@@ -1,6 +1,6 @@
 package com.wanna.framework.context
 
-import com.wanna.framework.beans.RootBeanDefinition
+import com.wanna.framework.beans.definition.RootBeanDefinition
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.StandardEnvironment
 
@@ -31,7 +31,7 @@ class AnnotationConfigApplicationContext(
             val name = it.simpleName
             if (beanFactory != null) beanFactory!!.registerBeanDefinition(
                 name,
-                RootBeanDefinition(name, it)
+                RootBeanDefinition(it)
             ) else throw IllegalStateException("Bean factory don't exists")
         }
     }

@@ -1,6 +1,6 @@
 package com.wanna.framework.context
 
-import com.wanna.framework.beans.BeanDefinition
+import com.wanna.framework.beans.definition.BeanDefinition
 
 open class DefaultListableBeanFactory() : ConfigurableListableBeanFactory, AbstractAutowireCapableBeanFactory() {
 

@@ -1,16 +1,11 @@
 package com.wanna.framework.context
 
 import com.wanna.framework.context.AnnotationAttributesUtils.asAnnotationAttributesSet
-import java.util.LinkedHashMap
-import com.wanna.framework.context.AnnotationAttributesUtils
 
 /**
  * 这个类主要是存放一些注解的属性，将注解中配置的相关属性全部都进行封装
  * 到这个类中，这个类继承了LinkedHashMap，key是注解的属性(方法)
  * 而value则是这个注解属性的key对应的配置的内容
- *
- * @author wanna
- * @version v1.0
  */
 class AnnotationAttributes : LinkedHashMap<String?, Any?> {
     /**

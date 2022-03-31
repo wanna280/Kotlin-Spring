@@ -6,10 +6,6 @@ import java.lang.reflect.InvocationTargetException
 
 /**
  * 给定注解的相关信息的工具类
- *
- * @author wanna
- * @version v1.0
- * @see AnnotationAttributes
  */
 object AnnotationAttributesUtils {
     /**

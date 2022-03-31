@@ -1,12 +1,9 @@
-package com.wanna.framework.beans
+package com.wanna.framework.beans.definition
 
 /**
  * 提供对Bean的相关信息的管理
  */
 interface BeanDefinition {
-
-    // beanName
-    var beanName: String
 
     // beanClass
     var beanClass: Class<*>

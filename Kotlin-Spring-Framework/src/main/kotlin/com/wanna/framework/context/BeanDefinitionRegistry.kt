@@ -1,6 +1,6 @@
 package com.wanna.framework.context
 
-import com.wanna.framework.beans.BeanDefinition
+import com.wanna.framework.beans.definition.BeanDefinition
 
 /**
  * 这是一个BeanDefinition的注册中心，它负责管理BeanDefinition的注册

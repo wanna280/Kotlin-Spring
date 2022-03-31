@@ -14,6 +14,6 @@ fun main() {
     applicationContext.register(AppConfiguration::class.java)
     applicationContext.refresh()
 
-    var bean = applicationContext.getBean("User")
+    var bean = applicationContext.getBean("")
     println(bean)
 }

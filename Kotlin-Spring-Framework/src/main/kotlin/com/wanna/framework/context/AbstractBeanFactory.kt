@@ -1,7 +1,6 @@
 package com.wanna.framework.context
 
-import com.wanna.framework.beans.BeanDefinition
-import com.wanna.framework.beans.RootBeanDefinition
+import com.wanna.framework.beans.definition.BeanDefinition
 import com.wanna.framework.context.exception.BeanDefNotFoundException
 import com.wanna.framework.context.exception.BeansException
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
