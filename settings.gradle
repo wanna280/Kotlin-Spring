@@ -1,0 +1,3 @@
+rootProject.name = 'Kotlin-Spring'
+
+include ':Kotlin-Spring-Framework'
