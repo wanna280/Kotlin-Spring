@@ -1,6 +1,6 @@
 package com.wanna.framework.context.annotations
 
-import com.wanna.framework.beans.definition.BeanDefinition
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.BeanDefinitionRegistry
 
 /**

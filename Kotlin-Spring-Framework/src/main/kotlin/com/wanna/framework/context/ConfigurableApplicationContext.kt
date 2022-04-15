@@ -17,6 +17,11 @@ interface ConfigurableApplicationContext : ApplicationContext {
      */
     fun addBeanFactoryPostProcessor(processor: BeanFactoryPostProcessor)
 
+    /**
+     * 获取ApplicationContext中的BeanFactory
+     */
+    fun getBeanFactory(): ConfigurableListableBeanFactory
+
 
     // ApplicationContext对应的环境对象
     var environment: ConfigurableEnvironment?

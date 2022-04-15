@@ -1,9 +1,9 @@
 package com.wanna.framework.context.util
 
 import com.wanna.framework.beans.annotations.Component
-import com.wanna.framework.beans.definition.BeanDefinition
-import com.wanna.framework.beans.definition.RootBeanDefinition
-import com.wanna.framework.beans.definition.ScannedGenericBeanDefinition
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition
+import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
+import com.wanna.framework.beans.factory.support.definition.ScannedGenericBeanDefinition
 import com.wanna.framework.context.BeanDefinitionRegistry
 import com.wanna.framework.context.annotations.BeanNameGenerator
 import com.wanna.framework.core.environment.Environment

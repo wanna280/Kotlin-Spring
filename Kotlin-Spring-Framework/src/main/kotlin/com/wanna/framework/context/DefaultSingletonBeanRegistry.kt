@@ -4,9 +4,9 @@ import com.wanna.framework.context.exception.BeanCurrentlyInCreationException
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 它是一个默认的单实例Bean的注册中心，维护了三级缓存
+ * 它是一个默认的单实例Bean的注册中心，维护了三级缓存，可以从三级缓存当中去获取Bean
  */
-open class DefaultSingletonBeanRegistry {
+open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
 
     // 当前Bean是否正在创建当中？
     private val singletonsCurrentlyInCreation = HashSet<String>()
@@ -91,6 +91,10 @@ open class DefaultSingletonBeanRegistry {
         return singletonObject as Any?
     }
 
+    override fun getSingleton(beanName: String): Any? {
+        return getSingleton(beanName, true)
+    }
+
     /**
      * 在创建Bean之前要执行的操作
      */
@@ -108,6 +112,18 @@ open class DefaultSingletonBeanRegistry {
         // 如果移除失败，说明之前都没有添加过这个Bean，抛出不合法的状态异常
         if (!singletonsCurrentlyInCreation.remove(beanName)) {
             throw IllegalStateException("remove bean [$beanName] failed")
+        }
+    }
+
+    /**
+     * 添加SingletonFactory
+     */
+    open fun addSingletonFactory(beanName: String, factory: ObjectFactory<*>) {
+        synchronized(singletonObjects) {
+            if (!singletonObjects.contains(beanName)) {
+                this.earlySingletonObjects.remove(beanName)
+                this.singletonFactories[beanName] = factory
+            }
         }
     }
 
@@ -141,9 +157,39 @@ open class DefaultSingletonBeanRegistry {
     }
 
     /**
+     * 注册一个单实例Bean到SingletonBeanRegistry
+     */
+    override fun registerSingleton(beanName: String, singleton: Any) {
+        synchronized(singletonObjects) {
+            // 从以及缓存当中拿到旧的Object实例，如果已经存在有旧的Object，那么抛出不合法的状态异常
+            val oldObject = singletonObjects.get(beanName)
+            if (oldObject != null) {
+                throw IllegalStateException("在SingletonBeanRegistry中已经存在有[beanName=$beanName]的Bean")
+            }
+            // 将单实例Bean进行注册
+            addSingleton(beanName, singleton)
+        }
+    }
+
+    /**
+     * 容器当中是否含有该beanName的Bean？
+     */
+    override fun containsSingleton(beanName: String): Boolean {
+        return this.singletonObjects.contains(beanName)
+    }
+
+    /**
      * 获取要操作单实例Bean的锁
      */
-    fun getSingletonLock(): Any {
+    override fun getSingletonMutex(): Any {
         return singletonObjects
+    }
+
+    override fun getSingletonCount(): Int {
+        return singletonObjects.size
+    }
+
+    override fun getSingletonNames(): Array<String> {
+        return singletonObjects.keys.toTypedArray()
     }
 }

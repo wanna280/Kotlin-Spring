@@ -8,8 +8,7 @@ import com.wanna.framework.context.processor.beans.BeanPostProcessor
 interface BeanFactory {
 
     companion object {
-        @JvmField
-        val FACTORY_BEAN_PREFIX = "&"  // FactoryBean的前缀，static final变量
+        const val FACTORY_BEAN_PREFIX = "&"  // FactoryBean的前缀，static final变量
     }
 
     /**
@@ -65,5 +64,5 @@ interface BeanFactory {
     /**
      * 根据beanName去匹配beanType
      */
-    fun getType(beanName: String): Class<*>
+    fun getType(beanName: String): Class<*>?
 }

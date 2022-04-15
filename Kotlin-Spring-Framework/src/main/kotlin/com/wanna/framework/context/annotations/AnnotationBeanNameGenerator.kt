@@ -1,8 +1,8 @@
 package com.wanna.framework.context.annotations
 
 import com.wanna.framework.beans.annotations.Component
-import com.wanna.framework.beans.definition.AnnotatedBeanDefinition
-import com.wanna.framework.beans.definition.BeanDefinition
+import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.AnnotationAttributesUtils
 import com.wanna.framework.context.BeanDefinitionRegistry
 import com.wanna.framework.util.ClassUtils
@@ -48,9 +48,9 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
      * 从注解当中去推断出来合适的BeanName
      */
     open fun determineBeanNameFromAnnotation(beanDefinition: AnnotatedBeanDefinition): String {
-        if (isCandidateAnnotation(beanDefinition.beanClass)) {
+        if (isCandidateAnnotation(beanDefinition.getBeanClass()!!)) {
             val component = AnnotatedElementUtils.getMergedAnnotation(
-                beanDefinition.beanClass,
+                beanDefinition.getBeanClass()!!,
                 ClassUtils.getAnnotationClassFromString(
                     COMPONENT_ANNOTATION_CLASSNAME
                 )
@@ -83,7 +83,7 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
     }
 
     open fun buildDefaultBeanName(beanDefinition: BeanDefinition): String {
-        val shortName = ClassUtils.getShortName(beanDefinition.beanClass).toCharArray()
+        val shortName = ClassUtils.getShortName(beanDefinition.getBeanClass()!!).toCharArray()
         shortName[0] = shortName[0].lowercaseChar()  // 首字母小写
         return String(shortName)
     }

@@ -12,6 +12,6 @@ annotation class Bean(
     @get:AliasFor("value")
     val name: String,
 
-    val initMethod: String,
-    val destoryMethod: String
+    val initMethod: String = "",
+    val destoryMethod: String = ""
 )

@@ -1,5 +1,7 @@
 package com.wanna.framework.context
 
+import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
+
 /**
  * 它是一个FactoryBean的注册中心
  */
@@ -11,16 +13,16 @@ open class FactoryBeanRegistrySupport() : DefaultSingletonBeanRegistry() {
     /**
      * 从FactoryBeanObject当中去创建Bean
      */
-    fun getFactoryBeanForObject(beanName: String): Any? {
+    open fun getFactoryBeanForObject(beanName: String): Any? {
         return factoryBeanObjectCache[beanName]
     }
 
     /**
      * 从FactoryBean当中去获取Object
      */
-    fun getObjectFromFactoryBean(factoryBean: FactoryBean<*>, beanName: String, shouldProcess: Boolean): Any? {
+    open fun getObjectFromFactoryBean(factoryBean: FactoryBean<*>, beanName: String, shouldProcess: Boolean): Any? {
         if (containsSingleton(beanName) && factoryBean.isSingleton()) {
-            synchronized(getSingletonLock()) {
+            synchronized(getSingletonMutex()) {
                 var instance = factoryBeanObjectCache[beanName]
                 if (instance == null) {
                     instance = doGetObjectFromFactoryBean(factoryBean)
@@ -34,19 +36,19 @@ open class FactoryBeanRegistrySupport() : DefaultSingletonBeanRegistry() {
         }
     }
 
-    /**
-     * 容器当中是否含有该beanName的Bean？
-     */
-    fun containsSingleton(beanName: String): Boolean {
-        return getSingleton(beanName, true) != null
-    }
-
-    fun doGetObjectFromFactoryBean(factoryBean: FactoryBean<*>): Any? {
+    open fun doGetObjectFromFactoryBean(factoryBean: FactoryBean<*>): Any? {
         try {
             return factoryBean.getObject() as Any
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
         return null
+    }
+
+    /**
+     * 获取FactoryBean的Object的Type
+     */
+    open fun getTypeForFactoryBean(factoryBean: FactoryBean<*>): Class<*>? {
+        return factoryBean.getObjectType()
     }
 }

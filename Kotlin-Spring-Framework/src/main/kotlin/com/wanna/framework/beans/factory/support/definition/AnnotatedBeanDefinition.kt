@@ -1,4 +1,4 @@
-package com.wanna.framework.beans.definition
+package com.wanna.framework.beans.factory.support.definition
 
 /**
  * 这是一个注解标注的BeanDefinition

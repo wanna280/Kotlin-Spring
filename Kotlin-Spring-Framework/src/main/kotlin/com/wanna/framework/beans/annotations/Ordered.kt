@@ -5,13 +5,10 @@ package com.wanna.framework.beans.annotations
  */
 interface Ordered {
 
-    // 最高优先级
-    val ORDER_HIGHEST: Int
-        get() = Int.MIN_VALUE
-
-    // 最低优先级
-    val ORDER_LOWEST: Int
-        get() = Int.MAX_VALUE
+    companion object {
+        const val ORDER_HIGHEST = Int.MIN_VALUE  // 最高优先级
+        const val ORDER_LOWEST = Int.MAX_VALUE  // 最低优先级
+    }
 
     /**
      * 获取Order

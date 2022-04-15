@@ -1,6 +1,6 @@
 package com.wanna.framework.context
 
-import com.wanna.framework.beans.definition.BeanDefinition
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 
 /**
  * 这是一个BeanDefinition的注册中心，它负责管理BeanDefinition的注册
@@ -25,4 +25,9 @@ interface BeanDefinitionRegistry {
      * 获取BeanDefinition
      */
     fun getBeanDefinition(beanName: String): BeanDefinition?
+
+    /**
+     * 是否注册了这个BeanDefinition？
+     */
+    fun containsBeanDefinition(beanName: String): Boolean
 }

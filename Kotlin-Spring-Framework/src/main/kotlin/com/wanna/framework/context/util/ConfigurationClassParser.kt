@@ -2,7 +2,7 @@ package com.wanna.framework.context.util
 
 import com.wanna.framework.beans.annotations.Bean
 import com.wanna.framework.beans.annotations.Import
-import com.wanna.framework.beans.definition.BeanDefinition
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.*
 import com.wanna.framework.context.annotations.BeanNameGenerator
 import com.wanna.framework.context.annotations.ComponentScan
@@ -10,6 +10,7 @@ import com.wanna.framework.context.annotations.ImportSource
 import com.wanna.framework.context.annotations.PropertySource
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.ReflectionUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
 import java.util.function.Predicate
 
@@ -112,11 +113,12 @@ class ConfigurationClassParser(
      * 处理Bean注解的方法
      */
     private fun processBeanMethods(configurationClass: ConfigurationClass) {
-        configurationClass.configurationClass.methods.forEach { method ->
-            if (AnnotatedElementUtils.isAnnotated(method!!, Bean::class.java)) {
+        ReflectionUtils.doWithMethods(configurationClass.configurationClass,
+            { method ->
                 configurationClass.addBeanMethod(BeanMethod(method))
-            }
-        }
+            }, { method ->
+                AnnotatedElementUtils.isAnnotated(method, Bean::class.java)
+            })
     }
 
     /**
@@ -171,11 +173,7 @@ class ConfigurationClassParser(
 
     private fun getImportCandidates(imports: Array<String>, filter: Predicate<String>): Collection<Class<*>> {
         val set = HashSet<Class<*>>()
-        imports.forEach {
-            if (!filter.test(it)) {
-                set.add(ClassUtils.forName<Any>(it))
-            }
-        }
+        imports.filter { !filter.test(it) }.forEach { set.add(ClassUtils.forName<Any>(it)) }
         return set
     }
 

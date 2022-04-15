@@ -1,7 +1,7 @@
 package com.wanna.framework.context.util
 
 import com.wanna.framework.beans.annotations.Bean
-import com.wanna.framework.beans.definition.AnnotatedGenericBeanDefinition
+import com.wanna.framework.beans.factory.support.definition.AnnotatedGenericBeanDefinition
 import com.wanna.framework.context.BeanDefinitionRegistry
 import com.wanna.framework.context.BeanMethod
 import com.wanna.framework.context.ImportBeanDefinitionRegistrar

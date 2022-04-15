@@ -1,6 +1,6 @@
 package com.wanna.framework.context.annotations
 
-import com.wanna.framework.beans.definition.BeanDefinition
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.annotations.AnnotationBeanNameGenerator
 
 /**
@@ -16,6 +16,6 @@ class FullyQualifiedAnnotationBeanNameGenerator : AnnotationBeanNameGenerator() 
      * 构建默认的beanName，采用全类名作为beanName
      */
     override fun buildDefaultBeanName(beanDefinition: BeanDefinition): String {
-        return beanDefinition.beanClass.name
+        return beanDefinition.getBeanClass()!!.name
     }
 }

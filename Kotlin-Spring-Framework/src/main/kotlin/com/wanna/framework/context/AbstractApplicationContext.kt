@@ -3,6 +3,8 @@ package com.wanna.framework.context
 import com.wanna.framework.context.event.ApplicationEventPublisher
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
+import com.wanna.framework.context.processor.beans.internal.ApplicationContextAwareProcessor
+import com.wanna.framework.context.processor.beans.internal.ApplicationListenerDetector
 import com.wanna.framework.context.processor.factory.BeanFactoryPostProcessor
 import com.wanna.framework.context.util.PostProcessorRegistrationDelegate
 
@@ -100,7 +102,11 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, List
      * 完成BeanFactory的准备工作
      */
     protected open fun prepareBeanFactory(beanFactory: ConfigurableListableBeanFactory) {
+        // 添加ApplicationContext的BeanPostProcessor，完成BeanClassLoaderAware/EnvironmentAware等Aware接口的处理
+        this.addBeanPostProcessor(ApplicationContextAwareProcessor(this))
 
+        // 添加ApplicationListener的Detector，完成EventListener的探测和注册
+        this.addBeanPostProcessor(ApplicationListenerDetector(this))
     }
 
     /**
@@ -189,7 +195,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, List
         return obtainBeanFactory().isTypeMatch(beanName, type)
     }
 
-    override fun getType(beanName: String): Class<*> {
+    override fun getType(beanName: String): Class<*>? {
         return obtainBeanFactory().getType(beanName)
     }
 
@@ -197,7 +203,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, List
         return obtainBeanFactory().getBeanNamesForType(type)
     }
 
-    override fun <T> getBeansForType(type: Class<T>): List<T> {
+    override fun <T> getBeansForType(type: Class<T>): Map<String, T> {
         return obtainBeanFactory().getBeansForType(type)
     }
 
@@ -205,7 +211,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, List
         return obtainBeanFactory().getBeanNamesForTypeIncludingAncestors(type)
     }
 
-    override fun <T> getBeansForTypeIncludingAncestors(type: Class<T>): List<T> {
+    override fun <T> getBeansForTypeIncludingAncestors(type: Class<T>): Map<String, T> {
         return obtainBeanFactory().getBeansForTypeIncludingAncestors(type)
     }
 

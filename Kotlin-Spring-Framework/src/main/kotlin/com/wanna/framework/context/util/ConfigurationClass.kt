@@ -1,6 +1,6 @@
 package com.wanna.framework.context.util
 
-import com.wanna.framework.beans.definition.BeanDefinition
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.BeanMethod
 import com.wanna.framework.context.ImportBeanDefinitionRegistrar
 import com.wanna.framework.context.annotations.BeanDefinitionReader
@@ -11,7 +11,7 @@ import com.wanna.main
  */
 class ConfigurationClass(_clazz: Class<*>) {
 
-    constructor(beanDefinition: BeanDefinition) : this(beanDefinition.beanClass)
+    constructor(beanDefinition: BeanDefinition) : this(beanDefinition.getBeanClass()!!)
 
     // clazz
     val configurationClass: Class<*> = _clazz
