@@ -181,15 +181,9 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     /**
      * 获取要操作单实例Bean的锁
      */
-    override fun getSingletonMutex(): Any {
-        return singletonObjects
-    }
+    override fun getSingletonMutex() = singletonObjects
 
-    override fun getSingletonCount(): Int {
-        return singletonObjects.size
-    }
+    override fun getSingletonCount() = singletonObjects.size
 
-    override fun getSingletonNames(): Array<String> {
-        return singletonObjects.keys.toTypedArray()
-    }
+    override fun getSingletonNames(): Array<String> = singletonObjects.keys.toTypedArray()
 }

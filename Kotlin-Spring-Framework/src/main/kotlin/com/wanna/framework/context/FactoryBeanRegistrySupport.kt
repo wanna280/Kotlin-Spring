@@ -1,7 +1,5 @@
 package com.wanna.framework.context
 
-import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-
 /**
  * 它是一个FactoryBean的注册中心
  */
@@ -13,9 +11,7 @@ open class FactoryBeanRegistrySupport() : DefaultSingletonBeanRegistry() {
     /**
      * 从FactoryBeanObject当中去创建Bean
      */
-    open fun getFactoryBeanForObject(beanName: String): Any? {
-        return factoryBeanObjectCache[beanName]
-    }
+    open fun getFactoryBeanForObject(beanName: String) = factoryBeanObjectCache[beanName]
 
     /**
      * 从FactoryBean当中去获取Object
@@ -28,7 +24,7 @@ open class FactoryBeanRegistrySupport() : DefaultSingletonBeanRegistry() {
                     instance = doGetObjectFromFactoryBean(factoryBean)
                     factoryBeanObjectCache[beanName] = instance as Any
                 }
-                return instance as Any?
+                return instance
             }
         } else {
 

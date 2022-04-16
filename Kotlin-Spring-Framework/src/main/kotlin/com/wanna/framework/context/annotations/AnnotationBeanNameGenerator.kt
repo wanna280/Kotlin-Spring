@@ -17,15 +17,15 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
         @JvmField
         val INSTANCE = AnnotationBeanNameGenerator()
 
-        // Component注解的类名
+        // Spring中的Component注解的类名
         @JvmField
         val COMPONENT_ANNOTATION_CLASSNAME = "com.wanna.framework.beans.annotations.Component"
 
-        // ManagedBean注解的类名
+        // Javax中ManagedBean注解的类名
         @JvmField
         val MANAGED_BEAN_ANNOTATION_CLASSNAME = "javax.annotation.ManagedBean"
 
-        // Named注解的类名
+        // Javax中Named注解的类名
         @JvmField
         val NAMED_ANNOTATION_CLASSNAME = "javax.inject.Named"
     }

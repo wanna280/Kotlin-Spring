@@ -1,6 +1,7 @@
 package com.wanna.framework.util
 
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
+import com.wanna.framework.beans.factory.support.ContextAnnotationAutowireCandidateResolver
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.BeanDefinitionRegistry
@@ -11,7 +12,7 @@ import com.wanna.framework.context.processor.beans.internal.AutowiredAnnotationP
 import com.wanna.framework.context.processor.beans.internal.CommonAnnotationPostProcessor
 import com.wanna.framework.context.processor.factory.internal.ConfigurationClassPostProcessor
 import com.wanna.framework.context.processor.factory.internal.EventListenerMethodProcessor
-import com.wanna.framework.core.AnnotationOrderComparator
+import com.wanna.framework.core.AnnotationAwareOrderComparator
 
 class AnnotationConfigUtils {
     companion object {
@@ -59,8 +60,13 @@ class AnnotationConfigUtils {
             val beanFactory = unwrapDefaultListableBeanFactory(registry)
             if (beanFactory != null) {
                 // 如果容器中的依赖比较器不是支持注解版的依赖比较器，那么就采用注解版的依赖比较器，去支持注解版的Order的比较
-                if (!(beanFactory.getDependencyComparator() is AnnotationOrderComparator)) {
-                    beanFactory.setDependencyComparator(AnnotationOrderComparator.INSTANCE)
+                if (!(beanFactory.getDependencyComparator() is AnnotationAwareOrderComparator)) {
+                    beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE)
+                }
+
+                // 设置AutowireCandidate的Resolver，主要用来完成自动注入的元素的匹配
+                if (!(beanFactory.getAutowireCandidateResolver() is ContextAnnotationAutowireCandidateResolver)) {
+                    beanFactory.setAutowireCandidateResolver(ContextAnnotationAutowireCandidateResolver.INSTANCE)
                 }
             }
 

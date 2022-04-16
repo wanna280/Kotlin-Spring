@@ -1,5 +1,6 @@
 package com.wanna.framework.context
 
+import com.wanna.App
 import com.wanna.framework.context.event.ApplicationEventPublisher
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
@@ -99,9 +100,14 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, List
     }
 
     /**
-     * 完成BeanFactory的准备工作
+     * 完成BeanFactory的准备工作，给BeanFactory当中添加一些相关的依赖
      */
     protected open fun prepareBeanFactory(beanFactory: ConfigurableListableBeanFactory) {
+        // 给容器中注册可以被解析的依赖，包括BeanFactory，Application，ApplicationEventPublisher等
+        beanFactory.registerResolvableDependency(BeanFactory::class.java, beanFactory)
+        beanFactory.registerResolvableDependency(ApplicationContext::class.java, this)
+        beanFactory.registerResolvableDependency(ApplicationEventPublisher::class.java, this)
+
         // 添加ApplicationContext的BeanPostProcessor，完成BeanClassLoaderAware/EnvironmentAware等Aware接口的处理
         this.addBeanPostProcessor(ApplicationContextAwareProcessor(this))
 

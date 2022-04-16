@@ -23,6 +23,8 @@ interface ConfigurableApplicationContext : ApplicationContext {
     fun getBeanFactory(): ConfigurableListableBeanFactory
 
 
-    // ApplicationContext对应的环境对象
+    /**
+     * ApplicationContext对应的环境对象
+     */
     var environment: ConfigurableEnvironment?
 }

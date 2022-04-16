@@ -18,9 +18,8 @@ class AnnotationAttributes : LinkedHashMap<String?, Any?> {
         this.annotationType = annotationType
     }
 
-    fun getString(key: String?): String? {
-        return get(key) as String?
-    }
+    fun getString(key: String?) = get(key) as String?
+
 
     fun getInt(key: String?): Int {
         return get(key) as Int

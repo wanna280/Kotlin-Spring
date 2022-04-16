@@ -1,5 +1,6 @@
 package com.wanna.framework.beans.factory
 
+import com.wanna.framework.beans.factory.support.DependencyDescriptor
 import com.wanna.framework.beans.method.PropertyValues
 import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.Field
@@ -9,7 +10,7 @@ import java.lang.reflect.Method
 /**
  * 它是封装一个类当中要进行注入的元素列表
  */
-open class InjectionMetadata(val targetClass: Class<*>, val elements: Collection<InjectedElement>) {
+open class InjectionMetadata(val targetClass: Class<*>, private val elements: Collection<InjectedElement>) {
 
     /**
      * 遍历所有要进行注入的元素，去进行依赖的注入
@@ -25,9 +26,8 @@ open class InjectionMetadata(val targetClass: Class<*>, val elements: Collection
          * 静态工厂方法，提供构建InjectMetadata的方式
          */
         @JvmStatic
-        fun forElements(targetClass: Class<*>, elements: Collection<InjectedElement>): InjectionMetadata {
-            return InjectionMetadata(targetClass, elements)
-        }
+        fun forElements(targetClass: Class<*>, elements: Collection<InjectedElement>) =
+            InjectionMetadata(targetClass, elements)
     }
 
 

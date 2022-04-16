@@ -26,12 +26,21 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
     // 已经完成合并的BeanDefinition的Map
     private val mergedBeanDefinitions: ConcurrentHashMap<String, RootBeanDefinition> = ConcurrentHashMap()
 
-    override fun getBeanClassLoader(): ClassLoader {
-        return this.beanClassLoader
-    }
+    // 类型转换器
+    private var typeConverter: TypeConverter? = null
 
+    // 嵌入式的值解析器列表
+    private val embeddedValueResolvers: MutableList<StringValueResolver> = ArrayList()
+
+    // BeanPostProcessor列表
+    protected val beanPostProcessors = ArrayList<BeanPostProcessor>()
+
+    // BeanPostProcessorCache
+    private var beanPostProcessorCache: BeanPostProcessorCache? = null
+
+    override fun getBeanClassLoader() = this.beanClassLoader
     override fun setBeanClassLoader(classLoader: ClassLoader?) {
-        this.beanClassLoader = if (classLoader == null) ClassLoader.getSystemClassLoader() else classLoader
+        this.beanClassLoader = classLoader ?: ClassLoader.getSystemClassLoader()
     }
 
     class BeanPostProcessorCache {
@@ -39,21 +48,10 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         val smartInstantiationAwareCache = ArrayList<SmartInstantiationAwareBeanPostProcessor>()
         val mergedDefinitions = ArrayList<MergedBeanDefinitionPostProcessor>()
 
-        fun hasInstantiationAware(): Boolean {
-            return instantiationAwareCache.isEmpty()
-        }
-
-        fun hasSmartInstantiationAware(): Boolean {
-            return smartInstantiationAwareCache.isEmpty()
-        }
-
-        fun hasMergedDefinition(): Boolean {
-            return mergedDefinitions.isEmpty()
-        }
+        fun hasInstantiationAware() = instantiationAwareCache.isEmpty()
+        fun hasSmartInstantiationAware() = smartInstantiationAwareCache.isEmpty()
+        fun hasMergedDefinition() = mergedDefinitions.isEmpty()
     }
-
-    // BeanPostProcessorCache
-    private var beanPostProcessorCache: BeanPostProcessorCache? = null
 
     /**
      * 获取BeanPostProcessor的Cache
@@ -76,12 +74,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         return beanPostProcessorCache!!
     }
 
-    // BeanPostProcessor列表
-    protected val beanPostProcessors = ArrayList<BeanPostProcessor>()
-
-    override fun getBean(beanName: String): Any? {
-        return doGetBean(beanName)
-    }
+    override fun getBean(beanName: String) = doGetBean(beanName)
 
     private fun doGetBean(beanName: String): Any? {
         var singleton = getSingleton(beanName, true)
@@ -92,9 +85,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         }
 
         val beanDefinition = getBeanDefinition(beanName)
-        if (beanDefinition == null) {
-            throw NoSuckBeanDefinitionException("The bean definition of [$beanName] can't be find")
-        }
+            ?: throw NoSuckBeanDefinitionException("The bean definition of [$beanName] can't be find")
 
         singleton = getSingleton(beanName, object : ObjectFactory<Any> {
             override fun getObject(): Any {
@@ -111,9 +102,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
      */
     protected abstract fun createBean(beanName: String, bd: BeanDefinition): Any?
 
-    override fun <T> getBean(beanName: String, type: Class<T>): T? {
-        return getBean(beanName) as T?
-    }
+    override fun <T> getBean(beanName: String, type: Class<T>) = getBean(beanName) as T?
 
     override fun <T> getBean(type: Class<T>): T? {
         val beansForType = getBeansForType(type)
@@ -122,12 +111,12 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
 
     override fun isSingleton(beanName: String): Boolean {
         val beanDefinition = getBeanDefinition(beanName)
-        return if (beanDefinition != null) beanDefinition.isSingleton() else throw BeansException()
+        return beanDefinition?.isSingleton() ?: throw BeansException()
     }
 
     override fun isPrototype(beanName: String): Boolean {
         val beanDefinition = getBeanDefinition(beanName)
-        return if (beanDefinition != null) beanDefinition.isPrototype() else throw BeansException()
+        return beanDefinition?.isPrototype() ?: throw BeansException()
     }
 
     override fun addBeanPostProcessor(processor: BeanPostProcessor) {
@@ -269,5 +258,37 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
             }
             return mbd
         }
+    }
+
+    override fun getTypeConverter(): TypeConverter {
+        if (this.typeConverter != null) {
+            return this.typeConverter!!
+        }
+        val typeConverter = SimpleTypeConverter()
+        return typeConverter
+    }
+
+    override fun setTypeConverter(typeConverter: TypeConverter) {
+        this.typeConverter = typeConverter
+    }
+
+    override fun addEmbeddedValueResolver(resolver: StringValueResolver) {
+        this.embeddedValueResolvers += resolver
+    }
+
+    override fun hasEmbeddedValueResolver() = !embeddedValueResolvers.isEmpty()
+
+    override fun resolveEmbeddedValue(strVal: String?): String? {
+        if (strVal == null) {
+            return null
+        }
+        var result: String? = null
+        for (resolver in embeddedValueResolvers) {
+            result = resolver.resolveStringValue(strVal)
+            if (result == null) {
+                return null
+            }
+        }
+        return result
     }
 }

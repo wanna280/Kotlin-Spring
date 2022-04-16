@@ -11,9 +11,7 @@ open class MethodOverride(val methodName: String) : BeanMetadataElement {
 
     private var source: Any? = null
 
-    override fun getSource(): Any? {
-        return source
-    }
+    override fun getSource() = source
 
     fun setSource(source: Any?) {
         this.source = source

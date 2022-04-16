@@ -15,9 +15,7 @@ open class MethodOverrides() {
         methodOverrides += methodOverride
     }
 
-    open fun getMethodOverrides(): MutableSet<MethodOverride> {
-        return this.methodOverrides
-    }
+    open fun getMethodOverrides() = this.methodOverrides
 
     open fun removeMethodOverride(methodName: String) {
         methodOverrides.removeIf {

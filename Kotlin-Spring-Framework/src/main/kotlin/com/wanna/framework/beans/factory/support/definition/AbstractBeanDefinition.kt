@@ -71,7 +71,7 @@ abstract class AbstractBeanDefinition constructor(_beanClass: Class<*>?) : BeanD
     private var autowireMode: Int = AUTOWIRE_NO  // autowire的模式，BY_TYPE/BY_NAME/CONSTRUCTOR
     private var autowireCandidate: Boolean = true  // 是否是一个候选去进行autowire的Bean
 
-    private var lazyInit: Boolean = true  // 是否懒加载
+    private var lazyInit: Boolean = false  // 是否懒加载，默认为false
     private var dependsOn: Array<String> = emptyArray()  // Bean所依赖的Bean的列表
 
     private var methodOverrides: MethodOverrides = MethodOverrides()  // 运行时方法重写的列表

@@ -11,3 +11,10 @@
 * 2.如果你没有配置BeanDefinitionGenerator，那么从SingleBeanRegistry中尝试去进行获取BeanDefinitionGenerator并进行使用。
 * 3.如果SingleBeanRegistry中没有获取到，那么就使用默认的(普通的Bean使用AnnotationBeanNameGenerator生成，Import的Bean采用FullyQualifiedAnnotationBeanNameGenerator生成)
 
+# 3. AutowireCandidateResolver
+
+* 1.父接口--AutowireCandidateResolver
+* 2.简单实现--SimpleAutowireCandidateResolver
+* 3.支持泛型--GenericTypeAwareAutowireCandidateResolver
+* 4.支持Qualifier相关注解--QualifierAnnotationAutowireCandidateResolver
+* 5.支持Context相关注解(例如Lazy)--ContextAnnotationAutowireCandidateResolver

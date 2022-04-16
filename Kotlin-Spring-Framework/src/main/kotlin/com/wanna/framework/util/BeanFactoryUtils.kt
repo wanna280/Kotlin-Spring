@@ -12,5 +12,21 @@ class BeanFactoryUtils {
         fun isFactoryDereference(beanName: String): Boolean {
             return beanName.startsWith(BeanFactory.FACTORY_BEAN_PREFIX)
         }
+
+        /**
+         * 将beanName前缀中的&全部去掉
+         */
+        @JvmStatic
+        fun transformBeanName(beanName: String): String {
+            if (!beanName.startsWith(BeanFactory.FACTORY_BEAN_PREFIX)) {
+                return beanName
+            }
+            // 切掉所有的FactoryBean的prefix，也就是&
+            var name = beanName
+            do {
+                name = name.substring(BeanFactory.FACTORY_BEAN_PREFIX.length)
+            } while (beanName.startsWith(BeanFactory.FACTORY_BEAN_PREFIX))
+            return name
+        }
     }
 }
