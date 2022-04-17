@@ -23,7 +23,13 @@ open class MethodParameter(
         null,
         nestingLevel
     )
-    constructor(executable: Executable,parameterIndex: Int,containingClass: Class<*>?):this(executable,parameterIndex,containingClass,1)
+
+    constructor(executable: Executable, parameterIndex: Int, containingClass: Class<*>?) : this(
+        executable,
+        parameterIndex,
+        containingClass,
+        1
+    )
 
 
     // 方法的泛型类型
@@ -31,6 +37,27 @@ open class MethodParameter(
 
     // 参数的类型
     private var parameterType: Class<*>? = null
+
+    /**
+     * 获取描述的方法参数上的全部注解列表
+     */
+    open fun getAnnotations(): Array<Annotation> {
+        return executable.parameters[parameterIndex].annotations
+    }
+
+    /**
+     * 获取描述的方法参数上的注解，找不到return null
+     */
+    open fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T? {
+        return executable.parameters[parameterIndex].getAnnotation(annotationClass)
+    }
+
+    /**
+     * 获取方法上的Annotation列表
+     */
+    open fun getMethodAnnotations(): Array<Annotation> {
+        return executable.annotations
+    }
 
     /**
      * 获取参数的返回类型

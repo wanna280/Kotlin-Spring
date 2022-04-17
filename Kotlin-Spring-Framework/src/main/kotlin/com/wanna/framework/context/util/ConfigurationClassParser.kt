@@ -2,6 +2,7 @@ package com.wanna.framework.context.util
 
 import com.wanna.framework.beans.annotations.Bean
 import com.wanna.framework.beans.annotations.Import
+import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.*
 import com.wanna.framework.context.annotations.BeanNameGenerator
@@ -50,30 +51,28 @@ class ConfigurationClassParser(
         return configurationClasses.keys
     }
 
-    fun parse() {
-        parse(registry.getBeanDefinitions())
-    }
-
-    fun parse(candidates: Collection<BeanDefinition>) {
+    fun parse(candidates: Collection<BeanDefinitionHolder>) {
         candidates.forEach {
-            parse(it)
+            parse(it.beanDefinition, it.beanName)
         }
     }
 
-    fun parse(beanDefinition: BeanDefinition) {
-        processConfigurationClass(ConfigurationClass(beanDefinition)) {
+    fun parse(beanDefinition: BeanDefinition, beanName: String) {
+        processConfigurationClass(ConfigurationClass(beanDefinition, beanName)) {
             it.startsWith("java.")
         }
     }
 
     private fun processConfigurationClass(configurationClass: ConfigurationClass, filter: Predicate<String>) {
+        // 如果已经处理过了，那么return...
         if (configurationClasses.containsKey(configurationClass)) {
             return
         }
 
-        // 将配置类注册到已有的配置类当中
+        // 将当前正在处理的配置类注册到已有的配置类当中
         configurationClasses[configurationClass] = configurationClass
 
+        // 执行真正的配置类的处理工作，处理各种注解...
         doProcessConfigurationClass(configurationClass, filter)
     }
 
@@ -100,8 +99,7 @@ class ConfigurationClassParser(
      */
     private fun processPropertySources(configurationClass: ConfigurationClass) {
         AnnotatedElementUtils.findAllMergedAnnotations(
-            configurationClass.configurationClass,
-            PropertySource::class.java
+            configurationClass.configurationClass, PropertySource::class.java
         ).forEach { propertySource ->
 
             // 加载得到的PropertySource
@@ -110,15 +108,12 @@ class ConfigurationClassParser(
     }
 
     /**
-     * 处理Bean注解的方法
+     * 处理Bean注解的方法，将所有的@Bean方法加入到候选列表当中
      */
     private fun processBeanMethods(configurationClass: ConfigurationClass) {
-        ReflectionUtils.doWithMethods(configurationClass.configurationClass,
-            { method ->
-                configurationClass.addBeanMethod(BeanMethod(method))
-            }, { method ->
-                AnnotatedElementUtils.isAnnotated(method, Bean::class.java)
-            })
+        ReflectionUtils.doWithMethods(configurationClass.configurationClass, { method ->
+            configurationClass.addBeanMethod(BeanMethod(method))
+        }, { method -> method.getAnnotation(Bean::class.java) != null })
     }
 
     /**
@@ -164,9 +159,9 @@ class ConfigurationClassParser(
 
                 // 如果只是导入了一个普通组件，需要把它当做一个配置类去进行递归处理
             } else {
-                val importConfigurationClass = ConfigurationClass(candidate)
+                val importConfigurationClass = ConfigurationClass(candidate, null)
                 importConfigurationClass.setImportedBy(configurationClass)   // importedBy
-                processConfigurationClass(importConfigurationClass, filter)  // 递归
+                processConfigurationClass(importConfigurationClass, filter)  // 把当前类当做配置类去进行递归
             }
         }
     }

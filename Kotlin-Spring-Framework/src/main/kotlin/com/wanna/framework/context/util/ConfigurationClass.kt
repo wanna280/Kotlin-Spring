@@ -9,12 +9,14 @@ import com.wanna.main
 /**
  * 这是对一个配置类的封装
  */
-class ConfigurationClass(_clazz: Class<*>) {
+class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
 
-    constructor(beanDefinition: BeanDefinition) : this(beanDefinition.getBeanClass()!!)
+    constructor(beanDefinition: BeanDefinition, beanName: String?) : this(beanDefinition.getBeanClass()!!, beanName)
 
     // clazz
     val configurationClass: Class<*> = _clazz
+
+    val beanName: String? = _beanName
 
     // beanMethods
     val beanMethods = HashSet<BeanMethod>()

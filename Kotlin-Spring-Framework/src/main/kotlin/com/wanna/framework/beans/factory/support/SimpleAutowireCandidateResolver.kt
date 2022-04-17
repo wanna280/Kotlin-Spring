@@ -18,5 +18,5 @@ open class SimpleAutowireCandidateResolver : AutowireCandidateResolver {
 
     override fun hasQualifier(descriptor: DependencyDescriptor) = false
 
-    override fun getSuggestedValue(descriptor: DependencyDescriptor) = null
+    override fun getSuggestedValue(descriptor: DependencyDescriptor): Any? = null
 }

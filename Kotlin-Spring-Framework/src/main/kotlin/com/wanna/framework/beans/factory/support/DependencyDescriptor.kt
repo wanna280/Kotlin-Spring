@@ -39,6 +39,27 @@ private constructor(
     private var containingClass: Class<*>? = parameter?.getContainingClass()
 
     /**
+     * 获取方法参数，如果这描述的是一个字段，那么return null
+     */
+    open fun getMethodParameter(): MethodParameter? {
+        return parameter
+    }
+
+    /**
+     * 获取方法参数/字段上的注解列表
+     */
+    open fun getAnnotations(): Array<Annotation> {
+        return if (field != null) field.annotations else parameter!!.getAnnotations()
+    }
+
+    /**
+     * 获取指定的注解，如果是一个方法参数，那么从方法参数当中获取注解；如果是一个字段，从字段当中获取注解
+     */
+    open fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T? {
+        return if (field != null) field.getAnnotation(annotationClass) else parameter!!.getAnnotation(annotationClass)
+    }
+
+    /**
      * 获取泛型的类型，如果是一个方法参数，那么获取方法参数的泛型；如果是一个字段，那么获取字段的泛型类型
      */
     open fun getGenericType(): Type {

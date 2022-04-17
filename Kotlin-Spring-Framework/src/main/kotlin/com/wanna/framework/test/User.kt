@@ -1,13 +1,21 @@
 package com.wanna.framework.test
 
 import com.wanna.framework.beans.annotations.Component
+import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.annotations.Autowired
+import com.wanna.framework.context.annotations.Value
 
 @Component
 class User {
 
+    @Value("name")
+    var name: String? = null;
+
     @Autowired
-    private var phone: Phone? = null
+    var phone: Phone? = null
+
+    @Autowired
+    var applicationContext: ApplicationContext? = null
 }
 
 @Component

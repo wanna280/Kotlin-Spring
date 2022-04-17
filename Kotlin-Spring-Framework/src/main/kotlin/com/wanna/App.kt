@@ -5,6 +5,7 @@ import com.wanna.framework.context.AnnotationConfigApplicationContext
 import com.wanna.framework.context.annotations.ComponentScan
 import com.wanna.framework.context.processor.factory.internal.ConfigurationClassPostProcessor
 import com.wanna.framework.test.AppConfiguration
+import com.wanna.framework.test.User
 import java.util.Scanner
 
 @ComponentScan(["com.wanna"])
@@ -13,8 +14,9 @@ class App
 
 fun main() {
     val applicationContext = AnnotationConfigApplicationContext(App::class.java)
-    val bean = applicationContext.getBean("user")
-    println(bean)
+    val bean = applicationContext.getBean("user") as User
+    println(bean.phone)
+    println(bean.applicationContext)
 }
 
 fun scan() {

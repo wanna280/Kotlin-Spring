@@ -13,21 +13,21 @@ interface AutowireCandidateResolver {
     }
 
     /**
-     * 判断这个依赖是否是必须进行注入的
+     * 判断这个依赖是否是必须进行注入的，根据DependencyDescriptor去进行决定
      */
     fun isRequired(descriptor: DependencyDescriptor): Boolean {
         return descriptor.isRequired()
     }
 
     /**
-     * 判断是否有Qualifier限定符
+     * 判断是否有Qualifier限定符，不仅包括Spring自家的@Qualifier注解，也包括Javax.inject当中的Qualifier注解
      */
     fun hasQualifier(descriptor: DependencyDescriptor): Boolean {
         return false
     }
 
     /**
-     * 决定是否有一个建议去进行设置的默认值
+     * 决定是否有一个建议去进行设置的默认值，用来处理字段或者方法参数上标注的@Value注解
      */
     fun getSuggestedValue(descriptor: DependencyDescriptor): Any? {
         return null
