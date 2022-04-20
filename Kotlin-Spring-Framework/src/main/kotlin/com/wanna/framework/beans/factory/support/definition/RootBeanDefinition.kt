@@ -9,6 +9,12 @@ import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 open class RootBeanDefinition constructor(beanClass: Class<*>?) :
     AbstractBeanDefinition(beanClass) {
 
+    // 进行后置处理的锁
+    var postProcessLock = Any()
+
+    // 是否已经被merged？
+    var postProcessed: Boolean = false
+
     /**
      * 调用super.copy方法将元素拷贝到当前对象当中
      */

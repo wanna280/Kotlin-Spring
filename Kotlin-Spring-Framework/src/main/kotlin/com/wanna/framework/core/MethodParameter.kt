@@ -7,7 +7,7 @@ import java.lang.reflect.Method
 import java.lang.reflect.Type
 
 /**
- * 这是对于一个方法的参数去进行的描述
+ * 这是对于一个方法的参数去进行的描述，通过参数索引(parameterIndex)，即可获取到方法的参数对象Parameter(来自java的reflect包)
  */
 open class MethodParameter(
     private var executable: Executable,

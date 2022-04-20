@@ -1,5 +1,7 @@
 package com.wanna.framework.context
 
 interface BeanWrapper {
-    fun getBeanInstance() : Any
+    fun getWrappedInstance() : Any
+
+    fun getWrappedClass() : Class<*>
 }

@@ -30,4 +30,9 @@ interface BeanDefinitionRegistry {
      * 是否注册了这个BeanDefinition？
      */
     fun containsBeanDefinition(beanName: String): Boolean
+
+    /**
+     * 获取BeanDefinition的数量
+     */
+    fun getBeanDefinitionCount() : Int
 }

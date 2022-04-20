@@ -2,6 +2,7 @@ package com.wanna.framework.util
 
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.factory.support.ContextAnnotationAutowireCandidateResolver
+import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.BeanDefinitionRegistry
@@ -32,19 +33,27 @@ class AnnotationConfigUtils {
         /**
          * 将BeanDefinitionRegistry转为DefaultListableBeanFactory
          */
+        @JvmStatic
         private fun unwrapDefaultListableBeanFactory(registry: BeanDefinitionRegistry): DefaultListableBeanFactory? {
-            if (registry is DefaultListableBeanFactory) {
-                return registry
-            } else if (registry is GenericApplicationContext) {
-                return registry.getBeanFactory()
-            } else {
-                return null
+            return when (registry) {
+                is DefaultListableBeanFactory -> registry
+                is GenericApplicationContext -> registry.getBeanFactory()
+                else -> null
             }
+        }
+
+        /**
+         * 处理通用的BeanDefinition注解，包括@Primary/@Lazy/@DependsOn/@Role等注解
+         */
+        @JvmStatic
+        fun processCommonDefinitionAnnotations(abd: AnnotatedBeanDefinition) {
+
         }
 
         /**
          * 注册AnnotationConfig相关的Processor
          */
+        @JvmStatic
         fun registerAnnotationConfigProcessors(registry: BeanDefinitionRegistry): MutableSet<BeanDefinitionHolder> {
             return registerAnnotationConfigProcessors(registry, null)
         }
@@ -118,6 +127,7 @@ class AnnotationConfigUtils {
         /**
          * 注册一个BeanDefinition到容器(BeanDefinitionRestryPostProcessor)中，并返回一个BeanDefinitionHolder
          */
+        @JvmStatic
         private fun registerProcessor(
             beanName: String,
             beanDefinition: RootBeanDefinition,

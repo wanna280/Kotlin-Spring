@@ -27,16 +27,36 @@ class ClassUtils {
         /**
          * 根据className，获取到AnnotationClass
          */
+        @JvmStatic
         fun <T : Annotation> getAnnotationClassFromString(clazzName: String): Class<T> {
             return forName<Any>(clazzName) as Class<T>
         }
 
+        @JvmStatic
         fun <T> forName(clazzName: String): Class<T> {
             return Class.forName(clazzName) as Class<T>
         }
 
+        @JvmStatic
         fun <T> newInstance(clazz: Class<T>): T {
             return clazz.getDeclaredConstructor().newInstance()
+        }
+
+        @JvmStatic
+        fun getDefaultClassLoader(): ClassLoader {
+            var classLoader: ClassLoader? = null
+            try {
+                classLoader = Thread.currentThread().contextClassLoader
+            } catch (ignored: Throwable) {
+
+            }
+            if (classLoader == null) {
+                classLoader = ClassUtils::class.java.classLoader
+            }
+            if (classLoader == null) {
+                classLoader = ClassLoader.getSystemClassLoader()
+            }
+            return classLoader!!
         }
     }
 }

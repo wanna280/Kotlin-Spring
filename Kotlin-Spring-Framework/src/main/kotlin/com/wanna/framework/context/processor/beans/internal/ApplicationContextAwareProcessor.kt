@@ -11,21 +11,24 @@ import com.wanna.framework.context.processor.beans.BeanPostProcessor
 /**
  * 这是一个ApplicationContext的处理器，注册负责完成一些Aware接口的回调
  */
-open class ApplicationContextAwareProcessor(_applicationContext: ApplicationContext) : BeanPostProcessor {
-
-    private val applicationContext: ApplicationContext = _applicationContext
+open class ApplicationContextAwareProcessor(private var applicationContext: ApplicationContext) : BeanPostProcessor {
 
     override fun postProcessBeforeInitialization(beanName: String, bean: Any): Any? {
-        invokeAwareMethod(bean)
+        invokeAwareInterfaces(bean)
         return bean
     }
 
-    fun invokeAwareMethod(bean: Any) {
+    /**
+     * 执行所有的Aware接口，完成容器对象的注入
+     */
+    open fun invokeAwareInterfaces(bean: Any) {
         if (bean is EnvironmentAware) {
             bean.setEnvironment(applicationContext.getEnvironment())
         }
         if (bean is BeanClassLoaderAware) {
-            bean.setBeanClassLoader((applicationContext as ConfigurableApplicationContext).getBeanFactory().getBeanClassLoader());
+            val beanClassLoader =
+                (applicationContext as ConfigurableApplicationContext).getBeanFactory().getBeanClassLoader()
+            bean.setBeanClassLoader(beanClassLoader)
         }
         if (bean is ApplicationContextAware) {
             bean.setApplicationContext(this.applicationContext)

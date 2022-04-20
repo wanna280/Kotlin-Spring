@@ -386,4 +386,8 @@ open class DefaultListableBeanFactory() : ConfigurableListableBeanFactory, BeanD
         }
         return null
     }
+
+    override fun getBeanDefinitionCount(): Int {
+        return beanDefinitionNames.size
+    }
 }

@@ -1,10 +1,11 @@
 package com.wanna.framework.context
 
+import com.wanna.framework.beans.factory.config.Scope
 import com.wanna.framework.beans.factory.support.NullBean
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import com.wanna.framework.context.exception.NoSuckBeanDefinitionException
 import com.wanna.framework.context.exception.BeansException
+import com.wanna.framework.context.exception.NoSuckBeanDefinitionException
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
 import com.wanna.framework.context.processor.beans.InstantiationAwareBeanPostProcessor
 import com.wanna.framework.context.processor.beans.MergedBeanDefinitionPostProcessor
@@ -25,6 +26,9 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
 
     // 已经完成合并的BeanDefinition的Map
     private val mergedBeanDefinitions: ConcurrentHashMap<String, RootBeanDefinition> = ConcurrentHashMap()
+
+    // 在BeanFactory当中已经完成注册的Scope列表，处于singleton/prototype的所有Scope，都会被注册到这里
+    private val scopes: MutableMap<String, Scope> = LinkedHashMap()
 
     // 类型转换器
     private var typeConverter: TypeConverter? = null
@@ -76,31 +80,86 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
 
     override fun getBean(beanName: String) = doGetBean(beanName)
 
-    private fun doGetBean(beanName: String): Any? {
-        var singleton = getSingleton(beanName, true)
+    private fun doGetBean(name: String): Any? {
+        // 转换name成为真正的beanName，去掉FactoryBean的前缀&
+        val beanName = transformedBeanName(name)
 
-        // 这里其实还需要判断FactoryBean，这里暂时不处理
-        if (singleton != null) {
-            return singleton
+        var beanInstance: Any? = null
+
+        // 尝试从单实例Bean的注册中心当中去获取Bean
+        val sharedInstance = getSingleton(beanName)
+
+        // 这里其实还需要判断FactoryBean
+        if (sharedInstance != null) {
+            return getObjectForBeanInstance(sharedInstance, name, beanName, null)
         }
 
-        val beanDefinition = getBeanDefinition(beanName)
-            ?: throw NoSuckBeanDefinitionException("The bean definition of [$beanName] can't be find")
+        // 如果从单例Bean注册中心当中获取不到Bean实例，那么需要获取MergedBeanDefinition，去完成Bean的创建
+        val mbd = getMergedBeanDefinition(beanName)
 
-        singleton = getSingleton(beanName, object : ObjectFactory<Any> {
-            override fun getObject(): Any {
-                return createBean(beanName, beanDefinition)
-                    ?: throw BeansException("Create bean instance of [$beanName] failed")
-            }
-        })
+        // 如果Bean是单例的
+        if (mbd.isSingleton()) {
+            beanInstance = getSingleton(beanName, object : ObjectFactory<Any> {
+                override fun getObject(): Any {
+                    return createBean(beanName, mbd)
+                        ?: throw BeansException("Create bean instance of [$beanName] failed")
+                }
+            })
 
-        return singleton
+            // 如果Bean是Prototype的
+        } else if (mbd.isPrototype()) {
+            beanInstance = createBean(beanName, mbd)
+
+            // 如果Bean是来自于自定义的Scope，那么需要从自定义的Scope当中去获取Bean
+        } else {
+            val scopeName = mbd.getScope()
+            assert(scopeName.isNotBlank()) { "[beanName=$beanName]的BeanDefinition的scopeName不能为空" }
+            val scope = this.scopes[scopeName]
+            checkNotNull(scope) { "容器中没有注册过这样的Scope" }
+            val scopedInstance = scope.get(beanName, object : ObjectFactory<Any> {
+                override fun getObject(): Any {
+                    return createBean(beanName, mbd)
+                        ?: throw BeansException("Create bean instance of [$beanName] failed")
+                }
+            })
+            beanInstance = getObjectForBeanInstance(scopedInstance, beanName, beanName, mbd)
+        }
+
+        return beanInstance
+    }
+
+    protected open fun getObjectForBeanInstance(
+        beanInstance: Any, name: String, beanName: String, mbd: RootBeanDefinition?
+    ): Any {
+        return beanInstance
+    }
+
+    /**
+     * 转换BeanName，去掉FactoryBean的前缀&
+     */
+    protected open fun transformedBeanName(name: String): String = BeanFactoryUtils.transformBeanName(name)
+
+    /**
+     * 获取已经注册的ScopeName列表
+     */
+    override fun getRegisteredScopeNames(): Array<String> = scopes.keys.toTypedArray()
+
+    /**
+     * 根据scopeName去获取已经注册的Scope，如果该scopeName没有被注册，那么return null
+     */
+    override fun getRegisteredScope(name: String): Scope? = this.scopes[name]
+
+    /**
+     * 注册scope到BeanFactory当中
+     */
+    override fun registerScope(name: String, scope: Scope) {
+        this.scopes[name] = scope
     }
 
     /**
      * 提供创建Bean的逻辑，交给子类去进行实现
      */
-    protected abstract fun createBean(beanName: String, bd: BeanDefinition): Any?
+    protected abstract fun createBean(beanName: String, mbd: RootBeanDefinition): Any?
 
     override fun <T> getBean(beanName: String, type: Class<T>) = getBean(beanName) as T?
 
@@ -120,8 +179,8 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
     }
 
     override fun addBeanPostProcessor(processor: BeanPostProcessor) {
-        beanPostProcessors -= processor
-        beanPostProcessors += processor
+        beanPostProcessors -= processor  // remove
+        beanPostProcessors += processor  // add
         this.beanPostProcessorCache = null  // clear
     }
 
@@ -252,7 +311,6 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
                 if (!StringUtils.hasText(mbd.getScope())) {
                     mbd.setScope(BeanDefinition.SCOPE_SINGLETON)
                 }
-
                 // 将合并完成的BeanDefinition放入到缓存当中
                 mergedBeanDefinitions[beanName] = mbd
             }

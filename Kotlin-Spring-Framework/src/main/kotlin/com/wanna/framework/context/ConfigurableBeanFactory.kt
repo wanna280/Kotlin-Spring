@@ -1,6 +1,8 @@
 package com.wanna.framework.context
 
-interface ConfigurableBeanFactory : BeanFactory {
+import com.wanna.framework.beans.factory.config.Scope
+
+interface ConfigurableBeanFactory : BeanFactory, SingletonBeanRegistry {
 
     /**
      * 获取BeanFactory的ClassLoader
@@ -33,4 +35,20 @@ interface ConfigurableBeanFactory : BeanFactory {
      * @param classLoader 要设置的ClassLoader，如果为空，将会使用默认的ClassLoader
      */
     fun setBeanClassLoader(classLoader: ClassLoader?)
+
+    /**
+     * 获取已经注册的ScopeName列表
+     */
+    fun getRegisteredScopeNames(): Array<String>
+
+    /**
+     * 根据scopeName去获取已经注册的Scope，如果该scopeName没有被注册，那么return null
+     */
+    fun getRegisteredScope(name: String): Scope?
+
+    /**
+     * 注册scope到BeanFactory当中
+     */
+    fun registerScope(name: String, scope: Scope)
+
 }

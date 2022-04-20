@@ -1,19 +1,19 @@
 package com.wanna.framework.context
 
-import com.wanna.App
 import com.wanna.framework.context.event.ApplicationEventPublisher
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
 import com.wanna.framework.context.processor.beans.internal.ApplicationContextAwareProcessor
 import com.wanna.framework.context.processor.beans.internal.ApplicationListenerDetector
 import com.wanna.framework.context.processor.factory.BeanFactoryPostProcessor
-import com.wanna.framework.context.util.PostProcessorRegistrationDelegate
+import com.wanna.framework.context.support.PostProcessorRegistrationDelegate
+import com.wanna.framework.core.environment.EnvironmentCapable
 
 /**
  * 提供了一个抽象的ApplicationContext都是实现
  */
 abstract class AbstractApplicationContext : ConfigurableApplicationContext, ListableBeanFactory,
-    ApplicationEventPublisher {
+    ApplicationEventPublisher, EnvironmentCapable {
 
     // 存放BeanFactoryPostProcessor的列表
     private val beanFactoryPostProcessors: MutableList<BeanFactoryPostProcessor> = ArrayList()

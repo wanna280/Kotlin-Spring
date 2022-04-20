@@ -8,7 +8,7 @@ import com.wanna.framework.core.environment.Environment
 interface ApplicationContext : BeanFactory {
 
     /**
-     * 获取可以自动装配的BeanFactory
+     * 获取可以自动装配的BeanFactory，可以用它完成Bean的创建/销毁等工作
      */
     fun getAutowireCapableBeanFactory(): AutowireCapableBeanFactory
 

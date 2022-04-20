@@ -80,4 +80,8 @@ abstract class GenericApplicationContext(_beanFactory: DefaultListableBeanFactor
     override fun getAutowireCapableBeanFactory(): AutowireCapableBeanFactory {
         return beanFactory as AutowireCapableBeanFactory
     }
+
+    override fun getBeanDefinitionCount(): Int {
+        return beanFactory?.getBeanDefinitionCount() ?: 0
+    }
 }

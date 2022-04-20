@@ -12,6 +12,11 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/Kotlin-Logger" />
+            <option value="$PROJECT_DIR$/Kotlin-Logger/logger-api" />
+            <option value="$PROJECT_DIR$/Kotlin-Logger/logger-impl" />
+            <option value="$PROJECT_DIR$/Kotlin-Logger/logger-temp" />
+            <option value="$PROJECT_DIR$/Kotlin-Logger/logger-test" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Framework" />
           </set>
         </option>

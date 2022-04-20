@@ -5,10 +5,7 @@ import com.wanna.framework.beans.annotations.Import
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.*
-import com.wanna.framework.context.annotations.BeanNameGenerator
-import com.wanna.framework.context.annotations.ComponentScan
-import com.wanna.framework.context.annotations.ImportSource
-import com.wanna.framework.context.annotations.PropertySource
+import com.wanna.framework.context.annotations.*
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
