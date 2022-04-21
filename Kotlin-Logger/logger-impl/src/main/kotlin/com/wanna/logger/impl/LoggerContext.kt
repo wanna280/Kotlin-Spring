@@ -53,7 +53,7 @@ open class LoggerContext : ILoggerFactory {
             if (parent != null) {
                 break
             }
-            loggerName = loggerName.substring(0, index - 1)
+            loggerName = loggerName.substring(0, index)
             index = loggerName.lastIndexOf('.')
         }
 

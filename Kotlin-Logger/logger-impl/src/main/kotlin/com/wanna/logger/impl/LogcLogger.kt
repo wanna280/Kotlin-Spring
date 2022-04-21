@@ -24,10 +24,10 @@ open class LogcLogger : Logger {
     private var globalLevel = LoggingLevel.DEBUG
 
     // Appender，使用输出流的方式，将日志输出到对应的位置，比如Console/LogFile
-    private var appender: LoggerAppender? = ConsoleLoggerAppender()
+    private var appenderList = ArrayList<LoggerAppender>()
 
-    fun setAppender(appender: LoggerAppender) {
-        this.appender = appender
+    fun addAppender(appender: LoggerAppender) {
+        appenderList += appender
     }
 
     override fun info(msg: String) {
@@ -56,15 +56,19 @@ open class LogcLogger : Logger {
         // 如果当前Logger没有Appender去进行日志的输出，但是parent Logger可以去完成日志的输出
         // 那么就交给parent去进行日志的输出
         while (logger != null) {
-            if (logger.getAppender() == null) {
+            if (logger.getAppenderList().isEmpty()) {
+                logger = logger.getParent()
                 continue
             }
             if (level.level >= globalLevel.level) {
                 val event = SubstituteLoggingEvent(level, msg, loggerName)
-                appender!!.append(event)
-                break
+
+                // 这里应该使用logger.getAppenderList，而不是this.appenderList
+                logger.getAppenderList().forEach { appender ->
+                    appender.append(event)
+                }
             }
-            logger = logger.getParent()
+            break
         }
     }
 
@@ -88,8 +92,8 @@ open class LogcLogger : Logger {
         this.parent = logger
     }
 
-    fun getAppender(): LoggerAppender? {
-        return appender
+    fun getAppenderList(): List<LoggerAppender> {
+        return appenderList
     }
 
     override fun setLoggerName(name: String) {

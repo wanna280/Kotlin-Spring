@@ -93,9 +93,6 @@ class LoggerFactory {
 
             }
             try {
-                val staticLoggerBinderClass = Class.forName(STATIC_LOGGER_BINDER_CLASSNAME)
-                val getSingletonMethod = staticLoggerBinderClass.getMethod("getSingleton")
-                getSingletonMethod.invoke(staticLoggerBinderClass)
                 // getSingleton，确保有该类的存在
                 StaticLoggerBinder.getSingleton()
                 // 成功初始化
