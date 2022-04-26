@@ -8,6 +8,4 @@ interface ILoggerFactory {
     fun getLogger(name: String): Logger
 
     fun getLogger(clazz: Class<*>): Logger
-
-    fun newLogger(name: String): Logger
 }

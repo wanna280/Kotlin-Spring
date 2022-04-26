@@ -1,19 +1,27 @@
 package com.wanna.framework.aop.framework
 
+import com.wanna.framework.aop.Advice
 import com.wanna.framework.aop.Advisor
 import com.wanna.framework.aop.TargetSource
 import com.wanna.framework.aop.intercept.MethodInterceptor
 import com.wanna.framework.aop.intercept.MethodInvocation
+import com.wanna.framework.aop.support.DefaultPointcutAdvisor
 import com.wanna.framework.aop.target.EmptyTargetSource
 import com.wanna.framework.aop.target.SingletonTargetSource
 import java.lang.reflect.Method
 
-open class AdvisedSupport {
+/**
+ * 这是一个对于Advised提供支持的类，也就是Advised的默认实现的通用模板类
+ */
+open class AdvisedSupport : ProxyConfig(), Advised {
 
     companion object {
         @JvmField
         val EMPTY_TARGET_SOURCR = EmptyTargetSource.INSTANCE
     }
+
+    // 这是一个构建SpringAOP的拦截器链的工厂
+    private var advisorChainFactory = DefaultAdvisorChainFactory()
 
     // targetSource
     private var targetSource: TargetSource = EMPTY_TARGET_SOURCR
@@ -48,19 +56,10 @@ open class AdvisedSupport {
     }
 
     /**
-     * 获取Interceptor和运行时的动态方法匹配的Advice
+     * 获取Interceptor和运行时的动态方法匹配的拦截器列表，也就是执行SpringAOP的拦截器列表
      */
     open fun getInterceptorsAndDynamicInterceptionAdvice(method: Method, targetClass: Class<*>?): List<Any> {
-        val interceptors: ArrayList<MethodInterceptor> = ArrayList()
-        interceptors.add(object : MethodInterceptor {
-            override fun invoke(invocation: MethodInvocation): Any? {
-                println("before")
-                val returnVal = invocation.proceed()
-                println("after")
-                return returnVal
-            }
-        })
-        return interceptors
+        return advisorChainFactory.getInterceptorsAndDynamicInterceptionAdvice(this, method, targetClass)
     }
 
     /**
@@ -74,4 +73,28 @@ open class AdvisedSupport {
         return this.targetSource.getTargetClass()
     }
 
+    override fun addAdvisor(pos: Int, advisor: Advisor) {
+        this.advisors[pos] = advisor
+    }
+
+    override fun addAdvisor(advisor: Advisor) {
+        this.advisors += advisor
+    }
+
+    override fun addAdvice(advice: Advice) {
+        addAdvice(advisors.size, advice)
+    }
+
+    override fun addAdvice(pos: Int, advice: Advice) {
+        if (pos >= advisors.size) {
+            this.advisors += DefaultPointcutAdvisor(advice)
+        } else {
+            this.advisors[pos] = DefaultPointcutAdvisor(advice)
+        }
+    }
+
+    override fun getAdvisors(): Array<Advisor> {
+        return this.advisors.toTypedArray()
+    }
 }
+

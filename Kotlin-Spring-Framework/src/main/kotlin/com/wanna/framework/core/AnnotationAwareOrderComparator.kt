@@ -12,6 +12,14 @@ open class AnnotationAwareOrderComparator : OrderComparator() {
     companion object {
         @JvmField
         val INSTANCE = AnnotationAwareOrderComparator()
+
+        /**
+         * 按照注解版的Order去完成排序
+         */
+        @JvmStatic
+        fun sort(list: MutableList<*>) {
+            list.sortWith(INSTANCE)
+        }
     }
 
     /**
@@ -35,5 +43,6 @@ open class AnnotationAwareOrderComparator : OrderComparator() {
      */
     private fun findOrderFromAnnotation(obj: Any) =
         AnnotatedElementUtils.getMergedAnnotation(obj::class.java, Order::class.java)?.value
+
 
 }

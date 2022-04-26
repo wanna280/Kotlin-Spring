@@ -1,6 +1,8 @@
 package com.wanna.framework.context
 
 import com.wanna.framework.beans.factory.config.Scope
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition
+import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 
 interface ConfigurableBeanFactory : BeanFactory, SingletonBeanRegistry {
 
@@ -50,5 +52,10 @@ interface ConfigurableBeanFactory : BeanFactory, SingletonBeanRegistry {
      * 注册scope到BeanFactory当中
      */
     fun registerScope(name: String, scope: Scope)
+
+    /**
+     * 获取合并之后的BeanDefinition
+     */
+    fun getMergedBeanDefinition(beanName: String): BeanDefinition
 
 }

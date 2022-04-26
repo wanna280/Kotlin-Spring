@@ -285,7 +285,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
     /**
      * 获取合并之后的BeanDefinition(RootBeanDefinition)
      */
-    protected open fun getMergedBeanDefinition(beanName: String): RootBeanDefinition {
+    override fun getMergedBeanDefinition(beanName: String): RootBeanDefinition {
         val rootBeanDefinition = mergedBeanDefinitions[beanName]
         // 先进行一次检查，避免立刻加锁进行操作
         if (rootBeanDefinition != null) {

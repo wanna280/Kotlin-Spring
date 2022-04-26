@@ -14,6 +14,14 @@ open class OrderComparator : Comparator<Any?> {
     companion object {
         @JvmField
         val INSTANCE = OrderComparator()
+
+        /**
+         * 按照Order去完成排序
+         */
+        @JvmStatic
+        fun sort(list: MutableList<*>) {
+            list.sortWith(INSTANCE)
+        }
     }
 
     override fun compare(o1: Any?, o2: Any?): Int {

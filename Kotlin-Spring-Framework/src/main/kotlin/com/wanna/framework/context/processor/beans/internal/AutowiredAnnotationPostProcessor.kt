@@ -1,23 +1,27 @@
 package com.wanna.framework.context.processor.beans.internal
 
+import com.wanna.framework.beans.annotations.Lookup
 import com.wanna.framework.beans.method.PropertyValues
 import com.wanna.framework.beans.factory.InjectionMetadata
 import com.wanna.framework.beans.factory.support.DependencyDescriptor
+import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
+import com.wanna.framework.beans.method.LookupOverride
+import com.wanna.framework.beans.method.MethodOverride
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.ConfigurableListableBeanFactory
 import com.wanna.framework.context.annotations.Autowired
 import com.wanna.framework.context.annotations.Value
 import com.wanna.framework.context.aware.ApplicationContextAware
+import com.wanna.framework.context.exception.BeanCreationException
 import com.wanna.framework.context.processor.beans.SmartInstantiationAwareBeanPostProcessor
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
-import java.lang.reflect.AccessibleObject
-import java.lang.reflect.Field
-import java.lang.reflect.Method
-import java.lang.reflect.Modifier
+import java.lang.reflect.*
+import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 处理Autowired/Inject/Value注解的BeanPostProcessor
@@ -28,10 +32,11 @@ class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostProcesso
 
     private var beanFactory: ConfigurableListableBeanFactory? = null
 
-    override fun setApplicationContext(applicationContext: ApplicationContext) {
-        this.applicationContext = applicationContext
-        this.beanFactory = (applicationContext as ConfigurableApplicationContext).getBeanFactory()
-    }
+    // 已经完成过处理的lookupMethod缓存，存的是beanName
+    private val lookupMethodChecked: MutableSet<String> = Collections.newSetFromMap(ConcurrentHashMap())
+
+    // 候选构造器的缓存，key-beanClass，value-constructors
+    private val candidateConstructorsCache: ConcurrentHashMap<Class<*>, Array<Constructor<*>>> = ConcurrentHashMap()
 
     companion object {
         // Autowired相关的注解，包括@Autowired/@Value和@Inject
@@ -47,6 +52,95 @@ class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostProcesso
                 // ignore ClassNotFountException
             }
         }
+    }
+
+    override fun setApplicationContext(applicationContext: ApplicationContext) {
+        this.applicationContext = applicationContext
+        this.beanFactory = (applicationContext as ConfigurableApplicationContext).getBeanFactory()
+    }
+
+    /**
+     * 检查LookupMethodOverride，并推断合适的候选的构造器
+     */
+    override fun determineCandidateConstructors(beanClass: Class<*>, beanName: String): Array<Constructor<*>>? {
+        // 如果这个Bean没有被处理LookupMethod过的话，遍历它的所有父类的所有方法去找Lookup注解
+        if (!lookupMethodChecked.contains(beanName)) {
+            var targetClass: Class<*>? = beanClass;
+            do {
+                ReflectionUtils.doWithLocalMethods(beanClass) { method ->
+                    val lookup = method.getAnnotation(Lookup::class.java)
+                    if (lookup != null) {
+                        // 创建一个LookupOverride对象，并存放methodName和Lookup的value(要进行lookup的beanName)
+                        val lookupOverride = LookupOverride(method, lookup.value)
+
+                        // 将它加入到对应的BeanDefinition的运行时方法的Override列表当中
+                        val rootBeanDefinition = beanFactory!!.getMergedBeanDefinition(beanName) as RootBeanDefinition
+                        rootBeanDefinition.getMethodOverrides().addMethodOverride(lookupOverride);
+                    }
+                }
+                targetClass = targetClass!!.superclass
+            } while (targetClass != null && targetClass.superclass != Any::class.java)
+            lookupMethodChecked += beanName
+        }
+
+        // 推断出来合适的构造器
+        var candidateConstructors = candidateConstructorsCache[beanClass]
+        if (candidateConstructors == null) {
+            synchronized(candidateConstructorsCache) {
+                candidateConstructors = candidateConstructorsCache[beanClass]
+                if (candidateConstructors == null) {
+                    // 获取beanClass的原始构造器
+                    val rawConstructors: Array<Constructor<*>> = beanClass.declaredConstructors
+
+                    // 候选的构造器列表
+                    val candidates = ArrayList<Constructor<*>>(rawConstructors.size)
+                    // required构造器
+                    var requiredConstructor: Constructor<*>? = null
+                    // 默认的无参数构造器
+                    var defaultConstructor: Constructor<*>? = null
+
+                    // 遍历所有的构造器列表，去获取候选的构造器列表、默认的构造器，required的构造器
+                    for (rawConstructor in rawConstructors) {
+                        val autowiredAnnotation = findAutowiredAnnotation(rawConstructor)
+                        // 如果从该构造器上找到了Autowired注解，那么它一定是一个候选的构造器
+                        if (autowiredAnnotation != null) {
+                            val requiredStatus = determineRequiredStatus(rawConstructor)
+                            // 如果required=true
+                            if (requiredStatus) {
+                                if (candidates.isNotEmpty()) {
+                                    throw BeanCreationException("找到了多个标注@Autowired注解的构造器，并且还有一个标注了required=true")
+                                }
+                                requiredConstructor = rawConstructor
+                            }
+                            candidates += rawConstructor
+                            // 获取无参数构造器
+                        } else if (rawConstructor.parameterCount == 0) {
+                            defaultConstructor = rawConstructor
+                        }
+                    }
+
+                    if (candidates.isNotEmpty()) {
+                        // 如果没有required=true的构造器，那么需要加入无参构造器作为候选构造器
+                        if (requiredConstructor == null) {
+                            if (defaultConstructor != null) {
+                                candidates += defaultConstructor
+                            }
+                            candidateConstructors = candidates.toTypedArray()
+                        }
+                        // 如果没有找到候选的，但是只要一个有参数构造器，那么会以它为准
+                    } else if (rawConstructors.size == 1 && rawConstructors[0].parameterCount > 0) {
+                        candidateConstructors = arrayOf(rawConstructors[0])
+
+                        // 如果没有找到合适的构造器...那么
+                    } else {
+                        candidateConstructors = emptyArray()
+                    }
+                    // 加入缓存
+                    this.candidateConstructorsCache[beanClass] = candidateConstructors!!
+                }
+            }
+        }
+        return if (candidateConstructors!!.isNotEmpty()) candidateConstructors else null
     }
 
     // 要进行注入的元素的MetadataCache
@@ -65,9 +159,7 @@ class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostProcesso
      * 在指定的类上去寻找要进行注入的Metadata元信息
      */
     protected fun findAutowiringMetadata(
-        beanClass: Class<*>,
-        beanName: String,
-        pvs: PropertyValues?
+        beanClass: Class<*>, beanName: String, pvs: PropertyValues?
     ): InjectionMetadata {
         // 先尝试从缓存中获取，如果缓存中没有，那么就去进行构建
         var injectionMetadata = injectionMetadataCache[beanClass]
@@ -149,8 +241,7 @@ class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostProcesso
     /**
      * 这是一个用来完成Autowired的字段注入的InjectedElement
      */
-    inner class AutowiredFieldElement(_field: Field, _required: Boolean) :
-        InjectionMetadata.InjectedElement(_field) {
+    inner class AutowiredFieldElement(_field: Field, _required: Boolean) : InjectionMetadata.InjectedElement(_field) {
         private val field = _field
         private val required = _required
 

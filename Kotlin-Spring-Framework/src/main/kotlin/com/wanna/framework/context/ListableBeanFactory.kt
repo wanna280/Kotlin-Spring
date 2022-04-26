@@ -11,7 +11,7 @@ interface ListableBeanFactory : BeanFactory {
      * 给定具体类型type，去容器中找到该类型的所有Bean列表
      * @param type 要去进行匹配的类型
      */
-    fun <T> getBeansForType(type: Class<T>): Map<String,T>
+    fun <T> getBeansForType(type: Class<T>): Map<String, T>
 
     /**
      * 根据type去匹配容器以及父容器当中所有该类型的Bean的beanName
@@ -23,15 +23,20 @@ interface ListableBeanFactory : BeanFactory {
      * 给定具体类型type，去容器以及父容器中找到该类型的所有Bean列表
      * @param type 要去进行匹配的类型
      */
-    fun <T> getBeansForTypeIncludingAncestors(type: Class<T>): Map<String,T>
+    fun <T> getBeansForTypeIncludingAncestors(type: Class<T>): Map<String, T>
 
     /**
      * 获取当前容器中的BeanDefinition的数量
      */
-    fun getBeanDefinitionCounts() : Int
+    fun getBeanDefinitionCounts(): Int
+
+    /**
+     * 容器中是否包含这样的BeanDefinition？
+     */
+    fun containsBeanDefinition(name: String): Boolean
 
     /**
      * 获取所有的BeanDefinition的name列表
      */
-    fun getBeanDefinitionNames() : List<String>
+    fun getBeanDefinitionNames(): List<String>
 }

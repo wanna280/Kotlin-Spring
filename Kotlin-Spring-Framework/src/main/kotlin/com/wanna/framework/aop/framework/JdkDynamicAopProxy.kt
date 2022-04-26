@@ -8,7 +8,7 @@ import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 
 /**
- * 这是一个基于JDK的动态代理，AdvisedSupport是一个为Advice提供支持的组件，例如ProxyFactory
+ * 这是一个基于JDK的动态代理，AdvisedSupport是一个为Advice提供支持的组件，例如ProxyFactory是它的子类
  */
 open class JdkDynamicAopProxy(var adviced: AdvisedSupport) : AopProxy, InvocationHandler {
 

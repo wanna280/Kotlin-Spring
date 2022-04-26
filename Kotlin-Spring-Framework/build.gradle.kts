@@ -10,12 +10,6 @@ repositories.flatDir {
     dirs("libs")
 }
 
-repositories {
-    google()
-    mavenCentral()
-    jcenter()
-}
-
 dependencies {
     implementation("org.springframework:spring-core:5.3.17")
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
