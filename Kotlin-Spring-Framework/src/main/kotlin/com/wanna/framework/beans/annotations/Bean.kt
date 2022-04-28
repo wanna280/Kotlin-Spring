@@ -8,9 +8,9 @@ import org.springframework.core.annotation.AliasFor
 @Target(AnnotationTarget.FUNCTION)
 annotation class Bean(
     @get:AliasFor("name")
-    val value: String,
+    val value: String = "",
     @get:AliasFor("value")
-    val name: String,
+    val name: String = "",
 
     val initMethod: String = "",
     val destoryMethod: String = ""

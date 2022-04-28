@@ -4,6 +4,7 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.BeanMethod
 import com.wanna.framework.context.ImportBeanDefinitionRegistrar
 import com.wanna.framework.context.annotations.BeanDefinitionReader
+import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.main
 
 /**
@@ -28,10 +29,17 @@ class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
     val importedSources = HashMap<String, Class<out BeanDefinitionReader>>()
 
     // importBeanDefinitionRegistrars
-    val importBeanDefinitionRegistrars = HashMap<ImportBeanDefinitionRegistrar, String>()
+    val importBeanDefinitionRegistrars = HashMap<ImportBeanDefinitionRegistrar, AnnotationMetadata>()
 
     fun addBeanMethod(beanMethod: BeanMethod) {
         beanMethods += beanMethod
+    }
+
+    /**
+     * 获取已经注册的ImportBeanDefinitionRegistrars
+     */
+    fun getImportBeanDefinitionRegistrars() : Map<ImportBeanDefinitionRegistrar,AnnotationMetadata> {
+        return importBeanDefinitionRegistrars
     }
 
     fun hasBeanMethod(): Boolean {
@@ -42,8 +50,8 @@ class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
         return beanMethods.isNotEmpty()
     }
 
-    fun addRegistrar(registrar: ImportBeanDefinitionRegistrar) {
-        importBeanDefinitionRegistrars[registrar] = "wanna"
+    fun addRegistrar(registrar: ImportBeanDefinitionRegistrar, annotationMetadata: AnnotationMetadata) {
+        importBeanDefinitionRegistrars[registrar] = annotationMetadata
     }
 
     fun setImportedBy(configurationClass: ConfigurationClass) {

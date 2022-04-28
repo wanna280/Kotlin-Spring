@@ -1,11 +1,14 @@
 package com.wanna.framework.aop.creator
 
 import com.wanna.framework.aop.Advisor
+import com.wanna.framework.aop.Pointcut
+import com.wanna.framework.aop.PointcutAdvisor
 import com.wanna.framework.aop.TargetSource
 import com.wanna.framework.aop.framework.autoproxy.BeanFactoryAdvisorRetrievalHelper
 import com.wanna.framework.context.BeanFactory
 import com.wanna.framework.context.ConfigurableListableBeanFactory
 import com.wanna.framework.core.AnnotationAwareOrderComparator
+import com.wanna.framework.util.ReflectionUtils
 
 abstract class AbstractAdvisorAutoProxyCreator : AbstractAutoProxyCreator() {
 
@@ -79,9 +82,29 @@ abstract class AbstractAdvisorAutoProxyCreator : AbstractAutoProxyCreator() {
      * 找出可以进行应用给当前的Bean的Advisor，主要是使用ClassFilter去对类进行匹配，使用MethodMatcher去遍历所有的方法去进行匹配
      */
     protected open fun findAdvisorsThatCanApply(
-        advisors: MutableList<Advisor>, benClass: Class<*>, beanName: String
+        advisors: MutableList<Advisor>, beanClass: Class<*>, beanName: String
     ): MutableList<Advisor> {
-        return advisors
+        val result = ArrayList<Advisor>()
+        advisors.forEach {
+            if (it is PointcutAdvisor) {
+                val pointcut = it.getPointcut()
+                if (pointcut.getClassFilter().matches(beanClass)) {
+                    var matches = false
+                    ReflectionUtils.doWithLocalMethods(beanClass) { method ->
+                        // 如果MethodMatcher对当前方法去进行匹配时，不匹配，那么return
+                        if (!pointcut.getMethodMatcher().matches(method, beanClass)) {
+                            return@doWithLocalMethods  // Kotlin当中，可以指定要return的方法
+                        }
+                        matches = true
+                    }
+                    // 如果方法和类都匹配的话，那么说明该Advisor对当前的beanClass是匹配的，那么往最终结果当中去进行一安吉
+                    if (matches) {
+                        result += it
+                    }
+                }
+            }
+        }
+        return result
     }
 
     /**

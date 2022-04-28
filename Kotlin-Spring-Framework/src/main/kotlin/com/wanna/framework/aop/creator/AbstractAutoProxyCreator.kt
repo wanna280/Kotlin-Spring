@@ -6,8 +6,10 @@ import com.wanna.framework.aop.Pointcut
 import com.wanna.framework.aop.TargetSource
 import com.wanna.framework.aop.framework.AopInfrastructureBean
 import com.wanna.framework.aop.framework.ProxyFactory
+import com.wanna.framework.aop.framework.ProxyProcessorSupport
 import com.wanna.framework.aop.framework.autoproxy.TargetSourceCreator
 import com.wanna.framework.aop.target.SingletonTargetSource
+import com.wanna.framework.beans.annotations.Ordered
 import com.wanna.framework.context.BeanFactory
 import com.wanna.framework.context.aware.BeanFactoryAware
 import com.wanna.framework.context.processor.beans.SmartInstantiationAwareBeanPostProcessor
@@ -19,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap
  * 这是一个用来完成代理的BeanPostProcessor，通过Creator工厂模式去完成代理的自动生成
  */
 abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcessor, BeanFactoryAware,
-    AopInfrastructureBean {
+    AopInfrastructureBean, ProxyProcessorSupport() {
 
     companion object {
         // 不进行创建代理的FLAG常量
@@ -79,8 +81,8 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
 
     override fun postProcessAfterInitialization(beanName: String, bean: Any): Any? {
         val cacheKey = getCacheKey(bean::class.java, beanName)
-        wrapIfNecessary(bean, beanName, cacheKey)
-        return bean
+        val proxy = wrapIfNecessary(bean, beanName, cacheKey)
+        return proxy
     }
 
     /**
@@ -126,6 +128,8 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
         beanClass: Class<*>, beanName: String, specificInterceptors: Array<Any>?, targetSource: TargetSource?
     ): Any {
         val proxyFactory = ProxyFactory()
+        proxyFactory.setTargetSource(targetSource)
+        proxyFactory.setInterfaces(*targetSource!!.getTargetClass()!!.interfaces)
         val proxy = proxyFactory.getProxy()
         return proxy
     }

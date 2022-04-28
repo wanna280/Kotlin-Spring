@@ -1,7 +1,5 @@
 package com.wanna.framework.context
 
-import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import com.wanna.framework.beans.util.ConfigurationClassUtils
 import com.wanna.framework.context.annotations.AnnotatedBeanDefinitionReader
 import com.wanna.framework.context.annotations.BeanNameGenerator
 import com.wanna.framework.context.annotations.ClassPathBeanDefinitionScanner
@@ -11,7 +9,12 @@ import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.util.AnnotationConfigUtils
 
 /**
- * 这是一个支持注解的处理的ApplicationContext
+ * 这是一个支持注解的处理的ApplicationContext，
+ * (1)可以通过注解的BeanDefinitionReader去完成配置类的注册;
+ * (2)可以通过ClassPathBeanDefinitionScanner去扫描指定的包下的所有配置类
+ *
+ * @see ClassPathBeanDefinitionScanner
+ * @see AnnotatedBeanDefinitionReader
  */
 open class AnnotationConfigApplicationContext(
     _environment: ConfigurableEnvironment,
@@ -29,9 +32,7 @@ open class AnnotationConfigApplicationContext(
     /**
      * 无参构造器，创建默认的Environment和BeanFactory，但是并不完成刷新工作，使用者自行完成ApplicationContext的刷新
      */
-    constructor() : this(StandardEnvironment(), DefaultListableBeanFactory()) {
-
-    }
+    constructor() : this(StandardEnvironment(), DefaultListableBeanFactory())
 
     /**
      * 注册配置类到容器中，创建默认的Environment和BeanFactory，并完成ApplicationContext的刷新

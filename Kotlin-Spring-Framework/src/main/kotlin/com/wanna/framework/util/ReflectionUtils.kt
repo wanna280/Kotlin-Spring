@@ -110,16 +110,18 @@ class ReflectionUtils {
 
         /**
          * 对一个类以及父类当中定义的所有字段，去执行某一个操作(action)
+         *
          * @param clazz 目标类
          * @param action 对方法要执行的操作
          */
         @JvmStatic
         fun doWithFields(clazz: Class<*>, action: (Field) -> Unit) {
-            doWithLocalFields(clazz, action) { true }
+            doWithFields(clazz, action) { true }
         }
 
         /**
          * 对一个类以及父类当中定义的所有字段，去执行某一个操作(action)
+         *
          * @param clazz 目标类
          * @param action 对方法要执行的操作
          * @param filter 哪些方法需要进行操作？
@@ -145,6 +147,7 @@ class ReflectionUtils {
 
         /**
          * 对一个类当中定义的所有字段，去执行某一个操作(action)
+         *
          * @param clazz 目标类
          * @param action 对方法要执行的操作
          * @param filter 哪些方法需要进行操作？
@@ -332,7 +335,7 @@ class ReflectionUtils {
 
             // 如果它还有父类，并且父类不是Object(Any)的话，那么，让它的父类也执行这个操作
             if (clazz.superclass != null && clazz.superclass != Any::class.java) {
-                doWithMethods(clazz, action, filter)
+                doWithMethods(clazz.superclass, action, filter)
 
                 // 如果它是个接口了，那么也把它当做类去执行方法
             } else if (clazz.isInterface) {

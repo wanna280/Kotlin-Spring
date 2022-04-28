@@ -105,14 +105,29 @@ interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
     fun getMethodOverrides(): MethodOverrides
 
     /**
+     * 是否有需要进行运行时方法重写的？
+     */
+    fun hasMethodOverrides(): Boolean
+
+    /**
      * 获取要进行设置的属性值
      */
     fun getPropertyValues(): MutablePropertyValues
 
     /**
+     * 是否有PropertyValue？
+     */
+    fun hasPropertyValues(): Boolean
+
+    /**
      * 获取构造器参数
      */
     fun getConstructorArgumentValues(): ConstructorArgumentValues
+
+    /**
+     * 是否有构造器参数？
+     */
+    fun hasConstructorArgumentValues(): Boolean
 
     /**
      * 是否懒加载

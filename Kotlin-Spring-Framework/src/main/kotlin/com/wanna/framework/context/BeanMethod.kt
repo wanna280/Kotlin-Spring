@@ -1,10 +1,11 @@
 package com.wanna.framework.context
 
+import com.wanna.framework.context.util.ConfigurationClass
 import java.lang.reflect.Method
 
 /**
- * 标识这是一个BeanMethod
+ * 标识这是一个BeanMethod，也就是被@Bean标注的方法
  */
-class BeanMethod(_method: Method) : ConfigurationMethod(_method) {
+open class BeanMethod(_method: Method,val configClass: ConfigurationClass) : ConfigurationMethod(_method) {
 
 }

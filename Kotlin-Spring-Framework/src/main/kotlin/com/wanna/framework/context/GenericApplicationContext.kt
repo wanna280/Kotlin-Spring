@@ -73,8 +73,8 @@ abstract class GenericApplicationContext(_beanFactory: DefaultListableBeanFactor
         return beanFactory?.getBeanDefinition(beanName)
     }
 
-    override fun containsBeanDefinition(beanName: String): Boolean {
-        return beanFactory?.containsBeanDefinition(beanName) ?: false
+    override fun containsBeanDefinition(name: String): Boolean {
+        return beanFactory?.containsBeanDefinition(name) ?: false
     }
 
     override fun getAutowireCapableBeanFactory(): AutowireCapableBeanFactory {

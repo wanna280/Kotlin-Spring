@@ -1,0 +1,196 @@
+package com.wanna.framework.beans.factory.support
+
+import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
+import com.wanna.framework.beans.method.ConstructorArgumentValues
+import com.wanna.framework.context.AbstractAutowireCapableBeanFactory
+import com.wanna.framework.context.BeanFactory
+import com.wanna.framework.context.BeanWrapper
+import com.wanna.framework.context.BeanWrapperImpl
+import java.lang.reflect.Constructor
+import java.lang.reflect.Executable
+import java.lang.reflect.Method
+
+/**
+ * 这是一个构造器的解析器，负责完成Bean的构造器的解析，并使用构造器去完成Bean的创建，并支持对构造器/方法的参数这两张方式去进行Autowire
+ *
+ * @see AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod
+ * @see ConstructorResolver.autowireConstructor  使用构造器去进行实例化和注入
+ * @see ConstructorResolver.instantiateUsingFactoryMethod  使用FactoryMethod去进行实例化和注入
+ */
+open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableBeanFactory) {
+
+    private val EMPTY_ARGS = emptyArray<Any>()
+
+    /**
+     * 使用Constructor去完成Bean的实例化和自动注入，需要从候选的构造器当中，选出合适的构造器，如果没有合适的构造器，那么需要自己解析出来合适的构造器
+     *
+     * @param beanName beanName
+     * @param mbd MergedBeanDefinition
+     * @param ctors 候选的构造器列表(为空时会自动推断)
+     * @param args 构造器的参数列表(可以为空)
+     * @return beanWrapper
+     */
+    open fun autowireConstructor(
+        beanName: String, mbd: RootBeanDefinition, ctors: Array<Constructor<*>>?, args: Array<out Any?>?
+    ): BeanWrapper {
+        val beanWrapper = BeanWrapperImpl()
+
+        var constructorToUse: Constructor<*>? = null
+        var argsToUse: Array<out Any?>? = null
+        var argsToResolve: Array<out Any?>? = null
+
+        // 1.检查BeanDefinition当中是否有已经缓存的构造器列表？
+        synchronized(mbd.constructorArgumentLock) {
+            constructorToUse = mbd.resolvedConstructorOrFactoryMethod as Constructor<*>?
+
+            // 如果之前已经缓存了构造器的话，并且还解析好了参数的话，直接去进行获取即可
+            if (constructorToUse != null && mbd.constructorArgumentsResolved) {
+                argsToUse = mbd.resolvedConstructorArguments
+
+                // 如果没有已经缓存好的参数列表，那么需要判断是否有preparedConstructorArguments
+                // 这种类型的参数，是需要进行后期处理的
+                if (argsToUse == null) {
+                    argsToResolve = mbd.preparedConstructorArguments
+                }
+            }
+            // 如果要完成参数的解析，那么在这里去完成参数的解析...
+            if (argsToResolve != null) {
+                argsToUse = emptyArray()
+            }
+        }
+
+        // 2.如果没有找到合适的构造器的话
+        if (constructorToUse == null || args == null) {
+
+            // 2.1 如果没有推断出来合适的构造器，那么从beanClass当中去获取到所有的DeclaredConstructor
+            var candidates = ctors
+            // 如果没有给定合适的构造器的话，那么获取declaredConstructor
+            if (candidates == null) {
+                candidates = mbd.getBeanClass()!!.declaredConstructors
+            }
+            // 如果只要一个候选的构造器的话，那么就使用它创建对象，并且加入到缓存当中
+            if (candidates != null && candidates.size == 1 && candidates[0].parameterCount == 0) {
+                beanWrapper.setBeanInstance(instantiate(mbd, beanName, beanFactory, candidates[0]))
+                mbd.resolvedConstructorOrFactoryMethod = candidates[0]
+                mbd.resolvedConstructorArguments = EMPTY_ARGS
+                mbd.constructorArgumentsResolved = true
+                return beanWrapper
+            }
+
+            var maxParamCount = 0
+            // 遍历所有的构造器，去进行匹配，选择出来最合适的一个构造器，并完成对象的创建
+            candidates?.forEach {
+                val parameterCount = it.parameterCount
+                if (maxParamCount < parameterCount) {
+                    maxParamCount = parameterCount
+                    constructorToUse = it
+                }
+            }
+
+            if (constructorToUse != null) {
+                argsToUse = createArgumentArray(
+                    beanName,
+                    mbd,
+                    beanWrapper,
+                    null,
+                    constructorToUse!!.parameterTypes,
+                    null,
+                    constructorToUse!!
+                )
+            }
+        }
+
+        // 使用构造器去进行实例化，并将beanInstance设置到BeanWrapper当中
+        beanWrapper.setBeanInstance(instantiate(mbd, beanName, beanFactory, constructorToUse!!, *argsToUse!!))
+        return beanWrapper
+    }
+
+    /**
+     * 解析出来合适的构造器以及构造器参数之后，就可以使用指定的构造器去完成Bean的实例化
+     */
+    private fun instantiate(
+        bd: RootBeanDefinition, beanName: String?, owner: BeanFactory, ctor: Constructor<*>, vararg args: Any?
+    ): Any {
+        return beanFactory.getInstantiationStrategy().instantiate(bd, beanName, owner, ctor, *args)
+    }
+
+    /**
+     * 使用FactoryMethod去执行目标方法完成实例化，并完成方法的自动注入
+     */
+    open fun instantiateUsingFactoryMethod(beanName: String, mbd: RootBeanDefinition): BeanWrapper {
+        val beanWrapper = BeanWrapperImpl()
+        beanFactory.initBeanWrapper(beanWrapper)
+
+        val factoryMethodName = mbd.getFactoryMethodName()
+        val factoryBeanName = mbd.getFactoryBeanName()
+        val resolvedFactoryMethod: Method? = mbd.getResolvedFactoryMethod()
+
+        // factoryBean and factoryClass
+        var factoryBean: Any? = null
+        var factoryClass: Class<*>? = null
+
+        if (factoryMethodName != null) {
+            factoryBean = beanFactory.getBean(factoryBeanName!!)!!
+            factoryClass = factoryBean::class.java
+        }
+
+        // 创建执行目标方法需要用到的参数数组
+        val argumentArray = createArgumentArray(
+            beanName,
+            mbd,
+            beanWrapper,
+            mbd.getConstructorArgumentValues(),
+            resolvedFactoryMethod!!.parameterTypes,
+            null,
+            resolvedFactoryMethod,
+            true
+        ) ?: emptyArray()
+
+        // 使用BeanFactory提供的实例化策略，去完成实例化
+        var instance = beanFactory.getInstantiationStrategy().instantiate(
+            mbd, beanName, beanFactory, factoryMethod = resolvedFactoryMethod, factoryBean!!, *argumentArray
+        )
+
+        if (instance == null) {  // 如果从实例化的Supplier当中获取到了null，那么封装NullBean
+            instance = NullBean()
+        }
+
+        // 后期设置beanInstance到beanWrapper当中
+        beanWrapper.setBeanInstance(instance)
+        return beanWrapper
+    }
+
+    /**
+     * 给指定的方法/构造器去创建参数数组
+     *
+     * @param beanName beanName
+     * @param mbd MergedBeanDefinition
+     * @param beanWrapper beanWrapper
+     * @param resolveValues 构造器参数列表(可以为空)
+     * @param paramTypes 参数类型列表
+     * @param paramNames 参数名列表(可以为空)
+     * @param executable 方法/构造器
+     * @param autowiring 是否要进行自动注入？
+     */
+    private fun createArgumentArray(
+        beanName: String,
+        mbd: RootBeanDefinition,
+        beanWrapper: BeanWrapper,
+        resolveValues: ConstructorArgumentValues?,
+        paramTypes: Array<Class<*>>,
+        paramNames: Array<String>?,
+        executable: Executable,
+        autowiring: Boolean = true
+    ): Array<out Any?>? {
+        // 创建一个参数数组(Array<Any?>)
+        val params: Array<Any?> = Array(paramTypes.size) { null }
+        // 遍历所有的参数，完成依赖的解析
+        for (i in 0 until paramTypes.size) {
+            val methodParameter = com.wanna.framework.core.MethodParameter(executable, i)
+            val resolvedDependency =
+                beanFactory.resolveDependency(DependencyDescriptor(methodParameter, true), beanName)
+            params[i] = resolvedDependency
+        }
+        return params
+    }
+}

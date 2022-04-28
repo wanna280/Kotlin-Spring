@@ -19,7 +19,7 @@ object AnnotationAttributesUtils {
         if (annotation == null) {
             return null
         }
-        val annotationType: Class<Annotation> = annotation.annotationClass.java as Class<Annotation>
+        val annotationType: Class<out Annotation> = annotation.annotationClass.java
         val attributes = AnnotationAttributes(annotationType)
         // 获取到目标注解对应的全部方法，将其解析出来放到AnnotationAttributes中去
         val methods = annotationType.declaredMethods
@@ -32,7 +32,7 @@ object AnnotationAttributesUtils {
                 // ignore，不可能出现这种情况...
             } catch (e: InvocationTargetException) {
             }
-            attributes[attrKey] = attrValue
+            attributes[attrKey] = attrValue!!
         }
         return attributes
     }
@@ -84,7 +84,7 @@ object AnnotationAttributesUtils {
      * @param map map
      * @return AnnotationAttributes对象
      */
-    fun fromMap(map: Map<String?, Any?>): AnnotationAttributes {
+    fun fromMap(map: Map<String, Any>): AnnotationAttributes {
         val attributes = AnnotationAttributes()
         attributes.putAll(map)
         return attributes

@@ -7,7 +7,7 @@ import com.wanna.framework.context.AnnotationAttributesUtils.asAnnotationAttribu
  * 到这个类中，这个类继承了LinkedHashMap，key是注解的属性(方法)
  * 而value则是这个注解属性的key对应的配置的内容
  */
-class AnnotationAttributes : LinkedHashMap<String?, Any?> {
+class AnnotationAttributes : LinkedHashMap<String, Any> {
     /**
      * 注解的类型
      */

@@ -11,11 +11,16 @@ open class ProxyConfig : java.io.Serializable {
     // 是否要对Advisor列表去进行冻结？如果是的话，那么Advisor列表将不允许被修改，一旦修改立马抛异常
     var frozen = false
 
+    // 是否需要暴露代理对象给AopUtil
+    var exposeProxy = false
+
     /**
      * 从某个也实现了ProxyConfig的类当中，拷贝它对代理的配置属性
      * @param config 要从哪个ProxyConfig对象去进行拷贝
      */
     open fun copyFrom(config: ProxyConfig) {
         this.proxyTargetClass = config.proxyTargetClass
+        this.frozen = config.frozen
+        this.exposeProxy = config.exposeProxy
     }
 }

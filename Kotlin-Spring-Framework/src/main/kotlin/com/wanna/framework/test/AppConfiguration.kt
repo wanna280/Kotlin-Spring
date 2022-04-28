@@ -17,6 +17,7 @@ interface ITF {
 class ITFImpl : ITF {
     override fun getUser(name: String): User {
         val user = User()
+        println("get User")
         user.name = name
         return user
     }

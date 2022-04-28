@@ -1,12 +1,13 @@
 package com.wanna.framework.context.processor.beans.internal
 
 import com.wanna.framework.beans.annotations.Lookup
-import com.wanna.framework.beans.method.PropertyValues
+import com.wanna.framework.beans.annotations.Order
+import com.wanna.framework.beans.annotations.Ordered
 import com.wanna.framework.beans.factory.InjectionMetadata
 import com.wanna.framework.beans.factory.support.DependencyDescriptor
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.beans.method.LookupOverride
-import com.wanna.framework.beans.method.MethodOverride
+import com.wanna.framework.beans.method.PropertyValues
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.ConfigurableListableBeanFactory
@@ -20,17 +21,21 @@ import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.*
-import java.util.Collections
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 处理Autowired/Inject/Value注解的BeanPostProcessor
  */
-class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostProcessor, ApplicationContextAware {
+open class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostProcessor, ApplicationContextAware,
+    Ordered {
 
     private var applicationContext: ApplicationContext? = null
 
     private var beanFactory: ConfigurableListableBeanFactory? = null
+
+    // order
+    private var order: Int = Ordered.ORDER_LOWEST - 10
 
     // 已经完成过处理的lookupMethod缓存，存的是beanName
     private val lookupMethodChecked: MutableSet<String> = Collections.newSetFromMap(ConcurrentHashMap())
@@ -38,20 +43,34 @@ class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostProcesso
     // 候选构造器的缓存，key-beanClass，value-constructors
     private val candidateConstructorsCache: ConcurrentHashMap<Class<*>, Array<Constructor<*>>> = ConcurrentHashMap()
 
-    companion object {
-        // Autowired相关的注解，包括@Autowired/@Value和@Inject
-        @JvmField
-        val autowiredAnnotationType = HashSet<Class<out Annotation>>()
+    // 哪些注解要作为Autowire注解？默认包括@Autowired/@Value和@Inject
+    private val autowiredAnnotationTypes = HashSet<Class<out Annotation>>()
 
-        init {
-            autowiredAnnotationType.add(Autowired::class.java)
-            autowiredAnnotationType.add(Value::class.java)
-            try {
-                autowiredAnnotationType.add(ClassUtils.forName("javax.inject.Inject"))
-            } catch (ignored: ClassNotFoundException) {
-                // ignore ClassNotFountException
-            }
+    init {
+        autowiredAnnotationTypes.add(Autowired::class.java)
+        autowiredAnnotationTypes.add(Value::class.java)
+        try {
+            autowiredAnnotationTypes.add(ClassUtils.forName("javax.inject.Inject"))
+        } catch (ignored: ClassNotFoundException) {
+            // ignore ClassNotFountException
         }
+    }
+
+    override fun getOrder(): Int {
+        return this.order
+    }
+
+    open fun setOrder(order: Int) {
+        this.order = order
+    }
+
+    /**
+     * 设置AutowiredAnnotationTypess
+     * @param types 要用哪些注解作为Autowired的注解？
+     */
+    open fun setAutowiredAnnotationTypess(types: Set<Class<out Annotation>>) {
+        this.autowiredAnnotationTypes.clear()  // clear
+        this.autowiredAnnotationTypes.addAll(types)  // add
     }
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {
@@ -83,7 +102,7 @@ class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostProcesso
             lookupMethodChecked += beanName
         }
 
-        // 推断出来合适的构造器
+        // 遍历所有的构造器，去推断出来合适的构造器
         var candidateConstructors = candidateConstructorsCache[beanClass]
         if (candidateConstructors == null) {
             synchronized(candidateConstructorsCache) {
@@ -113,7 +132,7 @@ class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostProcesso
                                 requiredConstructor = rawConstructor
                             }
                             candidates += rawConstructor
-                            // 获取无参数构造器
+                            // 获取无参数构造器(默认构造器)
                         } else if (rawConstructor.parameterCount == 0) {
                             defaultConstructor = rawConstructor
                         }
@@ -179,6 +198,7 @@ class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostProcesso
 
         var targetClass: Class<*>? = beanClass
 
+        // 遍历所有的方法和字段，去构建InjectMetadata
         do {
             ReflectionUtils.doWithLocalFields(targetClass!!) { field ->
                 val autowiredAnnotation = findAutowiredAnnotation(field)
@@ -217,7 +237,7 @@ class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostProcesso
      * 在指定的元素上去找Autowired/Inject/Value注解
      */
     private fun findAutowiredAnnotation(accessibleObject: AccessibleObject): Annotation? {
-        for (annotationClass in autowiredAnnotationType) {
+        for (annotationClass in autowiredAnnotationTypes) {
             val annotation = AnnotatedElementUtils.getMergedAnnotation(accessibleObject, annotationClass)
             if (annotation != null) {
                 return annotation

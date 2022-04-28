@@ -2,15 +2,21 @@ package com.wanna.framework.beans.method
 
 
 /**
- * 维护了PropertyValue列表
+ * 维护了PropertyValue列表，它是PropertyValues的具体实现
+ *
+ * @see PropertyValue
+ * @see PropertyValues
  */
-class MutablePropertyValues() : PropertyValues {
+open class MutablePropertyValues() : PropertyValues {
 
     // 属性值列表
     private val propertyValueList: MutableList<PropertyValue> = ArrayList()
 
-    constructor(mutablePropertyValues: MutablePropertyValues) : this() {
-        propertyValueList.forEach(this::addPropertyValue)
+    /**
+     * 提供一个PropertyValues的构造器，将它里面的属性全部拷贝到当前对象的PropertyValues当中
+     */
+    constructor(propertyValues: PropertyValues?) : this() {
+        propertyValues?.getPropertyValues()?.forEach(this::addPropertyValue)
     }
 
     override fun getPropertyValues(): Array<PropertyValue> {
@@ -26,21 +32,34 @@ class MutablePropertyValues() : PropertyValues {
         return false
     }
 
-    fun addPropertyValue(propertyValue: PropertyValue) {
+    override fun hasProperty(): Boolean {
+        return propertyValueList.isNotEmpty()
+    }
+
+    override fun addPropertyValue(propertyValue: PropertyValue) {
         propertyValueList += propertyValue
     }
 
-    fun addPropertyValue(name: String, value: Any?) {
+    override fun addPropertyValue(name: String, value: Any?) {
         propertyValueList += PropertyValue(name, value)
     }
 
-    fun addPropertyValues(propertyValues: Map<String, Any?>) {
-        propertyValues.forEach { k, v ->
-            propertyValueList.add(PropertyValue(k, v))
-        }
+    override fun addPropertyValues(propertyValues: Map<String, Any?>) {
+        propertyValues.forEach { (k, v) -> propertyValueList.add(PropertyValue(k, v)) }
     }
 
-    fun addPropertyValues(propertyValues: Collection<PropertyValue>) {
+    override fun addPropertyValues(propertyValues: Collection<PropertyValue>) {
         propertyValues.forEach(propertyValueList::add)
+    }
+
+    override fun removePropertyValue(name: String): Boolean {
+        val iterator = propertyValueList.iterator()
+        while (iterator.hasNext()) {
+            if (iterator.next().name == name) {
+                iterator.remove()
+                return true
+            }
+        }
+        return false
     }
 }

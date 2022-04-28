@@ -16,7 +16,13 @@ import com.wanna.framework.util.StringUtils
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 这是一个抽象的BeanFactory
+ * 这是一个抽象的BeanFactory，提供了单实例Bean的注册中心，FactoryBean的注册中心，以及ConfigurableBeanFactory/ListableBeanFactory
+ *
+ * @see ConfigurableBeanFactory
+ * @see ListableBeanFactory
+ * @see FactoryBeanRegistrySupport
+ * @see SingletonBeanRegistry
+ * @see DefaultSingletonBeanRegistry
  */
 abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, ListableBeanFactory,
     FactoryBeanRegistrySupport() {
@@ -36,7 +42,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
     // 嵌入式的值解析器列表
     private val embeddedValueResolvers: MutableList<StringValueResolver> = ArrayList()
 
-    // BeanPostProcessor列表
+    // BeanFactory当中需要维护的BeanPostProcessor列表
     protected val beanPostProcessors = ArrayList<BeanPostProcessor>()
 
     // BeanPostProcessorCache
@@ -47,14 +53,17 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         this.beanClassLoader = classLoader ?: ClassLoader.getSystemClassLoader()
     }
 
+    /**
+     * 这是一个BeanPostProcessorCache，对各种类型的BeanPostProcessor去进行分类，每次对BeanPostProcessor列表去进行更改(添加/删除)
+     */
     class BeanPostProcessorCache {
         val instantiationAwareCache = ArrayList<InstantiationAwareBeanPostProcessor>()
         val smartInstantiationAwareCache = ArrayList<SmartInstantiationAwareBeanPostProcessor>()
         val mergedDefinitions = ArrayList<MergedBeanDefinitionPostProcessor>()
 
-        fun hasInstantiationAware() = instantiationAwareCache.isEmpty()
-        fun hasSmartInstantiationAware() = smartInstantiationAwareCache.isEmpty()
-        fun hasMergedDefinition() = mergedDefinitions.isEmpty()
+        fun hasInstantiationAware(): Boolean = !instantiationAwareCache.isNotEmpty()
+        fun hasSmartInstantiationAware(): Boolean = smartInstantiationAwareCache.isNotEmpty()
+        fun hasMergedDefinition(): Boolean = mergedDefinitions.isNotEmpty()
     }
 
     /**
@@ -101,8 +110,11 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         if (mbd.isSingleton()) {
             beanInstance = getSingleton(beanName, object : ObjectFactory<Any> {
                 override fun getObject(): Any {
-                    return createBean(beanName, mbd)
-                        ?: throw BeansException("Create bean instance of [$beanName] failed")
+                    try {
+                        return createBean(beanName, mbd)!!
+                    } catch (ex: Exception) {
+                        throw BeansException("Create bean instance of [$beanName] failed，原因是[$ex]")
+                    }
                 }
             })
 
@@ -158,6 +170,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
 
     /**
      * 提供创建Bean的逻辑，交给子类去进行实现
+     * @see AbstractAutowireCapableBeanFactory.createBean
      */
     protected abstract fun createBean(beanName: String, mbd: RootBeanDefinition): Any?
 
@@ -203,9 +216,12 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
 
     override fun isTypeMatch(beanName: String, type: Class<*>): Boolean {
         val beanDefinition = getBeanDefinition(beanName)
-        return if (beanDefinition != null) ClassUtils.isAssginFrom(
-            type, beanDefinition.getBeanClass()!!
-        ) else throw BeansException()
+        val beanClass = beanDefinition?.getBeanClass()
+        return if (beanDefinition != null && beanClass != null) {
+            ClassUtils.isAssginFrom(type, beanClass)
+        } else {
+            false
+        }
     }
 
     /**
@@ -343,6 +359,8 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         var result: String? = null
         for (resolver in embeddedValueResolvers) {
             result = resolver.resolveStringValue(strVal)
+
+            // 如果都解析到null了，那么肯定return null，后续肯定解析不到东西
             if (result == null) {
                 return null
             }

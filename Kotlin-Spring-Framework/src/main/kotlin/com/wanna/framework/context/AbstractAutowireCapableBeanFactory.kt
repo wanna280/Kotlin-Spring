@@ -1,17 +1,37 @@
 package com.wanna.framework.context
 
 import com.wanna.framework.beans.InitializatingBean
+import com.wanna.framework.beans.factory.support.*
+import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
+import com.wanna.framework.beans.method.ConstructorArgumentValues
 import com.wanna.framework.beans.method.MutablePropertyValues
 import com.wanna.framework.beans.method.PropertyValues
 import com.wanna.framework.context.aware.BeanFactoryAware
 import com.wanna.framework.context.aware.BeanNameAware
 import com.wanna.framework.context.exception.BeanCreationException
+import java.lang.reflect.Constructor
+import java.lang.reflect.Executable
+import java.lang.reflect.Method
+import java.util.function.Supplier
 
+/**
+ * 这是一个拥有Autowire能力的BeanFactory，不仅提供了普通的BeanFactory的能力，也可以提供createBean等Autowire相关工作
+ */
 abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), AutowireCapableBeanFactory {
 
-    // 是否开启了循环依赖？
+    // 是否开启了循环依赖？默认设置为true
     var allowCircularReferences: Boolean = true
+
+    // 指定Bean的实例化策略，目前支持的策略，包括简单的策略/Cglib的策略
+    private var instantiationStrategy: InstantiationStrategy = CglibSubclassingInstantiationStrategy()
+
+    /**
+     * 获取实例化策略
+     */
+    open fun getInstantiationStrategy(): InstantiationStrategy {
+        return this.instantiationStrategy
+    }
 
     override fun createBean(beanName: String, mbd: RootBeanDefinition): Any? {
         // 如果实例之前的BeanPostProcessor已经return 非空，产生出来一个对象了，那么需要完成初始化工作...
@@ -22,13 +42,12 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
                 return applyBeanPostProcessorsAfterInitialization(instance, beanName)
             }
         }
-
         return doCreateBean(beanName, mbd)
     }
 
 
     protected open fun doCreateBean(beanName: String, mbd: RootBeanDefinition): Any? {
-        var beanWrapper = createBeanInstance(beanName, mbd)
+        val beanWrapper = createBeanInstance(beanName, mbd)
         val beanInstance = beanWrapper.getWrappedInstance()
         val beanType = beanWrapper.getWrappedClass()
 
@@ -64,7 +83,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
 
         try {
             // 填充属性
-            populateBean(beanWrapper, beanName)
+            populateBean(beanWrapper, mbd, beanName)
 
             // 初始化Bean
             exposedBean = initializeBean(beanWrapper, beanName)
@@ -81,24 +100,144 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
     }
 
     /**
-     * 创建真正的Bean实例
+     * 选择合适的方式去创建真正的Bean实例，并包装成为一个BeanWrapper的包装对象
+     * (1)如果提供了InstanceSupplier，那么从Supplier当中去进行获取Bean
+     * (2)如果指定了factoryMethodName，那么从factoryMethod当中去进行获取Bean(@Bean方法)
      */
-    private fun createBeanInstance(beanName: String, mbd: RootBeanDefinition): BeanWrapper {
-        val beanInstance = mbd.getBeanClass()!!.getDeclaredConstructor().newInstance()
-        val beanWrapper: BeanWrapper = BeanWrapperImpl(beanInstance)
+    protected open fun createBeanInstance(
+        beanName: String, mbd: RootBeanDefinition, args: Array<out Any?>?
+    ): BeanWrapper {
+        val beanClass = mbd.getBeanClass()
+
+        // 1.如果指定了自定义的实例化Supplier的话
+        if (mbd.getInstanceSupplier() != null) {
+            return obtainFromInstanceSupplier(mbd.getInstanceSupplier()!!, beanName)
+        }
+        // 2.如果指定了FactoryMethod的话，那么使用FactoryMethod去进行实例化(本质上也是看做构造器的实例化方式)
+        if (mbd.getFactoryMethodName() != null) {
+            return instantiateUsingFactoryMethod(beanName, mbd)
+        }
+
+        var resolved = false  // 是否已经完成了Constructor解析工作？
+        var autowireIfNecessary = false  // 是否需要进行Autowire？判断是否有解析出来的参数即可判断
+
+        // 如果没有给定具体的参数，那么可以尝试先去缓存当中获取，如果给定了具体的参数，那么肯定就不能走缓存了...
+        if (args == null) {
+            synchronized(mbd.constructorArgumentLock) {
+                if (mbd.resolvedConstructorOrFactoryMethod != null) {
+                    resolved = true
+                    autowireIfNecessary = mbd.constructorArgumentsResolved
+                }
+            }
+        }
+
+        // 如果该BeanDefinition已经完成过构造器的解析了，那么直接使用构造器去进行实例化即可
+        if (resolved) {
+            // 如果解析的结果当中有参数的话，需要进行Autowire
+            // 如果解析的结果当中没有参数的话，那么直接使用无参数构造器去进行实例化即可
+            if (autowireIfNecessary) {
+                return autowireConstructor(beanName, mbd, emptyArray(), emptyArray())
+            } else {
+                return instantiate(beanName, mbd)
+            }
+        }
+
+        // 如果没有解析过的话，那么需要从所有的BeanPostProcessor当中去推断合适的构造器列表
+        val ctors = determineConstructorsFromBeanPostProcessors(beanClass, beanName)
+
+        // (1)如果推断出来合适的构造器的话;(2)BeanDefinition当中有构造器参数;(3)注入模式为构造器注入;(4)传入进来了合适的参数列表;
+        // 那么采用构造器注入的方式去完成Bean的实例化
+        if (ctors != null || mbd.hasConstructorArgumentValues() || mbd.getAutowireMode() == AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR || (args != null && args.isNotEmpty())) {
+            return autowireConstructor(beanName, mbd, ctors, args)
+        }
+
+        // 没有找到合适的构造器，那么尝试去采用默认的方式去完成实例化
+        return instantiate(beanName, mbd)
+    }
+
+
+    protected open fun createBeanInstance(beanName: String, mbd: RootBeanDefinition): BeanWrapper {
+        return createBeanInstance(beanName, mbd, null)
+    }
+
+    /**
+     * 遍历所有的BeanPostProcessor，去推断出来合适的构造器去完成Bean的初始化
+     * @return 如果没有推断出来合适的构造器，那么return null；如果推断出来了，return推断出来的构造器列表
+     */
+    private fun determineConstructorsFromBeanPostProcessors(
+        beanClass: Class<*>?, beanName: String
+    ): Array<Constructor<*>>? {
+        if (beanClass != null && getBeanPostProcessorCache().hasSmartInstantiationAware()) {
+            getBeanPostProcessorCache().smartInstantiationAwareCache.forEach {
+                val candidateConstructors = it.determineCandidateConstructors(beanClass, beanName)
+                if (candidateConstructors != null) {
+                    return candidateConstructors
+                }
+            }
+        }
+        return null
+    }
+
+    /**
+     * 使用默认的方式去进行实例化
+     */
+    private fun instantiate(beanName: String, mbd: RootBeanDefinition): BeanWrapper {
+        val instance = getInstantiationStrategy().instantiate(mbd, beanName, this)
+        val beanWrapper = BeanWrapperImpl(instance)
+        initBeanWrapper(beanWrapper)
         return beanWrapper
+    }
+
+    /**
+     * 从实例化的InstanceSupplier当中去获取对象，并封装成为BeanWrapper
+     */
+    private fun obtainFromInstanceSupplier(supplier: Supplier<*>, beanName: String): BeanWrapper {
+        var instance = supplier.get()
+        if (instance == null) {  // 如果从实例化的Supplier当中获取到了null，那么封装NullBean
+            instance = NullBean()
+        }
+        val beanWrapper = BeanWrapperImpl(instance)
+        initBeanWrapper(beanWrapper)
+        return beanWrapper
+    }
+
+    /**
+     * 通过构造器完成Bean的实例化，并完成参数的自动注入
+     *
+     * @param ctors 推断出来的构造器列表，可以为空；交给ConstructorResolver去进行解析
+     * @param args 构造器参数，可以为空(进行自动注入)
+     */
+    private fun autowireConstructor(
+        beanName: String, mbd: RootBeanDefinition, ctors: Array<Constructor<*>>?, args: Array<out Any?>?
+    ): BeanWrapper {
+        return ConstructorResolver(this).autowireConstructor(beanName, mbd, ctors, args)
+    }
+
+    /**
+     * 使用FactoryMethod去完成Bean的实例化工作，需要使用到Constructor去协助完成，最终也是通过实例化策略去对Bean去进行实例化的
+     *
+     * @param beanName beanName
+     * @param mbd MergedBeanDefinition
+     * @return beanWrapper
+     */
+    private fun instantiateUsingFactoryMethod(beanName: String, mbd: RootBeanDefinition): BeanWrapper {
+        return ConstructorResolver(this).instantiateUsingFactoryMethod(beanName, mbd)
+    }
+
+    fun initBeanWrapper(beanWrapper: BeanWrapper) {
+
     }
 
     /**
      * 应用所有的MergedBeanDefinitionPostProcessor，去完成BeanDefinition的合并，此时得到的beanType为实例化之后得到的对象的真实beanType
      */
     private fun applyMergedBeanDefinitionPostProcessor(mbd: RootBeanDefinition, beanType: Class<*>, beanName: String) {
-        getBeanPostProcessorCache().mergedDefinitions.forEach {
-            it.postProcessMergedBeanDefinition(
-                mbd,
-                beanType,
-                beanName
-            )
+        if (getBeanPostProcessorCache().hasMergedDefinition()) {
+            getBeanPostProcessorCache().mergedDefinitions.forEach {
+                it.postProcessMergedBeanDefinition(
+                    mbd, beanType, beanName
+                )
+            }
         }
     }
 
@@ -122,20 +261,79 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
         return bean
     }
 
-    private fun populateBean(wrapper: BeanWrapper, beanName: String) {
+    /**
+     * 在完成Bean的实例化之后，需要去完成一个Bean的属性值填充
+     */
+    private fun populateBean(wrapper: BeanWrapper, mbd: RootBeanDefinition, beanName: String) {
+        // 在实例化之后，应用所有的干涉Bean的实例化的处理器(InstantiationAwareBeanPostProcessor)
+        if (getBeanPostProcessorCache().hasInstantiationAware()) {
+            // 执行实例化之后的BeanPostProcessor
+            for (postProcessor in getBeanPostProcessorCache().instantiationAwareCache) {
+                if (!postProcessor.postProcessAfterInstantiation(beanName, wrapper.getWrappedInstance())) {
+                    return
+                }
+            }
+        }
+        // 如果beanDefinition当中有属性值，那么获取属性值，如果beanDefinition当中没有属性值，应该return null
+        var pvs: PropertyValues? = if (mbd.hasPropertyValues()) mbd.getPropertyValues() else null
 
-        // 执行实例化之后的BeanPostProcessor
-        for (postProcessor in getBeanPostProcessorCache().instantiationAwareCache) {
-            if (!postProcessor.postProcessAfterInstantiation(beanName, wrapper.getWrappedInstance())) {
-                return
+        val resolvedAutowireMode = mbd.getAutowireMode()
+        // 如果解析到的AutowireMode为byName或者是byType去进行注入的话，那么需要解析相关的依赖，并放入到pvs当中
+        if (resolvedAutowireMode == AbstractBeanDefinition.AUTOWIRE_BY_NAME || resolvedAutowireMode == AbstractBeanDefinition.AUTOWIRE_BY_TYPE) {
+            val newPvs = MutablePropertyValues(pvs)
+            if (resolvedAutowireMode == AbstractBeanDefinition.AUTOWIRE_BY_TYPE) {
+                autowireByName(beanName, mbd, wrapper, newPvs)
+            }
+            if (resolvedAutowireMode == AbstractBeanDefinition.AUTOWIRE_BY_NAME) {
+                autowireByType(beanName, mbd, wrapper, newPvs)
+            }
+            pvs = newPvs  // 使用newPvs替换之前的pvs
+        }
+
+        if (getBeanPostProcessorCache().hasInstantiationAware()) {
+            // 完成Bean的属性填充
+            for (postProcessor in getBeanPostProcessorCache().instantiationAwareCache) {
+                pvs = postProcessor.postProcessProperties(pvs, wrapper.getWrappedInstance(), beanName)
             }
         }
 
-        // 完成Bean的属性填充
-        var pvs: PropertyValues? = MutablePropertyValues()
-        for (postProcessor in getBeanPostProcessorCache().instantiationAwareCache) {
-            pvs = postProcessor.postProcessProperties(pvs, wrapper.getWrappedInstance(), beanName)
+        // 如果有PropertyValues的话，那么需要进行应用PropertyValues到BeanWrapper当中的beanInstance
+        // 针对于byName或者byType的方式去进行自动注入的情况，就会往PropertyValues当中添加内容(别的地方也需要用到PropertyValue的设置)
+        // 因此就需要将该值应用给BeanWrapper当中的beanInstance当中
+        if (pvs != null) {
+            applyPropertyValues(beanName, mbd, wrapper, pvs)
         }
+    }
+
+    /**
+     * 应用所有的PropertyValues到BeanWrapper当中，可以通过PropertyValue去对Bean的某些字段值去进行设置
+     */
+    protected open fun applyPropertyValues(
+        beanName: String,
+        mbd: RootBeanDefinition,
+        beanWrapper: BeanWrapper,
+        pvs: PropertyValues
+    ) {
+        // 通过beanWrapper去设置propertyValues
+        beanWrapper.setPropertyValues(pvs)
+    }
+
+    /**
+     * 通过byName的方式去进行自动注入
+     */
+    protected open fun autowireByName(
+        name: String, mbd: RootBeanDefinition, beanWrapper: BeanWrapper, pvs: MutablePropertyValues
+    ) {
+
+    }
+
+    /**
+     * 通过byType的方式去进行自动注入
+     */
+    protected open fun autowireByType(
+        beanName: String, mbd: RootBeanDefinition, beanWrapper: BeanWrapper, pvs: MutablePropertyValues
+    ) {
+
     }
 
     /**

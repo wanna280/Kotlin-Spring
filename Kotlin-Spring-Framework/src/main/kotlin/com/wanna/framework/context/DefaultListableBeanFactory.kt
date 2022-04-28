@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap
  * (2)它本身还是一个BeanDefinitionRegistry，主要提供BeanDefinition的注册中心的功能
  * (3)它本身还是一个AutowireCapableBeanFactory(有Autowire能力的BeanFactory)，可以从容器中获取到要进行注入的依赖
  */
-open class DefaultListableBeanFactory() : ConfigurableListableBeanFactory, BeanDefinitionRegistry,
+open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDefinitionRegistry,
     AbstractAutowireCapableBeanFactory() {
 
     // beanDefinitionMap
@@ -110,7 +110,7 @@ open class DefaultListableBeanFactory() : ConfigurableListableBeanFactory, BeanD
 
     override fun getBeanDefinitionCounts() = beanDefinitionNames.size
 
-    override fun containsBeanDefinition(beanName: String) = beanDefinitionMap[beanName] != null
+    override fun containsBeanDefinition(name: String) = beanDefinitionMap[name] != null
 
     open fun getDependencyComparator() = dependencyComparator
 
@@ -134,7 +134,7 @@ open class DefaultListableBeanFactory() : ConfigurableListableBeanFactory, BeanD
     }
 
     override fun resolveDependency(descriptor: DependencyDescriptor, requestingBeanName: String): Any? {
-        TODO("Not yet implemented")
+        return resolveDependency(descriptor, requestingBeanName, null, null)
     }
 
     override fun resolveDependency(
@@ -306,7 +306,7 @@ open class DefaultListableBeanFactory() : ConfigurableListableBeanFactory, BeanD
         val candidateNames: List<String> = getBeanNamesForType(requiredType)
         val result: HashMap<String, Any> = HashMap()
 
-        // 1.从可解析的依赖当中尝试去进行解析
+        // 1.从BeanFactory当中注册的可解析的依赖(resolvableDependencies)当中尝试去进行解析
         this.resolvableDependencies.forEach { (type, obj) ->
             if (ClassUtils.isAssginFrom(requiredType, type) && requiredType.isInstance(obj)) {
                 result[requiredType.name] = obj
@@ -315,6 +315,7 @@ open class DefaultListableBeanFactory() : ConfigurableListableBeanFactory, BeanD
 
         // 2.遍历容器中的所有类型去进行匹配
         candidateNames.forEach {
+            // 从DependencyDescriptor当中解析到合适的依赖
             if (isAutowireCandidate(it, descriptor)) {
                 result[it] = descriptor.resolveCandidate(it, requiredType, this) as Any
             }
@@ -338,7 +339,7 @@ open class DefaultListableBeanFactory() : ConfigurableListableBeanFactory, BeanD
             // 获取数组的元素类型，可以通过componentType去进行获取
             val componentType = type.componentType
 
-            // 获取所有的候选的Bean
+            // 获取所有的候选的Bean，包括resolvableDependencies当中的依赖和beanFactory当中的对应的类型的Bean
             val candidates = findAutowireCandidates(requestingBeanName, componentType, descriptor)
             if (candidates.isEmpty()) {
                 return null
@@ -351,7 +352,7 @@ open class DefaultListableBeanFactory() : ConfigurableListableBeanFactory, BeanD
                 java.lang.reflect.Array.set(typeArray, index, candidatesList[index])
             }
 
-            // 将候选的要注入的beanNames列表进行输出
+            // 将候选的要注入的beanNames列表进行输出...
             autowiredBeanName?.addAll(candidates.keys)
 
             // 利用Comparator完成排序并return

@@ -7,6 +7,7 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.*
 import com.wanna.framework.context.annotations.*
 import com.wanna.framework.core.environment.Environment
+import com.wanna.framework.core.type.StandardAnnotationMetadata
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
@@ -109,7 +110,7 @@ class ConfigurationClassParser(
      */
     private fun processBeanMethods(configurationClass: ConfigurationClass) {
         ReflectionUtils.doWithMethods(configurationClass.configurationClass, { method ->
-            configurationClass.addBeanMethod(BeanMethod(method))
+            configurationClass.addBeanMethod(BeanMethod(method, configurationClass))
         }, { method -> method.getAnnotation(Bean::class.java) != null })
     }
 
@@ -152,7 +153,12 @@ class ConfigurationClassParser(
 
                 // 实例化，并保存ImportBeanDefinitionRegistrar到configurationClass当中
                 val registrar = ClassUtils.newInstance(candidate) as ImportBeanDefinitionRegistrar
-                configurationClass.addRegistrar(registrar)
+
+                // 构建AnnotationMetadata
+                val annotationMetadata = StandardAnnotationMetadata(configurationClass.configurationClass)
+
+                // value为配置类中的相关的的注解信息
+                configurationClass.addRegistrar(registrar, annotationMetadata)
 
                 // 如果只是导入了一个普通组件，需要把它当做一个配置类去进行递归处理
             } else {

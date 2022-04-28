@@ -178,12 +178,24 @@ abstract class AbstractBeanDefinition constructor(_beanClass: Class<*>?) : BeanD
         return methodOverrides
     }
 
+    override fun hasMethodOverrides(): Boolean {
+        return methodOverrides.getMethodOverrides().isNotEmpty()
+    }
+
     override fun getPropertyValues(): MutablePropertyValues {
         return propertyValues
     }
 
+    override fun hasPropertyValues(): Boolean {
+        return propertyValues.getPropertyValues().isNotEmpty()
+    }
+
     override fun getConstructorArgumentValues(): ConstructorArgumentValues {
         return constructorArgumentValues
+    }
+
+    override fun hasConstructorArgumentValues(): Boolean {
+        return false
     }
 
     override fun isLazyInit(): Boolean {

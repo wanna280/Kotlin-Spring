@@ -5,4 +5,9 @@ import com.wanna.framework.beans.factory.support.definition.config.BeanMetadataA
 /**
  * 描述的是一个对象的属性值
  */
-open class PropertyValue(val name: String, val value: Any?) : BeanMetadataAttributeAccessor()
+open class PropertyValue(val name: String, val value: Any?) : BeanMetadataAttributeAccessor() {
+
+    override fun toString(): String {
+        return "PropertyValue(name='$name', value=$value)"
+    }
+}
