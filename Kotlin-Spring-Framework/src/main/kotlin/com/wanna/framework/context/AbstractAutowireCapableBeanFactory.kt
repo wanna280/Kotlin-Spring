@@ -1,18 +1,16 @@
 package com.wanna.framework.context
 
-import com.wanna.framework.beans.InitializatingBean
+import com.wanna.framework.beans.InitializingBean
 import com.wanna.framework.beans.factory.support.*
 import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import com.wanna.framework.beans.method.ConstructorArgumentValues
 import com.wanna.framework.beans.method.MutablePropertyValues
 import com.wanna.framework.beans.method.PropertyValues
 import com.wanna.framework.context.aware.BeanFactoryAware
 import com.wanna.framework.context.aware.BeanNameAware
 import com.wanna.framework.context.exception.BeanCreationException
+import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.Constructor
-import java.lang.reflect.Executable
-import java.lang.reflect.Method
 import java.util.function.Supplier
 
 /**
@@ -23,11 +21,16 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
     // 是否开启了循环依赖？默认设置为true
     var allowCircularReferences: Boolean = true
 
-    // 指定Bean的实例化策略，目前支持的策略，包括简单的策略/Cglib的策略
+    /**
+     * 指定Bean的实例化策略，目前支持的策略，包括简单的策略/Cglib的策略
+     *
+     * @see CglibSubclassingInstantiationStrategy
+     * @see SimpleInstantiationStrategy
+     */
     private var instantiationStrategy: InstantiationStrategy = CglibSubclassingInstantiationStrategy()
 
     /**
-     * 获取实例化策略
+     * 获取实例化策略，提供对无参构造器/FactoryMethod/以及指定的候选构造器等多种方式对Bean去进行实例化的方式
      */
     open fun getInstantiationStrategy(): InstantiationStrategy {
         return this.instantiationStrategy
@@ -45,7 +48,9 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
         return doCreateBean(beanName, mbd)
     }
 
-
+    /**
+     * doCreateBean，去执行真正的Bean的实例化和初始化工作
+     */
     protected open fun doCreateBean(beanName: String, mbd: RootBeanDefinition): Any? {
         val beanWrapper = createBeanInstance(beanName, mbd)
         val beanInstance = beanWrapper.getWrappedInstance()
@@ -86,7 +91,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
             populateBean(beanWrapper, mbd, beanName)
 
             // 初始化Bean
-            exposedBean = initializeBean(beanWrapper, beanName)
+            exposedBean = initializeBean(beanWrapper, beanName, mbd)
         } catch (ex: Throwable) {
             if (ex is BeanCreationException) {
                 throw ex
@@ -241,7 +246,10 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
         }
     }
 
-    private fun initializeBean(wrapper: BeanWrapper, beanName: String): Any? {
+    /**
+     * 对Bean去完成初始化，执行Bean的初始化回调方法，以及对Bean的初始化前后的去进行干涉的BeanPostProcessor
+     */
+    protected open fun initializeBean(wrapper: BeanWrapper, beanName: String, mbd: RootBeanDefinition): Any? {
         val beanInstance = wrapper.getWrappedInstance()
 
         // 执行Aware方法，beanName和beanFactory，是需要这里去完成的，别的类型的Aware
@@ -252,7 +260,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
 
         try {
             // 执行初始化方法
-            invokeInitMethod(beanInstance)
+            invokeInitMethod(beanInstance, beanName, mbd)
         } catch (ex: Throwable) {
             throw BeanCreationException("执行对Bean[beanName=$beanName]的初始化过程中出现了异常", ex)
         }
@@ -274,7 +282,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
                 }
             }
         }
-        // 如果beanDefinition当中有属性值，那么获取属性值，如果beanDefinition当中没有属性值，应该return null
+        // 如果beanDefinition当中有属性值，那么获取属性值，如果beanDefinition当中没有属性值，应该return null；但是对于BeanDefinition来说应该返回的是一个空的MutablePropertyValue
         var pvs: PropertyValues? = if (mbd.hasPropertyValues()) mbd.getPropertyValues() else null
 
         val resolvedAutowireMode = mbd.getAutowireMode()
@@ -307,6 +315,10 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
 
     /**
      * 应用所有的PropertyValues到BeanWrapper当中，可以通过PropertyValue去对Bean的某些字段值去进行设置
+     * @param pvs PropertyValues
+     * @param mbd MergedBeanDefinition
+     * @param beanWrapper beanWrapper
+     * @param beanName beanName
      */
     protected open fun applyPropertyValues(
         beanName: String,
@@ -339,8 +351,22 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
     /**
      * 执行Init方法完成初始化
      */
-    private fun invokeInitMethod(bean: Any) {
-        if (bean is InitializatingBean) {
+    private fun invokeInitMethod(bean: Any, beanName: String, mbd: RootBeanDefinition) {
+
+        // 如果beanDefinition当中设置了initMethodName的话，那么需要获取该方法去执行
+        if (mbd.getInitMethodName() != null) {
+            try {
+                val beanClass = mbd.getBeanClass()
+                val initMethod = beanClass!!.getMethod(mbd.getInitMethodName()!!)
+                ReflectionUtils.makeAccessiable(initMethod)
+                ReflectionUtils.invokeMethod(initMethod, bean)
+            } catch (ex: Exception) {
+                throw BeanCreationException("执行[beanName=$beanName]的初始化方法(initMethod)失败，原因是-->[$ex]")
+            }
+        }
+
+        // 如果它是一个InitializingBean，那么需要在这里去进行回调去完成Bean的初始化
+        if (bean is InitializingBean) {
             bean.afterPropertiesSet()
         }
     }

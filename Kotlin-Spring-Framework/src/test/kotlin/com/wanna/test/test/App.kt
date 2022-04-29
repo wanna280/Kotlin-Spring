@@ -2,7 +2,6 @@ package com.wanna
 
 import com.wanna.framework.aop.*
 import com.wanna.framework.aop.annotaions.EnableAspectJAutoProxy
-import com.wanna.framework.aop.creator.AnnotationAwareAspectJAutoProxyCreator
 import com.wanna.framework.aop.intercept.MethodInterceptor
 import com.wanna.framework.aop.intercept.MethodInvocation
 import com.wanna.framework.beans.annotations.Bean
@@ -10,16 +9,19 @@ import com.wanna.framework.beans.annotations.Component
 import com.wanna.framework.beans.annotations.Configuration
 import com.wanna.framework.context.AnnotationConfigApplicationContext
 import com.wanna.framework.context.annotations.ComponentScan
-import com.wanna.framework.test.ITF
-import com.wanna.framework.test.User
+import com.wanna.framework.context.annotations.Value
 import com.wanna.framework.util.ClassUtils
+import com.wanna.test.test.ITF
+import com.wanna.test.test.User
 import java.util.*
-import kotlin.collections.HashMap
 
 @ComponentScan(["com.wanna"])
 @Configuration
 @EnableAspectJAutoProxy
 class App(val advisor: Advisor) {
+
+    @Value("%{java.version}")
+    val value: String? = null
 
     @Bean
     fun user2(advisor: Advisor): User {
@@ -58,7 +60,7 @@ class MyAdvisor : PointcutAdvisor {
     }
 }
 
-fun main() {
+fun main(vararg args: String) {
     val applicationContext = AnnotationConfigApplicationContext()
 
     applicationContext.register(App::class.java)

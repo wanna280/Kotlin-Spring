@@ -5,7 +5,6 @@ import com.wanna.framework.context.BeanMethod
 import com.wanna.framework.context.ImportBeanDefinitionRegistrar
 import com.wanna.framework.context.annotations.BeanDefinitionReader
 import com.wanna.framework.core.type.AnnotationMetadata
-import com.wanna.main
 
 /**
  * 这是对一个配置类的封装

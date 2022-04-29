@@ -61,7 +61,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         val smartInstantiationAwareCache = ArrayList<SmartInstantiationAwareBeanPostProcessor>()
         val mergedDefinitions = ArrayList<MergedBeanDefinitionPostProcessor>()
 
-        fun hasInstantiationAware(): Boolean = !instantiationAwareCache.isNotEmpty()
+        fun hasInstantiationAware(): Boolean = instantiationAwareCache.isNotEmpty()
         fun hasSmartInstantiationAware(): Boolean = smartInstantiationAwareCache.isNotEmpty()
         fun hasMergedDefinition(): Boolean = mergedDefinitions.isNotEmpty()
     }

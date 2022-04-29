@@ -2,6 +2,9 @@ package com.wanna.framework.util
 
 import com.wanna.framework.context.BeanFactory
 
+/**
+ * 这是一个BeanFactory的工具类，提供对BeanFactory当中相关操作提供公共方法
+ */
 class BeanFactoryUtils {
     companion object {
 

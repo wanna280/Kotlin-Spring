@@ -2,6 +2,10 @@ package com.wanna.framework.beans.util
 
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 
+/**
+ * 这是一个ConfigurationClass的配置类，在ConfigurationClassPostProcessor扫描时，会将一个类包装成为一个ConfigurationClass(配置类)，
+ * 这是一个提供ConfigurationClass的相关工具类
+ */
 class ConfigurationClassUtils {
     companion object {
 

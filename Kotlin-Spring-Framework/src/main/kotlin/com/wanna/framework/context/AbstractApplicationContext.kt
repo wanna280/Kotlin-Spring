@@ -147,6 +147,14 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, List
      * 完成BeanFactory的初始化，剩下的所有未进行实例化的Bean都会在这里去进行该Bean的实例化和初始化工作
      */
     protected open fun finishBeanFactoryInitialization(beanFactory: ConfigurableListableBeanFactory) {
+        // 如果容器当中没有嵌入式的值解析器，那么需要往容器当中加入一个默认的
+        if (!getBeanFactory().hasEmbeddedValueResolver()) {
+            getBeanFactory().addEmbeddedValueResolver(object : StringValueResolver {
+                override fun resolveStringValue(strVal: String) = getEnvironment().resolveRequiredPlaceholders(strVal)
+            })
+        }
+
+        // 完成剩下的所有单实例Bean的实例化和初始化工作
         beanFactory.preInstantiateSingletons()
     }
 

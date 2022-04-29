@@ -167,7 +167,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             // 如果value是String类型，那么需要使用嵌入式的值解析器完成解析...
             // TODO 在这里需要完成SpEL表达式的解析，以及嵌入式值解析器的解析工作
             if (value is String) {
-                return value
+                return this.resolveEmbeddedValue(value)
             }
             return null
         }
