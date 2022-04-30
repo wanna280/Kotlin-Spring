@@ -1,13 +1,13 @@
 package com.wanna.framework.beans.factory.support.definition
 
-import com.wanna.framework.beans.method.ConstructorArgumentValues
-import com.wanna.framework.beans.method.MutablePropertyValues
+import com.wanna.framework.beans.factory.config.ConstructorArgumentValues
+import com.wanna.framework.beans.MutablePropertyValues
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition.Companion.ROLE_APPLICATION
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition.Companion.SCOPE_PRTOTYPE
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition.Companion.SCOPE_SINGLETON
 import com.wanna.framework.beans.factory.support.definition.config.BeanMetadataAttributeAccessor
 import com.wanna.framework.beans.method.MethodOverrides
-import com.wanna.framework.context.AutowireCapableBeanFactory
+import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory
 import java.util.function.Supplier
 
 /**

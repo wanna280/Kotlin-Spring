@@ -1,5 +1,7 @@
 package com.wanna.framework.context
 
+import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
+import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.context.processor.factory.BeanFactoryPostProcessor
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 
@@ -35,5 +37,15 @@ interface ConfigurableApplicationContext : ApplicationContext {
     /**
      * 重写子类中的getEnvironment方法，让返回值为ConfigurableEnvironment
      */
-    override fun getEnvironment() : ConfigurableEnvironment
+    override fun getEnvironment(): ConfigurableEnvironment
+
+    /**
+     * 添加ApplicationListener到ApplicationContext当中
+     */
+    fun addApplicationListener(listener: ApplicationListener<*>)
+
+    /**
+     * 设置parent ApplicationContext
+     */
+    fun setParent(parent: ApplicationContext)
 }

@@ -1,6 +1,6 @@
 package com.wanna.framework.context.event
 
-import com.wanna.framework.beans.annotations.Ordered
+import com.wanna.framework.core.Ordered
 
 /**
  * 这是一个智能的ApplicationListener，能够去判断支持的事件类型；

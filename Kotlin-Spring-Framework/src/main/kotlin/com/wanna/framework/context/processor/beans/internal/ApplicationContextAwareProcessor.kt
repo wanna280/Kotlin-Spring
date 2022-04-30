@@ -1,17 +1,28 @@
 package com.wanna.framework.context.processor.beans.internal
 
-import com.wanna.framework.context.ApplicationContext
+import com.wanna.framework.beans.factory.config.EmbeddedValueResolver
+import com.wanna.framework.context.ApplicationContextAware
+import com.wanna.framework.context.ApplicationEventPublisherAware
 import com.wanna.framework.context.ConfigurableApplicationContext
-import com.wanna.framework.context.aware.ApplicationContextAware
+import com.wanna.framework.context.EmbeddedValueResolverAware
 import com.wanna.framework.context.aware.BeanClassLoaderAware
-import com.wanna.framework.context.aware.BeanFactoryAware
 import com.wanna.framework.context.aware.EnvironmentAware
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
 
 /**
  * 这是一个ApplicationContext的处理器，注册负责完成一些Aware接口的回调
+ *
+ * @see EnvironmentAware
+ * @see BeanClassLoaderAware
+ * @see ApplicationContextAware
+ * @see ApplicationEventPublisherAware
+ * @see EmbeddedValueResolverAware
  */
-open class ApplicationContextAwareProcessor(private var applicationContext: ApplicationContext) : BeanPostProcessor {
+open class ApplicationContextAwareProcessor(private var applicationContext: ConfigurableApplicationContext) :
+    BeanPostProcessor {
+
+    // 嵌入式值解析器
+    private val embeddedValueResolver = EmbeddedValueResolver(this.applicationContext.getBeanFactory())
 
     override fun postProcessBeforeInitialization(beanName: String, bean: Any): Any? {
         invokeAwareInterfaces(bean)
@@ -26,12 +37,16 @@ open class ApplicationContextAwareProcessor(private var applicationContext: Appl
             bean.setEnvironment(applicationContext.getEnvironment())
         }
         if (bean is BeanClassLoaderAware) {
-            val beanClassLoader =
-                (applicationContext as ConfigurableApplicationContext).getBeanFactory().getBeanClassLoader()
-            bean.setBeanClassLoader(beanClassLoader)
+            bean.setBeanClassLoader(applicationContext.getBeanFactory().getBeanClassLoader())
         }
         if (bean is ApplicationContextAware) {
             bean.setApplicationContext(this.applicationContext)
+        }
+        if (bean is ApplicationEventPublisherAware) {
+            bean.setApplicationEventPublisher(this.applicationContext)
+        }
+        if (bean is EmbeddedValueResolverAware) {
+            bean.setEmbeddedValueResolver(this.embeddedValueResolver)
         }
     }
 }

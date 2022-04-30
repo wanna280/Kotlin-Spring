@@ -5,6 +5,10 @@ package com.wanna.framework.core.util
  */
 class StringUtils {
     companion object {
+
+        // 空的String数组
+        private val EMPTY_STRING_ARRAY = emptyArray<String>()
+
         /**
          * 判断一个字符串是否有文本，判断长度是否为0
          */
@@ -61,6 +65,29 @@ class StringUtils {
                 }
             }
             return builder.toString()
+        }
+
+        /**
+         * 将字符串转为字符串数组(采用,作为分隔符)
+         */
+        @JvmStatic
+        fun commaDelimitedListToStringArray(str: String?): Array<String> {
+            return commaDelimitedListToStringArray(str, ",")
+        }
+
+        /**
+         * 将字符串转为字符串数组(采用delim作为分隔符)
+         * @param delim 分隔符
+         */
+        @JvmStatic
+        fun commaDelimitedListToStringArray(str: String?, delim: String?): Array<String> {
+            if (str == null) {
+                return EMPTY_STRING_ARRAY
+            }
+            if (delim == null) {
+                return arrayOf(str)
+            }
+            return str.trim().split(delim).toTypedArray()
         }
     }
 }

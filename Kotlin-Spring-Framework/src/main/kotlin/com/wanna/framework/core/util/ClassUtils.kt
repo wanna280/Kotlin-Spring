@@ -1,5 +1,6 @@
 package com.wanna.framework.core.util
 
+@Suppress("UNCHECKED_CAST")
 class ClassUtils {
     companion object {
         /**
@@ -35,6 +36,11 @@ class ClassUtils {
         @JvmStatic
         fun <T> forName(clazzName: String): Class<T> {
             return Class.forName(clazzName) as Class<T>
+        }
+
+        @JvmStatic
+        fun <T> forName(clazzName: String, classLoader: ClassLoader): Class<T> {
+            return Class.forName(clazzName, false, classLoader) as Class<T>
         }
 
         @JvmStatic

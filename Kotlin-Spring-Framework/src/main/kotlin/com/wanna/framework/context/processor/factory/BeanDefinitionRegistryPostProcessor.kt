@@ -1,6 +1,6 @@
 package com.wanna.framework.context.processor.factory
 
-import com.wanna.framework.context.BeanDefinitionRegistry
+import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 
 /**
  * 这是一个BeanFactoryPostProcessor的扩展接口，可以对BeanDefinitionRegistry去进行处理

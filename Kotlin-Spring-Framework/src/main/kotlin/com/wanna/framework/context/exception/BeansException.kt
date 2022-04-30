@@ -8,4 +8,8 @@ open class BeansException(override val message: String?, override val cause: Thr
     constructor() : this(null, null)
     constructor(message: String?) : this(message, null)
     constructor(cause: Throwable?) : this(null, cause)
+
+    override fun toString(): String {
+        return "BeansException(message=$message, cause=$cause)"
+    }
 }

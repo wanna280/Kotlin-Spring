@@ -1,6 +1,6 @@
 package com.wanna.framework.beans.factory.config
 
-import com.wanna.framework.context.ObjectFactory
+import com.wanna.framework.beans.factory.ObjectFactory
 
 /**
  * 这是一个自定义的Scope，支持从自定义的Scope当中去获取对象，每个Scope当中维护了自己作用域内的对象

@@ -1,11 +1,11 @@
 package com.wanna.framework.context.util
 
-import com.wanna.framework.beans.annotations.Bean
-import com.wanna.framework.beans.annotations.Import
+import com.wanna.framework.context.annotation.Bean
+import com.wanna.framework.context.annotation.Import
+import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
-import com.wanna.framework.context.*
-import com.wanna.framework.context.annotations.*
+import com.wanna.framework.context.annotation.*
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.type.StandardAnnotationMetadata
 import com.wanna.framework.core.util.ClassUtils

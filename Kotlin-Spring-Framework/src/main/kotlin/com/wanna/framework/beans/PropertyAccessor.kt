@@ -1,8 +1,5 @@
 package com.wanna.framework.beans
 
-import com.wanna.framework.beans.method.PropertyValue
-import com.wanna.framework.beans.method.PropertyValues
-
 /**
  * 标识这是一个属性的访问器，可以支持对一个属性的设置以及获取
  *

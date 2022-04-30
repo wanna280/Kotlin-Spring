@@ -1,6 +1,6 @@
 package com.wanna.framework.context.processor.beans
 
-import com.wanna.framework.beans.method.PropertyValues
+import com.wanna.framework.beans.PropertyValues
 
 /**
  * 这是一个可以干预Bean去进行实例化的BeanPostProcessor

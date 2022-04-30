@@ -1,6 +1,6 @@
 package com.wanna.framework.context.processor.factory
 
-import com.wanna.framework.context.ConfigurableListableBeanFactory
+import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 
 /**
  * 这是一个BeanFactoryPostProcessor，可以在BeanFactory初始化过程中，对BeanFactory去进进行干预工作

@@ -1,14 +1,14 @@
 package com.wanna.framework.context.processor.factory.internal
 
-import com.wanna.framework.beans.annotations.PriorityOrdered
+import com.wanna.framework.core.PriorityOrdered
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.util.ConfigurationClassUtils
-import com.wanna.framework.context.BeanDefinitionRegistry
-import com.wanna.framework.context.ConfigurableListableBeanFactory
+import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
+import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.context.SingletonBeanRegistry
-import com.wanna.framework.context.annotations.AnnotationBeanNameGenerator
-import com.wanna.framework.context.annotations.BeanNameGenerator
-import com.wanna.framework.context.annotations.FullyQualifiedAnnotationBeanNameGenerator
+import com.wanna.framework.context.annotation.AnnotationBeanNameGenerator
+import com.wanna.framework.context.annotation.BeanNameGenerator
+import com.wanna.framework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.EnvironmentAware
 import com.wanna.framework.context.processor.factory.BeanDefinitionRegistryPostProcessor

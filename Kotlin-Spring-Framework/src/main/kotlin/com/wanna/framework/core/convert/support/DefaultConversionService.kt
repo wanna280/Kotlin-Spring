@@ -8,14 +8,34 @@ import com.wanna.framework.core.convert.converter.ConverterRegistry
  * @see GenericConversionService
  * @see ConfigurableConversionService
  */
-class DefaultConversionService : GenericConversionService() {
-
+open class DefaultConversionService : GenericConversionService() {
     init {
         // 添加默认的Converters
         addDefaultConverters(this)
     }
 
     companion object {
+
+        // 共享的实例
+        private var sharedInstance: DefaultConversionService? = null
+
+        /**
+         * 获取共享的ConversionService，使用DCL完成获取
+         */
+        @JvmStatic
+        fun getSharedInstance(): DefaultConversionService {
+            var sharedInstance = DefaultConversionService.sharedInstance
+            if (sharedInstance == null) {
+                synchronized(DefaultConversionService::class.java) {
+                    sharedInstance = DefaultConversionService.sharedInstance
+                    if (sharedInstance == null) {
+                        sharedInstance = DefaultConversionService()
+                    }
+                }
+            }
+            return sharedInstance!!
+        }
+
         @JvmStatic
         fun addDefaultConverters(registry: ConverterRegistry) {
             registry.addConverter(StringToNumberConverter())

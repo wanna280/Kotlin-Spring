@@ -2,8 +2,8 @@ package com.wanna.framework.beans.factory.support.definition
 
 import com.wanna.framework.beans.factory.support.definition.config.AttributeAccessor
 import com.wanna.framework.beans.factory.support.definition.config.BeanMetadataElement
-import com.wanna.framework.beans.method.ConstructorArgumentValues
-import com.wanna.framework.beans.method.MutablePropertyValues
+import com.wanna.framework.beans.factory.config.ConstructorArgumentValues
+import com.wanna.framework.beans.MutablePropertyValues
 import com.wanna.framework.beans.method.MethodOverrides
 import java.util.function.Supplier
 

@@ -1,7 +1,7 @@
 package com.wanna.framework.aop.framework.autoproxy
 
 import com.wanna.framework.aop.Advisor
-import com.wanna.framework.context.ConfigurableListableBeanFactory
+import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 
 /**
  * 这个组件用来协助去BeanFactory当中去寻找所有的候选的Advisor的Bean的列表

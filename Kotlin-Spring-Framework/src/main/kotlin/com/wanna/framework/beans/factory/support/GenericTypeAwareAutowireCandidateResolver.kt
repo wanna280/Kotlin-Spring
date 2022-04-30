@@ -1,7 +1,7 @@
 package com.wanna.framework.beans.factory.support
 
-import com.wanna.framework.context.BeanFactory
-import com.wanna.framework.context.aware.BeanFactoryAware
+import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.beans.BeanFactoryAware
 
 /**
  * 它是一个支持泛型的检查的AutowireCandidateResolver

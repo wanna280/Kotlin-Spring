@@ -1,6 +1,6 @@
 package com.wanna.framework.core.util
 
-import com.wanna.framework.context.BeanFactory
+import com.wanna.framework.beans.factory.BeanFactory
 
 /**
  * 这是一个BeanFactory的工具类，提供对BeanFactory当中相关操作提供公共方法

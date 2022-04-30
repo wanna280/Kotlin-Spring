@@ -1,0 +1,14 @@
+package com.wanna.boot
+
+import com.wanna.framework.context.annotation.Configuration
+import org.springframework.core.annotation.AliasFor
+
+/**
+ * 标识这是一个SpringBoot的配置类
+ */
+@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS, AnnotationTarget.TYPE)
+@Configuration
+annotation class SpringBootConfiguration(
+    @get:AliasFor(annotation = Configuration::class, value = "proxyBeanMethods")
+    val proxyBeanMethods: Boolean = false  // 是否代理@Bean方法？
+)

@@ -1,6 +1,6 @@
 package com.wanna.framework.context.util
 
-import com.wanna.framework.context.AnnotationAttributes
+import com.wanna.framework.context.annotation.AnnotationAttributes
 import org.springframework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.InvocationTargetException

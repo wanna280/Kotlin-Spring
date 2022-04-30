@@ -1,7 +1,7 @@
 package com.wanna.framework.aop.support
 
 import com.wanna.framework.aop.PointcutAdvisor
-import com.wanna.framework.beans.annotations.Ordered
+import com.wanna.framework.core.Ordered
 
 abstract class AbstractPointcutAdvisor : PointcutAdvisor, Ordered, java.io.Serializable {
 

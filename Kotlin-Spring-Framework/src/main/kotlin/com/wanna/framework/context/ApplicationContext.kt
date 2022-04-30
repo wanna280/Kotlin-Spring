@@ -1,5 +1,8 @@
 package com.wanna.framework.context
 
+import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.beans.factory.ListableBeanFactory
+import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory
 import com.wanna.framework.context.event.ApplicationEventPublisher
 import com.wanna.framework.core.environment.EnvironmentCapable
 
@@ -12,4 +15,9 @@ interface ApplicationContext : BeanFactory, ApplicationEventPublisher, ListableB
      * 获取可以自动装配的BeanFactory，可以用它完成Bean的创建/销毁等工作
      */
     fun getAutowireCapableBeanFactory(): AutowireCapableBeanFactory
+
+    /**
+     * 获取parent ApplicationContext，如果有的话
+     */
+    fun getParent() : ApplicationContext?
 }

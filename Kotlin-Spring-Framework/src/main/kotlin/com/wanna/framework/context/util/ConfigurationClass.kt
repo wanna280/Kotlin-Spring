@@ -1,9 +1,9 @@
 package com.wanna.framework.context.util
 
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
-import com.wanna.framework.context.BeanMethod
-import com.wanna.framework.context.ImportBeanDefinitionRegistrar
-import com.wanna.framework.context.annotations.BeanDefinitionReader
+import com.wanna.framework.context.annotation.BeanMethod
+import com.wanna.framework.context.annotation.ImportBeanDefinitionRegistrar
+import com.wanna.framework.context.annotation.BeanDefinitionReader
 import com.wanna.framework.core.type.AnnotationMetadata
 
 /**

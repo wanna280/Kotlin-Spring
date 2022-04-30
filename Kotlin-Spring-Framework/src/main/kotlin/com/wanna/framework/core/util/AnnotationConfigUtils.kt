@@ -5,15 +5,15 @@ import com.wanna.framework.beans.factory.support.ContextAnnotationAutowireCandid
 import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import com.wanna.framework.context.BeanDefinitionRegistry
-import com.wanna.framework.context.DefaultListableBeanFactory
-import com.wanna.framework.context.GenericApplicationContext
+import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
+import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
+import com.wanna.framework.context.support.GenericApplicationContext
 import com.wanna.framework.context.event.DefaultEventListenerFactory
 import com.wanna.framework.context.processor.beans.internal.AutowiredAnnotationPostProcessor
 import com.wanna.framework.context.processor.beans.internal.CommonAnnotationPostProcessor
 import com.wanna.framework.context.processor.factory.internal.ConfigurationClassPostProcessor
 import com.wanna.framework.context.processor.factory.internal.EventListenerMethodProcessor
-import com.wanna.framework.core.AnnotationAwareOrderComparator
+import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 
 class AnnotationConfigUtils {
     companion object {

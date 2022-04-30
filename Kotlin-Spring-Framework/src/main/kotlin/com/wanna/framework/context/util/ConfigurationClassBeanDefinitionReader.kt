@@ -1,18 +1,17 @@
 package com.wanna.framework.context.util
 
-import com.wanna.framework.beans.annotations.Bean
+import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.AnnotatedGenericBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import com.wanna.framework.context.BeanDefinitionRegistry
-import com.wanna.framework.context.BeanMethod
-import com.wanna.framework.context.ImportBeanDefinitionRegistrar
-import com.wanna.framework.context.annotations.BeanDefinitionReader
-import com.wanna.framework.context.annotations.BeanNameGenerator
-import com.wanna.framework.context.annotations.XmlBeanDefinitionReader
+import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
+import com.wanna.framework.context.annotation.BeanMethod
+import com.wanna.framework.context.annotation.ImportBeanDefinitionRegistrar
+import com.wanna.framework.context.annotation.BeanDefinitionReader
+import com.wanna.framework.context.annotation.BeanNameGenerator
+import com.wanna.framework.context.annotation.XmlBeanDefinitionReader
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.util.BeanUtils
-import com.wanna.framework.core.util.ClassUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
 
 /**

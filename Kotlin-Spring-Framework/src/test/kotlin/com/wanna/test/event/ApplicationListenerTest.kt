@@ -1,6 +1,6 @@
 package com.wanna.test.event
 
-import com.wanna.framework.context.AnnotationConfigApplicationContext
+import com.wanna.framework.context.annotation.AnnotationConfigApplicationContext
 import com.wanna.framework.context.event.ApplicationEvent
 import com.wanna.framework.context.event.SmartApplicationListener
 import com.wanna.framework.core.util.ClassUtils

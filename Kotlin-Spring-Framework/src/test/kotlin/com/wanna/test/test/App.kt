@@ -1,15 +1,15 @@
 package com.wanna
 
 import com.wanna.framework.aop.*
-import com.wanna.framework.aop.annotaions.EnableAspectJAutoProxy
+import com.wanna.framework.context.annotation.EnableAspectJAutoProxy
 import com.wanna.framework.aop.intercept.MethodInterceptor
 import com.wanna.framework.aop.intercept.MethodInvocation
-import com.wanna.framework.beans.annotations.Bean
-import com.wanna.framework.beans.annotations.Component
-import com.wanna.framework.beans.annotations.Configuration
-import com.wanna.framework.context.AnnotationConfigApplicationContext
-import com.wanna.framework.context.annotations.ComponentScan
-import com.wanna.framework.context.annotations.Value
+import com.wanna.framework.context.annotation.Bean
+import com.wanna.framework.context.stereotype.Component
+import com.wanna.framework.context.annotation.Configuration
+import com.wanna.framework.context.annotation.AnnotationConfigApplicationContext
+import com.wanna.framework.context.annotation.ComponentScan
+import com.wanna.framework.beans.factory.annotation.Value
 import com.wanna.framework.core.util.ClassUtils
 import com.wanna.test.test.ITF
 import com.wanna.test.test.User

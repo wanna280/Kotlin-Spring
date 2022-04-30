@@ -1,19 +1,18 @@
 package com.wanna.framework.context.processor.beans.internal
 
-import com.wanna.framework.beans.annotations.Lookup
-import com.wanna.framework.beans.annotations.Order
-import com.wanna.framework.beans.annotations.Ordered
+import com.wanna.framework.beans.factory.annotation.Lookup
+import com.wanna.framework.core.Ordered
 import com.wanna.framework.beans.factory.InjectionMetadata
 import com.wanna.framework.beans.factory.support.DependencyDescriptor
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.beans.method.LookupOverride
-import com.wanna.framework.beans.method.PropertyValues
+import com.wanna.framework.beans.PropertyValues
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
-import com.wanna.framework.context.ConfigurableListableBeanFactory
-import com.wanna.framework.context.annotations.Autowired
-import com.wanna.framework.context.annotations.Value
-import com.wanna.framework.context.aware.ApplicationContextAware
+import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
+import com.wanna.framework.context.annotation.Autowired
+import com.wanna.framework.beans.factory.annotation.Value
+import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.exception.BeanCreationException
 import com.wanna.framework.context.processor.beans.SmartInstantiationAwareBeanPostProcessor
 import com.wanna.framework.core.MethodParameter

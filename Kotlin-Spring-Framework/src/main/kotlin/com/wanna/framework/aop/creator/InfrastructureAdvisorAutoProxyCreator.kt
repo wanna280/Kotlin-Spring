@@ -1,7 +1,7 @@
 package com.wanna.framework.aop.creator
 
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
-import com.wanna.framework.context.ConfigurableListableBeanFactory
+import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 
 /**
  * 这是一个基础设施的Advisor的自动代理的创建器，它会针对于是基础设施Bean的Advisor去进行创建代理

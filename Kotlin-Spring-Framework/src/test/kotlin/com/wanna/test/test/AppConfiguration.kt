@@ -1,7 +1,7 @@
 package com.wanna.test.test
 
-import com.wanna.framework.beans.annotations.Configuration
-import com.wanna.framework.context.annotations.ComponentScan
+import com.wanna.framework.context.annotation.Configuration
+import com.wanna.framework.context.annotation.ComponentScan
 
 @Configuration
 @ComponentScan(["com.wanna"])

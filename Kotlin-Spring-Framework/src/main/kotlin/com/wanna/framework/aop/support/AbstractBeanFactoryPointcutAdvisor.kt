@@ -1,9 +1,9 @@
 package com.wanna.framework.aop.support
 
 import com.wanna.framework.aop.Advice
-import com.wanna.framework.context.BeanFactory
-import com.wanna.framework.context.ConfigurableBeanFactory
-import com.wanna.framework.context.aware.BeanFactoryAware
+import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
+import com.wanna.framework.beans.BeanFactoryAware
 
 /**
  * 这是一个基于BeanFactory的PointAdvisor，它拥有了从BeanFactory中获取Advisor的能力

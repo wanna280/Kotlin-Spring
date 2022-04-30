@@ -1,9 +1,9 @@
 package com.wanna.framework.context.event
 
-import com.wanna.framework.context.BeanFactory
+import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.context.aware.BeanClassLoaderAware
-import com.wanna.framework.context.aware.BeanFactoryAware
-import com.wanna.framework.core.AnnotationAwareOrderComparator
+import com.wanna.framework.beans.BeanFactoryAware
+import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 
 /**
  * 它提供了ApplicationListener的注册工作

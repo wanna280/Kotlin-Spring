@@ -1,6 +1,6 @@
 package com.wanna.framework.aop.framework
 
-import com.wanna.framework.beans.annotations.Ordered
+import com.wanna.framework.core.Ordered
 
 /**
  * 这是一个为ProxyProcessor提供支持的组件

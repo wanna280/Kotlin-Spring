@@ -9,9 +9,8 @@ import com.wanna.framework.aop.framework.ProxyFactory
 import com.wanna.framework.aop.framework.ProxyProcessorSupport
 import com.wanna.framework.aop.framework.autoproxy.TargetSourceCreator
 import com.wanna.framework.aop.target.SingletonTargetSource
-import com.wanna.framework.beans.annotations.Ordered
-import com.wanna.framework.context.BeanFactory
-import com.wanna.framework.context.aware.BeanFactoryAware
+import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.context.processor.beans.SmartInstantiationAwareBeanPostProcessor
 import com.wanna.framework.core.util.ClassUtils
 import java.util.Collections

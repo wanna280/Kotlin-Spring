@@ -3,10 +3,10 @@ package com.wanna.framework.aop.config
 import com.wanna.framework.aop.creator.AnnotationAwareAspectJAutoProxyCreator
 import com.wanna.framework.aop.creator.AspectJAwareAdvisorAutoProxyCreator
 import com.wanna.framework.aop.creator.InfrastructureAdvisorAutoProxyCreator
-import com.wanna.framework.beans.annotations.Ordered
+import com.wanna.framework.core.Ordered
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import com.wanna.framework.context.BeanDefinitionRegistry
+import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 
 /**
  * 这是一个AopConfig的工具类，可以对AopProxyCreator去进行注册

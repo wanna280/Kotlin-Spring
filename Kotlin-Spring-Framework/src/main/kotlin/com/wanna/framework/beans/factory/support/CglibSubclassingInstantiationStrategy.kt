@@ -2,12 +2,10 @@ package com.wanna.framework.beans.factory.support
 
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.beans.method.LookupOverride
-import com.wanna.framework.beans.method.MethodOverride
 import com.wanna.framework.beans.method.ReplaceOverride
-import com.wanna.framework.context.BeanFactory
-import com.wanna.framework.context.ConfigurableBeanFactory
+import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.core.util.BeanUtils
-import net.sf.cglib.proxy.Callback
 import net.sf.cglib.proxy.CallbackFilter
 import net.sf.cglib.proxy.Enhancer
 import net.sf.cglib.proxy.Factory

@@ -1,7 +1,6 @@
 package com.wanna.framework.context.processor.factory.internal
 
-import com.wanna.framework.context.BeanFactory
-import com.wanna.framework.context.ConfigurableListableBeanFactory
+import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.context.processor.factory.BeanFactoryPostProcessor
 
 /**

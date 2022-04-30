@@ -1,9 +1,9 @@
 package com.wanna.test.test
 
-import com.wanna.framework.beans.annotations.Component
+import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.context.ApplicationContext
-import com.wanna.framework.context.annotations.Autowired
-import com.wanna.framework.context.annotations.Value
+import com.wanna.framework.context.annotation.Autowired
+import com.wanna.framework.beans.factory.annotation.Value
 
 @Component
 class User {

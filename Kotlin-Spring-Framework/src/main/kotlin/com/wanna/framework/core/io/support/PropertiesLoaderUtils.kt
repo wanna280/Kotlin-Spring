@@ -3,6 +3,7 @@ package com.wanna.framework.core.io.support
 import com.wanna.framework.core.util.ClassUtils
 import java.io.FileInputStream
 import java.io.FileNotFoundException
+import java.io.InputStream
 import java.util.Properties
 
 /**
@@ -28,6 +29,16 @@ class PropertiesLoaderUtils {
             } catch (ex: Exception) {
                 throw FileNotFoundException("无法加载Properties资源文件，路径为[$classpath]")
             }
+            return properties
+        }
+
+        /**
+         * 完成Properties的属性的加载
+         */
+        @JvmStatic
+        fun loadProperties(inputStream: InputStream): Properties {
+            val properties = Properties()
+            properties.load(inputStream)
             return properties
         }
     }
