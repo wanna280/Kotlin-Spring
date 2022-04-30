@@ -1,4 +1,4 @@
-package com.wanna.framework.util
+package com.wanna.framework.core.util
 
 import java.io.File
 import java.io.IOException

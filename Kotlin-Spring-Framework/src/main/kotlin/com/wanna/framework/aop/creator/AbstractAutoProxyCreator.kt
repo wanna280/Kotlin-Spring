@@ -13,7 +13,7 @@ import com.wanna.framework.beans.annotations.Ordered
 import com.wanna.framework.context.BeanFactory
 import com.wanna.framework.context.aware.BeanFactoryAware
 import com.wanna.framework.context.processor.beans.SmartInstantiationAwareBeanPostProcessor
-import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.core.util.ClassUtils
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
@@ -139,11 +139,11 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
      * 那么它就会被判断为一个基础设施的Class，log：不要尝试在基础设施Bean上去创建代理！
      */
     protected open fun isInfrastructureClass(beanClass: Class<*>): Boolean {
-        return ClassUtils.isAssginFrom(Advice::class.java, beanClass) || ClassUtils.isAssginFrom(
+        return ClassUtils.isAssignFrom(Advice::class.java, beanClass) || ClassUtils.isAssignFrom(
             Advisor::class.java, beanClass
-        ) || ClassUtils.isAssginFrom(
+        ) || ClassUtils.isAssignFrom(
             Pointcut::class.java, beanClass
-        ) || ClassUtils.isAssginFrom(AopInfrastructureBean::class.java, beanClass)
+        ) || ClassUtils.isAssignFrom(AopInfrastructureBean::class.java, beanClass)
     }
 
     /**

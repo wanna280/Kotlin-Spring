@@ -10,7 +10,7 @@ import com.wanna.framework.beans.annotations.Configuration
 import com.wanna.framework.context.AnnotationConfigApplicationContext
 import com.wanna.framework.context.annotations.ComponentScan
 import com.wanna.framework.context.annotations.Value
-import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.core.util.ClassUtils
 import com.wanna.test.test.ITF
 import com.wanna.test.test.User
 import java.util.*
@@ -48,7 +48,7 @@ class MyAdvisor : PointcutAdvisor {
             override fun getClassFilter(): ClassFilter {
                 return object : ClassFilter {
                     override fun matches(clazz: Class<*>): Boolean {
-                        return ClassUtils.isAssginFrom(ITF::class.java, clazz)
+                        return ClassUtils.isAssignFrom(ITF::class.java, clazz)
                     }
                 }
             }

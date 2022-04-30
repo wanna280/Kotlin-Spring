@@ -1,7 +1,7 @@
 package com.wanna.framework.core.type
 
-import com.wanna.framework.context.AnnotationAttributesUtils
-import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.context.util.AnnotationAttributesUtils
+import com.wanna.framework.core.util.ClassUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
 
 /**

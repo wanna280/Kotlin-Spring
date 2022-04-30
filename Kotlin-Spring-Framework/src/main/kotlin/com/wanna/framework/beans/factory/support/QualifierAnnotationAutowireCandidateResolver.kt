@@ -1,11 +1,11 @@
 package com.wanna.framework.beans.factory.support
 
 import com.wanna.framework.context.AnnotationAttributes
-import com.wanna.framework.context.AnnotationAttributesUtils
+import com.wanna.framework.context.util.AnnotationAttributesUtils
 import com.wanna.framework.context.annotations.Autowired
 import com.wanna.framework.context.annotations.Qualifier
 import com.wanna.framework.context.annotations.Value
-import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.core.util.ClassUtils
 
 /**
  * 这是一个支持Qualifier注解的AutowireCandidateResolver

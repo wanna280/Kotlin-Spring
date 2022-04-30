@@ -2,7 +2,7 @@ package com.wanna.framework.aop
 
 import com.wanna.framework.aop.framework.InterceptorAndDynamicMethodMatcher
 import com.wanna.framework.aop.intercept.MethodInterceptor
-import com.wanna.framework.util.ReflectionUtils
+import com.wanna.framework.core.util.ReflectionUtils
 import java.lang.reflect.Method
 
 /**

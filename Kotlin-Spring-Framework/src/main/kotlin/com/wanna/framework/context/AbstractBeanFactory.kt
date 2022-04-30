@@ -10,9 +10,10 @@ import com.wanna.framework.context.processor.beans.BeanPostProcessor
 import com.wanna.framework.context.processor.beans.InstantiationAwareBeanPostProcessor
 import com.wanna.framework.context.processor.beans.MergedBeanDefinitionPostProcessor
 import com.wanna.framework.context.processor.beans.SmartInstantiationAwareBeanPostProcessor
-import com.wanna.framework.util.BeanFactoryUtils
-import com.wanna.framework.util.ClassUtils
-import com.wanna.framework.util.StringUtils
+import com.wanna.framework.core.convert.ConversionService
+import com.wanna.framework.core.util.BeanFactoryUtils
+import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.core.util.StringUtils
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -29,6 +30,9 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
 
     // beanClassLoader
     private var beanClassLoader: ClassLoader = ClassLoader.getSystemClassLoader()
+
+    // ConversionService
+    private var conversionService: ConversionService? = null
 
     // 已经完成合并的BeanDefinition的Map
     private val mergedBeanDefinitions: ConcurrentHashMap<String, RootBeanDefinition> = ConcurrentHashMap()
@@ -198,7 +202,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
     }
 
     override fun removeBeanPostProcessor(type: Class<*>) {
-        beanPostProcessors.removeIf { ClassUtils.isAssginFrom(type, it::class.java) }
+        beanPostProcessors.removeIf { ClassUtils.isAssignFrom(type, it::class.java) }
         this.beanPostProcessorCache = null  // clear
     }
 
@@ -218,7 +222,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         val beanDefinition = getBeanDefinition(beanName)
         val beanClass = beanDefinition?.getBeanClass()
         return if (beanDefinition != null && beanClass != null) {
-            ClassUtils.isAssginFrom(type, beanClass)
+            ClassUtils.isAssignFrom(type, beanClass)
         } else {
             false
         }
@@ -243,7 +247,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         val mbd = getMergedBeanDefinition(beanName)
 
         val beanClass = mbd.getBeanClass()
-        if (beanClass != null && ClassUtils.isAssginFrom(FactoryBean::class.java, beanClass)) {
+        if (beanClass != null && ClassUtils.isAssignFrom(FactoryBean::class.java, beanClass)) {
             // 如果从名字来看，它不是一个FactoryBean，那么就获取到FactoryBean包装的Object的类型
             if (!BeanFactoryUtils.isFactoryDereference(beanName)) {
                 return getTypeForFactoryBean(beanName, mbd, true)
@@ -344,6 +348,14 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
 
     override fun setTypeConverter(typeConverter: TypeConverter) {
         this.typeConverter = typeConverter
+    }
+
+    override fun getConversionService(): ConversionService? {
+        return this.conversionService
+    }
+
+    override fun setConversionService(conversionService: ConversionService?) {
+        this.conversionService = conversionService
     }
 
     override fun addEmbeddedValueResolver(resolver: StringValueResolver) {

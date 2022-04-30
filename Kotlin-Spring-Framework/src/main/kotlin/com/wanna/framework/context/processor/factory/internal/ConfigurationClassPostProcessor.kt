@@ -16,7 +16,7 @@ import com.wanna.framework.context.util.ConfigurationClassBeanDefinitionReader
 import com.wanna.framework.context.util.ConfigurationClassParser
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.StandardEnvironment
-import com.wanna.framework.util.AnnotationConfigUtils
+import com.wanna.framework.core.util.AnnotationConfigUtils
 
 /**
  * 这是一个配置类处理器，用来扫描Spring当中的配置类，包括Configuration/Component/Bean等注解的处理

@@ -1,6 +1,6 @@
 package com.wanna.framework.context
 
-import com.wanna.framework.context.AnnotationAttributesUtils.asAnnotationAttributesSet
+import com.wanna.framework.context.util.AnnotationAttributesUtils.asAnnotationAttributesSet
 
 /**
  * 这个类主要是存放一些注解的属性，将注解中配置的相关属性全部都进行封装

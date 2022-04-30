@@ -1,6 +1,6 @@
 package com.wanna.framework.aop.framework
 
-import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.core.util.ClassUtils
 import net.sf.cglib.proxy.Enhancer
 import net.sf.cglib.proxy.MethodInterceptor
 import net.sf.cglib.proxy.MethodProxy

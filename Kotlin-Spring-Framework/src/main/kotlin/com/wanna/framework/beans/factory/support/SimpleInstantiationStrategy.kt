@@ -3,8 +3,8 @@ package com.wanna.framework.beans.factory.support
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.BeanFactory
 import com.wanna.framework.context.exception.BeanCreationException
-import com.wanna.framework.util.BeanUtils
-import com.wanna.framework.util.ReflectionUtils
+import com.wanna.framework.core.util.BeanUtils
+import com.wanna.framework.core.util.ReflectionUtils
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 

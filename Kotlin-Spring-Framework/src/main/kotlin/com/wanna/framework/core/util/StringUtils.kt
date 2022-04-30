@@ -1,4 +1,4 @@
-package com.wanna.framework.util
+package com.wanna.framework.core.util
 
 /**
  * 这是一个String的工具类

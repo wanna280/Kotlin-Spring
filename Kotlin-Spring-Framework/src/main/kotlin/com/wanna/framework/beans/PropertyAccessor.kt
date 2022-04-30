@@ -4,7 +4,10 @@ import com.wanna.framework.beans.method.PropertyValue
 import com.wanna.framework.beans.method.PropertyValues
 
 /**
- * 标识这是一个属性的访问器，可以支持对一个属性的设置
+ * 标识这是一个属性的访问器，可以支持对一个属性的设置以及获取
+ *
+ * @see com.wanna.framework.context.BeanWrapperImpl
+ * @see com.wanna.framework.context.BeanWrapper
  */
 interface PropertyAccessor {
 

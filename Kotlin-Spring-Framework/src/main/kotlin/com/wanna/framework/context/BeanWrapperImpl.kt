@@ -3,7 +3,7 @@ package com.wanna.framework.context
 import com.wanna.framework.beans.method.PropertyValue
 import com.wanna.framework.beans.method.PropertyValues
 import com.wanna.framework.context.exception.BeanCreationException
-import com.wanna.framework.util.ReflectionUtils
+import com.wanna.framework.core.util.ReflectionUtils
 import java.lang.reflect.Field
 
 class BeanWrapperImpl(_beanInstance: Any?) : BeanWrapper {

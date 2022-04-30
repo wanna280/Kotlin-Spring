@@ -1,4 +1,4 @@
-package com.wanna.framework.util
+package com.wanna.framework.core.util
 
 import com.wanna.framework.context.BeanFactory
 

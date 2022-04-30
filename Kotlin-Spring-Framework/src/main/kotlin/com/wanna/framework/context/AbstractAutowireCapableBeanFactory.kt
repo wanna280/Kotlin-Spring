@@ -9,7 +9,7 @@ import com.wanna.framework.beans.method.PropertyValues
 import com.wanna.framework.context.aware.BeanFactoryAware
 import com.wanna.framework.context.aware.BeanNameAware
 import com.wanna.framework.context.exception.BeanCreationException
-import com.wanna.framework.util.ReflectionUtils
+import com.wanna.framework.core.util.ReflectionUtils
 import java.lang.reflect.Constructor
 import java.util.function.Supplier
 

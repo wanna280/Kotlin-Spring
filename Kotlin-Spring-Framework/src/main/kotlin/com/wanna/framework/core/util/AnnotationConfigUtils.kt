@@ -1,4 +1,4 @@
-package com.wanna.framework.util
+package com.wanna.framework.core.util
 
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.factory.support.ContextAnnotationAutowireCandidateResolver

@@ -8,8 +8,8 @@ import com.wanna.framework.context.*
 import com.wanna.framework.context.annotations.*
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.type.StandardAnnotationMetadata
-import com.wanna.framework.util.ClassUtils
-import com.wanna.framework.util.ReflectionUtils
+import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.core.util.ReflectionUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
 import java.util.function.Predicate
 
@@ -138,7 +138,7 @@ class ConfigurationClassParser(
         }
         importCandidates.forEach { candidate ->
             // 如果它是一个ImportSelector
-            if (ClassUtils.isAssginFrom(ImportSelector::class.java, candidate)) {
+            if (ClassUtils.isAssignFrom(ImportSelector::class.java, candidate)) {
                 val importSelector = ClassUtils.newInstance(candidate) as ImportSelector
                 // 如果它是一个延时的Selector
                 if (importSelector is DeferredImportSelector) {
@@ -149,7 +149,7 @@ class ConfigurationClassParser(
                     processImports(configurationClass, getImportCandidates(imports, filter), filter)
                 }
                 // 如果它是一个ImportBeanDefinitionRegistrar
-            } else if (ClassUtils.isAssginFrom(ImportBeanDefinitionRegistrar::class.java, candidate)) {
+            } else if (ClassUtils.isAssignFrom(ImportBeanDefinitionRegistrar::class.java, candidate)) {
 
                 // 实例化，并保存ImportBeanDefinitionRegistrar到configurationClass当中
                 val registrar = ClassUtils.newInstance(candidate) as ImportBeanDefinitionRegistrar

@@ -3,6 +3,7 @@ package com.wanna.framework.context
 import com.wanna.framework.beans.factory.config.Scope
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
+import com.wanna.framework.core.convert.ConversionService
 
 interface ConfigurableBeanFactory : BeanFactory, SingletonBeanRegistry {
 
@@ -16,6 +17,12 @@ interface ConfigurableBeanFactory : BeanFactory, SingletonBeanRegistry {
      */
     fun getTypeConverter(): TypeConverter
     fun setTypeConverter(typeConverter: TypeConverter)
+
+    /**
+     * 获取ConversionService去完成类型的转换
+     */
+    fun getConversionService(): ConversionService?
+    fun setConversionService(conversionService: ConversionService?)
 
     /**
      * 添加字符串的值解析器，比如用来解析"${}"占位符表达式

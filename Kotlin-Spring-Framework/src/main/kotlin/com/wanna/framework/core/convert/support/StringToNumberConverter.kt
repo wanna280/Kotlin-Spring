@@ -11,6 +11,7 @@ class StringToNumberConverter : GenericConverter {
     private val convertiblePairs = HashSet<ConvertiblePair>()
 
     init {
+        // 初始化它支持转换的映射列表
         convertiblePairs.add(ConvertiblePair(String::class.java, Int::class.java))
         convertiblePairs.add(ConvertiblePair(String::class.java, Byte::class.java))
         convertiblePairs.add(ConvertiblePair(String::class.java, Double::class.java))
@@ -18,6 +19,7 @@ class StringToNumberConverter : GenericConverter {
         convertiblePairs.add(ConvertiblePair(String::class.java, Short::class.java))
         convertiblePairs.add(ConvertiblePair(String::class.java, Char::class.java))
         convertiblePairs.add(ConvertiblePair(String::class.java, Long::class.java))
+        convertiblePairs.add(ConvertiblePair(String::class.java, Boolean::class.java))
     }
 
     override fun getConvertibleTypes(): Set<ConvertiblePair> {
@@ -49,6 +51,9 @@ class StringToNumberConverter : GenericConverter {
         }
         if (targetType == Char::class.java) {
             return sourceStr.toInt().toChar() as T
+        }
+        if (targetType == Boolean::class.java) {
+            return sourceStr.toBoolean() as T
         }
         throw UnsupportedOperationException("支持将sourceType=[$sourceType]转换为targetType=[$targetType]")
     }

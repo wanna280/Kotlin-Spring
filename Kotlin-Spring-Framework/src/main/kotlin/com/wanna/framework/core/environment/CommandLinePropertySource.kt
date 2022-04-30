@@ -1,6 +1,6 @@
 package com.wanna.framework.core.environment
 
-import com.wanna.framework.util.StringUtils
+import com.wanna.framework.core.util.StringUtils
 
 /**
  * 这是命令行的PropertySource，为所有的基于命令行的PropertySource提供一层抽象的规范；

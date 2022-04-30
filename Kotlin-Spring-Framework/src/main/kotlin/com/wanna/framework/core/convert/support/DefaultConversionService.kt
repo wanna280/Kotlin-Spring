@@ -16,6 +16,7 @@ class DefaultConversionService : GenericConversionService() {
     }
 
     companion object {
+        @JvmStatic
         fun addDefaultConverters(registry: ConverterRegistry) {
             registry.addConverter(StringToNumberConverter())
         }

@@ -4,9 +4,7 @@ import com.wanna.framework.context.annotations.AnnotatedBeanDefinitionReader
 import com.wanna.framework.context.annotations.BeanNameGenerator
 import com.wanna.framework.context.annotations.ClassPathBeanDefinitionScanner
 import com.wanna.framework.core.environment.ConfigurableEnvironment
-import com.wanna.framework.core.environment.Environment
-import com.wanna.framework.core.environment.StandardEnvironment
-import com.wanna.framework.util.AnnotationConfigUtils
+import com.wanna.framework.core.util.AnnotationConfigUtils
 
 /**
  * 这是一个支持注解的处理的ApplicationContext，
@@ -16,12 +14,8 @@ import com.wanna.framework.util.AnnotationConfigUtils
  * @see ClassPathBeanDefinitionScanner
  * @see AnnotatedBeanDefinitionReader
  */
-open class AnnotationConfigApplicationContext(
-    _environment: ConfigurableEnvironment,
-    beanFactory: DefaultListableBeanFactory
-) : GenericApplicationContext(beanFactory) {
-
-    private var environment: ConfigurableEnvironment? = _environment
+open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFactory) :
+    GenericApplicationContext(beanFactory) {
 
     // 注解的BeanDefinition的Reader
     private var reader: AnnotatedBeanDefinitionReader = AnnotatedBeanDefinitionReader(this)
@@ -32,7 +26,7 @@ open class AnnotationConfigApplicationContext(
     /**
      * 无参构造器，创建默认的Environment和BeanFactory，但是并不完成刷新工作，使用者自行完成ApplicationContext的刷新
      */
-    constructor() : this(StandardEnvironment(), DefaultListableBeanFactory())
+    constructor() : this(DefaultListableBeanFactory())
 
     /**
      * 注册配置类到容器中，创建默认的Environment和BeanFactory，并完成ApplicationContext的刷新
@@ -61,7 +55,7 @@ open class AnnotationConfigApplicationContext(
      * 设置ApplicationContext的Environment，给Scanner和Reader中的Environment都给替换掉了
      */
     override fun setEnvironment(environment: ConfigurableEnvironment) {
-        this.environment = environment
+        super.setEnvironment(environment)
         this.scanner.environment = environment
         this.reader.environment = environment
     }
@@ -83,9 +77,5 @@ open class AnnotationConfigApplicationContext(
      */
     open fun register(vararg clazzes: Class<*>) {
         clazzes.forEach(this::register)
-    }
-
-    override fun getEnvironment(): Environment {
-        return environment as Environment
     }
 }

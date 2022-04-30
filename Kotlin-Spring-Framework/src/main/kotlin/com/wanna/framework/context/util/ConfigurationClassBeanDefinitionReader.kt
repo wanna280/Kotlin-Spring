@@ -11,8 +11,8 @@ import com.wanna.framework.context.annotations.BeanDefinitionReader
 import com.wanna.framework.context.annotations.BeanNameGenerator
 import com.wanna.framework.context.annotations.XmlBeanDefinitionReader
 import com.wanna.framework.core.type.AnnotationMetadata
-import com.wanna.framework.util.BeanUtils
-import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.core.util.BeanUtils
+import com.wanna.framework.core.util.ClassUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
 
 /**

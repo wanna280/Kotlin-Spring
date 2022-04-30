@@ -1,4 +1,4 @@
-package com.wanna.framework.util
+package com.wanna.framework.core.util
 
 class ClassUtils {
     companion object {
@@ -6,7 +6,7 @@ class ClassUtils {
          * 判断childClass是否是parentClass的子类？
          */
         @JvmStatic
-        fun isAssginFrom(parentClass: Class<*>, childClass: Class<*>): Boolean {
+        fun isAssignFrom(parentClass: Class<*>, childClass: Class<*>): Boolean {
             return parentClass.isAssignableFrom(childClass)
         }
 

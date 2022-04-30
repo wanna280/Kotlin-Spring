@@ -1,11 +1,10 @@
 package com.wanna.framework.context.annotations
 
-import com.wanna.framework.beans.annotations.Component
 import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
-import com.wanna.framework.context.AnnotationAttributesUtils
+import com.wanna.framework.context.util.AnnotationAttributesUtils
 import com.wanna.framework.context.BeanDefinitionRegistry
-import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.core.util.ClassUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
 
 /**

@@ -1,8 +1,8 @@
 package com.wanna.framework.aop.framework
 
 import com.wanna.framework.aop.ReflectiveMethodInvocation
-import com.wanna.framework.util.ClassUtils
-import com.wanna.framework.util.ReflectionUtils
+import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.core.util.ReflectionUtils
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy

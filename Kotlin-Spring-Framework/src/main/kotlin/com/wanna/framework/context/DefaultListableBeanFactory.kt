@@ -11,8 +11,8 @@ import com.wanna.framework.context.exception.BeanNotOfRequiredTypeException
 import com.wanna.framework.context.exception.NoSuckBeanDefinitionException
 import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
 import com.wanna.framework.core.OrderComparator
-import com.wanna.framework.util.BeanFactoryUtils
-import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.core.util.BeanFactoryUtils
+import com.wanna.framework.core.util.ClassUtils
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import java.lang.reflect.WildcardType
@@ -308,7 +308,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
         // 1.从BeanFactory当中注册的可解析的依赖(resolvableDependencies)当中尝试去进行解析
         this.resolvableDependencies.forEach { (type, obj) ->
-            if (ClassUtils.isAssginFrom(requiredType, type) && requiredType.isInstance(obj)) {
+            if (ClassUtils.isAssignFrom(requiredType, type) && requiredType.isInstance(obj)) {
                 result[requiredType.name] = obj
             }
         }
@@ -373,7 +373,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
                 autowiredBeanName?.addAll(candidates.keys)
                 return HashMap(candidates)
             }
-        } else if (ClassUtils.isAssginFrom(Collection::class.java, type)) {
+        } else if (ClassUtils.isAssignFrom(Collection::class.java, type)) {
             val genericTypes = descriptor.getGenericType()
             if (genericTypes is ParameterizedType) {
                 val valueType = genericTypes.actualTypeArguments[0] as Class<*>
