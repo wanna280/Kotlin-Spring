@@ -1,7 +1,7 @@
 package com.wanna.framework.beans.factory.support
 
 import com.wanna.framework.context.annotation.AnnotationAttributes
-import com.wanna.framework.context.util.AnnotationAttributesUtils
+import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.beans.factory.annotation.Qualifier
 import com.wanna.framework.beans.factory.annotation.Value

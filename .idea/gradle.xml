@@ -18,6 +18,7 @@
             <option value="$PROJECT_DIR$/Kotlin-Logger/logger-temp" />
             <option value="$PROJECT_DIR$/Kotlin-Logger/logger-test" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Boot" />
+            <option value="$PROJECT_DIR$/Kotlin-Spring-Boot-Autoconfigure" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Framework" />
           </set>
         </option>

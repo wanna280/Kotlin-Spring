@@ -1,6 +1,5 @@
 package com.wanna.framework.context.annotation
 
-import com.wanna.framework.context.util.ConfigurationClass
 import java.lang.reflect.Method
 
 /**

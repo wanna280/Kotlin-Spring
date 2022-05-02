@@ -1,10 +1,9 @@
 package com.wanna.framework.context.processor.factory.internal
 
-import com.wanna.framework.core.PriorityOrdered
-import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
-import com.wanna.framework.beans.util.ConfigurationClassUtils
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
+import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
+import com.wanna.framework.beans.util.ConfigurationClassUtils
 import com.wanna.framework.context.SingletonBeanRegistry
 import com.wanna.framework.context.annotation.AnnotationBeanNameGenerator
 import com.wanna.framework.context.annotation.BeanNameGenerator
@@ -12,8 +11,9 @@ import com.wanna.framework.context.annotation.FullyQualifiedAnnotationBeanNameGe
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.EnvironmentAware
 import com.wanna.framework.context.processor.factory.BeanDefinitionRegistryPostProcessor
-import com.wanna.framework.context.util.ConfigurationClassBeanDefinitionReader
-import com.wanna.framework.context.util.ConfigurationClassParser
+import com.wanna.framework.context.annotation.ConfigurationClassBeanDefinitionReader
+import com.wanna.framework.context.annotation.ConfigurationClassParser
+import com.wanna.framework.core.PriorityOrdered
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.util.AnnotationConfigUtils
@@ -88,7 +88,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
             ClassLoader.getSystemClassLoader(),
             componentScanBeanNameGenerator
         )
-        reader = ConfigurationClassBeanDefinitionReader(registry, importBeanBeanNameGenerator)
+        reader = ConfigurationClassBeanDefinitionReader(registry, importBeanBeanNameGenerator, environment!!)
 
         // 使用配置类解析器去进行解析配置类
         parser!!.parse(candidates)

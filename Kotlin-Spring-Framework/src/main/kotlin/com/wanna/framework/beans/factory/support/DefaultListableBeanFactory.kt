@@ -37,7 +37,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     // beanDefinitionNames
     private val beanDefinitionNames = HashSet<String>()
 
-    // 这是一个依赖的比较器
+    // 这是一个依赖的比较器，可以通过beanFactory去进行获取
     private var dependencyComparator: Comparator<Any?>? = null
 
     // 这是一个可以被解析的依赖，加入到这个Map当中的依赖可以进行Autowire，一般这里会注册BeanFactory，ApplicationContext等
@@ -103,20 +103,6 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         }
         return false
     }
-
-    private fun transformBeanName(beanName: String) = BeanFactoryUtils.transformBeanName(beanName)
-
-    override fun getBeanDefinition(beanName: String) = beanDefinitionMap[beanName]
-
-    override fun getBeanDefinitionNames() = ArrayList(beanDefinitionNames)
-
-    override fun getBeanDefinitions() = ArrayList(beanDefinitionMap.values)
-
-    override fun getBeanDefinitionCounts() = beanDefinitionNames.size
-
-    override fun containsBeanDefinition(name: String) = beanDefinitionMap[name] != null
-
-    open fun getDependencyComparator() = dependencyComparator
 
     open fun setDependencyComparator(dependencyComparator: Comparator<Any?>) {
         this.dependencyComparator = dependencyComparator
@@ -296,9 +282,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         return null
     }
 
-    private fun isPrimary(beanName: String, beanInstance: Any): Boolean {
-        return getMergedBeanDefinition(beanName).isPrimary()
-    }
+    private fun isPrimary(beanName: String, beanInstance: Any) = getMergedBeanDefinition(beanName).isPrimary()
 
     /**
      * 根据DependencyDescriptor去BeanFactory当中寻找到所有的候选的要进行注入的Bean的列表
@@ -393,12 +377,22 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         return null
     }
 
-    override fun getBeanDefinitionCount(): Int {
-        return beanDefinitionNames.size
+    override fun getBeanDefinitionCount() = beanDefinitionNames.size
+    private fun transformBeanName(beanName: String) = BeanFactoryUtils.transformBeanName(beanName)
+    override fun getBeanDefinition(beanName: String) = beanDefinitionMap[beanName]
+    override fun getBeanDefinitionNames() = ArrayList(beanDefinitionNames)
+    override fun getBeanDefinitions() = ArrayList(beanDefinitionMap.values)
+    override fun getBeanDefinitionCounts() = beanDefinitionNames.size
+    override fun containsBeanDefinition(name: String) = beanDefinitionMap[name] != null
+    open fun getDependencyComparator() = dependencyComparator
+
+    override fun removeBeanDefinition(name: String) {
+        this.beanDefinitionNames -= name
+        this.beanDefinitionMap -= name
     }
 
     /**
-     * 重写注册singleton方法，目的是添加singletonBeanName
+     * 重写注册singleton方法，目的是添加singletonBeanName去进行保存
      */
     override fun registerSingleton(beanName: String, singleton: Any) {
         super.registerSingleton(beanName, singleton)

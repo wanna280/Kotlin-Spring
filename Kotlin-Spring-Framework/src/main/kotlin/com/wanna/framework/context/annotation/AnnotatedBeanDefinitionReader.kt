@@ -8,22 +8,27 @@ import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.util.AnnotationConfigUtils
 
 /**
- * 这是一个注解的BeanDefinitionReader，负责给定clazz，将其封装一个BeanDefinition并注册到容器当中
+ * 这是一个注解的BeanDefinitionReader，负责给定clazz，将其封装一个AnnotatedGenericBeanDefinition并注册到容器当中
  */
-open class AnnotatedBeanDefinitionReader(val registry: BeanDefinitionRegistry) {
+open class AnnotatedBeanDefinitionReader(private val registry: BeanDefinitionRegistry) {
 
     // 默认的beanNameGenerator为注解版本的的BeanNameGenerator，可以进行自定义
-    var beanNameGenerator: BeanNameGenerator? = AnnotationBeanNameGenerator.INSTANCE
-        set(value) {
-            field = value ?: AnnotationBeanNameGenerator.INSTANCE
-        }
+    private var beanNameGenerator: BeanNameGenerator? = AnnotationBeanNameGenerator.INSTANCE
 
-    // 从Registry当中获取到Environment，如果没有，那么就创建一个默认的
-    var environment: Environment? = getOrDefaultEnvironment(registry)
+    // 从registry当中获取到Environment，如果没有，那么就创建一个默认的Environment对象
+    private var environment: Environment = getOrDefaultEnvironment(registry)
 
     init {
         // 注册AnnotationConfig相关的PostProcessor
         AnnotationConfigUtils.registerAnnotationConfigProcessors(registry)
+    }
+
+    open fun setBeanNameGenerator(beanNameGenerator: BeanNameGenerator?) {
+        this.beanNameGenerator = beanNameGenerator ?: AnnotationBeanNameGenerator.INSTANCE
+    }
+
+    open fun setEnvironment(environment: Environment) {
+        this.environment = environment
     }
 
     /**
@@ -36,7 +41,7 @@ open class AnnotatedBeanDefinitionReader(val registry: BeanDefinitionRegistry) {
 
     /**
      * 注册一个Bean到容器中，将给定的clazz包装成为BeanDefinition注册到容器当中
-     * @param name 要指定的beanName，如果为空时，将会使用BeanNameGenerator进行生成
+     * @param name 要指定的beanName(如果为空时，将会使用BeanNameGenerator进行生成)
      * @param clazz 要注册的类Class
      */
     open fun registerBean(clazz: Class<*>, name: String?) {

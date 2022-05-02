@@ -18,12 +18,12 @@ open class BeanDefinitionLoader(private val registry: BeanDefinitionRegistry, pr
 
     open fun setBeanNameGenerator(beanNameGenerator: BeanNameGenerator) {
         this.beanNameGenerator = beanNameGenerator
-        this.reader.beanNameGenerator = beanNameGenerator
+        this.reader.setBeanNameGenerator(beanNameGenerator)
     }
 
     open fun setEnvironment(environment: ConfigurableEnvironment) {
         this.environment = environment
-        this.reader.environment = environment
+        this.reader.setEnvironment(environment)
     }
 
     // 这是一个BeanDefinitionReader，负责注册配置类到容器当中

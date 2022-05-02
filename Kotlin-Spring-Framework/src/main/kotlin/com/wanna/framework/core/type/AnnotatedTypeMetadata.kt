@@ -18,4 +18,10 @@ interface AnnotatedTypeMetadata {
      * 指定具体的注解clazz，去寻找到合适的注解的对应属性
      */
     fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any>
+
+    /**
+     * 是否标注了某个注解
+     */
+    fun isAnnotated(annotationName: String): Boolean =
+        getAnnotations().map { it::class.java.name }.contains(annotationName)
 }

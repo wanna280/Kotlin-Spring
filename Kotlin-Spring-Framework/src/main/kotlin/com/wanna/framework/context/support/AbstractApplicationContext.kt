@@ -30,7 +30,7 @@ import com.wanna.framework.core.environment.StandardEnvironment
  */
 abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     companion object {
-        const val APPLICATION_EVENT_MULTICASTER_BEAN_NAME = "applicationEventMulticaster"  // 事件多拨器的beanName
+        const val APPLICATION_EVENT_MULTICASTER_BEAN_NAME = "applicationEventMulticaster"  // EventMulticaster的beanName
         const val LIFECYCLE_PROCESSOR_BEAN_NAME = "lifeProcessor";  // LifeCycleProcessor的beanName
     }
 
@@ -370,44 +370,28 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
      * 创建Environment
      */
     protected open fun createEnvironment(): ConfigurableEnvironment = StandardEnvironment()
-
     override fun getBean(beanName: String) = getBeanFactory().getBean(beanName)
-
     override fun <T> getBean(beanName: String, type: Class<T>): T? = getBeanFactory().getBean(beanName, type)
-
     override fun <T> getBean(type: Class<T>) = getBeanFactory().getBean(type)
-
     override fun isSingleton(beanName: String) = getBeanFactory().isSingleton(beanName)
-
     override fun isPrototype(beanName: String) = getBeanFactory().isPrototype(beanName)
-
     override fun addBeanPostProcessor(processor: BeanPostProcessor) = getBeanFactory().addBeanPostProcessor(processor)
-
     override fun removeBeanPostProcessor(type: Class<*>) = getBeanFactory().removeBeanPostProcessor(type)
-
     override fun removeBeanPostProcessor(index: Int) = getBeanFactory().removeBeanPostProcessor(index)
-
     override fun isFactoryBean(beanName: String) = getBeanFactory().isFactoryBean(beanName)
-
     override fun isTypeMatch(beanName: String, type: Class<*>) = getBeanFactory().isTypeMatch(beanName, type)
-
     override fun getType(beanName: String) = getBeanFactory().getType(beanName)
-
     override fun getBeanNamesForType(type: Class<*>) = getBeanFactory().getBeanNamesForType(type)
-
     override fun <T> getBeansForType(type: Class<T>) = getBeanFactory().getBeansForType(type)
+    open fun getBeanFactoryPostProcessors(): List<BeanFactoryPostProcessor> = this.beanFactoryPostProcessors
+    open fun getLifecycleProcessor(): LifecycleProcessor = this.lifecycleProcessor!!
+    override fun getParent(): ApplicationContext? = this.parent
 
     override fun getBeanNamesForTypeIncludingAncestors(type: Class<*>) =
         getBeanFactory().getBeanNamesForTypeIncludingAncestors(type)
 
     override fun <T> getBeansForTypeIncludingAncestors(type: Class<T>) =
         getBeanFactory().getBeansForTypeIncludingAncestors(type)
-
-    open fun getBeanFactoryPostProcessors(): List<BeanFactoryPostProcessor> = this.beanFactoryPostProcessors
-
-    open fun getLifecycleProcessor(): LifecycleProcessor = this.lifecycleProcessor!!
-
-    override fun getParent(): ApplicationContext? = this.parent
 
     override fun setParent(parent: ApplicationContext) {
         this.parent = parent

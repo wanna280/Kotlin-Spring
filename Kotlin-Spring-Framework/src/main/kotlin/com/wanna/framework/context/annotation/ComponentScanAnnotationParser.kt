@@ -7,31 +7,21 @@ import com.wanna.framework.core.environment.Environment
 import org.springframework.core.annotation.AnnotatedElementUtils
 
 /**
- * 这是完成ComponentScan注解的扫描的解析器
+ * 这是完成ComponentScan注解的扫描的解析器，负责将@ComponentScan注解当中配置的属性去进行解析，并完成ComponentScan的组件的扫描
+ *
+ * @see ClassPathBeanDefinitionScanner
  */
 class ComponentScanAnnotationParser(
-    _registry: BeanDefinitionRegistry,
-    _environment: Environment,
-    _classLoader: ClassLoader,
-    _componentScanBeanNameGenerator: BeanNameGenerator
+    private val registry: BeanDefinitionRegistry,
+    private val environment: Environment,
+    private val classLoader: ClassLoader,
+    private val componentScanBeanNameGenerator: BeanNameGenerator
 ) {
-    // BeanDefinition的注册中心
-    val registry: BeanDefinitionRegistry = _registry
-
-    // 容器对象对应的环境对象
-    val environment: Environment = _environment
-
-    // 类加载器
-    val classLoader: ClassLoader = _classLoader
-
-    // componentScan的beanNameGenerator
-    val componentScanBeanNameGenerator = _componentScanBeanNameGenerator
-
     fun parse(componentScanMetadata: ComponentScanMetadata): Set<BeanDefinitionHolder> {
         val scanner = ClassPathBeanDefinitionScanner(registry)
 
         // 设置beanNameGenerator
-        scanner.beanNameGenerator = componentScanBeanNameGenerator
+        scanner.setBeanNameGenerator(componentScanBeanNameGenerator)
 
         val attributes = componentScanMetadata.attributes
         val basePackages = attributes.getStringArray("basePackages")
@@ -46,8 +36,7 @@ class ComponentScanAnnotationParser(
      */
     private fun isCandidate(clazz: Class<*>): Boolean {
         return AnnotatedElementUtils.isAnnotated(
-            clazz,
-            Component::class.java
+            clazz, Component::class.java
         ) && !clazz.isAnnotation && !clazz.name.startsWith("java.")
     }
 }

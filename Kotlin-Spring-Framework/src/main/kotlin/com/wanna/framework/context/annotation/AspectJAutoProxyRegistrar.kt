@@ -5,7 +5,7 @@ import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.core.type.AnnotationMetadata
 
 /**
- * 这是一个AspectJAutoProxy的注册器，给容器中导入组件
+ * 这是一个AspectJAutoProxy的注册器，负责给容器中导入组件导入注解版的AspectJ的处理器
  */
 class AspectJAutoProxyRegistrar : ImportBeanDefinitionRegistrar {
 

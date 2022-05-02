@@ -12,6 +12,11 @@ interface BeanDefinitionRegistry {
     fun registerBeanDefinition(name: String, beanDefinition: BeanDefinition)
 
     /**
+     * 根据name从注册中心当中去移除一个BeanDefinition
+     */
+    fun removeBeanDefinition(name: String)
+
+    /**
      * 获取BeanDefinitioNames
      */
     fun getBeanDefinitionNames(): List<String>

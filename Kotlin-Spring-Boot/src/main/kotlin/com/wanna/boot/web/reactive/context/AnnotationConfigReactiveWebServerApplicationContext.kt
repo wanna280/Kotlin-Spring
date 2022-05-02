@@ -56,8 +56,8 @@ open class AnnotationConfigReactiveWebServerApplicationContext(_beanFactory: Def
      */
     override fun setEnvironment(environment: ConfigurableEnvironment) {
         super.setEnvironment(environment)
-        this.scanner.environment = environment
-        this.reader.environment = environment
+        this.scanner.setEnvironment(environment)
+        this.reader.setEnvironment(environment)
     }
 
     /**
@@ -65,8 +65,8 @@ open class AnnotationConfigReactiveWebServerApplicationContext(_beanFactory: Def
      * 也就是说，通过ApplicationContext的setBeanNameGenerator，可以替换全局的BeanNameGenerator
      */
     open fun setBeanNameGenerator(beanNameGenerator: BeanNameGenerator) {
-        this.reader.beanNameGenerator = beanNameGenerator
-        this.scanner.beanNameGenerator = beanNameGenerator
+        this.reader.setBeanNameGenerator(beanNameGenerator)
+        this.scanner.setBeanNameGenerator(beanNameGenerator)
 
         // 往BeanFactory当中去注册单实例的Bean，指定beanName，后续可以通过beanName，获取到这个BeanNameGenerator
         getBeanFactory().registerSingleton(AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR, beanNameGenerator)

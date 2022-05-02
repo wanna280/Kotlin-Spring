@@ -8,29 +8,19 @@ import com.wanna.framework.context.ApplicationContext
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * 这是一个通用的ApplicationContext
+ * 这是一个通用的ApplicationContext，它组合了BeanFactory，为AbstractApplicationContext当中的相关方法提供了实现；
+ * 子类当中只要继续根据此类去扩展自己相关的功能(比如注册配置类)，即可实现出一个比较完整的的ApplicationContext
+ *
+ * @see AbstractApplicationContext
  */
-abstract class GenericApplicationContext(_beanFactory: DefaultListableBeanFactory) : AbstractApplicationContext(),
-    BeanDefinitionRegistry {
+abstract class GenericApplicationContext(private val beanFactory: DefaultListableBeanFactory) :
+    AbstractApplicationContext(), BeanDefinitionRegistry {
 
     // 提供一个无参数的副构造器，创建一个默认的BeanFactory
     constructor() : this(DefaultListableBeanFactory())
 
-    // 容器是否已经刷新过？
+    // 容器是否已经刷新过？容器不允许被重复刷新
     private val refreshed = AtomicBoolean(false)
-
-
-
-    // 这是维护的BeanFactory，保存了容器中的全部Bean信息
-    private var beanFactory: DefaultListableBeanFactory = _beanFactory
-
-    open fun setAllowCircularReferences(allowCircularReferences: Boolean) {
-        beanFactory.allowCircularReferences = allowCircularReferences
-    }
-
-    open fun isAllowCircularReferences(): Boolean {
-        return beanFactory.allowCircularReferences
-    }
 
     override fun refreshBeanFactory() {
         if (!refreshed.compareAndSet(false, true)) {
@@ -38,55 +28,21 @@ abstract class GenericApplicationContext(_beanFactory: DefaultListableBeanFactor
         }
     }
 
-    override fun getBeanFactory(): DefaultListableBeanFactory {
-        return beanFactory
+    open fun setAllowCircularReferences(allowCircularReferences: Boolean) {
+        beanFactory.allowCircularReferences = allowCircularReferences
     }
 
-    override fun getBeanNamesForType(type: Class<*>): List<String> {
-        return beanFactory.getBeanNamesForType(type) ?: ArrayList()
-    }
-
-    override fun <T> getBeansForType(type: Class<T>): Map<String, T> {
-        return beanFactory.getBeansForType(type) ?: HashMap()
-    }
-
-    override fun getBeanNamesForTypeIncludingAncestors(type: Class<*>): List<String> {
-        return beanFactory.getBeanNamesForTypeIncludingAncestors(type) ?: ArrayList()
-    }
-
-    override fun <T> getBeansForTypeIncludingAncestors(type: Class<T>): Map<String, T> {
-        return beanFactory.getBeansForTypeIncludingAncestors(type) ?: HashMap()
-    }
-
-    override fun getBeanDefinitionCounts(): Int {
-        return beanFactory.getBeanDefinitionCounts() ?: -1
-    }
-
-    override fun getBeanDefinitionNames(): List<String> {
-        return beanFactory.getBeanDefinitionNames() ?: ArrayList()
-    }
-
-    override fun registerBeanDefinition(name: String, beanDefinition: BeanDefinition) {
+    override fun getBeanFactory(): DefaultListableBeanFactory = beanFactory
+    open fun isAllowCircularReferences() = beanFactory.allowCircularReferences
+    override fun getBeanDefinitionCounts() = beanFactory.getBeanDefinitionCounts()
+    override fun getBeanDefinitionNames() = beanFactory.getBeanDefinitionNames()
+    override fun getBeanDefinitions() = beanFactory.getBeanDefinitions()
+    override fun getBeanDefinition(beanName: String) = beanFactory.getBeanDefinition(beanName)
+    override fun containsBeanDefinition(name: String) = beanFactory.containsBeanDefinition(name)
+    override fun getAutowireCapableBeanFactory() = beanFactory
+    override fun getBeanDefinitionCount() = beanFactory.getBeanDefinitionCount()
+    override fun removeBeanDefinition(name: String) = beanFactory.removeBeanDefinition(name)
+    override fun registerBeanDefinition(name: String, beanDefinition: BeanDefinition) =
         beanFactory.registerBeanDefinition(name, beanDefinition)
-    }
 
-    override fun getBeanDefinitions(): List<BeanDefinition> {
-        return beanFactory.getBeanDefinitions() ?: ArrayList()
-    }
-
-    override fun getBeanDefinition(beanName: String): BeanDefinition? {
-        return beanFactory.getBeanDefinition(beanName)
-    }
-
-    override fun containsBeanDefinition(name: String): Boolean {
-        return beanFactory.containsBeanDefinition(name) ?: false
-    }
-
-    override fun getAutowireCapableBeanFactory(): AutowireCapableBeanFactory {
-        return beanFactory
-    }
-
-    override fun getBeanDefinitionCount(): Int {
-        return beanFactory.getBeanDefinitionCount()
-    }
 }
