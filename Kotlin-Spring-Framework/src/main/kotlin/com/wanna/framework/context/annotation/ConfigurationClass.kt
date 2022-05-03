@@ -28,7 +28,7 @@ open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
     val importedSources = HashMap<String, Class<out BeanDefinitionReader>>()
 
     // importBeanDefinitionRegistrars
-    val importBeanDefinitionRegistrars = HashMap<ImportBeanDefinitionRegistrar, AnnotationMetadata>()
+    private val importBeanDefinitionRegistrars = HashMap<ImportBeanDefinitionRegistrar, AnnotationMetadata>()
 
     fun addBeanMethod(beanMethod: BeanMethod) {
         beanMethods += beanMethod
@@ -63,7 +63,7 @@ open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
     /**
      * 是否被Import进来的？
      */
-    fun isImportedBy() = importedBy.isNotEmpty()
+    fun isImportedBy() : Boolean = importedBy.isNotEmpty()
 
     fun addImportSource(resource: String, reader: Class<out BeanDefinitionReader>) {
         importedSources[resource] = reader

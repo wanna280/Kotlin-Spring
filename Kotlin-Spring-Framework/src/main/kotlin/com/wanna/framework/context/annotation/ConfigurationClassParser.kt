@@ -105,7 +105,7 @@ open class ConfigurationClassParser(
     }
 
     /**
-     * 处理PropertySource注解
+     * 处理@PropertySource注解
      */
     private fun processPropertySources(configurationClass: ConfigurationClass) {
         AnnotatedElementUtils.findAllMergedAnnotations(
@@ -118,7 +118,7 @@ open class ConfigurationClassParser(
     }
 
     /**
-     * 处理Bean注解的方法，将所有的@Bean方法加入到候选列表当中
+     * 处理@Bean注解的标注的方法，将所有的@Bean方法加入到候选列表当中
      */
     private fun processBeanMethods(configurationClass: ConfigurationClass) {
         ReflectionUtils.doWithMethods(
@@ -194,7 +194,7 @@ open class ConfigurationClassParser(
     }
 
     /**
-     * 获取Import中导入的组件列表
+     * 获取@Import中导入的组件列表
      */
     private fun getImportCandidates(configurationClass: ConfigurationClass, filter: Predicate<String>): Set<Class<*>> {
         val imports =

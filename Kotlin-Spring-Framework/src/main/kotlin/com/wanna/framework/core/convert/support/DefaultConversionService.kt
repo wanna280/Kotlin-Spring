@@ -39,6 +39,7 @@ open class DefaultConversionService : GenericConversionService() {
         @JvmStatic
         fun addDefaultConverters(registry: ConverterRegistry) {
             registry.addConverter(StringToNumberConverter())
+            registry.addConverter(StringToStringConverter())
         }
     }
 }

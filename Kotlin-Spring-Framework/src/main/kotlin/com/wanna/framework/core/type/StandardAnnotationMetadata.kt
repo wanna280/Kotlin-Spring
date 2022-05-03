@@ -25,4 +25,8 @@ open class StandardAnnotationMetadata(val clazz: Class<*>) : AnnotationMetadata 
     override fun isAnnotated(annotationName: String): Boolean {
         return AnnotatedElementUtils.isAnnotated(clazz, annotationName)
     }
+
+    override fun getClassName(): String {
+        return clazz.name
+    }
 }

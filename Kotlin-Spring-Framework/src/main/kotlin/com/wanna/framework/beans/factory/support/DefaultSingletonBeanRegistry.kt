@@ -88,9 +88,9 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
         }
         // 如果是新创建的，还需要将Bean加入到一级缓存的列表当中
         if (newCreation && singletonObject != null) {
-            addSingleton(beanName, singletonObject as Any)
+            addSingleton(beanName, singletonObject)
         }
-        return singletonObject as Any?
+        return singletonObject
     }
 
     override fun getSingleton(beanName: String): Any? {
@@ -184,8 +184,6 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
      * 获取要操作单实例Bean的锁
      */
     override fun getSingletonMutex() = singletonObjects
-
     override fun getSingletonCount() = singletonObjects.size
-
     override fun getSingletonNames(): Array<String> = singletonObjects.keys.toTypedArray()
 }

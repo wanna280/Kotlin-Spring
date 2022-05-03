@@ -124,7 +124,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
                     try {
                         return createBean(beanName, mbd)!!
                     } catch (ex: Exception) {
-                        throw BeansException("Create bean instance of [$beanName] failed，原因是[$ex]")
+                        throw BeansException("Create bean instance of [$beanName] failed，原因是[${ex.message}]")
                     }
                 }
             })

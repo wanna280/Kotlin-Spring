@@ -1,6 +1,6 @@
 package com.wanna.framework.context.exception
 
-class BeanCreationException(message: String?, cause: Throwable?) :
+open class BeanCreationException(message: String?, cause: Throwable?) :
     BeansException(message, cause) {
     // 提供几个构造器的重载
     constructor() : this(null, null)

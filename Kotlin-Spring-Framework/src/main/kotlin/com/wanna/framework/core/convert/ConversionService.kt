@@ -1,12 +1,12 @@
 package com.wanna.framework.core.convert
 
 /**
- * 这是提供了一个内容转换服务，用来完成类型的转换
+ * 这是提供了一个内容转换服务，它的主要作用是为Spring当中的各个地方类型的转换提供支持
  */
 interface ConversionService {
 
     /**
-     * 能否将源类型的对象转换为目标类型？
+     * 能否将源类型(sourceType)的对象转换为目标类型(targetType)？
      *
      * @param sourceType 源类型
      * @param targetType 目标类型

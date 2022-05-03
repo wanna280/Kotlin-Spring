@@ -5,6 +5,8 @@ import com.wanna.framework.context.ConfigurableApplicationContext
 
 /**
  * 这是一个SpringApplication的Builder，支持去进行SpringApplication的构建
+ *
+ * @see SpringApplication
  */
 open class SpringApplicationBuilder(sources: Array<Class<*>>) {
 

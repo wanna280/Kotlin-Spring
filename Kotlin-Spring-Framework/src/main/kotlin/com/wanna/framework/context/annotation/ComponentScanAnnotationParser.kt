@@ -24,10 +24,18 @@ class ComponentScanAnnotationParser(
         scanner.setBeanNameGenerator(componentScanBeanNameGenerator)
 
         val attributes = componentScanMetadata.attributes
-        val basePackages = attributes.getStringArray("basePackages")
+        val packages = ArrayList<String>()
+        packages += attributes.getStringArray("basePackages")!!
+        packages += (attributes.getClassArray("basePackageClasses")!!).map { it.packageName }.toList()
+
+        // 如果没有获取到配置的packages列表，那么使用配置类所在的packageName作为要扫描的包
+        if (packages.isEmpty()) {
+            packages += componentScanMetadata.configurationClass.configurationClass.packageName
+        }
+
 
         // 使用类路径下的BeanDefinitionScanner去进行扫描
-        return scanner.doScan(*basePackages!!)
+        return scanner.doScan(*packages.toTypedArray())
     }
 
     /**

@@ -160,19 +160,23 @@ open class ConfigurationClassBeanDefinitionReader(
         fun shouldSkip(configurationClass: ConfigurationClass): Boolean {
             var skip: Boolean? = skipped[configurationClass]
             if (skip == null) {
-                var allSkipped = true
-                // 判断所有导入这个配置类的配置类，是否都已经被跳过了？使用递归的方式去进行判断
-                // 如果所有都被跳过了，那么这个配置类也应该被skip掉；
-                // 只要导入这个配置类的其中一个配置类还在，那么就有可能不被skip掉
-                for (importedBy in configurationClass.getImportedBy()) {
-                    if (!shouldSkip(importedBy)) {
-                        allSkipped = false
-                        break
+
+                // fixed:如果是被导入的配置类才需要匹配所有导入当前配置类的配置类，不然应该跳过这个环节
+                if (configurationClass.isImportedBy()) {
+                    var allSkipped = true
+                    // 判断所有导入这个配置类的配置类，是否都已经被跳过了？使用递归的方式去进行判断
+                    // 如果所有都被跳过了，那么这个配置类也应该被skip掉；
+                    // 只要导入这个配置类的其中一个配置类还在，那么就有可能不被skip掉
+                    for (importedBy in configurationClass.getImportedBy()) {
+                        if (!shouldSkip(importedBy)) {
+                            allSkipped = false
+                            break
+                        }
                     }
-                }
-                // 如果确实全部都被skip掉了，那么skip=true，表示当前的配置类也应该被Skip掉
-                if (allSkipped) {
-                    skip = true
+                    // 如果确实全部都被skip掉了，那么skip=true，表示当前的配置类也应该被Skip掉
+                    if (allSkipped) {
+                        skip = true
+                    }
                 }
                 // 如果不是全部都被skip掉了，那么需要计算一下是否应该被匹配？
                 if (skip == null) {

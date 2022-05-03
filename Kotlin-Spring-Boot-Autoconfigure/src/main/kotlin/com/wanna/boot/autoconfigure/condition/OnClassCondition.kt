@@ -36,7 +36,8 @@ open class OnClassCondition : FilteringSpringBootCondition() {
 
             // 将任务从split位置拆分成为两段，并且第二段交给另外一个线程去进行执行
             val firstResolver = StandardOutcomeResolver(autoConfigurationClasses, 0, split, autoConfigurationMetadata)
-            val secondResolver = StandardOutcomeResolver(autoConfigurationClasses, split, size, autoConfigurationMetadata)
+            val secondResolver =
+                StandardOutcomeResolver(autoConfigurationClasses, split, size, autoConfigurationMetadata)
             val threadedResolver = ThreadedOutcomeResolver(secondResolver)
 
             // 当前线程执行前一部分Outcomes的匹配
@@ -71,6 +72,10 @@ open class OnClassCondition : FilteringSpringBootCondition() {
         private val autoConfigurationMetadata: AutoConfigurationMetadata
     ) : OutcomesResolver {
         override fun resolveOutcomes(): Array<ConditionOutcome?> {
+            // fixed:如果给的数据越界了，那么直接return empty
+            if (start >= autoConfigurationClasses.size || end <= start) {
+                return emptyArray()
+            }
             val outcomes = arrayOfNulls<ConditionOutcome?>(end - start)  // size=end-start
             for (index in start until end) {
                 val autoConfigurationClass = autoConfigurationClasses[index]
