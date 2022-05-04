@@ -5,6 +5,7 @@ import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContext
+import com.wanna.framework.core.metrics.ApplicationStartup
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -24,16 +25,17 @@ abstract class GenericApplicationContext(private val beanFactory: DefaultListabl
 
     override fun refreshBeanFactory() {
         if (!refreshed.compareAndSet(false, true)) {
-            throw IllegalStateException("BeanFactory不能被重复刷新")
+            throw IllegalStateException("Spring BeanFactory不能被重复进行刷新")
         }
     }
 
-    open fun setAllowCircularReferences(allowCircularReferences: Boolean) {
-        beanFactory.allowCircularReferences = allowCircularReferences
+    override fun setApplicationStartup(applicationStartup: ApplicationStartup) {
+        super.setApplicationStartup(applicationStartup)
+        this.beanFactory.setApplicationContextStartup(applicationStartup) // 给beanFactory也设置上ApplicationStartup
     }
 
     override fun getBeanFactory(): DefaultListableBeanFactory = beanFactory
-    open fun isAllowCircularReferences() = beanFactory.allowCircularReferences
+    open fun isAllowCircularReferences() = beanFactory.isAllowCircularReferences()
     override fun getBeanDefinitionCounts() = beanFactory.getBeanDefinitionCounts()
     override fun getBeanDefinitionNames() = beanFactory.getBeanDefinitionNames()
     override fun getBeanDefinitions() = beanFactory.getBeanDefinitions()
@@ -45,4 +47,6 @@ abstract class GenericApplicationContext(private val beanFactory: DefaultListabl
     override fun registerBeanDefinition(name: String, beanDefinition: BeanDefinition) =
         beanFactory.registerBeanDefinition(name, beanDefinition)
 
+    open fun setAllowCircularReferences(allowCircularReferences: Boolean) =
+        beanFactory.setAllowCircularReferences(allowCircularReferences)
 }

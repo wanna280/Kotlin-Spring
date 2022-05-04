@@ -103,12 +103,7 @@ abstract class FilteringSpringBootCondition : SpringBootCondition(), AutoConfigu
              */
             @JvmStatic
             fun isPresent(className: String, classLoader: ClassLoader): Boolean {
-                return try {
-                    ClassUtils.forName<Any>(className, classLoader)
-                    true
-                } catch (ex: ClassNotFoundException) {
-                    false
-                }
+                return ClassUtils.isPresent(className, classLoader)
             }
         }
     }

@@ -34,6 +34,7 @@ open class RootBeanDefinition constructor(beanClass: Class<*>?) : AbstractBeanDe
         }
     }
 
+    // factoryMethod(@Bean方法标注的方法)
     private var factoryMethodToIntrospect: Method? = null
 
     // 进行后置处理的锁

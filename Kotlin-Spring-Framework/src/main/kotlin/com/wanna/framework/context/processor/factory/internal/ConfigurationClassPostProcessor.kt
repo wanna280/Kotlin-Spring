@@ -4,6 +4,7 @@ import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.util.ConfigurationClassUtils
+import com.wanna.framework.context.ApplicationStartupAware
 import com.wanna.framework.context.SingletonBeanRegistry
 import com.wanna.framework.context.annotation.AnnotationBeanNameGenerator
 import com.wanna.framework.context.annotation.BeanNameGenerator
@@ -16,13 +17,14 @@ import com.wanna.framework.context.annotation.ConfigurationClassParser
 import com.wanna.framework.core.PriorityOrdered
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.StandardEnvironment
+import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.core.util.AnnotationConfigUtils
 
 /**
  * 这是一个配置类处理器，用来扫描Spring当中的配置类，包括Configuration/Component/Bean等注解的处理
  */
 open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor, PriorityOrdered, EnvironmentAware,
-    BeanClassLoaderAware {
+    BeanClassLoaderAware, ApplicationStartupAware {
 
     // order
     private var order: Int = 0
@@ -48,6 +50,9 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
     // 是否设置了局部的BeanGenerator，如果设置了，将会采用默认的BeanNameGenerator
     private var localBeanNameGeneratorSet = false
 
+    // ApplicationStartup
+    private var applicationStartup: ApplicationStartup? = null
+
     /**
      * 设置局部的BeanNameGenerator，设置之后整个扫描过程都会采用给定的BeanNameGenerator作为beanName的生成器
      */
@@ -55,6 +60,10 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         localBeanNameGeneratorSet = true
         this.importBeanBeanNameGenerator = generator;
         this.componentScanBeanNameGenerator = generator;
+    }
+
+    override fun setApplicationStartup(applicationStartup: ApplicationStartup) {
+        this.applicationStartup = applicationStartup
     }
 
     override fun postProcessBeanDefinitionRegistry(registry: BeanDefinitionRegistry) {
@@ -90,6 +99,8 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         )
         reader = ConfigurationClassBeanDefinitionReader(registry, importBeanBeanNameGenerator, environment!!)
 
+        val parseConfig = this.applicationStartup!!.start("spring.context.config-classes.parse")  // start parseConfig
+
         // 使用配置类解析器去进行解析配置类
         parser!!.parse(candidates)
 
@@ -101,6 +112,8 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         // 2.如果一个配置类有BeanMethod，那么会在这里完成注册
         // 3.如果一个配置类有ImportBeanDefinitionRegistrar，那么会在这里完成导入
         reader!!.loadBeanDefinitions(configurationClasses)
+
+        parseConfig.tag("classCount", "${configurationClasses.size}").end()  // tag and end
     }
 
     override fun postProcessBeanFactory(beanFactory: ConfigurableListableBeanFactory) {

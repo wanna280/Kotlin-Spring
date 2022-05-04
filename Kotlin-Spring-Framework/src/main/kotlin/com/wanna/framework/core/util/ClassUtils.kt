@@ -5,6 +5,10 @@ package com.wanna.framework.core.util
  */
 @Suppress("UNCHECKED_CAST")
 object ClassUtils {
+
+    private const val DOT = "."
+    private const val CLASS_FILE_SUFFIX = ".class"
+
     /**
      * 判断childClass是否是parentClass的子类？如果其中一个返回为空，那么return true；只有两者均不为空时，才会去进行判断
      *
@@ -26,7 +30,7 @@ object ClassUtils {
 
     @JvmStatic
     fun getShortName(clazzName: String): String {
-        val lastDotIndex = clazzName.lastIndexOf(".")
+        val lastDotIndex = clazzName.lastIndexOf(DOT)
         return clazzName.substring(lastDotIndex + 1)
     }
 
@@ -46,6 +50,21 @@ object ClassUtils {
     @JvmStatic
     fun <T> forName(clazzName: String, classLoader: ClassLoader): Class<T> {
         return Class.forName(clazzName, false, classLoader) as Class<T>
+    }
+
+    /**
+     * 判断指定的类是否存在？
+     *
+     * @return 存在return true；不存在return false
+     */
+    @JvmStatic
+    fun isPresent(className: String, classLoader: ClassLoader): Boolean {
+        return try {
+            forName<Any>(className, classLoader)
+            true
+        } catch (ex: ClassNotFoundException) {
+            return false
+        }
     }
 
     @JvmStatic
@@ -68,5 +87,14 @@ object ClassUtils {
             classLoader = ClassLoader.getSystemClassLoader()
         }
         return classLoader!!
+    }
+
+    /**
+     * 获取一个Class的文件名(简单类名+".class")，例如String.class
+     */
+    @JvmStatic
+    fun getClassFileName(clazz: Class<*>): String {
+        val lastIndexOfDot = clazz.name.lastIndexOf(DOT)
+        return clazz.name.substring(lastIndexOfDot + 1) + CLASS_FILE_SUFFIX
     }
 }

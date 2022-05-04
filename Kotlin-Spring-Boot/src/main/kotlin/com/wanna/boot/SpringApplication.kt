@@ -13,6 +13,7 @@ import com.wanna.framework.core.convert.support.DefaultConversionService
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
+import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.core.util.AnnotationConfigUtils
 import com.wanna.framework.core.util.ClassUtils
 
@@ -48,6 +49,9 @@ open class SpringApplication(_primarySources: Array<Class<*>>) {
 
     // 是否需要添加ConversionService到容器当中？
     private var addConversionService = true
+
+    // ApplicationStartup，支持对SpringApplication启动过程中的各个阶段去进行记录
+    private var applicationStartup = ApplicationStartup.DEFAULT
 
     companion object {
         /**
@@ -98,8 +102,9 @@ open class SpringApplication(_primarySources: Array<Class<*>>) {
             // 准备好环境
             val environment = prepareEnvironment(listeners, bootstrapContext, applicationArguments)
 
-            // 创建ApplicationContext
+            // 创建ApplicationContext并且设置ApplicationStartup对象
             applicationContext = createApplicationContext()
+            applicationContext.setApplicationStartup(this.applicationStartup)
 
             // 准备SpringApplication的ApplicationContext
             prepareContext(bootstrapContext, applicationContext, environment, listeners, applicationArguments, banner)

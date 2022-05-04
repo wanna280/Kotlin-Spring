@@ -4,6 +4,7 @@ import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.context.processor.factory.BeanFactoryPostProcessor
 import com.wanna.framework.core.environment.ConfigurableEnvironment
+import com.wanna.framework.core.metrics.ApplicationStartup
 
 /**
  * 这是一个可以被配置的ApplicationContext
@@ -12,7 +13,21 @@ interface ConfigurableApplicationContext : ApplicationContext {
 
     companion object {
         const val CONVERSION_SERVICE_BEAN_NAME = "conversionService"  // ConversionService beanName
+        const val ENVIRONMENT_BEAN_NAME = "environment"  // Environment beanName
+        const val SYSTEM_PROPERTIES_BEAN_NAME = "systemProperties"  // SystemProperties beanName
+        const val SYSTEM_ENVIRONMENT_BEAN_NAME = "systemEnvironment"  // SystemEnvironment beanName
+        const val APPLICATION_STARTUP_BEANM_NAME = "applicationStartup"  // ApplicationStatup beanName
     }
+
+    /**
+     * 获取ApplicationStartup
+     */
+    fun getApplicationStartup() : ApplicationStartup
+
+    /**
+     * 设置ApplicationStartup
+     */
+    fun setApplicationStartup(applicationStartup: ApplicationStartup)
 
     /**
      * 刷新容器，完成所有Bean的实例化和初始化

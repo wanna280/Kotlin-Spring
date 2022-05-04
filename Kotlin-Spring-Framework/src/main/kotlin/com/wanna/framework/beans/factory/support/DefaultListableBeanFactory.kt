@@ -133,6 +133,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         autowiredBeanName: MutableSet<String>?,
         typeConverter: TypeConverter?
     ): Any? {
+        // 初始化参数名的发现器，方便后续的过程当中，去进行方法/构造器的参数名获取
+        descriptor.initParameterNameDiscoverer(getParameterNameDiscoverer())
         // TODO 需要对要进行注入的元素的@Lazy注解的检查，如果必要的话，需要生成代理
         var result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(descriptor, requestingBeanName)
         if (result == null) {

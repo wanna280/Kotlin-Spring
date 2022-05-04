@@ -2,20 +2,21 @@ package com.wanna.framework.beans.factory.support
 
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.core.ParameterNameDiscoverer
 import java.lang.reflect.Field
 import java.lang.reflect.Type
 
 /**
- * 这是一个依赖的描述符，可以描述一个方法的参数，或者是一个字段
+ * 这是一个依赖的描述符，可以描述一个方法的参数，或者是一个字段；
+ * 在Spring当中需要去进行依赖的解析时，就会将依赖的相关信息都封装成为一个DependencyDescriptor，方便BeanFactory当中可以对依赖去进行解析工作
  */
 open class DependencyDescriptor
 private constructor(
-    val field: Field?,
-    val parameter: MethodParameter?,
-    val required: Boolean,
-    val eager: Boolean = false
+    private val field: Field?,
+    private val parameter: MethodParameter?,
+    private val required: Boolean,
+    private val eager: Boolean = false
 ) {
-
     constructor(field: Field?, required: Boolean) : this(field, null, required)
     constructor(field: Field?, required: Boolean, eager: Boolean) : this(field, null, required, eager)
     constructor(parameter: MethodParameter?, required: Boolean) : this(null, parameter, required)
@@ -38,19 +39,19 @@ private constructor(
     // containingClass
     private var containingClass: Class<*>? = parameter?.getContainingClass()
 
+    // 参数名发现器
+    private var parameterNameDiscoverer: ParameterNameDiscoverer? = null
+
     /**
      * 获取方法参数，如果这描述的是一个字段，那么return null
      */
-    open fun getMethodParameter(): MethodParameter? {
-        return parameter
-    }
+    open fun getMethodParameter(): MethodParameter? = this.parameter
 
     /**
      * 获取方法参数/字段上的注解列表
      */
-    open fun getAnnotations(): Array<Annotation> {
-        return if (field != null) field.annotations else parameter!!.getAnnotations()
-    }
+    open fun getAnnotations(): Array<Annotation> =
+        if (field != null) field.annotations else parameter!!.getAnnotations()
 
     /**
      * 获取指定的注解，如果是一个方法参数，那么从方法参数当中获取注解；如果是一个字段，从字段当中获取注解
@@ -60,11 +61,18 @@ private constructor(
     }
 
     /**
+     * 初始化参数名发现器
+     *
+     * @param parameterNameDiscoverer 要指定的ParameterNameDiscoverer；可以为null
+     */
+    open fun initParameterNameDiscoverer(parameterNameDiscoverer: ParameterNameDiscoverer?) {
+        this.parameterNameDiscoverer = parameterNameDiscoverer
+    }
+
+    /**
      * 获取泛型的类型，如果是一个方法参数，那么获取方法参数的泛型；如果是一个字段，那么获取字段的泛型类型
      */
-    open fun getGenericType(): Type {
-        return parameter?.getGenericParameterType() ?: field!!.genericType
-    }
+    open fun getGenericType(): Type = parameter?.getGenericParameterType() ?: field!!.genericType
 
     // 获取containingClass
     open fun getContainingClass(): Class<*>? = containingClass
@@ -90,7 +98,6 @@ private constructor(
 
     // 该依赖，是否是必要的？(required=true？)
     open fun isRequired() = required
-
     open fun isEager(): Boolean = eager
 
     /**

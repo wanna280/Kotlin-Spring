@@ -1,10 +1,7 @@
 package com.wanna.framework.context.processor.beans.internal
 
 import com.wanna.framework.beans.factory.config.EmbeddedValueResolver
-import com.wanna.framework.context.ApplicationContextAware
-import com.wanna.framework.context.ApplicationEventPublisherAware
-import com.wanna.framework.context.ConfigurableApplicationContext
-import com.wanna.framework.context.EmbeddedValueResolverAware
+import com.wanna.framework.context.*
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.EnvironmentAware
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
@@ -47,6 +44,9 @@ open class ApplicationContextAwareProcessor(private var applicationContext: Conf
         }
         if (bean is EmbeddedValueResolverAware) {
             bean.setEmbeddedValueResolver(this.embeddedValueResolver)
+        }
+        if (bean is ApplicationStartupAware) {
+            bean.setApplicationStartup(this.applicationContext.getApplicationStartup())
         }
     }
 }

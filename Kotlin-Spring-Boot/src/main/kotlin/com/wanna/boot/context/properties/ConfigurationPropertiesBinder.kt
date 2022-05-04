@@ -58,7 +58,6 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
         // 获取@ConstructorBinding注解匹配的构造器
         val bindConstructor = ConfigurationPropertiesBindConstructorProvider.INSTANCE.getBindConstructor(beanType)!!
         val parameters = bindConstructor.parameters
-        println(parameters[0].name)
         return Any()
     }
 

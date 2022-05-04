@@ -18,6 +18,7 @@ import com.wanna.framework.context.processor.beans.InstantiationAwareBeanPostPro
 import com.wanna.framework.context.processor.beans.MergedBeanDefinitionPostProcessor
 import com.wanna.framework.context.processor.beans.SmartInstantiationAwareBeanPostProcessor
 import com.wanna.framework.core.convert.ConversionService
+import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.core.util.BeanFactoryUtils
 import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.core.util.StringUtils
@@ -59,9 +60,16 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
     // BeanPostProcessorCache
     private var beanPostProcessorCache: BeanPostProcessorCache? = null
 
+    // applicationStartup
+    private var applicationStartup: ApplicationStartup? = null
+
     override fun getBeanClassLoader() = this.beanClassLoader
     override fun setBeanClassLoader(classLoader: ClassLoader?) {
         this.beanClassLoader = classLoader ?: ClassLoader.getSystemClassLoader()
+    }
+
+    open fun setApplicationContextStartup(applicationStartup: ApplicationStartup) {
+        this.applicationStartup = applicationStartup
     }
 
     /**
@@ -117,35 +125,43 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         // 如果从单例Bean注册中心当中获取不到Bean实例，那么需要获取MergedBeanDefinition，去完成Bean的创建
         val mbd = getMergedBeanDefinition(beanName)
 
-        // 如果Bean是单例的
-        if (mbd.isSingleton()) {
-            beanInstance = getSingleton(beanName, object : ObjectFactory<Any> {
-                override fun getObject(): Any {
-                    try {
-                        return createBean(beanName, mbd)!!
-                    } catch (ex: Exception) {
-                        throw BeansException("Create bean instance of [$beanName] failed，原因是[${ex.message}]")
+        val beanCreation = this.applicationStartup!!.start("spring.beans.instantiate").tag("beanName", name)
+
+        try {
+            // 如果Bean是单例的
+            if (mbd.isSingleton()) {
+                beanInstance = getSingleton(beanName, object : ObjectFactory<Any> {
+                    override fun getObject(): Any {
+                        try {
+                            return createBean(beanName, mbd)!!
+                        } catch (ex: Exception) {
+                            throw BeansException("Create bean instance of [$beanName] failed，原因是[${ex.message}]")
+                        }
                     }
-                }
-            })
+                })
 
-            // 如果Bean是Prototype的
-        } else if (mbd.isPrototype()) {
-            beanInstance = createBean(beanName, mbd)
+                // 如果Bean是Prototype的
+            } else if (mbd.isPrototype()) {
+                beanInstance = createBean(beanName, mbd)
 
-            // 如果Bean是来自于自定义的Scope，那么需要从自定义的Scope当中去获取Bean
-        } else {
-            val scopeName = mbd.getScope()
-            assert(scopeName.isNotBlank()) { "[beanName=$beanName]的BeanDefinition的scopeName不能为空" }
-            val scope = this.scopes[scopeName]
-            checkNotNull(scope) { "容器中没有注册过这样的Scope" }
-            val scopedInstance = scope.get(beanName, object : ObjectFactory<Any> {
-                override fun getObject(): Any {
-                    return createBean(beanName, mbd)
-                        ?: throw BeansException("Create bean instance of [$beanName] failed")
-                }
-            })
-            beanInstance = getObjectForBeanInstance(scopedInstance, beanName, beanName, mbd)
+                // 如果Bean是来自于自定义的Scope，那么需要从自定义的Scope当中去获取Bean
+            } else {
+                val scopeName = mbd.getScope()
+                assert(scopeName.isNotBlank()) { "[beanName=$beanName]的BeanDefinition的scopeName不能为空" }
+                val scope = this.scopes[scopeName]
+                checkNotNull(scope) { "容器中没有注册过这样的Scope" }
+                val scopedInstance = scope.get(beanName, object : ObjectFactory<Any> {
+                    override fun getObject(): Any {
+                        return createBean(beanName, mbd)
+                            ?: throw BeansException("Create bean instance of [$beanName] failed")
+                    }
+                })
+                beanInstance = getObjectForBeanInstance(scopedInstance, beanName, beanName, mbd)
+            }
+        } catch (ex: Exception) {
+            throw ex
+        } finally {
+            beanCreation.end()
         }
 
         return beanInstance

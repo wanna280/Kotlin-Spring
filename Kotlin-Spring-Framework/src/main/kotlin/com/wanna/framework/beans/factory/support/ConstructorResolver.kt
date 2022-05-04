@@ -1,10 +1,12 @@
 package com.wanna.framework.beans.factory.support
 
-import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import com.wanna.framework.beans.factory.config.ConstructorArgumentValues
-import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.BeanWrapper
 import com.wanna.framework.beans.BeanWrapperImpl
+import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.beans.factory.config.ConstructorArgumentValues
+import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
+import com.wanna.framework.core.MethodParameter
+import java.beans.ConstructorProperties
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
 import java.lang.reflect.Method
@@ -18,7 +20,11 @@ import java.lang.reflect.Method
  */
 open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableBeanFactory) {
 
-    private val EMPTY_ARGS = emptyArray<Any>()
+    companion object {
+        // 空参数的标识符
+        private val EMPTY_ARGS = emptyArray<Any>()
+    }
+
 
     /**
      * 使用Constructor去完成Bean的实例化和自动注入，需要从候选的构造器当中，选出合适的构造器，如果没有合适的构造器，那么需要自己解析出来合适的构造器
@@ -34,7 +40,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
     ): BeanWrapper {
         val beanWrapper = BeanWrapperImpl()
 
-        var constructorToUse: Constructor<*>? = null
+        var constructorToUse: Constructor<*>?
         var argsToUse: Array<out Any?>? = null
         var argsToResolve: Array<out Any?>? = null
 
@@ -85,16 +91,18 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
                     constructorToUse = it
                 }
             }
-
             if (constructorToUse != null) {
+                // 从beanFactory当中去获取参数名的发现器，去提供参数名的发现的支持
+                val parameterNameDiscoverer = this.beanFactory.getParameterNameDiscoverer()
+
+                // 如果必要的话，从JDK当中提供的@ConstructorProperties注解当中去寻找
+                val cp = constructorToUse!!.getAnnotation(ConstructorProperties::class.java)
+                val parameterNames: Array<String>? =
+                    cp?.value ?: parameterNameDiscoverer?.getParameterNames(constructorToUse!!)
+
                 argsToUse = createArgumentArray(
-                    beanName,
-                    mbd,
-                    beanWrapper,
-                    null,
-                    constructorToUse!!.parameterTypes,
-                    null,
-                    constructorToUse!!
+                    beanName, mbd, beanWrapper, null,
+                    constructorToUse!!.parameterTypes, parameterNames, constructorToUse!!
                 )
             }
         }
@@ -115,6 +123,8 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
 
     /**
      * 使用FactoryMethod去执行目标方法完成实例化，并完成方法的自动注入
+     *
+     * @see RootBeanDefinition.factoryMethodToIntrospect
      */
     open fun instantiateUsingFactoryMethod(beanName: String, mbd: RootBeanDefinition): BeanWrapper {
         val beanWrapper = BeanWrapperImpl()
@@ -133,17 +143,14 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
             factoryClass = factoryBean::class.java
         }
 
+        val parameterNameDiscoverer = this.beanFactory.getParameterNameDiscoverer()
+        val parameterNames = parameterNameDiscoverer?.getParameterNames(resolvedFactoryMethod!!)
+
         // 创建执行目标方法需要用到的参数数组
         val argumentArray = createArgumentArray(
-            beanName,
-            mbd,
-            beanWrapper,
-            mbd.getConstructorArgumentValues(),
-            resolvedFactoryMethod!!.parameterTypes,
-            null,
-            resolvedFactoryMethod,
-            true
-        ) ?: emptyArray()
+            beanName, mbd, beanWrapper, mbd.getConstructorArgumentValues(),
+            resolvedFactoryMethod!!.parameterTypes, parameterNames, resolvedFactoryMethod, true
+        )
 
         // 使用BeanFactory提供的实例化策略，去完成实例化
         var instance = beanFactory.getInstantiationStrategy().instantiate(
@@ -169,7 +176,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
      * @param paramTypes 参数类型列表
      * @param paramNames 参数名列表(可以为空)
      * @param executable 方法/构造器
-     * @param autowiring 是否要进行自动注入？
+     * @param autowiring 在构造器参数当中找不到合适的参数时，是否要进行自动注入？
      */
     private fun createArgumentArray(
         beanName: String,
@@ -180,15 +187,11 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
         paramNames: Array<String>?,
         executable: Executable,
         autowiring: Boolean = true
-    ): Array<out Any?>? {
-        // 创建一个参数数组(Array<Any?>)
-        val params: Array<Any?> = Array(paramTypes.size) { null }
-        // 遍历所有的参数，完成依赖的解析
-        for (i in 0 until paramTypes.size) {
-            val methodParameter = com.wanna.framework.core.MethodParameter(executable, i)
-            val resolvedDependency =
-                beanFactory.resolveDependency(DependencyDescriptor(methodParameter, true), beanName)
-            params[i] = resolvedDependency
+    ): Array<Any?> {
+        // 创建一个参数数组(Array<Any?>)，去获取到方法需要的参数列表
+        val params: Array<Any?> = Array(paramTypes.size) {
+            val methodParameter = MethodParameter(executable, it)
+            beanFactory.resolveDependency(DependencyDescriptor(methodParameter, true), beanName)  // return
         }
         return params
     }

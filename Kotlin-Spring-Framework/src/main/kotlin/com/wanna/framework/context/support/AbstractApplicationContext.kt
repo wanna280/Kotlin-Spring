@@ -4,7 +4,11 @@ import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.beans.util.StringValueResolver
 import com.wanna.framework.context.*
+import com.wanna.framework.context.ConfigurableApplicationContext.Companion.APPLICATION_STARTUP_BEANM_NAME
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.CONVERSION_SERVICE_BEAN_NAME
+import com.wanna.framework.context.ConfigurableApplicationContext.Companion.ENVIRONMENT_BEAN_NAME
+import com.wanna.framework.context.ConfigurableApplicationContext.Companion.SYSTEM_ENVIRONMENT_BEAN_NAME
+import com.wanna.framework.context.ConfigurableApplicationContext.Companion.SYSTEM_PROPERTIES_BEAN_NAME
 import com.wanna.framework.context.event.*
 import com.wanna.framework.context.exception.BeansException
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
@@ -14,6 +18,7 @@ import com.wanna.framework.context.processor.factory.BeanFactoryPostProcessor
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.StandardEnvironment
+import com.wanna.framework.core.metrics.ApplicationStartup
 
 
 /**
@@ -31,7 +36,7 @@ import com.wanna.framework.core.environment.StandardEnvironment
 abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     companion object {
         const val APPLICATION_EVENT_MULTICASTER_BEAN_NAME = "applicationEventMulticaster"  // EventMulticaster的beanName
-        const val LIFECYCLE_PROCESSOR_BEAN_NAME = "lifeProcessor";  // LifeCycleProcessor的beanName
+        const val LIFECYCLE_PROCESSOR_BEAN_NAME = "lifeProcessor"  // LifeCycleProcessor的beanName
     }
 
     // ApplicationContext的环境信息，保存了配置文件、系统环境、系统属性等信息
@@ -62,8 +67,12 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     // 生命周期处理器
     private var lifecycleProcessor: LifecycleProcessor? = null
 
+    // ApplicationStartup，记录Spring应用启动过程当中的步骤信息
+    private var applicationStartup: ApplicationStartup = ApplicationStartup.DEFAULT
+
     override fun refresh() {
         synchronized(this.startupShutdownMonitor) {
+            val contextRefresh = this.applicationStartup.start("spring.context.refresh") // start context refresh
             // 准备完成容器的刷新工作，创建好早期监听器和早期事件列表、初始化PropertySources
             prepareRefresh()
 
@@ -77,11 +86,14 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
                 // BeanFactory的后置处理工作，是一个钩子方法，交给子类去进行完成
                 postProcessBeanFactory(beanFactory)
 
+                val postProcess =
+                    this.applicationStartup.start("spring.context.beans.post-process")  // start post process
                 // 执行已经注册到ApplicationContext当中的所有的BeanFactoryPostProcessor
                 invokeBeanFactoryPostProcessors(beanFactory)
 
                 // 把到容器当中的BeanPostProcessor的BeanDefinition去完成实例化，并注册到beanFactory当中
                 registerBeanPostProcessors(beanFactory)
+                postProcess.end()  // end postProcess
 
                 // 初始化事件多播器，如果容器当中有合适的ApplicationEventMulticaster的话，那么使用自定义的；
                 // 不然采用默认的SimpleApplicationEventMulticaster作为事件多拨器并注册到beanFactory当中
@@ -104,6 +116,8 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
                 finishRefresh()
             } catch (ex: BeansException) {
                 throw BeansException("初始化容器出错，原因是--->${ex.message}", ex)
+            } finally {
+                contextRefresh.end()  // end context refresh
             }
         }
     }
@@ -208,7 +222,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
      * 完成BeanFactory的准备工作，给BeanFactory当中添加一些相关的依赖
      */
     protected open fun prepareBeanFactory(beanFactory: ConfigurableListableBeanFactory) {
-        // 给容器中注册可以被解析的依赖，包括BeanFactory，Application，ApplicationEventPublisher等
+        // 给容器中注册可以被解析的依赖，包括BeanFactory，Application，ApplicationEventPublisher等，支持去进行Autowire
         beanFactory.registerResolvableDependency(BeanFactory::class.java, beanFactory)
         beanFactory.registerResolvableDependency(ApplicationContext::class.java, this)
         beanFactory.registerResolvableDependency(ApplicationEventPublisher::class.java, this)
@@ -218,6 +232,23 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
 
         // 添加ApplicationListener的Detector，完成EventListener的探测和注册
         this.addBeanPostProcessor(ApplicationListenerDetector(this))
+
+        // 注册ApplicationContext的环境对象到beanFactory当中
+        if (!containsBeanDefinition(ENVIRONMENT_BEAN_NAME)) {
+            beanFactory.registerSingleton(ENVIRONMENT_BEAN_NAME, getEnvironment())
+        }
+        // 注册系统属性对象到beanFactory当中
+        if (!containsBeanDefinition(SYSTEM_PROPERTIES_BEAN_NAME)) {
+            beanFactory.registerSingleton(SYSTEM_PROPERTIES_BEAN_NAME, getEnvironment().getSystemProperties())
+        }
+        // 注册系统环境对象到beanFactory当中
+        if (!containsBeanDefinition(SYSTEM_ENVIRONMENT_BEAN_NAME)) {
+            beanFactory.registerSingleton(SYSTEM_ENVIRONMENT_BEAN_NAME, getEnvironment().getSystemEnvironment())
+        }
+        // 把ApplicationStartup对象设置到beanFactory当中
+        if (!containsBeanDefinition(APPLICATION_STARTUP_BEANM_NAME)) {
+            beanFactory.registerSingleton(APPLICATION_STARTUP_BEANM_NAME,getApplicationStartup())
+        }
     }
 
     /**
@@ -332,12 +363,10 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     }
 
     override fun publishEvent(event: Any) {
-        val applicationEvent: ApplicationEvent?
-        if (event is ApplicationEvent) {
-            applicationEvent = event
-        } else {
-            applicationEvent = PayloadApplicationEvent(this, event)
-        }
+        // 如果要发布的事件对象不是ApplicationEvent，需要使用PayloadApplicationEvent去进行包装一层
+        val applicationEvent: ApplicationEvent =
+            if (event is ApplicationEvent) event
+            else PayloadApplicationEvent(this, event)
 
         // 如果早期事件不为空，那么加入到早期事件列表当中(此时事件多拨器还没准备好，就需要一个容器去保存早期的事件)
         // 等到ApplicationEventMulticaster已经准备好了，那么就可以使用ApplicationEventMulticaster去完成事件的发布了
@@ -386,7 +415,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     open fun getBeanFactoryPostProcessors(): List<BeanFactoryPostProcessor> = this.beanFactoryPostProcessors
     open fun getLifecycleProcessor(): LifecycleProcessor = this.lifecycleProcessor!!
     override fun getParent(): ApplicationContext? = this.parent
-
+    override fun getApplicationStartup() = this.applicationStartup
     override fun getBeanNamesForTypeIncludingAncestors(type: Class<*>) =
         getBeanFactory().getBeanNamesForTypeIncludingAncestors(type)
 
@@ -395,5 +424,9 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
 
     override fun setParent(parent: ApplicationContext) {
         this.parent = parent
+    }
+
+    override fun setApplicationStartup(applicationStartup: ApplicationStartup) {
+        this.applicationStartup = applicationStartup
     }
 }

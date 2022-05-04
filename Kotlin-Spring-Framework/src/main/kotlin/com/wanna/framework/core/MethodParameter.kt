@@ -121,4 +121,14 @@ open class MethodParameter(
      */
     open fun getParameterTypes(): Array<Class<*>> = executable.parameterTypes
 
+    companion object {
+        /**
+         * 提供静态方法，为Executable去构建MethodParameter
+         */
+        @JvmStatic
+        fun forExecutable(executable: Executable, parameterIndex: Int): MethodParameter {
+            return MethodParameter(executable, parameterIndex)
+        }
+    }
+
 }

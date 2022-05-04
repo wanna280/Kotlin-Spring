@@ -11,6 +11,8 @@ import com.wanna.framework.beans.factory.ObjectFactory
 import com.wanna.framework.beans.BeanWrapperImpl
 import com.wanna.framework.context.aware.BeanNameAware
 import com.wanna.framework.context.exception.BeanCreationException
+import com.wanna.framework.core.DefaultParameterNameDiscoverer
+import com.wanna.framework.core.ParameterNameDiscoverer
 import com.wanna.framework.core.util.ReflectionUtils
 import java.lang.reflect.Constructor
 import java.util.function.Supplier
@@ -21,7 +23,7 @@ import java.util.function.Supplier
 abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), AutowireCapableBeanFactory {
 
     // 是否开启了循环依赖？默认设置为true
-    var allowCircularReferences: Boolean = true
+    private var allowCircularReferences: Boolean = true
 
     /**
      * 指定Bean的实例化策略，目前支持的策略，包括简单的策略/Cglib的策略
@@ -31,12 +33,8 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
      */
     private var instantiationStrategy: InstantiationStrategy = CglibSubclassingInstantiationStrategy()
 
-    /**
-     * 获取实例化策略，提供对无参构造器/FactoryMethod/以及指定的候选构造器等多种方式对Bean去进行实例化的方式
-     */
-    open fun getInstantiationStrategy(): InstantiationStrategy {
-        return this.instantiationStrategy
-    }
+    // 参数名发现器，支持去进行方法/构造器的参数名列表的获取
+    private var parameterNameDiscoverer: ParameterNameDiscoverer? = DefaultParameterNameDiscoverer()
 
     override fun createBean(beanName: String, mbd: RootBeanDefinition): Any? {
         // 如果实例之前的BeanPostProcessor已经return 非空，产生出来一个对象了，那么需要完成初始化工作...
@@ -422,5 +420,27 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
             result = current
         }
         return result
+    }
+
+    /**
+     * 获取实例化策略，提供对无参构造器/FactoryMethod/以及指定的候选构造器等多种方式对Bean去进行实例化的方式
+     */
+    open fun getInstantiationStrategy(): InstantiationStrategy = this.instantiationStrategy
+
+    /**
+     * 获取BeanFactory当中的参数名发现器，可以去完成参数名的发现
+     *
+     * @see ParameterNameDiscoverer
+     */
+    open fun getParameterNameDiscoverer(): ParameterNameDiscoverer? = this.parameterNameDiscoverer
+
+    open fun setParameterNameDiscovery(parameterNameDiscoverer: ParameterNameDiscoverer?) {
+        this.parameterNameDiscoverer = parameterNameDiscoverer
+    }
+
+    open fun isAllowCircularReferences(): Boolean = this.allowCircularReferences
+
+    open fun setAllowCircularReferences(allowCircularReferences: Boolean) {
+        this.allowCircularReferences = allowCircularReferences
     }
 }
