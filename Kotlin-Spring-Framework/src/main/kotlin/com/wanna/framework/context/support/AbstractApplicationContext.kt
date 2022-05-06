@@ -4,9 +4,10 @@ import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.beans.util.StringValueResolver
 import com.wanna.framework.context.*
-import com.wanna.framework.context.ConfigurableApplicationContext.Companion.APPLICATION_STARTUP_BEANM_NAME
+import com.wanna.framework.context.ConfigurableApplicationContext.Companion.APPLICATION_STARTUP_BEAN_NAME
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.CONVERSION_SERVICE_BEAN_NAME
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.ENVIRONMENT_BEAN_NAME
+import com.wanna.framework.context.ConfigurableApplicationContext.Companion.LOAD_TIME_WEAVER_BEAN_NAME
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.SYSTEM_ENVIRONMENT_BEAN_NAME
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.SYSTEM_PROPERTIES_BEAN_NAME
 import com.wanna.framework.context.event.*
@@ -15,6 +16,7 @@ import com.wanna.framework.context.processor.beans.BeanPostProcessor
 import com.wanna.framework.context.processor.beans.internal.ApplicationContextAwareProcessor
 import com.wanna.framework.context.processor.beans.internal.ApplicationListenerDetector
 import com.wanna.framework.context.processor.factory.BeanFactoryPostProcessor
+import com.wanna.framework.context.weaving.LoadTimeWeaverAwareProcessor
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.StandardEnvironment
@@ -178,10 +180,18 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     abstract override fun getBeanFactory(): ConfigurableListableBeanFactory
 
     /**
-     * 完成BeanFactoryPostProcessor的执行
+     * 完成BeanFactoryPostProcessor的执行，完成BeanDefinition的加载以及BeanFactory的后置处理工作
+     *
+     * @param beanFactory BeanFactory
      */
     protected open fun invokeBeanFactoryPostProcessors(beanFactory: ConfigurableListableBeanFactory) {
         PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, beanFactoryPostProcessors)
+
+        // 因为完成了BeanFactoryPostProcessor的执行，因此可能还会往容器当中注册一些Bean，其中就可能包含LoadTimeWeaver的Bean
+        // 因此这里还需要去进行一次检测，如果容器当中包含了LoadTimeWeaver的Bean，那么这里需要添加LoadTimeWeaverAware的处理器
+        if (containsBeanDefinition(LOAD_TIME_WEAVER_BEAN_NAME)) {
+            beanFactory.addBeanPostProcessor(LoadTimeWeaverAwareProcessor(beanFactory))
+        }
     }
 
     /**
@@ -233,6 +243,11 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
         // 添加ApplicationListener的Detector，完成EventListener的探测和注册
         this.addBeanPostProcessor(ApplicationListenerDetector(this))
 
+        // 如果容器当中包含了LoadTimeWeaver的Bean，那么需要添加LoadTimeWeaverAware的处理器
+        if (containsBeanDefinition(LOAD_TIME_WEAVER_BEAN_NAME)) {
+            beanFactory.addBeanPostProcessor(LoadTimeWeaverAwareProcessor(beanFactory))
+        }
+
         // 注册ApplicationContext的环境对象到beanFactory当中
         if (!containsBeanDefinition(ENVIRONMENT_BEAN_NAME)) {
             beanFactory.registerSingleton(ENVIRONMENT_BEAN_NAME, getEnvironment())
@@ -246,8 +261,8 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
             beanFactory.registerSingleton(SYSTEM_ENVIRONMENT_BEAN_NAME, getEnvironment().getSystemEnvironment())
         }
         // 把ApplicationStartup对象设置到beanFactory当中
-        if (!containsBeanDefinition(APPLICATION_STARTUP_BEANM_NAME)) {
-            beanFactory.registerSingleton(APPLICATION_STARTUP_BEANM_NAME,getApplicationStartup())
+        if (!containsBeanDefinition(APPLICATION_STARTUP_BEAN_NAME)) {
+            beanFactory.registerSingleton(APPLICATION_STARTUP_BEAN_NAME, getApplicationStartup())
         }
     }
 

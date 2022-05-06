@@ -31,13 +31,15 @@ import java.util.concurrent.ConcurrentHashMap
 open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDefinitionRegistry,
     AbstractAutowireCapableBeanFactory() {
 
-    // beanDefinitionMap
-    private val beanDefinitionMap = HashMap<String, BeanDefinition>()
+    // beanDefinitionMap，使用ConcurrentHashMap去保证线程安全，也会作为操作BeanDefinition的锁对象
+    private val beanDefinitionMap = ConcurrentHashMap<String, BeanDefinition>()
 
-    // beanDefinitionNames
-    private val beanDefinitionNames = HashSet<String>()
+    // beanDefinitionNames，采用的是ArrayList去进行存储
+    // 实际上得采用写时复制的原则去进行操作，保证使用方可以更加安全地去完成迭代
+    // 在添加元素/删除元素时，都得新复制一份数据并进行修改，接着重新设置引用，就不影响使用方进行的迭代
+    private var beanDefinitionNames = ArrayList<String>()
 
-    // 这是一个依赖的比较器，可以通过beanFactory去进行获取
+    // 这是一个依赖的比较器，可以通过beanFactory去进行获取，可以基于比较规则，对依赖去完成排序
     private var dependencyComparator: Comparator<Any?>? = null
 
     // 这是一个可以被解析的依赖，加入到这个Map当中的依赖可以进行Autowire，一般这里会注册BeanFactory，ApplicationContext等
@@ -46,13 +48,10 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     // 这是用来处理Autowire的候选的依赖注入的Bean的解析器
     private var autowireCandidateResolver: AutowireCandidateResolver = SimpleAutowireCandidateResolver.INSTANCE
 
-    // 已经注册的 singletonObject的beanName
+    // 已经注册的 singletonObject的beanName列表，在这里进行维护
+    // 不然通过registerSingleton操作对单例Bean进行注册时，后续要对它去进行匹配时，没有办法找到该对象
+    // 因此这里就需要维护一个列表，方便后期去进行类型的匹配，比如解析Autowire依赖的时候，就会对这个列表去进行匹配
     private val manualSingletonNames = LinkedHashSet<String>()
-
-    override fun registerBeanDefinition(name: String, beanDefinition: BeanDefinition) {
-        beanDefinitionNames += name
-        beanDefinitionMap[name] = beanDefinition
-    }
 
     /**
      * 按照类型去注入一个可以被解析的依赖
@@ -65,7 +64,10 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * 预实例化所有的单例Bean，在这里会完成后容器中所有非懒加载的单实例Bean的实例化和初始化工作
      */
     override fun preInstantiateSingletons() {
-        ArrayList(beanDefinitionNames).forEach { beanName ->
+        // copy一份BeanDefinitionNames去进行实例化，避免在初始化过程当中又遇到了新注册进来的BeanDefinition的情况，这时候会出现并发修改异常
+        val beanDefinitionNames = ArrayList(this.beanDefinitionNames)
+
+        beanDefinitionNames.forEach { beanName ->
             val mbd: RootBeanDefinition = getMergedBeanDefinition(beanName)
             // 如果该Bean是单例的、非抽象的、非懒加载的
             if (mbd.isSingleton() && !mbd.isAbstract() && !mbd.isLazyInit()) {
@@ -90,7 +92,11 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         beanDefinitionNames.forEach {
             val singleton = getSingleton(it, false)
             if (singleton is SmartInitializingSingleton) {
+                val smartInitialize = this.getApplicationStartup()
+                    .start("spring.beans.smart-initialize") // start initialize
+                    .tag("beanName", it)  // tag beanName
                 singleton.afterSingletonsInstantiated()
+                smartInitialize.end() // end
             }
         }
     }
@@ -381,20 +387,71 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
     override fun getBeanDefinitionCount() = beanDefinitionNames.size
     private fun transformBeanName(beanName: String) = BeanFactoryUtils.transformBeanName(beanName)
-    override fun getBeanDefinition(beanName: String) = beanDefinitionMap[beanName]
     override fun getBeanDefinitionNames() = ArrayList(beanDefinitionNames)
     override fun getBeanDefinitions() = ArrayList(beanDefinitionMap.values)
     override fun getBeanDefinitionCounts() = beanDefinitionNames.size
-    override fun containsBeanDefinition(name: String) = beanDefinitionMap[name] != null
     open fun getDependencyComparator() = dependencyComparator
 
+    /**
+     * 是否包含了BeanDefinition？
+     */
+    override fun containsBeanDefinition(name: String) = beanDefinitionNames.contains(name)
+
+    /**
+     * 获取BeanDefinition，一定能获取到，如果获取不到直接抛出异常；
+     * 如果想要不抛出异常，请先使用containsBeanDefinition去进行判断该BeanDefinition是否存在
+     *
+     * @throws NoSuckBeanDefinitionException 如果没有找到这样的BeanDefinition异常
+     * @see containsBeanDefinition
+     */
+    override fun getBeanDefinition(beanName: String): BeanDefinition {
+        return beanDefinitionMap[beanName] ?: throw NoSuckBeanDefinitionException(beanName)
+    }
+
+    /**
+     * 移除BeanDefinition，需要拿到锁才能去对其进行操作，对BeanDefinitionNames列表去进行操作不是线程安全的
+     *
+     * @throws NoSuckBeanDefinitionException 如果没有根据name找到该BeanDefinition的话
+     */
     override fun removeBeanDefinition(name: String) {
-        this.beanDefinitionNames -= name
-        this.beanDefinitionMap -= name
+        beanDefinitionMap[name] ?: throw NoSuckBeanDefinitionException("没有这样的BeanDefinition[name=$name]")
+
+        synchronized(this.beanDefinitionMap) {
+
+            // copy一份原来的数据，不要动原来的数据，保证可以进行更加安全的迭代
+            val beanDefinitionNames = ArrayList(beanDefinitionNames)
+            beanDefinitionNames -= name
+            this.beanDefinitionNames = beanDefinitionNames
+            this.beanDefinitionMap -= name
+        }
+    }
+
+    /**
+     * 注册BeanDefinition，需要拿到锁才能去进行操作，对BeanDefinitionNames列表去进行操作不是线程安全的
+     */
+    override fun registerBeanDefinition(name: String, beanDefinition: BeanDefinition) {
+        val existBeanDefinition = this.beanDefinitionMap[name]
+        // 如果之前没有存在过，那么需要操作BeanDefinitionNames，需要加锁
+        if (existBeanDefinition == null) {
+            synchronized(this.beanDefinitionMap) {
+
+                // copy一份原来的数据，不要动原来的数据，保证可以进行更加安全的迭代
+                val beanDefinitionNames = ArrayList(beanDefinitionNames)
+                beanDefinitionNames += name
+                this.beanDefinitionNames = beanDefinitionNames
+                beanDefinitionMap[name] = beanDefinition
+            }
+
+            // 如果已经存在过的话，那么...
+        } else {
+            beanDefinitionMap[name] = beanDefinition
+        }
     }
 
     /**
      * 重写注册singleton方法，目的是添加singletonBeanName去进行保存
+     *
+     * @see manualSingletonNames
      */
     override fun registerSingleton(beanName: String, singleton: Any) {
         super.registerSingleton(beanName, singleton)
@@ -411,6 +468,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
                 beans[beanName] = getBean(beanName) as T
             }
         }
+
+        // 匹配已经注册的单实例Bean的列表
         this.manualSingletonNames.forEach {
             val singleton = getSingleton(it)
             if (type.isInstance(singleton)) {

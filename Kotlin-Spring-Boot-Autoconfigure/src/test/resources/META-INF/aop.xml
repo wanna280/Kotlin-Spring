@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE aspectj PUBLIC "-//AspectJ//DTD//EN" "http://www.eclipse.org/aspectj/dtd/aspectj.dtd">
+<aspectj>
+    <aspects>
+        <aspect name="com.wanna.boot.autoconfigure.UserAspect"/>
+    </aspects>
+    <weaver options="-verbose -showWeaveInfo -Xset:weaveJavaxPackages=false">
+        <include within="com.wanna.boot.autoconfigure.*"/>
+    </weaver>
+</aspectj>

@@ -10,7 +10,7 @@ interface Banner {
     fun printBanner(environment: Environment, sourceClass: Class<*>, printStream: PrintStream)
 
     /**
-     * 打印的模式枚举，包括Nonde/Console/Log三种方式
+     * 打印的模式枚举，包括No/Console/Log三种方式
      */
     enum class Mode {
         NO, CONSOLE, LOG;

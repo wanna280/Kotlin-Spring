@@ -22,7 +22,7 @@ open class LogcLogger() : Logger {
     }
 
     // loggerContext
-    private var loggerContext: LoggerContext? = null
+    private var abstractLoggerContext: AbstractLoggerContext<out LogcLogger>? = null
 
     // parent Logger
     private var parent: LogcLogger? = null
@@ -34,13 +34,17 @@ open class LogcLogger() : Logger {
     private var loggerName = this::class.java.name
 
     // Logger自身的Level
-    var level = Level.INFO
+    private var level = Level.INFO
 
     // Appender，使用输出流的方式，将日志输出到对应的位置，比如Console/LogFile
     private var appenderList = CopyOnWriteArrayList<LoggerAppender>()
 
     fun addAppender(appender: LoggerAppender) {
         appenderList += appender
+    }
+
+    open fun setLevel(level: Level) {
+        this.level = level
     }
 
     override fun info(msg: String) {
@@ -65,7 +69,7 @@ open class LogcLogger() : Logger {
 
     private fun filterAndLog(level: Level, msg: Any?) {
         // 让LoggerFilter去决策本次日志，是否要进行输出
-        val reply = loggerContext!!.filterList.getFilterChainDecisionReply(this, level, msg, emptyArray(), null)
+        val reply = abstractLoggerContext!!.filterList.getFilterChainDecisionReply(this, level, msg, emptyArray(), null)
 
         // 如果最终的结果是DENY的话，那么需要拒绝，不进行本次日志的输出，return
         if (reply == FilterReply.DENY) {
@@ -104,7 +108,7 @@ open class LogcLogger() : Logger {
     /**
      * 通过name去获取childLogger
      */
-    fun getChildByName(name: String): LogcLogger? {
+    open fun getChildByName(name: String): LogcLogger? {
         for (child in children) {
             if (child.getLoggerName() == name) {
                 return child
@@ -116,11 +120,11 @@ open class LogcLogger() : Logger {
     /**
      * 根据name去创建childLogger，并加入到当前的Logger的children列表当中去
      */
-    fun createChildByName(name: String): LogcLogger {
+    open fun createChildByName(name: String): LogcLogger {
         // 创建一个Logger，并设置parent为this
-        val logcLogger = LogcLogger(name)
+        val logcLogger = this.abstractLoggerContext!!.newLogger()
         logcLogger.setParent(this)
-        logcLogger.setLoggerContext(this.loggerContext!!)
+        logcLogger.setLoggerContext(this.abstractLoggerContext!!)
         logcLogger.level = this.level
 
         children += logcLogger
@@ -133,6 +137,18 @@ open class LogcLogger() : Logger {
 
     override fun isTraceEnabled(): Boolean {
         return level.level <= Level.TRACE.level
+    }
+
+    override fun isInfoEnabled(): Boolean {
+        return level.level <= Level.INFO.level
+    }
+
+    override fun isWarnEnabled(): Boolean {
+        return level.level <= Level.WARN.level
+    }
+
+    override fun isErrorEnabled(): Boolean {
+        return level.level <= Level.ERROR.level
     }
 
     override fun getLoggerName(): String {
@@ -155,8 +171,8 @@ open class LogcLogger() : Logger {
         this.loggerName = name
     }
 
-    fun setLoggerContext(context: LoggerContext) {
-        this.loggerContext = context
+    fun setLoggerContext(context: AbstractLoggerContext<out LogcLogger>) {
+        this.abstractLoggerContext = context
     }
 
     override fun toString(): String {

@@ -9,7 +9,7 @@ import com.wanna.logger.api.spi.LoggerFactoryBinder
  */
 class StaticLoggerBinder : LoggerFactoryBinder {
 
-    private val defaultLoggerContext = LoggerContext()
+    private val defaultAbstractLoggerContext = DefaultLoggerContext()
 
     companion object {
 
@@ -31,11 +31,11 @@ class StaticLoggerBinder : LoggerFactoryBinder {
      * 完成LoggerContext的初始化工作
      */
     fun init() {
-        ContextInitializer(defaultLoggerContext).autoConfig()
+        ContextInitializer(defaultAbstractLoggerContext).autoConfig()
     }
 
     override fun getLoggerFactory(): ILoggerFactory {
-        return defaultLoggerContext
+        return defaultAbstractLoggerContext
     }
 
     override fun getLoggerFactoryClassStr(): String {

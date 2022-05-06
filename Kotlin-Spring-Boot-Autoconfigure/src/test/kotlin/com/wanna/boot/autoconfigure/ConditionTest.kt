@@ -7,10 +7,12 @@ import com.wanna.boot.context.properties.ConstructorBinding
 import com.wanna.boot.context.properties.EnableConfigurationProperties
 import com.wanna.boot.web.server.WebServer
 import com.wanna.framework.context.stereotype.Component
-import com.wanna.framework.core.DefaultParameterNameDiscoverer
-import com.wanna.framework.core.KotlinReflectionParameterNameDiscoverer
-import com.wanna.framework.core.LocalVariableTableParameterNameDiscoverer
-import java.util.Arrays
+import com.wanna.framework.context.weaving.AspectJWeavingEnabler
+import com.wanna.framework.instrument.classloading.InstrumentationLoadTimeWeaver
+import org.aspectj.lang.annotation.After
+import org.aspectj.lang.annotation.Aspect
+import org.aspectj.lang.annotation.Before
+import org.aspectj.lang.annotation.Pointcut
 
 @ConditionOnMissingClass(value = ["com.wanna.boot.autoconfigure.MyReactiveWebServerFactory1"])
 @SpringBootApplication
@@ -43,14 +45,64 @@ class MyReactiveWebServerFactory : com.wanna.boot.web.reactive.server.ReactiveWe
     }
 }
 
-fun main(vararg args: String) {
-    val clazz = AutoConfigurationImportSelector::class.java
-    println(Package.getPackage("java.lang").implementationVersion)
-    clazz.declaredMethods.forEach {
-        val parameterNames = DefaultParameterNameDiscoverer().getParameterNames(it)
-        println(it.name + "-" + Arrays.toString(parameterNames))
+class MyClassLoader : ClassLoader() {
+    override fun loadClass(name: String?): Class<*> {
+        if (name == null) {
+            throw IllegalStateException("")
+        }
+        val stream = ClassLoader.getSystemClassLoader().getResourceAsStream(name.replace(".", "/") + ".class")
+        if (name.startsWith("com.wanna")) {
+            val readAllBytes = stream.readAllBytes()
+            return defineClass(name, readAllBytes, 0, readAllBytes.size)
+        }
+        return super.loadClass(name)
     }
 
-    val applicationContext = SpringApplication.run(ConditionTest::class.java, *args)
-    applicationContext.getBeansForType(Object::class.java).forEach(::println)
+    companion object {
+        val INSTANCE = MyClassLoader()
+    }
+}
+
+@Aspect
+open class UserAspect {
+    @Pointcut("execution(* com.wanna.boot.autoconfigure.UserService.*(..))")
+    fun pointcut() {
+    }
+
+    @Before("pointcut()")
+    fun before() {
+        println("-------before----------")
+    }
+
+    @After("pointcut()")
+    fun after() {
+        println("------after------")
+    }
+
+    companion object {
+        @JvmStatic
+        fun aspectOf(): UserAspect {
+            return UserAspect()
+        }
+    }
+}
+
+
+class UserService {
+    fun sayUser() {
+        println("HelloWorld")
+    }
+}
+
+fun main(vararg args: String) {
+    val loadTimeWeaver = InstrumentationLoadTimeWeaver(MyClassLoader.INSTANCE)
+    AspectJWeavingEnabler.enableAspectJWeaving(loadTimeWeaver, MyClassLoader.INSTANCE)
+
+    val clazz = MyClassLoader.INSTANCE.loadClass("com.wanna.boot.autoconfigure.UserService")
+    val instance = clazz.getDeclaredConstructor().newInstance()
+    val method = clazz.getMethod("sayUser")
+    method.invoke(instance)
+
+//    val applicationContext = SpringApplication.run(ConditionTest::class.java, *args)
+//    applicationContext.getBeansForType(Object::class.java).forEach(::println)
 }

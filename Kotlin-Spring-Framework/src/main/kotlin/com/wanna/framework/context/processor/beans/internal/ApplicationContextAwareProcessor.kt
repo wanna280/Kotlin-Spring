@@ -14,6 +14,7 @@ import com.wanna.framework.context.processor.beans.BeanPostProcessor
  * @see ApplicationContextAware
  * @see ApplicationEventPublisherAware
  * @see EmbeddedValueResolverAware
+ * @see ApplicationStartupAware
  */
 open class ApplicationContextAwareProcessor(private var applicationContext: ConfigurableApplicationContext) :
     BeanPostProcessor {

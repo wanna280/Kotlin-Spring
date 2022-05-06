@@ -6,11 +6,15 @@ import com.wanna.framework.context.annotation.BeanNameGenerator
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 
 /**
- * 这是一个BeanDefinition的Loader，负责完成BeanDefinition的加载
+ * 这是一个BeanDefinition的Loader，它内部继承了AnnotatedBeanDefinitionReader，去完成BeanDefinition的加载；
+ * 它注册是加载注册到SpringApplication当中的一些配置类的对象，比如primarySources等
  *
+ * @see SpringApplication.primarySources
  * @see AnnotatedBeanDefinitionReader
+ * @param registry BeanDefinitionRegistry
+ * @param sources 要注册的配置类列表
  */
-open class BeanDefinitionLoader(private val registry: BeanDefinitionRegistry, private val sources: Array<*>) {
+open class BeanDefinitionLoader(registry: BeanDefinitionRegistry, private val sources: Array<*>) {
 
     private var beanNameGenerator: BeanNameGenerator? = null
 

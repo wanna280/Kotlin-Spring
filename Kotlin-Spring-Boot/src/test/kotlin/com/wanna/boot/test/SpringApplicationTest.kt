@@ -1,5 +1,6 @@
 package com.wanna.boot.test
 
+import com.wanna.boot.ApplicationType
 import com.wanna.boot.SpringApplication
 import com.wanna.framework.context.annotation.Configuration
 
@@ -7,6 +8,8 @@ import com.wanna.framework.context.annotation.Configuration
 class App
 
 fun main(vararg args: String) {
-    val applicationContext = SpringApplication.run(App::class.java, *args)
+    val springApplication = SpringApplication(App::class.java)
+    springApplication.setApplicationType(ApplicationType.NONE)
+    val applicationContext = springApplication.run(*args)
     println(applicationContext.getBeanDefinitionNames())
 }

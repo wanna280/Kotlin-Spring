@@ -1,4 +1,4 @@
-package com.wanna.boot.web
+package com.wanna.boot.test
 
 import com.wanna.boot.SpringApplication
 import com.wanna.boot.SpringBootConfiguration

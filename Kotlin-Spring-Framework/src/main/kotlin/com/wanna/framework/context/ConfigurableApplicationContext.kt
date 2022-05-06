@@ -16,7 +16,8 @@ interface ConfigurableApplicationContext : ApplicationContext {
         const val ENVIRONMENT_BEAN_NAME = "environment"  // Environment beanName
         const val SYSTEM_PROPERTIES_BEAN_NAME = "systemProperties"  // SystemProperties beanName
         const val SYSTEM_ENVIRONMENT_BEAN_NAME = "systemEnvironment"  // SystemEnvironment beanName
-        const val APPLICATION_STARTUP_BEANM_NAME = "applicationStartup"  // ApplicationStatup beanName
+        const val APPLICATION_STARTUP_BEAN_NAME = "applicationStartup"  // ApplicationStartup beanName
+        const val LOAD_TIME_WEAVER_BEAN_NAME = "loadTimeWeaver"  // LoadTimeWeaver beanName
     }
 
     /**

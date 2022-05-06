@@ -8,7 +8,7 @@ import java.util.function.Supplier
  * @see ApplicationStartup
  * @see StartupStep
  */
-class DefaultApplicationStartup : ApplicationStartup {
+open class DefaultApplicationStartup : ApplicationStartup {
 
     override fun start(name: String): StartupStep {
         return DefaultStep()
@@ -19,7 +19,7 @@ class DefaultApplicationStartup : ApplicationStartup {
      *
      * @see StartupStep
      */
-    class DefaultStep : StartupStep {
+    open class DefaultStep : StartupStep {
         // 是否已经记录完成了？
         private var recorded = false
 

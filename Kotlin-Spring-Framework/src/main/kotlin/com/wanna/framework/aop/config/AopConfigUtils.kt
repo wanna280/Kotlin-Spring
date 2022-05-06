@@ -107,7 +107,7 @@ class AopConfigUtils {
         fun forceAutoProxyCreatorToUseClassProxying(registry: BeanDefinitionRegistry) {
             if (registry.containsBeanDefinition(AOP_PROXY_CREATOR_BEAN_NAME)) {
                 val beanDefinition = registry.getBeanDefinition(AOP_PROXY_CREATOR_BEAN_NAME)
-                beanDefinition!!.getPropertyValues().addPropertyValue("proxyTargetClass", true)
+                beanDefinition.getPropertyValues().addPropertyValue("proxyTargetClass", true)
             }
         }
 
@@ -118,7 +118,7 @@ class AopConfigUtils {
         fun forceAutoProxyCreatorToExposeProxy(registry: BeanDefinitionRegistry) {
             if (registry.containsBeanDefinition(AOP_PROXY_CREATOR_BEAN_NAME)) {
                 val beanDefinition = registry.getBeanDefinition(AOP_PROXY_CREATOR_BEAN_NAME)
-                beanDefinition!!.getPropertyValues().addPropertyValue("exposeProxy", true)
+                beanDefinition.getPropertyValues().addPropertyValue("exposeProxy", true)
             }
         }
 
@@ -138,7 +138,7 @@ class AopConfigUtils {
         ): BeanDefinition? {
             if (beanDefinitionRegistry.containsBeanDefinition(AOP_PROXY_CREATOR_BEAN_NAME)) {
                 val apcDefinition = beanDefinitionRegistry.getBeanDefinition(AOP_PROXY_CREATOR_BEAN_NAME)
-                if (apcDefinition!!.getBeanClass() != clazz) {
+                if (apcDefinition.getBeanClass() != clazz) {
                     val oldPriority = findPriorityForClass(apcDefinition.getBeanClass()!!)
                     val newPriority = findPriorityForClass(clazz)
                     // 如果要注册的新的类的优先级更高，那么需要替换beanClass；如果要注册的新的类的优先级反而更低，就保留原来的

@@ -11,6 +11,7 @@ repositories {
 }
 
 dependencies {
+    implementation("org.aspectj:aspectjweaver:1.9.9")
     implementation("com.google.guava:guava:31.1-jre")
     implementation(kotlin("stdlib"))
     implementation("org.springframework:spring-core:5.3.17")

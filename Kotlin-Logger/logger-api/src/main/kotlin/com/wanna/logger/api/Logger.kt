@@ -7,13 +7,19 @@ package com.wanna.logger.api
 interface Logger {
     fun info(msg: String)
 
+    fun isInfoEnabled() : Boolean
+
     fun debug(msg: String)
 
     fun isDebugEnabled(): Boolean
 
     fun warn(msg: String)
 
+    fun isWarnEnabled() : Boolean
+
     fun error(msg: String)
+
+    fun isErrorEnabled() : Boolean
 
     fun trace(msg: String)
 

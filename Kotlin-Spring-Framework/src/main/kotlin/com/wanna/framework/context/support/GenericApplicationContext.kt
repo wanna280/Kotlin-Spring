@@ -1,10 +1,8 @@
 package com.wanna.framework.context.support
 
-import com.wanna.framework.beans.factory.support.definition.BeanDefinition
-import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
-import com.wanna.framework.context.ApplicationContext
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.core.metrics.ApplicationStartup
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -31,7 +29,7 @@ abstract class GenericApplicationContext(private val beanFactory: DefaultListabl
 
     override fun setApplicationStartup(applicationStartup: ApplicationStartup) {
         super.setApplicationStartup(applicationStartup)
-        this.beanFactory.setApplicationContextStartup(applicationStartup) // 给beanFactory也设置上ApplicationStartup
+        this.beanFactory.setApplicationStartup(applicationStartup) // 给beanFactory也设置上ApplicationStartup
     }
 
     override fun getBeanFactory(): DefaultListableBeanFactory = beanFactory

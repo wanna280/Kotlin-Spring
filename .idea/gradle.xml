@@ -15,11 +15,13 @@
             <option value="$PROJECT_DIR$/Kotlin-Logger" />
             <option value="$PROJECT_DIR$/Kotlin-Logger/logger-api" />
             <option value="$PROJECT_DIR$/Kotlin-Logger/logger-impl" />
+            <option value="$PROJECT_DIR$/Kotlin-Logger/logger-slf4j-impl" />
             <option value="$PROJECT_DIR$/Kotlin-Logger/logger-temp" />
             <option value="$PROJECT_DIR$/Kotlin-Logger/logger-test" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Boot" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Boot-Autoconfigure" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Framework" />
+            <option value="$PROJECT_DIR$/Kotlin-Spring-Instrument" />
           </set>
         </option>
       </GradleProjectSettings>

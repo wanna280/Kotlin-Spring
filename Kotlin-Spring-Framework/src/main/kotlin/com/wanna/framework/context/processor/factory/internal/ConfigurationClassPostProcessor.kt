@@ -73,7 +73,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         beanDefinitionNames.forEach { beanName ->
             val beanDefinition = registry.getBeanDefinition(beanName)
             // 如果已经包含了配置类的属性，说明该配置类已经处理过了，不需要去进行继续处理了
-            if (beanDefinition!!.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
+            if (beanDefinition.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
 
                 // 检查配置类是否是配置类，如果是配置类，那么说明它应该作为配置类去进行处理，加入候选列表当
             } else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDefinition)) {

@@ -30,7 +30,6 @@ import java.util.concurrent.ConcurrentHashMap
  * @see ConfigurableBeanFactory
  * @see ListableBeanFactory
  * @see FactoryBeanRegistrySupport
- * @see SingletonBeanRegistry
  * @see DefaultSingletonBeanRegistry
  */
 abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, ListableBeanFactory,
@@ -61,14 +60,18 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
     private var beanPostProcessorCache: BeanPostProcessorCache? = null
 
     // applicationStartup
-    private var applicationStartup: ApplicationStartup? = null
+    private var applicationStartup: ApplicationStartup = ApplicationStartup.DEFAULT
 
     override fun getBeanClassLoader() = this.beanClassLoader
     override fun setBeanClassLoader(classLoader: ClassLoader?) {
         this.beanClassLoader = classLoader ?: ClassLoader.getSystemClassLoader()
     }
 
-    open fun setApplicationContextStartup(applicationStartup: ApplicationStartup) {
+    /**
+     * BeanFactory也得提供获取ApplicationStartup的功能
+     */
+    override fun getApplicationStartup(): ApplicationStartup = this.applicationStartup
+    override fun setApplicationStartup(applicationStartup: ApplicationStartup) {
         this.applicationStartup = applicationStartup
     }
 
@@ -125,7 +128,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         // 如果从单例Bean注册中心当中获取不到Bean实例，那么需要获取MergedBeanDefinition，去完成Bean的创建
         val mbd = getMergedBeanDefinition(beanName)
 
-        val beanCreation = this.applicationStartup!!.start("spring.beans.instantiate").tag("beanName", name)
+        val beanCreation = this.applicationStartup.start("spring.beans.instantiate").tag("beanName", name)
 
         try {
             // 如果Bean是单例的
@@ -201,6 +204,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
      */
     protected abstract fun createBean(beanName: String, mbd: RootBeanDefinition): Any?
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T> getBean(beanName: String, type: Class<T>) = getBean(beanName) as T?
 
     override fun <T> getBean(type: Class<T>): T? {
@@ -208,15 +212,8 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         return beansForType.values.iterator().next()
     }
 
-    override fun isSingleton(beanName: String): Boolean {
-        val beanDefinition = getBeanDefinition(beanName)
-        return beanDefinition?.isSingleton() ?: throw BeansException()
-    }
-
-    override fun isPrototype(beanName: String): Boolean {
-        val beanDefinition = getBeanDefinition(beanName)
-        return beanDefinition?.isPrototype() ?: throw BeansException()
-    }
+    override fun isSingleton(beanName: String) = getBeanDefinition(beanName).isSingleton()
+    override fun isPrototype(beanName: String) = getBeanDefinition(beanName).isPrototype()
 
     override fun addBeanPostProcessor(processor: BeanPostProcessor) {
         beanPostProcessors -= processor  // remove
@@ -243,8 +240,8 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
 
     override fun isTypeMatch(beanName: String, type: Class<*>): Boolean {
         val beanDefinition = getBeanDefinition(beanName)
-        val beanClass = beanDefinition?.getBeanClass()
-        return if (beanDefinition != null && beanClass != null) {
+        val beanClass = beanDefinition.getBeanClass()
+        return if (beanClass != null) {
             ClassUtils.isAssignFrom(type, beanClass)
         } else {
             false
@@ -312,9 +309,13 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
     }
 
     /**
-     * 获取最原始的注册进容器当中的BeanDefinition
+     * 获取BeanDefinition，一定能获取到，如果获取不到直接抛出异常；
+     * 如果想要不抛出异常，请先使用containsBeanDefinition去进行判断该BeanDefinition是否存在
+     *
+     * @throws NoSuckBeanDefinitionException 如果没有找到这样的BeanDefinition异常
+     * @see containsBeanDefinition
      */
-    abstract fun getBeanDefinition(beanName: String): BeanDefinition?
+    abstract fun getBeanDefinition(beanName: String): BeanDefinition
 
     /**
      * 获取合并之后的BeanDefinition(RootBeanDefinition)
@@ -326,7 +327,6 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
             return rootBeanDefinition
         }
         val beanDefinition = getBeanDefinition(beanName)
-            ?: throw NoSuckBeanDefinitionException("没有找到这样的BeanDefinition-->[beanName=$beanName]")
         return getMergedBeanDefinition(beanName, beanDefinition)
     }
 
@@ -376,7 +376,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         this.embeddedValueResolvers += resolver
     }
 
-    override fun hasEmbeddedValueResolver() = !embeddedValueResolvers.isEmpty()
+    override fun hasEmbeddedValueResolver() = embeddedValueResolvers.isNotEmpty()
 
     override fun resolveEmbeddedValue(strVal: String?): String? {
         if (strVal == null) {

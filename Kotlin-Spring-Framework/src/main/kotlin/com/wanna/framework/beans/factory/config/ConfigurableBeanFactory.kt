@@ -6,6 +6,7 @@ import com.wanna.framework.context.SingletonBeanRegistry
 import com.wanna.framework.beans.util.StringValueResolver
 import com.wanna.framework.beans.TypeConverter
 import com.wanna.framework.core.convert.ConversionService
+import com.wanna.framework.core.metrics.ApplicationStartup
 
 interface ConfigurableBeanFactory : BeanFactory, SingletonBeanRegistry {
 
@@ -66,5 +67,11 @@ interface ConfigurableBeanFactory : BeanFactory, SingletonBeanRegistry {
      * 获取合并之后的BeanDefinition
      */
     fun getMergedBeanDefinition(beanName: String): BeanDefinition
+
+    /**
+     * BeanFactory也得提供获取ApplicationStartup的功能
+     */
+    fun setApplicationStartup(applicationStartup: ApplicationStartup)
+    fun getApplicationStartup(): ApplicationStartup
 
 }

@@ -35,8 +35,15 @@ open class AnnotatedBeanDefinitionReader(private val registry: BeanDefinitionReg
      * 注册一个Bean到容器中，将给定的clazz包装成为BeanDefinition注册到容器当中，beanName采用默认的BeanNameGenerator进行生成
      * @param clazz 要进行注册的clazz
      */
-    open fun registerBean(clazz: Class<*>) {
+    protected open fun registerBean(clazz: Class<*>) {
         registerBean(clazz, null)
+    }
+
+    /**
+     * 注册很多个配置类到容器当中
+     */
+    open fun registerBean(vararg componentClasses: Class<*>) {
+        componentClasses.forEach(this::registerBean)
     }
 
     /**
