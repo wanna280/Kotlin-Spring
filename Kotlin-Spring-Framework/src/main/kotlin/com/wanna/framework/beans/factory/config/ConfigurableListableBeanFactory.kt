@@ -1,18 +1,17 @@
 package com.wanna.framework.beans.factory.config
 
 import com.wanna.framework.beans.factory.ListableBeanFactory
-import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory
 import com.wanna.framework.beans.factory.support.DependencyDescriptor
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
-import com.wanna.framework.context.exception.NoSuckBeanDefinitionException
+import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 
 interface ConfigurableListableBeanFactory : ListableBeanFactory, ConfigurableBeanFactory, AutowireCapableBeanFactory {
 
     /**
      * 获取BeanDefinition，一定能获取到，如果获取不到直接抛出异常；
      *
-     * @throws NoSuckBeanDefinitionException 如果没有找到这样的BeanDefinition异常
+     * @throws NoSuchBeanDefinitionException 如果没有找到这样的BeanDefinition异常
      */
     fun getBeanDefinition(beanName: String): BeanDefinition
 

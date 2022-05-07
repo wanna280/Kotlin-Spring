@@ -11,7 +11,7 @@ import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.TypeConverter
 import com.wanna.framework.context.exception.BeanNotOfRequiredTypeException
-import com.wanna.framework.context.exception.NoSuckBeanDefinitionException
+import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
 import com.wanna.framework.core.comparator.OrderComparator
 import com.wanna.framework.core.util.BeanFactoryUtils
@@ -102,7 +102,10 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     override fun isFactoryBean(beanName: String): Boolean {
+        //将beanName当中的&前缀全部去掉
         val transformBeanName = transformBeanName(beanName)
+
+        // 从容器当中获取到Singleton对象，看它类型是否是一个FactoryBean？
         val singleton = getSingleton(transformBeanName, false)
         if (singleton != null) {
             return singleton is FactoryBean<*>
@@ -181,7 +184,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         // 如果根本没有找到候选的Bean，那么需要处理required=true/false并return
         if (candidates.isEmpty()) {
             if (descriptor.isRequired()) {
-                throw NoSuckBeanDefinitionException("没有找到合适的Bean-->[beanType=$type]")
+                throw NoSuchBeanDefinitionException("没有找到合适的Bean-->[beanType=$type]")
             }
             return null
         }
@@ -204,7 +207,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         var result = instanceCandidate
         if (result == null) {
             if (descriptor.isRequired()) {
-                throw NoSuckBeanDefinitionException("没有找到合适的Bean-->[beanType=$type]")
+                throw NoSuchBeanDefinitionException("没有找到合适的Bean-->[beanType=$type]")
             }
             result = null
         }
@@ -401,20 +404,20 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * 获取BeanDefinition，一定能获取到，如果获取不到直接抛出异常；
      * 如果想要不抛出异常，请先使用containsBeanDefinition去进行判断该BeanDefinition是否存在
      *
-     * @throws NoSuckBeanDefinitionException 如果没有找到这样的BeanDefinition异常
+     * @throws NoSuchBeanDefinitionException 如果没有找到这样的BeanDefinition异常
      * @see containsBeanDefinition
      */
     override fun getBeanDefinition(beanName: String): BeanDefinition {
-        return beanDefinitionMap[beanName] ?: throw NoSuckBeanDefinitionException(beanName)
+        return beanDefinitionMap[beanName] ?: throw NoSuchBeanDefinitionException(beanName)
     }
 
     /**
      * 移除BeanDefinition，需要拿到锁才能去对其进行操作，对BeanDefinitionNames列表去进行操作不是线程安全的
      *
-     * @throws NoSuckBeanDefinitionException 如果没有根据name找到该BeanDefinition的话
+     * @throws NoSuchBeanDefinitionException 如果没有根据name找到该BeanDefinition的话
      */
     override fun removeBeanDefinition(name: String) {
-        beanDefinitionMap[name] ?: throw NoSuckBeanDefinitionException("没有这样的BeanDefinition[name=$name]")
+        beanDefinitionMap[name] ?: throw NoSuchBeanDefinitionException("没有这样的BeanDefinition[name=$name]")
 
         synchronized(this.beanDefinitionMap) {
 

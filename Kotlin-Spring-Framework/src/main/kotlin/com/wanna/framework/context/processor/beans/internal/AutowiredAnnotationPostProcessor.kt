@@ -302,7 +302,7 @@ open class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostPro
             // 如果解析到了方法参数列表，那么使用反射去执行
             if (methodParams != null) {
                 ReflectionUtils.makeAccessiable(method)
-                ReflectionUtils.invokeMethod(method, bean, methodParams)
+                ReflectionUtils.invokeMethod(method, bean, *methodParams)
             }
         }
 

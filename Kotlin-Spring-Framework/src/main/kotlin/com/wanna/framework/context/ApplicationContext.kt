@@ -17,7 +17,7 @@ interface ApplicationContext : BeanFactory, ApplicationEventPublisher, ListableB
     fun getAutowireCapableBeanFactory(): AutowireCapableBeanFactory
 
     /**
-     * 获取parent ApplicationContext，如果有的话
+     * 获取parent ApplicationContext，如果有的话；如果没有的话，return null
      */
     fun getParent() : ApplicationContext?
 }

@@ -18,9 +18,9 @@ interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
         const val SCOPE_PRTOTYPE = "prototype";  // 原型的scope名称
 
         // Bean的角色，包括Application(默认)、Support和Infrastructure(基础设施)
-        var ROLE_APPLICATION = 0
-        var ROLE_SUPPORT = 1
-        var ROLE_INFRASTRUCTURE = 2
+        const val ROLE_APPLICATION = 0
+        const val ROLE_SUPPORT = 1
+        const val ROLE_INFRASTRUCTURE = 2
     }
 
     /**

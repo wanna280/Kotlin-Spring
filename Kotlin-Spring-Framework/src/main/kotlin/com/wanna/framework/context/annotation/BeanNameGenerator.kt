@@ -5,7 +5,10 @@ import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 
 /**
  * 这是一个BeanName的生成器，它可以去决定BeanName的生成
+ *
+ * @see AnnotationBeanNameGenerator
+ * @see FullyQualifiedAnnotationBeanNameGenerator
  */
 interface BeanNameGenerator {
-    fun generateBeanName(beanDefinition: BeanDefinition, registry: BeanDefinitionRegistry) : String
+    fun generateBeanName(beanDefinition: BeanDefinition, registry: BeanDefinitionRegistry): String
 }

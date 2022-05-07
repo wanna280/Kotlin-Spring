@@ -54,6 +54,9 @@ open class AnnotatedBeanDefinitionReader(private val registry: BeanDefinitionReg
     open fun registerBean(clazz: Class<*>, name: String?) {
         // 创建一个AnnotatedGenericBeanDefinition
         val beanDefinition = AnnotatedGenericBeanDefinition(clazz)
+
+        // 处理@Lazy/@Role/@DependsOn/@Primary注解
+        AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition)
         // 生成BeanDefinition，注册到容器当中，如果给定了beanName，采用给定的beanName，如果没有给定，那么使用BeanNameGenerator去进行生成
         val beanName = name ?: beanNameGenerator!!.generateBeanName(beanDefinition, registry)
         registry.registerBeanDefinition(beanName, beanDefinition)

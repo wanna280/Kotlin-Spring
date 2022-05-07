@@ -12,7 +12,7 @@ import com.wanna.framework.beans.SimpleTypeConverter
 import com.wanna.framework.beans.util.StringValueResolver
 import com.wanna.framework.beans.TypeConverter
 import com.wanna.framework.context.exception.BeansException
-import com.wanna.framework.context.exception.NoSuckBeanDefinitionException
+import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
 import com.wanna.framework.context.processor.beans.InstantiationAwareBeanPostProcessor
 import com.wanna.framework.context.processor.beans.MergedBeanDefinitionPostProcessor
@@ -22,7 +22,9 @@ import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.core.util.BeanFactoryUtils
 import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.core.util.StringUtils
+import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * 这是一个抽象的BeanFactory，提供了单实例Bean的注册中心，FactoryBean的注册中心，以及ConfigurableBeanFactory/ListableBeanFactory
@@ -54,13 +56,16 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
     private val embeddedValueResolvers: MutableList<StringValueResolver> = ArrayList()
 
     // BeanFactory当中需要维护的BeanPostProcessor列表
-    protected val beanPostProcessors = ArrayList<BeanPostProcessor>()
+    protected val beanPostProcessors = CopyOnWriteArrayList<BeanPostProcessor>()
 
     // BeanPostProcessorCache
     private var beanPostProcessorCache: BeanPostProcessorCache? = null
 
     // applicationStartup
     private var applicationStartup: ApplicationStartup = ApplicationStartup.DEFAULT
+
+    // Logger
+    private val logger = LoggerFactory.getLogger(AbstractBeanFactory::class.java)
 
     override fun getBeanClassLoader() = this.beanClassLoader
     override fun setBeanClassLoader(classLoader: ClassLoader?) {
@@ -129,20 +134,18 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         val mbd = getMergedBeanDefinition(beanName)
 
         val beanCreation = this.applicationStartup.start("spring.beans.instantiate").tag("beanName", name)
-
         try {
             // 如果Bean是单例的
             if (mbd.isSingleton()) {
                 beanInstance = getSingleton(beanName, object : ObjectFactory<Any> {
                     override fun getObject(): Any {
                         try {
-                            return createBean(beanName, mbd)!!
+                            return createBean(beanName, mbd)
                         } catch (ex: Exception) {
-                            throw BeansException("Create bean instance of [$beanName] failed，原因是[${ex.message}]")
+                            throw BeansException("创建Bean失败", ex, beanName)
                         }
                     }
                 })
-
                 // 如果Bean是Prototype的
             } else if (mbd.isPrototype()) {
                 beanInstance = createBean(beanName, mbd)
@@ -192,27 +195,59 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
     override fun getRegisteredScope(name: String): Scope? = this.scopes[name]
 
     /**
-     * 注册scope到BeanFactory当中
+     * 注册一个指定的Scope到BeanFactory当中
+     *
+     * @throws IllegalArgumentException 如果尝试去注册Singleton/Prototype
      */
     override fun registerScope(name: String, scope: Scope) {
-        this.scopes[name] = scope
+        if (name == ConfigurableBeanFactory.SCOPE_SINGLETON || name == ConfigurableBeanFactory.SCOPE_PROTOTYPE) {
+            throw IllegalArgumentException("不能去替代容器当中默认的Single/Prototype这两个Scope")
+        }
+        val previous = this.scopes.put(name, scope)
+        if (previous != null && scope != previous) {
+            if (logger.isDebugEnabled) {
+                logger.debug("容器当中的Scope[scopeName=$name]发生了替换, 之前是[$previous], 现在是[$scope]")
+            }
+        } else {
+            if (logger.isTraceEnabled) {
+                logger.trace("容器当中新注册了Scope[scopeName=$name, scope=$scope]")
+            }
+        }
     }
 
     /**
-     * 提供创建Bean的逻辑，交给子类去进行实现
+     * 提供创建Bean的逻辑，调用这个方法即可完成Bean的创建工作，这是一个抽象模板方法，交给子类去进行实现
+     *
      * @see AbstractAutowireCapableBeanFactory.createBean
      */
-    protected abstract fun createBean(beanName: String, mbd: RootBeanDefinition): Any?
+    protected abstract fun createBean(beanName: String, mbd: RootBeanDefinition): Any
 
+    /**
+     * 按照指定的name和type去进行getBean
+     */
     @Suppress("UNCHECKED_CAST")
     override fun <T> getBean(beanName: String, type: Class<T>) = getBean(beanName) as T?
 
+    /**
+     * 按照type去进行getBean
+     */
     override fun <T> getBean(type: Class<T>): T? {
         val beansForType = getBeansForType(type)
         return beansForType.values.iterator().next()
     }
 
+    /**
+     * 给定一个beanName，从容器当中去获取BeanDefinition，去判断是否是单例的？
+     *
+     * @throws NoSuchBeanDefinitionException 如果容器当中不存在这样的BeanDefinition
+     */
     override fun isSingleton(beanName: String) = getBeanDefinition(beanName).isSingleton()
+
+    /**
+     * 给定一个beanName，从容器当中去获取BeanDefinition，去判断是否是原型的？
+     *
+     * @throws NoSuchBeanDefinitionException 如果容器当中不存在这样的BeanDefinition
+     */
     override fun isPrototype(beanName: String) = getBeanDefinition(beanName).isPrototype()
 
     override fun addBeanPostProcessor(processor: BeanPostProcessor) {
@@ -232,20 +267,27 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
     }
 
     /**
-     * 判断一个bean是否是FactoryBean？
+     * 判断容器当中的beanName对应的类型是否和type匹配？
+     *
+     * @param beanName beanName
+     * @param type beanName应该匹配的类型？
      */
-    override fun isFactoryBean(beanName: String): Boolean {
-        return false
-    }
-
     override fun isTypeMatch(beanName: String, type: Class<*>): Boolean {
-        val beanDefinition = getBeanDefinition(beanName)
+        val beanDefinition = getMergedBeanDefinition(beanName)
         val beanClass = beanDefinition.getBeanClass()
-        return if (beanClass != null) {
-            ClassUtils.isAssignFrom(type, beanClass)
-        } else {
-            false
+        /**
+         * 如果有beanClass的话，那么直接使用beanClass去进行匹配
+         */
+        if (beanClass != null) {
+            return ClassUtils.isAssignFrom(type, beanClass)
         }
+        /**
+         * 如果有FactoryMethod的话，那么直接使用FactoryMethod的返回值类型去进行匹配
+         */
+        if (beanDefinition.getFactoryMethodName() != null) {
+            return ClassUtils.isAssignFrom(type, beanDefinition.getResolvedFactoryMethod()!!.returnType)
+        }
+        return false
     }
 
     /**
@@ -312,7 +354,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
      * 获取BeanDefinition，一定能获取到，如果获取不到直接抛出异常；
      * 如果想要不抛出异常，请先使用containsBeanDefinition去进行判断该BeanDefinition是否存在
      *
-     * @throws NoSuckBeanDefinitionException 如果没有找到这样的BeanDefinition异常
+     * @throws NoSuchBeanDefinitionException 如果没有找到这样的BeanDefinition异常
      * @see containsBeanDefinition
      */
     abstract fun getBeanDefinition(beanName: String): BeanDefinition
@@ -326,6 +368,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
         if (rootBeanDefinition != null) {
             return rootBeanDefinition
         }
+        // 如果确实是没有，那么必须得加锁去进行Merged了
         val beanDefinition = getBeanDefinition(beanName)
         return getMergedBeanDefinition(beanName, beanDefinition)
     }

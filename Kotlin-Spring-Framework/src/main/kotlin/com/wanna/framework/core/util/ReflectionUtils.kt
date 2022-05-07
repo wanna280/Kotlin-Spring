@@ -235,7 +235,7 @@ class ReflectionUtils {
          */
         @JvmStatic
         fun invokeMethod(method: Method, target: Any?): Any? {
-            return invokeMethod(method, target, *emptyArray())
+            return method.invoke(target)
         }
 
         /**

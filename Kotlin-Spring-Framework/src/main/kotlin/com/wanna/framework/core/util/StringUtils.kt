@@ -12,7 +12,7 @@ object StringUtils {
      */
     @JvmStatic
     fun hasText(str: String?): Boolean {
-        return str == null || str.isEmpty()
+        return str != null && str.isNotBlank()
     }
 
     /**

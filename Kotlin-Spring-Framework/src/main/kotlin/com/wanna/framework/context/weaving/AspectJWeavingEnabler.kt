@@ -45,7 +45,6 @@ open class AspectJWeavingEnabler : BeanFactoryPostProcessor, Ordered, BeanClassL
     }
 
     companion object {
-
         // AspectJ Aop的Xml文件位置常量
         const val ASPECTJ_AOP_XML_RESOURCE = "META-INF/aop.xml"
 

@@ -5,6 +5,7 @@ import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.ScannedGenericBeanDefinition
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
+import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.EnvironmentCapable
 import com.wanna.framework.core.environment.StandardEnvironment
@@ -13,7 +14,7 @@ import com.wanna.framework.core.util.ClassDiscoveryUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
 
 /**
- * 这是ClassPath下的BeanDefinition的Scanner，负责完成指定的包下的全部配置类的扫描
+ * 这是ClassPath下的BeanDefinition的Scanner，负责完成指定的包下的全部配置类的扫描，并将其注册到BeanDefinitionRegistry当中
  */
 open class ClassPathBeanDefinitionScanner(private val registry: BeanDefinitionRegistry) {
 
@@ -48,10 +49,18 @@ open class ClassPathBeanDefinitionScanner(private val registry: BeanDefinitionRe
         val beanDefinitions = HashSet<BeanDefinitionHolder>()
         // 获取要进行扫描的包中的所有候选BeanDefinition
         val candidateComponents = findCandidateComponents(*packages)
+
         candidateComponents.filter { isCandidate(it.getBeanClass()) }
             .forEach { beanDefinition ->
                 // 利用beanNameGenerator给beanDefinition生成beanName，并注册到BeanDefinitionRegistry当中
                 val beanName = beanNameGenerator.generateBeanName(beanDefinition, registry)
+
+                // 如果它是一个被注解标注的BeanDefinition，那么可以从它身上找到注解的相关的元信息
+                // 需要处理@Role/@Lazy/@DependsOn/@Primary注解
+                if (beanDefinition is AnnotatedBeanDefinition) {
+                    AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition)
+                }
+
                 registry.registerBeanDefinition(beanName, beanDefinition)
 
                 // 加入到扫描到的BeanDefinition列表当中，封装成为BeanDefinitionHolder，让调用方可以获取到beanName

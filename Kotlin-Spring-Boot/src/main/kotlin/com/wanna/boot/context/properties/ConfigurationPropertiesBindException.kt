@@ -11,6 +11,6 @@ import com.wanna.framework.context.exception.BeanCreationException
 open class ConfigurationPropertiesBindException(
     private val bean: ConfigurationPropertiesBean?,
     cause: Throwable
-) : BeanCreationException(cause) {
+) : BeanCreationException(null, cause, null) {
 
 }

@@ -1,6 +1,7 @@
 package com.wanna.framework.beans.factory.support.definition
 
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
+import com.wanna.framework.core.type.MethodMetadata
 import java.lang.reflect.Executable
 import java.lang.reflect.Method
 
@@ -77,5 +78,9 @@ open class RootBeanDefinition constructor(beanClass: Class<*>?) : AbstractBeanDe
         this.factoryMethodToIntrospect = method
     }
 
+    /**
+     * 获取FactoryMethod的Metadata信息
+     */
+    open fun getFactoryMethodMetadata(): MethodMetadata? = null
 
 }

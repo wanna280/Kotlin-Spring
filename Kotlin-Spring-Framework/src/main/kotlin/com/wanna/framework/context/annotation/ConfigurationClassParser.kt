@@ -57,15 +57,20 @@ open class ConfigurationClassParser(
     open fun parse(candidates: Collection<BeanDefinitionHolder>) {
         candidates.forEach { parse(it.beanDefinition, it.beanName) }
 
-        // 处理延时加载的ImportSelector
+        // 在处理完所有的应该扫描的相关配置类之后，应该去进行处理延时加载的ImportSelector
+        // 比如SpringBoot的自动装配，就会在这里去完成，它的执行时期，比普通的Bean的处理更晚
         deferredImportSelectorHandler.process()
     }
 
     /**
-     * 针对与指定的BeanDefinition，把它作为配置类，去进行配置类的处理
+     * 针对指定的BeanDefinition，把它作为配置类，去进行配置类的处理
      */
     open fun parse(beanDefinition: BeanDefinition, beanName: String) {
         processConfigurationClass(ConfigurationClass(beanDefinition, beanName)) { it.startsWith("java.") }
+    }
+
+    open fun parse(beanClass: Class<*>, beanName: String) {
+        processConfigurationClass(ConfigurationClass(beanClass, beanName)) { it.startsWith("java.") }
     }
 
     private fun processConfigurationClass(configurationClass: ConfigurationClass, filter: Predicate<String>) {
@@ -179,7 +184,7 @@ open class ConfigurationClassParser(
                 configurationClass.addRegistrar(registrar, configurationClass.metadata)
                 // 如果只是导入了一个普通组件，需要把它当做一个配置类去进行递归处理
             } else {
-                val importConfigurationClass = ConfigurationClass(candidate, null)
+                val importConfigurationClass = ConfigurationClass(candidate, null)  // beanName???
                 importConfigurationClass.setImportedBy(configurationClass)   // importedBy
                 processConfigurationClass(importConfigurationClass, filter)  // 把当前类当做配置类去进行递归
             }
@@ -215,7 +220,8 @@ open class ConfigurationClassParser(
         )
         // 如果有ComponentScan注解，并且条件计算器计算不应该跳过，那么才需要遍历所有的ComponentScan注解去进行处理
         if (componentScans.isNotEmpty() && !this.conditionEvaluator.shouldSkip(
-                configurationClass.metadata, ConfigurationPhase.REGISTER_BEAN
+                configurationClass.metadata,
+                ConfigurationPhase.REGISTER_BEAN
             )
         ) {
             // 处理@ComponentScan注解，将符合条件的BeanDefinition，导入到容器当中

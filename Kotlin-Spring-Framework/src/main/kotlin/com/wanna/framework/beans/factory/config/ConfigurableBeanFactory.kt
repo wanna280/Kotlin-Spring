@@ -10,6 +10,11 @@ import com.wanna.framework.core.metrics.ApplicationStartup
 
 interface ConfigurableBeanFactory : BeanFactory, SingletonBeanRegistry {
 
+    companion object {
+        const val SCOPE_SINGLETON = "single"
+        const val SCOPE_PROTOTYPE  = "prototype"
+    }
+
     /**
      * 获取BeanFactory的ClassLoader
      */

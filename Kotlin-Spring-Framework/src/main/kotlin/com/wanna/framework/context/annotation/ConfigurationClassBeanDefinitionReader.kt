@@ -2,13 +2,17 @@ package com.wanna.framework.context.annotation
 
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
+import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.AnnotatedGenericBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase.REGISTER_BEAN
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.type.AnnotationMetadata
+import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.core.type.StandardMethodMetadata
+import com.wanna.framework.core.util.AnnotationConfigUtils
 import com.wanna.framework.core.util.BeanUtils
+import com.wanna.framework.core.util.StringUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
 
 /**
@@ -69,7 +73,9 @@ open class ConfigurationClassBeanDefinitionReader(
             registerBeanDefinitionForImportedConfigurationClass(configurationClass)
         }
         // 将所有的BeanMethod去完成匹配，并封装成为BeanDefinition，并注册到registry当中
-        configurationClass.beanMethods.forEach { loadBeanDefinitionsForBeanMethod(it) }
+        configurationClass.beanMethods.forEach {
+            loadBeanDefinitionsForBeanMethod(it)
+        }
 
         // 处理@ImportSource，为Annotation版本的IOC容器当中导入XML的Spring配置文件提供支持
         loadBeanDefinitionsFromImportedResources(configurationClass.importedSources)
@@ -94,14 +100,32 @@ open class ConfigurationClassBeanDefinitionReader(
         // 获取到@Bean注解当中的name属性，如果name属性为空的话，那么使用方法名作为beanName
         val beanAnnotation = AnnotatedElementUtils.getMergedAnnotation(method, Bean::class.java)!!
         beanName = beanAnnotation.name.ifBlank { method.name }
+        val medthodMetadata = StandardMethodMetadata(method)
 
-        val beanDefinition = RootBeanDefinition()
+        // 创建一个ConfigurationClassBeanDefinition，让它能适配RootBeanDefinition和AnnotatedBeanDefinition
+        val beanDefinition = ConfigurationClassBeanDefinition(configClass, medthodMetadata)
         // set factoryMethodName, factoryBeanName and factoryMethod
         beanDefinition.setFactoryMethodName(method.name)
-        beanDefinition.setFactoryBeanName(configClass.beanName)
+        val factoryBeanName = configClass.beanName ?: configClass.configurationClass.name
+        beanDefinition.setFactoryBeanName(factoryBeanName)
         beanDefinition.setResolvedFactoryMethod(method)
         // 设置autowiredMode为构造器注入
         beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR)
+
+        // 处理@Bean方法上的@Role/@Primary/@DependsOn/@Lazy注解
+        AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition, configClass.metadata)
+
+        // 根据@Bean注解当中的init方法和destory方法，去设置BeanDefinition的initMethod和destoryMethod
+        if (StringUtils.hasText(beanAnnotation.initMethod)) {
+            beanDefinition.setInitMethodName(beanAnnotation.initMethod)
+        }
+        if (StringUtils.hasText(beanAnnotation.destoryMethod)) {
+            beanDefinition.setDestoryMethodName(beanAnnotation.destoryMethod)
+        }
+
+        // 设置是否是AutowireCandidate以及AutowireMode
+        beanDefinition.setAutowireCandidate(beanAnnotation.autowireCandidate)
+        beanDefinition.setAutowireMode(beanAnnotation.autowireMode)
 
         // 注册beanDefinition到容器当中
         registry.registerBeanDefinition(beanName!!, beanDefinition)
@@ -138,7 +162,12 @@ open class ConfigurationClassBeanDefinitionReader(
      */
     private fun registerBeanDefinitionForImportedConfigurationClass(configurationClass: ConfigurationClass) {
         val clazz = configurationClass.configurationClass
+        val metadata = configurationClass.metadata
         val bd = AnnotatedGenericBeanDefinition(clazz)
+
+        // 处理@Role/@Primary/@DependsOn/@Lazy注解
+        AnnotationConfigUtils.processCommonDefinitionAnnotations(bd, metadata)
+
         // 生成beanName
         val beanName = importBeanNameGenerator.generateBeanName(bd, registry)
         registry.registerBeanDefinition(beanName, bd)
@@ -186,5 +215,21 @@ open class ConfigurationClassBeanDefinitionReader(
             }
             return skip
         }
+    }
+
+    /**
+     * 因为RootBeanDefinition本身不是AnnotatedBeanDefinition，但是这里需要用到AnnotatedBeanDefinition；
+     * 才能去处理@Lazy/@Primary/@Role/@DependsOn注解，因此这里需要做一层的适配
+     */
+    class ConfigurationClassBeanDefinition(
+        private val configurationClass: ConfigurationClass,
+        private val methodMetadata: MethodMetadata?
+    ) : RootBeanDefinition(), AnnotatedBeanDefinition {
+        override fun getMetadata(): AnnotationMetadata = configurationClass.metadata
+
+        /**
+         * 重写父类的getMetadata方法，去提供FactoryMethod的Metadata的获取
+         */
+        override fun getFactoryMethodMetadata(): MethodMetadata? = this.methodMetadata
     }
 }

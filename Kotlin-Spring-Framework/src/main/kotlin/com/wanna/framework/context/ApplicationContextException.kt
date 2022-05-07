@@ -10,10 +10,4 @@ open class ApplicationContextException(message: String?, cause: Throwable?) : Be
     constructor() : this(null, null)
     constructor(message: String?) : this(message, null)
     constructor(cause: Throwable?) : this(null, cause)
-
-    override fun toString(): String {
-        return "ApplicationContextException(message=$message, cause=$cause)"
-    }
-
-
 }

@@ -117,7 +117,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
                 // 完成容器的刷新
                 finishRefresh()
             } catch (ex: BeansException) {
-                throw BeansException("初始化容器出错，原因是--->${ex.message}", ex)
+                throw BeansException("初始化容器出错，原因是--->${ex.message}", ex, ex.beanName)
             } finally {
                 contextRefresh.end()  // end context refresh
             }
@@ -175,14 +175,15 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     protected abstract fun refreshBeanFactory()
 
     /**
-     * 在完成BeanFactory的刷新之后，应该为当前的ApplicationContext提供getBeanFactory方法，去获取BeanFactory
+     * 在完成BeanFactory的刷新之后，应该为当前的ApplicationContext提供getBeanFactory方法，去获取BeanFactory；
+     * SpringApplication的ApplicationContext的刷新过程当中，需要BeanFactory才能进行
      */
     abstract override fun getBeanFactory(): ConfigurableListableBeanFactory
 
     /**
      * 完成BeanFactoryPostProcessor的执行，完成BeanDefinition的加载以及BeanFactory的后置处理工作
      *
-     * @param beanFactory BeanFactory
+     * @param beanFactory beanFactory
      */
     protected open fun invokeBeanFactoryPostProcessors(beanFactory: ConfigurableListableBeanFactory) {
         PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors(beanFactory, beanFactoryPostProcessors)
@@ -195,7 +196,9 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     }
 
     /**
-     * 完成所有的BeanPostProcessor的注册工作
+     * 完成所有的BeanPostProcessor的注册工作，拿出容器中所有类型为BeanPostProcessor的Bean，完成实例化并注册到beanFactory当中
+     *
+     * @param beanFactory beanFactory
      */
     protected open fun registerBeanPostProcessors(beanFactory: ConfigurableListableBeanFactory) {
         PostProcessorRegistrationDelegate.registerBeanPostProcessors(beanFactory, this)

@@ -9,11 +9,13 @@ import com.wanna.framework.beans.PropertyValues
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.ObjectFactory
 import com.wanna.framework.beans.BeanWrapperImpl
+import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.BeanNameAware
 import com.wanna.framework.context.exception.BeanCreationException
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.ParameterNameDiscoverer
 import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.core.util.StringUtils
 import java.lang.reflect.Constructor
 import java.util.function.Supplier
 
@@ -36,7 +38,35 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
     // 参数名发现器，支持去进行方法/构造器的参数名列表的获取
     private var parameterNameDiscoverer: ParameterNameDiscoverer? = DefaultParameterNameDiscoverer()
 
-    override fun createBean(beanName: String, mbd: RootBeanDefinition): Any? {
+    /**
+     * 给定beanName和BeanDefinition，去完成Bean的创建
+     *
+     * @param beanName beanName
+     * @param mbd MergedBeanDefinition
+     * @return 创建好的Bean，有可能为NullBean
+     */
+    override fun createBean(beanName: String, mbd: RootBeanDefinition): Any {
+        // 在实例化之前，交给有资格对实例化去进行干涉的BeanPostProcessor(InstantiationAwareBeanPostProcessor)去进行回调
+        // 让它们去进行干涉，如果它们可以成功return对象，那么说明它们创建对象成功，直接return即可，不用去执行后续的创建Bean的过程了
+        try {
+            val bean = resolveBeforeInstantiation(beanName, mbd)
+            if (bean != null) {
+                return bean
+            }
+        } catch (ex: Throwable) {
+            throw BeanCreationException("在执行BeforeInstantiation的过程中发生了异常", ex, beanName)
+        }
+        return doCreateBean(beanName, mbd)
+    }
+
+    /**
+     * 在对Bean进行实例化之前，尝试从BeanPostProcessor当中去推断出来一个合适的Bean
+     *
+     * @param beanName
+     * @param mbd MergedBeanDefinition
+     * @return 如果推断出来了Bean，return Bean；不然return null
+     */
+    protected open fun resolveBeforeInstantiation(beanName: String, mbd: RootBeanDefinition): Any? {
         // 如果实例之前的BeanPostProcessor已经return 非空，产生出来一个对象了，那么需要完成初始化工作...
         // 如果必要的话，会完成动态代理，如果创建出来Bean，那么直接return，就不走doCreateBean的创建Bean的逻辑了...
         for (postProcessor in getBeanPostProcessorCache().instantiationAwareCache) {
@@ -45,13 +75,15 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
                 return applyBeanPostProcessorsAfterInitialization(instance, beanName)
             }
         }
-        return doCreateBean(beanName, mbd)
+        return null
     }
 
     /**
      * doCreateBean，去执行真正的Bean的实例化和初始化工作
+     *
+     * @throws BeanCreationException 如果在doGetBean的过程当中发生了异常
      */
-    protected open fun doCreateBean(beanName: String, mbd: RootBeanDefinition): Any? {
+    protected open fun doCreateBean(beanName: String, mbd: RootBeanDefinition): Any {
         val beanWrapper = createBeanInstance(beanName, mbd)
         val beanInstance = beanWrapper.getWrappedInstance()
         val beanType = beanWrapper.getWrappedClass()
@@ -84,20 +116,20 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
             }
         }
 
-        var exposedBean: Any? = null
+        val exposedBean: Any
 
         try {
             // 填充属性
             populateBean(beanWrapper, mbd, beanName)
 
             // 初始化Bean
-            exposedBean = initializeBean(beanWrapper, beanName, mbd)
+            exposedBean = initializeBean(beanWrapper.getWrappedInstance(), beanName, mbd)
         } catch (ex: Throwable) {
             if (ex is BeanCreationException) {
                 throw ex
             }
-            // 对ex进行再一次包装，往上抛
-            throw BeanCreationException("创建Bean[beanName=$beanName]失败", ex)
+            // 如果只是普通的异常，那么需要去对ex进行再一次包装，往上抛
+            throw BeanCreationException("初始化Bean失败", ex, beanName)
         }
 
         // registerDisposableBeanIfNecessary
@@ -229,6 +261,9 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
         return ConstructorResolver(this).instantiateUsingFactoryMethod(beanName, mbd)
     }
 
+    /**
+     * 对BeanWrapper去完成初始化工作
+     */
     fun initBeanWrapper(beanWrapper: BeanWrapper) {
 
     }
@@ -248,25 +283,29 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
 
     /**
      * 对Bean去完成初始化，执行Bean的初始化回调方法，以及对Bean的初始化前后的去进行干涉的BeanPostProcessor
+     *
+     * @throws BeanCreationException 执行初始化过程当中发生了异常
+     * @throws Throwable 在执行初始化之前/之后的方法当中，发生的异常将会直接往上抛
      */
-    protected open fun initializeBean(wrapper: BeanWrapper, beanName: String, mbd: RootBeanDefinition): Any? {
-        val beanInstance = wrapper.getWrappedInstance()
-
-        // 执行Aware方法，beanName和beanFactory，是需要这里去完成的，别的类型的Aware
+    protected open fun initializeBean(bean: Any, beanName: String, mbd: RootBeanDefinition): Any {
+        // 在初始化之前，需要去执行Aware接口当中的setXXX方法去注入相关的容器对象，beanName和beanFactory是需要这里去完成的，别的类型的Aware接口
         // 就交给ApplicationContextAwareBeanPostProcessor去完成，因为ApplicationContextAware能获取更多对象，比如Environment
-        invokeAwareMethods(beanInstance, beanName)
+        invokeAwareMethods(bean, beanName)
 
-        applyBeanPostProcessorsBeforeInitialization(beanInstance, beanName)
+        // 执行初始化之前的方法(BeforeInitialization)，应用所有的对Bean的初始化进行干涉的BeanPostProcessor
+        var wrappedBean: Any = applyBeanPostProcessorsBeforeInitialization(bean, beanName)
 
+
+        // 执行初始化方法，如果在执行初始化过程当中发生了异常，那么把异常包装成为BeanCreationException抛出去
         try {
-            // 执行初始化方法
-            invokeInitMethod(beanInstance, beanName, mbd)
+            invokeInitMethod(wrappedBean, beanName, mbd)
         } catch (ex: Throwable) {
-            throw BeanCreationException("执行对Bean[beanName=$beanName]的初始化过程中出现了异常", ex)
+            throw BeanCreationException("执行对Bean的初始化过程中出现了异常", ex, beanName)
         }
 
-        val bean = applyBeanPostProcessorsAfterInitialization(beanInstance, beanName)
-        return bean
+        // 执行初始化之后的方法(AfterInitialization)，应用所有的对Bean的初始化进行干涉的BeanPostProcessor
+        wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName)
+        return wrappedBean
     }
 
     /**
@@ -352,27 +391,22 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
      * 执行Init方法完成初始化
      */
     private fun invokeInitMethod(bean: Any, beanName: String, mbd: RootBeanDefinition) {
-
-        // 如果beanDefinition当中设置了initMethodName的话，那么需要获取该方法去执行
-        if (mbd.getInitMethodName() != null) {
-            try {
-                val beanClass = mbd.getBeanClass()
-                val initMethod = beanClass!!.getMethod(mbd.getInitMethodName()!!)
-                ReflectionUtils.makeAccessiable(initMethod)
-                ReflectionUtils.invokeMethod(initMethod, bean)
-            } catch (ex: Exception) {
-                throw BeanCreationException("执行[beanName=$beanName]的初始化方法(initMethod)失败，原因是-->[$ex]")
-            }
-        }
-
         // 如果它是一个InitializingBean，那么需要在这里去进行回调去完成Bean的初始化
         if (bean is InitializingBean) {
             bean.afterPropertiesSet()
         }
+
+        // 如果beanDefinition当中设置了initMethodName的话，那么需要获取该方法去执行
+        if (StringUtils.hasText(mbd.getInitMethodName())) {
+            val beanClass = mbd.getBeanClass()
+            val initMethod = beanClass!!.getMethod(mbd.getInitMethodName()!!)
+            ReflectionUtils.makeAccessiable(initMethod)
+            ReflectionUtils.invokeMethod(initMethod, bean)
+        }
     }
 
     /**
-     * 执行Aware，主要是BeanNameAware和BeanFactoryAware，别的Aware会在ApplicationContextAwareProcessor当中进行处理
+     * 执行Aware，主要是BeanNameAware和BeanFactoryAware、BeanClassLoaderAware，别的Aware会在ApplicationContextAwareProcessor当中进行处理
      */
     private fun invokeAwareMethods(bean: Any, beanName: String) {
         if (bean is BeanNameAware) {
@@ -380,6 +414,9 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
         }
         if (bean is BeanFactoryAware) {
             bean.setBeanFactory(this)
+        }
+        if (bean is BeanClassLoaderAware) {
+            bean.setBeanClassLoader(this.getBeanClassLoader())
         }
     }
 
@@ -397,26 +434,28 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
     }
 
     /**
-     * 执行beforeInitialization方法，如果必要的话，创建代理
+     * 执行beforeInitialization方法，如果必要的话创建代理；
+     * <note>如果其中一个BeanPostProcessor执行过程当中return null的话，终止后续的BeanPostProcessor的执行，直接return result；
+     * 如果BeanPostProcessor返回的不为null的话，那么将result=current，去进行继续执行</note>
      */
-    protected open fun applyBeanPostProcessorsBeforeInitialization(bean: Any, beanName: String): Any? {
-        var result: Any? = bean
-        for (postProcessor in this.beanPostProcessors) {
-            result = postProcessor.postProcessBeforeInitialization(beanName, result!!)
+    protected open fun applyBeanPostProcessorsBeforeInitialization(bean: Any, beanName: String): Any {
+        var result: Any = bean
+        for (postProcessor in beanPostProcessors) {
+            val current = postProcessor.postProcessBeforeInitialization(beanName, result) ?: return result
+            result = current
         }
         return result
     }
 
     /**
-     * 执行afterInitialization方法，如果必要的话，创建代理
+     * 执行afterInitialization方法，如果必要的话创建代理
+     * <note>如果其中一个BeanPostProcessor执行过程当中return null的话，终止后续的BeanPostProcessor的执行，直接return result；
+     * 如果BeanPostProcessor返回的不为null的话，那么将result=current，去进行继续执行</note>
      */
-    protected open fun applyBeanPostProcessorsAfterInitialization(bean: Any, beanName: String): Any? {
+    protected open fun applyBeanPostProcessorsAfterInitialization(bean: Any, beanName: String): Any {
         var result = bean
         for (postProcessor in this.beanPostProcessors) {
-            val current = postProcessor.postProcessAfterInitialization(beanName, result)
-            if (current == null) {
-                return null
-            }
+            val current = postProcessor.postProcessAfterInitialization(beanName, result) ?: return result
             result = current
         }
         return result
@@ -434,12 +473,21 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
      */
     open fun getParameterNameDiscoverer(): ParameterNameDiscoverer? = this.parameterNameDiscoverer
 
+    /**
+     * 设置Spring BeanFactory的参数名发现器
+     */
     open fun setParameterNameDiscovery(parameterNameDiscoverer: ParameterNameDiscoverer?) {
         this.parameterNameDiscoverer = parameterNameDiscoverer
     }
 
+    /**
+     * 是否允许循环引用？
+     */
     open fun isAllowCircularReferences(): Boolean = this.allowCircularReferences
 
+    /**
+     * 是否是否允许循环引用？
+     */
     open fun setAllowCircularReferences(allowCircularReferences: Boolean) {
         this.allowCircularReferences = allowCircularReferences
     }

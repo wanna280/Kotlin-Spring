@@ -1,5 +1,7 @@
 package com.wanna.framework.context.annotation
 
+import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory
 import org.springframework.core.annotation.AliasFor
 
 /**
@@ -11,7 +13,8 @@ annotation class Bean(
     val value: String = "",
     @get:AliasFor("value")
     val name: String = "",
-
+    val autowireCandidate: Boolean = true,  // 是否是AutowireCandidate？
+    val autowireMode: Int = AutowireCapableBeanFactory.AUTOWIRE_NO,  // AutowireMode
     val initMethod: String = "",
     val destoryMethod: String = ""
 )
