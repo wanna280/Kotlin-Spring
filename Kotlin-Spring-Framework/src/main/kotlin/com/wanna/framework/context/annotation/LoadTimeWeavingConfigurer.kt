@@ -9,6 +9,7 @@ import com.wanna.framework.instrument.classloading.LoadTimeWeaver
  * @see LoadTimeWeaver
  * @see LoadTimeWeavingConfiguration
  */
+@FunctionalInterface
 interface LoadTimeWeavingConfigurer {
     fun getLoadTimeWeaver(): LoadTimeWeaver
 }

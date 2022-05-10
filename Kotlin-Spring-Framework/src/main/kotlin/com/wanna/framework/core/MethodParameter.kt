@@ -1,13 +1,17 @@
 package com.wanna.framework.core
 
+import org.springframework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
 import java.lang.reflect.Member
 import java.lang.reflect.Method
+import java.lang.reflect.Parameter
 import java.lang.reflect.Type
 
 /**
- * 这是对于一个方法的参数去进行的描述，通过参数索引(parameterIndex)，即可获取到方法的参数对象Parameter(来自java的reflect包)
+ * 这是对于一个方法的参数去进行的描述，通过参数索引(parameterIndex)，即可获取到方法/构造器的参数对象Parameter(来自java的reflect包)
+ *
+ * 特殊地，它也可以被用来去描述一个方法的返回值等
  */
 open class MethodParameter(
     private var executable: Executable,
@@ -18,17 +22,11 @@ open class MethodParameter(
 
     constructor(executable: Executable, parameterIndex: Int) : this(executable, parameterIndex, null, 1)
     constructor(executable: Executable, parameterIndex: Int, nestingLevel: Int) : this(
-        executable,
-        parameterIndex,
-        null,
-        nestingLevel
+        executable, parameterIndex, null, nestingLevel
     )
 
     constructor(executable: Executable, parameterIndex: Int, containingClass: Class<*>?) : this(
-        executable,
-        parameterIndex,
-        containingClass,
-        1
+        executable, parameterIndex, containingClass, 1
     )
 
 
@@ -37,6 +35,18 @@ open class MethodParameter(
 
     // 参数的类型
     private var parameterType: Class<*>? = null
+
+    // 参数名发现器
+    private var parameterNameDiscoverer: ParameterNameDiscoverer? = null
+
+    /**
+     * 初始化参数名发现器(Kotlin反射/标准反射/ASM三种方式)
+     *
+     * @param parameterNameDiscoverer 要指定的参数名发现器
+     */
+    open fun initParameterNameDiscoverer(parameterNameDiscoverer: ParameterNameDiscoverer) {
+        this.parameterNameDiscoverer = parameterNameDiscoverer
+    }
 
     /**
      * 获取描述的方法参数上的全部注解列表
@@ -49,7 +59,7 @@ open class MethodParameter(
      * 获取描述的方法参数上的注解，找不到return null
      */
     open fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T? {
-        return executable.parameters[parameterIndex].getAnnotation(annotationClass)
+        return AnnotatedElementUtils.getMergedAnnotation(this.getParameter(), annotationClass)
     }
 
     /**
@@ -64,6 +74,13 @@ open class MethodParameter(
      */
     open fun getParameterType(): Class<*> {
         return executable.parameterTypes[parameterIndex]
+    }
+
+    /**
+     * 获取方法参数(来自jdk的Parameter)对象
+     */
+    open fun getParameter(): Parameter {
+        return executable.parameters[parameterIndex]
     }
 
     /**
@@ -95,7 +112,7 @@ open class MethodParameter(
     }
 
     /**
-     * 返回参数的泛型类型
+     * 返回方法参数的泛型类型
      */
     open fun getGenericParameterType(): Type {
         return executable.parameters[parameterIndex].parameterizedType
@@ -112,7 +129,7 @@ open class MethodParameter(
     open fun getConstructor(): Constructor<*>? = executable as? Constructor<*>
 
     /**
-     * 获取Memember
+     * 获取Member，也就是方法/构造器对象(executable)本身
      */
     open fun getMember(): Member = executable
 
@@ -120,6 +137,31 @@ open class MethodParameter(
      * 获取参数类型
      */
     open fun getParameterTypes(): Array<Class<*>> = executable.parameterTypes
+
+    /**
+     * 如果有参数名发现器的话，通过参数名发现器去获取参数名，如果 想要获取参数名的话，那么需要提前初始化参数名发现器
+     *
+     * @return 如果参数名发现器匹配了，那么return参数名；不然return null
+     */
+    open fun getParameterName(): String? {
+        val nameDiscoverer = this.parameterNameDiscoverer
+        val executable = this.executable
+        var parameterNames: Array<String>? = null
+
+        // 使用参数名解析器去解析到合适的参数名列表
+        if (nameDiscoverer != null) {
+            if (executable is Method) {
+                parameterNames = nameDiscoverer.getParameterNames(executable)
+            } else if (executable is Constructor<*>) {
+                parameterNames = nameDiscoverer.getParameterNames(executable)
+            }
+        }
+        // 如果参数名列表不为空，那么根据parameterIndex去return 参数名
+        if (parameterNames != null && parameterIndex >= 0) {
+            return parameterNames[parameterIndex]
+        }
+        return null
+    }
 
     companion object {
         /**

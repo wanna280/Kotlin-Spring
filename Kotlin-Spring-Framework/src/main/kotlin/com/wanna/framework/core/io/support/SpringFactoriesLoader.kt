@@ -110,7 +110,7 @@ object SpringFactoriesLoader {
 
                     // 将全部的factory的实现类都放入到列表当中去...
                     result.putIfAbsent(factoryTypeName, ArrayList())
-                    factoryImplementNames.forEach { result[factoryTypeName]!! += it }
+                    factoryImplementNames.filter { it.isNotBlank() }.forEach { result[factoryTypeName]!! += it }
                 }
             }
             // 将已经加载完成SpringFactories的结果加入到缓存当中

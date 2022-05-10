@@ -68,7 +68,7 @@ open class AspectJWeavingEnabler : BeanFactoryPostProcessor, Ordered, BeanClassL
     }
 
     /**
-     * 对类再进行包装一层，避免因为依赖当中没有AspectJ的依赖而产生潜在的AspectJ的LinkageError(NoClassDefError)
+     * 对AspectJ的Transformer再进行包装一层，避免因为依赖当中没有AspectJ的依赖而产生潜在的AspectJ的LinkageError(NoClassDefFoundError)
      */
     private class AspectJClassBypassingClassFileTransformer(private val delegate: ClassFileTransformer) :
         ClassFileTransformer {
@@ -79,10 +79,11 @@ open class AspectJWeavingEnabler : BeanFactoryPostProcessor, Ordered, BeanClassL
             protectionDomain: ProtectionDomain?,
             classfileBuffer: ByteArray?
         ): ByteArray? {
-            // 如果类名是AspectJ相关的jar包，那么直接去进行跳过处理
+            // 如果AspectJ相关的类(org.aspectj.*)，那么直接去进行跳过处理
             if (className.startsWith("org.aspectj") || className.startsWith("org/aspectj")) {
                 return classfileBuffer
             }
+            // 如果类名不是AspectJ相关的类，那么直接使用AspectJ的Transformer作为委托去进行transform
             return delegate.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer)
         }
     }

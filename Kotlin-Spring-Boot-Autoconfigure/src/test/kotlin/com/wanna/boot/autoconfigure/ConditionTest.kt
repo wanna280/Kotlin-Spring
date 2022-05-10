@@ -1,5 +1,6 @@
 package com.wanna.boot.autoconfigure
 
+import com.sun.tools.attach.VirtualMachine
 import com.wanna.boot.SpringApplication
 import com.wanna.boot.autoconfigure.condition.ConditionOnMissingClass
 import com.wanna.boot.context.properties.ConfigurationProperties
@@ -16,6 +17,7 @@ import org.aspectj.lang.annotation.After
 import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.annotation.Before
 import org.aspectj.lang.annotation.Pointcut
+import java.util.concurrent.TimeUnit
 
 @EnableAspectJWeaving
 @ConditionOnMissingClass(value = ["com.wanna.boot.autoconfigure.MyReactiveWebServerFactory1"])
@@ -110,9 +112,12 @@ class UserService {
 
 fun main(vararg args: String) {
     val applicationContext = SpringApplication.run(ConditionTest::class.java)
+    TimeUnit.MILLISECONDS.sleep(1000)
 
     val clazz = MyClassLoader.INSTANCE.loadClass("com.wanna.boot.autoconfigure.UserService")
     val instance = clazz.getDeclaredConstructor().newInstance()
     val method = clazz.getMethod("sayUser")
     method.invoke(instance)
+
+
 }

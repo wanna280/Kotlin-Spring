@@ -22,6 +22,7 @@
             <option value="$PROJECT_DIR$/Kotlin-Spring-Boot-Autoconfigure" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Framework" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Instrument" />
+            <option value="$PROJECT_DIR$/Kotlin-Spring-Web" />
           </set>
         </option>
       </GradleProjectSettings>

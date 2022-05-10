@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.6.10"
     java
+    id("io.spring.dependency-management") version("1.0.9.RELEASE")
 }
 
 group = "com.wanna"
