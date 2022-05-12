@@ -16,6 +16,8 @@ import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.core.util.AnnotationConfigUtils
 import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.StopWatch
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
@@ -70,7 +72,7 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         SpringFactoriesLoader.loadFactories(ApplicationContextInitializer::class.java)
 
     // 推测SpringApplication的主启动类
-    private val mainApplicationClass: Class<*> = deduceMainApplicationClass()
+    private val mainApplicationClass: Class<*>? = deduceMainApplicationClass()
 
     // 是否需要添加ConversionService到容器当中？
     private var addConversionService = true
@@ -86,6 +88,9 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
 
     // banner
     private var banner: Banner? = null
+
+    // 是否需要打印SpringApplication启动所花费的时间
+    private var logStartupInfo = true
 
     /**
      * 获取SpringApplication当中的监听器列表，并完成好排序工作
@@ -103,6 +108,10 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
      * @return 完成刷新工作的ApplicationContext
      */
     open fun run(vararg args: String): ConfigurableApplicationContext {
+        // 开启秒表的计时，方便去统计整个应用启动过程当中的占用的时间
+        val stopWatch = StopWatch()
+        stopWatch.start()
+
         // 创建BootstrapContext
         val bootstrapContext = createBootstrapContext()
 
@@ -119,7 +128,7 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
             // 准备好SpringApplication环境
             val environment = prepareEnvironment(listeners, bootstrapContext, applicationArguments)
 
-            // 环境已经准备好了，可以去打印Banner了，并将创建的Banner去进行返回1
+            // 环境已经准备好了，可以去打印Banner了，并将创建的Banner去进行返回
             val banner = printBanner(environment)
             // 创建ApplicationContext并且设置ApplicationStartup对象到ApplicationContext当中
             applicationContext = createApplicationContext()
@@ -133,6 +142,14 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
 
             // 在SpringApplication的ApplicationContext完成刷新之后的回调，是一个钩子函数，交给子类去完成
             afterRefresh(applicationContext, applicationArguments)
+
+            // 结束秒表的计时
+            stopWatch.stop()
+
+            // 如果需要记录startup的相关信息的话
+            if (this.logStartupInfo) {
+                StartupInfoLogger(mainApplicationClass).logStarted(getApplicationLogger(), stopWatch)
+            }
 
             // 通知所有的监听器，SpringApplication的已经启动完成，可以去进行后置处理工作了
             listeners.started(applicationContext)
@@ -156,6 +173,13 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
     /**
      * 准备SpringApplication的ApplicationContext，将Environment设置到ApplicationContext当中，并完成ApplicationContext的初始化工作；
      * 将注册到SpringApplication当中的配置类注册到ApplicationContext当中
+     *
+     * @param bootstrapContext bootstrapContext
+     * @param context ApplicationContext
+     * @param environment Environment
+     * @param listeners listeners
+     * @param arguments ApplicationArguments
+     * @param banner banner(有可能为空)
      */
     protected open fun prepareContext(
         bootstrapContext: BootstrapContext,
@@ -177,13 +201,19 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         // 通知监听器，ApplicationContext已经准备好了，可以完成后置处理了
         listeners.contextPrepared(context)
 
-        // 从容器当中获取到BeanFactory
+        // SpringApplication的整个ApplicationContext已经准备好了，可以去进行打印相关的日志信息了
+        // 是否需要打印SpringApplication启动过程当中的相关信息，如果需要的话，需要在这里去打印SpringApplication的相关环境信息
+        if (this.logStartupInfo) {
+            logStartingInfo(context.getParent() == null)  // 只要root容器才打印
+        }
+
+        // 从SpringApplication的ApplicationContext当中获取到BeanFactory
         val beanFactory = context.getBeanFactory()
 
-        // 把ApplicationArguments注册到容器当中
+        // 把ApplicationArguments注册到beanFactory当中
         beanFactory.registerSingleton("applicationArguments", arguments)
 
-        // 如果设置了Banner的话，将Banner注册到beanFactory当中
+        // 如果使用到了Banner的话，将Banner也注册到beanFactory当中
         if (banner != null) {
             // 将Banner对象注册到容器当中
             beanFactory.registerSingleton("springBootBanner", banner)
@@ -411,13 +441,13 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
     /**
      * 探测SpringApplication的启动类
      */
-    private fun deduceMainApplicationClass(): Class<*> {
+    private fun deduceMainApplicationClass(): Class<*>? {
         java.lang.RuntimeException().stackTrace.forEach {
             if (it.methodName == "main") {
                 return ClassUtils.forName<Any>(it.className)
             }
         }
-        return null!!
+        return null
     }
 
     /**
@@ -490,5 +520,27 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
      */
     open fun setApplicationType(applicationType: ApplicationType) {
         this.applicationType = applicationType
+    }
+
+    /**
+     * 打印SpringApplication启动过程当中的相关环境信息，只要当前容器是root容器时才需要去进行打印
+     */
+    protected open fun logStartingInfo(isRoot: Boolean) {
+        if (isRoot) {
+            StartupInfoLogger(this.mainApplicationClass).logStarting(getApplicationLogger())
+        }
+    }
+
+    /**
+     * 获取当前SpringApplication的Logger，如果有主启动类的话，那么使用该类作为loggerName去进行获取Logger；
+     * 如果没有的话，那么使用SpringApplication的Logger去作为Logger
+     *
+     * @return Application Logger
+     */
+    open fun getApplicationLogger(): Logger {
+        if (this.mainApplicationClass != null) {
+            return LoggerFactory.getLogger(this.mainApplicationClass)
+        }
+        return this.logger
     }
 }

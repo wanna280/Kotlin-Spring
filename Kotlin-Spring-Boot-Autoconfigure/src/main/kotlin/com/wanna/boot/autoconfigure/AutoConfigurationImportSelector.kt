@@ -67,7 +67,7 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
         // 从SpringFactories当中去加载到所有的EnableAutoConfiguration配置类的className列表
         var configurations = getCandidateConfigurations(metadata, null)
 
-        // 对加载出来的列表利用Set去进行去重
+        // 对加载出来的自动配置类列表利用Set去进行去重
         configurations = removeDuplicates(configurations)
 
         // 从配置文件/注解配置信息当中去加载要排除的className列表
@@ -143,8 +143,11 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
 
     /**
      * 获取ConfigurationClassFilter，利用metadata的方式，提前去对自动配置类去进行过滤
+     *
+     * @return 维护了AutoConfigurationImportFilter列表的ClassFilter
      */
     protected open fun getConfigurationClassFilter(): ConfigurationClassFilter {
+        this.configurationClassFilter
         if (this.configurationClassFilter == null) {
             // 从SpringFactories当中去加载AutoConfigurationImportFilter列表，并创建ConfigurationClassFilter对象
             val importFilters =
@@ -201,22 +204,25 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     }
 
     /**
-     * 配置类的ClassFilter，对要排除的配置类去进行排除
+     * 配置类的ClassFilter，对要排除的配置类去进行排除，内部组合了AutoConfigurationImportFilter的列表
+     *
+     * @param classLoader classLoader
+     * @param filters AutoConfigurationImportFilters
      */
     inner class ConfigurationClassFilter(
         classLoader: ClassLoader, private val filters: MutableList<AutoConfigurationImportFilter>
     ) {
-        // AutoConfiguration的Metadata信息
-        private var autoConfigurationMetadata: AutoConfigurationMetadata =
-            AutoConfigurationMetadataLoader.loadMetadata(classLoader)
+        // 从配置文件(META-INF/spring-autoconfigure-metadata.properties)当中加载AutoConfiguration的Metadata信息
+        private var autoConfigurationMetadata = AutoConfigurationMetadataLoader.loadMetadata(classLoader)
 
         /**
          * 使用AutoConfigurationImportFilter去过滤掉所有的在metadata当中就已经不匹配的配置类
          *
          * @param configurations 候选的AutoConfiguration的配置类
+         * @return 使用AutoConfigurationImportFilter去完成过滤之后的配置类列表
          */
         fun filter(configurations: List<String>): MutableList<String> {
-            // 将AutoConfiguration配置类列表转换为Array<String?>，因为需要将某个位置的元素设置为null
+            // 将AutoConfiguration配置类列表转换为Array<String?>，因为需要将某个位置的元素设置为null，需要使用?类型
             val candidates = ArrayList<String?>(configurations).toTypedArray()
             // 遍历所有的AutoConfigurationImportFilter去进行匹配，如果matches[index]=false，那么就将candidates[index]设置为null
             filters.forEach {

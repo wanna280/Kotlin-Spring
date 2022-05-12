@@ -4,7 +4,7 @@ import org.slf4j.ILoggerFactory
 import org.slf4j.spi.LoggerFactoryBinder
 
 /**
- * 这是针对于Slf4j的StaticLoggerBinder，去为Slf4j当中的LoggerFactory的获取提供支持
+ * 这是针对于Slf4j使用的StaticLoggerBinder，去为Slf4j当中的LoggerFactory的获取提供支持
  *
  * @see LoggerFactoryBinder
  */
@@ -38,11 +38,21 @@ open class StaticLoggerBinder : LoggerFactoryBinder {
         Slf4jBridgeContextInitializer(defaultSlf4JBridgeLoggerContext).autoConfig()
     }
 
+    /**
+     * 来自于Slf4j的LoggerFactoryBinder的方法
+     *
+     * @return Slf4j的ILoggerFactory
+     */
     override fun getLoggerFactory(): ILoggerFactory {
         return defaultSlf4JBridgeLoggerContext
     }
 
+    /**
+     * 来自于Slf4j的LoggerFactoryBinder的方法
+     *
+     * @return Slf4j的ILoggerFactory的className
+     */
     override fun getLoggerFactoryClassStr(): String {
-        return this::class.java.name
+        return defaultSlf4JBridgeLoggerContext::class.java.name
     }
 }

@@ -55,7 +55,7 @@ open class NettyServer : WebServer {
 
     override fun start() {
         serverBootstrap.bind(this.port).sync()
-        logger.info("NettyServer在9966端口启动")
+        logger.info("Netty Server已经启动在[${this.port}]端口")
     }
 
     override fun stop() {

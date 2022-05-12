@@ -26,3 +26,7 @@ dependencies {
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
 }
+
+tasks.getByName<Jar>("jar") {
+    manifest.attributes["Implementation-Version"] = "1.0.0"
+}

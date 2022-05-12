@@ -10,8 +10,6 @@ import org.slf4j.Marker
  * @see Logger
  */
 open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.LogcLogger(name) {
-    constructor() : this(Slf4jBridgeLogcLogger::class.java.name)
-
     override fun getName(): String {
         return super.getLoggerName()
     }

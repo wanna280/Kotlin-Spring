@@ -2,20 +2,31 @@ package com.wanna.logger.impl.event
 
 
 /**
- * 这是针对于Logger的Event的一个具体实现
+ * 这是针对于Logger的LoggingEvent的一个具体实现
+ *
+ * @param loggerQualifierName logger的全类名，可以利用它去寻找callerInfo信息
+ * @param level level
+ * @param msg logMessage
+ * @param loggerName loggerName
+ * @param throwable 异常信息
  */
-open class LoggingEvent(_level: Level, _msg: Any?, _loggerName: String) : ILoggingEvent {
-    private var level: Level = _level
-    private var msg: Any? = _msg
-    private var loggerName: String = _loggerName
-    private var timestamp: Long = System.currentTimeMillis()
-    private var threadName: String = Thread.currentThread().name
-    private var threadId: Long = Thread.currentThread().id
+open class LoggingEvent(
+    private val loggerQualifierName: String,
+    private val level: Level,
+    private val msg: Any?,
+    private val loggerName: String,
+    private val throwable: Throwable?
+) : ILoggingEvent {
+    private val timestamp: Long = System.currentTimeMillis()
+    private val threadName: String = Thread.currentThread().name
+    private val threadId: Long = Thread.currentThread().id
 
-    private var throwable: Throwable? = null
+    constructor(
+        _loggerQualifierName: String, _level: Level, _msg: Any?, _loggerName: String
+    ) : this(_loggerQualifierName, _level, _msg, _loggerName, null)
 
     override fun toString(): String {
-        return "$loggerName $timestamp $threadName $threadId ${level.name} $msg\n"
+        return "LoggingEvent[$loggerName $timestamp $threadName $threadId ${level.name} $msg $throwable]"
     }
 
     override fun getThreadId(): Long {
@@ -44,5 +55,9 @@ open class LoggingEvent(_level: Level, _msg: Any?, _loggerName: String) : ILoggi
 
     override fun getLevel(): Level {
         return level
+    }
+
+    fun getLoggerQualifierName(): String {
+        return this.loggerQualifierName
     }
 }

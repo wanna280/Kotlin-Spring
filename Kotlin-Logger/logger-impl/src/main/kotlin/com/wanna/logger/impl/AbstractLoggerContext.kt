@@ -1,13 +1,16 @@
 package com.wanna.logger.impl
 
 import com.wanna.logger.api.ILoggerFactory
+import com.wanna.logger.impl.filter.LoggerFilter
 import com.wanna.logger.impl.filter.LoggerFilterList
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 这是实现方对于LoggerFactory的具体实现提供模板实现类，实现方必须能遵循的API规范，因为API规范的指定方，会用到ILoggerFactory，去进行getLogger
  *
  * @see ILoggerFactory
- * @param T  Logger类型，子类可以进行自定义自己的LogcLogger类型
+ * @see LogcLogger
+ * @param T  Logger类型，子类可以进行自定义自己的LogcLogger类型，必须为LogcLogger的子类
  */
 @Suppress("UNCHECKED_CAST")
 abstract class AbstractLoggerContext<T : LogcLogger> : ILoggerFactory {
@@ -15,7 +18,7 @@ abstract class AbstractLoggerContext<T : LogcLogger> : ILoggerFactory {
     // RootLogger，全局默认的Logger
     var root: T = this.initRootLogger()
 
-    // Filter列表
+    // LoggerFilter列表，它能联合列表当中的所有的LoggerFilter一起来决策当前日志是否需要去进行输出
     val filterList: LoggerFilterList = LoggerFilterList()
 
     // 这是Logger的缓存的默认实现，缓存已经注册过的所有Logger，为了保证线程安全，采用ConcurrentHashMap
@@ -26,42 +29,81 @@ abstract class AbstractLoggerContext<T : LogcLogger> : ILoggerFactory {
     }
 
     /**
-     * 创建LoggerCache的方法，模板方法，交给子类去进行扩展
+     * 创建LoggerCache的方法，默认支持使用ConcurrentHashMap的方式；同时也可以作为模板方法，交给子类去进行扩展
+     *
+     * @param T Logger类型
+     * @return 要采用的LoggerCache
      */
-    abstract fun newLoggerCache(): MutableMap<String, T>
+    open fun newLoggerCache(): MutableMap<String, T> = ConcurrentHashMap<String, T>()
 
     /**
-     * 创建一个默认的Logger，name采用自定义的；抽象方法，子类必须实现有名字的创建Logger的方式
+     * 创建一个默认的Logger，name采用自定义的；抽象方法，子类必须实现有名字的创建Logger的方式；
+     * 全局创建Logger，都会使用这个方法去进行创建Logger，子类完成可以在创建Logger时，去进行各种的自定义操作；
+     *
+     * @param name loggerName
+     * @return 创建好的Logger
      */
     abstract fun newLogger(name: String): T
 
     /**
      * 初始化RootLogger，子类可以重写这个方法，完成自定义的RootLogger的实现；
      * 也提供了默认的实现，子类也可以不进行实现，使用默认的扩展方法
+     *
+     * @return RootLogger
      */
     open fun initRootLogger(): T {
         return newLogger(LogcLogger.ROOT_LOGGER_NAME)
     }
 
     /**
-     * 创建一个默认的Logger，name采用默认的LogcLogger的类名
-     */
-    open fun newLogger(): T = newLogger(LogcLogger::class.java.name)
-
-    /**
-     * 通过clazz去获取Logger
+     * 添加LoggerFilter
      *
-     * @param clazz 目标类
-     * @return 目标类的Logger
+     * @param filter 你想要添加的LoggerFilter
      */
-    override fun getLogger(clazz: Class<*>): T {
-        return getLogger(clazz.name)
+    open fun addLoggerFilter(filter: LoggerFilter) {
+        this.filterList += filter
     }
 
     /**
-     * 按照name去获取Logger
+     * 在指定的index处添加LoggerFilter
      *
-     * @param name LoggerName
+     * @param index index
+     * @param filter 你想要添加的LoggerFilter
+     * @throws IllegalArgumentException 如果index越界
+     */
+    open fun addLoggerFilterAt(index: Int, filter: LoggerFilter) {
+        if (index < 0 || index >= this.filterList.size) {
+            throw IllegalArgumentException("给定的index不合法")
+        }
+        this.filterList.add(index, filter)
+    }
+
+    /**
+     * 移除LoggerFilter
+     *
+     * @param filter 你想要移除的LoggerFilter
+     */
+    open fun removeLoggerFilter(filter: LoggerFilter) {
+        this.filterList += filter
+    }
+
+    /**
+     * 在指定的index处移除该位置的LoggerFilter
+     *
+     * @param index index
+     * @throws IllegalArgumentException 如果index越界的话
+     */
+    open fun removeLoggerFilterAt(index: Int) {
+        if (index < 0 || index >= this.filterList.size) {
+            throw IllegalArgumentException("给定的index不合法")
+        }
+        this.filterList.removeAt(index)
+    }
+
+    /**
+     * 按照loggerName去获取Logger
+     *
+     * @param name LoggerName(一般为全类名)
      * @return 获取到的Logger
      */
     override fun getLogger(name: String): T {
@@ -108,11 +150,11 @@ abstract class AbstractLoggerContext<T : LogcLogger> : ILoggerFactory {
     }
 
     /**
-     * 获取loggerName当中的第一个"."或者是"$"
+     * 获取loggerName当中的第一个"."或者是"$"所在的位置index
      *
      * @param name loggerName
      * @param fromIndex 从哪个位置开始开始进行判断
-     * @return "."或者"$"所在位置的index
+     * @return loggerName当中的"."或者"$"所在位置的index，如果都不存在，return -1
      */
     private fun getFirstIndexOf(name: String, fromIndex: Int): Int {
         val i1 = name.indexOf(".", fromIndex)

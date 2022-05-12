@@ -10,6 +10,4 @@ import com.wanna.logger.impl.AbstractLoggerContext
  * @see ContextInitializer
  */
 open class Slf4jBridgeContextInitializer(abstractLoggerContext: Slf4JBridgeLoggerContext) :
-    ContextInitializer<Slf4jBridgeLogcLogger>(abstractLoggerContext) {
-
-}
+    ContextInitializer<Slf4jBridgeLogcLogger>(abstractLoggerContext)

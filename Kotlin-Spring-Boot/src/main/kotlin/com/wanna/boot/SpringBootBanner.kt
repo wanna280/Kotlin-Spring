@@ -18,7 +18,7 @@ open class SpringBootBanner : Banner {
         )
     }
 
-    override fun printBanner(environment: Environment, sourceClass: Class<*>, printStream: PrintStream) {
+    override fun printBanner(environment: Environment, sourceClass: Class<*>?, printStream: PrintStream) {
        BANNER.forEach { printStream.println(it) }
     }
 }

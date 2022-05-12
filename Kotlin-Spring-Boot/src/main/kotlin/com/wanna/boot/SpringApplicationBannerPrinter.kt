@@ -12,9 +12,10 @@ import java.io.PrintStream
  * 采用的默认Banner为SpringBoot的Banner
  *
  * @see SpringBootBanner
+ *
+ * @param fallbackBanner 当没有根据路径匹配到合适的Banner时，应该使用的fallbackBanner
  */
 open class SpringApplicationBannerPrinter(private val fallbackBanner: Banner?) {
-
     companion object {
         const val BANNER_CHARSET_PROPERTY = "spring.banner.charset" // banner charset property name
         const val BANNER_LOCATION_PROPERTY = "spring.banner.location"  // location of banner
@@ -33,7 +34,7 @@ open class SpringApplicationBannerPrinter(private val fallbackBanner: Banner?) {
      * @param logger 要使用的输出的Logger
      * @return 将原来的创建好的Banner包装成为PrintedBanner去进行return
      */
-    open fun print(environment: ConfigurableEnvironment, mainClass: Class<*>, logger: Logger): Banner {
+    open fun print(environment: ConfigurableEnvironment, mainClass: Class<*>?, logger: Logger): Banner {
         val banner = getBanner(environment)  // getBanner
         logger.info(createStringFromBanner(environment, mainClass, banner))  // Banner获取到输出的字符串，并交给Logger去进行输出
         return PrintedBanner(banner, mainClass)  // wrapBanner
@@ -47,7 +48,7 @@ open class SpringApplicationBannerPrinter(private val fallbackBanner: Banner?) {
      * @param printStream 打印输出流
      * @return 将原来的创建好的Banner包装成为PrintedBanner去进行return
      */
-    open fun print(environment: ConfigurableEnvironment, mainClass: Class<*>, printStream: PrintStream): Banner {
+    open fun print(environment: ConfigurableEnvironment, mainClass: Class<*>?, printStream: PrintStream): Banner {
         val banner = getBanner(environment)  // getBanner
         banner.printBanner(environment, mainClass, printStream)  // printBanner
         return PrintedBanner(banner, mainClass)  // wrapBanner
@@ -75,7 +76,7 @@ open class SpringApplicationBannerPrinter(private val fallbackBanner: Banner?) {
      * 要使用Logger去进行输出，但是Banner只能接受PrintStream去进行输出，因此这里创建一个ByteArrayOutputStream去存储PrintStream
      * 输出的内容，接着将ByteArrayOutputStream转为字符串，交给Logger去进行输出即可(适配器模式？)
      */
-    private fun createStringFromBanner(environment: Environment, mainClass: Class<*>, banner: Banner): String {
+    private fun createStringFromBanner(environment: Environment, mainClass: Class<*>?, banner: Banner): String {
         val bous = ByteArrayOutputStream()
         banner.printBanner(environment, mainClass, PrintStream(bous))
         val charset = environment.getProperty(BANNER_CHARSET_PROPERTY, "utf-8")
@@ -107,16 +108,17 @@ open class SpringApplicationBannerPrinter(private val fallbackBanner: Banner?) {
         /**
          * 打印Banner，采用的打印的方式为：遍历所有的Banner，挨个去完成Banner的打印
          */
-        override fun printBanner(environment: Environment, sourceClass: Class<*>, printStream: PrintStream) {
+        override fun printBanner(environment: Environment, sourceClass: Class<*>?, printStream: PrintStream) {
             bannerList.forEach { it.printBanner(environment, sourceClass, printStream) }
         }
     }
 
     /**
-     * 这是已经已经完成打印的Banner，它将之前已经创建好的Banner去进行保存
+     * 这是已经已经完成打印的Banner，它将之前已经创建好的Banner去进行保存，如果后续当中还需要进行打印的话，也可以使用这个Banner去完成打印，
+     * 它通常会被加入到SpringApplication的beanFactory当中，可以去进行Autowire注入
      */
-    class PrintedBanner(private val banner: Banner, private val sourceClass: Class<*>) : Banner {
-        override fun printBanner(environment: Environment, sourceClass: Class<*>, printStream: PrintStream) {
+    class PrintedBanner(private val banner: Banner, private val sourceClass: Class<*>?) : Banner {
+        override fun printBanner(environment: Environment, sourceClass: Class<*>?, printStream: PrintStream) {
             banner.printBanner(environment, sourceClass, printStream)
         }
     }
