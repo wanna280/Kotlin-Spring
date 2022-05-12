@@ -1,7 +1,6 @@
 package org.slf4j.impl
 
-import com.wanna.logger.impl.ContextInitializer
-import com.wanna.logger.impl.AbstractLoggerContext
+import com.wanna.logger.impl.spi.ContextInitializer
 
 /**
  * 这是一个Slf4j的上下文初始化器的桥接类，目的是可以自己扩展原来的Logger的上下文初始化方法，为扩展自己原来的Logger提供支持；

@@ -55,6 +55,9 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
     /**
      * 按照类型去注入一个可以被解析的依赖
+     *
+     * @param dependencyType 依赖的类型
+     * @param autowireValue 要去进行注入的值
      */
     override fun registerResolvableDependency(dependencyType: Class<*>, autowireValue: Any) {
         resolvableDependencies[dependencyType] = autowireValue
@@ -159,7 +162,6 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         autowiredBeanName: MutableSet<String>?,
         typeConverter: TypeConverter?
     ): Any? {
-
         val type = descriptor.getDependencyType()
 
         // 从AutowireCandidateResolve获取建议进行设置的值，主要用来处理@Value注解

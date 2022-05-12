@@ -55,14 +55,8 @@ object AnnotationAttributesUtils {
      *
      * @param annotations 目标注解列表
      */
-    fun asAnnotationAttributesSet(annotations: Collection<*>): Set<AnnotationAttributes?> {
-        val attributesSet: MutableSet<AnnotationAttributes?> = HashSet()
-        for (annotation in annotations) {
-            if (annotation is Annotation) {
-                attributesSet.add(asAnnotationAttributes(annotation as Annotation))
-            }
-        }
-        return attributesSet
+    fun asAnnotationAttributesSet(annotations: Collection<*>): Set<AnnotationAttributes> {
+        return annotations.filterIsInstance<Annotation?>().mapNotNull { asAnnotationAttributes(it) }.toSet()
     }
 
     /**
@@ -70,9 +64,9 @@ object AnnotationAttributesUtils {
      *
      * @param element         目标位置(Class/Annotation/Method/Field等)
      * @param targetAnnoClass 目标注解类型
-    </keyword> */
+     */
     fun getDirectAnnotationAttributes(
-        element: AnnotatedElement?,
+        element: AnnotatedElement,
         targetAnnoClass: Class<out Annotation?>?
     ): AnnotationAttributes? {
         return asAnnotationAttributes(AnnotatedElementUtils.getMergedAnnotation(element, targetAnnoClass))

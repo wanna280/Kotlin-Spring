@@ -18,6 +18,28 @@ import java.security.ProtectionDomain
  * @see LoadTimeWeaverAware
  */
 open class AspectJWeavingEnabler : BeanFactoryPostProcessor, Ordered, BeanClassLoaderAware, LoadTimeWeaverAware {
+    companion object {
+        // AspectJ Aop的Xml文件位置常量
+        const val ASPECTJ_AOP_XML_RESOURCE = "META-INF/aop.xml"
+
+        /**
+         * 开启AspectJ的编织的支持，往InstrumentationLoadTimeWeaver当中添加AspectJ的Transformer
+         */
+        @JvmStatic
+        fun enableAspectJWeaving(loadTimeWeaver: LoadTimeWeaver?, classLoader: ClassLoader?) {
+            var weaverToUse = loadTimeWeaver
+            if (weaverToUse == null) {
+                if (InstrumentationLoadTimeWeaver.isInstrumentationAvailable()) {
+                    weaverToUse = InstrumentationLoadTimeWeaver(classLoader!!)
+                } else {
+                    throw IllegalStateException("VM当中没有LoadTimeWeaver存在")
+                }
+            }
+
+            // 往LoadTimeWeaver当中添加ClassFileTransformer
+            weaverToUse.addTransformer(AspectJClassBypassingClassFileTransformer(ClassPreProcessorAgentAdapter()))
+        }
+    }
 
     // LoadTimeWeaver
     private var loadTimeWeaver: LoadTimeWeaver? = null
@@ -42,29 +64,6 @@ open class AspectJWeavingEnabler : BeanFactoryPostProcessor, Ordered, BeanClassL
 
     override fun getOrder(): Int {
         return Ordered.ORDER_HIGHEST
-    }
-
-    companion object {
-        // AspectJ Aop的Xml文件位置常量
-        const val ASPECTJ_AOP_XML_RESOURCE = "META-INF/aop.xml"
-
-        /**
-         * 开启AspectJ的编织的支持，往InstrumentationLoadTimeWeaver当中添加AspectJ的Transformer
-         */
-        @JvmStatic
-        fun enableAspectJWeaving(loadTimeWeaver: LoadTimeWeaver?, classLoader: ClassLoader?) {
-            var weaverToUse = loadTimeWeaver
-            if (weaverToUse == null) {
-                if (InstrumentationLoadTimeWeaver.isInstrumentationAvailable()) {
-                    weaverToUse = InstrumentationLoadTimeWeaver(classLoader!!)
-                } else {
-                    throw IllegalStateException("VM当中没有LoadTimeWeaver存在")
-                }
-            }
-
-            // 往LoadTimeWeaver当中添加ClassFileTransformer
-            weaverToUse.addTransformer(AspectJClassBypassingClassFileTransformer(ClassPreProcessorAgentAdapter()))
-        }
     }
 
     /**

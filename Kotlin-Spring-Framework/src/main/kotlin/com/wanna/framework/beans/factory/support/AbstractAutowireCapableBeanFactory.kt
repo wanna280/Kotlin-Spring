@@ -264,7 +264,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
     /**
      * 对BeanWrapper去完成初始化工作
      */
-    fun initBeanWrapper(beanWrapper: BeanWrapper) {
+    open fun initBeanWrapper(beanWrapper: BeanWrapper) {
 
     }
 

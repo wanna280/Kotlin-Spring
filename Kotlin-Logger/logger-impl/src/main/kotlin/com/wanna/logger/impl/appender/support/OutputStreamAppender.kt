@@ -18,10 +18,9 @@ abstract class OutputStreamAppender : LoggerAppender {
     var encoder: LoggerEncoder<ILoggingEvent>? = PatternLayoutEncoder()
 
     override fun append(event: ILoggingEvent) {
-        val outputStream = this.out
-        if (outputStream != null) {
-            val byteArray = Ansi.ansi().eraseScreen().render(encoder!!.encode(event)).toString().toByteArray()
-            outputStream.write(byteArray)
-        }
+        val encoder = this.encoder ?: throw IllegalStateException("请先初始化Encoder")
+        val outputStream = this.out ?: throw IllegalStateException("请先初始化输出流OutputStream")
+        val byteArray = Ansi.ansi().eraseScreen().render(encoder.encode(event)).toString().toByteArray()
+        outputStream.write(byteArray)
     }
 }

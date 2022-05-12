@@ -1,22 +1,19 @@
 package com.wanna.framework.context.processor.factory.internal
 
+import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.util.ConfigurationClassUtils
 import com.wanna.framework.context.ApplicationStartupAware
 import com.wanna.framework.context.SingletonBeanRegistry
-import com.wanna.framework.context.annotation.AnnotationBeanNameGenerator
-import com.wanna.framework.context.annotation.BeanNameGenerator
-import com.wanna.framework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator
+import com.wanna.framework.context.annotation.*
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.EnvironmentAware
+import com.wanna.framework.context.processor.beans.InstantiationAwareBeanPostProcessor
 import com.wanna.framework.context.processor.factory.BeanDefinitionRegistryPostProcessor
-import com.wanna.framework.context.annotation.ConfigurationClassBeanDefinitionReader
-import com.wanna.framework.context.annotation.ConfigurationClassParser
 import com.wanna.framework.core.PriorityOrdered
 import com.wanna.framework.core.environment.Environment
-import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.core.util.AnnotationConfigUtils
 
@@ -25,6 +22,12 @@ import com.wanna.framework.core.util.AnnotationConfigUtils
  */
 open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor, PriorityOrdered, EnvironmentAware,
     BeanClassLoaderAware, ApplicationStartupAware {
+
+    companion object {
+
+        // ImportRegistry的beanName
+        private val IMPORT_REGISTRY_BEAN_NAME = ConfigurationClassPostProcessor::class.java.name + ".importRegistry"
+    }
 
     // order
     private var order: Int = 0
@@ -81,28 +84,28 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
             }
         }
 
+        var singletonBeanRegistry: SingletonBeanRegistry? = null
         // 如果没有设置局部的BeanNameGenerator，尝试从SingletonBeanRegistry当中去获取到BeanNameGenerator
         // 如果找到了，那么就去替换默认的BeanNameGenerator
         if (registry is SingletonBeanRegistry && !localBeanNameGeneratorSet) {
+            singletonBeanRegistry = registry
             val beanNameGenerator = registry.getSingleton(AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR)
             if (beanNameGenerator != null) {
                 this.importBeanBeanNameGenerator = beanNameGenerator as BeanNameGenerator;
-                this.componentScanBeanNameGenerator = beanNameGenerator as BeanNameGenerator;
+                this.componentScanBeanNameGenerator = beanNameGenerator;
             }
         }
 
-        parser = ConfigurationClassParser(
-            registry,
-            StandardEnvironment(),
-            ClassLoader.getSystemClassLoader(),
-            componentScanBeanNameGenerator
-        )
-        reader = ConfigurationClassBeanDefinitionReader(registry, importBeanBeanNameGenerator, environment!!)
+        parser =
+            ConfigurationClassParser(registry, this.environment!!, this.classLoader!!, componentScanBeanNameGenerator)
 
         val parseConfig = this.applicationStartup!!.start("spring.context.config-classes.parse")  // start parseConfig
 
         // 使用配置类解析器去进行解析配置类
         parser!!.parse(candidates)
+        val importRegistry = parser!!.getImportRegistry()
+        reader =
+            ConfigurationClassBeanDefinitionReader(registry, importBeanBeanNameGenerator, environment!!, importRegistry)
 
         // 获取解析器解析到的所有配置类
         val configurationClasses = parser!!.getConfigurationClasses()
@@ -114,10 +117,17 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         reader!!.loadBeanDefinitions(configurationClasses)
 
         parseConfig.tag("classCount", "${configurationClasses.size}").end()  // tag and end
+
+        // 将ImportRegistry注册到beanFactory当中，方便后续处理ImportAware
+        if (singletonBeanRegistry != null && !singletonBeanRegistry.containsSingleton(IMPORT_REGISTRY_BEAN_NAME)) {
+            singletonBeanRegistry.registerSingleton(IMPORT_REGISTRY_BEAN_NAME, importRegistry)
+        }
     }
 
     override fun postProcessBeanFactory(beanFactory: ConfigurableListableBeanFactory) {
 
+        // 给容器当中注册处理ImportAware的BeanPostProcessor
+        beanFactory.addBeanPostProcessor(ImportAwareBeanPostProcessor(beanFactory))
     }
 
     override fun setEnvironment(environment: Environment) {
@@ -142,5 +152,24 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
 
     open fun setOrder(order: Int) {
         this.order = order
+    }
+
+    /**
+     * 处理ImportAware接口的注入
+     */
+    private class ImportAwareBeanPostProcessor(private val beanFactory: BeanFactory) :
+        InstantiationAwareBeanPostProcessor {
+        override fun postProcessBeforeInitialization(beanName: String, bean: Any): Any {
+            if (bean is ImportAware) {
+                val importRegistry = beanFactory.getBean(IMPORT_REGISTRY_BEAN_NAME, ImportRegistry::class.java)
+                if (importRegistry != null) {
+                    val importedMetadata = importRegistry.getImportingClassFor(bean::class.java.name)
+                    if (importedMetadata != null) {
+                        bean.setImportMetadata(importedMetadata)
+                    }
+                }
+            }
+            return bean
+        }
     }
 }

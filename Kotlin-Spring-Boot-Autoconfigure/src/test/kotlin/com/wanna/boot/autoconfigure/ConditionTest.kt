@@ -42,25 +42,6 @@ class ConfigurationPropertiesConstructorBinding() {
     constructor(name: String) : this()
 }
 
-@Component
-class MyReactiveWebServerFactory : com.wanna.boot.web.reactive.server.ReactiveWebServerFactory {
-    override fun getWebServer(): WebServer {
-        return object : WebServer {
-            override fun start() {
-
-            }
-
-            override fun stop() {
-
-            }
-
-            override fun getPort(): Int {
-                return 8080
-            }
-        }
-    }
-}
-
 class MyClassLoader : ClassLoader() {
     override fun loadClass(name: String?): Class<*> {
         if (name == null) {

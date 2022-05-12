@@ -19,7 +19,7 @@ object ParserStrategyUtils {
      * 实例化BeanInstance，并完成Aware接口的回调
      */
     fun <T> instanceClass(
-        clazz: Class<T>, environment: Environment, registry: BeanDefinitionRegistry
+        clazz: Class<*>, environment: Environment, registry: BeanDefinitionRegistry
     ): T {
         // 获取classLoader
         val classLoader =
@@ -27,17 +27,17 @@ object ParserStrategyUtils {
         // 使用BeanUtils去实例化对象
         val instance = createInstance(clazz, environment, registry, classLoader)
         // 执行Aware接口中的方法
-        invokeAwareMethods(instance as Any, environment, registry, classLoader)
-        return instance
+        invokeAwareMethods(instance, environment, registry, classLoader)
+        return instance as T
     }
 
     /**
      * 创建BeanInstance
      */
-    private fun <T> createInstance(
-        clazz: Class<T>, environment: Environment, registry: BeanDefinitionRegistry, classLoader: ClassLoader?
-    ): T {
-        return BeanUtils.instantiateClass(clazz) as T
+    private fun createInstance(
+        clazz: Class<*>, environment: Environment, registry: BeanDefinitionRegistry, classLoader: ClassLoader?
+    ): Any {
+        return BeanUtils.instantiateClass(clazz)
     }
 
     /**

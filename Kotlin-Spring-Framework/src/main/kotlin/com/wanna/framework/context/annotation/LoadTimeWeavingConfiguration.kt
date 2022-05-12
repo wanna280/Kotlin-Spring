@@ -2,6 +2,7 @@ package com.wanna.framework.context.annotation
 
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.ConfigurableApplicationContext
+import com.wanna.framework.context.annotation.EnableAspectJWeaving.*
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.weaving.AspectJWeavingEnabler
 import com.wanna.framework.context.weaving.DefaultContextLoadTimeWeaver
@@ -62,8 +63,20 @@ open class LoadTimeWeavingConfiguration : BeanClassLoaderAware, ImportAware {
             loadTimeWeaverToUse = DefaultContextLoadTimeWeaver(classLoader!!)
         }
 
-        // 开启AspectJ的编织
-        AspectJWeavingEnabler.enableAspectJWeaving(loadTimeWeaverToUse, this.classLoader!!)
+        // 解析注解当中的AspectJWeaving的模式，AUTO-开启，AUTODETECT-探测aop配置文件来判断是否开启，DISABLE-关闭
+        val metadata = this.annotationMetadata
+        if (metadata != null) {
+            val aspectJWeaving = metadata.getAnnotationAttributes(EnableAspectJWeaving::class.java)
+            val mode = aspectJWeaving["aspectJWeaving"] as AspectJWeaving
+            if (mode == AspectJWeaving.ENABLED) {
+                AspectJWeavingEnabler.enableAspectJWeaving(loadTimeWeaverToUse, this.classLoader!!)
+            } else if (mode == AspectJWeaving.AUTODETECT) {
+                val resource = this.classLoader!!.getResource(AspectJWeavingEnabler.ASPECTJ_AOP_XML_RESOURCE)
+                if (resource != null) {
+                    AspectJWeavingEnabler.enableAspectJWeaving(loadTimeWeaverToUse, this.classLoader!!)
+                }
+            }
+        }
         return loadTimeWeaverToUse
     }
 

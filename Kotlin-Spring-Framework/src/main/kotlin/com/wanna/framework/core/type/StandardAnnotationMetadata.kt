@@ -29,4 +29,14 @@ open class StandardAnnotationMetadata(val clazz: Class<*>) : AnnotationMetadata 
     override fun getClassName(): String {
         return clazz.name
     }
+
+    companion object {
+        /**
+         * 给定一个clazz，去进行构建
+         */
+        @JvmStatic
+        fun from(clazz: Class<*>): StandardAnnotationMetadata {
+            return StandardAnnotationMetadata(clazz)
+        }
+    }
 }

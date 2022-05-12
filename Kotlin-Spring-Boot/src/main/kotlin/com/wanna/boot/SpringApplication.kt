@@ -30,10 +30,11 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
          *
          * @param primarySource 配置类
          * @param args 命令行参数
+         * @return SpringApplication构建好的ApplicationContext
          */
         @JvmStatic
         fun run(primarySource: Class<*>, vararg args: String): ConfigurableApplicationContext {
-            return run(arrayOf(primarySource), args.toList().toTypedArray())
+            return run(arrayOf(primarySource), arrayOf(*args))
         }
 
         /**
@@ -41,6 +42,7 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
          *
          * @param primarySources 配置类列表
          * @param args 命令行参数
+         * @return SpringApplication构建好的ApplicationContext
          */
         @JvmStatic
         fun run(primarySources: Array<Class<*>>, args: Array<String>): ConfigurableApplicationContext {

@@ -2,6 +2,7 @@ package com.wanna.boot.web
 
 import com.wanna.boot.SpringApplication
 import com.wanna.boot.autoconfigure.SpringBootApplication
+import com.wanna.boot.runSpringApplication
 import com.wanna.framework.web.bind.annotation.RestController
 import com.wanna.framework.web.method.annotation.RequestBody
 import com.wanna.framework.web.method.annotation.RequestMapping
@@ -35,6 +36,5 @@ class Controller {
 }
 
 fun main(vararg args: String) {
-    val applicationContext = SpringApplication.run(WebTest::class.java, *args)
-
+    runSpringApplication<WebTest>(*args) {}
 }

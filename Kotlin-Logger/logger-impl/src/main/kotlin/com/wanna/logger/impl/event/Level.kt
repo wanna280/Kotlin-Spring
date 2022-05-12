@@ -23,5 +23,23 @@ enum class Level(val level: Int) {
         fun parse(levelStr: String): Level {
             return valueOf(levelStr.uppercase(Locale.getDefault()))
         }
+
+        /**
+         * 给定levelInt，去获取到对应的LoggingLevel
+         *
+         * @param levelInt level Int
+         * @return 解析出来的Level
+         */
+        @JvmStatic
+        fun parse(levelInt: Int): Level {
+            return when (levelInt) {
+                TRACE.level -> TRACE
+                DEBUG.level -> DEBUG
+                INFO.level -> INFO
+                WARN.level -> WARN
+                ERROR.level -> ERROR
+                else -> throw IllegalArgumentException("不合法的levelInt")
+            }
+        }
     }
 }

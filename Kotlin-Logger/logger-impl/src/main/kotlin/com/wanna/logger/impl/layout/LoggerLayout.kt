@@ -1,5 +1,7 @@
 package com.wanna.logger.impl.layout
 
-interface LoggerLayout<E> {
+import com.wanna.logger.impl.event.ILoggingEvent
+
+interface LoggerLayout<E : ILoggingEvent> {
     fun doLayout(e: E) : String
 }

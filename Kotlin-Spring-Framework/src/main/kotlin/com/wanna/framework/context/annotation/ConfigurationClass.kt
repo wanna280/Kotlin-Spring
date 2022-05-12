@@ -2,7 +2,6 @@ package com.wanna.framework.context.annotation
 
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.core.type.AnnotationMetadata
-import com.wanna.framework.core.type.StandardAnnotationMetadata
 
 /**
  * 这是对一个配置类的封装
@@ -11,12 +10,12 @@ open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
 
     constructor(beanDefinition: BeanDefinition, beanName: String?) : this(beanDefinition.getBeanClass()!!, beanName)
 
-    val metadata: AnnotationMetadata = StandardAnnotationMetadata(_clazz)
+    val metadata: AnnotationMetadata = AnnotationMetadata.introspect(_clazz)
 
     // clazz
     val configurationClass: Class<*> = _clazz
 
-    val beanName: String? = _beanName
+    var beanName: String? = _beanName
 
     // beanMethods
     val beanMethods = HashSet<BeanMethod>()

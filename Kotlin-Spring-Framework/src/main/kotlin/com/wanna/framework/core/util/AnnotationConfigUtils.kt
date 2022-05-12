@@ -56,6 +56,7 @@ object AnnotationConfigUtils {
      * 处理通用的BeanDefinition注解
      */
     @JvmStatic
+    @Suppress("UNCHECKED_CAST")
     fun processCommonDefinitionAnnotations(abd: AnnotatedBeanDefinition, metadata: AnnotationMetadata) {
 
         // 如果标注了@Primary注解，将BeanDefinition的Primary设置为true
@@ -78,8 +79,8 @@ object AnnotationConfigUtils {
         }
 
         // 如果标注了DependsOn注解的话
-        val dependson = metadata.isAnnotated(DependsOn::class.java.name)
-        if (dependson) {
+        val dependsOn = metadata.isAnnotated(DependsOn::class.java.name)
+        if (dependsOn) {
             val bdDependsOn = metadata.getAnnotationAttributes(DependsOn::class.java)["value"] as Array<String>
             abd.setDependsOn(bdDependsOn)
         }

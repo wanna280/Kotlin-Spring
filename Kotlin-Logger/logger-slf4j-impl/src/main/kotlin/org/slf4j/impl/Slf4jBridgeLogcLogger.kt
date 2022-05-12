@@ -214,4 +214,6 @@ open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.L
     override fun error(marker: Marker, msg: String, t: Throwable) {
         super.error(msg)
     }
+
+    override fun toString(): String = " Slf4jBridgeLogcLogger[${this.getLoggerName()}]"
 }

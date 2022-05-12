@@ -1,6 +1,8 @@
 package com.wanna.logger.impl
 
 import com.wanna.logger.api.ILoggerFactory
+import com.wanna.logger.impl.event.Level
+import com.wanna.logger.impl.filter.FilterReply
 import com.wanna.logger.impl.filter.LoggerFilter
 import com.wanna.logger.impl.filter.LoggerFilterList
 import java.util.concurrent.ConcurrentHashMap
@@ -19,7 +21,7 @@ abstract class AbstractLoggerContext<T : LogcLogger> : ILoggerFactory {
     var root: T = this.initRootLogger()
 
     // LoggerFilter列表，它能联合列表当中的所有的LoggerFilter一起来决策当前日志是否需要去进行输出
-    val filterList: LoggerFilterList = LoggerFilterList()
+    private val filterList: LoggerFilterList = LoggerFilterList()
 
     // 这是Logger的缓存的默认实现，缓存已经注册过的所有Logger，为了保证线程安全，采用ConcurrentHashMap
     private val loggerCache = this.newLoggerCache()
@@ -101,14 +103,16 @@ abstract class AbstractLoggerContext<T : LogcLogger> : ILoggerFactory {
     }
 
     /**
-     * 按照loggerName去获取Logger
+     * 按照loggerName去获取Logger，比如给定的loggerName为com.wanna.test.App；
+     * 那么它会依次去检测com、com.wanna、com.wanna.test、以及com.wanna.test.App的Logger；
+     * 如果对应的name的Logger不存在的话，那么会先创建对应的Logger，并加入到LoggerCache当中，下次就能直接从LoggerCache当中去获取到Logger了
      *
      * @param name LoggerName(一般为全类名)
      * @return 获取到的Logger
      */
     override fun getLogger(name: String): T {
-        // 如果name给的是ROOT那么直接return，避免因为获取Logger导致加锁
-        if (name == root.getLoggerName()) {
+        // 如果name给的是ROOT(第二个参数设置不分大小写)那么直接return，避免因为获取Logger导致加锁
+        if (name.contentEquals(root.getLoggerName(), true)) {
             return root
         }
         // 如果给定name不是ROOT的话，那么确实得尝试从loggerCache当中获取了
@@ -124,21 +128,22 @@ abstract class AbstractLoggerContext<T : LogcLogger> : ILoggerFactory {
         // 如果childName并未在Logger的children当中的话，为childName创建Logger并加入到缓存当中
         // 如果childName已经在Logger的children当中的话，很可能就是之前已经完成过Logger的注册的情况了
         while (true) {
-            // 获取name的的"."的index
+            // 获取name从index位置开始第一个的"."(或者"$")的位置索引firstIndex
             val firstIndex = getFirstIndexOf(name, index)
-            // 获取子包名，为所有子包创建Logger
+            // 使用substring的方式去获取子包名，为所有子包创建(或者获取)Logger
             val childName = if (firstIndex == -1) name else name.substring(0, firstIndex)
 
             // startIndex=firstIndex+1，跳过当前位置的"."，为了下次startIndex能直接从".之后"去进行统计
             index = firstIndex + 1
 
-            // 对Logger去进行加锁
+            // 对Logger去进行加锁，因为可能需要操作它的children列表
             synchronized(logger) {
+                // 获取childLogger，如果必要的话，先去创建一个，并加入到缓存当中
                 childLogger = logger.getChildByName(childName) as T?
                 if (childLogger == null) {
                     childLogger = logger.createChildByName(childName) as T
+                    loggerCache[childName] = childLogger!!
                 }
-                loggerCache[childName] = childLogger!!
             }
             // current=current.child
             logger = childLogger!!
@@ -147,6 +152,22 @@ abstract class AbstractLoggerContext<T : LogcLogger> : ILoggerFactory {
                 return logger
             }
         }
+    }
+
+    /**
+     * 使用Filter去决策是否本次请求需要去进行输出，并且如果符合要求的话，需要使用合适的Appender去输出日志信息
+     *
+     * @param logger Logger
+     * @param params 参数列表
+     * @param throwable 异常信息
+     * @param level LoggingEvent Level
+     * @param msg 输出的消息
+     * @return 过滤器链决策的结果，DENY/ACCEPT/NEUTRAL
+     */
+    open fun getFilterChainDecisionReply(
+        logger: LogcLogger, level: Level, msg: Any?, params: Array<Any?>, throwable: Throwable?
+    ): FilterReply {
+        return filterList.getFilterChainDecisionReply(logger, level, msg, emptyArray(), null)
     }
 
     /**

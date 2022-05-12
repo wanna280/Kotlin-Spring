@@ -2,6 +2,7 @@ package com.wanna.logger.impl
 
 import com.wanna.logger.api.ILoggerFactory
 import com.wanna.logger.api.spi.LoggerFactoryBinder
+import com.wanna.logger.impl.spi.ContextInitializer
 
 /**
  * 这是一个StaticLoggerBinder，供API规范去使用类加载机制去进行加载，从而完成整个Logger上下文的初始化

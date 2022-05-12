@@ -25,7 +25,8 @@ import org.springframework.core.annotation.AnnotatedElementUtils
 open class ConfigurationClassBeanDefinitionReader(
     private val registry: BeanDefinitionRegistry,
     private val importBeanNameGenerator: BeanNameGenerator,
-    private val environment: Environment
+    private val environment: Environment,
+    private val importRegistry: ImportRegistry
 ) {
     // 这是一个条件计算器，去计算一个Bean是否应该被注册
     private val conditionEvaluator = ConditionEvaluator(registry, environment)
@@ -62,20 +63,20 @@ open class ConfigurationClassBeanDefinitionReader(
         // 比较所有导入当前的配置类的配置类是否都已经被移除掉了？如果都已经被移除掉了，那么当前的配置类也应该被移除掉！
         // 如果该配置类应该被skip掉，那么它应该从BeanDefinitionRegistry当中移除掉
         if (trackedConditionEvaluator.shouldSkip(configurationClass)) {
-            if (configurationClass.beanName != null && configurationClass.beanName.isEmpty()) {
-                registry.removeBeanDefinition(configurationClass.beanName)
+            if (configurationClass.beanName != null && configurationClass.beanName!!.isEmpty()) {
+                registry.removeBeanDefinition(configurationClass.beanName!!)
             }
+            this.importRegistry.removeImportingClass(configurationClass.configurationClass.name)
             return
         }
 
-        // 如果它是被@Import注解导入的Bean，那么应该处理一些后置处理工作，并注册到registry当中
+        // 如果它是被@Import注解导入的配置类，那么应该进行处理，并生成beanName注册到BeanDefinitionRegistry当中
+        // 在生成beanName的同时，还会为configurationClass去进行beanName的设置
         if (configurationClass.isImportedBy()) {
             registerBeanDefinitionForImportedConfigurationClass(configurationClass)
         }
         // 将所有的BeanMethod去完成匹配，并封装成为BeanDefinition，并注册到registry当中
-        configurationClass.beanMethods.forEach {
-            loadBeanDefinitionsForBeanMethod(it)
-        }
+        configurationClass.beanMethods.forEach(::loadBeanDefinitionsForBeanMethod)
 
         // 处理@ImportSource，为Annotation版本的IOC容器当中导入XML的Spring配置文件提供支持
         loadBeanDefinitionsFromImportedResources(configurationClass.importedSources)
@@ -103,11 +104,13 @@ open class ConfigurationClassBeanDefinitionReader(
         val medthodMetadata = StandardMethodMetadata(method)
 
         // 创建一个ConfigurationClassBeanDefinition，让它能适配RootBeanDefinition和AnnotatedBeanDefinition
+        // 因为去对注解信息去进行匹配时，需要用到AnnotatedBeanDefinition
         val beanDefinition = ConfigurationClassBeanDefinition(configClass, medthodMetadata)
         // set factoryMethodName, factoryBeanName and factoryMethod
         beanDefinition.setFactoryMethodName(method.name)
-        val factoryBeanName = configClass.beanName ?: configClass.configurationClass.name
-        beanDefinition.setFactoryBeanName(factoryBeanName)
+
+        // fixed:这里在之前已经生成好了beanName，因此这里可以直接设置beanName即可
+        beanDefinition.setFactoryBeanName(configClass.beanName)
         beanDefinition.setResolvedFactoryMethod(method)
         // 设置autowiredMode为构造器注入
         beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR)
@@ -159,18 +162,21 @@ open class ConfigurationClassBeanDefinitionReader(
     /**
      * 为被导入的配置类去注册BeanDefinition，因为在处理@Import注解时，很多信息都没有存储到ConfigurationClass当中，比如beanName
      * 就没有被处理到，这里需要做一些兜底工作，比如处理一些注解信息和生成beanName
+     *
+     * Note: 通过Import导入的配置类会在这里被设置好name，为了方便后续@Import导入的配置类的@Bean方法的处理
      */
     private fun registerBeanDefinitionForImportedConfigurationClass(configurationClass: ConfigurationClass) {
         val clazz = configurationClass.configurationClass
         val metadata = configurationClass.metadata
-        val bd = AnnotatedGenericBeanDefinition(clazz)
+        val beanDefinition = AnnotatedGenericBeanDefinition(clazz)  // 构建一个注解的BeanDefinition
 
         // 处理@Role/@Primary/@DependsOn/@Lazy注解
-        AnnotationConfigUtils.processCommonDefinitionAnnotations(bd, metadata)
+        AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition, metadata)
 
         // 生成beanName
-        val beanName = importBeanNameGenerator.generateBeanName(bd, registry)
-        registry.registerBeanDefinition(beanName, bd)
+        val beanName = importBeanNameGenerator.generateBeanName(beanDefinition, registry)
+        registry.registerBeanDefinition(beanName, beanDefinition)
+        configurationClass.beanName = beanName  // set ConfigurationClass beanName
     }
 
     /**
