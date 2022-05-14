@@ -62,6 +62,12 @@ open class RootBeanDefinition constructor(beanClass: Class<*>?) : AbstractBeanDe
     // 一个BeanDefinition所装饰的BeanDefinition，因为需要维护beanName，所以这里保存一个BeanDefinitionHolder
     var decoratedDefinition: BeanDefinitionHolder? = null
 
+    // 能否在beforeInstantiation当中解析到合适的Bean？如果解析不到，那么下次就不会回调beforeInstantiation了(提高性能)
+    var beforeInstantiationResolved: Boolean = true
+
+    // 是否已经解析出来destory方法？
+    var resolvedDestroyMethodName: String? = null
+
     // 是否是FactoryBean，可以为null
     private var isFactoryBean: Boolean? = null
 

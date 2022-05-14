@@ -34,7 +34,6 @@ abstract class GenericApplicationContext(private val beanFactory: DefaultListabl
 
     override fun getBeanFactory(): DefaultListableBeanFactory = beanFactory
     open fun isAllowCircularReferences() = beanFactory.isAllowCircularReferences()
-    override fun getBeanDefinitionCounts() = beanFactory.getBeanDefinitionCounts()
     override fun getBeanDefinitionNames() = beanFactory.getBeanDefinitionNames()
     override fun getBeanDefinitions() = beanFactory.getBeanDefinitions()
     override fun getBeanDefinition(beanName: String) = beanFactory.getBeanDefinition(beanName)

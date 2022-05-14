@@ -15,9 +15,9 @@ interface ImportRegistry {
     fun getImportingClassFor(importedClass: String): AnnotationMetadata?
 
     /**
-     * 给定被导入的配置类，移除导入它的配置类的相关信息
+     * 将Import的配置类(importingClass)的全部信息remove掉
      *
-     * @param importedClass 被导入的配置类的类名
+     * @param importingClass Import配置类，而不是被Import的配置类
      */
-    fun removeImportingClass(importedClass: String)
+    fun removeImportingClass(importingClass: String)
 }

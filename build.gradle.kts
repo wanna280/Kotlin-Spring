@@ -1,7 +1,7 @@
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version kotlinVersion
     java
-    id("io.spring.dependency-management") version("1.0.9.RELEASE")
+    id("io.spring.dependency-management") version ("1.0.9.RELEASE")
 }
 
 group = "com.wanna"
@@ -22,5 +22,5 @@ allprojects {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 }

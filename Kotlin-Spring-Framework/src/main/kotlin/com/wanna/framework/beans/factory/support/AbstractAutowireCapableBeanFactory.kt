@@ -67,15 +67,24 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
      * @return 如果推断出来了Bean，return Bean；不然return null
      */
     protected open fun resolveBeforeInstantiation(beanName: String, mbd: RootBeanDefinition): Any? {
-        // 如果实例之前的BeanPostProcessor已经return 非空，产生出来一个对象了，那么需要完成初始化工作...
-        // 如果必要的话，会完成动态代理，如果创建出来Bean，那么直接return，就不走doCreateBean的创建Bean的逻辑了...
-        for (postProcessor in getBeanPostProcessorCache().instantiationAwareCache) {
-            val instance = postProcessor.postProcessBeforeInstantiation(beanName, mbd)
-            if (instance != null) {
-                return applyBeanPostProcessorsAfterInitialization(instance, beanName)
+        var bean: Any? = null
+
+        // 判断有没有可能在初始化之前解析到Bean？最初被初始化为true，如果第一次解析的时候为bean=null，那么设为false，后续就不用再去进行解析了
+        if (!mbd.beforeInstantiationResolved) {
+            val beanClass = mbd.getBeanClass()
+            if (beanClass != null) {
+                // 如果实例之前的BeanPostProcessor已经return 非空，产生出来一个对象了，那么需要完成初始化工作...
+                // 如果必要的话，会完成动态代理，如果创建出来Bean，那么直接return，就不走doCreateBean的创建Bean的逻辑了...
+                for (postProcessor in getBeanPostProcessorCache().instantiationAwareCache) {
+                    bean = postProcessor.postProcessBeforeInstantiation(beanName, beanClass)
+                    if (bean != null) {
+                        bean = applyBeanPostProcessorsAfterInitialization(bean, beanName)
+                    }
+                }
             }
+            mbd.beforeInstantiationResolved = bean != null
         }
-        return null
+        return bean
     }
 
     /**
@@ -133,6 +142,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
         }
 
         // registerDisposableBeanIfNecessary
+        registerDisposableBeanIfNecessary(beanName, beanInstance, mbd)
         return exposedBean
     }
 

@@ -2,7 +2,6 @@ package com.wanna.framework.beans.factory.config
 
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
-import com.wanna.framework.context.SingletonBeanRegistry
 import com.wanna.framework.beans.util.StringValueResolver
 import com.wanna.framework.beans.TypeConverter
 import com.wanna.framework.core.convert.ConversionService

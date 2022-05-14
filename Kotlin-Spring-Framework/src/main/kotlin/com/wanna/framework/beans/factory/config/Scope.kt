@@ -8,8 +8,25 @@ import com.wanna.framework.beans.factory.ObjectFactory
 interface Scope {
     /**
      * 从Scope作用域内获取对象
+     *
      * @param beanName beanName
-     * @param factory 创建Bean的回调函数
+     * @param factory 创建Bean的回调函数(Spring BeanFactory的createBean)
      */
     fun get(beanName: String, factory: ObjectFactory<*>)
+
+    /**
+     * 给Scope内注册DisposableBean的回调，当对Bean去进行destroy时，需要完成的回调处理工作
+     *
+     * @param name beanName
+     * @param callback 回调方法(Runnable)
+     */
+    fun registerDestructionCallback(name: String, callback: Runnable)
+
+    /**
+     * 给定一个name，去移除在Scope的统一管理下的Bean
+     *
+     * @param name 想要移除的name
+     * @return 移除的对象
+     */
+    fun remove(name: String): Any?
 }

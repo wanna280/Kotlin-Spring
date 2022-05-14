@@ -6,6 +6,7 @@ import java.lang.instrument.Instrumentation
  * 这是提供JavaAgent的Instrumentation对象的保存的一个单例类，通常此依赖将会被加入到JavaAgent参数当中；
  * 同时支持premain和agentmain两种方式去获取Instrumentation对象
  */
+@Suppress("UNUSED")
 object InstrumentationSavingAgent {
 
     /**

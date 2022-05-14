@@ -6,7 +6,7 @@ import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.util.ConfigurationClassUtils
 import com.wanna.framework.context.ApplicationStartupAware
-import com.wanna.framework.context.SingletonBeanRegistry
+import com.wanna.framework.beans.factory.config.SingletonBeanRegistry
 import com.wanna.framework.context.annotation.*
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.EnvironmentAware
@@ -107,8 +107,8 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         reader =
             ConfigurationClassBeanDefinitionReader(registry, importBeanBeanNameGenerator, environment!!, importRegistry)
 
-        // 获取解析器解析到的所有配置类
-        val configurationClasses = parser!!.getConfigurationClasses()
+        // 获取解析器解析到的所有配置类列表
+        val configurationClasses = LinkedHashSet(parser!!.getConfigurationClasses())
 
         // 加载BeanDefinition
         // 1.如果它是被@Import导入进来的，那么会在这里完成BeanDefinition的注册

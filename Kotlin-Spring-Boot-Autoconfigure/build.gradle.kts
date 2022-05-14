@@ -11,16 +11,17 @@ repositories {
 }
 
 dependencies {
-    implementation("org.aspectj:aspectjweaver:1.9.9")
-    implementation("com.google.guava:guava:31.1-jre")
-    implementation(kotlin("stdlib"))
-    implementation("io.netty:netty-all:4.1.77.Final")
-    implementation("org.springframework:spring-core:5.3.17")
     implementation(project(":Kotlin-Spring-Boot"))
     implementation(project(":Kotlin-Spring-Framework"))
     implementation(project(":Kotlin-Spring-Web"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    implementation("org.aspectj:aspectjweaver:$aspectJVersion")
+    implementation("com.google.guava:guava:$guavaVersion")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+    implementation("io.netty:netty-all:$nettyVersion")
+    implementation("org.springframework:spring-core:$springCoreVersion")
+    implementation("javax.annotation:javax.annotation-api:$javaxAnnotationVersion")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
 tasks.getByName<Test>("test") {

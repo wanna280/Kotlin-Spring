@@ -4,12 +4,16 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.core.type.AnnotationMetadata
 
 /**
- * 这是对一个配置类的封装
+ * 这是对一个配置类的封装，一个配置类当中，往往会记录它导入的ImportSource、BeanMethod、ImportBeanDefinitionRegistrar等信息
+ *
+ * @param _clazz 目标配置类
+ * @param _beanName beanName(可以为null，后期去进行生成)
  */
 open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
-
+    constructor(_clazz: Class<*>) : this(_clazz, null)
     constructor(beanDefinition: BeanDefinition, beanName: String?) : this(beanDefinition.getBeanClass()!!, beanName)
 
+    // 该配置类的注解元信息
     val metadata: AnnotationMetadata = AnnotationMetadata.introspect(_clazz)
 
     // clazz
@@ -29,47 +33,70 @@ open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
     // importBeanDefinitionRegistrars
     private val importBeanDefinitionRegistrars = HashMap<ImportBeanDefinitionRegistrar, AnnotationMetadata>()
 
+    /**
+     * 往配置类当中添加一个@Bean的方法
+     *
+     * @param beanMethod 添加一个@Bean标注的方法
+     */
     fun addBeanMethod(beanMethod: BeanMethod) {
         beanMethods += beanMethod
     }
 
     /**
      * 获取已经注册的ImportBeanDefinitionRegistrars
+     *
+     * @return ImportBeanDefinitionRegistrar Map(key-registrar,value导入该ImportBeanDefinitionRegistrar的配置类的注解元信息)
      */
     fun getImportBeanDefinitionRegistrars(): Map<ImportBeanDefinitionRegistrar, AnnotationMetadata> {
         return importBeanDefinitionRegistrars
     }
 
-    fun hasBeanMethod(): Boolean {
-        return beanMethods.isNotEmpty()
-    }
+    /**
+     * 当前配置类当中是否有@Bean标注的方法？
+     */
+    fun hasBeanMethod(): Boolean = beanMethods.isNotEmpty()
 
-    fun hasRegistrar() = beanMethods.isNotEmpty()
+    /**
+     * 当前配置类是否有导入ImportBeanDefinitionRegistrar
+     */
+    fun hasRegistrar(): Boolean = beanMethods.isNotEmpty()
 
     fun addRegistrar(registrar: ImportBeanDefinitionRegistrar, annotationMetadata: AnnotationMetadata) {
         importBeanDefinitionRegistrars[registrar] = annotationMetadata
     }
 
+    /**
+     * 设置当前配置类是否哪个配置了类导入的？
+     *
+     * @param configurationClass 导入当前配置类的配置类
+     */
     fun setImportedBy(configurationClass: ConfigurationClass) {
         importedBy += configurationClass
     }
 
     /**
-     * 获取被哪些组件所导入？
+     * 获取当前配置类是被哪些配置类所导入？
      */
-    fun getImportedBy() = importedBy
+    fun getImportedBy(): Collection<ConfigurationClass> = importedBy
 
     /**
      * 是否被Import进来的？
+     *
+     * @return 如果当前的配置类是被导入的，return true；不然return false
      */
-    fun isImportedBy() : Boolean = importedBy.isNotEmpty()
+    fun isImportedBy(): Boolean = importedBy.isNotEmpty()
 
+    /**
+     * 添加ImportSource，通过@ImportSource注解导入的resource，并将其使用的BeanDefinitionReader去进行注册和保存
+     *
+     * @param reader readerClass
+     * @param resource resourceLocation
+     */
     fun addImportSource(resource: String, reader: Class<out BeanDefinitionReader>) {
         importedSources[resource] = reader
     }
 
     override fun hashCode() = configurationClass.hashCode()
-
 
     override fun equals(other: Any?): Boolean {
         // 如果configurationClass匹配的话，那么return true

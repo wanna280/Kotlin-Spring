@@ -34,6 +34,6 @@ open class LoadTimeWeaverAwareProcessor(private var beanFactory: BeanFactory?) :
             }
             bean.setLoadTimeWeaver(weaver!!)
         }
-        return super.postProcessBeforeInitialization(beanName, bean)
+        return bean
     }
 }

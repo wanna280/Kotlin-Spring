@@ -27,6 +27,10 @@ open class ReflectiveMethodInvocation(
         return this.proxy
     }
 
+    open fun getTarget() : Any? {
+        return this.target
+    }
+
     override fun setArguments(vararg args: Any?) {
         this.args = args
     }
@@ -83,11 +87,11 @@ open class ReflectiveMethodInvocation(
     /**
      * 执行Joinpoint，也就是执行目标方法
      */
-    protected fun invokeJoinpoint(): Any? {
+    protected open fun invokeJoinpoint(): Any? {
         ReflectionUtils.makeAccessiable(this.method)
         // 如果args=null，那么
         if (args == null) {
-            return ReflectionUtils.invokeMethod(method, target, *emptyArray())
+            return ReflectionUtils.invokeMethod(method, target)
         }
         return ReflectionUtils.invokeMethod(method, target, *args!!)
     }

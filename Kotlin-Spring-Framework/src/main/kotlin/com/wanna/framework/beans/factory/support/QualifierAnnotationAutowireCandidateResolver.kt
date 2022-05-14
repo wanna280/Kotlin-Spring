@@ -8,7 +8,7 @@ import com.wanna.framework.beans.factory.annotation.Value
 import com.wanna.framework.core.util.ClassUtils
 
 /**
- * 这是一个支持Qualifier注解的AutowireCandidateResolver
+ * 这是一个支持@Qualifier/@Value注解的AutowireCandidateResolver
  */
 open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowireCandidateResolver() {
 
@@ -31,6 +31,9 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
 
     /**
      * 如果描述符当中给定了required=false，那么就return false；如果required=true，那么就得检查一下Autowired注解
+     *
+     * @param descriptor 依赖描述符
+     * @return 该依赖是否是必须的？
      */
     override fun isRequired(descriptor: DependencyDescriptor): Boolean {
         val autowired = descriptor.getAnnotation(Autowired::class.java)
@@ -38,7 +41,10 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
     }
 
     /**
-     * 判断要进行注入的依赖的DependencyDescriptor上是否有Qualifier注解
+     * 判断要进行注入的依赖的DependencyDescriptor上是否有Qualifier注解(Spring家的Qualifier和javax.inject包下的Qualifier)
+     *
+     * @param descriptor 依赖描述符
+     * @return 依赖描述符当中的注解是否存在有Qualifier注解？
      */
     override fun hasQualifier(descriptor: DependencyDescriptor): Boolean {
         for (annotation in descriptor.getAnnotations()) {
@@ -51,6 +57,9 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
 
     /**
      * 获取建议的值，从@Value注解上去寻找value属性，如果找到了return找到的值，如果没有找到，return null
+     *
+     * @param descriptor 依赖描述符
+     * @return 建议去设置的值，有@Value注解。return @Value的value属性，如果@Value注解没有，那么return null
      */
     override fun getSuggestedValue(descriptor: DependencyDescriptor): Any? {
         // 1.获取从方法参数/字段上的@Value注解的value属性
@@ -67,7 +76,10 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
 
 
     /**
-     * 判断是否是Qualifier注解，如果找到了return true；没找到，return false
+     * 判断是否是Qualifier注解(包括Spring家的Qualifier以及javax.inject包下的Qualifier)，如果找到了return true；没找到，return false
+     *
+     * @param annotationClass 目标注解类型
+     * @return 如果目标注解类型是Qualifier，那么return true；否则return false
      */
     private fun isQualifier(annotationClass: Class<out Annotation>): Boolean {
         for (qualifierAnnotationType in qualifierAnnotationTypes) {

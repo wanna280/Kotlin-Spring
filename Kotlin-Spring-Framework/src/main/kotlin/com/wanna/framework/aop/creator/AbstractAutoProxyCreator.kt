@@ -59,17 +59,17 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
     override fun predictBeanType(beanClass: Class<*>, beanName: String): Class<*>? =
         if (proxyTypes.isEmpty()) null else proxyTypes[getCacheKey(beanClass, beanName)]
 
-    override fun postProcessBeforeInstantiation(beanName: String, bean: Any): Any? {
-        val cacheKey = getCacheKey(bean::class.java, beanName)
-        val customTargetSource = getCustomTargetSource(bean::class.java, beanName)
+    override fun postProcessBeforeInstantiation(beanName: String, beanClass: Class<*>): Any? {
+        val cacheKey = getCacheKey(beanClass, beanName)
+        val customTargetSource = getCustomTargetSource(beanClass, beanName)
         if (customTargetSource != null) {
             if (beanName.isNotBlank()) {
                 targetSourceBeans += beanName
             }
             // 为当前Bean找到合适的Advisor列表
-            val specificInterceptors = getAdvicesAndAdvisorsForBean(bean::class.java, beanName, null)
+            val specificInterceptors = getAdvicesAndAdvisorsForBean(beanClass, beanName, null)
             // 创建代理对象
-            val proxy = createProxy(bean::class.java, beanName, specificInterceptors!!, SingletonTargetSource(bean))
+            val proxy = createProxy(beanClass, beanName, specificInterceptors!!, customTargetSource)
 
             // 缓存已经完成代理的proxyType
             proxyTypes[cacheKey] = proxy::class.java

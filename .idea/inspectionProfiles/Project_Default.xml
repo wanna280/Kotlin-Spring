@@ -1,0 +1,16 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="GradlePackageUpdate" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="excludeList">
+        <list>
+          <option value="org.junit.jupiter:junit-jupiter-api" />
+          <option value="org.springframework:spring-core" />
+          <option value="org.junit.jupiter:junit-jupiter-engine" />
+          <option value="io.netty:netty-all" />
+          <option value="org.slf4j:slf4j-api" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>

@@ -37,7 +37,7 @@ open class ConfigurationClassBeanDefinitionReader(
      * @param configurationClasses 通过ConfigurationClassParser解析完成得到的配置类列表
      */
     open fun loadBeanDefinitions(configurationClasses: Collection<ConfigurationClass>) {
-        // 创建一个支持轨迹最终的ConditionEvaluator去进行条件的计算，内部组合ConditionEvaluator完成条件计算
+        // 创建一个支持轨迹追踪的ConditionEvaluator去进行条件的计算，内部组合ConditionEvaluator完成条件计算
         val trackedConditionEvaluator = TrackedConditionEvaluator()
 
         // 遍历所有的配置类，去进行BeanDefinition的加载

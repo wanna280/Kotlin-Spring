@@ -28,7 +28,7 @@ interface ListableBeanFactory : BeanFactory {
     /**
      * 获取当前容器中的BeanDefinition的数量
      */
-    fun getBeanDefinitionCounts(): Int
+    fun getBeanDefinitionCount(): Int
 
     /**
      * 容器中是否包含这样的BeanDefinition？

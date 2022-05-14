@@ -14,7 +14,7 @@ open class InjectionMetadata(val targetClass: Class<*>, private val elements: Co
     /**
      * 遍历所有要进行注入的元素，去进行依赖的注入
      */
-    fun inject(bean: Any, beanName: String, pvs: PropertyValues?) {
+    open fun inject(bean: Any, beanName: String, pvs: PropertyValues?) {
         elements.forEach { element ->
             element.inject(bean, beanName, pvs)
         }
@@ -25,22 +25,36 @@ open class InjectionMetadata(val targetClass: Class<*>, private val elements: Co
          * 静态工厂方法，提供构建InjectMetadata的方式
          */
         @JvmStatic
-        fun forElements(targetClass: Class<*>, elements: Collection<InjectedElement>) =
-            InjectionMetadata(targetClass, elements)
+        fun forElements(targetClass: Class<*>, elements: Collection<InjectedElement>): InjectionMetadata {
+            return InjectionMetadata(targetClass, elements)
+        }
+
+        // 这是一个空的InjectMetadata的实例
+        val EMPTY = object : InjectionMetadata(Any::class.java, emptyList()) {
+            override fun inject(bean: Any, beanName: String, pvs: PropertyValues?) {}
+        }
     }
 
 
     /**
-     * 要进行注入的元素
+     * 它描述了一个要去进行自动注入(Autowire)的元素，可以是一个方法/字段
+     *
+     * @param _member 方法/字段
      */
     abstract class InjectedElement(_member: Member) {
-
-        // 要进行注入的成员，方法/字段/构造器都是Member
-        private val member: Member = _member
-
+        // 要进行注入的成员，方法/字段/构造器都是Member的子类
+        val member: Member = _member
         // 元素是否是字段？
-        private val isField = _member is Field
+        val isField = _member is Field
 
+        /**
+         * 对该元素(方法/字段)去完成Autowire注入
+         *
+         * @param bean bean
+         * @param beanName beanName
+         * @param pvs PropertyValues
+         */
+        @Suppress("UNCHECKED_CAST")
         open fun inject(bean: Any, beanName: String, pvs: PropertyValues?) {
             val resourceToInject = getResourceToInject(bean, beanName)
             if (isField) {
@@ -54,6 +68,9 @@ open class InjectionMetadata(val targetClass: Class<*>, private val elements: Co
 
         /**
          * 获取资源去进行Inject
+         *
+         * @param bean bean
+         * @param beanName beanName
          */
         protected open fun getResourceToInject(bean: Any, beanName: String): Any? {
             return null

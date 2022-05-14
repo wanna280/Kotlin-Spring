@@ -13,10 +13,7 @@ import com.wanna.framework.beans.util.StringValueResolver
 import com.wanna.framework.beans.TypeConverter
 import com.wanna.framework.context.exception.BeansException
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
-import com.wanna.framework.context.processor.beans.BeanPostProcessor
-import com.wanna.framework.context.processor.beans.InstantiationAwareBeanPostProcessor
-import com.wanna.framework.context.processor.beans.MergedBeanDefinitionPostProcessor
-import com.wanna.framework.context.processor.beans.SmartInstantiationAwareBeanPostProcessor
+import com.wanna.framework.context.processor.beans.*
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.core.util.BeanFactoryUtils
@@ -34,7 +31,7 @@ import java.util.concurrent.CopyOnWriteArrayList
  * @see FactoryBeanRegistrySupport
  * @see DefaultSingletonBeanRegistry
  */
-abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, ListableBeanFactory,
+abstract class AbstractBeanFactory : BeanFactory, ConfigurableBeanFactory, ListableBeanFactory,
     FactoryBeanRegistrySupport() {
 
     // beanClassLoader
@@ -61,7 +58,7 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
     // BeanPostProcessorCache
     private var beanPostProcessorCache: BeanPostProcessorCache? = null
 
-    // applicationStartup
+    // applicationStartup，默认情况下什么都不做，如果用户想要获取到Application启动当中的相关信息，只需要将ApplicationStartup替换为自定义的即可
     private var applicationStartup: ApplicationStartup = ApplicationStartup.DEFAULT
 
     // Logger
@@ -82,36 +79,54 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
 
     /**
      * 这是一个BeanPostProcessorCache，对各种类型的BeanPostProcessor去进行分类，每次对BeanPostProcessor列表去进行更改(添加/删除)
+     * 都需要将BeanPostProcessorCache去进行clear掉(引用设置为null，变相clear)
      */
     class BeanPostProcessorCache {
+
+        // 干涉实例化的BeanPostProcessor(实例化之前、实例化之后、填充属性)
         val instantiationAwareCache = ArrayList<InstantiationAwareBeanPostProcessor>()
+
+        // 干涉智能的实例化的BeanPostProcessor(获取早期类型、推断构造器、预测beanType)
         val smartInstantiationAwareCache = ArrayList<SmartInstantiationAwareBeanPostProcessor>()
+
+        // 处理MergeBeanDefinition的PostProcessor
         val mergedDefinitions = ArrayList<MergedBeanDefinitionPostProcessor>()
+
+        // 处理destory的BeanPostProcessor
+        val destructionAwareCache = ArrayList<DestructionAwareBeanPostProcessor>()
 
         fun hasInstantiationAware(): Boolean = instantiationAwareCache.isNotEmpty()
         fun hasSmartInstantiationAware(): Boolean = smartInstantiationAwareCache.isNotEmpty()
         fun hasMergedDefinition(): Boolean = mergedDefinitions.isNotEmpty()
+        fun hasDestructionAwareCache(): Boolean = destructionAwareCache.isNotEmpty()
     }
 
     /**
      * 获取BeanPostProcessor的Cache
+     *
+     * @return 构建好的BeanPostProcessorCache
      */
     fun getBeanPostProcessorCache(): BeanPostProcessorCache {
-        if (this.beanPostProcessorCache == null) {
-            this.beanPostProcessorCache = BeanPostProcessorCache()
+        var beanPostProcessorCache = this.beanPostProcessorCache
+        if (beanPostProcessorCache == null) {
+            beanPostProcessorCache = BeanPostProcessorCache()
             beanPostProcessors.forEach {
                 if (it is InstantiationAwareBeanPostProcessor) {
-                    this.beanPostProcessorCache!!.instantiationAwareCache += it
+                    beanPostProcessorCache.instantiationAwareCache += it
                     if (it is SmartInstantiationAwareBeanPostProcessor) {
-                        this.beanPostProcessorCache!!.smartInstantiationAwareCache += it
+                        beanPostProcessorCache.smartInstantiationAwareCache += it
                     }
                 }
                 if (it is MergedBeanDefinitionPostProcessor) {
-                    this.beanPostProcessorCache!!.mergedDefinitions += it
+                    beanPostProcessorCache.mergedDefinitions += it
+                }
+                if (it is DestructionAwareBeanPostProcessor) {
+                    beanPostProcessorCache.destructionAwareCache += it
                 }
             }
+            this.beanPostProcessorCache = beanPostProcessorCache
         }
-        return beanPostProcessorCache!!
+        return beanPostProcessorCache
     }
 
     override fun getBean(beanName: String) = doGetBean(beanName)
@@ -219,6 +234,8 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
      * 提供创建Bean的逻辑，调用这个方法即可完成Bean的创建工作，这是一个抽象模板方法，交给子类去进行实现
      *
      * @see AbstractAutowireCapableBeanFactory.createBean
+     * @param beanName
+     * @param mbd MergedBeanDefinition
      */
     protected abstract fun createBean(beanName: String, mbd: RootBeanDefinition): Any
 
@@ -435,5 +452,56 @@ abstract class AbstractBeanFactory() : BeanFactory, ConfigurableBeanFactory, Lis
             }
         }
         return result
+    }
+
+    /**
+     * 是否需要去注册destory的回调？
+     * (1)支持AutoCloseable/DisposableBean以及BeanDefinition当中的destoryMethod等？
+     * (2)遍历所有的DestructionAwareBeanPostProcessor来判断是否需要注册注册？
+     *
+     * @param bean bean
+     * @param mbd
+     */
+    protected open fun requiresDestruction(bean: Any, mbd: RootBeanDefinition): Boolean {
+        if (mbd.getBeanClass() == NullBean::class.java) {
+            return false
+        }
+        // 判断它是否有destory方法，如果有return true(支持AutoCloseable/DisposableBean以及BeanDefinition当中的destoryMethod等)
+        if (DisposableBeanAdapter.hasDestroyMethod(bean, mbd)) {
+            return true
+        }
+        // 判断是否有DestructionAwareBeanPostProcessor可以应用给当前的Bean，如果有的话，return true
+        if (getBeanPostProcessorCache().hasDestructionAwareCache() &&
+            DisposableBeanAdapter.hasApplicableProcessors(bean, getBeanPostProcessorCache().destructionAwareCache)
+        ) {
+            return true
+        }
+        return false
+    }
+
+    /**
+     * 如果必要的话，给Bean去注册DisposableBean的回调
+     *
+     * @param beanName beanName
+     * @param bean bean
+     * @param mbd MergedBeanDefinition
+     */
+    protected open fun registerDisposableBeanIfNecessary(beanName: String, bean: Any, mbd: RootBeanDefinition) {
+        // 如果不是prototype的，并且需要去进行Destruction(destory)，那么需要去注册Callback
+        if (!mbd.isPrototype() && requiresDestruction(bean, mbd)) {
+            val destructionAwareCache = getBeanPostProcessorCache().destructionAwareCache
+            val disposableBeanAdapter = DisposableBeanAdapter(bean, beanName, mbd, destructionAwareCache)
+
+            // 如果它是一个单例的Bean，那么，把它注册给SingletonBeanRegistry的DisposableBean当中
+            if (mbd.isSingleton()) {
+                registerDisposableBean(beanName, disposableBeanAdapter)
+
+                // 如果它是一个来自于Scope的Bean，那么需要把DisposableBean注册给Scope当中，让Scope去管理destory
+            } else {
+                val scope = this.scopes[mbd.getScope()]
+                    ?: throw IllegalStateException("BeanFactory当中没有注册Scope[name=${mbd.getScope()}，但是BeanDefinition[name=$beanName]当中设置了该Scope]")
+                scope.registerDestructionCallback(beanName, disposableBeanAdapter)
+            }
+        }
     }
 }

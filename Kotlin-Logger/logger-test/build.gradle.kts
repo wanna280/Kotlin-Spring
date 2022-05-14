@@ -12,8 +12,8 @@ repositories.flatDir {
 
 dependencies {
     implementation(project(":Kotlin-Logger:logger-slf4j-impl"))
-    implementation("org.slf4j:slf4j-api:1.7.36")
-    implementation("org.fusesource.jansi:jansi:2.4.0")
+    implementation("org.slf4j:slf4j-api:$slf4jApiVersion")
+    implementation("org.fusesource.jansi:jansi:$jansiVersion")
 }
 
 tasks.getByName<Test>("test") {

@@ -12,6 +12,7 @@ import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.core.util.ReflectionUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.Method
+import java.util.LinkedList
 import java.util.function.Predicate
 
 /**
@@ -30,7 +31,8 @@ open class ConfigurationClassParser(
         }
 
         // 默认的用来去进行排除的Filter
-        private val DEFAULT_EXCLUSION_FILTER = Predicate<String> { it.startsWith("java.") }
+        private val DEFAULT_EXCLUSION_FILTER =
+            Predicate<String> { it.startsWith("java.") || it.startsWith("com.wanna.framework.context.stereotype.") }
     }
 
     // ComponentScan注解的解析器
@@ -47,22 +49,23 @@ open class ConfigurationClassParser(
     // **SpringBoot完成自动配置，就是通过DeferredImportSelector去完成的**
     private val deferredImportSelectorHandler = DeferredImportSelectorHandler()
 
-    // Import栈
+    // Import栈，一方面注册importedClass与导入它的配置类的元信息，一方面记录Import过程当中的栈轨迹(判断是否发生了循环导入)
     private val importStack = ImportStack()
 
     /**
-     * 获取导入被@Import配置类的信息栈
+     * 获取导入被@Import配置类的信息的注册中心(导入栈)
      */
     open fun getImportRegistry(): ImportRegistry = this.importStack
 
     /**
      * 获取解析完成的配置类列表
      */
-    open fun getConfigurationClasses(): MutableSet<ConfigurationClass> = this.configurationClasses.keys
+    open fun getConfigurationClasses(): Set<ConfigurationClass> = this.configurationClasses.keys
 
     /**
      * 解析容器中已经有的BeanDefinition当中的相关导入组件的配置类；一个BeanDefinitionHolder当中维护了beanDefinition和beanName信息
      *
+     * @param candidates 候选的BeanDefinitionHolder
      * @see BeanDefinitionHolder
      */
     open fun parse(candidates: Collection<BeanDefinitionHolder>) {
@@ -190,7 +193,6 @@ open class ConfigurationClassParser(
      * @param importCandidates @Import导入的配置类列表
      * @param exclusionFilter 要进行排除的Filter
      */
-    @Suppress("UNCHECKED_CAST")
     private fun processImports(
         configurationClass: ConfigurationClass,
         importCandidates: Collection<Class<*>>,
@@ -200,50 +202,59 @@ open class ConfigurationClassParser(
         if (importCandidates.isEmpty()) {
             return
         }
-        importCandidates.forEach { candidate ->
-            // 如果它是一个ImportSelector
-            if (ClassUtils.isAssignFrom(ImportSelector::class.java, candidate)) {
-                val selector = ParserStrategyUtils.instanceClass<ImportSelector>(candidate, environment, registry)
-                // 如果它是一个延时处理的ImportSelector，那么需要缓存起来，后续一起去进行处理
-                if (selector is DeferredImportSelector) {
-                    deferredImportSelectorHandler.add(configurationClass, selector)
-                } else {
-
-                    // 如果selector使用了排除的Filter
-                    val selectorExclusionFilter = selector.getExclusionFilter()
-                    var filterToUse = exclusionFilter
-                    if (selectorExclusionFilter != null) {
-                        filterToUse = filterToUse.or(selectorExclusionFilter)
+        importStack.push(configurationClass)  // push stack
+        try {
+            importCandidates.forEach { candidate ->
+                // 如果它是一个ImportSelector(不会注册到容器当中)
+                if (ClassUtils.isAssignFrom(ImportSelector::class.java, candidate)) {
+                    val selector = ParserStrategyUtils.instanceClass<ImportSelector>(candidate, environment, registry)
+                    // 如果它是一个延时处理的ImportSelector，那么需要缓存起来，后续一起去进行处理
+                    if (selector is DeferredImportSelector) {
+                        deferredImportSelectorHandler.add(configurationClass, selector)
+                    } else {
+                        // 如果selector使用了排除的Filter，那么需要将它与exclusionFilter进行或运算
+                        val selectorExclusionFilter = selector.getExclusionFilter()
+                        var filterToUse = exclusionFilter
+                        if (selectorExclusionFilter != null) {
+                            filterToUse = filterToUse.or(selectorExclusionFilter)
+                        }
+                        val imports = selector.selectImports(configurationClass.metadata)
+                        // 递归处理Import导入的Selector
+                        processImports(configurationClass, getImportCandidates(imports, filterToUse), filterToUse)
                     }
-                    val imports = selector.selectImports(configurationClass.metadata)
-                    // 递归处理Import导入的Selector
-                    processImports(configurationClass, getImportCandidates(imports, filterToUse), filterToUse)
-                }
-                // 如果它是一个ImportBeanDefinitionRegistrar
-            } else if (ClassUtils.isAssignFrom(ImportBeanDefinitionRegistrar::class.java, candidate)) {
-                // 实例化，并保存ImportBeanDefinitionRegistrar到configurationClass当中
-                val registrar =
-                    ParserStrategyUtils.instanceClass<ImportBeanDefinitionRegistrar>(candidate, environment, registry)
-                // value为配置类中的相关的的注解信息，在后续去回调ImportBeanDefinitionRegistrar时会以参数的形式传递给调用方
-                configurationClass.addRegistrar(registrar, configurationClass.metadata)
-                // 如果只是导入了一个普通组件，需要把它当做一个配置类去进行递归处理
-            } else {
-                // 注册Import导入的配置类的信息(第一个参数是被导入的配置类名，第二个参数是导入它的配置类的注解信息)
-                importStack.registerImport(candidate.name, configurationClass.metadata)
+                    // 如果它是一个ImportBeanDefinitionRegistrar(不会注册到容器当中)
+                } else if (ClassUtils.isAssignFrom(ImportBeanDefinitionRegistrar::class.java, candidate)) {
+                    // 实例化，并保存ImportBeanDefinitionRegistrar到configurationClass当中
+                    val registrar = ParserStrategyUtils.instanceClass<ImportBeanDefinitionRegistrar>(
+                        candidate, environment, registry
+                    )
+                    // value为配置类中的相关的的注解信息，在后续去回调ImportBeanDefinitionRegistrar时会以参数的形式传递给调用方
+                    configurationClass.addRegistrar(registrar, configurationClass.metadata)
+                    // 如果只是导入了一个普通组件，需要把它当做一个配置类去进行递归处理
+                } else {
+                    // 注册Import导入的配置类的信息(第一个参数是被导入的配置类名(key)，第二个参数是导入它的配置类的注解信息(value))
+                    importStack.registerImport(candidate.name, configurationClass.metadata)
 
-                // 构建被导入的配置类信息，beanName等ConfigurationClassBeanDefinitionReader.registerBeanDefinitionForImportedConfigurationClass生成
-                val importedConfigurationClass = ConfigurationClass(candidate, null)
-                importedConfigurationClass.setImportedBy(configurationClass)   // set importedBy
-                processConfigurationClass(importedConfigurationClass, exclusionFilter)  // 把当前类当做配置类去进行递归
+                    // 构建被导入的配置类信息，beanName等ConfigurationClassBeanDefinitionReader.registerBeanDefinitionForImportedConfigurationClass生成
+                    val importedConfigurationClass = ConfigurationClass(candidate)
+                    importedConfigurationClass.setImportedBy(configurationClass)   // set importedBy
+                    processConfigurationClass(importedConfigurationClass, exclusionFilter)  // 把当前类当做配置类去进行递归
+                }
             }
+        } finally {
+            importStack.pop()  // pop stack
         }
     }
 
     /**
-     * 获取@Import注解的候选类
+     * 获取ImportSelector的返回值导入的的候选配置类
+     *
+     * @param imports ImportSelector导入的Class列表
+     * @param exclusionFilter 用于排除使用到的filter
+     * @return ImportSelector导入的配置类列表
      */
-    private fun getImportCandidates(imports: Array<String>, filter: Predicate<String>): Collection<Class<*>> {
-        return imports.filter { !filter.test(it) }.map { ClassUtils.forName<Any>(it) }.toCollection(HashSet())
+    private fun getImportCandidates(imports: Array<String>, exclusionFilter: Predicate<String>): Collection<Class<*>> {
+        return imports.filter { !exclusionFilter.test(it) }.map { ClassUtils.forName<Any>(it) }.toSet()
     }
 
     /**
@@ -251,6 +262,7 @@ open class ConfigurationClassParser(
      *
      * @param clazz 目标配置类
      * @param filter 要去进行排除的Filter
+     * @return @Import导入的配置类列表
      */
     private fun getImportCandidates(clazz: Class<*>, filter: Predicate<String>): Set<Class<*>> {
         val imports = AnnotatedElementUtils.findAllMergedAnnotations(clazz, Import::class.java)
@@ -279,35 +291,63 @@ open class ConfigurationClassParser(
             // 处理@ComponentScan注解，将符合条件的BeanDefinition，导入到容器当中
             // 并且应该将@ComponentScan扫描进来的BeanDefinition，通通当做一个配置类去进行解析，递归
             AnnotationAttributesUtils.asAnnotationAttributesSet(componentScans)
-                .forEach { parse(parser.parse(ComponentScanMetadata(configurationClass, it))) }
+                .forEach {
+                    parse(parser.parse(ComponentScanMetadata(configurationClass, it)))
+                }
         }
     }
 
     /**
      * ImportStack，它是一个Import配置类的注册中心，它维护了Import和被Import之间的配置类的关系；
+     *
+     * 同时，它也是一个处理导入的栈(ArrayDeque)，如果出现了循环导入的情况，通过它也可以去进行检测
+     *
      * Note: 它会被注册到容器当中，去支持ImportAware的解析，因为有些被Import的配置类是需要获取到导入它的类的相关信息的
      */
-    private class ImportStack : ImportRegistry {
+    private class ImportStack : ImportRegistry, java.util.ArrayDeque<ConfigurationClass>() {
+
+        /**
+         * key-importedClass,value-导入importedClass该类的注解元信息
+         */
         private val imports = LinkedHashMap<String, MutableList<AnnotationMetadata>>()
 
         /**
          * 给某个被导入的配置类，注册导入它的那个类的元信息，比如A导入了B，那么importedClass=B，importingClass=A
          *
          * @param importedClass 被导入的配置类
-         * @param importingClassMetadata 导入的类的元信息
+         * @param importingClassMetadata 导入的类的注解元信息
          */
         fun registerImport(importedClass: String, importingClassMetadata: AnnotationMetadata) {
-            imports.putIfAbsent(importedClass, ArrayList())
+            imports.putIfAbsent(importedClass, LinkedList())
             imports[importedClass]!! += importingClassMetadata
         }
 
+        /**
+         * 给定importedClass，去找到导入它的注解元信息
+         *
+         * @param importedClass importedClass
+         * @return 导入importedClass的配置类的注解元信息，如果找不到return null
+         */
         override fun getImportingClassFor(importedClass: String): AnnotationMetadata? {
             val metadatas = imports[importedClass]
-            return if (metadatas == null || metadatas.isEmpty()) return null else metadatas[0]
+            return if (metadatas == null || metadatas.isEmpty()) return null else metadatas.last()
         }
 
-        override fun removeImportingClass(importedClass: String) {
-            imports -= importedClass
+        /**
+         * 给定importingClass，去移除掉它导入的所有的信息，因为key-importedClass，value-importedClassMetadata；
+         * 因此需要遍历所有的value，去进行挨个检查className是否匹配importingClass，如果匹配的话，就remove掉
+         *
+         * @param importingClass Import配置类
+         */
+        override fun removeImportingClass(importingClass: String) {
+            for (value in imports.values) {
+                val iterator = value.iterator()
+                while (iterator.hasNext()) {
+                    if (iterator.next().getClassName() == importingClass) {
+                        iterator.remove()
+                    }
+                }
+            }
         }
     }
 

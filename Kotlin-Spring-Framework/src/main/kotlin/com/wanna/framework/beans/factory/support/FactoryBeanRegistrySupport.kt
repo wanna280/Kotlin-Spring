@@ -5,7 +5,7 @@ import com.wanna.framework.beans.factory.FactoryBean
 /**
  * 它是一个FactoryBean的注册中心
  */
-open class FactoryBeanRegistrySupport() : DefaultSingletonBeanRegistry() {
+open class FactoryBeanRegistrySupport : DefaultSingletonBeanRegistry() {
 
     // FactoryBeanObject的缓存列表
     private val factoryBeanObjectCache = LinkedHashMap<String, Any>()

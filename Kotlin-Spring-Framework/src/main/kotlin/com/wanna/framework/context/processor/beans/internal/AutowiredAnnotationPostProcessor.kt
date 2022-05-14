@@ -37,10 +37,10 @@ open class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostPro
     private var order: Int = Ordered.ORDER_LOWEST - 10
 
     // 已经完成过处理的lookupMethod缓存，存的是beanName
-    private val lookupMethodChecked: MutableSet<String> = Collections.newSetFromMap(ConcurrentHashMap())
+    private val lookupMethodChecked: MutableSet<String> = Collections.newSetFromMap(ConcurrentHashMap(256))
 
     // 候选构造器的缓存，key-beanClass，value-constructors
-    private val candidateConstructorsCache: ConcurrentHashMap<Class<*>, Array<Constructor<*>>> = ConcurrentHashMap()
+    private val candidateConstructorsCache: ConcurrentHashMap<Class<*>, Array<Constructor<*>>> = ConcurrentHashMap(256)
 
     // 哪些注解要作为Autowire注解？默认包括@Autowired/@Value和@Inject
     private val autowiredAnnotationTypes = HashSet<Class<out Annotation>>()

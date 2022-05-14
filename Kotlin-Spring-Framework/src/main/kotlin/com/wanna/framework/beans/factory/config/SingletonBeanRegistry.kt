@@ -1,7 +1,10 @@
-package com.wanna.framework.context
+package com.wanna.framework.beans.factory.config
 
 /**
- * 这是一个单实例Bean的注册中心，提供单实例Bean的注册/获取
+ * 这是一个单实例Bean的注册中心，提供单实例Bean的注册/获取，它可以被Spring BeanFactory所实现，去提供单实例Bean的管理；
+ * BeanFactory的子类ConfigurableBeanFactory就实现了这个接口当中的方法，去完成Spring BeanFactory当中单实例Bean的管理
+ *
+ * @see ConfigurableBeanFactory
  */
 interface SingletonBeanRegistry {
 
@@ -16,6 +19,7 @@ interface SingletonBeanRegistry {
      * 只检查一级缓存，不检查二三级缓存
      */
     fun registerSingleton(beanName: String, singleton: Any)
+
 
     /**
      * 注册中心中是否存在有这样的Bean，只检查singleObjects，并不检查二三级缓存
