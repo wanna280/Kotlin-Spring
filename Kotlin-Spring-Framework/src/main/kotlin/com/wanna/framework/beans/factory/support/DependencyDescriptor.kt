@@ -7,7 +7,7 @@ import java.lang.reflect.Field
 import java.lang.reflect.Type
 
 /**
- * 这是一个依赖的描述符，可以描述一个方法的参数，或者是一个字段；
+ * 这是一个依赖的描述符，可以描述一个方法的参数，或者是一个字段，当然，也可以是一个构造器的参数也是可以的
  * 在Spring当中需要去进行依赖的解析时，就会将依赖的相关信息都封装成为一个DependencyDescriptor，方便BeanFactory当中可以对依赖去进行解析工作
  */
 open class DependencyDescriptor
@@ -48,7 +48,7 @@ private constructor(
     open fun getMethodParameter(): MethodParameter? = this.parameter
 
     /**
-     * 获取方法参数/字段上的注解列表
+     * 获取方法参数/构造器参数/字段上的注解列表
      */
     open fun getAnnotations(): Array<Annotation> =
         if (field != null) field.annotations else parameter!!.getAnnotations()

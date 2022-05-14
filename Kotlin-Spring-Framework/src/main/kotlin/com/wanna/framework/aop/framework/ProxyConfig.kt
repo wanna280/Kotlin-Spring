@@ -1,8 +1,7 @@
 package com.wanna.framework.aop.framework
 
 /**
- * 在这个类当中，对代理的配置去进行抽象了一层，在Spring当中凡是需要完成代理的配置，都会继承这个类，
- * 这个类当中为代理提供了相关的配置信息
+ * 在这个类当中，对代理的配置去进行抽象了一层，在Spring当中凡是需要完成代理的配置，都会继承这个类，这个类当中为代理提供了相关的配置信息
  */
 open class ProxyConfig : java.io.Serializable {
     // 是否代理目标类？设为true时，使用CGLIB去进行代理；设置false时，如果有接口采用JDK动态代理

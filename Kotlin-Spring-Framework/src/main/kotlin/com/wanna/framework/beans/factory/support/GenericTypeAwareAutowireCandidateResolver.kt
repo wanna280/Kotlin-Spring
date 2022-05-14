@@ -26,6 +26,6 @@ open class GenericTypeAwareAutowireCandidateResolver : BeanFactoryAware, SimpleA
     }
 
     private fun checkGenericTypeMatch(bdHolder: BeanDefinitionHolder, descriptor: DependencyDescriptor): Boolean {
-        return false
+        return true
     }
 }

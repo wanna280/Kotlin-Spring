@@ -151,21 +151,43 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     /**
-     * 获取Autowire的候选的解析器
+     * 获取Autowire的候选的解析器，用于匹配该Bean是否是一个可以作为目标依赖的候选注入Bean
      */
-    fun getAutowireCandidateResolver(): AutowireCandidateResolver = this.autowireCandidateResolver
+    open fun getAutowireCandidateResolver(): AutowireCandidateResolver = this.autowireCandidateResolver
 
+    /**
+     * 判断一个候选Bean能否注入给DependencyDescriptor的目标元素？会匹配BeanDefinition当中的AutowireCandidate属性以及Qualifier注解等情况
+     *
+     * @param beanName beanName
+     * @param descriptor 依赖描述符
+     * @return 是否是一个Autowire的候选Bean？
+     */
     override fun isAutowireCandidate(beanName: String, descriptor: DependencyDescriptor): Boolean {
+        val resolver = getAutowireCandidateResolver()
+
+        // 如果包含单实例BeanDefinition的话，那么我们拿它的BeanDefinition去进行匹配
+        if (containsBeanDefinition(beanName)) {
+            return resolver.isAutowireCandidate(
+                BeanDefinitionHolder(getMergedBeanDefinition(beanName), beanName),
+                descriptor
+            )
+
+            // 如果包含SingletonBean，但是没有BeanDefinition的话，我们这里构建一个BeanDefinition去适配一下
+        } else if (containsSingleton(beanName)) {
+            return resolver.isAutowireCandidate(
+                BeanDefinitionHolder(RootBeanDefinition(getType(beanName)), beanName), descriptor
+            )
+        }
         return true
     }
 
-    override fun resolveDependency(descriptor: DependencyDescriptor, requestingBeanName: String): Any? {
+    override fun resolveDependency(descriptor: DependencyDescriptor, requestingBeanName: String?): Any? {
         return resolveDependency(descriptor, requestingBeanName, null, null)
     }
 
     override fun resolveDependency(
         descriptor: DependencyDescriptor,
-        requestingBeanName: String,
+        requestingBeanName: String?,
         autowiredBeanName: MutableSet<String>?,
         typeConverter: TypeConverter?
     ): Any? {

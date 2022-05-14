@@ -18,7 +18,7 @@ interface AutowireCapableBeanFactory : BeanFactory {
      * @param requestingBeanName 请求进行注入的beanName，例如A需要注入B，那么requestingBeanName=A，而descriptor中则维护了B中的相关信息
      * @return 如果从容器中解析到了合适的依赖，那么return 解析到的依赖；如果解析不到，return null
      */
-    fun resolveDependency(descriptor: DependencyDescriptor, requestingBeanName: String): Any?
+    fun resolveDependency(descriptor: DependencyDescriptor, requestingBeanName: String?): Any?
 
     /**
      * 根据依赖的描述信息(descriptor)，从容器中解析出来合适的依赖，可以是Map/List以及普通的Entity
@@ -30,7 +30,7 @@ interface AutowireCapableBeanFactory : BeanFactory {
      */
     fun resolveDependency(
         descriptor: DependencyDescriptor,
-        requestingBeanName: String,
+        requestingBeanName: String?,
         autowiredBeanName: MutableSet<String>?,
         typeConverter: TypeConverter?
     ): Any?
