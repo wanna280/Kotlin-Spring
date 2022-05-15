@@ -9,11 +9,13 @@ import com.wanna.framework.context.annotation.ConfigurationCondition.Configurati
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.MethodMetadata
+import com.wanna.framework.core.type.StandardAnnotationMetadata
 import com.wanna.framework.core.type.StandardMethodMetadata
 import com.wanna.framework.core.util.AnnotationConfigUtils
 import com.wanna.framework.core.util.BeanUtils
 import com.wanna.framework.core.util.StringUtils
-import org.springframework.core.annotation.AnnotatedElementUtils
+import org.slf4j.LoggerFactory
+import java.lang.reflect.Method
 
 /**
  * 这是一个配置类的BeanDefinitionReader，负责从ConfigurationClass当中去读取BeanDefinition
@@ -28,6 +30,10 @@ open class ConfigurationClassBeanDefinitionReader(
     private val environment: Environment,
     private val importRegistry: ImportRegistry
 ) {
+    companion object {
+        private val logger = LoggerFactory.getLogger(ConfigurationClassBeanDefinitionReader::class.java)
+    }
+
     // 这是一个条件计算器，去计算一个Bean是否应该被注册
     private val conditionEvaluator = ConditionEvaluator(registry, environment)
 
@@ -89,34 +95,48 @@ open class ConfigurationClassBeanDefinitionReader(
      * 加载BeanMethod，去将BeanMethod封装成为一个BeanDefinition，并注册BeanDefinition到容器当中
      */
     open fun loadBeanDefinitionsForBeanMethod(beanMethod: BeanMethod) {
+        val metadata = beanMethod.metadata
         // 如果使用条件计算器去进行匹配指导它应该被Skip掉，那么Skip，不进行解析了...
-        if (conditionEvaluator.shouldSkip(StandardMethodMetadata(beanMethod.method), REGISTER_BEAN)) {
+        if (conditionEvaluator.shouldSkip(metadata, REGISTER_BEAN)) {
             return
         }
 
-        val method = beanMethod.method
         val configClass = beanMethod.configClass
         val beanName: String?
 
         // 获取到@Bean注解当中的name属性，如果name属性为空的话，那么使用方法名作为beanName
-        val beanAnnotation = AnnotatedElementUtils.getMergedAnnotation(method, Bean::class.java)!!
-        beanName = beanAnnotation.name.ifBlank { method.name }
-        val medthodMetadata = StandardMethodMetadata(method)
+        val beanAnnotation = metadata.getAnnotations()
+            .filter { it.annotationClass.java.name == Bean::class.java.name }
+            .toList()[0] as Bean
+        beanName = beanAnnotation.name.ifBlank { metadata.getMethodName() }
+
+        // 如果这个@Bean方法，在子类当中已经存在了(子类去进行重写)，那么就别添加父类的@Bean方法了，得pass掉...得以子类的为准....
+        if (isOverriddenByExistingDefinition(beanMethod, beanName)) {
+            if (logger.isDebugEnabled) {
+                logger.debug("之前配置类[${beanMethod.configClass.metadata.getClassName()}]的@Bean已经导入过当前的beanName=[$beanName]的BeanDefinition了，不能被重复注册")
+            }
+            return
+        }
 
         // 创建一个ConfigurationClassBeanDefinition，让它能适配RootBeanDefinition和AnnotatedBeanDefinition
-        // 因为去对注解信息去进行匹配时，需要用到AnnotatedBeanDefinition
-        val beanDefinition = ConfigurationClassBeanDefinition(configClass, medthodMetadata)
+        // 因为去对注解信息去进行匹配时，需要用到AnnotatedBeanDefinition...
+        val beanDefinition = ConfigurationClassBeanDefinition(configClass, metadata)
+
         // set factoryMethodName, factoryBeanName and factoryMethod
-        beanDefinition.setFactoryMethodName(method.name)
+        beanDefinition.setFactoryMethodName(metadata.getMethodName())
 
         // fixed:这里在之前已经生成好了beanName，因此这里可以直接设置beanName即可
         beanDefinition.setFactoryBeanName(configClass.beanName)
-        beanDefinition.setResolvedFactoryMethod(method)
+
+        if (metadata is StandardMethodMetadata) {
+            beanDefinition.setResolvedFactoryMethod(metadata.getMethod())
+        }
+
         // 设置autowiredMode为构造器注入
         beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR)
 
         // 处理@Bean方法上的@Role/@Primary/@DependsOn/@Lazy注解
-        AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition, configClass.metadata)
+        AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition, metadata)
 
         // 根据@Bean注解当中的init方法和destory方法，去设置BeanDefinition的initMethod和destoryMethod
         if (StringUtils.hasText(beanAnnotation.initMethod)) {
@@ -131,7 +151,30 @@ open class ConfigurationClassBeanDefinitionReader(
         beanDefinition.setAutowireMode(beanAnnotation.autowireMode)
 
         // 注册beanDefinition到容器当中
-        registry.registerBeanDefinition(beanName!!, beanDefinition)
+        registry.registerBeanDefinition(beanName, beanDefinition)
+    }
+
+    /**
+     * 判断是否应该替换掉之前的BeanDefinition？
+     *
+     * @param beanMethod 现在的BeanMethod
+     * @param beanName 现在的beanName
+     * @return 是否应该替换之前的？return true标识pass掉，return false则替换掉...
+     */
+    protected open fun isOverriddenByExistingDefinition(beanMethod: BeanMethod, beanName: String): Boolean {
+        if (!registry.containsBeanDefinition(beanName)) {
+            return false
+        }
+        val existBeanDef = registry.getBeanDefinition(beanName)
+
+        // 如果之前也是一个ConfigurationClassBeanDefinition，说明之前也是在@Bean这里添加的...
+        if (existBeanDef is ConfigurationClassBeanDefinition) {
+            // 判断之前的配置类名和现在的配置类名是否相同？如果相同的话，return true，应该pass掉...
+            if (existBeanDef.getMetadata().getClassName() == beanMethod.configClass.metadata.getClassName()) {
+                return true
+            }
+        }
+        return false
     }
 
     /**
@@ -231,6 +274,7 @@ open class ConfigurationClassBeanDefinitionReader(
         private val configurationClass: ConfigurationClass,
         private val methodMetadata: MethodMetadata?
     ) : RootBeanDefinition(), AnnotatedBeanDefinition {
+
         override fun getMetadata(): AnnotationMetadata = configurationClass.metadata
 
         /**

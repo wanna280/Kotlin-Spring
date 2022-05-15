@@ -58,9 +58,9 @@ class Controller : DisposableBean {
         @RequestBody(required = false) user: User?,
         inputStream: InputStream,
         outputStream: OutputStream
-    ): User? {
+    ): Any? {
         println(user)
-        return user
+        return userId
     }
 
     @PostConstruct
@@ -81,4 +81,5 @@ class Controller : DisposableBean {
 
 fun main(vararg args: String) {
     val applicationContext = runSpringApplication<WebTest>(*args)
+    println(applicationContext)
 }

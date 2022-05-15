@@ -13,8 +13,13 @@ import java.lang.reflect.Modifier
  */
 open class StandardMethodMetadata(private val method: Method) : MethodMetadata {
 
+
     override fun getAnnotations(): Array<Annotation> {
         return method.annotations
+    }
+
+    open fun getMethod(): Method {
+        return method
     }
 
     override fun getAnnotationAttributes(annotationName: String): Map<String, Any> {
@@ -45,4 +50,8 @@ open class StandardMethodMetadata(private val method: Method) : MethodMetadata {
     override fun isFinal() = Modifier.isFinal(method.modifiers)
 
     override fun isPrivate() = Modifier.isPrivate(method.modifiers)
+
+    override fun toString(): String {
+        return method.toString()
+    }
 }

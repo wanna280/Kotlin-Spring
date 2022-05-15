@@ -1,6 +1,7 @@
 package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.http.converter.HttpMessageConverter
 import org.springframework.core.annotation.AnnotatedElementUtils
@@ -13,7 +14,15 @@ import org.springframework.core.annotation.AnnotatedElementUtils
  * @see ResponseBody
  * @see RequestBody
  */
-open class RequestResponseBodyMethodProcessor : AbstractMessageConverterMethodProcessor() {
+open class RequestResponseBodyMethodProcessor(
+    messageConverters: List<HttpMessageConverter<*>>,
+    contentNegotiationManager: ContentNegotiationManager
+) : AbstractMessageConverterMethodProcessor() {
+
+    init {
+        this.messageConverters += messageConverters
+        this.setContentNegotiationManager(contentNegotiationManager)
+    }
 
     /**
      * 它支持处理什么样的参数？方法参数上标注了@RequestBody的参数即可支持处理
@@ -32,8 +41,10 @@ open class RequestResponseBodyMethodProcessor : AbstractMessageConverterMethodPr
      * @return 是否支持处理这样的返回值类型？
      */
     override fun supportsReturnType(parameter: MethodParameter): Boolean {
-        return parameter.getAnnotation(ResponseBody::class.java) != null ||
-                AnnotatedElementUtils.isAnnotated(parameter.getContainingClass()!!, ResponseBody::class.java)
+        return parameter.getAnnotation(ResponseBody::class.java) != null || AnnotatedElementUtils.isAnnotated(
+            parameter.getContainingClass()!!,
+            ResponseBody::class.java
+        )
     }
 
     /**
@@ -56,14 +67,5 @@ open class RequestResponseBodyMethodProcessor : AbstractMessageConverterMethodPr
      */
     override fun resolveArgument(parameter: MethodParameter, webRequest: NativeWebRequest): Any? {
         return readWithMessageConverters<Any>(webRequest, parameter, parameter.getParameterType())
-    }
-
-    companion object {
-        @JvmStatic
-        fun newRequestResponseBodyMethodProcessor(messageConverters: List<HttpMessageConverter<*>>): RequestResponseBodyMethodProcessor {
-            val processor = RequestResponseBodyMethodProcessor()
-            processor.messageConverters += messageConverters
-            return processor
-        }
     }
 }

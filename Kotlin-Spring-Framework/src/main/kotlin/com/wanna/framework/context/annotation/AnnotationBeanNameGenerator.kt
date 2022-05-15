@@ -16,16 +16,13 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
         val INSTANCE = AnnotationBeanNameGenerator()
 
         // Spring中的Component注解的类名
-        @JvmField
-        val COMPONENT_ANNOTATION_CLASSNAME = "com.wanna.framework.context.stereotype.Component"
+        const val COMPONENT_ANNOTATION_CLASSNAME = "com.wanna.framework.context.stereotype.Component"
 
         // Javax中ManagedBean注解的类名
-        @JvmField
-        val MANAGED_BEAN_ANNOTATION_CLASSNAME = "javax.annotation.ManagedBean"
+        const val MANAGED_BEAN_ANNOTATION_CLASSNAME = "javax.annotation.ManagedBean"
 
         // Javax中Named注解的类名
-        @JvmField
-        val NAMED_ANNOTATION_CLASSNAME = "javax.inject.Named"
+        const val NAMED_ANNOTATION_CLASSNAME = "javax.inject.Named"
     }
 
     override fun generateBeanName(beanDefinition: BeanDefinition, registry: BeanDefinitionRegistry): String {

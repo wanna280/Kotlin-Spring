@@ -19,9 +19,7 @@ object ClassDiscoveryUtils {
      */
     fun scan(vararg pkgs: String): Set<Class<*>> {
         val classes: MutableSet<Class<*>> = HashSet()
-        pkgs.forEach {
-            classes.addAll(getClassesForPackage(it))
-        }
+        pkgs.forEach { classes.addAll(getClassesForPackage(it)) }
         return classes
     }
 

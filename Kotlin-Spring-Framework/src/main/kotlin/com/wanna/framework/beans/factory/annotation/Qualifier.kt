@@ -25,6 +25,7 @@ import com.wanna.framework.context.annotation.Autowired
     AnnotationTarget.VALUE_PARAMETER,
     AnnotationTarget.ANNOTATION_CLASS,
     AnnotationTarget.TYPE,
-    AnnotationTarget.CLASS
+    AnnotationTarget.CLASS,
+    AnnotationTarget.FUNCTION
 )
 annotation class Qualifier(val value: String)

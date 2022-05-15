@@ -22,23 +22,23 @@ open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
     var beanName: String? = _beanName
 
     // beanMethods
-    val beanMethods = HashSet<BeanMethod>()
+    val beanMethods = LinkedHashSet<BeanMethod>()
 
     // 被哪个组件导入进来的？
-    private val importedBy = HashSet<ConfigurationClass>()
+    private val importedBy = LinkedHashSet<ConfigurationClass>()
 
     // importSources
-    val importedSources = HashMap<String, Class<out BeanDefinitionReader>>()
+    val importedSources = LinkedHashMap<String, Class<out BeanDefinitionReader>>()
 
     // importBeanDefinitionRegistrars
-    private val importBeanDefinitionRegistrars = HashMap<ImportBeanDefinitionRegistrar, AnnotationMetadata>()
+    private val importBeanDefinitionRegistrars = LinkedHashMap<ImportBeanDefinitionRegistrar, AnnotationMetadata>()
 
     /**
      * 往配置类当中添加一个@Bean的方法
      *
      * @param beanMethod 添加一个@Bean标注的方法
      */
-    fun addBeanMethod(beanMethod: BeanMethod) {
+    open fun addBeanMethod(beanMethod: BeanMethod) {
         beanMethods += beanMethod
     }
 
@@ -47,21 +47,21 @@ open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
      *
      * @return ImportBeanDefinitionRegistrar Map(key-registrar,value导入该ImportBeanDefinitionRegistrar的配置类的注解元信息)
      */
-    fun getImportBeanDefinitionRegistrars(): Map<ImportBeanDefinitionRegistrar, AnnotationMetadata> {
+    open fun getImportBeanDefinitionRegistrars(): Map<ImportBeanDefinitionRegistrar, AnnotationMetadata> {
         return importBeanDefinitionRegistrars
     }
 
     /**
      * 当前配置类当中是否有@Bean标注的方法？
      */
-    fun hasBeanMethod(): Boolean = beanMethods.isNotEmpty()
+    open fun hasBeanMethod(): Boolean = beanMethods.isNotEmpty()
 
     /**
      * 当前配置类是否有导入ImportBeanDefinitionRegistrar
      */
-    fun hasRegistrar(): Boolean = beanMethods.isNotEmpty()
+    open fun hasRegistrar(): Boolean = beanMethods.isNotEmpty()
 
-    fun addRegistrar(registrar: ImportBeanDefinitionRegistrar, annotationMetadata: AnnotationMetadata) {
+    open fun addRegistrar(registrar: ImportBeanDefinitionRegistrar, annotationMetadata: AnnotationMetadata) {
         importBeanDefinitionRegistrars[registrar] = annotationMetadata
     }
 
@@ -70,21 +70,21 @@ open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
      *
      * @param configurationClass 导入当前配置类的配置类
      */
-    fun setImportedBy(configurationClass: ConfigurationClass) {
+    open fun setImportedBy(configurationClass: ConfigurationClass) {
         importedBy += configurationClass
     }
 
     /**
      * 获取当前配置类是被哪些配置类所导入？
      */
-    fun getImportedBy(): Collection<ConfigurationClass> = importedBy
+    open fun getImportedBy(): Collection<ConfigurationClass> = importedBy
 
     /**
      * 是否被Import进来的？
      *
      * @return 如果当前的配置类是被导入的，return true；不然return false
      */
-    fun isImportedBy(): Boolean = importedBy.isNotEmpty()
+    open fun isImportedBy(): Boolean = importedBy.isNotEmpty()
 
     /**
      * 添加ImportSource，通过@ImportSource注解导入的resource，并将其使用的BeanDefinitionReader去进行注册和保存
@@ -92,7 +92,7 @@ open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
      * @param reader readerClass
      * @param resource resourceLocation
      */
-    fun addImportSource(resource: String, reader: Class<out BeanDefinitionReader>) {
+    open fun addImportSource(resource: String, reader: Class<out BeanDefinitionReader>) {
         importedSources[resource] = reader
     }
 
@@ -102,4 +102,10 @@ open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
         // 如果configurationClass匹配的话，那么return true
         return if (other != null && other is ConfigurationClass) other.configurationClass == configurationClass else false
     }
+
+    override fun toString(): String {
+        return "ConfigurationClass($beanName, $configurationClass)"
+    }
+
+
 }

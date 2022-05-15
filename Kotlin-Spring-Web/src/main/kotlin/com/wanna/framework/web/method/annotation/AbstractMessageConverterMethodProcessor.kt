@@ -140,4 +140,8 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
         val produceToUse = produceType.copyQualityValue(acceptType)
         return if (MediaType.SPECIFICITY_COMPARATOR.compare(acceptType, produceToUse) < 0) acceptType else produceToUse
     }
+
+    open fun setContentNegotiationManager(contentNegotiationManager: ContentNegotiationManager) {
+        this.contentNegotiationManager = contentNegotiationManager
+    }
 }

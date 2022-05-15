@@ -12,5 +12,5 @@ interface HandlerExceptionResolver {
         response: HttpServerResponse,
         handler: Any?,
         ex: Throwable
-    ): ModelAndView
+    ): ModelAndView?
 }

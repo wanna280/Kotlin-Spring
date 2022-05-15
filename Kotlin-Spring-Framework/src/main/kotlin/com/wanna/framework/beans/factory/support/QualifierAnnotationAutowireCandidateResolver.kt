@@ -79,7 +79,21 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
         if (!super.isAutowireCandidate(bdHolder, descriptor)) {
             return false
         }
-        return checkQualifiers(bdHolder, descriptor.getAnnotations())
+
+        // 1. 检查方法参数/字段上的Qualifier
+        var match = checkQualifiers(bdHolder, descriptor.getAnnotations())
+        if (match) {
+            val parameter = descriptor.getMethodParameter()
+            // 如果方法参数不为null，说明它可能是一个构造器/方法，一定不是一个字段
+            if (parameter != null) {
+                val method = parameter.getMethod()
+                // 如果method==null(说明它是一个构造器)，或者该方法的返回值是void，那么还得去构造器或者是方法上找一找注解...
+                if (method == null || method.returnType == Unit::class.java) {
+                    match = checkQualifiers(bdHolder, parameter.getMethodAnnotations())
+                }
+            }
+        }
+        return match
     }
 
     /**
@@ -186,7 +200,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
      * @return 建议去设置的值，有@Value注解。return @Value的value属性，如果@Value注解没有，那么return null
      */
     override fun getSuggestedValue(descriptor: DependencyDescriptor): Any? {
-        // 1.获取从方法参数/字段上的@Value注解的value属性
+        // 1.获取从方法参数/构造器参数/字段上的@Value注解的value属性
         var value = findValue(descriptor.getAnnotations())
         if (value == null) {
             val methodParameter = descriptor.getMethodParameter()

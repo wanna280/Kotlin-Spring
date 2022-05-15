@@ -60,19 +60,6 @@ object AnnotationAttributesUtils {
     }
 
     /**
-     * 获取<keyword>直接标注<keyword></keyword>的某个注解的元素属性信息
-     *
-     * @param element         目标位置(Class/Annotation/Method/Field等)
-     * @param targetAnnoClass 目标注解类型
-     */
-    fun getDirectAnnotationAttributes(
-        element: AnnotatedElement,
-        targetAnnoClass: Class<out Annotation?>?
-    ): AnnotationAttributes? {
-        return asAnnotationAttributes(AnnotatedElementUtils.getMergedAnnotation(element, targetAnnoClass))
-    }
-
-    /**
      * 从一个Map转换到Attributes对象
      *
      * @param map map

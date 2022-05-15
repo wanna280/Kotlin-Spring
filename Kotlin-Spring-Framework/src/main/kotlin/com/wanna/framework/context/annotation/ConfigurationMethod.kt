@@ -1,7 +1,7 @@
 package com.wanna.framework.context.annotation
 
-import java.lang.reflect.Method
+import com.wanna.framework.core.type.MethodMetadata
 
-open class ConfigurationMethod(_method: Method) {
-    val method = _method
+open class ConfigurationMethod(val metadata: MethodMetadata, val configClass: ConfigurationClass) {
+
 }

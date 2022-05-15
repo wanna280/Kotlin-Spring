@@ -292,12 +292,13 @@ class ReflectionUtils {
 
         /**
          * 对一个类当中定义的所有方法，执行同样的操作
+         *
          * @param clazz 要执行方法的类
          * @param action 要执行的操作
          */
         @JvmStatic
         fun doWithLocalMethods(clazz: Class<*>, action: (Method) -> Unit) {
-            doWithMethods(clazz, action) { true }
+            doWithLocalMethods(clazz, action) { true }
         }
 
         /**
@@ -314,6 +315,7 @@ class ReflectionUtils {
 
         /**
          * 对一个类以及它父类当中定义的所有方法，执行同样的操作
+         *
          * @param clazz 要执行方法的类
          * @param action 要执行的操作
          */

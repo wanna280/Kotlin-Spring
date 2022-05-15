@@ -4,6 +4,7 @@ import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.InitializingBean
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
+import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.context.request.ServerWebRequest
 import com.wanna.framework.web.handler.ModelAndView
 import com.wanna.framework.web.http.converter.HttpMessageConverter
@@ -38,6 +39,12 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     // 参数名发现器，用来去对方法的参数名去进行获取
     private var parameterNameDiscoverer = DefaultParameterNameDiscoverer()
 
+    // 交给外部去进行自定义的参数解析器(基于默认的去进行扩展)
+    private var customArgumentResolvers: List<HandlerMethodArgumentResolver>? = null
+
+    // 交给外部去机械能自定义的返回值处理器(基于默认的去进行扩展)
+    private var customReturnValueHandlers: List<HandlerMethodReturnValueHandler>? = null
+
     // 参数解析器列表(内部组合)
     private var argumentResolvers: HandlerMethodArgumentResolverComposite? = null
 
@@ -46,6 +53,9 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
 
     // 支持对HTTP请求的RequestBody和ResponseBodu去进行消息转换的HttpMessageConverter列表
     private var messageConverters: MutableList<HttpMessageConverter<*>>? = null
+
+    // 内容协商管理器
+    private var contentNegotiationManager: ContentNegotiationManager = ContentNegotiationManager()
 
     override fun setBeanFactory(beanFactory: BeanFactory) {
         this.beanFactory = beanFactory
@@ -72,9 +82,7 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     }
 
     override fun handleInternal(
-        request: HttpServerRequest,
-        response: HttpServerResponse,
-        handler: HandlerMethod
+        request: HttpServerRequest, response: HttpServerResponse, handler: HandlerMethod
     ): ModelAndView? {
         return invokeHandlerMethod(request, response, handler)
     }
@@ -88,9 +96,7 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
      * @return mav
      */
     protected open fun invokeHandlerMethod(
-        request: HttpServerRequest,
-        response: HttpServerResponse,
-        handler: HandlerMethod
+        request: HttpServerRequest, response: HttpServerResponse, handler: HandlerMethod
     ): ModelAndView? {
         // 将request和response封装到NativeWebRequest当中
         val serverWebRequest = ServerWebRequest(request, response)
@@ -125,7 +131,12 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         resolvers += ServerResponseMethodArgumentResolver()
 
         // 添加RequestResponseBody的方法处理器
-        resolvers += RequestResponseBodyMethodProcessor.newRequestResponseBodyMethodProcessor(messageConverters!!)
+        resolvers += RequestResponseBodyMethodProcessor(getHttpMessageConverters(), getContentNegotiationManager())
+
+        // 应用自定义的参数解析器
+        if (getCustomArgumentResolvers() != null) {
+            resolvers += getCustomArgumentResolvers()!!
+        }
         return resolvers
     }
 
@@ -134,12 +145,32 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
      */
     private fun getDefaultReturnValueHandlers(): List<HandlerMethodReturnValueHandler> {
         val handlers = ArrayList<HandlerMethodReturnValueHandler>()
-        handlers += RequestResponseBodyMethodProcessor.newRequestResponseBodyMethodProcessor(messageConverters!!)
+        handlers += RequestResponseBodyMethodProcessor(getHttpMessageConverters(), getContentNegotiationManager())
+
+        // 应用默认的返回值处理器
+        if (getCustomReturnValueHandlers() != null) {
+            handlers += getCustomReturnValueHandlers()!!
+        }
         return handlers
     }
 
+    open fun setCustomArgumentResolvers(argumentResolvers: List<HandlerMethodArgumentResolver>) {
+        this.customArgumentResolvers = argumentResolvers
+    }
 
-    fun setHttpMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
+    open fun getCustomArgumentResolvers(): List<HandlerMethodArgumentResolver>? {
+        return this.customArgumentResolvers
+    }
+
+    open fun setCustomReturnValueHandlers(returnValueHandlers: List<HandlerMethodReturnValueHandler>) {
+        this.customReturnValueHandlers = returnValueHandlers
+    }
+
+    open fun getCustomReturnValueHandlers(): List<HandlerMethodReturnValueHandler>? {
+        return this.customReturnValueHandlers
+    }
+
+    open fun setHttpMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
         this.messageConverters = converters
     }
 
@@ -147,7 +178,22 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         this.argumentResolvers = resolvers
     }
 
+    open fun getHttpMessageConverters(): List<HttpMessageConverter<*>> {
+        if (this.messageConverters == null) {
+            throw IllegalStateException("请先初始化RequestMappingHandlerAdapter的MessageConverter列表")
+        }
+        return this.messageConverters!!
+    }
+
     open fun setHandlerMethodReturnValueHandlers(handlers: HandlerMethodReturnValueHandlerComposite) {
         this.returnValueHandlers = handlers
+    }
+
+    open fun getContentNegotiationManager(): ContentNegotiationManager {
+        return this.contentNegotiationManager
+    }
+
+    open fun setContentNegotiationManager(contentNegotiationManager: ContentNegotiationManager) {
+        this.contentNegotiationManager = contentNegotiationManager
     }
 }

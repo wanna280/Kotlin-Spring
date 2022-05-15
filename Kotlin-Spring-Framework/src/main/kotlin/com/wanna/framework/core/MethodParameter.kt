@@ -9,9 +9,11 @@ import java.lang.reflect.Parameter
 import java.lang.reflect.Type
 
 /**
- * 这是对于一个方法的参数去进行的描述，通过参数索引(parameterIndex)，即可获取到方法/构造器的参数对象Parameter(来自java的reflect包)
+ * 这是对于一个方法的参数去进行的描述，通过参数索引(parameterIndex)，即可获取到方法/构造器的参数对象Parameter(来自java的reflect包)；
+ * Note: 特殊地，它也可以被用来去描述一个方法的返回值等
  *
- * 特殊地，它也可以被用来去描述一个方法的返回值等
+ * 例如，对于一个方法"int foo(String str, Integer i, User u)"来说，通过Method(Executable)，以及索引index=2，即可获取到参数"u"对应的具体的描述信息；
+ * 能获取到来自java的reflect包，自然也能获取到该方法参数的泛型信息、注解信息等诸多信息
  */
 open class MethodParameter(
     private var executable: Executable,
@@ -21,63 +23,54 @@ open class MethodParameter(
 ) {
 
     constructor(executable: Executable, parameterIndex: Int) : this(executable, parameterIndex, null, 1)
-    constructor(executable: Executable, parameterIndex: Int, nestingLevel: Int) : this(
-        executable, parameterIndex, null, nestingLevel
-    )
+    constructor(executable: Executable, parameterIndex: Int, nestingLevel: Int) : this(executable, parameterIndex, null, nestingLevel)
 
-    constructor(executable: Executable, parameterIndex: Int, containingClass: Class<*>?) : this(
-        executable, parameterIndex, containingClass, 1
-    )
+    constructor(executable: Executable, parameterIndex: Int, containingClass: Class<*>?) : this(executable, parameterIndex, containingClass, 1)
 
-
-    // 方法的泛型类型
-    private var genericParameterType: Type? = null
-
-    // 参数的类型
-    private var parameterType: Class<*>? = null
-
-    // 参数名发现器
+    // 参数名发现器，提供该方法/构造器当中的方法的参数名列表的获取
     private var parameterNameDiscoverer: ParameterNameDiscoverer? = null
 
     /**
      * 初始化参数名发现器(Kotlin反射/标准反射/ASM三种方式)
      *
-     * @param parameterNameDiscoverer 要指定的参数名发现器
+     * @param parameterNameDiscoverer 对于该方法名发现器，去指定要使用的参数名发现器
      */
     open fun initParameterNameDiscoverer(parameterNameDiscoverer: ParameterNameDiscoverer) {
         this.parameterNameDiscoverer = parameterNameDiscoverer
     }
 
     /**
-     * 获取描述的方法参数上的全部注解列表
+     * 获取描述的方法/构造器的参数上的全部注解列表
      */
     open fun getAnnotations(): Array<Annotation> {
         return executable.parameters[parameterIndex].annotations
     }
 
     /**
-     * 获取描述的方法参数上的注解，找不到return null
+     * 获取描述的方法参数/构造器参数上的注解，找不到return null
      */
     open fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T? {
         return AnnotatedElementUtils.getMergedAnnotation(this.getParameter(), annotationClass)
     }
 
     /**
-     * 获取方法上的Annotation列表
+     * 获取方法/构造器上的Annotation列表
+     *
+     * @return 方法/构造器上直接标注的注解列表
      */
     open fun getMethodAnnotations(): Array<Annotation> {
         return executable.annotations
     }
 
     /**
-     * 获取参数的返回类型
+     * 获取包装的参数的类型
      */
     open fun getParameterType(): Class<*> {
         return executable.parameterTypes[parameterIndex]
     }
 
     /**
-     * 获取方法参数(来自jdk的Parameter)对象
+     * 获取方法参数(来自jdk的Parameter)对象，将其暴露给使用者
      */
     open fun getParameter(): Parameter {
         return executable.parameters[parameterIndex]
@@ -91,7 +84,9 @@ open class MethodParameter(
     }
 
     /**
-     * 参数的定义类型
+     * 该方法/构造器，被定义在哪个类当中？
+     *
+     * @return 方法/构造器所被定义的类
      */
     open fun getDeclaringClass(): Class<*> {
         return executable.declaringClass
@@ -113,6 +108,8 @@ open class MethodParameter(
 
     /**
      * 返回方法参数的泛型类型
+     *
+     * @return 获取方法参数的泛型类型(如果必要的话)
      */
     open fun getGenericParameterType(): Type {
         return executable.parameters[parameterIndex].parameterizedType
@@ -120,21 +117,27 @@ open class MethodParameter(
 
     /**
      * 获取方法，如果包装的是构造器，则return null
+     *
+     * @return 将executable转换为方法，如果它不是方法，return null
      */
     open fun getMethod(): Method? = executable as? Method
 
     /**
      * 获取构造器，如果包装的是一个方法，那么返回null
+     *
+     * @return 将executable转换为构造器，如果它根本不是构造器，return null
      */
     open fun getConstructor(): Constructor<*>? = executable as? Constructor<*>
 
     /**
-     * 获取Member，也就是方法/构造器对象(executable)本身
+     * 获取Member，也就是该参数对应的方法/构造器对象(executable)本身
      */
     open fun getMember(): Member = executable
 
     /**
-     * 获取参数类型
+     * 获取该参数对应的方法/构造器的参数类型列表
+     *
+     * @return 参数类型列表(Array<Class<*>>)
      */
     open fun getParameterTypes(): Array<Class<*>> = executable.parameterTypes
 
@@ -166,6 +169,10 @@ open class MethodParameter(
     companion object {
         /**
          * 提供静态方法，为Executable去构建MethodParameter
+         *
+         * @param executable 方法/构造器
+         * @param parameterIndex 当前参数位于该方法/构造器的第几个位置？
+         * @return 为该方法参数构建好的MethodParameter对象
          */
         @JvmStatic
         fun forExecutable(executable: Executable, parameterIndex: Int): MethodParameter {

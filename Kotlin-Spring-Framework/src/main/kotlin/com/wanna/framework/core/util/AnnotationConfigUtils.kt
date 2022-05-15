@@ -1,36 +1,36 @@
 package com.wanna.framework.core.util
 
+import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.factory.support.ContextAnnotationAutowireCandidateResolver
+import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
-import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.annotation.DependsOn
 import com.wanna.framework.context.annotation.Primary
 import com.wanna.framework.context.annotation.Role
-import com.wanna.framework.context.support.GenericApplicationContext
 import com.wanna.framework.context.event.DefaultEventListenerFactory
 import com.wanna.framework.context.processor.beans.internal.AutowiredAnnotationPostProcessor
 import com.wanna.framework.context.processor.beans.internal.CommonAnnotationPostProcessor
 import com.wanna.framework.context.processor.factory.internal.ConfigurationClassPostProcessor
 import com.wanna.framework.context.processor.factory.internal.EventListenerMethodProcessor
+import com.wanna.framework.context.support.GenericApplicationContext
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
-import com.wanna.framework.core.type.AnnotationMetadata
+import com.wanna.framework.core.type.AnnotatedTypeMetadata
 
 object AnnotationConfigUtils {
-    const val CONFIGURATION_BEAN_NAME_GENERATOR = "beanNameGenerator";
+    const val CONFIGURATION_BEAN_NAME_GENERATOR = "com.wanna.framework.context.annotation.internBeanNameGenerator"
 
-    const val CONFIGURATION_ANOOTATION_PROCESSOR_BEAN_NAME = "internalConfigurationAnnotationProcessor"
+    const val CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME = "com.wanna.framework.context.annotation.internalConfigurationAnnotationProcessor"
 
-    const val AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME = "internalAutowiredAnnotationProcessor"
+    const val AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME = "com.wanna.framework.context.annotation.internalAutowiredAnnotationProcessor"
 
-    const val COMMON_ANNOTATION_PROCESSOR_BEAN_NAME = "internalCommonAnnotationProcessor"
+    const val COMMON_ANNOTATION_PROCESSOR_BEAN_NAME = "com.wanna.framework.context.annotation.internalCommonAnnotationProcessor"
 
-    const val EVENT_LISTENER_PROCESSOR_BEAN_NAME = "internalEventListenerProcessor"
+    const val EVENT_LISTENER_PROCESSOR_BEAN_NAME = "com.wanna.framework.context.annotation.internalEventListenerProcessor"
 
-    const val EVENT_LISTENER_FACTORY_BEAN_NAME = "internalEventListenerFactory"
+    const val EVENT_LISTENER_FACTORY_BEAN_NAME = "com.wanna.framework.context.annotation.internalEventListenerFactory"
 
     /**
      * 将BeanDefinitionRegistry转为DefaultListableBeanFactory
@@ -45,7 +45,10 @@ object AnnotationConfigUtils {
     }
 
     /**
-     * 处理通用的BeanDefinition注解，包括@Primary/@Lazy/@DependsOn/@Role等注解
+     * 处理通用的BeanDefinition注解，包括@Primary/@Lazy/@DependsOn/@Role等注解；
+     * 需要使用的metadata信息从BeanDefinition当中获取即可
+     *
+     * @param abd BeanDefinition
      */
     @JvmStatic
     fun processCommonDefinitionAnnotations(abd: AnnotatedBeanDefinition) {
@@ -54,10 +57,13 @@ object AnnotationConfigUtils {
 
     /**
      * 处理通用的BeanDefinition注解
+     *
+     * @param metadata 注解信息的来源
+     * @param abd 要进行设置属性的BeanDefinition
      */
     @JvmStatic
     @Suppress("UNCHECKED_CAST")
-    fun processCommonDefinitionAnnotations(abd: AnnotatedBeanDefinition, metadata: AnnotationMetadata) {
+    fun processCommonDefinitionAnnotations(abd: AnnotatedBeanDefinition, metadata: AnnotatedTypeMetadata) {
 
         // 如果标注了@Primary注解，将BeanDefinition的Primary设置为true
         val primary = metadata.isAnnotated(Primary::class.java.name)
@@ -105,12 +111,12 @@ object AnnotationConfigUtils {
         val beanFactory = unwrapDefaultListableBeanFactory(registry)
         if (beanFactory != null) {
             // 如果容器中的依赖比较器不是支持注解版的依赖比较器，那么就采用注解版的依赖比较器，去支持注解版的Order的比较
-            if (!(beanFactory.getDependencyComparator() is AnnotationAwareOrderComparator)) {
+            if (beanFactory.getDependencyComparator() !is AnnotationAwareOrderComparator) {
                 beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE)
             }
 
             // 设置AutowireCandidate的Resolver，主要用来完成自动注入的元素的匹配
-            if (!(beanFactory.getAutowireCandidateResolver() is ContextAnnotationAutowireCandidateResolver)) {
+            if (beanFactory.getAutowireCandidateResolver() !is ContextAnnotationAutowireCandidateResolver) {
                 beanFactory.setAutowireCandidateResolver(ContextAnnotationAutowireCandidateResolver.INSTANCE)
             }
         }
@@ -119,11 +125,11 @@ object AnnotationConfigUtils {
         val beanDefs = HashSet<BeanDefinitionHolder>()
 
         // 1.注册ConfigurationClassPostProcessor，处理注解版往容器中注册Bean的方式
-        if (!registry.containsBeanDefinition(CONFIGURATION_ANOOTATION_PROCESSOR_BEAN_NAME)) {
+        if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
             val rootBeanDefinition = RootBeanDefinition(ConfigurationClassPostProcessor::class.java)
             rootBeanDefinition.setSource(source)
             beanDefs += registerProcessor(
-                CONFIGURATION_ANOOTATION_PROCESSOR_BEAN_NAME,
+                CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME,
                 rootBeanDefinition,
                 registry
             )

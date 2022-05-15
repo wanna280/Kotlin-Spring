@@ -93,7 +93,7 @@ private constructor(
     // 获取方法的参数类型列表，如果描述的不是一个方法，那么return null
     open fun getParameterTypes(): Array<Class<*>>? = parameterTypes
 
-    // 获取字段名
+    // 获取字段名，如果它根本不是一个字段，return null
     open fun getFieldName(): String? = fieldName
 
     // 该依赖，是否是必要的？(required=true？)

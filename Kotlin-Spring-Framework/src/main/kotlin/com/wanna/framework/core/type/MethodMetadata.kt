@@ -48,7 +48,7 @@ interface MethodMetadata : AnnotatedTypeMetadata {
      * 获取标注的注解的类型集合(String)
      */
     fun getAnnotationTypes(): Set<String> {
-        return getAnnotations().map { it.annotationClass::class.java.name }.toCollection(HashSet<String>())
+        return getAnnotations().map { it.annotationClass.java.name }.toCollection(HashSet<String>())
     }
 
     /**

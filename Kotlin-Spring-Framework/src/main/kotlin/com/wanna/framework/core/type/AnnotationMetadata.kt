@@ -19,6 +19,17 @@ interface AnnotationMetadata : AnnotatedTypeMetadata, ClassMetadata {
         return getAnnotationTypes().contains(annotationName)
     }
 
+    fun hasAnnotatedMethods(annotationName: String): Boolean {
+        return getAnnotatedMethods(annotationName).isNotEmpty()
+    }
+
+    /**
+     * 获取标注了某个注解的方法的列表
+     *
+     * @param annotationName 要匹配的注解name
+     */
+    fun getAnnotatedMethods(annotationName: String): Set<MethodMetadata>
+
     companion object {
         /**
          * 直接构建一个StandardAnnotationMetadata

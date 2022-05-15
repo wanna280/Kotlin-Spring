@@ -450,10 +450,31 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         } else if (ClassUtils.isAssignFrom(Collection::class.java, type)) {
             val genericTypes = descriptor.getGenericType()
             if (genericTypes is ParameterizedType) {
-                val valueType = genericTypes.actualTypeArguments[0] as Class<*>
+                val valueType: Class<*>
+
+                // 解析泛型类型...
+                val types = genericTypes.actualTypeArguments[0]
+                if (types is WildcardType) {
+                    if (types.lowerBounds.isNotEmpty()) {
+                        valueType = types.lowerBounds[0] as Class<*>
+                    } else {
+                        valueType = types.upperBounds[0] as Class<*>
+                    }
+                } else {
+                    valueType = types as Class<*>
+                }
+
                 // 找到所有的候选类型的Bean
                 val candidates = findAutowireCandidates(requestingBeanName, valueType, descriptor)
-                val collection = type.getDeclaredConstructor().newInstance() as MutableCollection<Any>
+
+                var collection: MutableCollection<Any>
+                if (type == Set::class.java) {
+                    collection = LinkedHashSet()
+                } else if (type == List::class.java) {
+                    collection = ArrayList()
+                } else {
+                    collection = type.getDeclaredConstructor().newInstance() as MutableCollection<Any>
+                }
                 candidates.values.forEach(collection::add)
                 autowiredBeanName?.addAll(candidates.keys)
                 return collection

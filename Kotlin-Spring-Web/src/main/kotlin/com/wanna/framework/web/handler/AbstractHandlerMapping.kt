@@ -25,21 +25,15 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
 
     private var beanName: String? = null
 
-    // 拦截器列表
-    private val interceptors: ArrayList<Any> = ArrayList()
+    // 拦截器列表，可以放入非HandlerInterceptor类型的类型的拦截器，在经过类型转换之后，将会合并到adaptedInterceptors当中
+    private var interceptors: ArrayList<Any> = ArrayList()
 
-    // 经过了类型转换之后的拦截器列表
+    // 经过了类型转换之后的拦截器列表，也是最终使用的HandlerInterceptor列表
     private val adaptedInterceptors: ArrayList<HandlerInterceptor> = ArrayList()
 
     override fun getHandler(request: HttpServerRequest): HandlerExecutionChain? {
-        val handler = getHandlerInternal(request)
-        if (handler == null) {
-            return null
-        }
-
-        val handlerExecutionChain = getHandlerExecutionChain(request, handler)
-
-        return handlerExecutionChain
+        val handler = getHandlerInternal(request) ?: return null
+        return getHandlerExecutionChain(request, handler)
     }
 
     /**
@@ -58,11 +52,9 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
      * @return HandlerExecutionChain
      */
     protected open fun getHandlerExecutionChain(request: HttpServerRequest, handler: Any): HandlerExecutionChain {
-        val handlerExecutionChain = if (handler is HandlerExecutionChain) handler else HandlerExecutionChain(handler)
-        this.adaptedInterceptors.forEach {
-            handlerExecutionChain.addInterceptor(it)
-        }
-        return handlerExecutionChain
+        val chain = if (handler is HandlerExecutionChain) handler else HandlerExecutionChain(handler)
+        this.adaptedInterceptors.forEach(chain::addInterceptor)
+        return chain
     }
 
     override fun setBeanName(beanName: String) {
@@ -98,9 +90,25 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
     }
 
     /**
-     * 初始化Interceptors列表
+     * 设置拦截器列表
+     *
+     * @param interceptors 你想要设置的Interceptor列表(可以为非HandlerInterceptor类型，为了去支持别的类型的拦截器)
+     */
+    open fun setInterceptors(vararg interceptors: Any) {
+        this.interceptors = arrayListOf(*interceptors)
+    }
+
+    /**
+     * 初始化Interceptors列表，用于将interceptors列表当中的拦截器列表转换为HandlerInterceptor
      */
     protected open fun initInterceptors() {
-
+        if (this.interceptors.isEmpty()) {
+            return
+        }
+        this.interceptors.forEach {
+            if (it is HandlerInterceptor) {
+                this.adaptedInterceptors += it
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@ package com.wanna.framework.core.type
 
 import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.core.util.ReflectionUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
 
 /**
@@ -26,8 +27,28 @@ open class StandardAnnotationMetadata(val clazz: Class<*>) : AnnotationMetadata 
         return AnnotatedElementUtils.isAnnotated(clazz, annotationName)
     }
 
+    override fun getAnnotatedMethods(annotationName: String): Set<MethodMetadata> {
+        val methodMetadatas = LinkedHashSet<MethodMetadata>()
+        ReflectionUtils.doWithLocalMethods(clazz) {
+            it.annotations.forEach { ann ->
+                if (ann.annotationClass.java.name == annotationName) {
+                    methodMetadatas += StandardMethodMetadata(it)
+                }
+            }
+        }
+        return methodMetadatas
+    }
+
     override fun getClassName(): String {
         return clazz.name
+    }
+
+    override fun getPackageName(): String {
+        return clazz.packageName
+    }
+
+    override fun isInterface(): Boolean {
+        return clazz.isInterface
     }
 
     companion object {

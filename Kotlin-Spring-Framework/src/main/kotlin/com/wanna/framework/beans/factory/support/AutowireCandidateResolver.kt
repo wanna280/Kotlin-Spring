@@ -12,10 +12,15 @@ package com.wanna.framework.beans.factory.support
 interface AutowireCandidateResolver {
 
     /**
-     * 判断一个Bean是否是符合进行注入的要求？默认只从BeanDefinition中进行判断；
+     * 判断一个Bean是否是符合进行注入的要求？默认只从BeanDefinition.isAutowireCandidate中进行判断；
+     *
+     * ## 1.DependencyDescriptor上有Qualifier注解的情况
      * Spring在进行Autowire的匹配时，会将所有的候选Bean的列表，挨个调用这个方法去进行匹配，而BeanDefinition就是该候选的Bean的相关信息；
      * (子类中)首先会比较DependencyDescriptor当中的Qualifier和候选的BeanDefinition中的Qualifier是否**成对**匹配？匹配则return true；
      * 如果不匹配的话，那么就尝试将Qualifier注解当中的value属性和bdHolder.beanName去进行匹配，如果匹配的话那么return true
+     *
+     * ## 2.DependencyDescriptor上没有Qualifier注解的情况
+     * 只要类型匹配时，那么就return true，不用去进行beanName的匹配
      *
      * @param bdHolder candidate BeanDefinition and beanName
      * @param descriptor 依赖描述符
@@ -37,10 +42,11 @@ interface AutowireCandidateResolver {
     }
 
     /**
-     * 判断是否有Qualifier限定符，不仅包括Spring自家的@Qualifier注解，也包括javax.inject当中的Qualifier注解
+     * 判断是否有Qualifier限定符，不仅包括Spring自家的@Qualifier注解，也包括javax.inject当中的Qualifier注解；
+     * 遍历依赖描述符上的所有的注解，去和Qualifier去进行比对，如果匹配那么return true；不然return false
      *
-     * @param descriptor 依赖描述符
-     * @return 是否有Qualifier？
+     * @param descriptor 要进行匹配的依赖描述符
+     * @return 该依赖描述符上是否有Qualifier？
      */
     fun hasQualifier(descriptor: DependencyDescriptor): Boolean {
         return false

@@ -23,7 +23,7 @@ open class AnnotationConfigReactiveWebServerApplicationContext(_beanFactory: Def
     private var reader: AnnotatedBeanDefinitionReader = AnnotatedBeanDefinitionReader(this)
 
     // 类路径下的BeanDefinition的Scanner
-    private var scanner: ClassPathBeanDefinitionScanner = ClassPathBeanDefinitionScanner(this)
+    private var scanner: ClassPathBeanDefinitionScanner = ClassPathBeanDefinitionScanner(this, true)
 
     /**
      * 无参构造器，创建默认的Environment和BeanFactory，但是并不完成刷新工作，使用者自行完成ApplicationContext的刷新
