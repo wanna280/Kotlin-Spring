@@ -1,5 +1,7 @@
 package com.wanna.framework.context.event
 
+import com.wanna.framework.core.ResolvableType
+
 /**
  * 这是一个ApplicationEvent的多拨器，它可以维护监听器列表，并完成事件的发布
  *
@@ -45,5 +47,10 @@ interface ApplicationEventMulticaster {
      * 发布事件，可以执行事件的类型；如果type为空，那么默认情况下会采用event.class作为type
      */
     fun multicastEvent(event: ApplicationEvent, type: Class<out ApplicationEvent>?)
+
+    /**
+     * 发布事件，可以执行事件的类型；
+     */
+    fun multicastEvent(event: ApplicationEvent, eventType: ResolvableType?)
 
 }

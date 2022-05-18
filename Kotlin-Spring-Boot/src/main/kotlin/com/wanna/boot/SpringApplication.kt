@@ -51,7 +51,10 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
     }
 
     // primarySources
-    private var primarySources: Set<Class<*>>? = LinkedHashSet(_primarySources.toList())
+    private var primarySources: MutableSet<Class<*>> = LinkedHashSet(_primarySources.toList())
+
+    // sources
+    private var sources = LinkedHashSet<Any>()
 
     // Application的监听器列表
     private var listeners: MutableList<ApplicationListener<*>> =
@@ -74,7 +77,7 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         SpringFactoriesLoader.loadFactories(ApplicationContextInitializer::class.java)
 
     // 推测SpringApplication的主启动类
-    private val mainApplicationClass: Class<*>? = deduceMainApplicationClass()
+    private var mainApplicationClass: Class<*>? = deduceMainApplicationClass()
 
     // 是否需要添加ConversionService到容器当中？
     private var addConversionService = true
@@ -222,7 +225,7 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         }
 
         // 把注册到SpringApplication当中的source去完成BeanDefinition的加载
-        load(context, primarySources!!.toTypedArray())
+        load(context, getAllSources().toTypedArray())
 
         // 通知监听器ApplicationContext已经启动完成了，可以完成后置处理工作了
         listeners.contextLoaded(context)
@@ -307,7 +310,7 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
     /**
      * 获取SpringApplication的ApplicationContext的初始化器列表
      */
-    protected open fun getInitializers(): Set<ApplicationContextInitializer<*>> {
+    open fun getInitializers(): Set<ApplicationContextInitializer<*>> {
         return asOrderSet(initializers)
     }
 
@@ -544,5 +547,35 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
             return LoggerFactory.getLogger(this.mainApplicationClass)
         }
         return this.logger
+    }
+
+    open fun getMainApplicationClass(): Class<*>? {
+        return this.mainApplicationClass
+    }
+
+    open fun setLogStartupInfo(logStartupInfo: Boolean) {
+        this.logStartupInfo = logStartupInfo
+    }
+
+    open fun setMainApplicationClass(mainApplicationClass: Class<*>?) {
+        this.mainApplicationClass = mainApplicationClass
+    }
+
+    open fun setEnvironment(environment: ConfigurableEnvironment) {
+        this.environment = environment
+    }
+
+    open fun addSources(vararg sources: Any) {
+        sources.forEach(this.sources::add)
+    }
+
+    open fun addPrimarySource(clazz: Class<*>) {
+        this.primarySources.add(clazz)
+    }
+
+    open fun getAllSources(): List<Any> {
+        val sources: MutableList<Any> = ArrayList(this.primarySources)
+        sources.addAll(this.sources)
+        return sources
     }
 }

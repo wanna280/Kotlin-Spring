@@ -1,5 +1,6 @@
 package com.wanna.framework.web.config.annotation
 
+import com.wanna.framework.context.format.FormatterRegistry
 import com.wanna.framework.web.handler.HandlerExceptionResolver
 import com.wanna.framework.web.http.converter.HttpMessageConverter
 import com.wanna.framework.web.method.support.HandlerMethodArgumentResolver
@@ -22,4 +23,6 @@ interface WebMvcConfigurer {
     fun configureHandlerExceptionResolvers(resolvers: List<HandlerExceptionResolver>) {}
 
     fun extendHandlerExceptionResolvers(resolvers: List<HandlerExceptionResolver?>) {}
+
+    fun addFormatters(formatterRegistry: FormatterRegistry) {}
 }

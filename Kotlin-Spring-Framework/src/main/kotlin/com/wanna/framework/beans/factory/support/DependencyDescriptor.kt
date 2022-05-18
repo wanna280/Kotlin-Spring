@@ -3,6 +3,7 @@ package com.wanna.framework.beans.factory.support
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ParameterNameDiscoverer
+import com.wanna.framework.core.ResolvableType
 import java.lang.reflect.Field
 import java.lang.reflect.Type
 
@@ -41,6 +42,9 @@ private constructor(
 
     // 参数名发现器
     private var parameterNameDiscoverer: ParameterNameDiscoverer? = null
+
+    // 可以解析的类型
+    private var resolvableType: ResolvableType? = null
 
     /**
      * 获取方法参数，如果这描述的是一个字段，那么return null
@@ -108,6 +112,24 @@ private constructor(
     /**
      * 提供解析候选Bean的方式，默认实现为从容器中获取
      */
-    open fun resolveCandidate(beanName: String, requiredType: Class<*>, beanFactory: BeanFactory): Any? =
-        beanFactory.getBean(beanName)
+    open fun resolveCandidate(beanName: String, requiredType: Class<*>, beanFactory: BeanFactory): Any? {
+        return beanFactory.getBean(beanName)
+    }
+
+    /**
+     * 获取到该依赖描述符的可以解析的类型
+     */
+    open fun getResolvableType(): ResolvableType {
+        var resolvableType = this.resolvableType
+        if (resolvableType == null) {
+            if (this.field != null) {
+                resolvableType = ResolvableType.forField(this.field)
+            } else {
+                resolvableType = ResolvableType.forMethodParameter(getMethodParameter()!!)
+            }
+            this.resolvableType = resolvableType
+        }
+        return resolvableType
+    }
+
 }

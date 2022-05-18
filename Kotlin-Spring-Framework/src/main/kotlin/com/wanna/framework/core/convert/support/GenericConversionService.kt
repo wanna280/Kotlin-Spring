@@ -1,5 +1,6 @@
 package com.wanna.framework.core.convert.support
 
+import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.convert.converter.Converter
 import com.wanna.framework.core.convert.converter.GenericConverter
 import com.wanna.framework.core.convert.converter.GenericConverter.ConvertiblePair
@@ -16,12 +17,15 @@ import java.util.concurrent.CopyOnWriteArraySet
  * @see ConfigurableConversionService
  */
 open class GenericConversionService : ConfigurableConversionService {
-
-    // Converter的注册中心
+    // Converter的注册中心，内部维护了全部的Converter的列表
     private val converters = Converters()
 
     /**
      * 判断Converter注册中心当中，是否存在有这样的Converter，能去完成从sourceType->targetType的类型转换？
+     *
+     * @param sourceType
+     * @param targetType
+     * @return 是否能支持从sourceType->targetType？
      */
     override fun canConvert(sourceType: Class<*>, targetType: Class<*>): Boolean {
         return converters.converters.containsKey(ConvertiblePair(sourceType, targetType))
@@ -44,7 +48,14 @@ open class GenericConversionService : ConfigurableConversionService {
     }
 
     override fun addConverter(converter: Converter<*, *>) {
-        addConverter(ConverterAdapter(converter))
+        // 解析Converter的泛型类型
+        val generics = ResolvableType.forClass(converter::class.java).`as`(Converter::class.java).getGenerics()
+        if (generics.isEmpty()) {
+            throw IllegalStateException("无法解析添加的Converter的泛型类型[$converter]")
+        }
+        val adapter = ConverterAdapter(converter)
+        adapter.addConvertibleType(generics[0].resolve()!!, generics[1].resolve()!!)
+        addConverter(adapter)
     }
 
     override fun <S, T> addConverter(sourceType: Class<S>, targetType: Class<T>, converter: Converter<S, T>) {
@@ -90,13 +101,14 @@ open class GenericConversionService : ConfigurableConversionService {
         /**
          * 根据(sourceType->targetType)的映射Mapping，去移除掉该Mapping相应的Converter列表
          */
-        fun removeConverter(soureType: Class<*>, targetType: Class<*>) {
-            this.converters.remove(ConvertiblePair(soureType, targetType))
+        fun removeConverter(sourceType: Class<*>, targetType: Class<*>) {
+            this.converters.remove(ConvertiblePair(sourceType, targetType))
         }
     }
 
     /**
-     * 这是一个映射(Pair)对应的Converter列表的注册中心
+     * 这是一个映射(Pair,sourceType->targetType的映射)对应的Converter列表的注册中心；
+     * 比如一个Integer->String的映射可能会存在有多个Converter都能去进行转换...
      *
      * @see ConvertiblePair
      */
@@ -113,7 +125,9 @@ open class GenericConversionService : ConfigurableConversionService {
     }
 
     /**
-     * 这是一个Converter的Adapter，它可以将普通的Converter转换为GenericConverter
+     * 这是一个Converter的Adapter，它可以将普通的Converter转换为GenericConverter去进行包装
+     *
+     * @param converter 想要去进行包装的Converter
      */
     @Suppress("UNCHECKED_CAST")
     private class ConverterAdapter(private val converter: Converter<*, *>) : GenericConverter {
@@ -121,7 +135,7 @@ open class GenericConversionService : ConfigurableConversionService {
         private val convertibleTypes = HashSet<ConvertiblePair>()
 
         /**
-         * 添加可以转换的类型到列表当中
+         * 添加可以转换的类型到列表当中(source->target的映射关系)
          *
          * @param sourceType 源类型
          * @param targetType 目标类型
@@ -131,7 +145,9 @@ open class GenericConversionService : ConfigurableConversionService {
         }
 
         /**
-         * 获取支持转换的类型列表
+         * 获取当前Converter支持转换的类型列表
+         *
+         * @return 当前这个Converter支持的转换的映射列表
          */
         override fun getConvertibleTypes(): Set<ConvertiblePair> {
             return convertibleTypes

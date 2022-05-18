@@ -106,7 +106,7 @@ abstract class AbstractEnvironment() : ConfigurableEnvironment {
         return propertyResolver.getProperty(key, requiredType)
     }
 
-    override fun <T> getProperty(key: String, requiredType: Class<T>, defaultValue: T): T? {
+    override fun <T> getProperty(key: String, requiredType: Class<T>, defaultValue: T): T {
         return propertyResolver.getProperty(key, requiredType, defaultValue)
     }
 

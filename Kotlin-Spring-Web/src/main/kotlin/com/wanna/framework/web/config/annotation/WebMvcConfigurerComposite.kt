@@ -1,5 +1,6 @@
 package com.wanna.framework.web.config.annotation
 
+import com.wanna.framework.context.format.FormatterRegistry
 import com.wanna.framework.web.handler.HandlerExceptionResolver
 import com.wanna.framework.web.http.converter.HttpMessageConverter
 import com.wanna.framework.web.method.support.HandlerMethodArgumentResolver
@@ -46,5 +47,9 @@ open class WebMvcConfigurerComposite : WebMvcConfigurer {
 
     override fun extendHandlerExceptionResolvers(resolvers: List<HandlerExceptionResolver?>) {
         this.webMvcConfigurers.forEach { it.extendHandlerExceptionResolvers(resolvers) }
+    }
+
+    override fun addFormatters(formatterRegistry: FormatterRegistry) {
+        this.webMvcConfigurers.forEach { it.addFormatters(formatterRegistry) }
     }
 }

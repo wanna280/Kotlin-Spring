@@ -185,13 +185,13 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
         }
 
         /**
-         * 是否是只有部分匹配的？(==>是否有部分是未匹配的？)只要unmatch集合中有一个不为空，那么就是部分匹配
+         * 是否是只有部分匹配的？(==>是否有部分是未匹配的？)只要matches集合中有一个不为空，那么就是部分匹配
          */
         fun isAnyMatch() =
-            unmatchedNames.isNotEmpty() || unmatchedTypes.isNotEmpty() || unmatchedAnnotations.isNotEmpty()
+            matchedNames.isNotEmpty() || matchedTypes.isNotEmpty() || matchedAnnotations.isNotEmpty()
 
         /**
-         * 是否全部都匹配了？必须要unmatch的三个集合全部为空才算匹配
+         * 是否全部都匹配了？必须要unmatches的三个集合全部为空才算匹配
          */
         fun isAllMatch() = unmatchedNames.isEmpty() && unmatchedTypes.isEmpty() && unmatchedAnnotations.isEmpty()
     }

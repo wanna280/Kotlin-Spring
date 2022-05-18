@@ -27,6 +27,6 @@ open class InterceptorRegistry {
     }
 
     open fun getInterceptors(): List<Any> {
-        return interceptors.sortedWith(INTERCEPTOR_COMPARATOR).toList()
+        return interceptors.sortedWith(INTERCEPTOR_COMPARATOR).map { it.interceptor }.toList()
     }
 }

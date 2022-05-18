@@ -12,7 +12,7 @@ interface Scope {
      * @param beanName beanName
      * @param factory 创建Bean的回调函数(Spring BeanFactory的createBean)
      */
-    fun get(beanName: String, factory: ObjectFactory<*>)
+    fun get(beanName: String, factory: ObjectFactory<*>) : Any
 
     /**
      * 给Scope内注册DisposableBean的回调，当对Bean去进行destroy时，需要完成的回调处理工作

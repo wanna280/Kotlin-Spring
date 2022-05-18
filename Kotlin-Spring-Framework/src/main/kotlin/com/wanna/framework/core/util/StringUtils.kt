@@ -85,6 +85,6 @@ object StringUtils {
         if (delim == null) {
             return arrayOf(str)
         }
-        return str.trim().split(delim).toTypedArray()
+        return str.trim().split(delim).filter { hasText(it) }.toTypedArray()
     }
 }

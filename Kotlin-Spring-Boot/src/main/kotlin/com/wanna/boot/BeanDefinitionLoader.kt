@@ -20,6 +20,8 @@ open class BeanDefinitionLoader(registry: BeanDefinitionRegistry, private val so
 
     private var environment: ConfigurableEnvironment? = null
 
+
+
     open fun setBeanNameGenerator(beanNameGenerator: BeanNameGenerator) {
         this.beanNameGenerator = beanNameGenerator
         this.reader.setBeanNameGenerator(beanNameGenerator)

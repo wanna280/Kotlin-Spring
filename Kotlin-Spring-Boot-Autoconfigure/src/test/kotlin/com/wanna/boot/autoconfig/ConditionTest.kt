@@ -1,7 +1,8 @@
-package com.wanna.boot.autoconfigure
+package com.wanna.boot.autoconfig
 
 import com.sun.tools.attach.VirtualMachine
 import com.wanna.boot.SpringApplication
+import com.wanna.boot.autoconfigure.SpringBootApplication
 import com.wanna.boot.autoconfigure.condition.ConditionOnMissingClass
 import com.wanna.boot.context.properties.ConfigurationProperties
 import com.wanna.boot.context.properties.ConstructorBinding

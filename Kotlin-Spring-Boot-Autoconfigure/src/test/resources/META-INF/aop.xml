@@ -2,7 +2,7 @@
 <!DOCTYPE aspectj PUBLIC "-//AspectJ//DTD//EN" "http://www.eclipse.org/aspectj/dtd/aspectj.dtd">
 <aspectj>
     <aspects>
-        <aspect name="com.wanna.boot.autoconfigure.UserAspect"/>
+        <aspect name="com.wanna.boot.autoconfig.UserAspect"/>
     </aspects>
     <weaver options="-verbose -showWeaveInfo -Xset:weaveJavaxPackages=false">
         <include within="com.wanna.boot.autoconfigure.*"/>

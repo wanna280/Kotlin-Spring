@@ -6,10 +6,15 @@ import com.wanna.framework.beans.factory.annotation.Qualifier
 import com.wanna.framework.beans.factory.support.DisposableBean
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.Bean
+import com.wanna.framework.context.format.FormatterRegistry
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
 import com.wanna.framework.context.stereotype.Component
+import com.wanna.framework.core.convert.converter.Converter
 import com.wanna.framework.core.util.AnnotationConfigUtils
+import com.wanna.framework.web.HandlerInterceptor
 import com.wanna.framework.web.bind.annotation.RestController
+import com.wanna.framework.web.config.annotation.InterceptorRegistry
+import com.wanna.framework.web.config.annotation.WebMvcConfigurer
 import com.wanna.framework.web.method.annotation.RequestBody
 import com.wanna.framework.web.method.annotation.RequestMapping
 import com.wanna.framework.web.method.annotation.RequestParam
@@ -26,6 +31,47 @@ class WebTest {
     @Bean
     fun u2(): User {
         return User()
+    }
+
+    @Bean
+    fun webMvcConfigurer(): WebMvcConfigurer {
+        return object : WebMvcConfigurer {
+            override fun addInterceptors(registry: InterceptorRegistry) {
+                registry.addInterceptor(object : HandlerInterceptor {
+                    override fun preHandle(
+                        request: HttpServerRequest,
+                        response: HttpServerResponse,
+                        handler: Any
+                    ): Boolean {
+                        println("pre")
+                        return true
+                    }
+
+                    override fun postHandle(request: HttpServerRequest, response: HttpServerResponse, handler: Any) {
+                        println("post")
+                    }
+
+                    override fun afterCompletion(
+                        request: HttpServerRequest,
+                        response: HttpServerResponse,
+                        handler: Any,
+                        ex: Throwable?
+                    ) {
+                        println("after")
+                    }
+                })
+            }
+
+            override fun addFormatters(formatterRegistry: FormatterRegistry) {
+                formatterRegistry.addConverter(MyConverter())
+            }
+        }
+    }
+}
+
+class MyConverter : Converter<Int, String> {
+    override fun convert(source: Int?): String? {
+        return source?.toString()
     }
 }
 

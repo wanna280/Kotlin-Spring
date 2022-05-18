@@ -12,4 +12,6 @@ class ApplicationEnvironmentPreparedEvent(
     application: SpringApplication,
     args: Array<String>,
     val environment: ConfigurableEnvironment
-) : SpringApplicationEvent(application, args)
+) : SpringApplicationEvent(application, args) {
+
+}

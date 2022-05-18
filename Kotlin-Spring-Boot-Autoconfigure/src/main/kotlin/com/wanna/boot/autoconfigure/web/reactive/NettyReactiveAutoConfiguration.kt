@@ -45,37 +45,6 @@ open class NettyReactiveAutoConfiguration : ApplicationContextAware {
         return nettyWebServerFactory
     }
 
-    @Bean
-    fun configurer(): WebMvcConfigurer {
-        return object : WebMvcConfigurer {
-            override fun addInterceptors(registry: InterceptorRegistry) {
-                registry.addInterceptor(object : HandlerInterceptor {
-                    override fun preHandle(
-                        request: HttpServerRequest,
-                        response: HttpServerResponse,
-                        handler: Any
-                    ): Boolean {
-                        println("pre")
-                        return true
-                    }
-
-                    override fun postHandle(request: HttpServerRequest, response: HttpServerResponse, handler: Any) {
-                        println("post")
-                    }
-
-                    override fun afterCompletion(
-                        request: HttpServerRequest,
-                        response: HttpServerResponse,
-                        handler: Any,
-                        ex: Throwable?
-                    ) {
-                        println("afterCompletion")
-                    }
-                })
-            }
-        }
-    }
-
     @Component
     open class EnableWebMvcConfiguration : DelegatingWebMvcConfiguration() {
 

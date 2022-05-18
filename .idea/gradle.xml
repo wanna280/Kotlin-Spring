@@ -20,6 +20,10 @@
             <option value="$PROJECT_DIR$/Kotlin-Logger/logger-test" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Boot" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Boot-Autoconfigure" />
+            <option value="$PROJECT_DIR$/Kotlin-Spring-Cloud" />
+            <option value="$PROJECT_DIR$/Kotlin-Spring-Cloud-Context" />
+            <option value="$PROJECT_DIR$/Kotlin-Spring-Cloud/Kotlin-Spring-Cloud-Nacos" />
+            <option value="$PROJECT_DIR$/Kotlin-Spring-Cloud/Kotlin-Spring-Cloud-Nacos/Kotlin-Spring-Cloud-Nacos-Config" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Framework" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Instrument" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Web" />

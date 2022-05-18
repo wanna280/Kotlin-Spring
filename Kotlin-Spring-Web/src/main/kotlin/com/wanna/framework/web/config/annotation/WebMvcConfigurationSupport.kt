@@ -4,6 +4,7 @@ import com.wanna.framework.beans.factory.annotation.Qualifier
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.annotation.Bean
+import com.wanna.framework.context.format.FormatterRegistry
 import com.wanna.framework.context.format.support.DefaultFormattingConversionService
 import com.wanna.framework.context.format.support.FormattingConversionService
 import com.wanna.framework.web.accept.ContentNegotiationManager
@@ -57,7 +58,6 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         var negotiationManager = this.contentNegotiationManager
         if (negotiationManager == null) {
             val contentNegotiationConfigurer = ContentNegotiationConfigurer()
-
             negotiationManager = contentNegotiationConfigurer.build()
             this.contentNegotiationManager = negotiationManager
         }
@@ -80,6 +80,9 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         return handlerAdapter
     }
 
+    /**
+     * 给容器当中去注册一个ConversionService，去支持进行WebMvc当中的类型转换工作
+     */
     @Bean
     @Qualifier("mvcConversionService")
     open fun formattingConversionService(): FormattingConversionService {
@@ -216,7 +219,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
 
     }
 
-    protected open fun addFormatters(conversionService: FormattingConversionService) {
+    protected open fun addFormatters(formatterRegistry: FormatterRegistry) {
 
     }
 

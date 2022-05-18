@@ -6,6 +6,7 @@ import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.EnvironmentCapable
 import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.util.AnnotationConfigUtils
+import org.springframework.core.annotation.AnnotatedElementUtils
 
 /**
  * 这是一个注解的BeanDefinitionReader，负责给定clazz，将其封装一个AnnotatedGenericBeanDefinition并注册到容器当中
@@ -17,6 +18,8 @@ open class AnnotatedBeanDefinitionReader(private val registry: BeanDefinitionReg
 
     // 从registry当中获取到Environment，如果没有，那么就创建一个默认的Environment对象
     private var environment: Environment = getOrDefaultEnvironment(registry)
+
+    private var scopeMetadataResolver: ScopeMetadataResolver = AnnotationScopeMetadataResolver()
 
     init {
         // 注册AnnotationConfig相关的PostProcessor
@@ -54,6 +57,10 @@ open class AnnotatedBeanDefinitionReader(private val registry: BeanDefinitionReg
     open fun registerBean(clazz: Class<*>, name: String?) {
         // 创建一个AnnotatedGenericBeanDefinition
         val beanDefinition = AnnotatedGenericBeanDefinition(clazz)
+
+        val scopeMetadata = scopeMetadataResolver.resolveScopeMetadata(beanDefinition)
+        beanDefinition.setScope(scopeMetadata.scopeName)
+
 
         // 处理@Lazy/@Role/@DependsOn/@Primary注解
         AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition)

@@ -19,7 +19,7 @@ open class StandardAnnotationMetadata(val clazz: Class<*>) : AnnotationMetadata 
     }
 
     override fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any> {
-        val mergedAnnotation = AnnotatedElementUtils.getMergedAnnotation(clazz, annotationClass)
+        val mergedAnnotation = AnnotatedElementUtils.getMergedAnnotation(clazz, annotationClass) ?: return emptyMap()
         return AnnotationAttributesUtils.asAnnotationAttributes(mergedAnnotation) ?: emptyMap()
     }
 

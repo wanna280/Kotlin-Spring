@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
  *
  * @see OnBeanCondition
  */
-@Target(AnnotationTarget.TYPE, AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
+@Target(AnnotationTarget.TYPE, AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS,AnnotationTarget.FUNCTION)
 @Conditional([OnBeanCondition::class])
 annotation class ConditionOnMissingBean(
     val value: Array<KClass<*>> = [],

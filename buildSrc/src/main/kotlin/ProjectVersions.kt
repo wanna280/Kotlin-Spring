@@ -9,3 +9,4 @@ const val aspectJVersion = "1.9.9"  // aspectJ Version
 const val guavaVersion = "31.1-jre"  // guava Version
 const val jacksonDatabindVersion = "2.13.2.2"  // jackson Version
 const val jansiVersion = "2.4.0"  // jansi Version
+const val nacosClientVersion = "1.4.3"  // nacos Client Version

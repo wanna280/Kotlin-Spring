@@ -15,6 +15,7 @@ import com.wanna.framework.core.util.AnnotationConfigUtils
 import com.wanna.framework.core.util.BeanUtils
 import com.wanna.framework.core.util.StringUtils
 import org.slf4j.LoggerFactory
+import org.springframework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.Method
 
 /**
@@ -150,6 +151,13 @@ open class ConfigurationClassBeanDefinitionReader(
         beanDefinition.setAutowireCandidate(beanAnnotation.autowireCandidate)
         beanDefinition.setAutowireMode(beanAnnotation.autowireMode)
 
+
+        // 解析scope
+        val scope = metadata.getAnnotationAttributes(Scope::class.java.name)
+        if (scope.isNotEmpty()) {
+            beanDefinition.setScope(scope["scopeName"]!!.toString())
+        }
+
         // 注册beanDefinition到容器当中
         registry.registerBeanDefinition(beanName, beanDefinition)
     }
@@ -215,6 +223,10 @@ open class ConfigurationClassBeanDefinitionReader(
 
         // 处理@Role/@Primary/@DependsOn/@Lazy注解
         AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition, metadata)
+        val scope = AnnotatedElementUtils.getMergedAnnotation(clazz, Scope::class.java)
+        if (scope != null) {
+            beanDefinition.setScope(scope.scopeName)
+        }
 
         // 生成beanName
         val beanName = importBeanNameGenerator.generateBeanName(beanDefinition, registry)

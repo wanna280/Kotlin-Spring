@@ -25,6 +25,19 @@ open class MutablePropertySources() : PropertySources {
         return false
     }
 
+    /**
+     * 按照name去进行替换PropertySource
+     *
+     * @param name name
+     * @param propertySource 要进行替换的PropertySource
+     */
+    open fun replace(name: String, propertySource: PropertySource<*>) {
+        val index = propertySourceList.indices.filter { propertySourceList[it].name == name }.toList()
+        if (index.isNotEmpty()) {
+            replace(index[0], propertySource)
+        }
+    }
+
     override fun get(name: String): PropertySource<*>? {
         propertySourceList.forEach {
             if (it.name == name) {
@@ -41,6 +54,12 @@ open class MutablePropertySources() : PropertySources {
     private fun removeIfPresent(propertySource: PropertySource<*>) {
         synchronized(this.propertySourceList) {
             this.propertySourceList.remove(propertySource)
+        }
+    }
+
+    open fun replace(index: Int, propertySource: PropertySource<*>) {
+        synchronized(this.propertySourceList) {
+            this.propertySourceList[index] = propertySource
         }
     }
 

@@ -2,6 +2,7 @@ package com.wanna.framework.web.config.annotation
 
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.Configuration
+import com.wanna.framework.context.format.FormatterRegistry
 import com.wanna.framework.web.handler.HandlerExceptionResolver
 import com.wanna.framework.web.http.converter.HttpMessageConverter
 import com.wanna.framework.web.method.support.HandlerMethodArgumentResolver
@@ -54,5 +55,9 @@ open class DelegatingWebMvcConfiguration : WebMvcConfigurationSupport() {
 
     override fun extendsHandlerExceptionResolver(resolvers: MutableList<HandlerExceptionResolver>) {
         this.webMvcConfigurerComposite.extendHandlerExceptionResolvers(resolvers)
+    }
+
+    override fun addFormatters(formatterRegistry: FormatterRegistry) {
+        this.webMvcConfigurerComposite.addFormatters(formatterRegistry)
     }
 }

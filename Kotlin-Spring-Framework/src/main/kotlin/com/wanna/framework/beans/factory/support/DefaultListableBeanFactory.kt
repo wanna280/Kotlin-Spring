@@ -366,7 +366,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
         // 1.从BeanFactory当中注册的可解析的依赖(resolvableDependencies)当中尝试去进行解析
         this.resolvableDependencies.forEach { (type, obj) ->
-            if (ClassUtils.isAssignFrom(requiredType, type) && requiredType.isInstance(obj)) {
+            if (ClassUtils.isAssignFrom(type, requiredType) && requiredType.isInstance(obj)) {
                 result[requiredType.name] = obj
             }
         }
@@ -402,7 +402,6 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         if (type.isArray) {
             // 获取数组的元素类型，可以通过componentType去进行获取
             val componentType = type.componentType
-
             // 获取所有的候选的Bean，包括resolvableDependencies当中的依赖和beanFactory当中的对应的类型的Bean
             val candidates = findAutowireCandidates(requestingBeanName, componentType, descriptor)
             if (candidates.isEmpty()) {
@@ -423,62 +422,36 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             Arrays.sort(typeArray as Array<*>, getDependencyComparator())
             return typeArray
         } else if (type == Map::class.java) {
-            val genericTypes = descriptor.getGenericType()
-            if (genericTypes is ParameterizedType) {
-                val actualTypeArguments: Array<Type> = genericTypes.actualTypeArguments
-                // 如果是Map类型，那么这里完全可以去断言：泛型类型的长度一定为2
-                val keyGeneric = actualTypeArguments[0]
-                var valueGeneric = actualTypeArguments[1]
+            val generics = descriptor.getResolvableType().asMap().getGenerics()
+            // 如果是Map类型，那么这里完全可以去断言：泛型类型的长度一定为2
+            val keyGeneric = generics[0].resolve()
+            val valueGeneric = generics[1].resolve()
 
-                // 如果它是WildcardType，那么需要去进行转换...这里的valueGeneric有可能是野生类型(WildType，也就是Java中的?或者是Kotlin中的*)
-                if (valueGeneric is WildcardType) {
-                    if (valueGeneric.lowerBounds.isNotEmpty()) {
-                        valueGeneric = valueGeneric.lowerBounds[0]
-                    } else {
-                        valueGeneric = valueGeneric.upperBounds[0]
-                    }
-
-                }
-                if (keyGeneric != String::class.java) {  // 如果key的泛型不是String类型，那么return null
-                    return null
-                }
-                // 获取所有的候选Bean
-                val candidates = findAutowireCandidates(requestingBeanName, valueGeneric as Class<*>, descriptor)
-                autowiredBeanName?.addAll(candidates.keys)
-                return LinkedHashMap(candidates)
+            // 如果key的泛型不是String类型，那么return null
+            if (keyGeneric != String::class.java) {
+                return null
             }
-        } else if (ClassUtils.isAssignFrom(Collection::class.java, type)) {
-            val genericTypes = descriptor.getGenericType()
-            if (genericTypes is ParameterizedType) {
-                val valueType: Class<*>
+            // 获取所有的候选Bean
+            val candidates = findAutowireCandidates(requestingBeanName, valueGeneric as Class<*>, descriptor)
+            autowiredBeanName?.addAll(candidates.keys)
+            return LinkedHashMap(candidates)
+        } else if (ClassUtils.isAssignFrom(Collection::class.java, type) && type.isInterface) {
+            val generics = descriptor.getResolvableType().asCollection().getGenerics()
+            val valueType = generics[0].resolve()
+            // 找到所有的候选类型的Bean
+            val candidates = findAutowireCandidates(requestingBeanName, valueType!!, descriptor)
 
-                // 解析泛型类型...
-                val types = genericTypes.actualTypeArguments[0]
-                if (types is WildcardType) {
-                    if (types.lowerBounds.isNotEmpty()) {
-                        valueType = types.lowerBounds[0] as Class<*>
-                    } else {
-                        valueType = types.upperBounds[0] as Class<*>
-                    }
-                } else {
-                    valueType = types as Class<*>
-                }
-
-                // 找到所有的候选类型的Bean
-                val candidates = findAutowireCandidates(requestingBeanName, valueType, descriptor)
-
-                var collection: MutableCollection<Any>
-                if (type == Set::class.java) {
-                    collection = LinkedHashSet()
-                } else if (type == List::class.java) {
-                    collection = ArrayList()
-                } else {
-                    collection = type.getDeclaredConstructor().newInstance() as MutableCollection<Any>
-                }
-                candidates.values.forEach(collection::add)
-                autowiredBeanName?.addAll(candidates.keys)
-                return collection
+            val collection: MutableCollection<Any>
+            if (type == Set::class.java) {
+                collection = LinkedHashSet()
+            } else if (type == List::class.java) {
+                collection = ArrayList()
+            } else {
+                collection = type.getDeclaredConstructor().newInstance() as MutableCollection<Any>
             }
+            candidates.values.forEach(collection::add)
+            autowiredBeanName?.addAll(candidates.keys)
+            return collection
         }
         return null
     }

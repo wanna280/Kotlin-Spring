@@ -8,6 +8,7 @@ import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.util.ReflectionUtils
+import org.slf4j.LoggerFactory
 
 /**
  * 这是一个ConfigurationProperties的Binder，负责完成@ConfigurationProperties的绑定工作
@@ -26,6 +27,9 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
     companion object {
         @JvmField
         val BEAN_NAME: String = ConfigurationPropertiesBinder::class.java.name
+
+        // logger
+        private val logger = LoggerFactory.getLogger(ConfigurationProperties::class.java)
 
         /**
          * 给容器中注册ConfigurationPropertiesBinder的相关基础设施Bean
@@ -77,13 +81,21 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
 
                 // 获取setter的方法
                 val setMethodName = "set" + name[0].uppercaseChar() + name.substring(1)
-                val setterMethod = clazz.getDeclaredMethod(setMethodName, it.type)
-                val conversionService = environment.getConversionService()
+                try {
+                    val setterMethod = clazz.getDeclaredMethod(setMethodName, it.type)
+                    val conversionService = environment.getConversionService()
 
-                if (conversionService.canConvert(String::class.java, it.type)) {
-                    // 反射执行目标方法
-                    ReflectionUtils.makeAccessiable(setterMethod)
-                    ReflectionUtils.invokeMethod(setterMethod, instance, conversionService.convert(property, it.type))
+                    if (conversionService.canConvert(String::class.java, it.type)) {
+                        // 反射执行目标方法
+                        ReflectionUtils.makeAccessiable(setterMethod)
+                        ReflectionUtils.invokeMethod(
+                            setterMethod,
+                            instance,
+                            conversionService.convert(property, it.type)
+                        )
+                    }
+                } catch (ex: Exception) {
+                    logger.warn("ex=[${ex.message}]")
                 }
             }
         }

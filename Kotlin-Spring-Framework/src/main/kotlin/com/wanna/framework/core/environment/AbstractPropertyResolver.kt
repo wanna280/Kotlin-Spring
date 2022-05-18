@@ -65,7 +65,7 @@ abstract class AbstractPropertyResolver : ConfigurablePropertyResolver {
 
     override fun getProperty(key: String, defaultValue: String?): String? = getProperty(key) ?: defaultValue
 
-    override fun <T> getProperty(key: String, requiredType: Class<T>, defaultValue: T): T? =
+    override fun <T> getProperty(key: String, requiredType: Class<T>, defaultValue: T): T =
         getProperty(key, requiredType) ?: defaultValue
 
     override fun getRequiredProperty(key: String): String =

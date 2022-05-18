@@ -1,0 +1,10 @@
+com.wanna.boot.SpringApplicationRunListener=\
+  com.wanna.boot.context.event.EventPublishingRunListener
+com.wanna.framework.context.event.ApplicationListener=\
+  com.wanna.boot.env.EnvironmentPostProcessorApplicationListener
+
+com.wanna.boot.env.EnvironmentPostProcessor=\
+  com.wanna.boot.context.config.ConfigDataEnvironmentPostProcessor
+
+com.wanna.boot.env.PropertySourceLoader=\
+  com.wanna.boot.env.PropertiesPropertySourceLoader

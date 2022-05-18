@@ -12,7 +12,7 @@ import java.util.Properties
  * @see Properties.setProperty
  */
 @Suppress("UNCHECKED_CAST")
-class PropertiesPropertySource(name: String, source: Properties) : MapPropertySource(name, source as Map<String, Any>) {
+open class PropertiesPropertySource(name: String, source: Properties) : MapPropertySource(name, source as Map<String, Any>) {
     // 提供一个使用Map的方式去进行构建的构造器
     constructor(name: String, source: Map<String, Any>) : this(name, source as Properties)
 }

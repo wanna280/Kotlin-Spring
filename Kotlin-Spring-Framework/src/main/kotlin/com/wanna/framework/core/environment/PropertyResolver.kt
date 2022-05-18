@@ -31,7 +31,7 @@ interface PropertyResolver {
     /**
      * 按照指定的类型去获取属性，如果获取不到，return默认值(defaultValue)
      */
-    fun <T> getProperty(key: String, requiredType: Class<T>, defaultValue: T): T?
+    fun <T> getProperty(key: String, requiredType: Class<T>, defaultValue: T): T
 
     /**
      * 根据key去获取属性，如果获取不到，抛出IllegalStateException

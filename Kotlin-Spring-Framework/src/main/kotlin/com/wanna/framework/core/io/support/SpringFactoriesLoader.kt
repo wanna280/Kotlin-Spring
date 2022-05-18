@@ -101,7 +101,7 @@ object SpringFactoriesLoader {
             val urls = classLoader.getResources(FACTORIES_RESOURCE_LOCATION)
             for (url in urls) {
                 // 从给定的IOStream当中去加载Properties
-                val properties = PropertiesLoaderUtils.loadProperties(url.openStream())
+                val properties = PropertiesLoaderUtils.loadPropertiesFromProperties(url.openStream())
 
                 properties.keys.forEach {
                     val factoryTypeName = (it as String).trim()  // 去掉首位

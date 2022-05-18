@@ -174,7 +174,6 @@ abstract class AbstractBeanFactory : BeanFactory, ConfigurableBeanFactory, Lista
                 val scopedInstance = scope.get(beanName, object : ObjectFactory<Any> {
                     override fun getObject(): Any {
                         return createBean(beanName, mbd)
-                            ?: throw BeansException("Create bean instance of [$beanName] failed")
                     }
                 })
                 beanInstance = getObjectForBeanInstance(scopedInstance, beanName, beanName, mbd)

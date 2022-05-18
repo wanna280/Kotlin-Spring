@@ -38,6 +38,8 @@ open class ClassPathBeanDefinitionScanner(
     // 是否包含注解版的配置？如果开启了，使用它进行扫描时，就会往容器中注册注解的通用处理器
     private var includeAnnotationConfig: Boolean = true
 
+    private var scopeMetadataResolver: ScopeMetadataResolver = AnnotationScopeMetadataResolver()
+
     private var lazyInit: Boolean = false
 
     init {
@@ -92,7 +94,8 @@ open class ClassPathBeanDefinitionScanner(
                     if (beanDefinition is AnnotatedBeanDefinition) {
                         AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition)
                     }
-
+                    val metadata = scopeMetadataResolver.resolveScopeMetadata(beanDefinition)
+                    beanDefinition.setScope(metadata.scopeName)
                     if (lazyInit) {
                         beanDefinition.setLazyInit(true)
                     }
@@ -121,6 +124,9 @@ open class ClassPathBeanDefinitionScanner(
      */
     protected open fun isCandidateComponent(clazz: Class<*>?): Boolean {
         if (clazz == null) {
+            return false
+        }
+        if (clazz.name.startsWith("java.") || clazz.isInterface) {
             return false
         }
         // 如果被excludeFilter匹配，直接return false
