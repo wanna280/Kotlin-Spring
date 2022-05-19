@@ -5,7 +5,6 @@ import com.wanna.boot.context.properties.ConfigurationProperties
 import com.wanna.boot.context.properties.EnableConfigurationProperties
 import com.wanna.boot.runSpringApplication
 import com.wanna.cloud.context.config.annotation.RefreshScope
-import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.stereotype.Component
 import java.util.concurrent.TimeUnit
 
@@ -13,13 +12,9 @@ import java.util.concurrent.TimeUnit
 @SpringBootApplication
 class NacosConfigTest {
 
-    @Bean
-    @RefreshScope
-    fun user(): User {
-        return User()
-    }
 }
 
+@RefreshScope
 @Component
 @ConfigurationProperties("my.user")
 class User {

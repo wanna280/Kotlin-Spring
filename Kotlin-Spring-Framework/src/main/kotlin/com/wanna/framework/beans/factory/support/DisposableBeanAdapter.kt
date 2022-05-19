@@ -23,7 +23,7 @@ import java.lang.reflect.Method
 open class DisposableBeanAdapter(
     private val bean: Any,
     private val beanName: String,
-    private val mbd: RootBeanDefinition,
+    private val mbd: RootBeanDefinition?,
     _postProcessors: List<DestructionAwareBeanPostProcessor>
 ) : DisposableBean, Runnable {
 
@@ -80,12 +80,13 @@ open class DisposableBeanAdapter(
         }
 
         // 3.如果有destroy方法，那么去执行该方法
-        if (this.destroyMethod != null) {
-            ReflectionUtils.makeAccessiable(this.destroyMethod!!)
+        val destroyMethod = this.destroyMethod
+        if (destroyMethod != null) {
+            ReflectionUtils.makeAccessiable(destroyMethod)
             try {
-                ReflectionUtils.invokeMethod(this.destroyMethod!!, this.bean)
+                ReflectionUtils.invokeMethod(destroyMethod, this.bean)
             } catch (ex: Throwable) {
-                logger.warn("执行[beanName=$bean, beanClass=${this.bean::class.java}]的destroy方法[name=${destroyMethod!!.name}]失败，原因是[$ex]")
+                logger.warn("执行[beanName=$bean, beanClass=${this.bean::class.java}]的destroy方法[name=${destroyMethod.name}]失败，原因是[$ex]")
             }
         }
     }
@@ -134,8 +135,12 @@ open class DisposableBeanAdapter(
          *
          * @param bean bean
          * @param mbd MergedBeanDefinition
+         * @return 如果找到了的话，返回值destroyMethodName，如果找不到的话，return null
          */
-        private fun inferDestroyMethodIfNecessary(bean: Any, mbd: RootBeanDefinition): String? {
+        private fun inferDestroyMethodIfNecessary(bean: Any, mbd: RootBeanDefinition?): String? {
+            if (mbd == null) {
+                return null
+            }
             var destroyMethodName = mbd.resolvedDestroyMethodName
             if (destroyMethodName == null) {
                 destroyMethodName = mbd.getDestoryMethodName()

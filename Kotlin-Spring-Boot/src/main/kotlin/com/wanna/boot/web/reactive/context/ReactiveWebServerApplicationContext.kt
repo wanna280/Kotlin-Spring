@@ -1,6 +1,8 @@
 package com.wanna.boot.web.reactive.context
 
+import com.wanna.boot.web.context.WebServerApplicationContext
 import com.wanna.boot.web.reactive.server.ReactiveWebServerFactory
+import com.wanna.boot.web.server.WebServer
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContextException
 import com.wanna.framework.context.support.GenericApplicationContext
@@ -9,7 +11,7 @@ import com.wanna.framework.context.support.GenericApplicationContext
  * 这是一个ReactiveWebServerApplicationContext
  */
 open class ReactiveWebServerApplicationContext(beanFactory: DefaultListableBeanFactory) :
-    GenericApplicationContext(beanFactory) {
+    GenericApplicationContext(beanFactory), WebServerApplicationContext {
     // 提供一个无参数构造器
     constructor() : this(DefaultListableBeanFactory())
 
@@ -25,6 +27,9 @@ open class ReactiveWebServerApplicationContext(beanFactory: DefaultListableBeanF
         }
     }
 
+    /**
+     * 创建WebServer，并发布ReactiveWebServerInitializedEvent事件...
+     */
     override fun onRefresh() {
         super.onRefresh()
         try {
@@ -55,5 +60,9 @@ open class ReactiveWebServerApplicationContext(beanFactory: DefaultListableBeanF
             throw ApplicationContextException("从容器中找到ReactiveWebServer的数量不止1个")
         }
         return factories.iterator().next()
+    }
+
+    override fun getWebServer(): WebServer {
+        return this.webServerManager!!.getWebServer()
     }
 }

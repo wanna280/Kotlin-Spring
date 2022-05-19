@@ -5,6 +5,7 @@ import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.core.Ordered
+import com.wanna.framework.core.environment.EnumerablePropertySource
 import com.wanna.framework.core.environment.PropertySource
 
 /**
@@ -32,7 +33,11 @@ open class PropertySourceBootstrapConfiguration : ApplicationContextInitializer<
         this.propertySourceLocators.forEach {
             val propertySources = it.locateCollection(environment)
             propertySources.forEach {
-                composite += SimpleBootstrapPropertySource(it)
+                if (it is EnumerablePropertySource<*>) {
+                    composite += BootstrapPropertySource(it)
+                } else {
+                    composite += SimpleBootstrapPropertySource(it)
+                }
             }
         }
 

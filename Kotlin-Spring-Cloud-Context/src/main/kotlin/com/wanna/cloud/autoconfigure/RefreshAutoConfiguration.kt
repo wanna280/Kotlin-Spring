@@ -15,6 +15,7 @@ import com.wanna.framework.context.annotation.Configuration
 open class RefreshAutoConfiguration {
 
     @Bean
+    @ConditionOnMissingBean([RefreshScope::class])
     open fun refreshScope(): RefreshScope {
         return RefreshScope()
     }

@@ -8,7 +8,7 @@ package com.wanna.framework.core.environment
  * @see SimpleCommandLineArgsParser.parse
  * @see CommandLineArgs
  */
-class SimpleCommandLinePropertySource(vararg args: String) :
+open class SimpleCommandLinePropertySource(vararg args: String) :
     CommandLinePropertySource<CommandLineArgs>(SimpleCommandLineArgsParser().parse(*args)) {
 
     constructor(name: String, args: Array<String>) : this(*args) {

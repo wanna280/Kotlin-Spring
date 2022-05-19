@@ -5,7 +5,8 @@ package com.wanna.framework.core.environment
  *
  * @see PropertySource
  */
-open class MapPropertySource(name: String, source: Map<String, Any>) : PropertySource<Map<String, Any>>(name, source) {
+open class MapPropertySource(name: String, source: Map<String, Any>) :
+    EnumerablePropertySource<Map<String, Any>>(name, source) {
 
     override fun getProperty(name: String): Any? {
         return source[name]
@@ -13,5 +14,9 @@ open class MapPropertySource(name: String, source: Map<String, Any>) : PropertyS
 
     override fun containsProperty(name: String): Boolean {
         return source.containsKey(name)
+    }
+
+    override fun getPropertyNames(): Array<String> {
+        return source.keys.toTypedArray()
     }
 }

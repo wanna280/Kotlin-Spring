@@ -1,5 +1,6 @@
 package com.wanna.cloud.nacos.config
 
+import com.wanna.cloud.nacos.config.refresh.NacosContextRefresher
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 

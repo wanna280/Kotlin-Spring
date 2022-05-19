@@ -297,7 +297,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
      * @throws BeanCreationException 执行初始化过程当中发生了异常
      * @throws Throwable 在执行初始化之前/之后的方法当中，发生的异常将会直接往上抛
      */
-    protected open fun initializeBean(bean: Any, beanName: String, mbd: RootBeanDefinition): Any {
+    protected open fun initializeBean(bean: Any, beanName: String, mbd: RootBeanDefinition?): Any {
         // 在初始化之前，需要去执行Aware接口当中的setXXX方法去注入相关的容器对象，beanName和beanFactory是需要这里去完成的，别的类型的Aware接口
         // 就交给ApplicationContextAwareBeanPostProcessor去完成，因为ApplicationContextAware能获取更多对象，比如Environment
         invokeAwareMethods(bean, beanName)
@@ -370,10 +370,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
      * @param beanName beanName
      */
     protected open fun applyPropertyValues(
-        beanName: String,
-        mbd: RootBeanDefinition,
-        beanWrapper: BeanWrapper,
-        pvs: PropertyValues
+        beanName: String, mbd: RootBeanDefinition, beanWrapper: BeanWrapper, pvs: PropertyValues
     ) {
         // 通过beanWrapper去设置propertyValues
         beanWrapper.setPropertyValues(pvs)
@@ -400,16 +397,15 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
     /**
      * 执行Init方法完成初始化
      */
-    private fun invokeInitMethod(bean: Any, beanName: String, mbd: RootBeanDefinition) {
+    private fun invokeInitMethod(bean: Any, beanName: String, mbd: RootBeanDefinition?) {
         // 如果它是一个InitializingBean，那么需要在这里去进行回调去完成Bean的初始化
         if (bean is InitializingBean) {
             bean.afterPropertiesSet()
         }
-
+        val beanClass = bean::class.java
         // 如果beanDefinition当中设置了initMethodName的话，那么需要获取该方法去执行
-        if (StringUtils.hasText(mbd.getInitMethodName())) {
-            val beanClass = mbd.getBeanClass()
-            val initMethod = beanClass!!.getMethod(mbd.getInitMethodName()!!)
+        if (mbd != null && beanClass != NullBean::class.java && StringUtils.hasText(mbd.getInitMethodName())) {
+            val initMethod = beanClass.getMethod(mbd.getInitMethodName()!!)
             ReflectionUtils.makeAccessiable(initMethod)
             ReflectionUtils.invokeMethod(initMethod, bean)
         }
@@ -500,5 +496,26 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
      */
     open fun setAllowCircularReferences(allowCircularReferences: Boolean) {
         this.allowCircularReferences = allowCircularReferences
+    }
+
+    /**
+     * 对一个Bean去完成初始化，供beanFactory外部去进行使用
+     *
+     * @param beanName beanName
+     * @param bean bean
+     */
+    override fun initializeBean(bean: Any, beanName: String) {
+        initializeBean(bean, beanName, null)
+    }
+
+    /**
+     * 摧毁一个Bean，回调的它的destory方法，供beanFactory外部去进行使用
+     *
+     * @param existingBean 要进行摧毁的已经存在于容器当中的Bean
+     */
+    override fun destroy(existingBean: Any) {
+        DisposableBeanAdapter(
+            existingBean, existingBean::class.java.name, null, getBeanPostProcessorCache().destructionAwareCache
+        ).destroy()
     }
 }

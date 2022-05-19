@@ -7,7 +7,7 @@ import com.wanna.framework.core.environment.PropertySource
  *
  * @param propertySource 要进行包装的PropertySource
  */
-class SimpleBootstrapPropertySource<T>(private val propertySource: PropertySource<T>) :
+open class SimpleBootstrapPropertySource<T>(private val propertySource: PropertySource<T>) :
     PropertySource<T>(propertySource.name, propertySource.source) {
 
     override fun getProperty(name: String): Any? {

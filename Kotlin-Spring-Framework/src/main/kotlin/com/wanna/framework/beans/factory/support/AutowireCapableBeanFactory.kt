@@ -34,4 +34,19 @@ interface AutowireCapableBeanFactory : BeanFactory {
         autowiredBeanName: MutableSet<String>?,
         typeConverter: TypeConverter?
     ): Any?
+
+    /**
+     * 初始化Bean，供beanFactory外部去进行使用
+     *
+     * @param bean bean
+     * @param beanName beanName
+     */
+    fun initializeBean(bean: Any, beanName: String)
+
+    /**
+     * 摧毁Bean，供beanFactory外部去进行使用
+     *
+     * @param existingBean 要进行摧毁的已经存在于容器当中的Bean
+     */
+    fun destroy(existingBean:Any)
 }

@@ -139,7 +139,7 @@ object PostProcessorRegistrationDelegate {
         val nonOrderedProcessors = ArrayList<BeanFactoryPostProcessor>()
         postProcessorNames.forEach { beanName ->
             if (processedBeans.contains(beanName)) {  // skip because it has been processed
-                return
+                return@forEach
             }
             val postProcessor = beanFactory.getBean(beanName, BeanFactoryPostProcessor::class.java)!!
             if (beanFactory.isTypeMatch(beanName, PriorityOrdered::class.java)) {

@@ -6,7 +6,7 @@ import com.wanna.boot.web.server.WebServer
 /**
  * 这是一个WebServerManager，负责去启动和关闭WebServer
  */
-class WebServerManager(
+open class WebServerManager(
     private val applicationContext: ReactiveWebServerApplicationContext,
     private val factory: ReactiveWebServerFactory
 ) {
@@ -14,6 +14,9 @@ class WebServerManager(
 
     fun start() {
         this.webServer.start()
+
+        // 发布WebServer已经初始化完成事件...
+        this.applicationContext.publishEvent(ReactiveWebServerInitializedEvent(this.webServer, this.applicationContext))
     }
 
     fun getWebServer(): WebServer {
