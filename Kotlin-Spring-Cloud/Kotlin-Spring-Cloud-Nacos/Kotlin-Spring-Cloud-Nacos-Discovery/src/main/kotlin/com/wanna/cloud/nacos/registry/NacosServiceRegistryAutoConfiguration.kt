@@ -1,17 +1,23 @@
 package com.wanna.cloud.nacos.registry
 
+import com.wanna.boot.autoconfigure.AutoConfigureAfter
 import com.wanna.boot.autoconfigure.condition.ConditionOnBean
 import com.wanna.boot.context.properties.EnableConfigurationProperties
+import com.wanna.cloud.client.serviceregistry.AutoServiceRegistrationConfiguration
 import com.wanna.cloud.client.serviceregistry.AutoServiceRegistrationProperties
 import com.wanna.cloud.nacos.NacosDiscoveryProperties
 import com.wanna.cloud.nacos.NacosServiceManager
+import com.wanna.cloud.nacos.discovery.NacosDiscoveryAutoConfiguration
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 
 /**
- * 它是一个Nacos的服务注册的自动配置类，负责给容器当中去导入自动配置类，去提供SpringCloud的服务自动注册
+ * 它是一个Nacos的服务注册的自动配置类，负责给容器当中去导入自动配置类，去提供SpringCloud的服务自动注册；
+ * 这个自动配置类，需要交给Spring容器去进行管理，让Spring在WebSever已经准备好的时候，使用事件发布机制；
+ * 可以去自动回调NacosServiceRegistry(Nacos的服务注册中心)，从而实现NacosRegistration实例的自动注册
  */
+@AutoConfigureAfter(value = [NacosDiscoveryAutoConfiguration::class, AutoServiceRegistrationConfiguration::class])
 @EnableConfigurationProperties
 @Configuration(proxyBeanMethods = false)
 open class NacosServiceRegistryAutoConfiguration {

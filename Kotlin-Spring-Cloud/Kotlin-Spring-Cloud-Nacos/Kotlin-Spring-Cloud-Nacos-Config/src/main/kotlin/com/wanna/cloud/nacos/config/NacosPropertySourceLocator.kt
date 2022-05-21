@@ -4,7 +4,6 @@ import com.wanna.cloud.bootstrap.config.PropertySourceLocator
 import com.wanna.framework.core.environment.CompositePropertySource
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.PropertySource
-import java.util.*
 
 /**
  * Nacos的PropertySourceLocator，它负责去实现从远程拉取配置文件到本地，并配置到Environment当中

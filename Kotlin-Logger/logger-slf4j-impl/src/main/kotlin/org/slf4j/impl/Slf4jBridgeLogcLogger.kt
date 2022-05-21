@@ -35,107 +35,107 @@ open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.L
     }
 
     override fun trace(format: String, arg1: Any?, arg2: Any?) {
-        super.trace(format)
+        super.trace(format(format, arg1, arg2))
     }
 
     override fun trace(format: String, vararg arguments: Any?) {
-        super.trace(format)
+        super.trace(format(format, *arguments))
     }
 
     override fun trace(msg: String, t: Throwable) {
-        super.trace(msg)
+        super.trace(format(msg))
     }
 
     override fun trace(marker: Marker?, msg: String) {
-        super.trace(msg)
+        super.trace(format(msg))
     }
 
     override fun trace(marker: Marker?, format: String, arg: Any?) {
-        super.trace(format)
+        super.trace(format(format, arg))
     }
 
     override fun trace(marker: Marker?, format: String, arg1: Any?, arg2: Any?) {
-        super.trace(format)
+        super.trace(format(format, arg1, arg2))
     }
 
     override fun trace(marker: Marker?, format: String, vararg argArray: Any?) {
-        super.trace(format)
+        super.trace(format(format, *argArray))
     }
 
     override fun trace(marker: Marker?, msg: String, t: Throwable) {
-        super.trace(msg)
+        super.trace(format(msg))
     }
 
     override fun debug(format: String, arg: Any?) {
-        super.debug(format)
+        super.debug(format(format, arg))
     }
 
     override fun debug(format: String, arg1: Any?, arg2: Any?) {
-        super.debug(format)
+        super.debug(format(format, arg1, arg2))
     }
 
     override fun debug(format: String, vararg arguments: Any?) {
-        super.debug(format)
+        super.debug(format(format))
     }
 
     override fun debug(msg: String, t: Throwable) {
-        super.debug(msg)
+        super.debug(format(msg))
     }
 
     override fun debug(marker: Marker?, msg: String) {
-        super.debug(msg)
+        super.debug(format(msg))
     }
 
     override fun debug(marker: Marker?, format: String, arg: Any?) {
-        super.debug(format)
+        super.debug(format(format, arg))
     }
 
     override fun debug(marker: Marker?, format: String, arg1: Any?, arg2: Any?) {
-        super.debug(format)
+        super.debug(format(format, arg1, arg2))
     }
 
     override fun debug(marker: Marker?, format: String, vararg arguments: Any?) {
-        super.debug(format)
+        super.debug(format(format, *arguments))
     }
 
     override fun debug(marker: Marker?, msg: String, t: Throwable) {
-        super.debug(msg)
+        super.debug(format(msg))
     }
 
     override fun info(format: String, arg: Any?) {
-        super.info(format)
+        super.info(format(format, arg))
     }
 
     override fun info(format: String, arg1: Any?, arg2: Any?) {
-        super.info(format)
+        super.info(format(format, arg1, arg2))
     }
 
     override fun info(format: String, vararg arguments: Any?) {
-        super.info(format)
+        super.info(format(format, *arguments))
     }
 
     override fun info(msg: String, t: Throwable) {
-        super.info(msg)
+        super.info(format(msg))
     }
 
     override fun info(marker: Marker?, msg: String) {
-        super.info(msg)
+        super.info(format(msg))
     }
 
     override fun info(marker: Marker?, format: String, arg: Any?) {
-        super.info(format)
+        super.info(format(format, arg))
     }
 
     override fun info(marker: Marker?, format: String, arg1: Any?, arg2: Any?) {
-        super.info(format)
+        super.info(format(format, arg1, arg2))
     }
 
     override fun info(marker: Marker?, format: String, vararg arguments: Any?) {
-        super.info(format)
+        super.info(format(format, *arguments))
     }
 
     override fun info(marker: Marker?, msg: String, t: Throwable) {
-        return super.info(msg)
+        return super.info(format(msg))
     }
 
     override fun isWarnEnabled(marker: Marker?): Boolean {
@@ -143,76 +143,86 @@ open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.L
     }
 
     override fun warn(format: String, arg: Any?) {
-        return super.warn(format)
+        return super.warn(format(format, arg))
     }
 
     override fun warn(format: String, vararg arguments: Any?) {
-        return super.warn(format)
+        return super.warn(format(format, *arguments))
     }
 
     override fun warn(format: String, arg1: Any?, arg2: Any?) {
-        return super.warn(format)
+        return super.warn(format(format, arg1, arg2))
     }
 
     override fun warn(msg: String, t: Throwable) {
-        return super.warn(msg)
+        return super.warn(format(msg))
     }
 
     override fun warn(marker: Marker?, msg: String) {
-        return super.warn(msg)
+        return super.warn(format(msg))
     }
 
     override fun warn(marker: Marker?, format: String, arg: Any?) {
-        return super.warn(format)
+        return super.warn(format(format, arg))
     }
 
     override fun warn(marker: Marker?, format: String, arg1: Any?, arg2: Any?) {
-        return super.warn(format)
+        return super.warn(format(format, arg1, arg2))
     }
 
     override fun warn(marker: Marker?, format: String, vararg arguments: Any?) {
-        return super.warn(format)
+        return super.warn(format(format, *arguments))
     }
 
     override fun warn(marker: Marker?, msg: String, t: Throwable) {
-        return super.warn(msg)
+        return super.warn(format(msg))
     }
 
-
     override fun error(format: String, arg: Any?) {
-        super.error(format)
+        super.error(format(format, arg))
     }
 
     override fun error(format: String, arg1: Any?, arg2: Any?) {
-        super.error(format)
+        super.error(format(format, arg1, arg2))
     }
 
     override fun error(format: String, vararg arguments: Any?) {
-        super.error(format)
+        super.error(format(format, *arguments))
     }
 
     override fun error(msg: String, t: Throwable) {
-        super.error(msg)
+        super.error(format(msg))
     }
 
     override fun error(marker: Marker?, msg: String) {
-        super.error(msg)
+        super.error(format(msg))
     }
 
     override fun error(marker: Marker?, format: String, arg: Any?) {
-        super.error(format)
+        super.error(format(format, arg))
     }
 
     override fun error(marker: Marker?, format: String, arg1: Any?, arg2: Any?) {
-        super.error(format)
+        super.error(format(format, arg1, arg2))
     }
 
     override fun error(marker: Marker?, format: String, vararg arguments: Any?) {
-        super.error(format)
+        super.error(format(format, *arguments))
     }
 
     override fun error(marker: Marker?, msg: String, t: Throwable) {
-        super.error(msg)
+        super.error(format(msg))
+    }
+
+    private fun format(format: String, vararg args: Any?): String {
+        val builder = StringBuilder(format)
+        args.indices.forEach {
+            val index = builder.indexOf("{}")
+            if (index != -1) {
+                builder.replace(index, index + "{}".length, args[it]?.toString() ?: "")
+            }
+        }
+        return builder.toString()
     }
 
     override fun toString(): String = " Slf4jBridgeLogcLogger[${this.getLoggerName()}]"

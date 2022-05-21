@@ -49,7 +49,7 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     }
 
     override fun selectImports(metadata: AnnotationMetadata): Array<String> {
-        return getAutoConfigurationEntry(metadata).configurations.toTypedArray()
+        return AutoConfigurationSorter().sort(getAutoConfigurationEntry(metadata).configurations).toTypedArray()
     }
 
     /**
@@ -67,7 +67,7 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
         // 从SpringFactories当中去加载到所有的EnableAutoConfiguration配置类的className列表
         var configurations = getCandidateConfigurations(metadata, null)
 
-        // 对加载出来的自动配置类列表利用Set去进行去重
+        // 对加载出来的自动配置类列表利用LinkedHashSet去进行去重
         configurations = removeDuplicates(configurations)
 
         // 从配置文件/注解配置信息当中去加载要排除的className列表

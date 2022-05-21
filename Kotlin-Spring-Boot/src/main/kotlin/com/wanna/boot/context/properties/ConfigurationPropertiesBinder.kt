@@ -94,8 +94,10 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
                             conversionService.convert(property, it.type)
                         )
                     }
-                } catch (ex: Exception) {
-                    logger.warn("ex=[${ex.message}]")
+                } catch (_: java.lang.reflect.InvocationTargetException) {
+
+                } catch (_: java.lang.IllegalArgumentException) {
+
                 }
             }
         }

@@ -11,7 +11,8 @@ dependencies {
     implementation(project(":Kotlin-Spring-Boot"))
     implementation(project(":Kotlin-Spring-Boot-Autoconfigure"))
     implementation(project(":Kotlin-Logger:logger-slf4j-impl"))
-    implementation(project(":Kotlin-Spring-Cloud-Context"))
+    implementation(project(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Context"))
+    implementation(project(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Common"))
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("com.alibaba.nacos:nacos-client:$nacosClientVersion")
 }

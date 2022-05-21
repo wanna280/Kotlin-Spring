@@ -20,4 +20,9 @@ interface ApplicationContext : BeanFactory, ApplicationEventPublisher, ListableB
      * 获取parent ApplicationContext，如果有的话；如果没有的话，return null
      */
     fun getParent() : ApplicationContext?
+
+    /**
+     * 获取BeanClassLoader
+     */
+    fun getBeanClassLoader() : ClassLoader
 }

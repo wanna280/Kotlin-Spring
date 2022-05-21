@@ -7,5 +7,6 @@ import com.wanna.boot.runSpringApplication
 class RegistryTest
 
 fun main() {
-    runSpringApplication<RegistryTest>()
+    val applicationContext = runSpringApplication<RegistryTest>()
+    println(applicationContext)
 }

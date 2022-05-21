@@ -353,10 +353,6 @@ abstract class AbstractBeanFactory : BeanFactory, ConfigurableBeanFactory, Lista
         return null
     }
 
-    override fun getBeanNamesForType(type: Class<*>): List<String> {
-        return ArrayList(getBeansForType(type).keys)
-    }
-
 
     override fun getBeanNamesForTypeIncludingAncestors(type: Class<*>): List<String> {
         TODO("Not yet implemented")

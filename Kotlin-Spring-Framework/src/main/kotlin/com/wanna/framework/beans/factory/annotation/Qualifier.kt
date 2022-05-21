@@ -1,7 +1,5 @@
 package com.wanna.framework.beans.factory.annotation
 
-import com.wanna.framework.context.annotation.Autowired
-
 /**
  * 标识这是一个限定符，限定了Autowire的元素(不仅是可以标注在Autowired上，也可以是别的自动注入的注解，比如@Inject/@Resource等都可以支持)要去进行注入的beanName；
  * 当然也可以标注在beanClass上，例如B类上有Qualifier注解，并且A想要去注入B，并且在b字段上加了Qualifier；
@@ -28,4 +26,4 @@ import com.wanna.framework.context.annotation.Autowired
     AnnotationTarget.CLASS,
     AnnotationTarget.FUNCTION
 )
-annotation class Qualifier(val value: String)
+annotation class Qualifier(val value: String = "")

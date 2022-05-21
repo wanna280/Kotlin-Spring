@@ -1,25 +1,22 @@
 package com.wanna.framework.beans.factory.support
 
-import com.wanna.framework.beans.SmartInitializingSingleton
-import com.wanna.framework.beans.factory.BeanFactory
-import com.wanna.framework.beans.factory.support.definition.BeanDefinition
-import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.beans.BeanFactoryAware
+import com.wanna.framework.beans.SmartInitializingSingleton
+import com.wanna.framework.beans.TypeConverter
+import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.FactoryBean
 import com.wanna.framework.beans.factory.SmartFactoryBean
-import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
-import com.wanna.framework.beans.TypeConverter
+import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition
+import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.exception.BeanNotOfRequiredTypeException
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
 import com.wanna.framework.core.comparator.OrderComparator
 import com.wanna.framework.core.util.BeanFactoryUtils
 import com.wanna.framework.core.util.ClassUtils
-import java.lang.reflect.ParameterizedType
-import java.lang.reflect.Type
-import java.lang.reflect.WildcardType
-import java.util.Arrays
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -629,5 +626,22 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             }
         }
         return beans
+    }
+
+    override fun getBeanNamesForType(type: Class<*>): List<String> {
+        val beanNames = ArrayList<String>()
+        getBeanDefinitionNames().forEach { beanName ->
+            if (isTypeMatch(beanName, type)) {
+                beanNames += beanName
+            }
+        }
+        // 匹配已经注册的单实例Bean的列表
+        this.manualSingletonNames.forEach {
+            val singleton = getSingleton(it)
+            if (type.isInstance(singleton)) {
+                beanNames += it
+            }
+        }
+        return beanNames
     }
 }

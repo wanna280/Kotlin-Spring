@@ -64,4 +64,6 @@ interface ConfigurableApplicationContext : ApplicationContext {
      * 设置parent ApplicationContext
      */
     fun setParent(parent: ApplicationContext)
+
+    fun setBeanClassLoader(beanClassLoader: ClassLoader)
 }

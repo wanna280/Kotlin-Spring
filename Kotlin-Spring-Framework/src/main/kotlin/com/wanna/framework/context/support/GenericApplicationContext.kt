@@ -46,4 +46,12 @@ abstract class GenericApplicationContext(private val beanFactory: DefaultListabl
 
     open fun setAllowCircularReferences(allowCircularReferences: Boolean) =
         beanFactory.setAllowCircularReferences(allowCircularReferences)
+
+    override fun setBeanClassLoader(beanClassLoader: ClassLoader) {
+        this.beanFactory.setBeanClassLoader(beanClassLoader)
+    }
+
+    override fun getBeanClassLoader(): ClassLoader {
+        return this.beanFactory.getBeanClassLoader()
+    }
 }

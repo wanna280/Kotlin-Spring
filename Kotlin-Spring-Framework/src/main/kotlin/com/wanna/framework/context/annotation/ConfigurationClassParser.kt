@@ -321,7 +321,7 @@ open class ConfigurationClassParser(
     private fun asSourceClasses(imports: Array<String>, exclusionFilter: Predicate<String>): Collection<SourceClass> {
         return imports.filter { !exclusionFilter.test(it) }  // 丢掉不合法的
             .map { SourceClass(ClassUtils.forName<Any>(it)) }  // 转为className转为SourceClass
-            .toSet()
+            .toList()
     }
 
     /**

@@ -70,6 +70,8 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
     }
 
     override fun postProcessBeanDefinitionRegistry(registry: BeanDefinitionRegistry) {
+        val environment = this.environment!!
+        val classLoader = this.classLoader!!
         // 候选的BeanDefinition列表，包含了beanDefinition和beanName
         val candidates = ArrayList<BeanDefinitionHolder>()
         val beanDefinitionNames = registry.getBeanDefinitionNames()
@@ -85,7 +87,8 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         }
 
         var singletonBeanRegistry: SingletonBeanRegistry? = null
-        // 如果没有设置局部的BeanNameGenerator，尝试从SingletonBeanRegistry当中去获取到BeanNameGenerator
+        // 如果没有设置局部的BeanNameGenerator
+        // 尝试从SingletonBeanRegistry当中去获取到BeanNameGenerator
         // 如果找到了，那么就去替换默认的BeanNameGenerator
         if (registry is SingletonBeanRegistry && !localBeanNameGeneratorSet) {
             singletonBeanRegistry = registry
@@ -97,7 +100,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         }
 
         parser =
-            ConfigurationClassParser(registry, this.environment!!, this.classLoader!!, componentScanBeanNameGenerator)
+            ConfigurationClassParser(registry, environment, classLoader, componentScanBeanNameGenerator)
 
         val parseConfig = this.applicationStartup!!.start("spring.context.config-classes.parse")  // start parseConfig
 
@@ -105,7 +108,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         parser!!.parse(candidates)
         val importRegistry = parser!!.getImportRegistry()
         reader =
-            ConfigurationClassBeanDefinitionReader(registry, importBeanBeanNameGenerator, environment!!, importRegistry)
+            ConfigurationClassBeanDefinitionReader(registry, importBeanBeanNameGenerator, environment, importRegistry)
 
         // 获取解析器解析到的所有配置类列表
         val configurationClasses = LinkedHashSet(parser!!.getConfigurationClasses())

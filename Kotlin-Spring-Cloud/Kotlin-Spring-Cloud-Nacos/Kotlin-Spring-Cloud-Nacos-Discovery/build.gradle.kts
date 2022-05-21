@@ -11,8 +11,11 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":Kotlin-Spring-Cloud-Common"))
-    implementation(project(":Kotlin-Spring-Cloud-Context"))
+    implementation("com.netflix.ribbon:ribbon-loadbalancer:$ribbonVersion")
+    implementation("com.netflix.ribbon:ribbon-core:$ribbonVersion")
+    implementation(project(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Ribbon"))
+    implementation(project(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Context"))
+    implementation(project(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Common"))
     implementation(project(":Kotlin-Spring-Framework"))
     implementation(project(":Kotlin-Spring-Boot"))
     implementation(project(":Kotlin-Spring-Boot-Autoconfigure"))
@@ -20,8 +23,4 @@ dependencies {
     implementation("javax.annotation:javax.annotation-api:$javaxAnnotationVersion")
     implementation("com.alibaba.nacos:nacos-client:$nacosClientVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-}
-
-tasks.getByName<Test>("test") {
-    useJUnitPlatform()
 }
