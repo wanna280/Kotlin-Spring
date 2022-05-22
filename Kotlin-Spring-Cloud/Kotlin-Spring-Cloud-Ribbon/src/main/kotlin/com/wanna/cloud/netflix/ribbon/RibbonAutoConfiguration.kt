@@ -19,7 +19,8 @@ open class RibbonAutoConfiguration {
     private var specifications: List<RibbonClientSpecification> = emptyList()
 
     /**
-     * 给App容器当中去导入一个SpringClientFactory，支持Ribbon从SpringClientFactory当中去获取各种各样的组件，去完成负载均衡的实现；
+     * * 1.给App容器当中去导入一个SpringClientFactory，支持Ribbon从SpringClientFactory当中去获取各种各样的组件，去完成负载均衡的实现；
+     * * 2.它会自动将App容器当中的全部RibbonClientSpecification，直接apply给SpringClientFactory，也就是直接apply给对应的childContext；
      */
     @Bean
     @ConditionOnMissingBean
@@ -30,7 +31,8 @@ open class RibbonAutoConfiguration {
     }
 
     /**
-     * 给App容器当中去导入一个LoadBalancerClient，它是所有的SpringCloud的负载均衡的入口
+     * 给App容器当中去导入一个LoadBalancerClient，它是所有的SpringCloud的负载均衡的入口；
+     * 使用方，如果想要使用Ribbon提供的负载均衡的功能，都可以直接去注入LoadBalancerClient即可
      *
      * @param springClientFactory SpringClientFactory
      */

@@ -14,15 +14,13 @@ open class RibbonClientConfigurationRegistrar : ImportBeanDefinitionRegistrar {
     override fun registerBeanDefinitions(annotationMetadata: AnnotationMetadata, registry: BeanDefinitionRegistry) {
         val clientsAttributes = annotationMetadata.getAnnotationAttributes(RibbonClients::class.java)
         if (clientsAttributes.isNotEmpty()) {
-            // 1.遍历RibbonClients当中的所有RibbonClient注解，去进行处理
+            // 遍历RibbonClients当中的所有RibbonClient注解，去进行处理
             val ribbonClients = clientsAttributes["value"] as Array<RibbonClient>
             ribbonClients.forEach {
-                registerRibbonClient(
-                    registry, AnnotationAttributesUtils.asAnnotationAttributes(it)!!
-                )
+                registerRibbonClient(registry, AnnotationAttributesUtils.asAnnotationAttributes(it)!!)
             }
 
-            // 将defaultConfiguration注册一下，需要加上前缀default.代表对所有的childContext(Service)生效...
+            // 将defaultConfiguration注册一下，需要加上前缀"default."代表对所有的childContext(Service)生效...
             val defaultConfigurations = clientsAttributes["defaultConfiguration"] as Array<Class<*>>
             defaultConfigurations.forEach {
                 registerClientConfiguration(registry, "default." + it.name, arrayOf(it))
@@ -30,13 +28,19 @@ open class RibbonClientConfigurationRegistrar : ImportBeanDefinitionRegistrar {
 
         }
 
-
+        // 处理单个@RibbonClient
         val attributes = annotationMetadata.getAnnotationAttributes(RibbonClient::class.java)
         if (attributes.isNotEmpty()) {
             registerRibbonClient(registry, attributes)
         }
     }
 
+    /**
+     * 处理一个@RibbonClient，将注解当中的相关信息，注册成为Specification
+     *
+     * @param registry registry
+     * @param attributes @RibbonClient当中的配置信息
+     */
     private fun registerRibbonClient(registry: BeanDefinitionRegistry, attributes: Map<String, Any>) {
         registerClientConfiguration(registry, attributes["name"].toString(), attributes["configuration"] as Array<Class<*>>)
     }

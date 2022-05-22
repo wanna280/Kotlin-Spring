@@ -1,22 +1,10 @@
 package com.wanna.cloud.netflix.ribbon
 
-import com.netflix.client.config.CommonClientConfigKey
+import com.netflix.client.config.CommonClientConfigKey.*
 import com.netflix.client.config.DefaultClientConfigImpl
 import com.netflix.client.config.IClientConfig
 import com.netflix.client.config.IClientConfigKey
-import com.netflix.loadbalancer.ConfigurationBasedServerList
-import com.netflix.loadbalancer.DummyPing
-import com.netflix.loadbalancer.ILoadBalancer
-import com.netflix.loadbalancer.IPing
-import com.netflix.loadbalancer.IRule
-import com.netflix.loadbalancer.PollingServerListUpdater
-import com.netflix.loadbalancer.Server
-import com.netflix.loadbalancer.ServerList
-import com.netflix.loadbalancer.ServerListFilter
-import com.netflix.loadbalancer.ServerListUpdater
-import com.netflix.loadbalancer.ZoneAffinityServerListFilter
-import com.netflix.loadbalancer.ZoneAvoidanceRule
-import com.netflix.loadbalancer.ZoneAwareLoadBalancer
+import com.netflix.loadbalancer.*
 import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
 import com.wanna.boot.context.properties.EnableConfigurationProperties
 import com.wanna.framework.beans.factory.annotation.Value
@@ -25,6 +13,20 @@ import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.aware.EnvironmentAware
 import com.wanna.framework.core.environment.Environment
 
+/**
+ * RibbonClient的配置类，RibbonClient要想实现负载均衡，必须组合ILoadBalancer去完成负载均衡，需要使用到ILoadBalancer，
+ * 则需要提供IClientConfig、IRule、IPing、ServerList、ServerFilterList、ServerListUpdater这六个组件，在这个配置类当中，我们都提供默认的；
+ * 在真正地提供负载均衡的Server(ServiceInstance)一方(比如Nacos、Eureka等)，只需要按需替换掉配置的默认配置即可实现让Ribbon去完成负载均衡；
+ * 比如Nacos当中，就替换掉默认的ServerList去让Ribbon知道，Nacos的DiscoveryServer当中根据serviceId能够去，找到哪些实例列表；
+ *
+ * @see IClientConfig
+ * @see IRule
+ * @see IPing
+ * @see ServerListUpdater
+ * @see ServerList
+ * @see ServerListFilter
+ * @see ILoadBalancer
+ */
 @EnableConfigurationProperties
 @Configuration(proxyBeanMethods = false)
 open class RibbonClientConfiguration : EnvironmentAware {
@@ -42,13 +44,9 @@ open class RibbonClientConfiguration : EnvironmentAware {
     open fun ribbonClientConfig(): IClientConfig {
         val config = DefaultClientConfigImpl()
         config.loadProperties(clientName)
-        config.set(
-            CommonClientConfigKey.ConnectTimeout, getProperty(CommonClientConfigKey.ConnectTimeout, 1000)
-        )
-        config.set(
-            CommonClientConfigKey.ReadTimeout, getProperty(CommonClientConfigKey.ReadTimeout, 1000)
-        )
-        config.set(CommonClientConfigKey.GZipPayload, true)
+        config.set(ConnectTimeout, getProperty(ConnectTimeout, 1000))
+        config.set(ReadTimeout, getProperty(ReadTimeout, 1000))
+        config.set(GZipPayload, true)
         return config
     }
 
@@ -91,6 +89,9 @@ open class RibbonClientConfiguration : EnvironmentAware {
         return filter
     }
 
+    /**
+     * ILoadBalancer，去提供负载均衡的Server的选择
+     */
     @Bean
     @ConditionOnMissingBean
     open fun ribbonLoadBalancer(
@@ -108,11 +109,7 @@ open class RibbonClientConfiguration : EnvironmentAware {
         this.environment = environment
     }
 
-    private fun getProperty(
-        connectTimeout: IClientConfigKey<Int>, defaultConnectTimeout: Int
-    ): Int? {
-        return environment!!.getProperty(
-            "ribbon.$connectTimeout", Int::class.java, defaultConnectTimeout
-        )
+    private fun getProperty(connectTimeout: IClientConfigKey<Int>, defaultConnectTimeout: Int): Int? {
+        return environment!!.getProperty("ribbon.$connectTimeout", Int::class.java, defaultConnectTimeout)
     }
 }

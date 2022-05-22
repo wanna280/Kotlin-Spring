@@ -8,7 +8,9 @@ import com.wanna.cloud.nacos.NacosDiscoveryProperties
 import com.wanna.cloud.nacos.NacosServiceManager
 
 /**
- * 这是Nacos针对于Ribbon去进行实现的ServerList
+ * 这是Nacos针对于Ribbon去进行实现的ServerList，主要是为Ribbon的负载均衡去提供Server的选择来源；
+ *
+ * @see AbstractServerList
  */
 open class NacosServerList(
     private val discoveryProperties: NacosDiscoveryProperties,
@@ -26,6 +28,11 @@ open class NacosServerList(
         return getServers()
     }
 
+    /**
+     * 获取Nacos注册中心当中的所有NacosServer实例，需要使用group+serviceId，联合去进行查询
+     *
+     * @return 从NacosServer当中获取到的所有的NacosServer(Nacos Instance)列表
+     */
     private fun getServers(): MutableList<NacosServer> {
         val group = discoveryProperties.group
         val instances = namingService().selectInstances(serviceId, group, true)
@@ -41,6 +48,11 @@ open class NacosServerList(
         return instances.map { NacosServer(it) }.toMutableList()
     }
 
+    /**
+     * 初始化相关的配置，这里主要是初始化serviceId(clientName)，Ribbon会自动自动把相关的信息保存到IClientConfig当中
+     *
+     * @param clientConfig ClientConfig相关信息
+     */
     override fun initWithNiwsConfig(clientConfig: IClientConfig) {
         this.serviceId = clientConfig.clientName
     }

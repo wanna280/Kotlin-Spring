@@ -17,6 +17,8 @@ fun main() {
     val discoveryClient = applicationContext.getBean(DiscoveryClient::class.java)!!
     val instances = discoveryClient.getInstances("wanna")
     val loadBalancerClient = applicationContext.getBean(LoadBalancerClient::class.java)!!
-    loadBalancerClient.choose("wanna")
+    val serviceInstance = loadBalancerClient.choose("wanna")
+
+
     println(applicationContext)
 }

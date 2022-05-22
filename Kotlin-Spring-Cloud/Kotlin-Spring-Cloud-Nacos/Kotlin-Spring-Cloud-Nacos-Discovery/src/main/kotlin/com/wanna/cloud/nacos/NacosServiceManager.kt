@@ -7,6 +7,8 @@ import java.util.Properties
 /**
  * Nacos的Service管理器，它主要支持去进行NamingService的管理工作；
  * 不管是对于Nacos的服务的注册、还是去提供Nacos服务的发现，都需要用到NamingService去进行操作，这个组件的作用就是去提供NamingService的相关操作
+ *
+ * @see NamingService
  */
 open class NacosServiceManager {
 

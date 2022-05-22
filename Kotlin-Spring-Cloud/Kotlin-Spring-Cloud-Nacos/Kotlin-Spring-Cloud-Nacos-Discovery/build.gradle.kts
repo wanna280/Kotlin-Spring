@@ -11,6 +11,8 @@ repositories {
 }
 
 dependencies {
+    testApi(project(":Kotlin-Spring-Web"))
+
     implementation("com.netflix.ribbon:ribbon-loadbalancer:$ribbonVersion")
     implementation("com.netflix.ribbon:ribbon-core:$ribbonVersion")
     implementation(project(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Ribbon"))

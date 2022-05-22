@@ -37,7 +37,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
             // 遍历所有的HandlerMapping获取HandlerExecutionChain去处理本次请求
             val mappedHandler = getHandler(request)
             if (mappedHandler == null) {
-                logger.error("没有找到合适的Handler去处理本次请求")
+                logger.error("没有找到合适的Handler去处理本次请求[path=${request.getUri()}]")
                 return
             }
 

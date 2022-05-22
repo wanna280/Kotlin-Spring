@@ -249,6 +249,9 @@ abstract class AbstractBeanFactory : BeanFactory, ConfigurableBeanFactory, Lista
      */
     override fun <T> getBean(type: Class<T>): T? {
         val beansForType = getBeansForType(type)
+        if (beansForType.isEmpty()) {
+            throw NoSuchBeanDefinitionException("没有这样的BeanDefinition", type)
+        }
         return beansForType.values.iterator().next()
     }
 

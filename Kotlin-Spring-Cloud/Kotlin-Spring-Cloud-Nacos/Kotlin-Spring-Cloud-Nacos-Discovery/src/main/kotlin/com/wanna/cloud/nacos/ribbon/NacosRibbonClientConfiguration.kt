@@ -31,6 +31,12 @@ open class NacosRibbonClientConfiguration {
         return NacosServiceManager()
     }
 
+    /**
+     *
+     * @param discoveryProperties NacosDiscovery的配置信息
+     * @param manager nacos的NamingService的管理器(操作NacosServer的注册服务)
+     * @param config RibbonClient的配置信息
+     */
     @Bean
     @ConditionOnMissingBean
     open fun nacosServerList(
@@ -39,6 +45,7 @@ open class NacosRibbonClientConfiguration {
         config: IClientConfig
     ): NacosServerList {
         val nacosServerList = NacosServerList(discoveryProperties, manager)
+        // 使用clientConfig去对NacosServerList去进行初始化，主要是初始化serviceId
         nacosServerList.initWithNiwsConfig(config)
         return nacosServerList
     }

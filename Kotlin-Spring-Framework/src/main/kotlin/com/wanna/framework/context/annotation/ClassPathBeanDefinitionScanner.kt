@@ -114,7 +114,7 @@ open class ClassPathBeanDefinitionScanner(
      * @param packageName 指定的包名
      */
     open fun findCandidateComponents(packageName: String): Set<BeanDefinition> {
-        return ClassDiscoveryUtils.scan(packageName).map { ScannedGenericBeanDefinition(it) }.toSet()
+        return ClassDiscoveryUtils.scan(packageName).map { ScannedGenericBeanDefinition(it) }.filter { isCandidateComponent(it.getBeanClass()) }.toSet()
     }
 
     /**
@@ -126,7 +126,7 @@ open class ClassPathBeanDefinitionScanner(
         if (clazz == null) {
             return false
         }
-        if (clazz.name.startsWith("java.") || clazz.isInterface) {
+        if (clazz.name.startsWith("java.")) {
             return false
         }
         // 如果被excludeFilter匹配，直接return false
