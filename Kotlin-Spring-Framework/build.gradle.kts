@@ -11,6 +11,7 @@ repositories.flatDir {
 }
 
 dependencies {
+    compileOnly("javax.inject:javax.inject:1")
     compileOnly(project(":Kotlin-Spring-Instrument"))  // compileOnly
     compileOnly("org.aspectj:aspectjweaver:$aspectJVersion")
     implementation(project(":Kotlin-Logger:logger-slf4j-impl"))

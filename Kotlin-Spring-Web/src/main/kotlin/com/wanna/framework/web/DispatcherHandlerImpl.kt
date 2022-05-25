@@ -36,17 +36,18 @@ open class DispatcherHandlerImpl : DispatcherHandler {
         try {
             // 遍历所有的HandlerMapping获取HandlerExecutionChain去处理本次请求
             val mappedHandler = getHandler(request)
+
+            // 如果没有找到合适的Handler，得处理404的情况...
             if (mappedHandler == null) {
-                logger.error("没有找到合适的Handler去处理本次请求[path=${request.getUri()}]")
+                notHandlerFound(request, response)
                 return
             }
 
-            // 获取到处理请求的HandlerAdapter
+            // 获取到处理请求的合适的HandlerAdapter
             val handlerAdapter = getHandlerAdapter(mappedHandler.getHandler())
 
             // 交给所有的HandlerInterceptor去拦截本次请求去进行处理
             if (!mappedHandler.applyPreHandle(request, response)) {
-                logger.error("处理请求当中，其中一个HandlerInterceptor拒绝了本次请求")
                 return
             }
 
@@ -61,7 +62,21 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     }
 
     /**
-     * 遍历已经注册的所有的HandlerAdapter，去找到合适的一个去处理本次请求
+     * 处理没有找到Handler去处理当前mapping的情况(也就是404的情况)
+     *
+     * @param request request
+     * @param response response
+     */
+    protected open fun notHandlerFound(request: HttpServerRequest, response: HttpServerResponse) {
+        if (logger.isWarnEnabled) {
+            logger.warn("没有找到合适的Handler去处理本次请求[path=${request.getUri()}]")
+        }
+        // sendError(404)
+        response.sendError(HttpServerResponse.SC_NOT_FOUND)
+    }
+
+    /**
+     * 遍历已经注册到当前的DispatcherHandler当中的所有的HandlerAdapter，去找到合适的一个去处理本次请求
      *
      * @param handler handler
      * @return 如果找到了合适的Adapter来处理请求的话，return HandlerAdapter

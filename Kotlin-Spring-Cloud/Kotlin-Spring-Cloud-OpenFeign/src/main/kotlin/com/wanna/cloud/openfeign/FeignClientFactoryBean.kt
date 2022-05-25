@@ -16,13 +16,16 @@ import feign.codec.Decoder
 import feign.codec.Encoder
 
 /**
- * FeignClient的FactoryBean
+ * FeignClient的FactoryBean，会将一个@FeignClient注解当中的全部元素解析成为一个FactoryBean；
+ * 方便后期去进行FeignClient的构建，本身是一个FactoryBean，可以通过getTarget方法去回调和创建Bean；
+ * 它负责将给定的FeignClient接口使用JDK动态代理去生成代理对象，方便拦截FeignClient方法，并在运行时能够正确地去执行请求的发送；
+ *
+ * @see FeignClient
+ * @see EnableFeignClients
+ * @see FeignClientsRegistrar
  */
 @Suppress("UNCHECKED_CAST")
 open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, ApplicationContextAware, BeanFactoryAware {
-    private var beanFactory: BeanFactory? = null
-
-    private var applicationContext: ApplicationContext? = null
 
     var type: Class<*>? = null  // type
 
@@ -30,10 +33,17 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
 
     var url: String? = null  // url
 
-    var name: String? = null  // serviceName
+    var name: String? = null  // serviceName(childContextName)
 
     var path: String? = null  // path
 
+    var fallback: Class<*>? = null  // fallback
+
+    var fallbackFactory: Class<*>? = null // fallback Factory
+
+    private var beanFactory: BeanFactory? = null
+
+    private var applicationContext: ApplicationContext? = null
 
     override fun setBeanFactory(beanFactory: BeanFactory) {
         this.beanFactory = beanFactory
@@ -79,11 +89,12 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
         val client = getOptional(context, Client::class.java)
         if (client != null) {
             // 1.如果是LoadBalancerFeignClient的话，应该获取它包装的client(提供ApacheHttpClient/OkHttp)
-            val clientToUse = if (client is RibbonLoadBalancerFeignClient) {
-                client.delegate
-            } else {
-                client
-            }
+            val clientToUse =
+                if (client is RibbonLoadBalancerFeignClient) {
+                    client.delegate
+                } else {
+                    client
+                }
             feign.client(clientToUse)
         }
         // 获取Targeter
@@ -113,7 +124,7 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
      * * (3)Contract-->扩展Feign默认的Contract，完成SpringMvc的相关注解的解析
      *
      * @param context FeignContext
-     * @return Feign.Builder
+     * @return 完成初始化之后的Feign.Builder
      */
     private fun feign(context: FeignContext): Feign.Builder {
         val feign = get(context, Feign.Builder::class.java)
@@ -142,17 +153,29 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
         throw IllegalStateException("没有找到用来去进行复杂均衡的FeignClient LoadBalancer")
     }
 
+    /**
+     * 从childContext当中去获取指定类型的Bean(获取不到抛异常)
+     *
+     * @param context FeignContext
+     * @param type 想要获取的类型
+     * @return return 获取到的Bean，如果获取到了return Bean；如果没有获取到，直接抛出异常
+     */
     protected open fun <T> get(context: FeignContext, type: Class<T>): T {
         return context.getInstance(contextId!!, type)!!
     }
 
+    /**
+     * 从childContext当中去获取指定类型的Bean(可选)
+     *
+     * @param context FeignContext
+     * @param type 想要获取的类型
+     * @return return 获取到的Bean，如果获取到了return Bean；如果没有获取到，return null
+     */
     protected open fun <T> getOptional(context: FeignContext, type: Class<T>): T? {
         return context.getInstance(contextId!!, type)
     }
 
-
     override fun isSingleton() = true
-
     override fun isPrototype() = false
 
     override fun afterPropertiesSet() {

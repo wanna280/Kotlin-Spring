@@ -1,6 +1,7 @@
 package com.wanna.boot.autoconfigure.web.mvc
 
 import com.wanna.framework.context.ApplicationContext
+import com.wanna.framework.core.util.StringUtils
 import com.wanna.framework.web.DispatcherHandler
 import com.wanna.framework.web.bind.RequestMethod
 import com.wanna.framework.web.server.HttpServerRequest
@@ -37,8 +38,20 @@ class NettyServerHandler(private val applicationContext: ApplicationContext) : C
     private fun sendResponse(response: HttpServerResponse, ctx: ChannelHandlerContext) {
         val outputStream = response.getOutputStream()
         val responseByteBuf = Unpooled.copiedBuffer((outputStream as ByteArrayOutputStream).toByteArray())
-        val httpResponse = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, responseByteBuf)
-        httpResponse.headers()["content-type"] = "application/json"
+
+        // 构建响应状态码
+        val responseStatus = if (StringUtils.hasText(response.getMessage())) HttpResponseStatus.valueOf(
+            response.getStatusCode(), response.getMessage()
+        ) else HttpResponseStatus.valueOf(response.getStatusCode())
+
+        val httpResponse = DefaultFullHttpResponse(HttpVersion.HTTP_1_1, responseStatus, responseByteBuf)
+
+        // 添加header
+        response.getHeaders().forEach(httpResponse.headers()::add)
+
+        httpResponse.headers()["Content-Type"] = response.getContentType()
+
+        // write And Flush
         ctx.writeAndFlush(httpResponse)
     }
 

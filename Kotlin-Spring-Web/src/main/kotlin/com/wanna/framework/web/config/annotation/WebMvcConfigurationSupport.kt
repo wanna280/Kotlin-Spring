@@ -108,7 +108,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         return composite
     }
 
-    protected fun getArgumentResolvers(): List<HandlerMethodArgumentResolver> {
+    protected open fun getArgumentResolvers(): List<HandlerMethodArgumentResolver> {
         var argumentResolvers = this.argumentResolvers
         if (argumentResolvers == null) {
             argumentResolvers = ArrayList()
@@ -119,7 +119,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     }
 
 
-    protected fun getReturnValueResolvers(): List<HandlerMethodReturnValueHandler> {
+    protected open fun getReturnValueResolvers(): List<HandlerMethodReturnValueHandler> {
         var handlers = this.returnValueHandlers
         if (handlers == null) {
             handlers = ArrayList()
@@ -137,7 +137,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
      *
      * Note: configure是直接替换默认的，extends是在默认的基础上去进行扩展
      */
-    protected fun getMessageConverters(): MutableList<HttpMessageConverter<*>> {
+    protected open fun getMessageConverters(): MutableList<HttpMessageConverter<*>> {
         var messageConverters = this.messageConverters
         if (messageConverters == null) {
             messageConverters = ArrayList()
@@ -153,7 +153,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     /**
      * 应用默认的MessageConverter列表
      */
-    protected fun applyDefaultMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
+    protected open fun applyDefaultMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
         converters += MappingJackson2HttpMessageConverter()
     }
 
@@ -168,7 +168,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     /**
      * 获取Interceptor列表，交给子类去进行扩展
      */
-    protected fun getInterceptors(): Array<Any> {
+    protected open fun getInterceptors(): Array<Any> {
         var interceptors = this.interceptors
         if (interceptors == null) {
             val registry = InterceptorRegistry()
@@ -184,7 +184,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     /**
      * 应用默认的异常解析器
      */
-    protected fun applyDefaultHandlerExceptionResolver(
+    protected open fun applyDefaultHandlerExceptionResolver(
         resolvers: MutableList<HandlerExceptionResolver>, contentNegotiationManager: ContentNegotiationManager
     ) {
         val exceptionHandlerExceptionResolver = ExceptionHandlerExceptionResolver()

@@ -21,7 +21,6 @@ open class HttpClientFeignLoadBalancedConfiguration {
     @Bean
     @ConditionOnMissingBean
     open fun loadBalancerFeignClient(springClientFactory: SpringClientFactory, httpClient: HttpClient): Client {
-        val delegate = ApacheHttpClient(httpClient)
-        return RibbonLoadBalancerFeignClient(springClientFactory, delegate)
+        return RibbonLoadBalancerFeignClient(springClientFactory, ApacheHttpClient(httpClient))
     }
 }

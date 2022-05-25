@@ -23,7 +23,7 @@ interface MyFeignClient {
 data class User(val id: String, val name: String)
 
 fun main() {
-    val applicationContext = runSpringApplication<FeignTest>() {
+    val applicationContext = runSpringApplication<FeignTest> {
         setApplicationType(ApplicationType.NONE)
     }
     val feignClient = applicationContext.getBean(MyFeignClient::class.java)!!

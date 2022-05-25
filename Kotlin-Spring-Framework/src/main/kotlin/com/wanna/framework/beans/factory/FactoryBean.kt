@@ -6,22 +6,22 @@ package com.wanna.framework.beans.factory
 interface FactoryBean<T> {
 
     /**
-     * 获取要导入的组件的类型
+     * 获取当前的FactoryBean要导入的组件的类型
      */
     fun getObjectType(): Class<T>
 
     /**
-     * 获取要给容器中导入的组件对象
+     * 获取要给容器中导入的组件对象(FactoryBeanObject)
      */
     fun getObject(): T
 
     /**
-     * 是否是单例的？
+     * 要导入的FactoryBeanObject是否是单例的？
      */
     fun isSingleton(): Boolean
 
     /**
-     * 是否是原型的？
+     * 要导入的FactoryBeanObject是否是原型的？
      */
     fun isPrototype(): Boolean
 }

@@ -1,6 +1,5 @@
 package com.wanna.framework.web.method.annotation
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.context.request.NativeWebRequest
@@ -75,6 +74,7 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
             }
         }
 
+        // 根据MediaType的具体程度以及权重去进行MediaType的排序
         MediaType.sortBySpecificityAndQuality(mediaTypesToUse)
 
         var mediaTypeToUse: MediaType? = null
@@ -84,11 +84,15 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
                 break
             }
         }
+
+        // 遍历所有的MessageConverter，挨个去判断它能否完成将当前的返回值类型写出成为指定的MediaType
+        // 如果它支持去进行写出的话，那么就使用该HttpMessageConverter去完成消息的写出
         if (mediaTypeToUse != null) {
             this.messageConverters.forEach {
                 if (it.canWrite(parameterType, mediaTypeToUse)) {
                     if (value != null) {
                         (it as HttpMessageConverter<T>).write(value, mediaTypeToUse, outputMessage)
+                        return@forEach
                     }
                 }
             }
@@ -116,9 +120,9 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
     }
 
     /**
-     * 获取服务端所能产出的全部MediaType类型
+     * 获取服务端所能产出的全部MediaType类型的列表
      *
-     * @param request
+     * @param request request
      * @return 服务端能够产生的全部MediaType
      */
     private fun getProducibleMediaTypes(request: HttpServerRequest, valueType: Class<*>): List<MediaType> {
@@ -130,7 +134,7 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
     }
 
     /**
-     * 获取更加具体的媒体类型
+     * 根据想要接收的媒体类型以及可以产出的媒体类型，获取更加具体的媒体类型
      *
      * @param acceptType 可以接收的类型
      * @param produceType 可以产出的类型
@@ -141,6 +145,11 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
         return if (MediaType.SPECIFICITY_COMPARATOR.compare(acceptType, produceToUse) < 0) acceptType else produceToUse
     }
 
+    /**
+     * 设置内容协商管理器，去替换掉默认的ContentNegotiationManager
+     *
+     * @param contentNegotiationManager 你想要使用的ContentNegotiationManager
+     */
     open fun setContentNegotiationManager(contentNegotiationManager: ContentNegotiationManager) {
         this.contentNegotiationManager = contentNegotiationManager
     }

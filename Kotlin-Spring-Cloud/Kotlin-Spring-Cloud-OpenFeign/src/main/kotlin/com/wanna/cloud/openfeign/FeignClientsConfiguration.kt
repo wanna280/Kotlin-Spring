@@ -1,6 +1,9 @@
 package com.wanna.cloud.openfeign
 
+import com.wanna.boot.autoconfigure.condition.ConditionOnClass
 import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionOnMissingClass
+import com.wanna.cloud.client.circuitbreaker.CircuitBreaker
 import com.wanna.cloud.openfeign.support.SpringDecoder
 import com.wanna.cloud.openfeign.support.SpringEncoder
 import com.wanna.cloud.openfeign.support.SpringMvcContract
@@ -15,6 +18,7 @@ import com.wanna.framework.web.http.converter.HttpMessageConverter
 import com.wanna.framework.web.http.converter.json.MappingJackson2HttpMessageConverter
 import feign.Contract
 import feign.Feign
+import feign.Retryer
 import feign.codec.Decoder
 import feign.codec.Encoder
 
@@ -29,11 +33,11 @@ open class FeignClientsConfiguration {
         return DefaultFormattingConversionService()
     }
 
+
     @Bean
     @ConditionOnMissingBean
-    @Scope(BeanDefinition.SCOPE_PRTOTYPE)
-    open fun feign(): Feign.Builder {
-        return Feign.builder()
+    open fun feignRetryer(): Retryer {
+        return Retryer.NEVER_RETRY
     }
 
     @Bean
@@ -64,5 +68,27 @@ open class FeignClientsConfiguration {
     @ConditionOnMissingBean
     open fun messageConverters(): HttpMessageConverter<*> {
         return MappingJackson2HttpMessageConverter()
+    }
+
+    @ConditionOnClass(name = ["com.wanna.cloud.client.circuitbreaker.CircuitBreaker"])
+    @Configuration(proxyBeanMethods = false)
+    open class CircuitBreakerPresentFeignBuilderConfiguration {
+
+        @Bean
+        @Scope(BeanDefinition.SCOPE_PRTOTYPE)
+        fun circuitBreakerFeignBuilder(): Feign.Builder {
+            return FeignCircuitBreaker.builder()
+        }
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @ConditionOnMissingClass(["com.wanna.cloud.client.circuitbreaker.CircuitBreaker"])
+    open class DefaultFeignBuilderConfiguration {
+        @Bean
+        @ConditionOnMissingBean
+        @Scope(BeanDefinition.SCOPE_PRTOTYPE)
+        open fun feignBuilder(retryer: Retryer): Feign.Builder {
+            return Feign.builder().retryer(retryer)
+        }
     }
 }

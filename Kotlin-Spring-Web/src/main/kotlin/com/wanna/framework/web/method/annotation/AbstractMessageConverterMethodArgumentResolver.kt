@@ -54,7 +54,10 @@ abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArg
 
         // 如果required=true，但是当前解析的结果为空，丢异常
         if (arg == null && checkRequired(parameter)) {
-            throw HttpMessageNotReadableException("读取HttpMessage失败, @RequestBody的required=true，但是HTTP请求当中没有RequestBody", inputMessage)
+            throw HttpMessageNotReadableException(
+                "读取HttpMessage失败, @RequestBody的required=true，但是HTTP请求当中没有RequestBody",
+                inputMessage
+            )
         }
         return arg
     }
@@ -84,11 +87,10 @@ abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArg
         inputMessage: HttpInputMessage, parameter: MethodParameter, type: Type
     ): Any? {
         val contentType: String = inputMessage.getHeaders()["Content-Type"] ?: ""
-        var mediaType: MediaType? = null
-        try {
-            mediaType = MediaType.parseMediaType(contentType)
+        val mediaType = try {
+            MediaType.parseMediaType(contentType)
         } catch (ex: Exception) {
-            mediaType = null
+            null
         }
         var targetClass: Class<T>? = if (type is Class<*>) type as Class<T> else null
         if (targetClass == null) {
@@ -101,7 +103,7 @@ abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArg
         try {
             message = EmptyBodyCheckingHttpInputMessage(inputMessage)
             this.messageConverters.forEach {
-                if(message.hasBody()) {
+                if (message.hasBody()) {
                     if (it.canRead(targetClass, mediaType)) {
                         body = (it as HttpMessageConverter<T>).read(targetClass, message)
                     }
@@ -129,7 +131,8 @@ abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArg
     private class EmptyBodyCheckingHttpInputMessage(inputMessage: HttpInputMessage) : HttpInputMessage {
 
         companion object {
-            private val EMPTY_INPUT_STREAM = ByteArrayInputStream(ByteArray(0))
+            // 一个空的InputStream，使用ByteArrayInputStream去进行构造
+            private val EMPTY_INPUT_STREAM: InputStream = ByteArrayInputStream(ByteArray(0))
         }
 
         private var headers = inputMessage.getHeaders()
@@ -145,7 +148,7 @@ abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArg
                 this.body = if (inputStream.read() != -1) inputStream else null
                 inputStream.reset()
 
-                // 如果该inputStream不支持mark，那么需要创建一个支持回退的IntputStream去进行包装
+                // 如果该inputStream不支持mark，那么需要创建一个支持回退的InputStream去进行包装
             } else {
                 val pushBackInputStream = PushbackInputStream(inputStream)
                 val read = pushBackInputStream.read()
@@ -158,16 +161,10 @@ abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArg
             }
         }
 
-        fun hasBody(): Boolean {
-            return this.body != null
-        }
+        fun hasBody(): Boolean = this.body != null
 
-        override fun getBody(): InputStream {
-            return body ?: EMPTY_INPUT_STREAM
-        }
+        override fun getBody() = body ?: EMPTY_INPUT_STREAM
 
-        override fun getHeaders(): Map<String, String> {
-            return this.headers
-        }
+        override fun getHeaders() = this.headers
     }
 }

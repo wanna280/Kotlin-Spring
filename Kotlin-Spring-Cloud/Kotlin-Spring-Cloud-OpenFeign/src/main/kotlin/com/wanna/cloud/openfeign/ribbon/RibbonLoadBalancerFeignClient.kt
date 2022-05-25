@@ -23,8 +23,8 @@ open class RibbonLoadBalancerFeignClient(val springClientFactory: SpringClientFa
 
         // 使用Ribbon的LoadBalancer，从注册中心(ServiceRegistry)当中去获取到一个合适的ServiceInstance实例
         val loadBalancer = springClientFactory.getInstance(serviceId, ILoadBalancer::class.java)!!
-        val server =
-            loadBalancer.chooseServer(serviceId) ?: throw IllegalStateException("没有从注册中心当中找到合适的ServiceInstance去处理本次请求")
+        val server = loadBalancer.chooseServer(serviceId)
+            ?: throw IllegalStateException("没有从注册中心当中找到合适的ServiceInstance去处理本次请求")
 
         // 解析成为一个正确的uri，并构建一个新的request去执行真正的请求的发送
         val path = uri.scheme + "://" + server.hostPort + getCleanPath(uri.path)

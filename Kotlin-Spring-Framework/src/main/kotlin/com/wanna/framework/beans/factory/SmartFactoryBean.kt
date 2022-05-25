@@ -1,7 +1,9 @@
 package com.wanna.framework.beans.factory
 
 /**
- * 这是一个更加只能的FactoryBean，它能决定FactoryBean是否应该被懒加载
+ * 这是一个更加智能的FactoryBean，它能决定一个FactoryBean是否应该被懒加载
+ *
+ * @see FactoryBean
  */
 interface SmartFactoryBean<T> : FactoryBean<T> {
 

@@ -3,9 +3,7 @@ package com.wanna.framework.beans.factory.support
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.SmartInitializingSingleton
 import com.wanna.framework.beans.TypeConverter
-import com.wanna.framework.beans.factory.BeanFactory
-import com.wanna.framework.beans.factory.FactoryBean
-import com.wanna.framework.beans.factory.SmartFactoryBean
+import com.wanna.framework.beans.factory.*
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
@@ -13,13 +11,17 @@ import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.exception.BeanNotOfRequiredTypeException
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
+import com.wanna.framework.core.ParameterNameDiscoverer
+import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.comparator.OrderComparator
 import com.wanna.framework.core.util.BeanFactoryUtils
 import com.wanna.framework.core.util.ClassUtils
+import java.lang.reflect.Type
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import java.util.function.Predicate
+import javax.inject.Provider
 
 
 /**
@@ -30,6 +32,18 @@ import java.util.function.Predicate
  */
 open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDefinitionRegistry,
     AbstractAutowireCapableBeanFactory() {
+
+    companion object {
+        private var javaxInjectProviderClass: Class<*>? = null  // javax.inject.Provider--->对应于Spring家的ObjectProvider
+
+        init {
+            try {
+                javaxInjectProviderClass = Class.forName("javax.inject.Provider")
+            } catch (ignored: ClassNotFoundException) {
+
+            }
+        }
+    }
 
     // beanDefinitionMap，使用ConcurrentHashMap去保证线程安全，也会作为操作beanDefinitionNames和manualSingletonNames的锁对象
     private val beanDefinitionMap = ConcurrentHashMap<String, BeanDefinition>()
@@ -74,7 +88,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
         beanDefinitionNames.forEach { beanName ->
             val mbd: RootBeanDefinition = getMergedBeanDefinition(beanName)
-            // 如果该Bean是单例的、非抽象的、非懒加载的
+            // 如果该Bean是单例的、非抽象的、非懒加载的，那么需要在这里去完成初始化...
             if (mbd.isSingleton() && !mbd.isAbstract() && !mbd.isLazyInit()) {
                 if (isFactoryBean(beanName)) {
                     val bean = getBean(BeanFactory.FACTORY_BEAN_PREFIX + beanName)
@@ -93,7 +107,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             }
         }
 
-        // 在初始化完所有的单实例Bean之后，需要回调所有的SmartInitializingSingleton
+        // 在初始化完所有的单实例Bean之后，需要回调所有的SmartInitializingSingleton，完成Bean的初始化工作...
         beanDefinitionNames.forEach {
             val singleton = getSingleton(it, false)
             if (singleton is SmartInitializingSingleton) {
@@ -165,8 +179,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         // 如果包含单实例BeanDefinition的话，那么我们拿它的BeanDefinition去进行匹配
         if (containsBeanDefinition(beanName)) {
             return resolver.isAutowireCandidate(
-                BeanDefinitionHolder(getMergedBeanDefinition(beanName), beanName),
-                descriptor
+                BeanDefinitionHolder(getMergedBeanDefinition(beanName), beanName), descriptor
             )
 
             // 如果包含SingletonBean，但是没有BeanDefinition的话，我们这里构建一个BeanDefinition去适配一下
@@ -176,6 +189,131 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             )
         }
         return true
+    }
+
+    private interface BeanObjectProvider<T> : ObjectProvider<T>, java.io.Serializable
+
+    /**
+     * 方便去进行内部的依赖的解析，因此，这里需要将ObjectFactory的泛型类型去进行作为真正的依赖类型，这里我们进行包装一下
+     */
+    private class InnerDependencyDescriptor(
+        private val descriptor: DependencyDescriptor, private val type: ResolvableType,
+    ) : DependencyDescriptor(null, null, false, false) {
+
+        private var required: Boolean? = null
+
+        // 如果指定了required，那么使用自定义的，不然就使用origin的
+        constructor(descriptor: DependencyDescriptor, type: ResolvableType, required: Boolean) : this(
+            descriptor, type
+        ) {
+            this.required = required
+        }
+
+        override fun getMethodParameter(): com.wanna.framework.core.MethodParameter? {
+            return descriptor.getMethodParameter()
+        }
+
+        override fun getAnnotations(): Array<Annotation> {
+            return descriptor.getAnnotations()
+        }
+
+        override fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T? {
+            return descriptor.getAnnotation(annotationClass)
+        }
+
+        override fun initParameterNameDiscoverer(parameterNameDiscoverer: ParameterNameDiscoverer?) {
+            descriptor.initParameterNameDiscoverer(parameterNameDiscoverer)
+        }
+
+        override fun getGenericType(): Type {
+            return descriptor.getGenericType()
+        }
+
+        override fun getContainingClass(): Class<*>? {
+            return descriptor.getContainingClass()
+        }
+
+        override fun setContainingClass(containingClass: Class<*>?) {
+            descriptor.setContainingClass(containingClass)
+        }
+
+        override fun getParameterIndex(): Int {
+            return descriptor.getParameterIndex()
+        }
+
+        override fun getMethodName(): String? {
+            return descriptor.getMethodName()
+        }
+
+        override fun getDeclaringClass(): Class<*> {
+            return descriptor.getDeclaringClass()
+        }
+
+        override fun getParameterTypes(): Array<Class<*>>? {
+            return descriptor.getParameterTypes()
+        }
+
+        override fun getFieldName(): String? {
+            return descriptor.getFieldName()
+        }
+
+        override fun isRequired(): Boolean {
+            return required ?: descriptor.isRequired()
+        }
+
+        override fun isEager(): Boolean {
+            return descriptor.isEager()
+        }
+
+        override fun getDependencyType(): Class<*> {
+            return type.resolve()!!
+        }
+
+        override fun getResolvableType(): ResolvableType {
+            return type
+        }
+    }
+
+    /**
+     * 用来完成Dependency的解析的ObjectProvider，为获取Java对象提供懒加载的机制去进行实现
+     *
+     * @param originDescriptor 原始依赖描述符
+     * @param beanName beanName
+     */
+    private open inner class DependencyObjectProvider(
+        private val originDescriptor: DependencyDescriptor, private val beanName: String?
+    ) : BeanObjectProvider<Any> {
+
+        // 获取ObjectFactory的泛型类型...
+        private val type = originDescriptor.getResolvableType().`as`(ObjectFactory::class.java).getGenerics()[0]
+
+        override fun getObject(): Any {
+            val descriptorToUse = InnerDependencyDescriptor(originDescriptor, type)
+            return doResolveDependency(descriptorToUse, beanName, null, null)
+                ?: throw NoSuchBeanDefinitionException(originDescriptor.getResolvableType().toString())
+        }
+
+        override fun getIfAvailable(): Any? {
+            return try {
+                val descriptorToUse = InnerDependencyDescriptor(originDescriptor, type, false)
+                doResolveDependency(descriptorToUse, beanName, null, null)
+            } catch (ex: Exception) {
+                null
+            }
+        }
+    }
+
+    private inner class Jsr330Factory : java.io.Serializable {
+        fun createDependencyProvider(descriptor: DependencyDescriptor, beanName: String?): Provider<Any> {
+            return Jsr330Provider(descriptor, beanName)
+        }
+    }
+
+    private inner class Jsr330Provider(descriptor: DependencyDescriptor, beanName: String?) :
+        DependencyObjectProvider(descriptor, beanName), Provider<Any> {
+        override fun get(): Any {
+            return getObject()
+        }
     }
 
     override fun resolveDependency(descriptor: DependencyDescriptor, requestingBeanName: String?): Any? {
@@ -190,7 +328,17 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     ): Any? {
         // 初始化参数名的发现器，方便后续的过程当中，去进行方法/构造器的参数名获取
         descriptor.initParameterNameDiscoverer(getParameterNameDiscoverer())
-        // TODO 需要对要进行注入的元素的@Lazy注解的检查，如果必要的话，需要生成代理
+
+        // 如果要求注入的是一个ObjectFactory/ObjectProvider的话，那么...去进行构建一个ObjectProvider
+        if (descriptor.getDependencyType() == ObjectFactory::class.java || descriptor.getDependencyType() == ObjectProvider::class.java) {
+            return DependencyObjectProvider(descriptor, requestingBeanName)
+
+            // 如果要求注入的是Jsr330的Provider，那么在这里去进行create
+        } else if (descriptor.getDependencyType() == javaxInjectProviderClass){
+            return Jsr330Factory().createDependencyProvider(descriptor, requestingBeanName)
+        }
+
+        // 如果必要的话，对@Lazy注解的Bean去进行生成代理...
         var result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(descriptor, requestingBeanName)
         if (result == null) {
             // 从容器中去进行解析真正的依赖
@@ -202,7 +350,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     open fun doResolveDependency(
         descriptor: DependencyDescriptor,
         requestingBeanName: String?,
-        autowiredBeanName: MutableSet<String>?,
+        autowiredBeanNames: MutableSet<String>?,
         typeConverter: TypeConverter?
     ): Any? {
         val type = descriptor.getDependencyType()
@@ -210,8 +358,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         // 从AutowireCandidateResolve获取建议进行设置的值，主要用来处理@Value注解
         val value = getAutowireCandidateResolver().getSuggestedValue(descriptor)
         if (value != null) {
-            // 如果value是String类型，那么需要使用嵌入式的值解析器完成解析...
-            // TODO 在这里需要完成SpEL表达式的解析，以及嵌入式值解析器的解析工作
+            // 如果value是String类型，那么需要使用嵌入式的值解析器完成解析...(SpEL呢？)
             if (value is String) {
                 return this.resolveEmbeddedValue(value)
             }
@@ -219,7 +366,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         }
 
         // 解析要进行注入的元素是多个Bean的情况，例如Collection/Map/Array等情况
-        val multipleBeans = resolveMultipleBeans(descriptor, requestingBeanName, autowiredBeanName, typeConverter)
+        val multipleBeans = resolveMultipleBeans(descriptor, requestingBeanName, autowiredBeanNames, typeConverter)
         if (multipleBeans != null) {
             return multipleBeans
         }
@@ -233,22 +380,24 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             }
             return null
         }
-        var autowiredBeanName: String? = null  // 要进行autowire的beanName
+        val autowiredBeanName: String?  // 要进行autowire的beanName
         var instanceCandidate: Any? = null  // 要进行注入的bean
 
         // 如果找到了众多的候选Bean
         if (candidates.size > 1) {
-            // TODO 从众多的候选Bean当中选择出来一个合适的Bean的beanName
+            // 根据Order和Primary去进行决策...
             autowiredBeanName = determineAutowireCandidate(candidates, descriptor)
             if (autowiredBeanName != null) {
                 instanceCandidate = candidates[autowiredBeanName]
             }
-            // 如果就找到一个合适的候选Bean，那么这个Bean就是最终的候选Bean
+            // 如果就找到一个合适的候选Bean，那么这个Bean就是最终的候选Bean(毫无疑问)
         } else {
             autowiredBeanName = candidates.iterator().next().key
             instanceCandidate = candidates.iterator().next().value
         }
-
+        if (autowiredBeanNames != null && autowiredBeanName != null) {
+            autowiredBeanNames.add(autowiredBeanName)
+        }
         var result = instanceCandidate
         if (result == null) {
             if (descriptor.isRequired()) {
@@ -256,6 +405,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             }
             result = null
         }
+
         if (result != null && !type.isInstance(result)) {
             throw BeanNotOfRequiredTypeException("给定的类型为[requiredType=$type]，找到的Bean类型为[type=${result::class.java}]不匹配")
         }
@@ -368,11 +518,11 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             }
         }
 
-        // 2.遍历容器中的所有类型去进行匹配
+        // 2.遍历容器中的所有的类型匹配的Bean，去进行挨个地匹配...为了AutowireCandidate的Bean
         candidateNames.forEach {
             // 从DependencyDescriptor当中解析到合适的依赖
             if (isAutowireCandidate(it, descriptor)) {
-                result[it] = descriptor.resolveCandidate(it, requiredType, this) as Any
+                result[it] = descriptor.resolveCandidate(it, requiredType, this)
             }
         }
 
@@ -438,13 +588,10 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             // 找到所有的候选类型的Bean
             val candidates = findAutowireCandidates(requestingBeanName, valueType!!, descriptor)
 
-            val collection: MutableCollection<Any>
-            if (type == Set::class.java) {
-                collection = LinkedHashSet()
-            } else if (type == List::class.java) {
-                collection = ArrayList()
-            } else {
-                collection = type.getDeclaredConstructor().newInstance() as MutableCollection<Any>
+            val collection = when (type) {
+                Set::class.java -> LinkedHashSet()
+                List::class.java -> ArrayList()
+                else -> type.getDeclaredConstructor().newInstance() as MutableCollection<Any>
             }
             candidates.values.forEach(collection::add)
             autowiredBeanName?.addAll(candidates.keys)
@@ -628,6 +775,14 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         return beans
     }
 
+    /**
+     * 给定具体类型(type)，去容器中找到所有的类型匹配的单实例Bean
+     *
+     * Note：这里不能去getBean的，只能从BeanDefinition当中去进行匹配...
+     *
+     * @param type beanType
+     * @return beanType对应的beanName列表
+     */
     override fun getBeanNamesForType(type: Class<*>): List<String> {
         val beanNames = ArrayList<String>()
         getBeanDefinitionNames().forEach { beanName ->

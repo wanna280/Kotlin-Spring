@@ -13,6 +13,7 @@ import kotlin.reflect.KClass
  * @param configuration 该context当中的配置类列表
  * @param url 请求的url(如果没有url，将会使用FeignClientName作为serviceName)
  * @param fallback 指定FeignClient的Fallback，指定的Class必须是一个合法的SpringBean，并且实现标注这个注解的FeignClient接口
+ * @param fallbackFactory 创建fallback的Factory
  */
 annotation class FeignClient(
     val value: String = "",
@@ -21,5 +22,6 @@ annotation class FeignClient(
     val path: String = "",
     val url: String = "",
     val configuration: Array<KClass<*>> = [],
-    val fallback: KClass<*> = Unit::class
+    val fallback: KClass<*> = Void::class,
+    val fallbackFactory: KClass<*> = Void::class
 )

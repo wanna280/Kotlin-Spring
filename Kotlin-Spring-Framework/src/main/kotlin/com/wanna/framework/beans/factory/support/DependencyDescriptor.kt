@@ -12,7 +12,7 @@ import java.lang.reflect.Type
  * 在Spring当中需要去进行依赖的解析时，就会将依赖的相关信息都封装成为一个DependencyDescriptor，方便BeanFactory当中可以对依赖去进行解析工作
  */
 open class DependencyDescriptor
-private constructor(
+protected constructor(
     private val field: Field?,
     private val parameter: MethodParameter?,
     private val required: Boolean,
@@ -23,7 +23,7 @@ private constructor(
     constructor(parameter: MethodParameter?, required: Boolean) : this(null, parameter, required)
     constructor(parameter: MethodParameter?, required: Boolean, eager: Boolean) : this(null, parameter, required, eager)
 
-    private var declaringClass: Class<*> = if (field != null) field.declaringClass else parameter!!.getDeclaringClass()
+    private var declaringClass: Class<*>? = if (field != null) field.declaringClass else parameter?.getDeclaringClass()
 
     // 字段名(描述的是一个字段时才生效)
     private var fieldName: String? = field?.name
@@ -92,7 +92,7 @@ private constructor(
     open fun getMethodName(): String? = methodName
 
     // 获取方法/字段/构造器所在的定义的类
-    open fun getDeclaringClass(): Class<*> = declaringClass
+    open fun getDeclaringClass(): Class<*> = declaringClass!!
 
     // 获取方法的参数类型列表，如果描述的不是一个方法，那么return null
     open fun getParameterTypes(): Array<Class<*>>? = parameterTypes
@@ -107,13 +107,15 @@ private constructor(
     /**
      * 返回依赖的类型，如果是字段返回字段类型，如果是方法参数返回方法参数的类型
      */
-    open fun getDependencyType(): Class<*> = parameter?.getParameterType() ?: field!!.type
+    open fun getDependencyType(): Class<*> {
+        return parameter?.getParameterType() ?: field!!.type
+    }
 
     /**
      * 提供解析候选Bean的方式，默认实现为从容器中获取
      */
-    open fun resolveCandidate(beanName: String, requiredType: Class<*>, beanFactory: BeanFactory): Any? {
-        return beanFactory.getBean(beanName)
+    open fun resolveCandidate(beanName: String, requiredType: Class<*>, beanFactory: BeanFactory): Any {
+        return beanFactory.getBean(beanName)!!
     }
 
     /**

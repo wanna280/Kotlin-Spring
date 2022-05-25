@@ -37,19 +37,19 @@ abstract class AbstractBeanFactory : BeanFactory, ConfigurableBeanFactory, Lista
     // beanClassLoader
     private var beanClassLoader: ClassLoader = ClassLoader.getSystemClassLoader()
 
-    // ConversionService
+    // ConversionService，提供Spring BeanFactory的类型的转换
     private var conversionService: ConversionService? = null
 
     // 已经完成合并的BeanDefinition的Map
     private val mergedBeanDefinitions: ConcurrentHashMap<String, RootBeanDefinition> = ConcurrentHashMap()
 
-    // 在BeanFactory当中已经完成注册的Scope列表，处于singleton/prototype的所有Scope，都会被注册到这里
+    // 在BeanFactory当中已经完成注册的Scope列表，除了(except)singleton/prototype的所有Scope，都会被注册到这里
     private val scopes: MutableMap<String, Scope> = LinkedHashMap()
 
     // 类型转换器
     private var typeConverter: TypeConverter? = null
 
-    // 嵌入式的值解析器列表
+    // 存放BeanFactory当中的所有嵌入式的值解析器
     private val embeddedValueResolvers: MutableList<StringValueResolver> = ArrayList()
 
     // BeanFactory当中需要维护的BeanPostProcessor列表
@@ -58,7 +58,8 @@ abstract class AbstractBeanFactory : BeanFactory, ConfigurableBeanFactory, Lista
     // BeanPostProcessorCache
     private var beanPostProcessorCache: BeanPostProcessorCache? = null
 
-    // applicationStartup，默认情况下什么都不做，如果用户想要获取到Application启动当中的相关信息，只需要将ApplicationStartup替换为自定义的即可
+    // applicationStartup，默认情况下什么都不做
+    // 如果用户想要获取到Application启动当中的相关信息，只需要将ApplicationStartup替换为自定义的即可
     private var applicationStartup: ApplicationStartup = ApplicationStartup.DEFAULT
 
     // Logger
@@ -79,10 +80,9 @@ abstract class AbstractBeanFactory : BeanFactory, ConfigurableBeanFactory, Lista
 
     /**
      * 这是一个BeanPostProcessorCache，对各种类型的BeanPostProcessor去进行分类，每次对BeanPostProcessor列表去进行更改(添加/删除)
-     * 都需要将BeanPostProcessorCache去进行clear掉(引用设置为null，变相clear)
+     * 都需要**自行**地将BeanPostProcessorCache去进行clear掉(引用设置为null，变相clear)
      */
     class BeanPostProcessorCache {
-
         // 干涉实例化的BeanPostProcessor(实例化之前、实例化之后、填充属性)
         val instantiationAwareCache = ArrayList<InstantiationAwareBeanPostProcessor>()
 
@@ -140,7 +140,7 @@ abstract class AbstractBeanFactory : BeanFactory, ConfigurableBeanFactory, Lista
         // 尝试从单实例Bean的注册中心当中去获取Bean
         val sharedInstance = getSingleton(beanName)
 
-        // 这里其实还需要判断FactoryBean
+        // TODO: 这里其实还需要判断FactoryBean...
         if (sharedInstance != null) {
             return getObjectForBeanInstance(sharedInstance, name, beanName, null)
         }
@@ -461,7 +461,7 @@ abstract class AbstractBeanFactory : BeanFactory, ConfigurableBeanFactory, Lista
      * @param mbd
      */
     protected open fun requiresDestruction(bean: Any, mbd: RootBeanDefinition): Boolean {
-        if (mbd.getBeanClass() == NullBean::class.java) {
+        if (mbd.getBeanClass() == NullBean::class.java) {  // except NullBean
             return false
         }
         // 判断它是否有destory方法，如果有return true(支持AutoCloseable/DisposableBean以及BeanDefinition当中的destoryMethod等)
@@ -478,14 +478,14 @@ abstract class AbstractBeanFactory : BeanFactory, ConfigurableBeanFactory, Lista
     }
 
     /**
-     * 如果必要的话，给Bean去注册DisposableBean的回调
+     * 如果必要的话，给Bean去注册DisposableBean的回调，根据Bean的作用域的不同，走Scope对应的注册回调的逻辑
      *
      * @param beanName beanName
      * @param bean bean
      * @param mbd MergedBeanDefinition
      */
     protected open fun registerDisposableBeanIfNecessary(beanName: String, bean: Any, mbd: RootBeanDefinition) {
-        // 如果不是prototype的，并且需要去进行Destruction(destory)，那么需要去注册Callback
+        // 如果不是prototype的，并且需要去进行Destruction(destroy)，那么需要去注册Callback
         if (!mbd.isPrototype() && requiresDestruction(bean, mbd)) {
             val destructionAwareCache = getBeanPostProcessorCache().destructionAwareCache
             val disposableBeanAdapter = DisposableBeanAdapter(bean, beanName, mbd, destructionAwareCache)

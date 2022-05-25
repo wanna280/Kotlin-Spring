@@ -21,6 +21,7 @@ dependencies {
     implementation(project(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Context"))
     implementation(project(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Ribbon"))
 
+    implementation("org.slf4j:slf4j-api:$slf4jApiVersion")
     implementation("org.springframework:spring-core:$springCoreVersion")
     implementation("com.netflix.ribbon:ribbon-loadbalancer:$ribbonVersion")
     implementation("com.netflix.ribbon:ribbon-core:$ribbonVersion")
