@@ -8,7 +8,7 @@ import com.wanna.framework.beans.BeanFactoryAware
  */
 open class GenericTypeAwareAutowireCandidateResolver : BeanFactoryAware, SimpleAutowireCandidateResolver() {
 
-    private var beanFactory: BeanFactory? = null
+    private lateinit var beanFactory: BeanFactory
 
     override fun setBeanFactory(beanFactory: BeanFactory) {
         this.beanFactory = beanFactory

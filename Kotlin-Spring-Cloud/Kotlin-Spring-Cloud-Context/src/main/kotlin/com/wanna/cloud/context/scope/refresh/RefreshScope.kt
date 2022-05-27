@@ -23,9 +23,9 @@ open class RefreshScope : GenericScope(), Ordered, ApplicationContextAware, Appl
 
     private var order: Int = Ordered.ORDER_LOWEST - 10
 
-    private var applicationContext: ApplicationContext? = null
+    private lateinit var applicationContext: ApplicationContext
 
-    private var registry: BeanDefinitionRegistry? = null
+    private lateinit var registry: BeanDefinitionRegistry
 
     // 是否渴望去进行初始化？如果渴望去进行初始化的话，那么容器启动完成就去实例化所有的Bean
     private var eager: Boolean = true
@@ -43,8 +43,8 @@ open class RefreshScope : GenericScope(), Ordered, ApplicationContextAware, Appl
      */
     override fun onApplicationEvent(event: ContextRefreshedEvent) {
         val registry = this.registry
-        val applicationContext = this.applicationContext!!
-        if (this.eager && event.applicationContext == applicationContext && registry != null) {
+        val applicationContext = this.applicationContext
+        if (this.eager && event.applicationContext == applicationContext) {
             registry.getBeanDefinitionNames().forEach {
                 if (registry.getBeanDefinition(it).getScope() == this.getName()) {
                     applicationContext.getBean(it)?.javaClass
@@ -60,7 +60,7 @@ open class RefreshScope : GenericScope(), Ordered, ApplicationContextAware, Appl
      */
     open fun refresh(name: String): Boolean {
         if (super.destroy(name)) {
-            this.applicationContext!!.publishEvent(RefreshScopeRefreshedEvent(name))
+            this.applicationContext.publishEvent(RefreshScopeRefreshedEvent(name))
             return true
         }
         return false
@@ -71,7 +71,7 @@ open class RefreshScope : GenericScope(), Ordered, ApplicationContextAware, Appl
      */
     open fun refreshAll() {
         super.destroy()  // super.destroy，摧毁RefreshScope内的全部Bean
-        this.applicationContext!!.publishEvent(RefreshScopeRefreshedEvent())
+        this.applicationContext.publishEvent(RefreshScopeRefreshedEvent())
     }
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {

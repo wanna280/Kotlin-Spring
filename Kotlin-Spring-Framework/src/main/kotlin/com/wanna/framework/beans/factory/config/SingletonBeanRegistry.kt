@@ -20,7 +20,6 @@ interface SingletonBeanRegistry {
      */
     fun registerSingleton(beanName: String, singleton: Any)
 
-
     /**
      * 注册中心中是否存在有这样的Bean，只检查singleObjects，并不检查二三级缓存
      */

@@ -43,6 +43,9 @@ protected constructor(
     // 参数名发现器
     private var parameterNameDiscoverer: ParameterNameDiscoverer? = null
 
+    // 当前泛型的层级(不会实现...)
+    private var nestingLevel: Int = 1
+
     // 可以解析的类型
     private var resolvableType: ResolvableType? = null
 
@@ -54,14 +57,27 @@ protected constructor(
     /**
      * 获取方法参数/构造器参数/字段上的注解列表
      */
-    open fun getAnnotations(): Array<Annotation> =
-        if (field != null) field.annotations else parameter!!.getAnnotations()
+    open fun getAnnotations(): Array<Annotation> {
+        if (field != null) {
+            return field.annotations
+        }
+        if (parameter != null) {
+            return parameter.getAnnotations()
+        }
+        return emptyArray()
+    }
 
     /**
      * 获取指定的注解，如果是一个方法参数，那么从方法参数当中获取注解；如果是一个字段，从字段当中获取注解
      */
     open fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T? {
-        return if (field != null) field.getAnnotation(annotationClass) else parameter!!.getAnnotation(annotationClass)
+        if (field != null) {
+            return field.getAnnotation(annotationClass)
+        }
+        if (parameter != null) {
+            return parameter.getAnnotation(annotationClass)
+        }
+        return null
     }
 
     /**
@@ -70,13 +86,23 @@ protected constructor(
      * @param parameterNameDiscoverer 要指定的ParameterNameDiscoverer；可以为null
      */
     open fun initParameterNameDiscoverer(parameterNameDiscoverer: ParameterNameDiscoverer?) {
-        this.parameterNameDiscoverer = parameterNameDiscoverer
+        if (parameterNameDiscoverer != null) {
+            this.parameterNameDiscoverer = parameterNameDiscoverer
+        }
     }
 
     /**
      * 获取泛型的类型，如果是一个方法参数，那么获取方法参数的泛型；如果是一个字段，那么获取字段的泛型类型
      */
-    open fun getGenericType(): Type = parameter?.getGenericParameterType() ?: field!!.genericType
+    open fun getGenericType(): Type {
+        if (parameter != null) {
+            return parameter.getGenericParameterType()
+        }
+        if (field != null) {
+            return field.genericType
+        }
+        return null!!
+    }
 
     // 获取containingClass
     open fun getContainingClass(): Class<*>? = containingClass
@@ -86,36 +112,62 @@ protected constructor(
     }
 
     // 获取参数所在的索引，如果描述的是字段的话，值为0
-    open fun getParameterIndex(): Int = parameterIndex
+    open fun getParameterIndex(): Int {
+        return parameterIndex
+    }
 
     // 如果描述的是一个方法的话，返回方法名，如果描述的不是一个方法的话，返回null
-    open fun getMethodName(): String? = methodName
+    open fun getMethodName(): String? {
+        return methodName
+    }
 
     // 获取方法/字段/构造器所在的定义的类
-    open fun getDeclaringClass(): Class<*> = declaringClass!!
+    open fun getDeclaringClass(): Class<*> {
+        return declaringClass!!
+    }
 
     // 获取方法的参数类型列表，如果描述的不是一个方法，那么return null
-    open fun getParameterTypes(): Array<Class<*>>? = parameterTypes
+    open fun getParameterTypes(): Array<Class<*>>? {
+        return parameterTypes
+    }
 
     // 获取字段名，如果它根本不是一个字段，return null
-    open fun getFieldName(): String? = fieldName
+    open fun getFieldName(): String? {
+        return fieldName
+    }
 
     // 该依赖，是否是必要的？(required=true？)
-    open fun isRequired() = required
+    open fun isRequired(): Boolean {
+        if (!required) {
+            return false
+        }
+        return true
+    }
+
     open fun isEager(): Boolean = eager
 
     /**
      * 返回依赖的类型，如果是字段返回字段类型，如果是方法参数返回方法参数的类型
      */
     open fun getDependencyType(): Class<*> {
-        return parameter?.getParameterType() ?: field!!.type
+        if (parameter != null) {
+            return parameter.getParameterType()
+        }
+        if (field != null) {
+            return field.type
+        }
+        return null!!
     }
 
     /**
-     * 提供解析候选Bean的方式，默认实现为从容器中获取
+     * 提供解析候选Bean的方式，默认实现为从给定的beanFactory当中去进行获取
+     *
+     * @param beanName beanName
+     * @param beanFactory beanFactory
+     * @param requiredType 类型
      */
     open fun resolveCandidate(beanName: String, requiredType: Class<*>, beanFactory: BeanFactory): Any {
-        return beanFactory.getBean(beanName)!!
+        return requiredType.cast(beanFactory.getBean(beanName))
     }
 
     /**

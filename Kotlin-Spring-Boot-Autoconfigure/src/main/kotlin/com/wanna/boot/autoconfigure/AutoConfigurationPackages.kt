@@ -3,7 +3,6 @@ package com.wanna.boot.autoconfigure
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.GenericBeanDefinition
-import com.wanna.framework.context.annotation.BeanNameGenerator
 import com.wanna.framework.context.annotation.ImportBeanDefinitionRegistrar
 import com.wanna.framework.core.type.AnnotationMetadata
 import java.util.function.Supplier
@@ -39,7 +38,8 @@ class AutoConfigurationPackages {
 
 
     /**
-     * 这是一个BeanDefinitionRegistrar，负责给容器中导入BasePackagesBeanDefinition，从而实现往容器当中注册一个BasePackages对象
+     * 这是一个BeanDefinitionRegistrar，负责给容器中导入BasePackagesBeanDefinition，从而实现往容器当中注册一个BasePackages对象；
+     * 在BasePackages对象当中维护了当前SpringApplication要进行自动配置的包的列表
      *
      * @see BasePackagesBeanDefinition
      * @see BasePackages
@@ -56,7 +56,7 @@ class AutoConfigurationPackages {
      * @see BasePackagesBeanDefinition
      */
     class BasePackages(basePackages: Array<String>) {
-        val basePackages: List<String> = basePackages.toList()
+        val basePackages = basePackages.toMutableList()
     }
 
     /**
@@ -65,8 +65,7 @@ class AutoConfigurationPackages {
      * @see BasePackages
      */
     class BasePackagesBeanDefinition(basePackages: Array<String>) : GenericBeanDefinition() {
-
-        private val basePackages: MutableSet<String> = HashSet()
+        private val basePackages = LinkedHashSet<String>()
 
         fun addPackages(packages: Array<String>) {
             basePackages += packages
@@ -84,16 +83,16 @@ class AutoConfigurationPackages {
          * @see BeanDefinition.getInstanceSupplier
          */
         override fun getInstanceSupplier(): Supplier<*> {
-            return Supplier<BasePackages> { BasePackages(this@BasePackagesBeanDefinition.basePackages.toTypedArray()) }
+            return Supplier { BasePackages(this@BasePackagesBeanDefinition.basePackages.toTypedArray()) }
         }
     }
 
     /**
-     * 这是一个负责根据注解信息去解析要配置的包的相关信息
+     * 这是一个负责根据注解(AutoConfigurationPackage)信息去解析要配置的包的相关信息
      */
     @Suppress("UNCHECKED_CAST")
     class PackageImports(annotationMetadata: AnnotationMetadata) {
-        private val packages: MutableSet<String> = HashSet()
+        private val packages = LinkedHashSet<String>()
 
         init {
             val attributes = annotationMetadata.getAnnotationAttributes(AutoConfigurationPackage::class.java)

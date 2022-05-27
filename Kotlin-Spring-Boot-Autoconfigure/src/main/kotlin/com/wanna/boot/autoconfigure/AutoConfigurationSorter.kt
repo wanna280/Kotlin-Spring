@@ -1,7 +1,9 @@
 package com.wanna.boot.autoconfigure
 
 /**
- * 完成AutoConfiguration自动配置类的排序，主要处理AutoConfigureAfter/AutoConfigureBefore等注解
+ * 完成AutoConfiguration自动配置类的排序，主要处理AutoConfigureAfter/AutoConfigureBefore等注解；
+ *
+ * // TODO: 排序算法应该如何去写？
  */
 open class AutoConfigurationSorter {
 

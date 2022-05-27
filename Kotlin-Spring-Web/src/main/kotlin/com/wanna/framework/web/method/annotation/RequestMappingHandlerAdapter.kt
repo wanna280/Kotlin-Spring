@@ -51,7 +51,7 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     // 返回值解析器列表(内部组合)
     private var returnValueHandlers: HandlerMethodReturnValueHandlerComposite? = null
 
-    // 支持对HTTP请求的RequestBody和ResponseBodu去进行消息转换的HttpMessageConverter列表
+    // 支持对HTTP请求的RequestBody和ResponseBody去进行消息转换的HttpMessageConverter列表
     private var messageConverters: MutableList<HttpMessageConverter<*>>? = null
 
     // 内容协商管理器

@@ -1,8 +1,11 @@
 package com.wanna.framework.context.support
 
+import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
+import com.wanna.framework.context.ApplicationContext
+import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.core.metrics.ApplicationStartup
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -43,6 +46,24 @@ abstract class GenericApplicationContext(private val beanFactory: DefaultListabl
     override fun removeBeanDefinition(name: String) = beanFactory.removeBeanDefinition(name)
     override fun registerBeanDefinition(name: String, beanDefinition: BeanDefinition) =
         beanFactory.registerBeanDefinition(name, beanDefinition)
+
+    /**
+     * 设置parentApplicationContext的同时，需要设置parentBeanFactory
+     */
+    override fun setParent(parent: ApplicationContext) {
+        super.setParent(parent)
+        this.beanFactory.setParentBeanFactory(getInternalParentBeanFactory())
+    }
+
+    /**
+     * 获取ApplicationContext内部的BeanFactory；
+     * * 1.如果ApplicationContext是ConfigurableApplicationContext，那么可以从它里面获取BeanFactory；
+     * * 2.如果ApplicationContext不是ConfigurableApplicationContext，那么fallback直接就使用它作为parentBeanFactory；
+     */
+    protected open fun getInternalParentBeanFactory(): BeanFactory? {
+        val parent = getParent()
+        return if (parent is ConfigurableApplicationContext) parent.getBeanFactory() else parent
+    }
 
     open fun setAllowCircularReferences(allowCircularReferences: Boolean) =
         beanFactory.setAllowCircularReferences(allowCircularReferences)

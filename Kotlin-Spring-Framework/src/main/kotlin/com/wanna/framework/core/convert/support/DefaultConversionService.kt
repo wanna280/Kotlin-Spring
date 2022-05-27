@@ -1,5 +1,6 @@
 package com.wanna.framework.core.convert.support
 
+import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.converter.ConverterRegistry
 
 /**
@@ -40,6 +41,10 @@ open class DefaultConversionService : GenericConversionService() {
         fun addDefaultConverters(registry: ConverterRegistry) {
             registry.addConverter(StringToNumberConverter())
             registry.addConverter(StringToStringConverter())
+            if (registry is ConversionService) {
+                registry.addConverter(CollectionToArrayConverter(registry))
+                registry.addConverter(CollectionToCollectionConverter(registry))
+            }
         }
     }
 }

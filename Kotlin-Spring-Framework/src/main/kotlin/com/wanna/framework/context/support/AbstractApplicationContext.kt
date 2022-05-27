@@ -437,6 +437,10 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     override fun getBeanNamesForTypeIncludingAncestors(type: Class<*>) =
         getBeanFactory().getBeanNamesForTypeIncludingAncestors(type)
 
+    override fun getParentBeanFactory(): BeanFactory? {
+        return getParent()
+    }
+
     override fun <T> getBeansForTypeIncludingAncestors(type: Class<T>) =
         getBeanFactory().getBeansForTypeIncludingAncestors(type)
 

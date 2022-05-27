@@ -57,6 +57,8 @@ open class ContextAnnotationAutowireCandidateResolver : QualifierAnnotationAutow
      */
     protected open fun buildLazyResolutionProxy(descriptor: DependencyDescriptor, beanName: String?): Any? {
         val beanFactory = getBeanFactory()
+
+        // 如果不是DefaultListableBeanFactory...
         if (beanFactory !is DefaultListableBeanFactory) {
             throw IllegalStateException("BeanFactory只支持[${DefaultListableBeanFactory::class.java.name}]")
         }

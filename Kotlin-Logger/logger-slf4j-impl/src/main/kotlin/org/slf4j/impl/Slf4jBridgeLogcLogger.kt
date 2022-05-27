@@ -44,6 +44,7 @@ open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.L
 
     override fun trace(msg: String, t: Throwable) {
         super.trace(format(msg))
+        t.printStackTrace()
     }
 
     override fun trace(marker: Marker?, msg: String) {
@@ -64,6 +65,7 @@ open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.L
 
     override fun trace(marker: Marker?, msg: String, t: Throwable) {
         super.trace(format(msg))
+        t.printStackTrace()
     }
 
     override fun debug(format: String, arg: Any?) {
@@ -80,6 +82,7 @@ open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.L
 
     override fun debug(msg: String, t: Throwable) {
         super.debug(format(msg))
+        t.printStackTrace()
     }
 
     override fun debug(marker: Marker?, msg: String) {
@@ -100,6 +103,7 @@ open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.L
 
     override fun debug(marker: Marker?, msg: String, t: Throwable) {
         super.debug(format(msg))
+        t.printStackTrace()
     }
 
     override fun info(format: String, arg: Any?) {
@@ -116,6 +120,7 @@ open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.L
 
     override fun info(msg: String, t: Throwable) {
         super.info(format(msg))
+        t.printStackTrace()
     }
 
     override fun info(marker: Marker?, msg: String) {
@@ -135,7 +140,8 @@ open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.L
     }
 
     override fun info(marker: Marker?, msg: String, t: Throwable) {
-        return super.info(format(msg))
+        super.info(format(msg))
+        t.printStackTrace()
     }
 
     override fun isWarnEnabled(marker: Marker?): Boolean {
@@ -143,39 +149,41 @@ open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.L
     }
 
     override fun warn(format: String, arg: Any?) {
-        return super.warn(format(format, arg))
+        super.warn(format(format, arg))
     }
 
     override fun warn(format: String, vararg arguments: Any?) {
-        return super.warn(format(format, *arguments))
+        super.warn(format(format, *arguments))
     }
 
     override fun warn(format: String, arg1: Any?, arg2: Any?) {
-        return super.warn(format(format, arg1, arg2))
+        super.warn(format(format, arg1, arg2))
     }
 
     override fun warn(msg: String, t: Throwable) {
-        return super.warn(format(msg))
+        super.warn(format(msg))
+        t.printStackTrace()
     }
 
     override fun warn(marker: Marker?, msg: String) {
-        return super.warn(format(msg))
+        super.warn(format(msg))
     }
 
     override fun warn(marker: Marker?, format: String, arg: Any?) {
-        return super.warn(format(format, arg))
+        super.warn(format(format, arg))
     }
 
     override fun warn(marker: Marker?, format: String, arg1: Any?, arg2: Any?) {
-        return super.warn(format(format, arg1, arg2))
+        super.warn(format(format, arg1, arg2))
     }
 
     override fun warn(marker: Marker?, format: String, vararg arguments: Any?) {
-        return super.warn(format(format, *arguments))
+        super.warn(format(format, *arguments))
     }
 
     override fun warn(marker: Marker?, msg: String, t: Throwable) {
-        return super.warn(format(msg))
+        super.warn(format(msg))
+        t.printStackTrace()
     }
 
     override fun error(format: String, arg: Any?) {
@@ -192,6 +200,7 @@ open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.L
 
     override fun error(msg: String, t: Throwable) {
         super.error(format(msg))
+        t.printStackTrace()
     }
 
     override fun error(marker: Marker?, msg: String) {
@@ -212,6 +221,7 @@ open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.L
 
     override fun error(marker: Marker?, msg: String, t: Throwable) {
         super.error(format(msg))
+        t.printStackTrace()
     }
 
     private fun format(format: String, vararg args: Any?): String {

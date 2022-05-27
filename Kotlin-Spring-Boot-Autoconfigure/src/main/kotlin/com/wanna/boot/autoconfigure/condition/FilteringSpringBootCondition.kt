@@ -20,9 +20,9 @@ import com.wanna.framework.core.util.ClassUtils
 abstract class FilteringSpringBootCondition : SpringBootCondition(), AutoConfigurationImportFilter,
     BeanClassLoaderAware, BeanFactoryAware {
 
-    private var classLoader: ClassLoader? = null
+    private lateinit var classLoader: ClassLoader
 
-    private var beanFactory: BeanFactory? = null
+    private lateinit var beanFactory: BeanFactory
 
     /**
      * 这是一个来自于AutoConfigurationImportFilter的匹配方法，主要是基于配置文件当中的元信息去进行匹配
@@ -77,8 +77,8 @@ abstract class FilteringSpringBootCondition : SpringBootCondition(), AutoConfigu
         this.beanFactory = beanFactory
     }
 
-    open fun getClassLoader(): ClassLoader = this.classLoader!!
-    open fun getBeanFactory(): BeanFactory = this.beanFactory!!
+    open fun getClassLoader(): ClassLoader = this.classLoader
+    open fun getBeanFactory(): BeanFactory = this.beanFactory
 
     /**
      * 这是一个ClassName的Filter，判断className所在类是否存在于依赖当中

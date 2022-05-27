@@ -1,7 +1,7 @@
 package com.wanna.framework.context
 
 /**
- * 这是一个声明周期的处理器
+ * 这是一个生命周期(Lifecycle)的处理器，它本质上也是一个Lifecycle组件
  */
 interface LifecycleProcessor : Lifecycle {
     /**

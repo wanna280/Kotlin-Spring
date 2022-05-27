@@ -218,6 +218,10 @@ abstract class AbstractBeanDefinition constructor(_beanClass: Class<*>?) : BeanD
         return beanClass
     }
 
+    override fun getBeanClassName(): String? {
+        return beanClass?.name
+    }
+
     override fun setBeanClass(beanClass: Class<*>?) {
         this.beanClass = beanClass
     }

@@ -44,11 +44,11 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
      */
     open fun determineBeanNameFromAnnotation(beanDefinition: AnnotatedBeanDefinition): String {
         if (isCandidateAnnotation(beanDefinition.getBeanClass()!!)) {
+
+            // 获取@Component注解的相关属性
             val component = AnnotatedElementUtils.getMergedAnnotation(
                 beanDefinition.getBeanClass()!!,
-                ClassUtils.getAnnotationClassFromString(
-                    COMPONENT_ANNOTATION_CLASSNAME
-                )
+                ClassUtils.getAnnotationClassFromString(COMPONENT_ANNOTATION_CLASSNAME)
             )
             val componentAttr = AnnotationAttributesUtils.asAnnotationAttributes(component)
             if (componentAttr != null) {
@@ -62,7 +62,7 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
     }
 
     /**
-     * 是否是候选注解？
+     * 是否是候选注解？主要包括三个注解，@Component/@ManagedBean/@Named
      */
     private fun isCandidateAnnotation(clazz: Class<*>): Boolean {
         return AnnotatedElementUtils.isAnnotated(clazz, COMPONENT_ANNOTATION_CLASSNAME) ||
@@ -77,9 +77,12 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
         return buildDefaultBeanName(beanDefinition)
     }
 
+    /**
+     * 构建默认的beanName，默认采用的是首字母小写的方式去进行生成
+     */
     open fun buildDefaultBeanName(beanDefinition: BeanDefinition): String {
-        val shortName = ClassUtils.getShortName(beanDefinition.getBeanClass()!!).toCharArray()
+        val shortName = ClassUtils.getShortName(beanDefinition.getBeanClassName()!!).toCharArray()
         shortName[0] = shortName[0].lowercaseChar()  // 首字母小写
-        return String(shortName)
+        return String(shortName)  // charArray to String
     }
 }

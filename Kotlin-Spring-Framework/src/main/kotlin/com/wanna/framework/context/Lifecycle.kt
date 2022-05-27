@@ -1,7 +1,7 @@
 package com.wanna.framework.context
 
 /**
- * 这是一个声明周期的回调
+ * 这是一个生命周期的回调
  */
 interface Lifecycle {
 

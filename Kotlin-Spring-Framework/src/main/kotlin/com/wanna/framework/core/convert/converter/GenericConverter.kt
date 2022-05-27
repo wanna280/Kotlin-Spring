@@ -6,7 +6,7 @@ package com.wanna.framework.core.convert.converter
 interface GenericConverter {
 
     /**
-     * 获取可以转换的类型列表
+     * 获取可以转换的类型映射列表
      */
     fun getConvertibleTypes(): Set<ConvertiblePair>?
 

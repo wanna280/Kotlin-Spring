@@ -10,10 +10,10 @@ import com.wanna.framework.context.processor.beans.BeanPostProcessor
  */
 open class WebServerFactoryCustomizerBeanPostProcessor : BeanPostProcessor, BeanFactoryAware {
 
-    private val beanFactory: ListableBeanFactory? = null
+    private lateinit var beanFactory: ListableBeanFactory
 
     override fun setBeanFactory(beanFactory: BeanFactory) {
-        this.beanFactory as ListableBeanFactory
+        this.beanFactory = beanFactory as ListableBeanFactory
     }
 
     /**
@@ -27,7 +27,7 @@ open class WebServerFactoryCustomizerBeanPostProcessor : BeanPostProcessor, Bean
     @Suppress("UNCHECKED_CAST")
     override fun postProcessBeforeInitialization(beanName: String, bean: Any): Any? {
         if (bean is WebServerFactory) {
-            val customizers = beanFactory!!.getBeansForType(WebServerFactoryCustomizer::class.java).values
+            val customizers = beanFactory.getBeansForType(WebServerFactoryCustomizer::class.java).values
             customizers.forEach { (it as WebServerFactoryCustomizer<WebServerFactory>).customize(bean) }
         }
         return bean
