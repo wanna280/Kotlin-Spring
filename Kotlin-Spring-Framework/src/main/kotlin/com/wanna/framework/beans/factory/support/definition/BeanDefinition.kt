@@ -27,6 +27,7 @@ interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
      * beanClass
      */
     fun getBeanClass(): Class<*>?
+    fun getBeanClassName() : String?
     fun setBeanClass(beanClass: Class<*>?);
 
     /**

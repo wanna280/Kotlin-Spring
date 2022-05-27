@@ -4,6 +4,7 @@ import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.convert.converter.Converter
 import com.wanna.framework.core.convert.converter.GenericConverter
 import com.wanna.framework.core.convert.converter.GenericConverter.ConvertiblePair
+import com.wanna.framework.core.util.ClassUtils
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.CopyOnWriteArraySet
@@ -17,6 +18,7 @@ import java.util.concurrent.CopyOnWriteArraySet
  * @see ConfigurableConversionService
  */
 open class GenericConversionService : ConfigurableConversionService {
+
     // Converter的注册中心，内部维护了全部的Converter的列表
     private val converters = Converters()
 
@@ -28,7 +30,8 @@ open class GenericConversionService : ConfigurableConversionService {
      * @return 是否能支持从sourceType->targetType？
      */
     override fun canConvert(sourceType: Class<*>, targetType: Class<*>): Boolean {
-        return converters.converters.containsKey(ConvertiblePair(sourceType, targetType))
+        val convertersForPair = converters.getConverter(sourceType, targetType)
+        return convertersForPair.converters.isNotEmpty()
     }
 
     /**
@@ -39,21 +42,28 @@ open class GenericConversionService : ConfigurableConversionService {
         if (source == null) {
             return null
         }
-        converters.converters.forEach { (type, converters) ->
-            if (type == ConvertiblePair(source::class.java, targetType)) {
-                return converters.convert(source, targetType) as T?
-            }
+        val converter = converters.getConverter(source::class.java, targetType)
+        if (converter.converters.isNotEmpty()) {
+            return converter.convert(source, targetType) as T?
         }
         return null
     }
 
+    /**
+     * 添加一个自定义的Converter，自动去解析Converter的泛型类型去进行注册
+     *
+     * @param converter 你想要添加的Converter
+     * @throws IllegalStateException 如果无法解析出来Converter的泛型类型
+     */
     override fun addConverter(converter: Converter<*, *>) {
         // 解析Converter的泛型类型
         val generics = ResolvableType.forClass(converter::class.java).`as`(Converter::class.java).getGenerics()
         if (generics.isEmpty()) {
             throw IllegalStateException("无法解析添加的Converter的泛型类型[$converter]")
         }
+        // 将Converter包装成为GenericConverter
         val adapter = ConverterAdapter(converter)
+        // 添加该Converter能处理的映射类型...
         adapter.addConvertibleType(generics[0].resolve()!!, generics[1].resolve()!!)
         addConverter(adapter)
     }
@@ -85,7 +95,21 @@ open class GenericConversionService : ConfigurableConversionService {
          * 将GenericConverter可以转换的类型拿出来作为Key，去完成Mapping->Converters的映射关系注册
          */
         fun addConverter(converter: GenericConverter) {
-            converter.getConvertibleTypes()?.forEach { getConverter(it).addConverter(converter) }
+            converter.getConvertibleTypes()?.forEach {
+                val converters = getConverter(it)
+                converters.addConverter(converter)
+            }
+        }
+
+        /**
+         * 根据sourceType和targetType去获取Converter
+         *
+         * @param sourceType sourceType
+         * @param targetType targetType
+         * @return 支持处理该映射关系的Converter列表
+         */
+        fun getConverter(sourceType: Class<*>, targetType: Class<*>): ConvertersForPair {
+            return getConverter(ConvertiblePair(sourceType, targetType))
         }
 
         /**
@@ -95,7 +119,34 @@ open class GenericConversionService : ConfigurableConversionService {
          * @return ConvertersForPair，也就是支持处理(sourceType->targetType)这种映射关系的Converter列表
          */
         fun getConverter(type: ConvertiblePair): ConvertersForPair {
-            return this.converters.computeIfAbsent(type) { ConvertersForPair() }
+            var convertersForPair = this.converters[type]
+            if (convertersForPair != null) {
+                return convertersForPair
+            }
+            // 遍历所有的Converter，根据继承关系去进行寻找...
+            convertersForPair = find(type)
+            val convertersForPairToUse = convertersForPair ?: ConvertersForPair()
+            if (convertersForPair == null) {
+                this.converters[type] = convertersForPairToUse
+            }
+            return convertersForPairToUse
+        }
+
+        /**
+         * 遍历所有的Converter去进行继承关系的匹配，因为有可能给出的是它的子类...
+         *
+         * @param type 要去进行匹配的sourceType和targetType
+         * @return 寻找到的Converters(如果没有找到return null)
+         */
+        fun find(type: ConvertiblePair): ConvertersForPair? {
+            this.converters.forEach { (k, v) ->
+                val sourceTypeMatch = ClassUtils.isAssignFrom(k.sourceType, type.sourceType)
+                val targetTypeMatch = ClassUtils.isAssignFrom(k.targetType, type.targetType)
+                if (sourceTypeMatch && targetTypeMatch) {
+                    return v
+                }
+            }
+            return null
         }
 
         /**
@@ -112,8 +163,8 @@ open class GenericConversionService : ConfigurableConversionService {
      *
      * @see ConvertiblePair
      */
-    private class ConvertersForPair {
-        private var converters = ConcurrentLinkedDeque<GenericConverter>()
+    class ConvertersForPair {
+        var converters = ConcurrentLinkedDeque<GenericConverter>()
 
         fun addConverter(converter: GenericConverter) {
             converters += converter

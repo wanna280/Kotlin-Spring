@@ -3,31 +3,32 @@ package com.wanna.framework.beans
 import com.wanna.framework.core.util.ReflectionUtils
 import java.lang.reflect.Field
 
-class BeanWrapperImpl(_beanInstance: Any?) : BeanWrapper {
-
-    constructor() : this(null)
-
-    private var beanInstance: Any? = _beanInstance
+/**
+ * BeanWrapper的具体实现，提供了属性的访问器，并组合了BeanFactory的TypeConverter，去完成Bean属性的类型的转换工作；
+ * 它提供了SpringBean的BeanDefinition当中的PropertyValues(pvs)当中维护的所有的属性值的设置工作，在Spring的BeanDefinition当中，
+ * 通过BeanDefinition去添加PropertyValue的方式，可以去实现属性的自动注入工作；
+ */
+open class BeanWrapperImpl(private var beanInstance: Any? = null) : BeanWrapper, AbstractPropertyAccessor() {
 
     /**
      * 提供后期设置beanInstance的方式
      */
-    fun setBeanInstance(instance: Any?) {
+    open fun setBeanInstance(instance: Any?) {
         this.beanInstance = instance
     }
 
     override fun getWrappedInstance(): Any {
-        return beanInstance!!
+        return beanInstance ?: IllegalStateException("无法获取到实例，请先完成beanInstance的初始化工作")
     }
 
     override fun getWrappedClass(): Class<*> {
-        return beanInstance!!::class.java
+        return getWrappedInstance()::class.java
     }
 
     override fun setPropertyValue(name: String, value: Any?) {
         // 如果找不到字段直接return
         val field = getField(name) ?: return
-        // 确保字段可用，并
+        // 确保字段可用，并去进行set
         ReflectionUtils.makeAccessiable(field)
         ReflectionUtils.setField(field, getWrappedInstance(), value)
     }

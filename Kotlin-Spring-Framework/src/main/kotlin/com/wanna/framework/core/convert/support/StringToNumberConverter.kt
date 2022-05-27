@@ -55,6 +55,6 @@ class StringToNumberConverter : GenericConverter {
         if (targetType == Boolean::class.java) {
             return sourceStr.toBoolean() as T
         }
-        throw UnsupportedOperationException("支持将sourceType=[$sourceType]转换为targetType=[$targetType]")
+        throw UnsupportedOperationException("不支持将sourceType=[$sourceType]转换为targetType=[$targetType]")
     }
 }

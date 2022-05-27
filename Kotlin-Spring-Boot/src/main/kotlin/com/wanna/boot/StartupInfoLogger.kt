@@ -7,7 +7,7 @@ import java.lang.management.ManagementFactory
 /**
  * 以日志的形式去进行记录Spring应用启动过程当中的相关信息，比如相关的JavaVersion，Spring应用启动所花费的时间；
  *
- * @param sourceClass 源类(主启动类)，如果不设置默认为application
+ * @param sourceClass 源类(主启动类)，如果不设置默认为"application"
  */
 class StartupInfoLogger(private val sourceClass: Class<*>?) {
 

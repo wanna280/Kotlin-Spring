@@ -48,8 +48,9 @@ object ClassUtils {
     }
 
     @JvmStatic
-    fun <T> forName(clazzName: String, classLoader: ClassLoader): Class<T> {
-        return Class.forName(clazzName, false, classLoader) as Class<T>
+    fun <T> forName(clazzName: String, classLoader: ClassLoader?): Class<T> {
+        val classLoaderToUse = classLoader ?: ClassUtils::class.java.classLoader
+        return Class.forName(clazzName, false, classLoaderToUse) as Class<T>
     }
 
     /**

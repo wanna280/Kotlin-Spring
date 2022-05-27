@@ -24,6 +24,7 @@ open class NacosDiscoveryProperties {
 
     var ip: String = "127.0.0.1"  // ip
 
+    @Value("%{spring.cloud.nacos.discovery.port:%{server.port:9888}}")
     var port: Int = 9888  // port
 
     var ephemeral: Boolean = true  // 是否是一个临时节点，默认为true(切换CP/AP)

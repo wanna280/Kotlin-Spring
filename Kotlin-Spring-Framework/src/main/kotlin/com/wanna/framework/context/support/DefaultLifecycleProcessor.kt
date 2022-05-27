@@ -15,7 +15,7 @@ import com.wanna.framework.beans.BeanFactoryAware
  */
 open class DefaultLifecycleProcessor : LifecycleProcessor, BeanFactoryAware {
 
-    private var beanFactory: ConfigurableListableBeanFactory? = null
+    private lateinit var beanFactory: ConfigurableListableBeanFactory
 
     private var running: Boolean = false
 
@@ -45,7 +45,7 @@ open class DefaultLifecycleProcessor : LifecycleProcessor, BeanFactoryAware {
         this.beanFactory = beanFactory as ConfigurableListableBeanFactory
     }
 
-    fun getBeanFactory(): ConfigurableListableBeanFactory? = this.beanFactory
+    fun getBeanFactory(): ConfigurableListableBeanFactory = this.beanFactory
 
     /**
      * 启动所有的Bean，拿出容器当中的所有的Lifecycle，去执行start
@@ -62,14 +62,16 @@ open class DefaultLifecycleProcessor : LifecycleProcessor, BeanFactoryAware {
     }
 
     /**
-     * 获取LifecycleBean列表，在寻找的过程当中，需要去掉本身，如果本身不去掉，肯定**会出现SOF**
+     * 获取LifecycleBean列表
+     *
+     * Note: 在寻找的过程当中，需要去掉本身，如果本身不去掉，肯定**会出现SOF**
      *
      * @return 容器当中找到的Lifecycle的Bean的列表
      */
     private fun getLifecycleBeans(): List<Lifecycle> {
-        val lifecycles = beanFactory?.getBeansForType(Lifecycle::class.java)
+        val lifecycles = beanFactory.getBeansForType(Lifecycle::class.java)
         val lifecycleBeans = ArrayList<Lifecycle>()
-        lifecycles?.forEach { (_, bean) ->
+        lifecycles.forEach { (_, bean) ->
             if (bean != this) {
                 lifecycleBeans += bean
             }

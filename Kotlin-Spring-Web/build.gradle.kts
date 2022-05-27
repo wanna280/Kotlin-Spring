@@ -16,7 +16,7 @@ dependencies {
     implementation(project(":Kotlin-Logger:logger-slf4j-impl"))
     implementation("org.slf4j:slf4j-api:$slf4jApiVersion")
     implementation("org.springframework:spring-core:$springCoreVersion")
-    implementation("io.netty:netty-all:$nettyVersion")
+    implementation("io.netty:netty-codec-http:$nettyVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")

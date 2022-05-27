@@ -28,7 +28,7 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
         val DO_NOT_PROXY: Array<Any>? = null
     }
 
-    private var beanFactory: BeanFactory? = null
+    private lateinit var beanFactory: BeanFactory
 
     // 维护已经缓存过的Bean的列表，key-cacheKey，value=true代表产生了代理，value=false代表没有产生代理，但是已经处理过了
     private val advisedBeans: ConcurrentHashMap<Any, Boolean> = ConcurrentHashMap()
@@ -158,7 +158,7 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
      */
     protected open fun getCustomTargetSource(beanClass: Class<*>, beanName: String): TargetSource? {
         val customTargetSourceCreators = this.customTargetSourceCreators
-        if (customTargetSourceCreators != null && this.beanFactory != null) {
+        if (customTargetSourceCreators != null) {
             for (tsc in customTargetSourceCreators) {
                 val ts = tsc.getTargetSource(beanClass, beanName)
                 if (ts != null) {

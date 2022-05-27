@@ -42,8 +42,8 @@ open class ConfigurationPropertiesBindingPostProcessor : BeanPostProcessor, Appl
         }
     }
 
-    private var applicationContext: ApplicationContext? = null
-    private var registry: BeanDefinitionRegistry? = null
+    private lateinit var applicationContext: ApplicationContext
+    private lateinit var registry: BeanDefinitionRegistry
     private var binder: ConfigurationPropertiesBinder? = null
 
 
@@ -52,7 +52,7 @@ open class ConfigurationPropertiesBindingPostProcessor : BeanPostProcessor, Appl
      */
     override fun postProcessBeforeInitialization(beanName: String, bean: Any): Any? {
         // 处理@ConfigurationProperties注册，把它注册到ConfigurationPropertiesBinder当中
-        bind(ConfigurationPropertiesBean.get(this.applicationContext!!, bean, beanName))
+        bind(ConfigurationPropertiesBean.get(this.applicationContext, bean, beanName))
         return bean
     }
 
@@ -73,11 +73,11 @@ open class ConfigurationPropertiesBindingPostProcessor : BeanPostProcessor, Appl
     }
 
     /**
-     * 在初始化Bean时，获取BeanDefinitionRegistry和ConfigurationPropertieBinder
+     * 在初始化Bean时，获取BeanDefinitionRegistry和ConfigurationPropertiesBinder
      */
     override fun afterPropertiesSet() {
-        this.registry = this.applicationContext!!.getAutowireCapableBeanFactory() as BeanDefinitionRegistry
-        this.binder = ConfigurationPropertiesBinder.get(this.applicationContext!!)
+        this.registry = this.applicationContext.getAutowireCapableBeanFactory() as BeanDefinitionRegistry
+        this.binder = ConfigurationPropertiesBinder.get(this.applicationContext)
     }
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {

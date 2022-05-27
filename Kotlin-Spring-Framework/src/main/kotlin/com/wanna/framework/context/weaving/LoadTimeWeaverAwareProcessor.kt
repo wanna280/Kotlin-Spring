@@ -12,10 +12,14 @@ import com.wanna.framework.instrument.classloading.LoadTimeWeaver
  * @see LoadTimeWeaver
  * @see LoadTimeWeaverAware
  */
-open class LoadTimeWeaverAwareProcessor(private var beanFactory: BeanFactory?) : BeanPostProcessor, BeanFactoryAware {
+open class LoadTimeWeaverAwareProcessor() : BeanPostProcessor, BeanFactoryAware {
+
+    private lateinit var beanFactory: BeanFactory
 
     // 提供一个无参数的辅助构造器，并去设置beanFactory为null
-    constructor() : this(null)
+    constructor(beanFactory: BeanFactory) : this() {
+        this.beanFactory = beanFactory
+    }
 
     private var loadTimeWeaver: LoadTimeWeaver? = null  // LoadTimeWeaver
 
@@ -30,7 +34,7 @@ open class LoadTimeWeaverAwareProcessor(private var beanFactory: BeanFactory?) :
         if (bean is LoadTimeWeaverAware) {
             var weaver = loadTimeWeaver
             if (weaver == null) {
-                weaver = beanFactory!!.getBean(LOAD_TIME_WEAVER_BEAN_NAME, LoadTimeWeaver::class.java)
+                weaver = beanFactory.getBean(LOAD_TIME_WEAVER_BEAN_NAME, LoadTimeWeaver::class.java)
             }
             bean.setLoadTimeWeaver(weaver!!)
         }

@@ -1,5 +1,7 @@
 package com.wanna.framework.beans
 
+import java.util.concurrent.CopyOnWriteArrayList
+
 
 /**
  * 维护了PropertyValue列表，它是PropertyValues的具体实现
@@ -10,7 +12,7 @@ package com.wanna.framework.beans
 open class MutablePropertyValues() : PropertyValues {
 
     // 属性值列表
-    private val propertyValueList: MutableList<PropertyValue> = ArrayList()
+    private val propertyValueList: MutableList<PropertyValue> = CopyOnWriteArrayList()
 
     /**
      * 提供一个PropertyValues的构造器，将它里面的属性全部拷贝到当前对象的PropertyValues当中

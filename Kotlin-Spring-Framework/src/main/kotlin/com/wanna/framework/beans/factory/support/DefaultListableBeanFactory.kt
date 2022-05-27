@@ -16,6 +16,7 @@ import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.comparator.OrderComparator
 import com.wanna.framework.core.util.BeanFactoryUtils
 import com.wanna.framework.core.util.ClassUtils
+import org.slf4j.LoggerFactory
 import java.lang.reflect.Type
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -34,7 +35,11 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     AbstractAutowireCapableBeanFactory() {
 
     companion object {
-        private var javaxInjectProviderClass: Class<*>? = null  // javax.inject.Provider--->对应于Spring家的ObjectProvider
+        // javax.inject.Provider--->对应于Spring家的ObjectProvider
+        private var javaxInjectProviderClass: Class<*>? = null
+
+        // logger
+        private val logger = LoggerFactory.getLogger(DefaultListableBeanFactory::class.java)
 
         init {
             try {
@@ -289,8 +294,9 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
         override fun getObject(): Any {
             val descriptorToUse = InnerDependencyDescriptor(originDescriptor, type)
-            return doResolveDependency(descriptorToUse, beanName, null, null)
-                ?: throw NoSuchBeanDefinitionException(originDescriptor.getResolvableType().toString())
+            return doResolveDependency(descriptorToUse, beanName, null, null) ?: throw NoSuchBeanDefinitionException(
+                originDescriptor.getResolvableType().toString()
+            )
         }
 
         override fun getIfAvailable(): Any? {
@@ -334,7 +340,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             return DependencyObjectProvider(descriptor, requestingBeanName)
 
             // 如果要求注入的是Jsr330的Provider，那么在这里去进行create
-        } else if (descriptor.getDependencyType() == javaxInjectProviderClass){
+        } else if (descriptor.getDependencyType() == javaxInjectProviderClass) {
             return Jsr330Factory().createDependencyProvider(descriptor, requestingBeanName)
         }
 
@@ -355,25 +361,32 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     ): Any? {
         val type = descriptor.getDependencyType()
 
-        // 从AutowireCandidateResolve获取建议进行设置的值，主要用来处理@Value注解
+        // 1. 从AutowireCandidateResolve获取建议进行设置的值，主要用来处理@Value注解
         val value = getAutowireCandidateResolver().getSuggestedValue(descriptor)
         if (value != null) {
-            // 如果value是String类型，那么需要使用嵌入式的值解析器完成解析...(SpEL呢？)
+            // 如果value是String类型
             if (value is String) {
-                return this.resolveEmbeddedValue(value)
+                // 那么需要使用嵌入式的值解析器完成解析...(SpEL呢？)
+                val embeddedValue = this.resolveEmbeddedValue(value)
+                // fixed: 使用TypeConverter去完成类型的转换工作...因为有可能@Value字段类型不一定是String，可能是Int等类型
+                try {
+                    return (typeConverter ?: getTypeConverter()).convertIfNecessary(embeddedValue, type)
+                } catch (ex: Exception) {
+                    logger.error("类型转换失败，无法将String转换为目标类型[type=$type]", ex)
+                }
             }
             return null
         }
 
-        // 解析要进行注入的元素是多个Bean的情况，例如Collection/Map/Array等情况
+        // 2. 解析要进行注入的元素是多个Bean的情况，例如Collection/List/Map/Array等情况
         val multipleBeans = resolveMultipleBeans(descriptor, requestingBeanName, autowiredBeanNames, typeConverter)
         if (multipleBeans != null) {
             return multipleBeans
         }
-        // 下面需要解析注入的元素是单个Bean的情况
+        // 3. 下面需要解析注入的元素是单个Bean的情况
         val candidates: Map<String, Any> = findAutowireCandidates(requestingBeanName, type, descriptor)
 
-        // 如果根本没有找到候选的Bean，那么需要处理required=true/false并return
+        // 3.1 如果根本没有找到候选的Bean，那么需要处理required=true/false并return
         if (candidates.isEmpty()) {
             if (descriptor.isRequired()) {
                 throw NoSuchBeanDefinitionException("没有找到合适的Bean-->[beanType=$type]")
@@ -383,14 +396,14 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         val autowiredBeanName: String?  // 要进行autowire的beanName
         var instanceCandidate: Any? = null  // 要进行注入的bean
 
-        // 如果找到了众多的候选Bean
+        // 3.2 如果找到了众多的候选Bean，那么需要去进行决策...
         if (candidates.size > 1) {
             // 根据Order和Primary去进行决策...
             autowiredBeanName = determineAutowireCandidate(candidates, descriptor)
             if (autowiredBeanName != null) {
                 instanceCandidate = candidates[autowiredBeanName]
             }
-            // 如果就找到一个合适的候选Bean，那么这个Bean就是最终的候选Bean(毫无疑问)
+            // 3.3 如果就找到一个合适的候选Bean，那么这个Bean就是最终的候选Bean(毫无疑问)
         } else {
             autowiredBeanName = candidates.iterator().next().key
             instanceCandidate = candidates.iterator().next().value
@@ -502,14 +515,15 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     private fun isPrimary(beanName: String, beanInstance: Any) = getMergedBeanDefinition(beanName).isPrimary()
 
     /**
-     * 根据DependencyDescriptor去BeanFactory当中寻找到所有的候选的要进行注入的Bean的列表
+     * 根据DependencyDescriptor去BeanFactory当中寻找到所有的候选的要进行注入的Bean的列表；
+     * 所有会设涉及到Autowire的候选Bean的逻辑，都会使用这个方法去进行完成
      */
     private fun findAutowireCandidates(
         beanName: String?, requiredType: Class<*>, descriptor: DependencyDescriptor
     ): MutableMap<String, Any> {
-        // 从容器中拿到所有的匹配requiredType的类型的beanName列表
-        val candidateNames: List<String> = getBeanNamesForType(requiredType)
-        val result: HashMap<String, Any> = HashMap()
+        // 从BeanFactory(以及它的parentBeanFactory)当中中拿到所有的类型匹配requiredType的beanName列表
+        val candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this, requiredType)
+        val result = HashMap<String, Any>()
 
         // 1.从BeanFactory当中注册的可解析的依赖(resolvableDependencies)当中尝试去进行解析
         this.resolvableDependencies.forEach { (type, obj) ->
@@ -520,7 +534,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
         // 2.遍历容器中的所有的类型匹配的Bean，去进行挨个地匹配...为了AutowireCandidate的Bean
         candidateNames.forEach {
-            // 从DependencyDescriptor当中解析到合适的依赖
+            // 从DependencyDescriptor当中解析到合适的依赖，判断该Bean，是否是一个Autowire候选Bean？
             if (isAutowireCandidate(it, descriptor)) {
                 result[it] = descriptor.resolveCandidate(it, requiredType, this)
             }
@@ -532,8 +546,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     /**
      * 解析多个Bean的情况，比如Collection/Map/Array等类型的依赖的解析，有可能会需要用到Converter去完成类型的转换
      *
-     * @param descriptor 依赖描述符
-     * @param requestingBeanName 请求去进行注入的beanName
+     * @param descriptor 要去进行注入的依赖的依赖描述符
+     * @param requestingBeanName 请求去进行注入的beanName(A请求注入B，requestingBeanName=A)
      * @param autowiredBeanName 自动注入的beanName列表，作为输出参数(可以为null)
      * @param typeConverter 类型转换器
      */
@@ -554,13 +568,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             if (candidates.isEmpty()) {
                 return null
             }
-            // 利用Java的反射去创建数组，交给JVM去创建一个合成的数组类型
-            val typeArray = java.lang.reflect.Array.newInstance(componentType, candidates.size)
-            // 将候选的Bean列表转换为List，方便完成遍历
-            val candidatesList = ArrayList(candidates.values)
-            for (index in 0 until candidates.size) {
-                java.lang.reflect.Array.set(typeArray, index, candidatesList[index])
-            }
+            // 交给TypeConverter，去利用Java的反射(java.lang.reflect.Array)去创建数组，交给JVM去创建一个合成的数组类型
+            val typeArray = (typeConverter ?: getTypeConverter()).convertIfNecessary(candidates.values, type)
 
             // 如果必要的话，将候选的要注入的beanNames列表进行输出...
             autowiredBeanName?.addAll(candidates.keys)
@@ -588,12 +597,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             // 找到所有的候选类型的Bean
             val candidates = findAutowireCandidates(requestingBeanName, valueType!!, descriptor)
 
-            val collection = when (type) {
-                Set::class.java -> LinkedHashSet()
-                List::class.java -> ArrayList()
-                else -> type.getDeclaredConstructor().newInstance() as MutableCollection<Any>
-            }
-            candidates.values.forEach(collection::add)
+            val collection = (typeConverter ?: getTypeConverter()).convertIfNecessary(candidates.values, type)
             autowiredBeanName?.addAll(candidates.keys)
             return collection
         }
@@ -760,18 +764,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     @Suppress("UNCHECKED_CAST")
     override fun <T> getBeansForType(type: Class<T>): Map<String, T> {
         val beans = HashMap<String, T>()
-        getBeanDefinitionNames().forEach { beanName ->
-            if (isTypeMatch(beanName, type)) {
-                beans[beanName] = getBean(beanName) as T
-            }
-        }
-        // 匹配已经注册的单实例Bean的列表
-        this.manualSingletonNames.forEach {
-            val singleton = getSingleton(it)
-            if (type.isInstance(singleton)) {
-                beans[it] = singleton as T
-            }
-        }
+        getBeanNamesForType(type).forEach { beans[it] = getBean(it) as T }
         return beans
     }
 

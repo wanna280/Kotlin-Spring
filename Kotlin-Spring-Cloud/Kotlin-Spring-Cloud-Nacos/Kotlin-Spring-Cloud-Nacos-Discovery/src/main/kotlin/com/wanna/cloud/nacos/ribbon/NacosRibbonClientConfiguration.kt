@@ -19,30 +19,17 @@ import com.wanna.cloud.context.named.NamedContextFactory
 @Configuration(proxyBeanMethods = false)
 open class NacosRibbonClientConfiguration {
 
-    @Bean
-    @ConditionOnMissingBean
-    open fun nacosDiscoveryProperties() : NacosDiscoveryProperties {
-        return NacosDiscoveryProperties()
-    }
-
-    @Bean
-    @ConditionOnMissingBean
-    open fun nacosServiceManager() : NacosServiceManager {
-        return NacosServiceManager()
-    }
-
     /**
+     * 配置Nacos自己的NacosServerList，为了去整合Ribbon实现客户端负载均衡，Ribbon提供负载均衡算法，Nacos提供负载均衡的实例(Server)
      *
-     * @param discoveryProperties NacosDiscovery的配置信息
-     * @param manager nacos的NamingService的管理器(操作NacosServer的注册服务)
+     * @param discoveryProperties NacosDiscovery的配置信息(从parent容器当中直接获取)
+     * @param manager nacos的NamingService的管理器(操作NacosServer的注册服务，从parent容器当中直接获取)
      * @param config RibbonClient的配置信息
      */
     @Bean
     @ConditionOnMissingBean
     open fun nacosServerList(
-        discoveryProperties: NacosDiscoveryProperties,
-        manager: NacosServiceManager,
-        config: IClientConfig
+        discoveryProperties: NacosDiscoveryProperties, manager: NacosServiceManager, config: IClientConfig
     ): NacosServerList {
         val nacosServerList = NacosServerList(discoveryProperties, manager)
         // 使用clientConfig去对NacosServerList去进行初始化，主要是初始化serviceId

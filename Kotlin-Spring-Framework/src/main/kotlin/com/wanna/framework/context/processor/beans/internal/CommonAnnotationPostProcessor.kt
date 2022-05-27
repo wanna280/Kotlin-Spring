@@ -41,7 +41,7 @@ open class CommonAnnotationPostProcessor : InitDestroyAnnotationBeanPostProcesso
         }
     }
 
-    private var beanFactory: BeanFactory? = null
+    private lateinit var beanFactory: BeanFactory
 
     override fun setBeanFactory(beanFactory: BeanFactory) {
         this.beanFactory = beanFactory
@@ -174,7 +174,7 @@ open class CommonAnnotationPostProcessor : InitDestroyAnnotationBeanPostProcesso
          * @return 去执行自动注入的元素
          */
         override fun getResourceToInject(bean: Any, beanName: String): Any? {
-            return beanFactory?.getBean(name)
+            return beanFactory.getBean(name)
         }
     }
 }

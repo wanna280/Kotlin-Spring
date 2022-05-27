@@ -13,9 +13,9 @@ import com.wanna.framework.core.environment.Environment
  */
 open class PropertySourcesPlaceholderConfigurer : EnvironmentAware, BeanFactoryAware, BeanFactoryPostProcessor {
 
-    private var environment: Environment? = null
+    private lateinit var environment: Environment
 
-    private var beanFactory: BeanFactory? = null
+    private lateinit  var beanFactory: BeanFactory
 
     override fun setEnvironment(environment: Environment) {
         this.environment = environment

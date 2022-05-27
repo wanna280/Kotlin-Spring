@@ -22,7 +22,7 @@ import java.util.function.Supplier
 /**
  * 这是一个拥有Autowire能力的BeanFactory，不仅提供了普通的BeanFactory的能力，也可以提供createBean等Autowire相关工作
  */
-abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), AutowireCapableBeanFactory {
+abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), AutowireCapableBeanFactory {
 
     // 是否开启了循环依赖？默认设置为true
     private var allowCircularReferences: Boolean = true
@@ -137,7 +137,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
             if (ex is BeanCreationException) {
                 throw ex
             }
-            // 如果只是普通的异常，那么需要去对ex进行再一次包装，往上抛
+            // 如果只是一个普通异常，那么需要去对ex进行再一次包装，往上抛
             throw BeanCreationException("初始化Bean失败", ex, beanName)
         }
 
@@ -271,12 +271,6 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
         return ConstructorResolver(this).instantiateUsingFactoryMethod(beanName, mbd)
     }
 
-    /**
-     * 对BeanWrapper去完成初始化工作
-     */
-    open fun initBeanWrapper(beanWrapper: BeanWrapper) {
-
-    }
 
     /**
      * 应用所有的MergedBeanDefinitionPostProcessor，去完成BeanDefinition的合并，此时得到的beanType为实例化之后得到的对象的真实beanType

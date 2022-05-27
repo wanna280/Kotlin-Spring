@@ -8,7 +8,7 @@ import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 它是一个默认的单实例Bean的注册中心，维护了三级缓存，可以从三级缓存当中去获取Bean
+ * 它是一个默认的单实例Bean的注册中心，维护了SpringBeanFactory的三级缓存，可以从三级缓存当中去获取Bean
  */
 open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
 
