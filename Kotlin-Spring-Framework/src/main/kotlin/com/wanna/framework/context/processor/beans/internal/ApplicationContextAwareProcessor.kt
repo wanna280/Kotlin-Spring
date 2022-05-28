@@ -1,6 +1,7 @@
 package com.wanna.framework.context.processor.beans.internal
 
 import com.wanna.framework.beans.factory.config.EmbeddedValueResolver
+import com.wanna.framework.beans.util.StringValueResolver
 import com.wanna.framework.context.*
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.EnvironmentAware
@@ -16,10 +17,10 @@ import com.wanna.framework.context.processor.beans.BeanPostProcessor
  * @see EmbeddedValueResolverAware
  * @see ApplicationStartupAware
  */
-open class ApplicationContextAwareProcessor(private var applicationContext: ConfigurableApplicationContext) :
+open class ApplicationContextAwareProcessor(private val applicationContext: ConfigurableApplicationContext) :
     BeanPostProcessor {
 
-    // 嵌入式值解析器
+    // 嵌入式值解析器，提供表达式的解析工作
     private val embeddedValueResolver = EmbeddedValueResolver(this.applicationContext.getBeanFactory())
 
     override fun postProcessBeforeInitialization(beanName: String, bean: Any): Any? {
@@ -28,7 +29,7 @@ open class ApplicationContextAwareProcessor(private var applicationContext: Conf
     }
 
     /**
-     * 执行所有的Aware接口，完成容器对象的注入
+     * 执行所有的Aware接口，完成Spring内部的容器组件的注入工作
      */
     open fun invokeAwareInterfaces(bean: Any) {
         if (bean is EnvironmentAware) {

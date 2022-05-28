@@ -98,7 +98,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
         } catch (ex: Exception) {
             throw ex
         } finally {
-            // afterSingletonCreation
+            // afterSingletonCreation...
             afterSingletonCreation(beanName)
         }
         // 如果是新创建的，还需要将Bean加入到一级缓存的列表当中
@@ -254,7 +254,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     override fun registerSingleton(beanName: String, singleton: Any) {
         synchronized(singletonObjects) {
             // 从以及缓存当中拿到旧的Object实例，如果已经存在有旧的Object，那么抛出不合法的状态异常
-            val oldObject = singletonObjects.get(beanName)
+            val oldObject = singletonObjects[beanName]
             if (oldObject != null) {
                 throw IllegalStateException("在SingletonBeanRegistry中已经存在有[beanName=$beanName]的Bean")
             }
@@ -269,7 +269,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
      * @param beanName beanName
      */
     override fun containsSingleton(beanName: String): Boolean {
-        return this.singletonObjects.contains(beanName)
+        return this.singletonObjects.containsKey(beanName)  // fixed:contains-->containsKey
     }
 
     /**

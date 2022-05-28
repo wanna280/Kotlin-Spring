@@ -14,8 +14,9 @@ open class FactoryBeanRegistrySupport : DefaultSingletonBeanRegistry() {
      * 根据beanName从FactoryBeanObject当中去获取FactoryBeanObject
      *
      * @param beanName beanName
+     * @return FactoryBeanObject(如果没有的话，return null)
      */
-    open fun getCachedFactoryBeanForObject(beanName: String) = factoryBeanObjectCache[beanName]
+    open fun getCachedFactoryBeanForObject(beanName: String): Any? = factoryBeanObjectCache[beanName]
 
     /**
      * 从FactoryBean当中去获取FactoryBeanObject，通过调用FactoryBean.getObject方法，去获取到该FactoryBean要导入的FactoryBeanObject

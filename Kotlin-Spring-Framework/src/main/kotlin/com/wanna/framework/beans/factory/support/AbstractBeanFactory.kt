@@ -118,7 +118,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
      * doGetBean，对多种情况的getBean的方式提供模板方法的实现
      */
     @Suppress("UNCHECKED_CAST")
-    protected open fun <T> doGetBean(name: String, requiredType: Class<T>?): T? {
+    protected open fun <T> doGetBean(name: String, requiredType: Class<T>?): T {
         // 转换name成为真正的beanName，去掉FactoryBean的前缀"&"去进行解引用
         val beanName = transformedBeanName(name)
 
@@ -126,19 +126,25 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
 
         // 尝试从单实例Bean的注册中心当中去获取Bean
         val sharedInstance = getSingleton(beanName)
-
-        // 如果获取到的SingletonBean的话，那么需要尝试去获取FactoryBeanObject
+        // 如果获取到了SingletonBean的话，那么需要尝试去获取FactoryBeanObject(如果是FactoryBean的话)
         if (sharedInstance != null) {
+            if (logger.isTraceEnabled) {
+                if (isSingletonCurrentlyInCreation(beanName)) {
+                    logger.trace("提前去获取了早期实例的引用[beanName=$beanName]，它并未完成彻底的初始化工作，因为发生了循环依赖")
+                } else {
+                    logger.trace("从缓存当中获取单实例Bean[beanName=$beanName]")
+                }
+            }
             beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, null)
         } else {
             val parentBeanFactory = this.parentBeanFactory
             // 如果有parentBeanFactory，并且当前的BeanFactory当中确实是**没有**该BeanDefinition，那么就从parent去进行寻找...
             if (parentBeanFactory != null && !containsBeanDefinition(name)) {
-                return parentBeanFactory.getBean(name) as T?
+                return parentBeanFactory.getBean(name) as T
             }
 
             // 如果从单例Bean注册中心当中获取不到Bean实例，那么需要获取MergedBeanDefinition，去完成Bean的创建
-            val mbd = getMergedBeanDefinition(beanName)
+            val mbd = getMergedLocalBeanDefinition(beanName)
 
             val beanCreation = this.applicationStartup.start("spring.beans.instantiate")
                 .tag("beanName", name)
@@ -150,9 +156,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
 
                 // 将它依赖的Bean先去进行实例化工作...
                 val dependsOn = mbd.getDependsOn()
-                dependsOn.forEach {
-                    getBean(it)
-                }
+                dependsOn.forEach { getBean(it) }
 
                 // 如果Bean是单例(Singleton)的
                 if (mbd.isSingleton()) {
@@ -189,12 +193,12 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
                     })
                     beanInstance = getObjectForBeanInstance(scopedInstance, name, beanName, mbd)
                 }
-            } catch (ex: Exception) {
+            } catch (ex: BeansException) {
                 beanCreation.tag("exception", ex::class.java.toString())
                 beanCreation.tag("message", ex.message ?: "")
                 throw ex
             } finally {
-                beanCreation.end()
+                beanCreation.end()  // end
             }
         }
 
@@ -238,8 +242,8 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
             mbd?.setFactoryBean(true)  // setFactoryBean to true
             return beanInstance
         }
-        // 如果给定的name不是以"&"开头的话，说明它想获取到的是FactoryBeanObject(或者正常非FactoryBean的Bean)
 
+        // 如果给定的name不是以"&"开头的话，说明它想获取到的是FactoryBeanObject(或者正常非FactoryBean的普通Bean)
         if (beanInstance !is FactoryBean<*>) {  // 正常的Bean，直接return
             return beanInstance
         }
@@ -267,6 +271,8 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
     /**
      * 注册一个指定的Scope到BeanFactory当中
      *
+     * @param name scopeName
+     * @param scope 要去进行注册的Scope
      * @throws IllegalArgumentException 如果尝试去注册Singleton/Prototype
      */
     override fun registerScope(name: String, scope: Scope) {
@@ -297,12 +303,12 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
     /**
      * 按照type去进行getBean
      */
-    override fun <T> getBean(type: Class<T>): T? {
-        val beansForType = getBeansForType(type)
-        if (beansForType.isEmpty()) {
+    override fun <T> getBean(type: Class<T>): T {
+        val result = getBeanNamesForType(type).map { getBean(it, type) }
+        if (result.isEmpty()) {
             throw NoSuchBeanDefinitionException("没有这样的BeanDefinition", type)
         }
-        return beansForType.values.iterator().next()
+        return result.iterator().next()
     }
 
     /**
@@ -331,6 +337,14 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         return isTypeMatch(name, type, true)
     }
 
+    /**
+     * 判断容器当中的beanName对应的类型是否和type匹配？(支持去匹配FactoryBeanObject)
+     *
+     * @param name beanName
+     * @param type beanName应该匹配的类型？
+     * @param allowFactoryBeanInit 是否允许FactoryBean去进行初始化？
+     * @return 是否类型匹配？
+     */
     protected open fun isTypeMatch(name: String, type: Class<*>, allowFactoryBeanInit: Boolean): Boolean {
         val beanName = transformedBeanName(name)
         val factoryDereference = BeanFactoryUtils.isFactoryDereference(name)
@@ -340,7 +354,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         if (singleton != null && singleton::class.java != NullBean::class.java) {
             // 如果获取到的SingletonBean是FactoryBean的话
             return if (singleton is FactoryBean<*>) {
-                if (!factoryDereference) { // 如果给的name没有"&"，说明有可能需要匹配FactoryBeanObject
+                if (!factoryDereference) { // 如果给的name没有以"&"开头，说明有可能需要匹配FactoryBeanObject
                     val typeForFactoryBean = getTypeForFactoryBean(singleton)
                     ClassUtils.isAssignFrom(type, typeForFactoryBean)
                 } else { // 如果给的name含有"&"，那么说明想要的是FactoryBean，而不是FactoryBeanObject，直接匹配FactoryBean的类型
@@ -358,16 +372,20 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         }
 
         // 3.如果从SingletonBean当中都无法获取到的话，那么也只能从BeanDefinition当中去进行判断了...
-        val beanDefinition = getMergedBeanDefinition(beanName)
+        val beanDefinition = getMergedLocalBeanDefinition(beanName)
         val beanClass = beanDefinition.getBeanClass()
 
         // 如果有beanClass的话，那么直接使用beanClass去进行匹配
         if (beanClass != null) {
             if (isFactoryBean(beanName, beanDefinition)) {
-                // 如果是FactoryBean并且有"&"作为前缀的话，那么尝试一下去获取FactoryBean，再利用FactoryBeanObject去进行匹配
-                if (allowFactoryBeanInit && factoryDereference) {
-                    val factoryBean = getBean(name, type) as FactoryBean<*>
+                // 如果是FactoryBean，那么有可能需要匹配FactoryBean/FactoryBeanObject
+                // 1.如果name以"&"开头，那么需要匹配的是FactoryBean，直接使用isAssignFrom去进行匹配就行
+                // 2.如果name没有以"&"开头，那么需要匹配的就是FactoryBeanObject(需要提前去完成FactoryBean的实例化)
+                if (allowFactoryBeanInit && !factoryDereference) {
+                    val factoryBean = getBean(FACTORY_BEAN_PREFIX + beanName, type) as FactoryBean<*>
                     return ClassUtils.isAssignFrom(type, factoryBean.getObjectType())
+                } else {
+                    return ClassUtils.isAssignFrom(type, beanClass)
                 }
             } else {
                 return ClassUtils.isAssignFrom(type, beanClass)
@@ -421,7 +439,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         // 1.从SingletonBean中去进行获取Bean的类型
         val beanInstance = getSingleton(beanName, false)
         if (beanInstance != null && beanInstance != NullBean::class.java) {
-            // 如果获取到的是单例Bean是一个FactoryBean，但是beanName没有&，那么就说明需要返回FactoryBean所导入的Object的类型
+            // 如果获取到的是单例Bean是一个FactoryBean，但是beanName没有"&"，那么就说明需要返回FactoryBean所导入的Object的类型
             if (beanInstance is FactoryBean<*> && !BeanFactoryUtils.isFactoryDereference(beanName)) {
                 return getTypeForFactoryBean(beanInstance)
             } else {
@@ -430,7 +448,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         }
 
         // 获取到MergedBeanDefinition
-        val mbd = getMergedBeanDefinition(beanName)
+        val mbd = getMergedLocalBeanDefinition(beanName)
 
         val beanClass = mbd.getBeanClass()
         if (beanClass != null && ClassUtils.isAssignFrom(FactoryBean::class.java, beanClass)) {
@@ -483,21 +501,44 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
     abstract fun getBeanDefinition(beanName: String): BeanDefinition
 
     /**
-     * 获取合并之后的BeanDefinition(RootBeanDefinition)
+     * 获取合并之后的BeanDefinition(RootBeanDefinition)，支持从parentBeanFactory当中去进行递归搜索
+     *
+     * @param name 要去进行合并的beanName
+     * @return 完成合并的BeanDefinition(一般为RootBeanDefinition)
      */
-    override fun getMergedBeanDefinition(beanName: String): RootBeanDefinition {
+    override fun getMergedBeanDefinition(name: String): BeanDefinition {
+        val beanName = transformedBeanName(name)
+        // 如果当前的BeanFactory当中没有包含的话，那么直接尝试去parent去进行检查(fast check)
+        if (!containsBeanDefinition(name) && getParentBeanFactory() is ConfigurableBeanFactory) {
+            return (getParentBeanFactory()!! as ConfigurableBeanFactory).getMergedBeanDefinition(beanName)
+        }
+        // 如果当前BeanFactory当中有包含的话，那么从当前的BeanFactory当中去进行寻找
+        return getMergedLocalBeanDefinition(beanName)
+    }
+
+    /**
+     * 获取**当前BeanFactory**当中完成合并的BeanDefinition，不会从parent当中去进行搜索
+     *
+     * @param beanName 要去进行合并的BeanDefinition的beanName
+     * @return 完成合并的RootBeanDefinition
+     */
+    protected open fun getMergedLocalBeanDefinition(beanName: String): RootBeanDefinition {
         val rootBeanDefinition = mergedBeanDefinitions[beanName]
-        // 先进行一次检查，避免立刻加锁进行操作
+        // 先进行一次检查(fast check)，避免立刻加锁进行操作
         if (rootBeanDefinition != null) {
             return rootBeanDefinition
         }
         // 如果确实是没有，那么必须得加锁去进行Merged了
-        val beanDefinition = getBeanDefinition(beanName)
-        return getMergedBeanDefinition(beanName, beanDefinition)
+        return getMergedBeanDefinition(beanName, getBeanDefinition(beanName))
     }
+
 
     /**
      * 返回合并之后的BeanDefinition(RootBeanDefinition)
+     *
+     * @param beanName beanName
+     * @param beanDefinition originBeanDefinition(待去进行Merge的BeanDefinition)
+     * @return 合并之后的RootBeanDefinition
      */
     protected open fun getMergedBeanDefinition(beanName: String, beanDefinition: BeanDefinition): RootBeanDefinition {
         synchronized(mergedBeanDefinitions) {

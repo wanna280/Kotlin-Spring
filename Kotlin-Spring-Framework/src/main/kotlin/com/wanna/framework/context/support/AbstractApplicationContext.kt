@@ -417,9 +417,9 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
      * 创建Environment
      */
     protected open fun createEnvironment(): ConfigurableEnvironment = StandardEnvironment()
-    override fun getBean(beanName: String) = getBeanFactory().getBean(beanName)
-    override fun <T> getBean(beanName: String, type: Class<T>): T? = getBeanFactory().getBean(beanName, type)
-    override fun <T> getBean(type: Class<T>) = getBeanFactory().getBean(type)
+    override fun getBean(beanName: String) : Any = getBeanFactory().getBean(beanName)
+    override fun <T> getBean(beanName: String, type: Class<T>): T = getBeanFactory().getBean(beanName, type)
+    override fun <T> getBean(type: Class<T>) : T = getBeanFactory().getBean(type)
     override fun isSingleton(beanName: String) = getBeanFactory().isSingleton(beanName)
     override fun isPrototype(beanName: String) = getBeanFactory().isPrototype(beanName)
     override fun addBeanPostProcessor(processor: BeanPostProcessor) = getBeanFactory().addBeanPostProcessor(processor)
