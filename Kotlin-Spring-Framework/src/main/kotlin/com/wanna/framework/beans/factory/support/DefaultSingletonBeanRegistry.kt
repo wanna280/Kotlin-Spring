@@ -200,7 +200,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
      *
      * @param beanName beanName
      */
-    open fun destorySingleton(beanName: String) {
+    open fun destroySingleton(beanName: String) {
         // 1.从三级缓存当中去移除单实例Bean
         removeSingleton(beanName)
 

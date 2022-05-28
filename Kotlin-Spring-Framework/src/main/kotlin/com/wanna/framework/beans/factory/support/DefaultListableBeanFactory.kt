@@ -5,6 +5,7 @@ import com.wanna.framework.beans.SmartInitializingSingleton
 import com.wanna.framework.beans.TypeConverter
 import com.wanna.framework.beans.factory.*
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
+import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
@@ -98,10 +99,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
                 if (isFactoryBean(beanName)) {
                     val bean = getBean(BeanFactory.FACTORY_BEAN_PREFIX + beanName)
                     if (bean is FactoryBean<*>) {
-                        var isEagerInit = false
-                        if (bean is SmartFactoryBean<*>) {
-                            isEagerInit = bean.isEagerInit()
-                        }
+                        val isEagerInit = bean is SmartFactoryBean<*> && bean.isEagerInit()
                         if (isEagerInit) {
                             getBean(beanName)
                         }
@@ -128,19 +126,26 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     /**
      * 给定一个beanName，去判断该Bean是否是FactoryBean
      *
-     * @param beanName beanName
+     * @param name beanName
      * @return 该Bean是否是FactoryMethod
      */
-    override fun isFactoryBean(beanName: String): Boolean {
+    override fun isFactoryBean(name: String): Boolean {
         //将beanName当中的&前缀全部去掉
-        val transformBeanName = transformBeanName(beanName)
+        val transformBeanName = transformBeanName(name)
 
-        // 从容器当中获取到Singleton对象，看它类型是否是一个FactoryBean？
+        // 1.尝试去从容器当中获取到Singleton对象，看它类型是否是一个FactoryBean？
         val singleton = getSingleton(transformBeanName, false)
         if (singleton != null) {
             return singleton is FactoryBean<*>
         }
-        return false
+
+        // 2.如果当前BeanFactory当中没有该BeanDefinition，那么从parent去进行寻找
+        if (!containsBeanDefinition(name) && getParentBeanFactory() is ConfigurableBeanFactory) {
+            return getParentBeanFactory()!!.isFactoryBean(name)
+        }
+
+        // 3.从BeanDefinition当中去进行判断是否是FactoryBean...
+        return isFactoryBean(name, getMergedBeanDefinition(name))
     }
 
     /**
@@ -704,8 +709,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      *
      * @param beanName beanName
      */
-    override fun destorySingleton(beanName: String) {
-        super.destorySingleton(beanName)
+    override fun destroySingleton(beanName: String) {
+        super.destroySingleton(beanName)
 
         // 从manualSingletonName当中也进行移除掉
         removeManualSingletonName(beanName)

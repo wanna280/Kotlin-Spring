@@ -54,12 +54,12 @@ interface BeanFactory {
     /**
      * 根据beanName去判断该Bean是否是一个FactoryBean
      */
-    fun isFactoryBean(beanName: String): Boolean
+    fun isFactoryBean(name: String): Boolean
 
     /**
      * beanName对应的Bean的类型是否匹配type？
      */
-    fun isTypeMatch(beanName: String, type: Class<*>): Boolean
+    fun isTypeMatch(name: String, type: Class<*>): Boolean
 
     /**
      * 根据beanName去匹配beanType
