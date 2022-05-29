@@ -11,43 +11,71 @@ open class FactoryBeanRegistrySupport : DefaultSingletonBeanRegistry() {
     private val factoryBeanObjectCache = LinkedHashMap<String, Any>()
 
     /**
-     * 根据beanName从FactoryBeanObject当中去获取Bean
+     * 根据beanName从FactoryBeanObject当中去获取FactoryBeanObject
      *
      * @param beanName beanName
+     * @return FactoryBeanObject(如果没有的话，return null)
      */
-    open fun getFactoryBeanForObject(beanName: String) = factoryBeanObjectCache[beanName]
+    open fun getCachedFactoryBeanForObject(beanName: String): Any? = factoryBeanObjectCache[beanName]
 
     /**
-     * 从FactoryBean当中去获取FactoryBeanObject
+     * 从FactoryBean当中去获取FactoryBeanObject，通过调用FactoryBean.getObject方法，去获取到该FactoryBean要导入的FactoryBeanObject
+     *
+     * @param factoryBean FactoryBean
+     * @param beanName beanName(不包含"&"的beanName)
+     * @param shouldProcess 是否应该被后置处理？如果应该的话，那么会使用BeanPostProcessor去进行后置处理(完成代理工作)
      */
-    open fun getObjectFromFactoryBean(factoryBean: FactoryBean<*>, beanName: String, shouldProcess: Boolean): Any? {
+    open fun getObjectFromFactoryBean(factoryBean: FactoryBean<*>, beanName: String, shouldProcess: Boolean): Any {
+        // 1.如果该FactoryBean是单例的，并且已经包含了该SingletonBean的话...
         if (containsSingleton(beanName) && factoryBean.isSingleton()) {
             synchronized(getSingletonMutex()) {
-                var instance = factoryBeanObjectCache[beanName]
-                if (instance == null) {
-                    instance = doGetObjectFromFactoryBean(factoryBean)
-                    factoryBeanObjectCache[beanName] = instance as Any
+                // 尝试从缓存去进行获取，如果获取不到，那么就去构建一波FactoryBeanObject
+                var factoryBeanObject = factoryBeanObjectCache[beanName]
+                if (factoryBeanObject == null) {
+                    factoryBeanObject = doGetObjectFromFactoryBean(factoryBean)
                 }
-                return instance
+                // 如果应该被后置处理的话，那么使用BeanPostProcessor去进行后置处理工作
+                if (shouldProcess) {
+                    beforeSingletonCreation(beanName)
+                    factoryBeanObject = postProcessObjectFromFactoryBean(factoryBeanObject!!, beanName)
+                    afterSingletonCreation(beanName)
+                }
+                if (containsSingleton(beanName)) {
+                    factoryBeanObjectCache[beanName] = factoryBeanObject!!  // put Cache
+                }
+                return factoryBeanObject!!
             }
+
+            // 如果还没有包含该Singleton，或者它是Prototype的FactoryBean的话...
         } else {
-            return Any()
+            var factoryBeanObject = doGetObjectFromFactoryBean(factoryBean)
+            if (shouldProcess) {
+                factoryBeanObject = postProcessObjectFromFactoryBean(factoryBeanObject, beanName)
+            }
+            return factoryBeanObject
         }
     }
 
-    open fun doGetObjectFromFactoryBean(factoryBean: FactoryBean<*>): Any? {
+    /**
+     * 对FactoryBean去完成后置处理，模板方法，交给子类去进行实现
+     */
+    protected open fun postProcessObjectFromFactoryBean(factoryBeanObject: Any, beanName: String): Any {
+        return factoryBeanObject
+    }
+
+    open fun doGetObjectFromFactoryBean(factoryBean: FactoryBean<*>): Any {
         try {
             return factoryBean.getObject() as Any
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
-        return null
+        return NullBean()
     }
 
     /**
      * 获取FactoryBean的Object的Type
      */
-    open fun getTypeForFactoryBean(factoryBean: FactoryBean<*>): Class<*>? {
+    open fun getTypeForFactoryBean(factoryBean: FactoryBean<*>): Class<*> {
         return factoryBean.getObjectType()
     }
 }

@@ -8,7 +8,7 @@ import java.util.UUID
 
 fun main() {
     val typeConverter = SimpleTypeConverter()
-    typeConverter.conversionService = DefaultConversionService()
+    typeConverter.setConversionService(DefaultConversionService())
 
     println(typeConverter.convertIfNecessary("234", Int::class.java))
 

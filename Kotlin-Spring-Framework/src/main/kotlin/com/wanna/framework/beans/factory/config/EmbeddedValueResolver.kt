@@ -8,7 +8,8 @@ import com.wanna.framework.beans.util.StringValueResolver
  * @see StringValueResolver
  */
 open class EmbeddedValueResolver(private val beanFactory: ConfigurableListableBeanFactory) : StringValueResolver {
+
     override fun resolveStringValue(strVal: String): String? {
-        return strVal
+        return beanFactory.resolveEmbeddedValue(strVal)
     }
 }

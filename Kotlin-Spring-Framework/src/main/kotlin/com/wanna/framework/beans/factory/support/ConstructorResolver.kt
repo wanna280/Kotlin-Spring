@@ -3,9 +3,11 @@ package com.wanna.framework.beans.factory.support
 import com.wanna.framework.beans.BeanWrapper
 import com.wanna.framework.beans.BeanWrapperImpl
 import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.beans.factory.InjectionPoint
 import com.wanna.framework.beans.factory.config.ConstructorArgumentValues
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.core.NamedThreadLocal
 import java.beans.ConstructorProperties
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
@@ -23,6 +25,23 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
     companion object {
         // 空参数的标识符
         private val EMPTY_ARGS = emptyArray<Any>()
+
+        // 当前的InjectionPoint(字段/方法参数)
+        private val currentInjectionPoint = NamedThreadLocal<InjectionPoint>("Current Injection Point")
+
+        /**
+         * 设置新的InjectionPoint，并返回之前的InjectionPoint
+         */
+        @JvmStatic
+        fun setCurrentInjectionPoint(injectionPoint: InjectionPoint?): InjectionPoint? {
+            val old = currentInjectionPoint.get()
+            if (injectionPoint != null) {
+                currentInjectionPoint.set(old)
+            } else {
+                currentInjectionPoint.remove()
+            }
+            return old
+        }
     }
 
 

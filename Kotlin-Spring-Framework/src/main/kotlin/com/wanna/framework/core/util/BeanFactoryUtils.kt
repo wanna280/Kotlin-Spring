@@ -28,7 +28,7 @@ object BeanFactoryUtils {
         var name = beanName
         do {
             name = name.substring(FACTORY_BEAN_PREFIX.length)
-        } while (beanName.startsWith(FACTORY_BEAN_PREFIX))
+        } while (name.startsWith(FACTORY_BEAN_PREFIX))
         return name
     }
 
