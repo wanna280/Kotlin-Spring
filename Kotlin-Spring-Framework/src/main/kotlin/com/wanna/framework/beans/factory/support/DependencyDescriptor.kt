@@ -1,6 +1,7 @@
 package com.wanna.framework.beans.factory.support
 
 import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.beans.factory.InjectionPoint
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ParameterNameDiscoverer
 import com.wanna.framework.core.ResolvableType
@@ -11,13 +12,9 @@ import java.lang.reflect.Type
  * 这是一个依赖的描述符，可以描述一个方法的参数，或者是一个字段，当然，也可以是一个构造器的参数也是可以的
  * 在Spring当中需要去进行依赖的解析时，就会将依赖的相关信息都封装成为一个DependencyDescriptor，方便BeanFactory当中可以对依赖去进行解析工作
  */
-open class DependencyDescriptor
-protected constructor(
-    private val field: Field?,
-    private val parameter: MethodParameter?,
-    private val required: Boolean,
-    private val eager: Boolean = false
-) {
+open class DependencyDescriptor protected constructor(
+    field: Field?, parameter: MethodParameter?, private val required: Boolean, private val eager: Boolean = false
+) : InjectionPoint(field, parameter) {
     constructor(field: Field?, required: Boolean) : this(field, null, required)
     constructor(field: Field?, required: Boolean, eager: Boolean) : this(field, null, required, eager)
     constructor(parameter: MethodParameter?, required: Boolean) : this(null, parameter, required)
@@ -49,36 +46,6 @@ protected constructor(
     // 可以解析的类型
     private var resolvableType: ResolvableType? = null
 
-    /**
-     * 获取方法参数，如果这描述的是一个字段，那么return null
-     */
-    open fun getMethodParameter(): MethodParameter? = this.parameter
-
-    /**
-     * 获取方法参数/构造器参数/字段上的注解列表
-     */
-    open fun getAnnotations(): Array<Annotation> {
-        if (field != null) {
-            return field.annotations
-        }
-        if (parameter != null) {
-            return parameter.getAnnotations()
-        }
-        return emptyArray()
-    }
-
-    /**
-     * 获取指定的注解，如果是一个方法参数，那么从方法参数当中获取注解；如果是一个字段，从字段当中获取注解
-     */
-    open fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T? {
-        if (field != null) {
-            return field.getAnnotation(annotationClass)
-        }
-        if (parameter != null) {
-            return parameter.getAnnotation(annotationClass)
-        }
-        return null
-    }
 
     /**
      * 初始化参数名发现器
@@ -95,6 +62,8 @@ protected constructor(
      * 获取泛型的类型，如果是一个方法参数，那么获取方法参数的泛型；如果是一个字段，那么获取字段的泛型类型
      */
     open fun getGenericType(): Type {
+        val parameter = getMethodParameter()
+        val field = getField()
         if (parameter != null) {
             return parameter.getGenericParameterType()
         }
@@ -150,6 +119,8 @@ protected constructor(
      * 返回依赖的类型，如果是字段返回字段类型，如果是方法参数返回方法参数的类型
      */
     open fun getDependencyType(): Class<*> {
+        val parameter = getMethodParameter()
+        val field = getField()
         if (parameter != null) {
             return parameter.getParameterType()
         }
@@ -174,10 +145,11 @@ protected constructor(
      * 获取到该依赖描述符的可以解析的类型
      */
     open fun getResolvableType(): ResolvableType {
+        val field = getField()
         var resolvableType = this.resolvableType
         if (resolvableType == null) {
-            if (this.field != null) {
-                resolvableType = ResolvableType.forField(this.field)
+            if (field != null) {
+                resolvableType = ResolvableType.forField(field)
             } else {
                 resolvableType = ResolvableType.forMethodParameter(getMethodParameter()!!)
             }

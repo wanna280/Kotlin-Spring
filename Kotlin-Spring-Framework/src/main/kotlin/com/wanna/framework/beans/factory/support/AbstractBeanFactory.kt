@@ -11,9 +11,11 @@ import com.wanna.framework.beans.factory.config.Scope
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.beans.util.StringValueResolver
+import com.wanna.framework.context.exception.BeanCurrentlyInCreationException
 import com.wanna.framework.context.exception.BeansException
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.processor.beans.*
+import com.wanna.framework.core.NamedThreadLocal
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.support.DefaultConversionService
 import com.wanna.framework.core.metrics.ApplicationStartup
@@ -73,6 +75,9 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
 
     // Logger
     private val logger = LoggerFactory.getLogger(AbstractBeanFactory::class.java)
+
+    // 当前正在创建当中的Bean，用来排查原型Bean的注入的情况
+    private val prototypesCurrentlyInCreation = NamedThreadLocal<Any>("Prototype Beans Current In Creation")
 
     override fun getBeanClassLoader() = this.beanClassLoader
     override fun setBeanClassLoader(classLoader: ClassLoader?) {
@@ -137,6 +142,12 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
             }
             beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, null)
         } else {
+            // 快速地去检查当前原型Bean是否已经正在创建当中了？只要已经在创建当中了，那么我们就可以认为已经发生了循环依赖了
+            // 但是对于原型Bean的循环依赖，无法解决，因此我们在这里直接抛出BeanCurrentlyInCreationException异常...
+            if (isPrototypeCurrentlyInCreation(beanName)) {
+                throw BeanCurrentlyInCreationException("原型Bean[$beanName]当前正在创建当中", beanName)
+            }
+
             val parentBeanFactory = this.parentBeanFactory
             // 如果有parentBeanFactory，并且当前的BeanFactory当中确实是**没有**该BeanDefinition，那么就从parent去进行寻找...
             if (parentBeanFactory != null && !containsBeanDefinition(name)) {
@@ -172,13 +183,14 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
                     })!!
                     // 如果Bean是Prototype的
                 } else if (mbd.isPrototype()) {
-                    val singleton: Any
+                    val prototypeInstance: Any
+                    beforePrototypeCreation(beanName)
                     try {
-                        singleton = createBean(beanName, mbd)
+                        prototypeInstance = createBean(beanName, mbd)
                     } finally {
-
+                        afterPrototypeCreation(beanName)
                     }
-                    beanInstance = getObjectForBeanInstance(singleton, name, beanName, mbd)
+                    beanInstance = getObjectForBeanInstance(prototypeInstance, name, beanName, mbd)
 
                     // 如果Bean是来自于自定义的Scope，那么需要从自定义的Scope当中去获取Bean
                 } else {
@@ -186,9 +198,16 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
                     assert(scopeName.isNotBlank()) { "[beanName=$beanName]的BeanDefinition的scopeName不能为空" }
                     val scope = this.scopes[scopeName]
                     checkNotNull(scope) { "容器中没有注册过这样的Scope" }
+
+                    // 从自定义的Scope内获取Bean
                     val scopedInstance = scope.get(beanName, object : ObjectFactory<Any> {
                         override fun getObject(): Any {
-                            return createBean(beanName, mbd)
+                            beforePrototypeCreation(beanName)
+                            try {
+                                return createBean(beanName, mbd)
+                            } finally {
+                                afterPrototypeCreation(beanName)
+                            }
                         }
                     })
                     beanInstance = getObjectForBeanInstance(scopedInstance, name, beanName, mbd)
@@ -219,6 +238,66 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
             return getTypeConverter().convertIfNecessary(beanInstance, requiredType)!!
         }
         return beanInstance as T
+    }
+
+    /**
+     * 在原型Bean创建之前应该执行的操作，把它加入到当前正在执行的原型Bean的列表当中
+     *
+     * @param beanName 要标记为当前正在创建当中的原型Bean的beanName
+     */
+    protected open fun beforePrototypeCreation(beanName: String) {
+        val current = prototypesCurrentlyInCreation.get()
+        // 如果current==null，说明之前没有放入过，直接设置beanName
+        if (current == null) {
+            prototypesCurrentlyInCreation.set(beanName)
+
+            // 如果current is String，说明之前已经设置过了，那么需要使用HashSet去添加beanName
+        } else if (current is String) {
+            val beanNameSet = HashSet<String>(2)
+            beanNameSet += current
+            beanNameSet += beanName
+            prototypesCurrentlyInCreation.set(beanNameSet)
+
+            // 如果当前是HashSet，说明之前已经放入过两个以上的元素了，这里直接往HashSet当中添加即可
+        } else {
+            @Suppress("UNCHECKED_CAST")
+            val beanNameSet = current as HashSet<String>
+            beanNameSet += beanName
+        }
+    }
+
+    /**
+     * 在原型Bean创建之后，应该执行的操作，把它从正在执行的原型Bean当中移除掉
+     *
+     * @param beanName 想要去进行移除的原型Bean的beanName
+     */
+    protected open fun afterPrototypeCreation(beanName: String) {
+        val current = prototypesCurrentlyInCreation.get()
+        // 如果之前是String，直接remove
+        if (current is String) {
+            prototypesCurrentlyInCreation.remove()
+
+            // 如果之前是HashSet，那么需要移除一个元素
+        } else {
+            @Suppress("UNCHECKED_CAST")
+            val beanNameSet = current as HashSet<String>
+            beanNameSet -= beanName
+            // 如果最后一个元素都被删掉了，那么直接remove...
+            if (beanNameSet.isEmpty()) {
+                prototypesCurrentlyInCreation.remove()
+            }
+        }
+    }
+
+    /**
+     * 当前原型Bean是否正在创建当中？
+     */
+    @Suppress("UNCHECKED_CAST")
+    protected open fun isPrototypeCurrentlyInCreation(beanName: String): Boolean {
+        val current = prototypesCurrentlyInCreation.get()
+        return current != null && (current == beanName || (current is Set<*> && (current as Set<String>).contains(
+            beanName
+        )))
     }
 
     /**
@@ -528,7 +607,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         if (rootBeanDefinition != null) {
             return rootBeanDefinition
         }
-        // 如果确实是没有，那么必须得加锁去进行Merged了
+        // 如果确实是没有，那么必须得加锁(slow check)去进行Merged了
         return getMergedBeanDefinition(beanName, getBeanDefinition(beanName))
     }
 

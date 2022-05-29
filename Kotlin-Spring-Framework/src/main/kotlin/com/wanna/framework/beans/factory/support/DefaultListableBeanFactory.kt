@@ -357,14 +357,14 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      *
      * @param descriptor 依赖描述符
      * @param requestingBeanName 请求去进行注入的beanName(可以为null)
-     * @param autowiredBeanName 解析到的所有依赖的beanName列表(输出参数，如果为null则不用输出)
+     * @param autowiredBeanNames 解析到的所有依赖的beanName列表(输出参数，如果为null则不用输出)
      * @param typeConverter 解析过程当中要使用到的TypeConverter(可以为null，从BeanFactory当中去进行自动获取)
      * @return 解析到的要去进行注入的依赖
      */
     override fun resolveDependency(
         descriptor: DependencyDescriptor,
         requestingBeanName: String?,
-        autowiredBeanName: MutableSet<String>?,
+        autowiredBeanNames: MutableSet<String>?,
         typeConverter: TypeConverter?
     ): Any? {
         // 初始化依赖描述符的"参数名发现器"，方便后续的过程当中去进行方法/构造器的参数名获取
@@ -386,82 +386,98 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         var result = getAutowireCandidateResolver().getLazyResolutionProxyIfNecessary(descriptor, requestingBeanName)
         if (result == null) {
             // 如果没有生成懒加载代理的话，那么从容器中去进行解析真正的依赖
-            result = doResolveDependency(descriptor, requestingBeanName, autowiredBeanName, typeConverter)
+            result = doResolveDependency(descriptor, requestingBeanName, autowiredBeanNames, typeConverter)
         }
         return result
     }
 
+    /**
+     * 解析目标依赖，可以是Map/List/Set/Collection/Array的情况，也可以是普通的单个Bean的情况
+     * @param descriptor 依赖描述符
+     * @param requestingBeanName 请求去进行注入的beanName(可以为null)
+     * @param autowiredBeanNames 解析到的所有依赖的beanName列表(输出参数，如果为null则不用输出)
+     * @param typeConverter 解析过程当中要使用到的TypeConverter(可以为null，从BeanFactory当中去进行自动获取)
+     * @return 解析到的要去进行注入的依赖
+     */
     open fun doResolveDependency(
         descriptor: DependencyDescriptor,
         requestingBeanName: String?,
         autowiredBeanNames: MutableSet<String>?,
         typeConverter: TypeConverter?
     ): Any? {
-        val type = descriptor.getDependencyType()
+        // 设置InjectionPoint
+        val previousInjectionPoint = ConstructorResolver.setCurrentInjectionPoint(descriptor)
+        try {
+            val type = descriptor.getDependencyType()
 
-        // 1. 从AutowireCandidateResolver去获取到建议进行设置的值，主要用来处理@Value注解
-        var value = getAutowireCandidateResolver().getSuggestedValue(descriptor)
-        if (value != null) {
-            // 如果value是String类型
-            // 那么需要使用嵌入式的值解析器完成解析...(SpEL呢？)
-            if (value is String) {
-                value = this.resolveEmbeddedValue(value)
+            // 1. 从AutowireCandidateResolver去获取到建议进行设置的值，主要用来处理@Value注解
+            var value = getAutowireCandidateResolver().getSuggestedValue(descriptor)
+            if (value != null) {
+                // 如果value是String类型
+                // 那么需要使用嵌入式的值解析器完成解析...(SpEL呢？)
+                if (value is String) {
+                    value = this.resolveEmbeddedValue(value)
+                }
+                // fixed: 使用TypeConverter去完成类型的转换工作...因为有可能@Value字段类型不一定是String，可能是Int等类型
+                try {
+                    return (typeConverter ?: getTypeConverter()).convertIfNecessary(value, type)
+                } catch (ex: Exception) {
+                    logger.error("类型转换失败，无法将String转换为目标类型[type=$type]", ex)
+                }
+                return value
             }
-            // fixed: 使用TypeConverter去完成类型的转换工作...因为有可能@Value字段类型不一定是String，可能是Int等类型
-            try {
-                return (typeConverter ?: getTypeConverter()).convertIfNecessary(value, type)
-            } catch (ex: Exception) {
-                logger.error("类型转换失败，无法将String转换为目标类型[type=$type]", ex)
-            }
-            return value
-        }
 
-        // 2. 解析要进行注入的元素是多个Bean的情况，例如Collection/List/Map/Array等情况
-        val multipleBeans = resolveMultipleBeans(descriptor, requestingBeanName, autowiredBeanNames, typeConverter)
-        if (multipleBeans != null) {
-            return multipleBeans
-        }
-        // 3. 下面需要解析注入的元素是单个Bean的情况
-        val candidates: Map<String, Any> = findAutowireCandidates(requestingBeanName, type, descriptor)
-
-        // 3.1 如果根本没有找到候选的Bean，那么需要处理required=true/false并return
-        if (candidates.isEmpty()) {
-            if (descriptor.isRequired()) {
-                throw NoSuchBeanDefinitionException("没有找到合适的Bean-->[beanType=$type]")
+            // 2. 解析要进行注入的元素是多个Bean的情况，例如Collection/List/Map/Array等情况
+            val multipleBeans = resolveMultipleBeans(descriptor, requestingBeanName, autowiredBeanNames, typeConverter)
+            if (multipleBeans != null) {
+                return multipleBeans
             }
-            return null
-        }
-        val autowiredBeanName: String?  // 要进行autowire的beanName
-        var instanceCandidate: Any? = null  // 要进行注入的bean
 
-        // 3.2 如果找到了众多的候选Bean，那么需要去进行决策...
-        if (candidates.size > 1) {
-            // 根据Order和Primary去进行决策出来一个合适的BeanDefinition...
-            autowiredBeanName = determineAutowireCandidate(candidates, descriptor)
-            if (autowiredBeanName != null) {
-                instanceCandidate = candidates[autowiredBeanName]
-            }
-            // 3.3 如果就找到一个合适的候选Bean，那么这个Bean就是最终的候选Bean(毫无疑问)
-        } else {
-            autowiredBeanName = candidates.iterator().next().key
-            instanceCandidate = candidates.iterator().next().value
-        }
-        if (autowiredBeanNames != null && autowiredBeanName != null) {
-            autowiredBeanNames.add(autowiredBeanName)
-        }
-        var result = instanceCandidate
-        if (result == null) {
-            if (descriptor.isRequired()) {
-                throw NoSuchBeanDefinitionException("没有找到合适的Bean-->[beanType=$type]")
-            }
-            result = null
-        }
+            // 3. 下面需要解析注入的元素是单个Bean的情况
+            val matchingBeans: Map<String, Any> = findAutowireCandidates(requestingBeanName, type, descriptor)
 
-        if (result != null && !type.isInstance(result)) {
-            throw BeanNotOfRequiredTypeException("给定的类型为[requiredType=$type]，找到的Bean类型为[type=${result::class.java}]不匹配")
+            // 3.1 如果根本没有找到候选的Bean，那么需要处理required=true/false并return
+            if (matchingBeans.isEmpty()) {
+                if (descriptor.isRequired()) {
+                    throw NoSuchBeanDefinitionException("至少需要一个该类型的Bean-->[beanType=$type]，但是在BeanFactory当中没有找到合适的Bean")
+                }
+                return null
+            }
+            val autowiredBeanName: String?  // 要进行autowire的beanName
+            var instanceCandidate: Any? = null  // 要进行注入的bean
+
+            // 3.2 如果找到了众多的候选Bean，那么需要去进行决策...
+            if (matchingBeans.size > 1) {
+                // 根据Order和Primary去进行决策出来一个合适的BeanDefinition...
+                autowiredBeanName = determineAutowireCandidate(matchingBeans, descriptor)
+                if (autowiredBeanName != null) {
+                    instanceCandidate = matchingBeans[autowiredBeanName]
+                }
+                // 3.3 如果就找到一个合适的候选Bean，那么这个Bean就是最终的候选Bean(毫无疑问)
+            } else {
+                autowiredBeanName = matchingBeans.iterator().next().key
+                instanceCandidate = matchingBeans.iterator().next().value
+            }
+            if (autowiredBeanNames != null && autowiredBeanName != null) {
+                autowiredBeanNames.add(autowiredBeanName)
+            }
+            var result = instanceCandidate
+            if (result == null) {
+                if (descriptor.isRequired()) {
+                    throw NoSuchBeanDefinitionException("至少需要一个该类型的Bean-->[beanType=$type]，但是在BeanFactory当中没有找到合适的Bean")
+                }
+                result = null
+            }
+
+            if (result != null && !type.isInstance(result)) {
+                throw BeanNotOfRequiredTypeException("给定的类型为[requiredType=$type]，找到的Bean类型为[type=${result::class.java}]不匹配")
+            }
+            // 如果类型匹配，那么返回最终的匹配的对象
+            return result
+        } finally {
+            // 复原InjectionPoint
+            ConstructorResolver.setCurrentInjectionPoint(previousInjectionPoint)
         }
-        // 如果类型匹配，那么返回最终的匹配的对象
-        return result
     }
 
     /**
@@ -661,7 +677,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             autowiredBeanName?.addAll(candidates.keys)
             return collection
         }
-        return null
+        return null  // return null to fallback match single bean
     }
 
     /**
