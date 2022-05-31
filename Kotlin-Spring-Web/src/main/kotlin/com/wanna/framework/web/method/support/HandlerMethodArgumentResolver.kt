@@ -26,5 +26,5 @@ interface HandlerMethodArgumentResolver {
      * @param webRequest NativeWebRequest(request and response)
      * @return 解析到的参数，有可能为null
      */
-    fun resolveArgument(parameter: MethodParameter, webRequest: NativeWebRequest): Any?
+    fun resolveArgument(parameter: MethodParameter, webRequest: NativeWebRequest, mavContainer: ModelAndViewContainer?): Any?
 }

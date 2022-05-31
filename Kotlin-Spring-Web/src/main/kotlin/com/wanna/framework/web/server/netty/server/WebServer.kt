@@ -1,4 +1,4 @@
-package com.wanna.framework.web.netty.server
+package com.wanna.framework.web.server.netty.server
 
 interface WebServer {
     fun setPort(port: Int)

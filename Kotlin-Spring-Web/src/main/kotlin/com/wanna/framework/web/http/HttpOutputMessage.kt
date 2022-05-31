@@ -3,7 +3,10 @@ package com.wanna.framework.web.http
 import java.io.OutputStream
 
 /**
- * 这是HttpResponse的输出流，可以将要发送给客户端的消息，写入到输出流当中
+ * 这是Http的输出的消息
+ *
+ * * 1.对于Client来说，可以从OutputStream当中获取到Client要发送给Server的RequestBody
+ * * 2.对于Server来说，可以获取将ResponseBody写入到OutputStream当中
  */
 interface HttpOutputMessage : HttpMessage {
     fun getBody(): OutputStream

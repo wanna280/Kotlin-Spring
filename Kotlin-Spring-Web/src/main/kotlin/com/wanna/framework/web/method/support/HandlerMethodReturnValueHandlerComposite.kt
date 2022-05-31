@@ -41,12 +41,17 @@ open class HandlerMethodReturnValueHandlerComposite : HandlerMethodReturnValueHa
      * @return 如果找到了合适的Handler去进行处理，return Handler处理结果
      * @throws IllegalArgumentException 如果没有找到合适的Handler去处理
      */
-    override fun handleReturnValue(returnValue: Any?, webRequest: NativeWebRequest, returnType: MethodParameter) {
+    override fun handleReturnValue(
+        returnValue: Any?,
+        webRequest: NativeWebRequest,
+        returnType: MethodParameter,
+        mavContainer: ModelAndViewContainer
+    ) {
         val selectHandler = selectHandler(returnValue, webRequest, returnType)
             ?: throw IllegalArgumentException("未知类型的返回值，没有找到合适的ReturnValueHandler去进行处理")
 
         // 使用选择出来的Handler去进行返回值的处理工作
-        selectHandler.handleReturnValue(returnValue, webRequest, returnType)
+        selectHandler.handleReturnValue(returnValue, webRequest, returnType, mavContainer)
     }
 
     /**

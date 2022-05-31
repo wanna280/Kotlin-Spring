@@ -29,14 +29,23 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping() {
     }
 
     /**
-     * 给定handlerMethod和handlerType，返回Mapping(RequestMappingInfo)
+     * 给定handlerMethod和handlerType，返回Mapping(RequestMappingInfo)，这里因为方法上和类上都有可能有@RequestMapping注解，
+     * 因此，我们需要去进行合并，但是由于合并的算法不会写，目前仅仅提供了路径的前缀功能，别的功能算法不会写！！！
      *
      * @param method method
      * @param handlerType handlerType
      * @return 如果方法上找到了@RequestMapping注解，return封装好的RequestMappingInfo；不然return null
      */
     override fun getMappingForMethod(method: Method, handlerType: Class<*>): RequestMappingInfo? {
-        return getRequestMappingInfo(method)
+        // 从方法上找到@RequestMapping注解
+        val info = getRequestMappingInfo(method)
+        // 如果方法上找到了@RequestMapping注解，那么尝试去类上去进行寻找
+        if (info != null) {
+            val typeInfo = getRequestMappingInfo(handlerType)
+            // 将类上的@RequestMapping的路径合并到方法的@RequestMapping的path上
+            typeInfo?.paths?.forEach { prefix -> info.paths = info.paths.map { prefix + it }.toMutableList() }
+        }
+        return info
     }
 
     /**

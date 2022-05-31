@@ -4,6 +4,7 @@ import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.method.support.HandlerMethodArgumentResolver
+import com.wanna.framework.web.method.support.ModelAndViewContainer
 import com.wanna.framework.web.server.HttpServerResponse
 import java.io.OutputStream
 
@@ -12,14 +13,18 @@ import java.io.OutputStream
  */
 open class ServerResponseMethodArgumentResolver : HandlerMethodArgumentResolver {
     override fun supportsParameter(parameter: MethodParameter): Boolean {
-        return ClassUtils.isAssignFrom(HttpServerResponse::class.java, parameter.getParameterType()) ||
-                ClassUtils.isAssignFrom(OutputStream::class.java, parameter.getParameterType())
+        return ClassUtils.isAssignFrom(
+            HttpServerResponse::class.java,
+            parameter.getParameterType()
+        ) || ClassUtils.isAssignFrom(OutputStream::class.java, parameter.getParameterType())
     }
 
     /**
      * 解析HttpServerResponse参数
      */
-    override fun resolveArgument(parameter: MethodParameter, webRequest: NativeWebRequest): Any? {
+    override fun resolveArgument(
+        parameter: MethodParameter, webRequest: NativeWebRequest, mavContainer: ModelAndViewContainer?
+    ): Any? {
         val response = webRequest.getNativeResponse(HttpServerResponse::class.java)
         if (ClassUtils.isAssignFrom(HttpServerResponse::class.java, parameter.getParameterType())) {
             return response

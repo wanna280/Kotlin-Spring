@@ -19,6 +19,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
  * @see afterPropertiesSet
  * @see isHandler
  * @see getMappingForMethod
+ * @param T Mapping的类型，一般情况下维护的是RequestMapping注解的解析结果(也可以是别的，交给子类去进行完成)
  */
 abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), InitializingBean {
 
@@ -26,7 +27,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     // 根据path -> mapping -> MappingRegistration，可以获取到path对应的表项当中的具体信息
     private val mappingRegistry = MappingRegistry()
 
-    // HandlerMethod的映射的命名策略
+    // HandlerMethod的映射的命名策略(默认为Controller的大写字母#方法名，比如UserController的getUser方法，会被命名为UC#getUser)
     private var namingStrategy: HandlerMethodMappingNamingStrategy<T>? = null
 
     /**
@@ -48,10 +49,10 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
         // 从request当中去获取到要进行寻找的path
         val lookupPath = initLookupPath(request)
 
-        // 寻找合适的处理请求的HandlerMethod
+        // 从MappingRegistry当中寻找合适的处理请求的HandlerMethod
         val handlerMethod = lookupHandlerMethod(lookupPath, request)
 
-        // 如果必要的话，将HandlerMethod当中的beanName替换为真正的Bean
+        // 如果必要的话，在运行时(接收请求时)，需要将HandlerMethod当中的beanName替换为真正的Bean
         return handlerMethod?.createWithResolvedBean()
     }
 
@@ -98,9 +99,11 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
      */
     abstract fun getDirectPaths(mapping: T): Set<String>
 
-
     /**
-     * 从request当中获取到请求的url
+     * 从request当中获取到请求的url(不含参数部分)
+     *
+     * @param request request
+     * @return url
      */
     protected open fun initLookupPath(request: HttpServerRequest): String {
         return request.getUrl()
@@ -110,6 +113,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
      * 给定一个BeanClass，去判断它是否是一个Handler？
      *
      * @param beanType beanType
+     * @return 它是否是一个Handler？是一个Handler时return true；否则return false
      */
     protected abstract fun isHandler(beanType: Class<*>): Boolean
 
@@ -136,8 +140,10 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
             val mappings = mappingRegistry.getMappingsByDirectPath(lookupPath)
             val matches = ArrayList<Match>()
 
-            // 交给子类去匹配，那些Mapping是匹配的？
+            // 交给子类去匹配，哪些Mapping是匹配的？
             addMatchingMappings(matches, request, mappings)
+
+            // 如果没有匹配到合适的结果的话...return null
             if (matches.isEmpty()) {
                 return null
             }
@@ -168,6 +174,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     /**
      * 如何去进行匹配当前请求和Mapping匹配？抽象的模板方法，交给子类去实现
      *
+     * @param request request
      * @return 如果匹配到return mapping，如果匹配不到，return null
      */
     abstract fun getMatchingMapping(request: HttpServerRequest, mapping: T): T?
@@ -314,6 +321,9 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
 
     /**
      * 封装请求的匹配的结果
+     *
+     * @param mapping mapping
+     * @param registration MappingRegistration
      */
     inner class Match(val mapping: T, val registration: MappingRegistration<T>) {
         fun getHandlerMethod() = registration.handlerMethod

@@ -4,6 +4,7 @@ import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.method.support.HandlerMethodArgumentResolver
+import com.wanna.framework.web.method.support.ModelAndViewContainer
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -29,7 +30,9 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
     /**
      * 解析一个方法参数的值
      */
-    override fun resolveArgument(parameter: MethodParameter, webRequest: NativeWebRequest): Any? {
+    override fun resolveArgument(
+        parameter: MethodParameter, webRequest: NativeWebRequest, mavContainer: ModelAndViewContainer?
+    ): Any? {
         // 获取NamedValueInfo，交给子类去进行注解的解析并构建NamedValueInfo
         val namedValueInfo = getNamedValueInfo(parameter)
 

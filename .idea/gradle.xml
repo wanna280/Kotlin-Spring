@@ -18,6 +18,10 @@
             <option value="$PROJECT_DIR$/Kotlin-Logger/logger-slf4j-impl" />
             <option value="$PROJECT_DIR$/Kotlin-Logger/logger-temp" />
             <option value="$PROJECT_DIR$/Kotlin-Logger/logger-test" />
+            <option value="$PROJECT_DIR$/Kotlin-Nacos" />
+            <option value="$PROJECT_DIR$/Kotlin-Nacos/Kotlin-Nacos-Api" />
+            <option value="$PROJECT_DIR$/Kotlin-Nacos/Kotlin-Nacos-Config-Server" />
+            <option value="$PROJECT_DIR$/Kotlin-Nacos/Kotlin-Nacos-Naming-Server" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Boot" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Boot-Autoconfigure" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Cloud" />

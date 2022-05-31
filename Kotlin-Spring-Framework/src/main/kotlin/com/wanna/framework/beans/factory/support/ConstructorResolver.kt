@@ -158,7 +158,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
         var factoryClass: Class<*>? = null
 
         if (factoryMethodName != null) {
-            factoryBean = beanFactory.getBean(factoryBeanName!!)!!
+            factoryBean = beanFactory.getBean(factoryBeanName!!)
             factoryClass = factoryBean::class.java
         }
 

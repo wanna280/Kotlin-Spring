@@ -4,8 +4,11 @@ import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.core.util.StringUtils
 import com.wanna.framework.web.DispatcherHandler
 import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.server.HttpServerRequest
+import com.wanna.framework.web.server.HttpServerRequestImpl
 import com.wanna.framework.web.server.HttpServerResponse
+import com.wanna.framework.web.server.HttpServerResponseImpl
 import io.netty.buffer.Unpooled
 import io.netty.channel.ChannelHandler.Sharable
 import io.netty.channel.ChannelHandlerContext
@@ -18,14 +21,14 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
 @Sharable
-class NettyServerHandler(private val applicationContext: ApplicationContext) : ChannelInboundHandlerAdapter() {
+class NettyServerHandler(applicationContext: ApplicationContext) : ChannelInboundHandlerAdapter() {
     private val dispatcherHandler = applicationContext.getBean(DispatcherHandler::class.java)
 
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
-        if (dispatcherHandler != null && msg is FullHttpRequest) {
+        if (msg is FullHttpRequest) {
             // 解析请求，将netty的FullHttpRequest转为HttpServerRequest
             val request = parseRequest(msg)
-            val response = HttpServerResponse()
+            val response = HttpServerResponseImpl()
 
             // 处理本次HTTP请求
             dispatcherHandler.doDispatch(request, response)
@@ -35,6 +38,12 @@ class NettyServerHandler(private val applicationContext: ApplicationContext) : C
         }
     }
 
+    /**
+     * 将响应的HttpServerResponse构建成为Netty的Response并去进行写出给客户端
+     *
+     * @param response HttpServerResponse
+     * @param ctx ChannelHandlerContext
+     */
     private fun sendResponse(response: HttpServerResponse, ctx: ChannelHandlerContext) {
         val outputStream = response.getOutputStream()
         val responseByteBuf = Unpooled.copiedBuffer((outputStream as ByteArrayOutputStream).toByteArray())
@@ -49,14 +58,28 @@ class NettyServerHandler(private val applicationContext: ApplicationContext) : C
         // 添加header
         response.getHeaders().forEach(httpResponse.headers()::add)
 
-        httpResponse.headers()["Content-Type"] = response.getContentType()
+        // setContentType, default for "application/json"
+        httpResponse.headers()[HttpHeaders.CONTENT_TYPE] = response.getContentType()
 
-        // write And Flush
+        // Http1.1当中Connection默认为"keep-alive"(长连接)，告诉对方在发送完成之后不用关闭TCP连接(设置为"false"时关闭长连接)
+        // 但是由于WebServer和浏览器的众多的历史原因，这个字段一直被保留，也会被浏览器/WebServer所进行发送(比如Tomcat也会发送这个字段)
+        httpResponse.headers()[HttpHeaders.CONNECTION] = "keep-alive"
+
+        // addHeader，"Transfer-Encoding=chucked"，标识将数据去进行分块传输
+        httpResponse.headers()[HttpHeaders.TRANSFER_ENCODING] = "chunked"
+
+        // write And Flush，将要Http响应报文数据写出给客户端...
         ctx.writeAndFlush(httpResponse)
     }
 
+    /**
+     * 从Netty的request当中去解析成为HttpServerRequest
+     *
+     * @param msg Netty的FullHttpRequest
+     * @return 解析完成的HttpServerResponse
+     */
     private fun parseRequest(msg: FullHttpRequest): HttpServerRequest {
-        val request = HttpServerRequest()
+        val request = HttpServerRequestImpl()
 
         // 设置uri和method
         request.setUri(msg.uri())
@@ -70,8 +93,7 @@ class NettyServerHandler(private val applicationContext: ApplicationContext) : C
         }
 
         val content = msg.content()
-        val size = content.readableBytes()
-        val byteArray = ByteArray(size)
+        val byteArray = ByteArray(content.readableBytes())
         content.readBytes(byteArray)
 
         // 将request当中的内容包装成为InputStream

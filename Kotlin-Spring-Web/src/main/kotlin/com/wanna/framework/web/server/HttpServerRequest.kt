@@ -1,131 +1,105 @@
 package com.wanna.framework.web.server
 
 import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.http.HttpHeaders
 import java.io.InputStream
 
-class HttpServerRequest {
+/**
+ * HttpServerRequest
+ */
+interface HttpServerRequest {
+
     companion object {
         const val COMMA = "; "
-        const val PARAM_SEPARATOR = "&"
-        const val EQUAL = "="
     }
 
-    // 请求方式
-    private var method = RequestMethod.GET
+    /**
+     * 获取request的输入流，可以从输出流当中获取RequestBody
+     *
+     * @return RequestBody的输入流
+     */
+    fun getInputStream(): InputStream
 
-    // 完成请求路径，包括query部分
-    private var uri = "/"
-
-    // 请求路径，不包含query部分
-    private var url = "/"
-
-    // headers
-    private var headers = LinkedHashMap<String, String>()
-
-    // params
-    private var params = LinkedHashMap<String, String>()
-
-    private var inputStream: InputStream? = null
-
-    fun setInputStream(inputStream: InputStream) {
-        this.inputStream = inputStream
-    }
-
-    fun getInputStream(): InputStream {
-        return this.inputStream!!
-    }
+    /**
+     * 设置request的具体的参数(如果之前已经有该参数了，那么直接去进行替换)
+     *
+     * @param name paramName
+     * @param value paramValue(为null时代表移除)
+     */
+    fun setParam(name: String, value: String?)
 
     /**
      * 添加参数，如果value为空的话，移除该name的param
+     *
+     * @param name paramName
+     * @param value paramValue(为null时代表移除)
      */
-    fun addParam(name: String, value: String?) {
-        if (value != null) {
-            this.params[name] = value
-        } else {
-            this.params -= name
-        }
-    }
+    fun addParam(name: String, value: String?)
 
     /**
      * 根据name获取param
+     *
+     * @param name paramName
+     * @return 给定paramName获取到的参数列表(如果存在有多个param，那么使用"; "去进行分割)
      */
-    fun getParam(name: String): String? {
-        return this.params[name]
-    }
+    fun getParam(name: String): String?
 
     /**
-     * 移除一个参数
+     * 根据name移除一个参数
+     *
+     * @param name paramName
      */
-    fun removeParam(name: String) {
-        this.params -= name
-    }
+    fun removeParam(name: String)
 
     /**
      * 添加Header，如果value为空的话，标识移除该name的header
+     *
+     * @param name headerName
+     * @param value headerValue
      */
-    fun addHeader(name: String, value: String?) {
-        if (value != null) {
-            this.headers[name] = value
-        } else {
-            this.headers -= name
-        }
-    }
+    fun addHeader(name: String, value: String?)
 
     /**
      * 设置某个Header的值
+     *
+     * @param name headerName
+     * @param value headerValue
      */
-    fun setHeader(name: String, value: String) {
-        this.headers[name] = value
-    }
+    fun setHeader(name: String, value: String)
 
     /**
      * 根据name去获取到headerValue
+     *
+     * @param name headerName
+     * @return 根据name去获取到的headerValue(如果该header存在有多个值，那么使用"; "去进行分割)
      */
-    fun getHeader(name: String): String? {
-        return this.headers[name]
-    }
+    fun getHeader(name: String): String?
 
-    fun getHeaders(): Map<String, String> {
-        return this.headers
-    }
+    /**
+     * 获取当前request的HttpHeaders
+     *
+     * @return HttpHeaders of request
+     */
+    fun getHeaders(): HttpHeaders
 
-    fun getUri() = this.uri
-    fun setUri(uri: String) {
-        parseUriUrlAndParams(uri)
-    }
+    /**
+     * 获取当前请求的uri(包含url和query参数)
+     *
+     * @return uri of request
+     */
+    fun getUri(): String
 
-    private fun parseUriUrlAndParams(uri: String) {
-        this.uri = uri
-        val indexOf = uri.indexOf("?")
-        if (indexOf == -1) {
-            this.url = uri
-            return
-        }
-        this.url = uri.substring(0, indexOf) // url
+    /**
+     * 获取当前请求的url(不包含query参数)
+     *
+     * @return url of request
+     */
+    fun getUrl(): String
 
-        val params = uri.substring(indexOf + 1).split(PARAM_SEPARATOR)
-        params.forEach {
-            val eqIndex = it.indexOf(EQUAL)
-
-            val key = it.substring(0, eqIndex)
-            val value = it.substring(eqIndex + 1)
-
-            // 如果有多个key相同的时候，应该将其使用";"分割
-            var newParamVal = (this.params[key] ?: "") + COMMA + value
-            if (newParamVal.startsWith(COMMA)) {
-                newParamVal = newParamVal.substring(COMMA.length)
-            }
-
-            // 拼接param
-            this.params[key] = newParamVal
-        }
-    }
-
-    fun getUrl() = this.url
-
-    fun getMethod() = this.method
-    fun setMethod(method: RequestMethod) {
-        this.method = method
-    }
-
+    /**
+     * 获取当前请求的请求方式
+     *
+     * @return request method of request
+     */
+    fun getMethod(): RequestMethod
 }

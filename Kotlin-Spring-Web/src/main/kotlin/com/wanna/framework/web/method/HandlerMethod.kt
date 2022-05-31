@@ -35,7 +35,7 @@ open class HandlerMethod {
     fun createWithResolvedBean(): HandlerMethod {
         var handler = bean
         if (handler is String) {
-            handler = this.beanFactory!!.getBean(handler)!!
+            handler = this.beanFactory!!.getBean(handler)
         }
         return newHandlerMethod(this, handler!!)
     }

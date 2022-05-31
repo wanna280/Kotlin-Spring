@@ -100,6 +100,7 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     ): ModelAndView? {
         // 将request和response封装到NativeWebRequest当中
         val serverWebRequest = ServerWebRequest(request, response)
+        val mavContainer = ModelAndViewContainer()
 
         // 构建InvocableHandlerMethod，并去完成参数名发现器、参数解析器以及返回值处理器的初始化
         val invocableHandlerMethod = InvocableHandlerMethod.newInvocableHandlerMethod(handler)
@@ -112,8 +113,15 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         }
 
         // 执行HandlerMethod
-        invocableHandlerMethod.invokeAndHandle(serverWebRequest)
-        return null
+        invocableHandlerMethod.invokeAndHandle(serverWebRequest, mavContainer)
+        return getModelAndView(mavContainer)
+    }
+
+    private fun getModelAndView(mavContainer: ModelAndViewContainer): ModelAndView {
+        val modelAndView = ModelAndView()
+        modelAndView.view = mavContainer.view
+        modelAndView.modelMap = mavContainer.defaultModel
+        return modelAndView
     }
 
     /**
@@ -145,7 +153,15 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
      */
     private fun getDefaultReturnValueHandlers(): List<HandlerMethodReturnValueHandler> {
         val handlers = ArrayList<HandlerMethodReturnValueHandler>()
+
+        // RequestResponseBody的方法处理器
         handlers += RequestResponseBodyMethodProcessor(getHttpMessageConverters(), getContentNegotiationManager())
+
+        // 解析ModelAndView的返回值的方法处理器
+        handlers += ModelAndViewMethodReturnValueHandler()
+
+        // 解析ViewName的处理器
+        handlers += ViewNameMethodReturnValueHandler()
 
         // 应用默认的返回值处理器
         if (getCustomReturnValueHandlers() != null) {

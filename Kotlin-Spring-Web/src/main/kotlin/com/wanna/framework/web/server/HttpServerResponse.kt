@@ -1,74 +1,95 @@
 package com.wanna.framework.web.server
 
-import java.io.ByteArrayOutputStream
+import com.wanna.framework.web.http.HttpHeaders
 import java.io.OutputStream
 
-open class HttpServerResponse {
+/**
+ * HttpServerResponse
+ */
+interface HttpServerResponse {
     companion object {
         const val SC_NOT_FOUND = 404
     }
 
-    private var statusCode: Int = 200 // 响应状态码，默认为200
+    /**
+     * 获取HttpServerResponse的ResponseBody输出流
+     *
+     * @return 当前的response的ResponseBody输出流
+     */
+    fun getOutputStream(): OutputStream
 
-    private var message: String = ""  // message
+    /**
+     * 获取当前的HttpServerResponse的HttpHeaders
+     *
+     * @return HttpHeaders of this response
+     */
+    fun getHeaders(): HttpHeaders
 
-    private val outputStream = ByteArrayOutputStream(1024)
+    /**
+     * 根据headerName，去移除一个header
+     *
+     * @param name headerName
+     * @return 之前的旧的headerValue(如果有多个，使用"; "去进行分割)
+     */
+    fun removeHeader(name: String): String?
 
-    private val headers: MutableMap<String, String> = HashMap()
+    /**
+     * 根据name和value去设置一个Header(如果之前已经有该header，那么直接清除掉之前所有的)
+     *
+     * @param name headerName
+     * @param value headerValue(为null时表示移除)
+     */
+    fun setHeader(name: String, value: String?)
 
-    open fun getHeaders(): Map<String, String> {
-        return headers
-    }
+    /**
+     * 根据name和value去添加一个Header(如果之前已经有该header，那么在原来的基础上去进行扩充)
+     *
+     * @param name headerName
+     * @param value headerValue(为null时表示移除)
+     */
+    fun addHeader(name: String,value: String?)
 
-    open fun removeHeader(name: String) : String? {
-        return this.headers.remove(name)
-    }
+    /**
+     * 根据headerName去设置一个Header
+     *
+     * @param name headerName
+     * @return headerValue(如果有多个，使用"; "去进行分割；如果不存在return null)
+     */
+    fun getHeader(name: String): String?
 
-    open fun setHeader(name: String, value: String?) {
-        if (value != null) {
-            this.headers[name] = value
-        } else {
-            this.headers -= name
-        }
-    }
+    /**
+     * 获取response的响应类型
+     *
+     * @return 响应类型(比如"application/json")
+     */
+    fun getContentType(): String
 
-    open fun getHeader(name: String): String? {
-        return headers[name]
-    }
+    /**
+     * 获取响应状态码
+     *
+     * @return 响应状态码(比如404，500)
+     */
+    fun getStatusCode(): Int
 
-    open fun getContentType(): String {
-        return headers["Content-Type"] ?: "application/json"
-    }
-
-    open fun getStatusCode(): Int {
-        return statusCode
-    }
-
-    open fun getMessage(): String {
-        return message
-    }
-
-    open fun getOutputStream(): OutputStream {
-        return outputStream
-    }
+    /**
+     * 获取响应的消息，配合状态码去进行使用
+     *
+     * @return 响应携带的消息
+     */
+    fun getMessage(): String
 
     /**
      * sendError，msg采用默认的msg
      *
      * @param statusCode 状态码
      */
-    open fun sendError(statusCode: Int) {
-        sendError(statusCode, "")
-    }
+    fun sendError(statusCode: Int)
 
     /**
-     * sendError
+     * sendError，并同时设置Error的消息
      *
      * @param statusCode 状态码
-     * @param msg message
+     * @param msg message of error
      */
-    open fun sendError(statusCode: Int, msg: String) {
-        this.statusCode = statusCode
-        this.message = msg
-    }
+    fun sendError(statusCode: Int, msg: String)
 }

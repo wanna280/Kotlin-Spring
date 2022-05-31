@@ -1,4 +1,4 @@
-package com.wanna.framework.web.netty.server.support
+package com.wanna.framework.web.server.netty.server.support
 
 import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelInitializer

@@ -9,9 +9,10 @@
     <groovy codeStyle="LEGACY" />
   </component>
   <component name="EntryPointsManager">
-    <list size="2">
+    <list size="3">
       <item index="0" class="java.lang.String" itemvalue="com.wanna.framework.context.annotation.Bean" />
       <item index="1" class="java.lang.String" itemvalue="com.wanna.framework.context.stereotype.Component" />
+      <item index="2" class="java.lang.String" itemvalue="com.wanna.framework.web.method.annotation.RequestMapping" />
     </list>
   </component>
   <component name="ExternalStorageConfigurationManager" enabled="true" />

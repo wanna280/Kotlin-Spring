@@ -9,6 +9,7 @@ import com.wanna.framework.context.format.support.DefaultFormattingConversionSer
 import com.wanna.framework.context.format.support.FormattingConversionService
 import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.handler.HandlerExceptionResolver
+import com.wanna.framework.web.handler.ViewResolver
 import com.wanna.framework.web.http.converter.HttpMessageConverter
 import com.wanna.framework.web.http.converter.json.MappingJackson2HttpMessageConverter
 import com.wanna.framework.web.method.annotation.ExceptionHandlerExceptionResolver
@@ -17,6 +18,8 @@ import com.wanna.framework.web.method.annotation.RequestMappingHandlerMapping
 import com.wanna.framework.web.method.support.HandlerExceptionResolverComposite
 import com.wanna.framework.web.method.support.HandlerMethodArgumentResolver
 import com.wanna.framework.web.method.support.HandlerMethodReturnValueHandler
+import com.wanna.framework.web.method.view.BeanNameViewResolver
+import com.wanna.framework.web.method.view.TemplateViewResolver
 
 /**
  * 为WebMvc提供支持的配置类，它为WebMvc的正常运行提供的一些默认的相关组件，并配置到容器当中...
@@ -27,7 +30,7 @@ import com.wanna.framework.web.method.support.HandlerMethodReturnValueHandler
  */
 open class WebMvcConfigurationSupport : ApplicationContextAware {
 
-    private var applicationContext: ApplicationContext? = null
+    private lateinit var applicationContext: ApplicationContext
 
     private var interceptors: MutableList<Any>? = null
 
@@ -106,6 +109,21 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         composite.setOrder(0)
         composite.setHandlerExceptionResolver(exceptionResolvers)
         return composite
+    }
+
+    /**
+     * 给容器中注册一个BeanName的ViewResolver
+     */
+    @Bean
+    @Qualifier("beanNameViewResolver")
+    open fun beanNameViewResolver(): ViewResolver {
+        return BeanNameViewResolver()
+    }
+
+    @Bean
+    @Qualifier("templateViewResolver")
+    open fun templateViewResolver(): ViewResolver {
+        return TemplateViewResolver()
     }
 
     protected open fun getArgumentResolvers(): List<HandlerMethodArgumentResolver> {
@@ -188,10 +206,16 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         resolvers: MutableList<HandlerExceptionResolver>, contentNegotiationManager: ContentNegotiationManager
     ) {
         val exceptionHandlerExceptionResolver = ExceptionHandlerExceptionResolver()
+
         exceptionHandlerExceptionResolver.setContentNegotiationManager(contentNegotiationManager)
         exceptionHandlerExceptionResolver.setHandlerMethodArgumentResolvers(getArgumentResolvers())
         exceptionHandlerExceptionResolver.setHttpMessageConverters(getMessageConverters())
         exceptionHandlerExceptionResolver.setHandlerMethodReturnValueHandlers(getReturnValueResolvers())
+
+
+        // 手动设置ApplicationContext，并完成初始化工作...因为它不是一个SpringBean，无法自动初始化...
+        exceptionHandlerExceptionResolver.setApplicationContext(this.applicationContext)
+        exceptionHandlerExceptionResolver.afterPropertiesSet()
 
         resolvers += exceptionHandlerExceptionResolver
     }

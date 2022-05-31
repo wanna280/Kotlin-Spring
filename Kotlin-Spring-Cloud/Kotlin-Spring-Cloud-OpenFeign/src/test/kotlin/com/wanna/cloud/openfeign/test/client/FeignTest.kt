@@ -26,6 +26,6 @@ fun main() {
     val applicationContext = runSpringApplication<FeignTest> {
         setApplicationType(ApplicationType.NONE)
     }
-    val feignClient = applicationContext.getBean(MyFeignClient::class.java)!!
+    val feignClient = applicationContext.getBean(MyFeignClient::class.java)
     println("FeignClient调用的结果为:[${feignClient.ut("wanna", User("1", "wanna"))}]")
 }

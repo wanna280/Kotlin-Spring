@@ -18,7 +18,7 @@ class MyController {
     @RequestMapping(["/user"])
     fun user(): String {
         println("request")
-        return "wanna"
+        return "{\"name\":\"wanna\",\"clusters\":\"DEFAULT\",\"hosts\":{}}"
     }
 }
 
