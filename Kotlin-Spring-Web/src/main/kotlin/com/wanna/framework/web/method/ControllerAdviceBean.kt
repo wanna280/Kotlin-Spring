@@ -11,38 +11,6 @@ import org.springframework.core.annotation.AnnotatedElementUtils
  * @see ControllerAdvice
  */
 open class ControllerAdviceBean() {
-    private var beanOrBeanName: Any? = null
-
-    private var beanFactory: BeanFactory? = null
-
-    private var isSingleton = true
-
-    constructor(bean: Any) : this() {
-        this.beanOrBeanName = bean
-        this.isSingleton = true
-    }
-
-    constructor(beanName: String, beanFactory: BeanFactory, controllerAdvice: ControllerAdvice?) : this() {
-        this.beanFactory = beanFactory
-        this.beanOrBeanName = beanName
-        this.isSingleton = beanFactory.isSingleton(beanName)
-    }
-
-    constructor(beanName: String, beanFactory: BeanFactory) : this(beanName, beanFactory, null)
-
-    open fun getBeanType(): Class<*> {
-        if (this.beanOrBeanName is String) {
-            return beanFactory!!.getType(this.beanOrBeanName as String)!!
-        }
-        return this.beanOrBeanName!!::class.java
-    }
-
-    open fun resolveBean(): Any {
-        if (this.beanOrBeanName is String) {
-            return beanFactory!!.getBean(this.beanOrBeanName as String)
-        }
-        return this.beanOrBeanName!!
-    }
 
     companion object {
         /**
@@ -63,6 +31,37 @@ open class ControllerAdviceBean() {
             }
             return result
         }
+    }
+
+    private var beanOrBeanName: Any? = null
+
+    private var beanFactory: BeanFactory? = null
+
+    private var isSingleton = true
+
+    constructor(bean: Any) : this() {
+        this.beanOrBeanName = bean
+        this.isSingleton = true
+    }
+
+    constructor(beanName: String, beanFactory: BeanFactory, controllerAdvice: ControllerAdvice? = null) : this() {
+        this.beanFactory = beanFactory
+        this.beanOrBeanName = beanName
+        this.isSingleton = beanFactory.isSingleton(beanName)
+    }
+
+    open fun getBeanType(): Class<*> {
+        if (this.beanOrBeanName is String) {
+            return beanFactory!!.getType(this.beanOrBeanName as String)!!
+        }
+        return this.beanOrBeanName!!::class.java
+    }
+
+    open fun resolveBean(): Any {
+        if (this.beanOrBeanName is String) {
+            return beanFactory!!.getBean(this.beanOrBeanName as String)
+        }
+        return this.beanOrBeanName!!
     }
 
     override fun equals(other: Any?): Boolean {

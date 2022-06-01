@@ -8,6 +8,7 @@ version = "1.0-SNAPSHOT"
 
 
 dependencies {
+    implementation(project(":Kotlin-Spring-Web"))
     implementation(project(":Kotlin-Spring-Framework"))
     implementation(project(":Kotlin-Spring-Boot"))
     implementation(project(":Kotlin-Spring-Boot-Autoconfigure"))

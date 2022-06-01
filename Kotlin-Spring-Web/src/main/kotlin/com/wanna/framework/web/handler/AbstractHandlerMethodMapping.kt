@@ -19,7 +19,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
  * @see afterPropertiesSet
  * @see isHandler
  * @see getMappingForMethod
- * @param T Mapping的类型，一般情况下维护的是RequestMapping注解的解析结果(也可以是别的，交给子类去进行完成)
+ * @param T Mapping的类型，一般情况下维护的是RequestMapping注解的解析结果RequestMappingInfo(也可以是别的，交给子类去进行完成)
  */
 abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), InitializingBean {
 
@@ -66,7 +66,6 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
         val bdNames = applicationContext.getBeanDefinitionNames()
         bdNames.forEach {
             val beanType = applicationContext.getType(it)
-
             // 如果它是一个合格的Handler的话，那么需要探测它内部的HandlerMethod
             if (beanType != null && isHandler(beanType)) {
                 detectHandlerMethods(it)
@@ -77,25 +76,23 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     /**
      * 探测一个Handler上的全部Handler方法，并注册到MappingRegistry当中
      *
-     * @param handler beanName or BeanObject
+     * @param handler beanName or beanObject
      */
     protected open fun detectHandlerMethods(handler: Any) {
         // 如果给定的handler是String，那么从容器当中getType；如果它不是String，那么直接getClass
         val handlerType = if (handler is String) obtainApplicationContext().getType(handler)!! else handler::class.java
-
         ReflectionUtils.doWithMethods(handlerType) {
             // 交给子类去告诉我，当前的方法是否是一个HandlerMethod？如果return null，则不是；return not null，则是
-            val mapping = getMappingForMethod(it, handlerType)
-            if (mapping != null) {
-                mappingRegistry.registerHandlerMethod(handler, it, mapping)
-            }
+            val mapping = getMappingForMethod(it, handlerType) ?: return@doWithMethods
+            mappingRegistry.registerHandlerMethod(handler, it, mapping)
         }
     }
 
     /**
      * 从Mapping(例如RequestMappingInfo)当中去获取直接路径，交给子类去进行实现
      *
-     * @return 从Mapping当中解析到的直接路径
+     * @param mapping
+     * @return 从Mapping当中解析到的直接路径列表
      */
     abstract fun getDirectPaths(mapping: T): Set<String>
 
@@ -282,6 +279,9 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
 
         /**
          * 将path->mapping，注册到MappingRegistry当中
+         *
+         * @param path path
+         * @param mapping mapping
          */
         private fun addPathLookup(path: String, mapping: T) {
             this.pathLookup.putIfAbsent(path, ArrayList())

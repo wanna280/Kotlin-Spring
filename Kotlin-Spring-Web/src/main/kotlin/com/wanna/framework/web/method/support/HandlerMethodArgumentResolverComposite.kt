@@ -1,6 +1,7 @@
 package com.wanna.framework.web.method.support
 
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
 import java.util.concurrent.ConcurrentHashMap
 
@@ -47,11 +48,12 @@ class HandlerMethodArgumentResolverComposite : HandlerMethodArgumentResolver {
     override fun resolveArgument(
         parameter: MethodParameter,
         webRequest: NativeWebRequest,
-        mavContainer: ModelAndViewContainer?
+        mavContainer: ModelAndViewContainer?,
+        binderFactory: WebDataBinderFactory?
     ): Any? {
         val resolver = getArgumentResolver(parameter)
         if (resolver != null) {
-            return resolver.resolveArgument(parameter, webRequest,mavContainer)
+            return resolver.resolveArgument(parameter, webRequest, mavContainer, binderFactory)
         }
         throw IllegalArgumentException("不支持的参数类型[$parameter]，没有找到合适的ArgumentResolver去进行解析该类型的参数")
     }

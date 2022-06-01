@@ -82,6 +82,15 @@ open class HttpServerRequestImpl : HttpServerRequest {
     }
 
     /**
+     * 获取ParamMap
+     *
+     * @return paramMap
+     */
+    override fun getParamMap(): Map<String, List<String>> {
+        return this.params
+    }
+
+    /**
      * 根据name移除一个参数
      *
      * @param name paramName

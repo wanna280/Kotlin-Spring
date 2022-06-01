@@ -1,4 +1,4 @@
-package com.wanna.boot.web.reactive.context
+package com.wanna.boot.web.mvc.context
 
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.annotation.AnnotatedBeanDefinitionReader
@@ -16,8 +16,8 @@ import com.wanna.framework.core.util.AnnotationConfigUtils
  * @see com.wanna.framework.context.support.GenericApplicationContext
  * @see com.wanna.framework.context.annotation.AnnotationConfigApplicationContext
  */
-open class AnnotationConfigReactiveWebServerApplicationContext(_beanFactory: DefaultListableBeanFactory) :
-    ReactiveWebServerApplicationContext(_beanFactory), AnnotationConfigRegistry {
+open class AnnotationConfigMvcWebServerApplicationContext(_beanFactory: DefaultListableBeanFactory) :
+    MvcWebServerApplicationContext(_beanFactory), AnnotationConfigRegistry {
 
     // 注解的BeanDefinition的Reader
     private var reader: AnnotatedBeanDefinitionReader = AnnotatedBeanDefinitionReader(this)

@@ -5,7 +5,7 @@ import com.wanna.framework.web.ui.ModelMap
 /**
  * ModelAndView的容器
  */
-class ModelAndViewContainer {
+open class ModelAndViewContainer {
 
     // 视图/视图名
     var view: Any? = null
@@ -15,4 +15,13 @@ class ModelAndViewContainer {
 
     // model
     var defaultModel = ModelMap()
+
+    open fun getModel(): ModelMap {
+        if (useDefaultModel()) {
+            return defaultModel
+        }
+        return ModelMap()
+    }
+
+    open fun useDefaultModel(): Boolean = !redirectModelScenario
 }

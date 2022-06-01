@@ -12,6 +12,7 @@ import com.wanna.framework.web.method.ControllerAdviceBean
 import com.wanna.framework.web.method.support.*
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
+import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 
@@ -22,6 +23,10 @@ import java.util.concurrent.ConcurrentHashMap
  * @see HandlerExceptionResolver
  */
 open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, ApplicationContextAware, InitializingBean {
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(ExceptionHandlerMethodResolver::class.java)
+    }
 
     private var messageConverters: List<HttpMessageConverter<*>>? = null
 
@@ -44,18 +49,18 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
         request: HttpServerRequest, response: HttpServerResponse, handler: Any?, ex: Throwable
     ): ModelAndView? {
 
+        // 遍历所有的ControllerAdvice，去寻找合适的ExceptionHandler去处理异常
         var exceptionHandlerMethod: InvocableHandlerMethod? = null
         exceptionHandlerAdviceCache.forEach { (bean, resolver) ->
-            val resolveMethod = resolver.resolveMethod(ex)
-            if (resolveMethod != null) {
-                exceptionHandlerMethod =
-                    InvocableHandlerMethod.newInvocableHandlerMethod(bean.resolveBean(), resolveMethod)
-            }
+            val resolveMethod = resolver.resolveMethod(ex) ?: return@forEach
+            exceptionHandlerMethod = InvocableHandlerMethod.newInvocableHandlerMethod(bean.resolveBean(), resolveMethod)
         }
         if (exceptionHandlerMethod == null) {
             response.sendError(500)
             return null
         }
+
+        // 初始化方法解析器和返回值解析器
         val invocableHandlerMethod = exceptionHandlerMethod!!
         if (this.argumentResolvers != null) {
             if (this.argumentResolvers!!.isEmpty()) {
@@ -75,11 +80,31 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
         }
 
         val mavContainer = ModelAndViewContainer()
-
         val webRequest = ServerWebRequest(request, response)
 
+        // 获取cause列表，因为下层的异常有可能被上层抓了，因此得拿到所有的cause列表传递下去去进行匹配
+        val exceptions = ArrayList<Throwable>()
+
+        if (logger.isDebugEnabled) {
+            logger.info("使用@ExceptionHandler[$invocableHandlerMethod]去处理异常")
+        }
+        var exToExpose: Throwable? = ex
+        while (exToExpose != null) {
+            exceptions += exToExpose
+            val cause = exToExpose.cause
+            exToExpose = if (cause !== exToExpose) cause else null
+        }
+
+        // 构建候选的参数列表，为了后续解析参数可以解析到，这些参数都可以可以支持去注入给@ExceptionHandler方法
+        val arguments = arrayOfNulls<Any>(exceptions.size + 1)
+        // 1. 添加异常列表，使用这种方式，可以更好地去使用ArrayList当中的arraycopy
+        exceptions.toArray(arguments)
+        // 2. 添加HandlerMethod到候选的参数列表
+        arguments[arguments.size - 1] = invocableHandlerMethod
+
         // 执行目标ExceptionHandler方法...
-        invocableHandlerMethod.invokeAndHandle(webRequest,mavContainer)
+        @Suppress("UNCHECKED_CAST")
+        invocableHandlerMethod.invokeAndHandle(webRequest, mavContainer, *(arguments as Array<out Any>))
 
         // return an empty ModelAndView to pass next HandlerExceptionResolvers and not to render view...
         return ModelAndView()
@@ -109,6 +134,8 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
 
     /**
      * 如果不进行自定义，那么需要去获取默认的HandlerMethod的参数解析器列表
+     *
+     * @return 默认的HandlerMethodArgumentResolver列表
      */
     private fun getDefaultArgumentResolvers(): List<HandlerMethodArgumentResolver> {
         val resolvers = ArrayList<HandlerMethodArgumentResolver>()
@@ -121,22 +148,47 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
         resolvers += ServerRequestMethodArgumentResolver()
         resolvers += ServerResponseMethodArgumentResolver()
 
-        // 添加RequestResponseBody的方法处理器
+        // 添加Model方法处理器，处理Model类型的参数，将ModelAndViewContainer当中的Model传递下去
+        resolvers += ModelMethodProcessor()
+        // 添加Map方法处理器，处理Map类型的参数，将ModelAndViewContainer当中的Model传递下去
+        resolvers += MapMethodProcessor()
+
+        // 添加RequestResponseBody的方法处理器(处理@RequestBody注解)
         resolvers += RequestResponseBodyMethodProcessor(getHttpMessageConverters(), getContentNegotiationManager())
+
+        // 添加一个ModelAttribute的方法处理器，处理器方法参数上的@ModelAttribute注解，以及非简单类型的JavaBean
+        resolvers += ModelAttributeMethodProcessor()
 
         return resolvers
     }
 
     /**
      * 如果不进行自定义，那么需要去获取默认的ReturnValueHandlers列表
+     *
+     * @return 默认的HandlerMethodReturnValueHandler列表
      */
     private fun getDefaultReturnValueHandlers(): List<HandlerMethodReturnValueHandler> {
         val handlers = ArrayList<HandlerMethodReturnValueHandler>()
+
+        // RequestResponseBody的方法处理器
         handlers += RequestResponseBodyMethodProcessor(getHttpMessageConverters(), getContentNegotiationManager())
 
+        // 解析ModelAndView的返回值的方法处理器
+        handlers += ModelAndViewMethodReturnValueHandler()
+
+        // 添加Model方法处理器，去处理Model类型的返回值，将Model数据转移到ModelAndViewContainer当中
+        handlers += ModelMethodProcessor()
+
+        // 添加Map方法处理器，去处理Map类型的返回值，将Map数据转移到ModelAndViewContainer当中
+        handlers += MapMethodProcessor()
+
+        // 解析ViewName的处理器
+        handlers += ViewNameMethodReturnValueHandler()
+
+        // 添加一个ModelAttribute的方法处理器，处理方法返回值是ModelAttribute的情况
+        handlers += ModelAttributeMethodProcessor()
         return handlers
     }
-
     open fun getContentNegotiationManager(): ContentNegotiationManager {
         return this.contentNegotiationManager
     }

@@ -6,10 +6,15 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
+import com.wanna.framework.core.environment.CompositePropertySource
+import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.Environment
+import com.wanna.framework.core.io.support.DefaultPropertySourceFactory
+import com.wanna.framework.core.io.support.PropertySourceFactory
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.util.BeanUtils
 import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.core.util.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.core.annotation.AnnotatedElementUtils
 import java.util.LinkedList
@@ -163,6 +168,7 @@ open class ConfigurationClassParser(
 
         val superclass: Class<*>? = sourceClass.clazz.superclass
 
+        // 如果还有superClass，那么return superClass
         if (superclass != null && !superclass.name.startsWith("java.")) {
             return SourceClass(superclass)
         }
@@ -205,17 +211,61 @@ open class ConfigurationClassParser(
     }
 
     /**
-     * 处理某个配置类上的@PropertySource注解
+     * 处理某个配置类上的@PropertySource注解，将该PropertySource导入的locations当中的资源，添加到Spring Environment当中
      *
      * @param configClass 要去进行匹配的目标配置类
      * @param sourceClass 源类
      */
     private fun processPropertySources(configClass: ConfigurationClass, sourceClass: SourceClass) {
-        AnnotatedElementUtils.findAllMergedAnnotations(
-            sourceClass.clazz, PropertySource::class.java
-        ).forEach { propertySource ->
-            // 加载得到的PropertySource
-            BeanUtils.instantiateClass(propertySource.factory.java).create("wanna", propertySource.locations)
+        val propertySources =
+            AnnotatedElementUtils.findAllMergedAnnotations(sourceClass.clazz, PropertySource::class.java)
+        propertySources.forEach { propertySource ->
+            val name = if (!StringUtils.hasText(propertySource.name)) null else propertySource.name
+            val locations = propertySource.locations
+
+            // 创建PropertySourceFactory，交给它去完成配置文件(Properties)的加载工作...
+            var factoryClass = propertySource.factory.java
+            if (factoryClass == PropertySourceFactory::class.java) {
+                factoryClass = DefaultPropertySourceFactory::class.java
+            }
+            val propertySourceFactory = BeanUtils.instantiateClass(factoryClass)
+
+            // 遍历给定的所有资源的位置(location)，使用PropertySourceFactory去进行加载
+            locations.forEach {
+                // location支持使用占位符
+                val location = this.environment.resolveRequiredPlaceholders(it)
+                addPropertySource(propertySourceFactory.createPropertySource(name, location))
+            }
+        }
+    }
+
+    /**
+     * 添加一个PropertySource到Spring Environment当中
+     *
+     * @param propertySource 要去进行添加的PropertySource
+     */
+    private fun addPropertySource(propertySource: com.wanna.framework.core.environment.PropertySource<*>) {
+        val name = propertySource.name
+        val propertySources = (this.environment as ConfigurableEnvironment).getPropertySources()
+
+        if (propertySources.contains(name)) {
+            val oldPropertySource = propertySources.get(name)!!
+
+            // 如果之前就是CompositePropertySource，那么直接添加到之前的后面就行
+            if (oldPropertySource is CompositePropertySource) {
+                oldPropertySource.addPropertySource(propertySource)
+
+                // 如果之前还不是组合的PropertySource，那么需要组合旧的和新的
+            } else {
+                val composite = CompositePropertySource(name)
+                composite.addPropertySource(oldPropertySource)
+                composite.addPropertySource(propertySource)
+                propertySources.replace(name, composite)  // replace
+            }
+
+            // 如果之前都还没存在过该name的PropertySource，直接addLast到Environment当中
+        } else {
+            propertySources.addLast(propertySource)
         }
     }
 

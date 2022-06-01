@@ -2,6 +2,7 @@ package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.web.accept.ContentNegotiationManager
+import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.http.converter.HttpMessageConverter
 import com.wanna.framework.web.method.support.ModelAndViewContainer
@@ -70,7 +71,10 @@ open class RequestResponseBodyMethodProcessor(
      * @return HttpMessageConverter转换出来的RequestBody
      */
     override fun resolveArgument(
-        parameter: MethodParameter, webRequest: NativeWebRequest, mavContainer: ModelAndViewContainer?
+        parameter: MethodParameter,
+        webRequest: NativeWebRequest,
+        mavContainer: ModelAndViewContainer?,
+        binderFactory: WebDataBinderFactory?
     ): Any? {
         return readWithMessageConverters<Any>(webRequest, parameter, parameter.getParameterType())
     }

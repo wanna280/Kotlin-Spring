@@ -1,4 +1,4 @@
-package com.wanna.boot.autoconfigure.web.mvc
+package com.wanna.framework.web.server.netty.server.support
 
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.core.util.StringUtils
@@ -21,7 +21,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
 @Sharable
-class NettyServerHandler(applicationContext: ApplicationContext) : ChannelInboundHandlerAdapter() {
+open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelInboundHandlerAdapter() {
     private val dispatcherHandler = applicationContext.getBean(DispatcherHandler::class.java)
 
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {

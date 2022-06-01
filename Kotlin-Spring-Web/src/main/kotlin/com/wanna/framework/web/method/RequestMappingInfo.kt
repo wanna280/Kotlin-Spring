@@ -7,11 +7,22 @@ import com.wanna.framework.web.bind.RequestMethod
  */
 class RequestMappingInfo {
 
+    // @RequestMapping当中配置的支持的路径
     var paths: MutableList<String> = ArrayList()
 
+    // @RequestMapping当中配置的参数
     var params: MutableList<String> = ArrayList()
 
-    var methods: MutableList<RequestMethod> = ArrayList()
+    // 支持的方法列表，默认为全部
+    var methods: MutableList<RequestMethod> = mutableListOf(
+        RequestMethod.GET,
+        RequestMethod.PUT,
+        RequestMethod.PUT,
+        RequestMethod.DELETE,
+        RequestMethod.PATCH,
+        RequestMethod.OPTIONS,
+        RequestMethod.TRACE
+    )
 
     /**
      * Builder，方便更方便地去构建RequestMappingInfo

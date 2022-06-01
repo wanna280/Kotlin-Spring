@@ -41,6 +41,7 @@ open class TemplateViewResolver : ViewResolver, BeanClassLoaderAware, Ordered, A
             val templateView = TemplateView()
             templateView.viewName = viewName
             templateView.resourceStream = fis
+            templateView.resourceUrl = resourcePath
             return templateView
         }
         return null

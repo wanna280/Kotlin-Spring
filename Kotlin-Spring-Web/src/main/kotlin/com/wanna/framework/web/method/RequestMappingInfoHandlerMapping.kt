@@ -5,7 +5,7 @@ import com.wanna.framework.web.server.HttpServerRequest
 
 /**
  * 它支持了RequestMappingInfo的HandlerMapping，它实现了父类的泛型T为RequestMappingInfo；
- * 它支持去对Mapping为RequestMappingInfo进行解析和匹配
+ * 它支持去对Mapping为RequestMappingInfo的情况去进行解析和匹配
  */
 abstract class RequestMappingInfoHandlerMapping : AbstractHandlerMethodMapping<RequestMappingInfo>() {
 
@@ -16,7 +16,7 @@ abstract class RequestMappingInfoHandlerMapping : AbstractHandlerMethodMapping<R
     /**
      * 从Mapping(RequestMappingInfo)当中去获取到直接路径列表
      *
-     * @param mapping
+     * @param mapping(RequestMappingInfo)
      * @return Mapping当中的路径列表
      */
     override fun getDirectPaths(mapping: RequestMappingInfo): Set<String> {

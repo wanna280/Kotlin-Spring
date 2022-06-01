@@ -1,8 +1,7 @@
-package com.wanna.boot.web.reactive.context
+package com.wanna.boot.web.mvc.context
 
-import com.wanna.boot.web.context.WebServerApplicationContext
-import com.wanna.boot.web.reactive.server.ReactiveWebServerFactory
-import com.wanna.boot.web.server.WebServer
+
+import com.wanna.boot.web.mvc.server.WebServerFactory
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContextException
 import com.wanna.framework.context.support.GenericApplicationContext
@@ -10,7 +9,7 @@ import com.wanna.framework.context.support.GenericApplicationContext
 /**
  * 这是一个ReactiveWebServerApplicationContext
  */
-open class ReactiveWebServerApplicationContext(beanFactory: DefaultListableBeanFactory) :
+open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactory) :
     GenericApplicationContext(beanFactory), WebServerApplicationContext {
     // 提供一个无参数构造器
     constructor() : this(DefaultListableBeanFactory())
@@ -44,16 +43,18 @@ open class ReactiveWebServerApplicationContext(beanFactory: DefaultListableBeanF
      */
     private fun createWebServer() {
         if (this.webServerManager == null) {
-            val reactiveWebServerFactory = getReactiveWebServerFactory()
+            val reactiveWebServerFactory = getWebServerFactory()
             this.webServerManager = WebServerManager(this, reactiveWebServerFactory)
             this.getBeanFactory()
-                .registerSingleton("webServerStartStop", WebServerStartStopLifecycle(this.webServerManager!!))
+                .registerSingleton("webServerStartStop",
+                    WebServerStartStopLifecycle(this.webServerManager!!)
+                )
         }
         initPropertySources()
     }
 
-    private fun getReactiveWebServerFactory(): ReactiveWebServerFactory {
-        val factories = getBeanFactory().getBeansForType(ReactiveWebServerFactory::class.java).values
+    private fun getWebServerFactory(): WebServerFactory {
+        val factories = getBeanFactory().getBeansForType(WebServerFactory::class.java).values
         if (factories.isEmpty()) {
             throw ApplicationContextException("没有从容器当中去找到合适的ReactiveWebServer")
         } else if (factories.size > 1) {
@@ -62,7 +63,7 @@ open class ReactiveWebServerApplicationContext(beanFactory: DefaultListableBeanF
         return factories.iterator().next()
     }
 
-    override fun getWebServer(): WebServer {
+    override fun getWebServer(): com.wanna.boot.web.server.WebServer {
         return this.webServerManager!!.getWebServer()
     }
 }

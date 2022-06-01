@@ -48,10 +48,13 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
 
     @Bean
     @Qualifier("requestMappingHandlerMapping")
-    open fun requestMappingHandlerMapping(@Qualifier("mvcContentNegotiationManager") contentNegotiationManager: ContentNegotiationManager): RequestMappingHandlerMapping {
+    open fun requestMappingHandlerMapping(
+        @Qualifier("mvcContentNegotiationManager") contentNegotiationManager: ContentNegotiationManager,
+        @Qualifier("mvcConversionService") conversionService: FormattingConversionService
+    ): RequestMappingHandlerMapping {
         val mapping = createRequestMappingHandlerMapping()
         // 设置Interceptors列表
-        mapping.setInterceptors(*getInterceptors())
+        mapping.setInterceptors(*getInterceptors(conversionService))
         return mapping
     }
 
@@ -69,7 +72,10 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
 
     @Bean
     @Qualifier("requestMappingHandlerAdapter")
-    open fun requestMappingHandlerAdapter(@Qualifier("mvcContentNegotiationManager") contentNegotiationManager: ContentNegotiationManager): RequestMappingHandlerAdapter {
+    open fun requestMappingHandlerAdapter(
+        @Qualifier("mvcContentNegotiationManager") contentNegotiationManager: ContentNegotiationManager,
+        @Qualifier("mvcConversionService") conversionService: FormattingConversionService
+    ): RequestMappingHandlerAdapter {
         val handlerAdapter = createRequestMappingHandlerAdapter()
         handlerAdapter.setHttpMessageConverters(getMessageConverters())
         handlerAdapter.setContentNegotiationManager(contentNegotiationManager)
@@ -85,11 +91,14 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
 
     /**
      * 给容器当中去注册一个ConversionService，去支持进行WebMvc当中的类型转换工作
+     *
+     * Note: 整个SpringMvc当中的各个组件，都将会采用这个ConversionService去完成类型的转换工作
      */
     @Bean
     @Qualifier("mvcConversionService")
     open fun formattingConversionService(): FormattingConversionService {
         val formattingConversionService = DefaultFormattingConversionService()
+        // 扩展ConversionService当中的Formatter
         addFormatters(formattingConversionService)
         return formattingConversionService
     }
@@ -186,7 +195,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     /**
      * 获取Interceptor列表，交给子类去进行扩展
      */
-    protected open fun getInterceptors(): Array<Any> {
+    protected open fun getInterceptors(conversionService: FormattingConversionService): Array<Any> {
         var interceptors = this.interceptors
         if (interceptors == null) {
             val registry = InterceptorRegistry()

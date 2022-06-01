@@ -1,6 +1,7 @@
 package com.wanna.framework.web.method.support
 
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
 
 /**
@@ -24,7 +25,14 @@ interface HandlerMethodArgumentResolver {
      *
      * @param parameter 方法参数
      * @param webRequest NativeWebRequest(request and response)
+     * @param mavContainer ModelAndView的Container
+     * @param binderFactory WebDataBinderFactory，提供类型转换
      * @return 解析到的参数，有可能为null
      */
-    fun resolveArgument(parameter: MethodParameter, webRequest: NativeWebRequest, mavContainer: ModelAndViewContainer?): Any?
+    fun resolveArgument(
+        parameter: MethodParameter,
+        webRequest: NativeWebRequest,
+        mavContainer: ModelAndViewContainer?,
+        binderFactory: WebDataBinderFactory?
+    ): Any?
 }

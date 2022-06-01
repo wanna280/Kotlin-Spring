@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory
  * DispatcherHandler的具体实现
  */
 open class DispatcherHandlerImpl : DispatcherHandler {
-
     companion object {
         // Logger
         private val logger = LoggerFactory.getLogger(DispatcherHandlerImpl::class.java)
@@ -133,7 +132,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
         ex: Throwable?
     ) {
         var modelAndView = mv
-        // 交给ExceptionResolver去进行处理...
+        // 交给ExceptionResolver去进行处理...尝试去进行视图的解析工作
         if (ex != null) {
             modelAndView = processHandlerException(request, response, mappedHandler?.getHandler(), ex)
         }
@@ -159,7 +158,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
         val view = if (viewName != null) {
             resolveView(viewName, mv.modelMap, request)
         } else {
-            mv.getView()!!
+            mv.getView()
         }
 
         // 渲染视图
@@ -246,11 +245,9 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      * @throws IllegalStateException 如果没有找到合适的Handler去进行处理的话
      */
     protected open fun getHandlerAdapter(handler: Any): HandlerAdapter {
-        if (this.handlerAdapters != null) {
-            this.handlerAdapters!!.forEach {
-                if (it.supports(handler)) {
-                    return it
-                }
+        this.handlerAdapters?.forEach {
+            if (it.supports(handler)) {
+                return it
             }
         }
         throw IllegalStateException("没有为[handler=$handler]找到合适的HandlerAdapter去处理")
@@ -263,10 +260,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      * @return 如果找到了合适的Handler，那么return HandlerExecutionChain；否则，return null
      */
     protected open fun getHandler(request: HttpServerRequest): HandlerExecutionChain? {
-        if (this.handlerMappings == null) {
-            return null
-        }
-        this.handlerMappings!!.forEach {
+        this.handlerMappings?.forEach {
             val handler = it.getHandler(request)
             if (handler != null) {
                 return handler
@@ -296,6 +290,8 @@ open class DispatcherHandlerImpl : DispatcherHandler {
 
     /**
      * 获取HandlerMapping列表
+     *
+     * @return 当前DispatcherHandler当中的HandlerMapping列表
      */
     protected open fun getHandlerMappings(): Collection<HandlerMapping>? {
         return if (this.handlerMappings == null) null else ArrayList(this.handlerMappings!!)
@@ -347,6 +343,8 @@ open class DispatcherHandlerImpl : DispatcherHandler {
 
     /**
      * 初始化HandlerAdapter
+     *
+     * @param applicationContext ApplicationContext
      */
     private fun initHandlerAdapters(applicationContext: ApplicationContext) {
         val handlerAdapters = ArrayList<HandlerAdapter>()
@@ -442,11 +440,9 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      * Note: 这里需要使用inner内部类，方便去获取外部类的方法
      */
     inner class ContextRefreshListener : SmartApplicationListener {
-
         // 处理事件的方式是，交给DispatcherHandler.OnRefresh方法去进行组件的初始化
-        override fun onApplicationEvent(event: ApplicationEvent) {
+        override fun onApplicationEvent(event: ApplicationEvent) =
             this@DispatcherHandlerImpl.onRefresh(event.source as ApplicationContext)
-        }
 
         override fun supportEventType(eventType: Class<out ApplicationEvent>) =
             eventType == ContextRefreshedEvent::class.java

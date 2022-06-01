@@ -2,6 +2,7 @@ package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.method.support.HandlerMethodArgumentResolver
 import com.wanna.framework.web.method.support.ModelAndViewContainer
@@ -23,7 +24,7 @@ open class ServerResponseMethodArgumentResolver : HandlerMethodArgumentResolver 
      * 解析HttpServerResponse参数
      */
     override fun resolveArgument(
-        parameter: MethodParameter, webRequest: NativeWebRequest, mavContainer: ModelAndViewContainer?
+        parameter: MethodParameter, webRequest: NativeWebRequest, mavContainer: ModelAndViewContainer?,binderFactory: WebDataBinderFactory?
     ): Any? {
         val response = webRequest.getNativeResponse(HttpServerResponse::class.java)
         if (ClassUtils.isAssignFrom(HttpServerResponse::class.java, parameter.getParameterType())) {

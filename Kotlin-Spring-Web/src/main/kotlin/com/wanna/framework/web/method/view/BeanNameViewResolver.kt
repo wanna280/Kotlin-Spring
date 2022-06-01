@@ -19,6 +19,9 @@ open class BeanNameViewResolver : ViewResolver, WebApplicationObjectSupport(), O
     }
 
     override fun resolveView(viewName: String): View? {
+        if (!obtainApplicationContext().containsBeanDefinition(viewName)) {
+            return null
+        }
         if (!obtainApplicationContext().isTypeMatch(viewName, View::class.java)) {
             return null
         }

@@ -2,6 +2,7 @@ package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.method.support.HandlerMethodArgumentResolver
 import com.wanna.framework.web.method.support.ModelAndViewContainer
@@ -24,28 +25,37 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
     // beanFactory
     private var beanFactory: ConfigurableBeanFactory? = null
 
-    // NamedValueInfo缓存
+    // NamedValueInfo缓存，key-方法参数，value-要处理的NamedValueInfo
     private val namedValueInfoCache = ConcurrentHashMap<MethodParameter, NamedValueInfo>()
 
     /**
      * 解析一个方法参数的值
      */
     override fun resolveArgument(
-        parameter: MethodParameter, webRequest: NativeWebRequest, mavContainer: ModelAndViewContainer?
+        parameter: MethodParameter,
+        webRequest: NativeWebRequest,
+        mavContainer: ModelAndViewContainer?,
+        binderFactory: WebDataBinderFactory?
     ): Any? {
         // 获取NamedValueInfo，交给子类去进行注解的解析并构建NamedValueInfo
         val namedValueInfo = getNamedValueInfo(parameter)
 
         // 如果必要的话，使用beanFactory去将name使用嵌入式的值解析器的方式去进行解析
         val resolvedName = resolveEmbeddedValuesAndExpressions(namedValueInfo.name)
-        if (resolvedName == null) {
-            throw IllegalArgumentException("无法解析到方法的参数名[${namedValueInfo.name}]")
-        }
+            ?: throw IllegalArgumentException("无法解析到方法的参数名[${namedValueInfo.name}]")
 
         // 交给子类去解析该参数名的值
-        val arg = resolveName(resolvedName.toString(), webRequest)
+        var arg = resolveName(resolvedName.toString(), webRequest)
         if (arg == null) {
+            // 提供了value的占位符解析工作
+            if (namedValueInfo.defaultValue != null) {
+                arg = resolveEmbeddedValuesAndExpressions(namedValueInfo.defaultValue)
+            }
+        }
+        if (binderFactory != null) {
+            val binder = binderFactory.createBinder(webRequest, null, resolvedName.toString())
 
+            return binder.convertIfNecessary(arg, parameter.getParameterType())
         }
         return arg
     }

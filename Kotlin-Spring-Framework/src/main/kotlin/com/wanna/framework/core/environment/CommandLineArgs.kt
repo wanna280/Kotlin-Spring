@@ -1,5 +1,7 @@
 package com.wanna.framework.core.environment
 
+import com.wanna.framework.util.LinkedMultiValueMap
+
 /**
  * 维护了命令行参数的信息
  */
@@ -8,7 +10,7 @@ class CommandLineArgs {
     private val nonOptionArgs = ArrayList<String>()
 
     // 设置了option的参数列表
-    private val optionArgs = HashMap<String, MutableList<String?>>()
+    private val optionArgs = LinkedMultiValueMap<String, String>()
 
     // 添加optionArg参数
     fun addOptionArg(optionName: String, optionValue: String?) {

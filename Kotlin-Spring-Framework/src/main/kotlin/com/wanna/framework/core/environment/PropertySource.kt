@@ -9,8 +9,6 @@ package com.wanna.framework.core.environment
 @Suppress("UNCHECKED_CAST")
 abstract class PropertySource<T>(var name: String, val source: T) {
 
-    constructor(name: String) : this(name, Any() as T)
-
     /**
      * 从PropertySource当中去获取属性值，抽象方法，交给子类去实现
      */
@@ -20,4 +18,6 @@ abstract class PropertySource<T>(var name: String, val source: T) {
      * 当前的PropertySource当中是否存在有这样的属性值？
      */
     open fun containsProperty(name: String): Boolean = getProperty(name) != null
+
+    override fun toString(): String  = "name=($name)"
 }

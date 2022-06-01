@@ -25,6 +25,9 @@ abstract class CommandLinePropertySource<T>(name: String, source: T) : Enumerabl
      * 获取属性值
      * (1)如果name为noOptionArgs的属性值name，那么返回所有的noOptionArgs列表(使用","进行分割)；
      * (2)如果name不为noOptionArgs的属性值name，那么需要从列表当中获取到所有的值(并使用","去进行分割)
+     *
+     * @param name 参数名
+     * @return 获取到的参数值(获取不到return null)
      */
     override fun getProperty(name: String): Any? {
         if (noOptionArgsPropertyName == name) {

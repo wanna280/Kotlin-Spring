@@ -133,7 +133,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
                 try {
                     applyMergedBeanDefinitionPostProcessor(mbd, beanType, beanName)
                 } catch (ex: Throwable) {
-                    throw BeanCreationException("完成merged的后置处理工作失败，[beanName=$beanName]")
+                    throw BeanCreationException("完成merged的后置处理工作失败，[beanName=$beanName]", ex)
                 }
                 mbd.postProcessed = true
             }

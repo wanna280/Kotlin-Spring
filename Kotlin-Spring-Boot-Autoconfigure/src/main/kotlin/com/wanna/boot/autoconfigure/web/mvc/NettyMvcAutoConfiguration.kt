@@ -2,18 +2,21 @@ package com.wanna.boot.autoconfigure.web.mvc
 
 import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
 import com.wanna.boot.context.properties.EnableConfigurationProperties
-import com.wanna.boot.web.reactive.server.ReactiveWebServerFactory
+import com.wanna.boot.web.mvc.server.WebServerFactory
+import com.wanna.framework.beans.factory.annotation.Qualifier
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.annotation.Primary
+import com.wanna.framework.context.format.support.FormattingConversionService
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.web.DispatcherHandler
 import com.wanna.framework.web.DispatcherHandlerImpl
 import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.config.annotation.DelegatingWebMvcConfiguration
 import com.wanna.framework.web.method.annotation.RequestMappingHandlerMapping
+import com.wanna.framework.web.server.netty.server.support.NettyServerHandler
 
 @EnableConfigurationProperties([NettyWebServerProperties::class])
 @Configuration(proxyBeanMethods = false)
@@ -37,7 +40,7 @@ open class NettyMvcAutoConfiguration : ApplicationContextAware {
      * 给容器中导入一个NettyWebServerFactory
      */
     @Bean
-    open fun nettyWebServerFactory(properties: NettyWebServerProperties): ReactiveWebServerFactory {
+    open fun nettyWebServerFactory(properties: NettyWebServerProperties): WebServerFactory {
         val nettyWebServerFactory = NettyWebServerFactory()
         nettyWebServerFactory.setHandler(NettyServerHandler(this.applicationContext!!))
         nettyWebServerFactory.setPort(properties.port)
@@ -47,10 +50,14 @@ open class NettyMvcAutoConfiguration : ApplicationContextAware {
     @Component
     open class EnableWebMvcConfiguration : DelegatingWebMvcConfiguration() {
 
-        @Bean  // set to Primary
-        @Primary
-        override fun requestMappingHandlerMapping(contentNegotiationManager: ContentNegotiationManager): RequestMappingHandlerMapping {
-            return super.requestMappingHandlerMapping(contentNegotiationManager)
+        @Primary  // set to Primary
+        @Bean
+        @Qualifier("requestMappingHandlerMapping")
+        override fun requestMappingHandlerMapping(
+            @Qualifier("mvcContentNegotiationManager") contentNegotiationManager: ContentNegotiationManager,
+            @Qualifier("mvcConversionService") conversionService: FormattingConversionService
+        ): RequestMappingHandlerMapping {
+            return super.requestMappingHandlerMapping(contentNegotiationManager, conversionService)
         }
     }
 }

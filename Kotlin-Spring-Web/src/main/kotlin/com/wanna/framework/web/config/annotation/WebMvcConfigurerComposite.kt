@@ -25,27 +25,27 @@ open class WebMvcConfigurerComposite : WebMvcConfigurer {
         this.webMvcConfigurers.forEach { it.addInterceptors(registry) }
     }
 
-    override fun addArgumentResolvers(resolvers: List<HandlerMethodArgumentResolver>) {
+    override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         this.webMvcConfigurers.forEach { it.addArgumentResolvers(resolvers) }
     }
 
-    override fun addReturnValueHandlers(handlers: List<HandlerMethodReturnValueHandler>) {
+    override fun addReturnValueHandlers(handlers: MutableList<HandlerMethodReturnValueHandler>) {
         this.webMvcConfigurers.forEach { it.addReturnValueHandlers(handlers) }
     }
 
-    override fun configureMessageConverters(converters: List<HttpMessageConverter<*>>) {
+    override fun configureMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
         this.webMvcConfigurers.forEach { it.configureMessageConverters(converters) }
     }
 
-    override fun extendMessageConverters(converters: List<HttpMessageConverter<*>>) {
+    override fun extendMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
         this.webMvcConfigurers.forEach { it.extendMessageConverters(converters) }
     }
 
-    override fun configureHandlerExceptionResolvers(resolvers: List<HandlerExceptionResolver>) {
+    override fun configureHandlerExceptionResolvers(resolvers: MutableList<HandlerExceptionResolver>) {
         this.webMvcConfigurers.forEach { it.configureHandlerExceptionResolvers(resolvers) }
     }
 
-    override fun extendHandlerExceptionResolvers(resolvers: List<HandlerExceptionResolver?>) {
+    override fun extendHandlerExceptionResolvers(resolvers: MutableList<HandlerExceptionResolver>) {
         this.webMvcConfigurers.forEach { it.extendHandlerExceptionResolvers(resolvers) }
     }
 

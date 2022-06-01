@@ -45,6 +45,13 @@ interface HttpServerRequest {
     fun getParam(name: String): String?
 
     /**
+     * 获取目标参数的Map
+     *
+     * @return 参数Map(key-paramName,value-paramValues)
+     */
+    fun getParamMap(): Map<String, List<String>>
+
+    /**
      * 根据name移除一个参数
      *
      * @param name paramName

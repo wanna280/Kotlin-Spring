@@ -1,4 +1,4 @@
-package com.wanna.boot.web.context
+package com.wanna.boot.web.mvc.context
 
 import com.wanna.boot.web.server.WebServer
 import com.wanna.framework.context.ApplicationContext
@@ -9,7 +9,6 @@ import com.wanna.framework.context.event.ApplicationEvent
  *
  * @param webServer webServer
  */
-abstract class WebServerInitializedEvent(val webServer:WebServer) : ApplicationEvent(webServer) {
-
+abstract class WebServerInitializedEvent(val webServer: WebServer) : ApplicationEvent(webServer) {
     abstract fun getApplicationContext() : ApplicationContext
 }

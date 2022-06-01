@@ -1,6 +1,5 @@
-package com.wanna.boot.web.reactive.context
+package com.wanna.boot.web.mvc.context
 
-import com.wanna.boot.web.context.WebServerInitializedEvent
 import com.wanna.boot.web.server.WebServer
 import com.wanna.framework.context.ApplicationContext
 
@@ -10,7 +9,7 @@ import com.wanna.framework.context.ApplicationContext
  * @param webServer WebServer
  * @param applicationContext applicationContext
  */
-open class ReactiveWebServerInitializedEvent(webServer: WebServer, private val applicationContext: ApplicationContext) :
+open class MvcWebServerInitializedEvent(webServer: WebServer, private val applicationContext: ApplicationContext) :
     WebServerInitializedEvent(webServer) {
 
     override fun getApplicationContext(): ApplicationContext {

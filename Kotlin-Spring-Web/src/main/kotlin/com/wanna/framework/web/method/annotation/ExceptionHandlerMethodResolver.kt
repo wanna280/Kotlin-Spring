@@ -39,7 +39,7 @@ open class ExceptionHandlerMethodResolver(private val beanType: Class<*>) {
     /**
      * 根据异常的类型去找到合适的ExceptionHandler方法
      *
-     * @param exception 异常
+     * @param exception 具体产生的异常
      * @return 该异常对应的HandlerMethod(找不到return null)
      */
     open fun resolveMethod(exception: Throwable): Method? {
