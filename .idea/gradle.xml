@@ -22,6 +22,7 @@
             <option value="$PROJECT_DIR$/Kotlin-Nacos/Kotlin-Nacos-Api" />
             <option value="$PROJECT_DIR$/Kotlin-Nacos/Kotlin-Nacos-Config-Server" />
             <option value="$PROJECT_DIR$/Kotlin-Nacos/Kotlin-Nacos-Naming-Server" />
+            <option value="$PROJECT_DIR$/Kotlin-Nacos/Kotlin-Spring-SpringShell" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Boot" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Boot-Autoconfigure" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Cloud" />
@@ -34,6 +35,7 @@
             <option value="$PROJECT_DIR$/Kotlin-Spring-Cloud/Kotlin-Spring-Cloud-Ribbon" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Framework" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Instrument" />
+            <option value="$PROJECT_DIR$/Kotlin-Spring-SpringShell" />
             <option value="$PROJECT_DIR$/Kotlin-Spring-Web" />
             <option value="$PROJECT_DIR$/buildSrc" />
           </set>

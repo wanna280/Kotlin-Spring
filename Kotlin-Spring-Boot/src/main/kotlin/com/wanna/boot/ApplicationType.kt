@@ -11,11 +11,17 @@ enum class ApplicationType {
     companion object {
         private const val NETTY_MARKER = "io.netty.bootstrap.ServerBootstrap"
 
+        private const val DISPATCHER_HANDLER_MARKER = "com.wanna.framework.web.DispatcherHandler"
+
         /**
          * 从ClassPath当中去推断应用的类型
          */
+        @JvmStatic
         fun deduceFromClassPath(): ApplicationType {
-            if (ClassUtils.isPresent(NETTY_MARKER, ApplicationType::class.java.classLoader)) {
+            if (ClassUtils.isPresent(NETTY_MARKER, ApplicationType::class.java.classLoader) && ClassUtils.isPresent(
+                    DISPATCHER_HANDLER_MARKER, ApplicationType::class.java.classLoader
+                )
+            ) {
                 return REACTIVE
             }
             return NONE

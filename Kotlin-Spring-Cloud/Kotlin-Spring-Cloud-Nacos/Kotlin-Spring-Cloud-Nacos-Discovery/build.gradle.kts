@@ -11,7 +11,9 @@ repositories {
 }
 
 dependencies {
-    testApi(project(":Kotlin-Spring-Web"))
+    testImplementation(project(":Kotlin-Spring-Web"))
+    testImplementation("io.netty:netty-codec-http:$nettyVersion")
+
 
     implementation("com.netflix.ribbon:ribbon-loadbalancer:$ribbonVersion")
     implementation("com.netflix.ribbon:ribbon-core:$ribbonVersion")

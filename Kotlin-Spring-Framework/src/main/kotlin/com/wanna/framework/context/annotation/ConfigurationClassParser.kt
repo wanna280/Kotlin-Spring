@@ -194,6 +194,7 @@ open class ConfigurationClassParser(
             }
         }
 
+
         // 遍历所有的内部类，去进行递归处理...设置ImportedBy，beanName将会在后期Reader当中去进行生成(内部类其实和@Import导入的完全等效啊...)
         candidates.forEach {
             if (importStack.contains(configClass)) {

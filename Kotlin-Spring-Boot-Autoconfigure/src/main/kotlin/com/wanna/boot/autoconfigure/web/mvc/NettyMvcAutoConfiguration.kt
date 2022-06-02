@@ -1,6 +1,7 @@
 package com.wanna.boot.autoconfigure.web.mvc
 
 import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnWebApplication
 import com.wanna.boot.context.properties.EnableConfigurationProperties
 import com.wanna.boot.web.mvc.server.WebServerFactory
 import com.wanna.framework.beans.factory.annotation.Qualifier
@@ -18,6 +19,7 @@ import com.wanna.framework.web.config.annotation.DelegatingWebMvcConfiguration
 import com.wanna.framework.web.method.annotation.RequestMappingHandlerMapping
 import com.wanna.framework.web.server.netty.server.support.NettyServerHandler
 
+@ConditionalOnWebApplication(ConditionalOnWebApplication.Type.MVC)
 @EnableConfigurationProperties([NettyWebServerProperties::class])
 @Configuration(proxyBeanMethods = false)
 open class NettyMvcAutoConfiguration : ApplicationContextAware {

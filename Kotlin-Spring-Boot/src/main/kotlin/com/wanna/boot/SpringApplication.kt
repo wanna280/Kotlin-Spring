@@ -161,7 +161,7 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
             // 通知所有的监听器，SpringApplication的已经启动完成，可以去进行后置处理工作了
             listeners.started(applicationContext)
 
-            // 拿出容器当中的所有的ApplicationRunner和CommandLineRunner，去进行回调
+            // 拿出容器当中的所有的ApplicationRunner和CommandLineRunner，去进行回调，处理命令行参数
             callRunners(applicationContext, applicationArguments)
         } catch (ex: Throwable) {
             handleRunException(applicationContext, ex, listeners)
@@ -294,13 +294,18 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
      *
      * @see ApplicationRunner
      * @see CommandLineRunner
+     *
+     * @param applicationArguments 命令行参数信息
+     * @param applicationContext ApplicationContext
      */
     protected open fun callRunners(applicationContext: ApplicationContext, applicationArguments: ApplicationArguments) {
         val runners = ArrayList<Any>()
-        runners += applicationContext.getBeansForType(ApplicationRunner::class.java)
-        runners += applicationContext.getBeansForType(CommandLineRunner::class.java)
+        // fixed:要添加的只是Value而已，而不是Map<String,T>
+        runners.addAll(applicationContext.getBeansForType(ApplicationRunner::class.java).values)
+        runners.addAll(applicationContext.getBeansForType(CommandLineRunner::class.java).values)
         AnnotationAwareOrderComparator.sort(runners)  // sort
-        runners.forEach {
+        // 去重，并回调所有的Runner
+        LinkedHashSet(runners).forEach {
             if (it is ApplicationRunner) {
                 it.run(applicationArguments)
             }

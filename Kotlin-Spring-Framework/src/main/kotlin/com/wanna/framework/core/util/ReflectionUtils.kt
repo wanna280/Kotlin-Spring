@@ -2,8 +2,10 @@ package com.wanna.framework.core.util
 
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
+import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import java.lang.reflect.UndeclaredThrowableException
 
 /**
  * Java的反射工具类
@@ -235,7 +237,7 @@ class ReflectionUtils {
          */
         @JvmStatic
         fun invokeMethod(method: Method, target: Any?): Any? {
-            return method.invoke(target)
+            return invokeMethod(method, target, *emptyArray())
         }
 
         /**
@@ -248,7 +250,34 @@ class ReflectionUtils {
          */
         @JvmStatic
         fun invokeMethod(method: Method, target: Any?, vararg args: Any?): Any? {
-            return method.invoke(target, *args)
+            try {
+                return method.invoke(target, *args)
+            } catch (ex: Exception) {
+                handleReflectionException(ex)
+            }
+            throw IllegalStateException("不应该到达这里！")
+        }
+
+        /**
+         * 处理反射过程当中可能会产生的异常
+         *
+         * @param ex 要去处理的异常
+         */
+        @JvmStatic
+        fun handleReflectionException(ex: Exception) {
+            if (ex is NoSuchMethodException) {
+                throw IllegalStateException("要执行的目标方法没有找到--[${ex.message}]")
+            }
+            if (ex is InvocationTargetException) {
+                throw ex.cause!!
+            }
+            if (ex is IllegalAccessException) {
+                throw IllegalStateException("不合法的访问一个方法/字段--[${ex.message}]")
+            }
+            if (ex is RuntimeException) {
+                throw ex
+            }
+            throw UndeclaredThrowableException(ex)
         }
 
         /**
