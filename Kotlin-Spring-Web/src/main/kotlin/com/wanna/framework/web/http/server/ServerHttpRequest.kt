@@ -1,6 +1,7 @@
 package com.wanna.framework.web.http.server
 
 import com.wanna.framework.web.context.request.NativeWebRequest
+import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpInputMessage
 import com.wanna.framework.web.server.HttpServerRequest
 import java.io.InputStream
@@ -21,7 +22,7 @@ open class ServerHttpRequest(webRequest: NativeWebRequest) : HttpInputMessage {
         return request.getInputStream()
     }
 
-    override fun getHeaders(): Map<String, String> {
+    override fun getHeaders(): HttpHeaders {
         return request.getHeaders()
     }
 }

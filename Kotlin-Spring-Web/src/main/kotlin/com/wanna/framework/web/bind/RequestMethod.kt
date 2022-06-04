@@ -15,5 +15,4 @@ enum class RequestMethod {
             return valueOf(method.uppercase())
         }
     }
-
 }

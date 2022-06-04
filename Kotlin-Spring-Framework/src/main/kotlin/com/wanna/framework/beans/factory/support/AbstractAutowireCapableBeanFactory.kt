@@ -9,6 +9,7 @@ import com.wanna.framework.beans.PropertyValues
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.ObjectFactory
 import com.wanna.framework.beans.BeanWrapperImpl
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.BeanNameAware
 import com.wanna.framework.context.exception.BeanCreationException
@@ -57,6 +58,19 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
             throw BeanCreationException("在执行BeforeInstantiation的过程中发生了异常", ex, beanName)
         }
         return doCreateBean(beanName, mbd)
+    }
+
+    /**
+     * 给定一个beanClass，封装成为一个BeanDefinition，交给容器当中去创建Bean
+     *
+     * @param clazz beanClass
+     * @return 创建好的Bean
+     */
+    @Suppress("UNCHECKED_CAST")
+    override fun <T> createBean(clazz: Class<T>): T {
+        val rootBeanDefinition = RootBeanDefinition(clazz)
+        rootBeanDefinition.setScope(BeanDefinition.SCOPE_PRTOTYPE)
+        return createBean(clazz.name, rootBeanDefinition) as T
     }
 
     /**
@@ -119,7 +133,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
                 try {
                     applyMergedBeanDefinitionPostProcessor(mbd, beanType, beanName)
                 } catch (ex: Throwable) {
-                    throw BeanCreationException("完成merged的后置处理工作失败，[beanName=$beanName]")
+                    throw BeanCreationException("完成merged的后置处理工作失败，[beanName=$beanName]", ex)
                 }
                 mbd.postProcessed = true
             }

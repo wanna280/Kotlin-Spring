@@ -13,6 +13,8 @@ dependencies {
     implementation(project(":Kotlin-Logger:logger-slf4j-impl"))
     implementation(project(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Context"))
     implementation(project(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Common"))
+
+    testImplementation("io.netty:netty-codec-http:$nettyVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("com.alibaba.nacos:nacos-client:$nacosClientVersion")
 }

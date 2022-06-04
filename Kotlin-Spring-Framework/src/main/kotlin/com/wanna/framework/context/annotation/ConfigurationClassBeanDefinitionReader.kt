@@ -9,14 +9,12 @@ import com.wanna.framework.context.annotation.ConfigurationCondition.Configurati
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.MethodMetadata
-import com.wanna.framework.core.type.StandardAnnotationMetadata
 import com.wanna.framework.core.type.StandardMethodMetadata
 import com.wanna.framework.core.util.AnnotationConfigUtils
 import com.wanna.framework.core.util.BeanUtils
 import com.wanna.framework.core.util.StringUtils
 import org.slf4j.LoggerFactory
 import org.springframework.core.annotation.AnnotatedElementUtils
-import java.lang.reflect.Method
 
 /**
  * 这是一个配置类的BeanDefinitionReader，负责从ConfigurationClass当中去读取BeanDefinition
@@ -103,13 +101,12 @@ open class ConfigurationClassBeanDefinitionReader(
         }
 
         val configClass = beanMethod.configClass
-        val beanName: String?
-
-        // 获取到@Bean注解当中的name属性，如果name属性为空的话，那么使用方法名作为beanName
         val beanAnnotation = metadata.getAnnotations()
             .filter { it.annotationClass.java.name == Bean::class.java.name }
             .toList()[0] as Bean
-        beanName = beanAnnotation.name.ifBlank { metadata.getMethodName() }
+
+        // 从@Bean的注解上找到合适的beanName
+        val beanName: String = findBeanNameFromBeanAnnotation(beanAnnotation, metadata)
 
         // 如果这个@Bean方法，在子类当中已经存在了(子类去进行重写)，那么就别添加父类的@Bean方法了，得pass掉...得以子类的为准....
         if (isOverriddenByExistingDefinition(beanMethod, beanName)) {
@@ -276,6 +273,28 @@ open class ConfigurationClassBeanDefinitionReader(
             }
             return skip
         }
+    }
+
+    /**
+     * 从@Bean的注解上找到合适的beanName；
+     * * 1.尝试使用name属性
+     * * 2.尝试使用value属性
+     * * 3.尝试使用方法名
+     *
+     * @return 解析到的beanName
+     */
+    private fun findBeanNameFromBeanAnnotation(beanAnnotation: Bean, metadata: MethodMetadata): String {
+        var beanName: String? = null
+        if (StringUtils.hasText(beanAnnotation.name)) {
+            beanName = beanAnnotation.name
+        }
+        if (!StringUtils.hasText(beanName) && StringUtils.hasText(beanAnnotation.value)) {
+            beanName = beanAnnotation.value
+        }
+        if (!StringUtils.hasText(beanName)) {
+            beanName = metadata.getMethodName()
+        }
+        return beanName!!
     }
 
     /**

@@ -9,6 +9,8 @@ package com.wanna.boot
 interface ApplicationArguments {
     /**
      * 获取原始的命令行参数列表
+     *
+     * @return 原始的命令行参数列表
      */
     fun getSourceArgs(): Array<String>
 }

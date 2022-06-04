@@ -11,6 +11,8 @@ import com.wanna.framework.web.method.support.HandlerMethodReturnValueHandler
 /**
  * 它是一个为WebMvcConfiguration提供扩展的配置类，它在提供父类的当中的webMvc的相关支持的前提下；
  * 支持使用WebMvcConfigurer去对WebMvc当中的各个组件去进行扩展和自定义
+ *
+ * @see WebMvcConfigurationSupport
  */
 @Configuration(proxyBeanMethods = false)
 open class DelegatingWebMvcConfiguration : WebMvcConfigurationSupport() {

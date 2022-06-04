@@ -1,6 +1,6 @@
 package com.wanna.boot
 
-import com.wanna.boot.web.reactive.context.AnnotationConfigReactiveWebServerApplicationContext
+import com.wanna.boot.web.mvc.context.AnnotationConfigMvcWebServerApplicationContext
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
@@ -10,7 +10,9 @@ import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.context.support.AbstractApplicationContext
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.convert.support.DefaultConversionService
+import com.wanna.framework.core.environment.CompositePropertySource
 import com.wanna.framework.core.environment.ConfigurableEnvironment
+import com.wanna.framework.core.environment.SimpleCommandLinePropertySource
 import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
@@ -159,7 +161,7 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
             // 通知所有的监听器，SpringApplication的已经启动完成，可以去进行后置处理工作了
             listeners.started(applicationContext)
 
-            // 拿出容器当中的所有的ApplicationRunner和CommandLineRunner，去进行回调
+            // 拿出容器当中的所有的ApplicationRunner和CommandLineRunner，去进行回调，处理命令行参数
             callRunners(applicationContext, applicationArguments)
         } catch (ex: Throwable) {
             handleRunException(applicationContext, ex, listeners)
@@ -194,6 +196,7 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         arguments: ApplicationArguments,
         banner: Banner?
     ) {
+
         // 将准备好的环境对象，设置到ApplicationContext当中去
         context.setEnvironment(environment)
 
@@ -291,13 +294,18 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
      *
      * @see ApplicationRunner
      * @see CommandLineRunner
+     *
+     * @param applicationArguments 命令行参数信息
+     * @param applicationContext ApplicationContext
      */
     protected open fun callRunners(applicationContext: ApplicationContext, applicationArguments: ApplicationArguments) {
         val runners = ArrayList<Any>()
-        runners += applicationContext.getBeansForType(ApplicationRunner::class.java)
-        runners += applicationContext.getBeansForType(CommandLineRunner::class.java)
-        AnnotationAwareOrderComparator.sort(runners)
-        runners.forEach {
+        // fixed:要添加的只是Value而已，而不是Map<String,T>
+        runners.addAll(applicationContext.getBeansForType(ApplicationRunner::class.java).values)
+        runners.addAll(applicationContext.getBeansForType(CommandLineRunner::class.java).values)
+        AnnotationAwareOrderComparator.sort(runners)  // sort
+        // 去重，并回调所有的Runner
+        LinkedHashSet(runners).forEach {
             if (it is ApplicationRunner) {
                 it.run(applicationArguments)
             }
@@ -393,7 +401,7 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         return when (this.applicationType) {
             ApplicationType.NONE -> AnnotationConfigApplicationContext()
             ApplicationType.SERVLET -> AnnotationConfigApplicationContext()
-            ApplicationType.REACTIVE -> AnnotationConfigReactiveWebServerApplicationContext()
+            ApplicationType.REACTIVE -> AnnotationConfigMvcWebServerApplicationContext()
         }
     }
 
@@ -407,10 +415,44 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
     ): ConfigurableEnvironment {
         val environment = getOrCreateEnvironment()
 
+        // 配置环境，添加ConversionService以及命令行参数的PropertySource
+        configureEnvironment(environment, applicationArguments.getSourceArgs())
         // 通知所有的监听器，环境已经准备好了，可以去完成后置处理了...
         listeners.environmentPrepared(bootstrapContext, environment)
 
         return environment
+    }
+
+    /**
+     * 对SpringApplication Environment环境去进行配置
+     *
+     * @param environment 要去进行配置的环境
+     * @param args 命令行参数列表
+     */
+    protected open fun configureEnvironment(environment: ConfigurableEnvironment, args: Array<String>) {
+        if (this.addConversionService) {
+            environment.setConversionService(DefaultConversionService.getSharedInstance())
+        }
+        configurePropertySources(environment, args)
+    }
+
+    /**
+     * 对SpringApplication的Environment的PropertySource去进行配置
+     *
+     * @param environment 要去进行配置的环境
+     * @param args 命令行参数列表
+     */
+    protected open fun configurePropertySources(environment: ConfigurableEnvironment, args: Array<String>) {
+        val sourceName = SimpleCommandLinePropertySource.COMMAND_LINE_PROPERTY_SOURCE_NAME
+        if (environment.getPropertySources().contains(sourceName)) {
+            val old = environment.getPropertySources().get(sourceName)!!
+            val newSource = CompositePropertySource(sourceName)
+            newSource.addPropertySource(old)
+            newSource.addPropertySource(SimpleCommandLinePropertySource("springApplicationCommandLineArgs", *args))
+            environment.getPropertySources().replace(sourceName, newSource)  // replace old
+        } else {
+            environment.getPropertySources().addLast(SimpleCommandLinePropertySource(sourceName, *args))
+        }
     }
 
     /**

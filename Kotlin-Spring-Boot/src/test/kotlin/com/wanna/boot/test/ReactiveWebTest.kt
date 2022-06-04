@@ -11,7 +11,7 @@ import com.wanna.framework.context.stereotype.Component
 class AppTest
 
 @Component
-class MyReactiveWebServerFactory : com.wanna.boot.web.reactive.server.ReactiveWebServerFactory {
+class MyReactiveWebServerFactory : com.wanna.boot.web.mvc.server.WebServerFactory {
     override fun getWebServer(): WebServer {
         return object : WebServer {
             override fun start() {

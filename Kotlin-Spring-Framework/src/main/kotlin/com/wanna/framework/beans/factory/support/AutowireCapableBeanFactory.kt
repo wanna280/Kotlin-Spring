@@ -49,6 +49,14 @@ interface AutowireCapableBeanFactory : BeanFactory {
     fun initializeBean(bean: Any, beanName: String)
 
     /**
+     * 给定具体的class，使用BeanFactory去创建一个Bean
+     *
+     * @param clazz 给定clazz
+     * @return 创建好的Bean
+     */
+    fun <T> createBean(clazz: Class<T>) : T
+
+    /**
      * 摧毁Bean，供beanFactory外部去进行使用
      *
      * @param existingBean 要进行摧毁的已经存在于容器当中的Bean

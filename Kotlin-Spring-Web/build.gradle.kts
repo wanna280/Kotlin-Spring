@@ -13,11 +13,15 @@ repositories {
 dependencies {
     implementation(project(":Kotlin-Spring-Framework"))
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // jackson
-    implementation(project(":Kotlin-Logger:logger-slf4j-impl"))
     implementation("org.slf4j:slf4j-api:$slf4jApiVersion")
     implementation("org.springframework:spring-core:$springCoreVersion")
-    implementation("io.netty:netty-codec-http:$nettyVersion")
+    compileOnly("io.netty:netty-codec-http:$nettyVersion")
+    implementation("org.apache.httpcomponents:httpclient:$apacheHttpClientVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
+
+    testImplementation("io.netty:netty-codec-http:$nettyVersion")
+    testImplementation(project(":Kotlin-Logger:logger-slf4j-impl"))
+    testImplementation("io.netty:netty-codec-http:$nettyVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }

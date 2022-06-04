@@ -24,7 +24,6 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
     BeanClassLoaderAware, ApplicationStartupAware {
 
     companion object {
-
         // ImportRegistry的beanName
         private val IMPORT_REGISTRY_BEAN_NAME = ConfigurationClassPostProcessor::class.java.name + ".importRegistry"
     }
@@ -61,8 +60,8 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
      */
     open fun setBeanNameGenerator(generator: BeanNameGenerator) {
         localBeanNameGeneratorSet = true
-        this.importBeanBeanNameGenerator = generator;
-        this.componentScanBeanNameGenerator = generator;
+        this.importBeanBeanNameGenerator = generator
+        this.componentScanBeanNameGenerator = generator
     }
 
     override fun setApplicationStartup(applicationStartup: ApplicationStartup) {
@@ -94,24 +93,25 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
             singletonBeanRegistry = registry
             val beanNameGenerator = registry.getSingleton(AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR)
             if (beanNameGenerator != null) {
-                this.importBeanBeanNameGenerator = beanNameGenerator as BeanNameGenerator;
-                this.componentScanBeanNameGenerator = beanNameGenerator;
+                this.importBeanBeanNameGenerator = beanNameGenerator as BeanNameGenerator
+                this.componentScanBeanNameGenerator = beanNameGenerator
             }
         }
 
-        parser =
+        val parser =
             ConfigurationClassParser(registry, environment, classLoader, componentScanBeanNameGenerator)
+        this.parser = parser
 
         val parseConfig = this.applicationStartup!!.start("spring.context.config-classes.parse")  // start parseConfig
 
         // 使用配置类解析器去进行解析配置类
-        parser!!.parse(candidates)
-        val importRegistry = parser!!.getImportRegistry()
+        parser.parse(candidates)
+        val importRegistry = parser.getImportRegistry()
         reader =
             ConfigurationClassBeanDefinitionReader(registry, importBeanBeanNameGenerator, environment, importRegistry)
 
         // 获取解析器解析到的所有配置类列表
-        val configurationClasses = LinkedHashSet(parser!!.getConfigurationClasses())
+        val configurationClasses = LinkedHashSet(parser.getConfigurationClasses())
 
         // 加载BeanDefinition
         // 1.如果它是被@Import导入进来的，那么会在这里完成BeanDefinition的注册
@@ -165,11 +165,9 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         override fun postProcessBeforeInitialization(beanName: String, bean: Any): Any {
             if (bean is ImportAware) {
                 val importRegistry = beanFactory.getBean(IMPORT_REGISTRY_BEAN_NAME, ImportRegistry::class.java)
-                if (importRegistry != null) {
-                    val importedMetadata = importRegistry.getImportingClassFor(bean::class.java.name)
-                    if (importedMetadata != null) {
-                        bean.setImportMetadata(importedMetadata)
-                    }
+                val importedMetadata = importRegistry.getImportingClassFor(bean::class.java.name)
+                if (importedMetadata != null) {
+                    bean.setImportMetadata(importedMetadata)
                 }
             }
             return bean

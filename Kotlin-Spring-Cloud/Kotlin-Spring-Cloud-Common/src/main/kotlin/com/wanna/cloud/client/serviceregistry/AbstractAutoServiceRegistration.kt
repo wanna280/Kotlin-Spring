@@ -1,12 +1,12 @@
 package com.wanna.cloud.client.serviceregistry
 
-import com.wanna.boot.web.context.WebServerInitializedEvent
 import com.wanna.cloud.client.discovery.event.InstancePreRegisteredEvent
 import com.wanna.cloud.client.discovery.event.InstanceRegisteredEvent
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.core.environment.Environment
+import com.wanna.boot.web.mvc.context.WebServerInitializedEvent
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**

@@ -1,5 +1,6 @@
 package com.wanna.cloud.openfeign.support
 
+import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpInputMessage
 import com.wanna.framework.web.http.converter.HttpMessageConverter
 import feign.Response
@@ -29,6 +30,6 @@ open class SpringDecoder(private val messageConverters: List<HttpMessageConverte
             return response.body().asInputStream()
         }
 
-        override fun getHeaders() = emptyMap<String, String>()
+        override fun getHeaders() = HttpHeaders()
     }
 }

@@ -18,12 +18,10 @@ class MyController {
     @RequestMapping(["/user"])
     fun user(): String {
         println("request")
-        return "wanna"
+        return "{\"name\":\"wanna\",\"clusters\":\"DEFAULT\",\"hosts\":{}}"
     }
 }
 
 fun main() {
-    val applicationContext = runSpringApplication<RegistryTest>()
-    val myController = applicationContext.getBean(MyController::class.java)
-    println(applicationContext)
+    runSpringApplication<RegistryTest>("--spring.application.name=wanna", "--server.port=9999")
 }

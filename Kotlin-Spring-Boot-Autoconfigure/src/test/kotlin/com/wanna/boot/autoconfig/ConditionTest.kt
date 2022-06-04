@@ -1,17 +1,14 @@
 package com.wanna.boot.autoconfig
 
-import com.sun.tools.attach.VirtualMachine
 import com.wanna.boot.SpringApplication
 import com.wanna.boot.autoconfigure.SpringBootApplication
 import com.wanna.boot.autoconfigure.condition.ConditionOnMissingClass
 import com.wanna.boot.context.properties.ConfigurationProperties
 import com.wanna.boot.context.properties.ConstructorBinding
 import com.wanna.boot.context.properties.EnableConfigurationProperties
-import com.wanna.boot.web.server.WebServer
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.EnableAspectJWeaving
 import com.wanna.framework.context.annotation.LoadTimeWeavingConfigurer
-import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.instrument.classloading.InstrumentationLoadTimeWeaver
 import com.wanna.framework.instrument.classloading.LoadTimeWeaver
 import org.aspectj.lang.annotation.After

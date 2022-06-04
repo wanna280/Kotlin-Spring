@@ -1,5 +1,6 @@
 package com.wanna.cloud.openfeign.support
 
+import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpOutputMessage
 import com.wanna.framework.web.http.MediaType
 import com.wanna.framework.web.http.converter.HttpMessageConverter
@@ -25,7 +26,7 @@ open class SpringEncoder(private val messageConverters: List<HttpMessageConverte
     }
 
     private class FeignHttpOutputMessage(private val template: RequestTemplate) : HttpOutputMessage {
-        override fun getHeaders() = emptyMap<String, String>()
+        override fun getHeaders() = HttpHeaders()
         override fun getBody(): OutputStream {
             val baos = ByteArrayOutputStream(template.body().size)
             baos.write(template.body())

@@ -20,9 +20,10 @@ import com.wanna.framework.web.server.HttpServerRequest
  * @see getHandlerInternal
  */
 abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, WebApplicationObjectSupport() {
-
+    // order of this HandlerMapping
     private var order: Int = Ordered.ORDER_LOWEST
 
+    // beanName of this HandlerMapping
     private var beanName: String? = null
 
     // 拦截器列表，可以放入非HandlerInterceptor类型的类型的拦截器，在经过类型转换之后，将会合并到adaptedInterceptors当中
@@ -37,7 +38,7 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
     }
 
     /**
-     * 获取真正的内部的Handler，交给子类去进行实现
+     * 获取真正的内部的Handler，对于具体的实现交给子类去进行实现
      *
      * @param request request
      * @return handler
@@ -49,7 +50,7 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
      *
      * @param request request
      * @param handler handler
-     * @return HandlerExecutionChain
+     * @return HandlerExecutionChain with Handler
      */
     protected open fun getHandlerExecutionChain(request: HttpServerRequest, handler: Any): HandlerExecutionChain {
         val chain = if (handler is HandlerExecutionChain) handler else HandlerExecutionChain(handler)
@@ -65,7 +66,7 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
         return this.order
     }
 
-    fun setOrder(order: Int) {
+    open fun setOrder(order: Int) {
         this.order = order
     }
 
@@ -77,6 +78,8 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
 
     /**
      * 交给子类去进行重写，去扩展Interceptors，往给定的这个列表当中添加元素即可添加
+     *
+     * @param interceptors HandlerMapping的拦截器列表
      */
     protected open fun extendsInterceptors(interceptors: MutableList<Any>) {
 
@@ -90,7 +93,7 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
     }
 
     /**
-     * 设置拦截器列表
+     * 设置当前HandlerMapping的拦截器列表(如果之前已经有拦截器的话，替换掉之前的所有)
      *
      * @param interceptors 你想要设置的Interceptor列表(可以为非HandlerInterceptor类型，为了去支持别的类型的拦截器)
      */

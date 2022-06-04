@@ -126,6 +126,6 @@ class Controller : DisposableBean {
 }
 
 fun main(vararg args: String) {
-    val applicationContext = runSpringApplication<WebTest>(*args)
+    val applicationContext = runSpringApplication<WebTest>("--server.port=8089")
     println(applicationContext)
 }

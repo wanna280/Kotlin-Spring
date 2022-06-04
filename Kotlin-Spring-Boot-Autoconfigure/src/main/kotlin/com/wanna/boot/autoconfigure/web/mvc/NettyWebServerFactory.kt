@@ -1,11 +1,11 @@
 package com.wanna.boot.autoconfigure.web.mvc
 
-import com.wanna.boot.web.reactive.server.ReactiveWebServerFactory
+import com.wanna.boot.web.mvc.server.WebServerFactory
 import com.wanna.boot.web.server.WebServer
-import com.wanna.framework.web.netty.server.support.NettyServer
+import com.wanna.framework.web.server.netty.server.support.NettyServer
 import io.netty.channel.ChannelHandler
 
-open class NettyWebServerFactory : ReactiveWebServerFactory {
+open class NettyWebServerFactory : WebServerFactory {
     private val webServer = NettyWebServer()
 
     override fun getWebServer(): WebServer {

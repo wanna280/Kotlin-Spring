@@ -18,7 +18,11 @@ open class MutablePropertyValues() : PropertyValues {
      * 提供一个PropertyValues的构造器，将它里面的属性全部拷贝到当前对象的PropertyValues当中
      */
     constructor(propertyValues: PropertyValues?) : this() {
-        propertyValues?.getPropertyValues()?.forEach(this::addPropertyValue)
+        propertyValues?.getPropertyValues()?.forEach(::addPropertyValue)
+    }
+
+    constructor(propertyValues: Map<String, Any?>) : this() {
+        propertyValues.forEach(::addPropertyValue)
     }
 
     override fun getPropertyValues(): Array<PropertyValue> {

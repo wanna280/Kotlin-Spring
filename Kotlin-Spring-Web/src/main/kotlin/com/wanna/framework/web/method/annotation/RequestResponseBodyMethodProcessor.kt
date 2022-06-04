@@ -2,8 +2,10 @@ package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.web.accept.ContentNegotiationManager
+import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.http.converter.HttpMessageConverter
+import com.wanna.framework.web.method.support.ModelAndViewContainer
 import org.springframework.core.annotation.AnnotatedElementUtils
 
 /**
@@ -15,8 +17,7 @@ import org.springframework.core.annotation.AnnotatedElementUtils
  * @see RequestBody
  */
 open class RequestResponseBodyMethodProcessor(
-    messageConverters: List<HttpMessageConverter<*>>,
-    contentNegotiationManager: ContentNegotiationManager
+    messageConverters: List<HttpMessageConverter<*>>, contentNegotiationManager: ContentNegotiationManager
 ) : AbstractMessageConverterMethodProcessor() {
 
     init {
@@ -42,8 +43,7 @@ open class RequestResponseBodyMethodProcessor(
      */
     override fun supportsReturnType(parameter: MethodParameter): Boolean {
         return parameter.getAnnotation(ResponseBody::class.java) != null || AnnotatedElementUtils.isAnnotated(
-            parameter.getContainingClass()!!,
-            ResponseBody::class.java
+            parameter.getContainingClass()!!, ResponseBody::class.java
         )
     }
 
@@ -54,7 +54,12 @@ open class RequestResponseBodyMethodProcessor(
      * @param webRequest NativeWebRequest(request and response)
      * @param returnType 方法的返回值类型
      */
-    override fun handleReturnValue(returnValue: Any?, webRequest: NativeWebRequest, returnType: MethodParameter) {
+    override fun handleReturnValue(
+        returnValue: Any?,
+        webRequest: NativeWebRequest,
+        returnType: MethodParameter,
+        mavContainer: ModelAndViewContainer
+    ) {
         writeWithMessageConverters(returnValue, returnType, webRequest)
     }
 
@@ -65,7 +70,12 @@ open class RequestResponseBodyMethodProcessor(
      * @param webRequest NativeWebRequest(request and response)
      * @return HttpMessageConverter转换出来的RequestBody
      */
-    override fun resolveArgument(parameter: MethodParameter, webRequest: NativeWebRequest): Any? {
+    override fun resolveArgument(
+        parameter: MethodParameter,
+        webRequest: NativeWebRequest,
+        mavContainer: ModelAndViewContainer?,
+        binderFactory: WebDataBinderFactory?
+    ): Any? {
         return readWithMessageConverters<Any>(webRequest, parameter, parameter.getParameterType())
     }
 }

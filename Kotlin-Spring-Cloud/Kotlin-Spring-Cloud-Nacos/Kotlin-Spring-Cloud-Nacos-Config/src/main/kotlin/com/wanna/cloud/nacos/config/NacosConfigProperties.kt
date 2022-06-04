@@ -9,7 +9,7 @@ import java.util.Properties
 /**
  * 它维护了Nacos相关的配置属性
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ConfigurationProperties("spring.cloud.nacos.config")
 open class NacosConfigProperties {
     companion object {
@@ -35,6 +35,11 @@ open class NacosConfigProperties {
 
     var password = ""
 
+    /**
+     * 获取NacosConfigProperties，重新生成所有的字段，并且返回Properties
+     *
+     * @return Properties
+     */
     open fun getNacosConfigProperties(): Properties {
         val environment = this.environment
         if (environment != null) {

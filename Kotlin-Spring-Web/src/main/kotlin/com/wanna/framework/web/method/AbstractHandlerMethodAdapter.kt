@@ -26,7 +26,7 @@ abstract class AbstractHandlerMethodAdapter : HandlerAdapter, Ordered {
     /**
      * 只要handler是HandlerMethod，那么就支持去进行处理本次请求
      *
-     * @param handler hanler
+     * @param handler handler
      * @return 如果handler是HandlerMethod类型，return true；不然return false
      */
     override fun supports(handler: Any): Boolean {
@@ -39,13 +39,16 @@ abstract class AbstractHandlerMethodAdapter : HandlerAdapter, Ordered {
      * @param request request
      * @param response response
      * @param handler handlerMethod Object
+     * @return ModelAndView
      */
     override fun handle(request: HttpServerRequest, response: HttpServerResponse, handler: Any): ModelAndView? {
         return handleInternal(request, response, handler as HandlerMethod)
     }
 
     /**
-     * 处理目标请求的具体实现逻辑，交给子类去进行实现
+     * 使用HandlerMethod去处理目标请求的具体实现逻辑，交给子类去进行实现
+     *
+     * @param handler HandlerMethod
      */
     abstract fun handleInternal(
         request: HttpServerRequest,

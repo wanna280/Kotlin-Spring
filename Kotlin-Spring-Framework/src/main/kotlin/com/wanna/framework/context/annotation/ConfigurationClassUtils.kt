@@ -34,10 +34,10 @@ object ConfigurationClassUtils {
         }
 
         try {
-            metadata.hasAnnotatedMethods(Bean::class.java.name)
-        } catch (ex: Exception) {
-            return false
+            return metadata.hasAnnotatedMethods(Bean::class.java.name)
+        } catch (ignored: Exception) {
+
         }
-        return true
+        return false // fixed: default to return false
     }
 }

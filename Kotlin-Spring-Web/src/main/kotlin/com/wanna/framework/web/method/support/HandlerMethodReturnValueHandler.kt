@@ -23,5 +23,10 @@ interface HandlerMethodReturnValueHandler {
      * @param webRequest NativeWebRequest(request and response)
      * @param returnType 返回值类型封装的MethodParameter
      */
-    fun handleReturnValue(returnValue: Any?, webRequest: NativeWebRequest, returnType: MethodParameter)
+    fun handleReturnValue(
+        returnValue: Any?,
+        webRequest: NativeWebRequest,
+        returnType: MethodParameter,
+        mavContainer: ModelAndViewContainer
+    )
 }

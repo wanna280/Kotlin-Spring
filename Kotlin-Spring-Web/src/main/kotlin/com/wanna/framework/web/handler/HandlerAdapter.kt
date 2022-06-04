@@ -19,6 +19,7 @@ interface HandlerAdapter {
      * @param request request
      * @param response response
      * @param handler handler
+     * @return Handler处理的结果，ModelAndView(封装了模型和数据)
      */
     fun handle(request: HttpServerRequest, response: HttpServerResponse, handler: Any) : ModelAndView?
 }

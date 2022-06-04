@@ -12,5 +12,5 @@ interface LoadBalancerRequest<T> {
      * @param serviceInstance ServiceInstance
      * @return apply ServiceInstance的返回结果(比如说网络请求的Response)
      */
-    fun apply(serviceInstance: ServiceInstance): T?
+    fun apply(serviceInstance: ServiceInstance): T
 }

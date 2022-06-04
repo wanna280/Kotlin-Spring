@@ -3,6 +3,7 @@ package com.wanna.framework.web.method.annotation
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.web.bind.RequestMethod
 import com.wanna.framework.web.context.request.NativeWebRequest
+import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpInputMessage
 import com.wanna.framework.web.http.MediaType
 import com.wanna.framework.web.http.converter.HttpMessageConverter
@@ -86,7 +87,7 @@ abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArg
     protected open fun <T> readWithMessageConverters(
         inputMessage: HttpInputMessage, parameter: MethodParameter, type: Type
     ): Any? {
-        val contentType: String = inputMessage.getHeaders()["Content-Type"] ?: ""
+        val contentType: String = inputMessage.getHeaders().getFirst(HttpHeaders.CONTENT_TYPE) ?: ""
         val mediaType = try {
             MediaType.parseMediaType(contentType)
         } catch (ex: Exception) {

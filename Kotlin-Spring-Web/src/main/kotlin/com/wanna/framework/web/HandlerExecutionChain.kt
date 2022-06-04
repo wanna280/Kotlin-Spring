@@ -8,28 +8,18 @@ import org.slf4j.LoggerFactory
 /**
  * 这是对拦截器链的封装，内部组合了拦截器链以及处理本次请求的Handler
  *
- * @param _handler 处理请求的Handler
- * @param interceptors 要使用的拦截器链
+ * @param handler 处理请求的Handler(例如HandlerMethod)，具体是什么类型，交给HandlerMapping自己去决定，这里使用的是Any(Object)类型
+ * @param interceptors 要使用的拦截器列表
  */
-open class HandlerExecutionChain(_handler: Any, interceptors: Collection<HandlerInterceptor>?) {
+open class HandlerExecutionChain(private val handler: Any, interceptors: Collection<HandlerInterceptor>? = null) {
+    companion object {
+        private val logger: Logger = LoggerFactory.getLogger(HandlerExecutionChain::class.java)
+    }
 
-    // 提供一个只需要Handler的构造器
-    constructor(_handler: Any) : this(_handler, null)
-
-    // 提供一个使用变长参数的HandlerInterceptor列表的构造器
-    constructor(_handler: Any, vararg interceptors: HandlerInterceptor) : this(
-        _handler, arrayListOf<HandlerInterceptor>(*interceptors)
-    )
-
-    private val logger: Logger = LoggerFactory.getLogger(HandlerExecutionChain::class.java)
-
-    // 处理请求的Handler，具体是什么类型，交给HandlerMapping自己去决定，这里使用的是Any(Object)类型
-    private val handler: Any = _handler
-
-    // 拦截器链
+    // 拦截器链的列表
     private val interceptorList = ArrayList<HandlerInterceptor>()
 
-    // 拦截器链的索引
+    // 拦截器链的索引，控制拦截器链的链式调用
     private var interceptorIndex = -1
 
     init {
@@ -58,6 +48,9 @@ open class HandlerExecutionChain(_handler: Any, interceptors: Collection<Handler
 
     /**
      * 应用拦截器的postHandle方法，因为到达这里请求已经处理完，应该逆方向去应用所有的HandlerInterceptor
+     *
+     * @param request request
+     * @param response response
      */
     open fun applyPostHandle(request: HttpServerRequest, response: HttpServerResponse) {
         interceptorList.indices.reversed().forEach {
@@ -87,23 +80,21 @@ open class HandlerExecutionChain(_handler: Any, interceptors: Collection<Handler
 
     open fun getHandler(): Any = this.handler
 
-    fun addInterceptor(interceptor: HandlerInterceptor) {
+    open fun addInterceptor(interceptor: HandlerInterceptor) {
         this.interceptorList += interceptor
     }
 
-    fun addInterceptor(index: Int, interceptor: HandlerInterceptor) {
+    open fun addInterceptor(index: Int, interceptor: HandlerInterceptor) {
         this.interceptorList[index] = interceptor
     }
 
-    fun addInterceptors(interceptors: Collection<HandlerInterceptor>) {
+    open fun addInterceptors(interceptors: Collection<HandlerInterceptor>) {
         this.interceptorList += interceptors
     }
 
-    fun addInterceptors(vararg interceptors: HandlerInterceptor) {
+    open fun addInterceptors(vararg interceptors: HandlerInterceptor) {
         this.interceptorList += interceptors
     }
 
-    override fun toString(): String {
-        return "HandlerExecution[handler=${this.handler}, interceptorSize=${this.interceptorList.size}]"
-    }
+    override fun toString() = "HandlerExecution[handler=${this.handler}, interceptorSize=${this.interceptorList.size}]"
 }

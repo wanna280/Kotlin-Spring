@@ -3,7 +3,8 @@ package com.wanna.cloud.client.loadbalancer
 import com.wanna.cloud.client.ServiceInstance
 
 /**
- * ServiceInstance的Chooser，去给定具体的策略实现负载均衡
+ * ServiceInstance的Chooser，去给定具体的策略实现负载均衡；
+ * 对于采用何种策略去进行ServiceInstance的选择，交给SpringCloud的实现方来去进行实现，比如SpringCloudRibbon/SpringCloudLoadBalancer
  */
 interface ServiceInstanceChooser {
 

@@ -94,7 +94,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
             }
             // 如果只要一个候选的构造器的话，那么就使用它创建对象，并且加入到缓存当中
             if (candidates != null && candidates.size == 1 && candidates[0].parameterCount == 0) {
-                beanWrapper.setBeanInstance(instantiate(mbd, beanName, beanFactory, candidates[0]))
+                beanWrapper.setWrappedInstance(instantiate(mbd, beanName, beanFactory, candidates[0]))
                 mbd.resolvedConstructorOrFactoryMethod = candidates[0]
                 mbd.resolvedConstructorArguments = EMPTY_ARGS
                 mbd.constructorArgumentsResolved = true
@@ -127,7 +127,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
         }
 
         // 使用构造器去进行实例化，并将beanInstance设置到BeanWrapper当中
-        beanWrapper.setBeanInstance(instantiate(mbd, beanName, beanFactory, constructorToUse!!, *argsToUse!!))
+        beanWrapper.setWrappedInstance(instantiate(mbd, beanName, beanFactory, constructorToUse!!, *argsToUse!!))
         return beanWrapper
     }
 
@@ -158,7 +158,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
         var factoryClass: Class<*>? = null
 
         if (factoryMethodName != null) {
-            factoryBean = beanFactory.getBean(factoryBeanName!!)!!
+            factoryBean = beanFactory.getBean(factoryBeanName!!)
             factoryClass = factoryBean::class.java
         }
 
@@ -181,7 +181,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
         }
 
         // 后期设置beanInstance到beanWrapper当中
-        beanWrapper.setBeanInstance(instance)
+        beanWrapper.setWrappedInstance(instance)
         return beanWrapper
     }
 
