@@ -16,7 +16,7 @@ class RequestMappingInfo {
     // 支持的方法列表，默认为全部
     var methods: MutableList<RequestMethod> = mutableListOf(
         RequestMethod.GET,
-        RequestMethod.PUT,
+        RequestMethod.POST,
         RequestMethod.PUT,
         RequestMethod.DELETE,
         RequestMethod.PATCH,

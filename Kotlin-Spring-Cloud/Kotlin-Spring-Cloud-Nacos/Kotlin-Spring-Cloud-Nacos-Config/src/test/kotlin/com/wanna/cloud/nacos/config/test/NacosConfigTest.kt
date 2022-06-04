@@ -25,7 +25,7 @@ fun main() {
     val applicationContext = runSpringApplication<NacosConfigTest>()
     while (true) {
         val user = applicationContext.getBean(User::class.java)
-        println(user?.name)
+        println(user.name)
         TimeUnit.SECONDS.sleep(5)
     }
 }

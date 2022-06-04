@@ -18,6 +18,11 @@ object HealthCheckReactor {
     private val futureMap = ConcurrentHashMap<String, ScheduledFuture<*>>()
 
     @JvmStatic
+    fun scheduleCheck(healthCheckTask: HealthCheckTask): ScheduledFuture<*> {
+        return GlobalExecutor.scheduleNamingHealth(healthCheckTask, 5000L, TimeUnit.MILLISECONDS)
+    }
+
+    @JvmStatic
     fun scheduleCheck(task: ClientBeatCheckTask) {
         futureMap.putIfAbsent(
             task.getTaskKey(),

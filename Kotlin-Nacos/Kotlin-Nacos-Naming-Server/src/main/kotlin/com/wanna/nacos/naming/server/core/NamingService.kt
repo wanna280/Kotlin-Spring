@@ -1,5 +1,6 @@
 package com.wanna.nacos.naming.server.core
 
+import com.wanna.framework.core.util.StringUtils
 import com.wanna.nacos.api.naming.pojo.Service
 import com.wanna.nacos.naming.server.healthcheck.ClientBeatCheckTask
 import com.wanna.nacos.naming.server.healthcheck.ClientBeatInfo
@@ -17,7 +18,7 @@ open class NamingService : Service() {
     private val clientBeatCheckTask = ClientBeatCheckTask(this)
 
     // namespaceId
-    lateinit var namespaceId: String
+    var namespaceId: String = ""
 
     // 是否启用该NamingService？
     var enabled = true
@@ -32,7 +33,7 @@ open class NamingService : Service() {
 
     override fun validate() {
         super.validate()
-        if (!this::namespaceId.isInitialized) {
+        if (!StringUtils.hasText(this.namespaceId)) {
             throw IllegalStateException("NamingService的namespace未完成初始化工作")
         }
     }

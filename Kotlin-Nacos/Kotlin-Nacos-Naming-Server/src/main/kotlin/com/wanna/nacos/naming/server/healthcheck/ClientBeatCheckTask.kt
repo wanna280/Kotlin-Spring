@@ -6,7 +6,9 @@ import com.wanna.nacos.naming.server.core.NamingService
 import org.slf4j.LoggerFactory
 
 /**
- * 这是一个客户端心跳检测的任务
+ * 这是一个客户端心跳检测的任务，负责修改当前NamingService下的各个NamingInstance实例的健康状态，以及进行实例的删除
+ *
+ * @param service 当前任务要检查的NamingService
  */
 open class ClientBeatCheckTask(private val service: NamingService) : Runnable {
     private val restTemplate = RestTemplate()
@@ -16,7 +18,7 @@ open class ClientBeatCheckTask(private val service: NamingService) : Runnable {
     }
 
     override fun run() {
-        // 获取所有的临时节点
+        // 获取所有的临时节点(持久节点不参与检测)
         val allIps = service.allIps(true)
 
         // 如果NamingInstance心跳超时的话，将健康状态标识为false
@@ -46,10 +48,10 @@ open class ClientBeatCheckTask(private val service: NamingService) : Runnable {
             "serviceName" to instance.serviceName,
             "clusterName" to instance.clusterName
         )
-        val delete = restTemplate.getForObject("/v1/ns/instance/deregister", String::class.java, params)
+        restTemplate.getForObject("/v1/ns/instance/deregister", String::class.java, params)
     }
 
     fun getTaskKey(): String {
-        return ""
+        return service.toString()
     }
 }

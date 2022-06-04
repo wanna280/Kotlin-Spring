@@ -1,6 +1,7 @@
 package com.wanna.framework.web.client
 
 import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.http.ResponseEntity
 import java.net.URI
 
 /**
@@ -11,7 +12,7 @@ import java.net.URI
 interface RestOperations {
 
     /**
-     * 使用GET方式去执行一次Http请求
+     * 使用GET方式去执行一次Http请求，将ResponseBody转换为JavaBean
      *
      * @param url url
      * @param responseType 响应类型
@@ -21,7 +22,17 @@ interface RestOperations {
     fun <T> getForObject(url: String, responseType: Class<T>, uriVariables: Map<String, String>): T?
 
     /**
-     * 使用POST请求的方式去执行一次Http请求
+     * 使用GET方式去执行一次Http请求，将ResponseBody转换为ResponseEntity(headers&status&body)
+     *
+     * @param url url
+     * @param responseType 响应类型
+     * @param uriVariables 请求参数列表
+     * @return Http请求返回的ResponseBody转换成为包含有JavaBean的ResponseEntity(如果转换失败，return null)
+     */
+    fun <T> getForEntity(url: String, responseType: Class<T>, uriVariables: Map<String, String>): ResponseEntity<T>?
+
+    /**
+     * 使用POST请求的方式去执行一次Http请求，将ResponseBody转换为JavaBean
      *
      * @param url url
      * @param responseType 响应类型
@@ -29,6 +40,48 @@ interface RestOperations {
      * @return Http请求返回的ResponseBody转换成为JavaBean(如果转换失败，return null)
      */
     fun <T> postForObject(url: String, responseType: Class<T>, uriVariables: Map<String, String>): T?
+
+    /**
+     * 使用POST请求的方式去执行一次Http请求，将ResponseBody转换为ResponseEntity(headers&status&body)
+     *
+     * Note: 支持携带RequestBody
+     *
+     * @param url url
+     * @param responseType 响应类型
+     * @param uriVariables 请求参数列表
+     * @param requestBody requestBody(可以为null)
+     * @return Http请求返回的ResponseBody转换成为JavaBean(如果转换失败，return null)
+     */
+    fun <T> postForObject(url: String, requestBody: Any?, responseType: Class<T>, uriVariables: Map<String, String>): T?
+
+    /**
+     * 使用POST请求的方式去执行一次Http请求，将ResponseBody转换为JavaBean
+     *
+     * @param url url
+     * @param responseType 响应类型
+     * @param uriVariables 请求参数列表
+     * @return Http请求返回的ResponseBody转换成为包含有JavaBean的ResponseEntity(如果转换失败，return null)
+     */
+    fun <T> postForEntity(url: String, responseType: Class<T>, uriVariables: Map<String, String>): ResponseEntity<T>?
+
+    /**
+     * 使用POST请求的方式去执行一次Http请求，将ResponseBody转换为ResponseEntity(headers&status&body)
+     *
+     * Note: 支持携带RequestBody
+     *
+     * @param url url
+     * @param responseType 响应类型
+     * @param uriVariables 请求参数列表
+     * @param requestBody requestBody(可以为null)
+     * @return Http请求返回的ResponseBody转换成为包含有JavaBean的ResponseEntity(如果转换失败，return null)
+     */
+    fun <T> postForEntity(
+        url: String,
+        requestBody: Any?,
+        responseType: Class<T>,
+        uriVariables: Map<String, String>
+    ): ResponseEntity<T>?
+
 
     /**
      * 执行一次Http请求

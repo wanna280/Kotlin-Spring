@@ -23,7 +23,5 @@ class MyController {
 }
 
 fun main() {
-    val applicationContext = runSpringApplication<RegistryTest>()
-    val myController = applicationContext.getBean(MyController::class.java)
-    println(applicationContext)
+    runSpringApplication<RegistryTest>("--spring.application.name=wanna", "--server.port=9999")
 }

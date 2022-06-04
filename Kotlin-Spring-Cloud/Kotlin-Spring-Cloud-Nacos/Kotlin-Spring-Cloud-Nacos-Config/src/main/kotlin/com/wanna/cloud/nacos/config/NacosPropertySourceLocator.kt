@@ -7,6 +7,8 @@ import com.wanna.framework.core.environment.PropertySource
 
 /**
  * Nacos的PropertySourceLocator，它负责去实现从远程拉取配置文件到本地，并配置到Environment当中
+ *
+ * @param nacosConfigManager NacosConfigManager
  */
 open class NacosPropertySourceLocator(private val nacosConfigManager: NacosConfigManager) : PropertySourceLocator {
 
@@ -18,8 +20,11 @@ open class NacosPropertySourceLocator(private val nacosConfigManager: NacosConfi
     private val nacosConfigProperties = nacosConfigManager.nacosConfigProperties
 
     override fun locate(environment: Environment): PropertySource<*>? {
-        nacosConfigProperties.environment = environment  // 给NacosConfigProperties去设置Environment
+        // 给NacosConfigProperties去设置Environment
+        nacosConfigProperties.environment = environment
         nacosConfigProperties.getNacosConfigProperties()  // init for Properties
+
+        // 创建一个组合的Nacos的PropertySource
         val composite = CompositePropertySource(NACOS_CONFIG_PROPERTY_SOURCE_NAME)
 
         val prefix = nacosConfigProperties.prefix

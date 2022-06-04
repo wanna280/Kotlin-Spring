@@ -15,9 +15,9 @@ import org.slf4j.LoggerFactory
  */
 open class ConfigurationPropertiesBinder : ApplicationContextAware {
 
-    private var applicationContext: ApplicationContext? = null
+    private lateinit var applicationContext: ApplicationContext
 
-    private var environment: ConfigurableEnvironment? = null
+    private lateinit var environment: ConfigurableEnvironment
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext
@@ -33,6 +33,8 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
 
         /**
          * 给容器中注册ConfigurationPropertiesBinder的相关基础设施Bean
+         *
+         * @param registry BeanDefinitionRegistry
          */
         @JvmStatic
         fun register(registry: BeanDefinitionRegistry) {
@@ -46,10 +48,13 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
 
         /**
          * 从beanFactory当中去获取ConfigurationPropertiesBinder
+         *
+         * @param beanFactory beanFactory
+         * @return 获取到的ConfigurationPropertiesBinder
          */
         @JvmStatic
         fun get(beanFactory: BeanFactory): ConfigurationPropertiesBinder {
-            return beanFactory.getBean(BEAN_NAME, ConfigurationPropertiesBinder::class.java)!!
+            return beanFactory.getBean(BEAN_NAME, ConfigurationPropertiesBinder::class.java)
         }
     }
 
@@ -67,18 +72,19 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
 
     /**
      * 对已经完成实例化的Bean，去完成ConfigurationProperties的绑定工作
+     *
+     * @param bean 要去进行绑定的ConfigurationPropertiesBean
      */
     open fun bind(bean: ConfigurationPropertiesBean) {
         val annotation = bean.getAnnotation()
         val instance = bean.getInstance()
-        val environment = environment!!
+        val environment = environment
         if (instance != null) {
             val prefix = annotation.prefix
             val clazz = instance::class.java
             clazz.declaredFields.forEach {
                 val name = it.name  // 字段名
-                val property = environment.getProperty("${prefix}.${name}")
-
+                val property = environment.getProperty("${prefix}.${name}") ?: return@forEach
                 // 获取setter的方法
                 val setMethodName = "set" + name[0].uppercaseChar() + name.substring(1)
                 try {
@@ -86,17 +92,16 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
                     val conversionService = environment.getConversionService()
 
                     if (conversionService.canConvert(String::class.java, it.type)) {
+                        val convertedValue = conversionService.convert(property, it.type)
                         // 反射执行目标方法
                         ReflectionUtils.makeAccessiable(setterMethod)
-                        ReflectionUtils.invokeMethod(
-                            setterMethod,
-                            instance,
-                            conversionService.convert(property, it.type)
-                        )
+                        ReflectionUtils.invokeMethod(setterMethod, instance, convertedValue)
                     }
                 } catch (_: java.lang.reflect.InvocationTargetException) {
 
                 } catch (_: java.lang.IllegalArgumentException) {
+
+                } catch (_: NoSuchMethodException) {
 
                 }
             }

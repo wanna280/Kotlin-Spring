@@ -106,12 +106,13 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
     private fun updateNamedValueInfo(parameter: MethodParameter, namedValueInfo: NamedValueInfo): NamedValueInfo {
         var name: String? = namedValueInfo.name
         if (name == null || name.isEmpty()) {
+            // 如果没有指定name的话，需要获取参数名name
             name = parameter.getParameterName()
             if (name == null) {
                 throw IllegalArgumentException("解析参数名失败")
             }
         }
-        return NamedValueInfo(name, true, null)
+        return NamedValueInfo(name, namedValueInfo.required, namedValueInfo.defaultValue)
     }
 
     /**

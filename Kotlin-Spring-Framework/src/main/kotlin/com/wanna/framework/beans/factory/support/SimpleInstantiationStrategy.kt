@@ -105,7 +105,10 @@ open class SimpleInstantiationStrategy : InstantiationStrategy {
                 }
             }
         } catch (throwable: Throwable) {
-            throw BeanCreationException("创建Bean[beanName=$beanName, factoryMethod=$factoryMethod]失败，原因是[throwable=$throwable]")
+            throw BeanCreationException(
+                "创建Bean[beanName=$beanName, factoryMethod=$factoryMethod]失败，原因是[throwable=$throwable]",
+                throwable
+            )
         }
     }
 }

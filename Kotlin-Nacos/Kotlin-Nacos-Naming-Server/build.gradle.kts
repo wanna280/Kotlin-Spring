@@ -17,6 +17,7 @@ dependencies {
 
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // jackson
     implementation("org.slf4j:slf4j-api:$slf4jApiVersion")
+    implementation("io.netty:netty-codec-http:$nettyVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")

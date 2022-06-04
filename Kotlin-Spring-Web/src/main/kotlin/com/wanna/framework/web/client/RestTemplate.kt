@@ -1,7 +1,10 @@
 package com.wanna.framework.web.client
 
 import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.http.MediaType
+import com.wanna.framework.web.http.ResponseEntity
 import com.wanna.framework.web.http.client.ClientHttpRequest
+import com.wanna.framework.web.http.client.ClientHttpResponse
 import com.wanna.framework.web.http.client.InterceptingClientHttpRequestFactory
 import com.wanna.framework.web.http.client.support.InterceptingHttpAccessor
 import com.wanna.framework.web.http.converter.HttpMessageConverter
@@ -29,7 +32,15 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
         url: String, responseType: Class<T>, uriVariables: Map<String, String>
     ): T? {
         val requestCallback = acceptHeaderRequestCallback(responseType)
-        val responseExtractor = HttpMessageConverterExtractor<T>(this.messageConverters, responseType)
+        val responseExtractor = HttpMessageConverterExtractor(this.messageConverters, responseType)
+        return execute(url, RequestMethod.GET, responseExtractor, uriVariables, requestCallback)
+    }
+
+    override fun <T> getForEntity(
+        url: String, responseType: Class<T>, uriVariables: Map<String, String>
+    ): ResponseEntity<T>? {
+        val requestCallback = acceptHeaderRequestCallback(responseType)
+        val responseExtractor = ResponseEntityResponseExtractor(responseType)
         return execute(url, RequestMethod.GET, responseExtractor, uriVariables, requestCallback)
     }
 
@@ -37,7 +48,37 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
         url: String, responseType: Class<T>, uriVariables: Map<String, String>
     ): T? {
         val requestCallback = acceptHeaderRequestCallback(responseType)
-        val responseExtractor = HttpMessageConverterExtractor<T>(this.messageConverters, responseType)
+        val responseExtractor = HttpMessageConverterExtractor(this.messageConverters, responseType)
+        return execute(url, RequestMethod.POST, responseExtractor, uriVariables, requestCallback)
+    }
+
+    override fun <T> postForEntity(
+        url: String, responseType: Class<T>, uriVariables: Map<String, String>
+    ): ResponseEntity<T>? {
+        val requestCallback = acceptHeaderRequestCallback(responseType)
+        val responseExtractor = ResponseEntityResponseExtractor(responseType)
+        return execute(url, RequestMethod.POST, responseExtractor, uriVariables, requestCallback)
+    }
+
+    override fun <T> postForObject(
+        url: String,
+        requestBody: Any?,
+        responseType: Class<T>,
+        uriVariables: Map<String, String>
+    ): T? {
+        val requestCallback = httpEntityRequestCallback(requestBody)
+        val responseExtractor = HttpMessageConverterExtractor(this.messageConverters, responseType)
+        return execute(url, RequestMethod.POST, responseExtractor, uriVariables, requestCallback)
+    }
+
+    override fun <T> postForEntity(
+        url: String,
+        requestBody: Any?,
+        responseType: Class<T>,
+        uriVariables: Map<String, String>
+    ): ResponseEntity<T>? {
+        val requestCallback = httpEntityRequestCallback(requestBody)
+        val responseExtractor = ResponseEntityResponseExtractor(responseType)
         return execute(url, RequestMethod.POST, responseExtractor, uriVariables, requestCallback)
     }
 
@@ -58,7 +99,7 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
             builder.append("?")
         }
         uriVariables.forEach { (name, value) -> builder.append(name).append("=").append(value).append("&") }
-        return URI(if(uriVariables.isNotEmpty()) builder.substring(0, builder.length - 1) else builder.toString())
+        return URI(if (uriVariables.isNotEmpty()) builder.substring(0, builder.length - 1) else builder.toString())
     }
 
 
@@ -66,6 +107,8 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
         url: URI, method: RequestMethod, requestCallback: RequestCallback?, responseExtractor: ResponseExtractor<T>?
     ): T? {
         // 使用ClientHttpRequestFactory创建ClientHttpRequest
+        // 如果当前RestTemplate当中存在有拦截器的话，那么创建的将会是InterceptingClientHttpRequest；
+        // 如果当前RestTemplate当中不存在有拦截器的话，那么创建的将会是来自于各个HttpClient(比如ApacheHttpClient)的ClientHttpRequest
         val clientRequest: ClientHttpRequest = createRequest(url, method)
 
         // 如果必要的话，使用给定的RequestCallback对ClientHttpRequest去进行处理
@@ -80,6 +123,45 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
 
     open fun <T> acceptHeaderRequestCallback(responseType: Class<T>): RequestCallback {
         return AcceptHeaderRequestCallback(responseType)
+    }
+
+    /**
+     * 含有HttpEntity的RequestCallback，用来将HttpEntity写出到Request当中
+     *
+     * @param requestBody requestBody
+     */
+    private fun httpEntityRequestCallback(requestBody: Any?): RequestCallback {
+        return HttpEntityRequestCallback(requestBody)
+    }
+
+    /**
+     * 将响应转换为Entity的Response提取器
+     */
+    private inner class ResponseEntityResponseExtractor<T>(responseType: Class<T>) :
+        ResponseExtractor<ResponseEntity<T>> {
+        private val delegate = HttpMessageConverterExtractor(messageConverters, responseType)
+
+        override fun extractData(response: ClientHttpResponse): ResponseEntity<T>? {
+            return ResponseEntity(response.getStatusCode(), response.getHeaders(), delegate.extractData(response))
+        }
+    }
+
+    /**
+     * 将HttpEntity使用MessageConverter以合适的格式写出到Request当中的RequestCallback
+     *
+     * @param requestBody requestBody的Entity数据
+     */
+    private inner class HttpEntityRequestCallback(private val requestBody: Any?) : RequestCallback {
+        override fun doWithRequest(request: ClientHttpRequest) {
+            if (requestBody != null) {
+                messageConverters.forEach {
+                    if (it.canWrite(requestBody::class.java, MediaType.APPLICATION_JSON)) {
+                        @Suppress("UNCHECKED_CAST")
+                        (it as HttpMessageConverter<Any>).write(requestBody, MediaType.APPLICATION_JSON, request)
+                    }
+                }
+            }
+        }
     }
 
     /**

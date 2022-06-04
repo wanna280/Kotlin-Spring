@@ -8,7 +8,7 @@ import java.util.Properties
  * @see PlaceholderResolver
  */
 open class PropertyPlaceholderHelper(
-    private val prefix: String, private val suffix: String, private val valueSeparator: String?
+    private val prefix: String, private val suffix: String, private val valueSeparator: String? = null
 ) {
     // 简单前缀，如果是"%{}"则为"{"，如果是"%[]"则为"["，如果是"%()"则为"("
     private val simplePrefix = wellKnownSimplePrefix[suffix] ?: prefix
@@ -16,7 +16,6 @@ open class PropertyPlaceholderHelper(
     companion object {
         // 已经知道的简单前缀
         private val wellKnownSimplePrefix = HashMap<String, String>(3)
-
         init {
             wellKnownSimplePrefix["}"] = "{"
             wellKnownSimplePrefix["]"] = "]"
@@ -24,10 +23,12 @@ open class PropertyPlaceholderHelper(
         }
     }
 
-    constructor(prefix: String, suffix: String) : this(prefix, suffix, null)
-
     /**
      * 给定一个Properties，从Properties当中去获取属性，去完成最终的占位符解析
+     *
+     * @param text 要去进行解析的目标占位符文本
+     * @param properties 要解析的占位符的属性来源
+     * @return 解析完成的占位符
      * @see parseStringValue
      */
     open fun replacePlaceholder(text: String, properties: Properties): String {
@@ -37,15 +38,21 @@ open class PropertyPlaceholderHelper(
     /**
      * 解析占位符，支持"%{%{user.name}} %{user.id}"这种情况，user.name等具体的属性值，甚至还可以是占位符，也支持去进行解析
      *
+     * @param text 要去进行解析的目标占位符文本
+     * @param placeholderResolver 占位符解析的策略接口，从哪获取属性的回调方法？
+     * @return 解析完成的占位符
      * @see parseStringValue
      */
     open fun replacePlaceholder(text: String, placeholderResolver: PlaceholderResolver): String {
-        return parseStringValue(text, placeholderResolver, HashSet())
+        return parseStringValue(text, placeholderResolver, LinkedHashSet())
     }
 
     /**
-     * 解析占位符，本来需要传入的是一个PlaceholderResolver，为了能直接提供一个函数引用，在这里使用适配器模式去做一层适配
+     * 解析占位符，本来需要传入的是一个PlaceholderResolver，为了能直接提供一个Kotlin函数引用，在这里使用适配器模式去做一层适配
      *
+     * @param text 要去进行解析的目标占位符文本
+     * @param placeholderResolver 占位符解析的策略接口，从哪获取属性的回调方法？
+     * @return 解析完成的占位符
      * @see parseStringValue
      */
     open fun replacePlaceholder(text: String, placeholderResolver: (String) -> String?): String {
@@ -56,6 +63,10 @@ open class PropertyPlaceholderHelper(
 
     /**
      * 解析字符串的值，在这里完成真正的占位符解析
+     * @param text 要去进行解析的目标占位符文本
+     * @param placeholderResolver 占位符解析的策略接口，从哪获取属性的回调方法？
+     * @param visitedPlaceholder 已经完成解析的占位符，避免递归过程中，出现循环解析的情况...
+     * @return 解析完成的占位符
      */
     protected open fun parseStringValue(
         text: String,
@@ -70,7 +81,7 @@ open class PropertyPlaceholderHelper(
         val builder = StringBuilder(text)  // 将text转为StringBuilder方便去进行操作
         while (startIndex != -1) {
 
-            // 找到占位符的结束符的位置index
+            // 找到占位符的结束符(右括号)的位置index
             val endIndex = findPlaceholderEndIndex(builder, startIndex)
             if (endIndex != -1) {
                 // [startIndex...endIndex+suffixLength]为真正的占位符的部分(包含前后缀)，[startIndex+prefixLength...endIndex]为占位符中间的属性值部分(不含前后缀)
@@ -131,9 +142,13 @@ open class PropertyPlaceholderHelper(
      * 在每次遇到前缀时，withinNestedPlaceholder++，计算前缀的出现次数；
      * 如果遇到一次后缀，那么就将withinNestedPlaceholder--；
      * 如果最终，withinNestedPlaceholder==0时，说明内部的全部占位符都解析完了，直接return，后面部分的字符串就不用管了
+     *
+     * @param text 要去寻找的文本
+     * @param startIndex 从哪里开始寻找？
+     * @return 找到的占位符的结束位置(如果没有找到，return -1)
      */
-    protected fun findPlaceholderEndIndex(text: CharSequence, startIndex: Int): Int {
-        var index = startIndex + prefix.length  // 跳过前缀
+    protected open fun findPlaceholderEndIndex(text: CharSequence, startIndex: Int): Int {
+        var index = startIndex + prefix.length  // 跳过startIndex之前的部分
         var withinNestedPlaceholder = 0
 
         while (index < text.length) {
@@ -161,7 +176,8 @@ open class PropertyPlaceholderHelper(
     }
 
     /**
-     * 这是一个策略接口，它是一个占位符的解析器Resolver，完成属性值的获取，通过key去获取value的方式
+     * 这是一个策略接口，它是一个占位符的解析器Resolver，完成属性值的获取，通过key去获取value的方式；
+     * 供外部为占位符的解析去提供属性的来源的回调方法
      */
     interface PlaceholderResolver {
         fun resolvePlaceholder(text: String): String?

@@ -25,11 +25,12 @@ open class NamingInstance : Instance() {
         @JvmStatic
         fun fromRequest(request: HttpServerRequest, updateLastBeat: Boolean = true): NamingInstance {
             val namingInstance = NamingInstance()
-            namingInstance.ip = request.getParam("ip")!!
-            namingInstance.port = request.getParam("port")!!.toInt()
+            namingInstance.ip = request.getParam("ip") ?: throw IllegalStateException("ip不能为空")
+            namingInstance.port = request.getParam("port")?.toInt() ?: throw NullPointerException("port不能为空")
             namingInstance.clusterName =
                 request.getParam(CommonParams.CLUSTER_NAME) ?: NamingConstants.DEFAULT_CLUSTER_NAME
-            namingInstance.serviceName = request.getParam(CommonParams.SERVICE_NAME)!!
+            namingInstance.serviceName =
+                request.getParam(CommonParams.SERVICE_NAME) ?: throw NullPointerException("serviceName不能为null")
             if (updateLastBeat) {
                 // 设置上次心跳的时间为当前时间
                 namingInstance.lastBeat = System.currentTimeMillis()
@@ -37,7 +38,6 @@ open class NamingInstance : Instance() {
             return namingInstance
         }
     }
-
 
     /**
      * 将NamingInstance转换为JacksonObjectNode

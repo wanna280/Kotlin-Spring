@@ -9,8 +9,8 @@ import com.wanna.framework.web.method.support.InvocableHandlerMethod
 open class NacosControllerAdvice {
 
     @ResponseBody
-    @ExceptionHandler([IllegalStateException::class])
+    @ExceptionHandler([IllegalStateException::class, IllegalArgumentException::class, NullPointerException::class])
     open fun handleError(handlerMethod: InvocableHandlerMethod, ex: IllegalStateException): String {
-        return "error"
+        return "IllegalStateException-->${ex.message}"
     }
 }

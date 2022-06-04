@@ -18,7 +18,7 @@ object GlobalExecutor {
     }
 
     @JvmStatic
-    fun scheduleNamingHealth(command: Runnable, delay: Long, unit: TimeUnit) {
-        NAMING_HEALTH_EXECUTOR.schedule(command, delay, unit)
+    fun scheduleNamingHealth(command: Runnable, delay: Long, unit: TimeUnit) : ScheduledFuture<*> {
+        return NAMING_HEALTH_EXECUTOR.schedule(command, delay, unit)
     }
 }

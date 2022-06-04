@@ -1,6 +1,8 @@
 package com.wanna.nacos.naming.server.core
 
 import com.wanna.nacos.api.naming.pojo.Cluster
+import com.wanna.nacos.naming.server.healthcheck.HealthCheckReactor
+import com.wanna.nacos.naming.server.healthcheck.HealthCheckTask
 
 /**
  * Nacos的NamingCluster
@@ -25,6 +27,11 @@ open class NamingCluster(clusterName: String, var service: NamingService) : Clus
      */
     open fun init() {
         if (inited) return
+
+        // 添加健康检测任务
+        val healthCheckTask = HealthCheckTask(this)
+        HealthCheckReactor.scheduleCheck(healthCheckTask)
+        inited = true
     }
 
     /**

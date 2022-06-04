@@ -9,9 +9,9 @@ import org.apache.http.client.methods.HttpGet
 import org.apache.http.client.methods.HttpHead
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.impl.client.HttpClients
-import java.io.ByteArrayOutputStream
 import java.net.URI
 import com.wanna.framework.web.client.RestTemplate
+import com.wanna.framework.web.http.HttpComponentsClientHttpRequestFactory
 
 /**
  * 它是一个基础的HttpAccessor，提供Http访问的入口，不要直接使用，具体的使用见RestTemplate
@@ -20,21 +20,8 @@ import com.wanna.framework.web.client.RestTemplate
  */
 abstract class HttpAccessor {
 
-    private var requestFactory: ClientHttpRequestFactory = object : ClientHttpRequestFactory {
-        override fun create(url: URI, method: RequestMethod): ClientHttpRequest {
-            val httpClient = HttpClients.createDefault()
-            val httpRequest = when (method) {
-                RequestMethod.GET -> HttpGet(url)
-                RequestMethod.POST -> HttpPost(url)
-                RequestMethod.DELETE -> HttpDelete(url)
-                RequestMethod.HEAD -> HttpHead(url)
-                else -> throw IllegalStateException("不支持这种请求方式!!!")
-            }
-            val clientHttpRequest = HttpComponentsClientHttpRequest(httpClient, httpRequest)
-            clientHttpRequest.setBody(ByteArrayOutputStream())
-            return clientHttpRequest
-        }
-    }
+    // ClientHttpRequestFactory，默认为Apache的HttpClientFactory，去创建一个Apache的HttpClient的RequestFactory
+    private var requestFactory: ClientHttpRequestFactory = HttpComponentsClientHttpRequestFactory()
 
     open fun getRequestFactory(): ClientHttpRequestFactory {
         return this.requestFactory
@@ -45,6 +32,6 @@ abstract class HttpAccessor {
     }
 
     protected open fun createRequest(url: URI, method: RequestMethod): ClientHttpRequest {
-        return getRequestFactory().create(url, method)
+        return getRequestFactory().createRequest(url, method)
     }
 }

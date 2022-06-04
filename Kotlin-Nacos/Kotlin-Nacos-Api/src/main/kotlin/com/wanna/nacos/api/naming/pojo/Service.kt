@@ -1,11 +1,14 @@
 package com.wanna.nacos.api.naming.pojo
 
+import com.wanna.framework.core.util.StringUtils
+import com.wanna.nacos.api.naming.ValidateBase
+
 /**
  * 这是Nacos的一个服务
  */
-open class Service {
-    lateinit var groupName: String  // groupName
-    lateinit var serviceName: String  // serviceName
+open class Service : java.io.Serializable, ValidateBase {
+    var groupName: String = ""  // groupName
+    var serviceName: String = ""  // serviceName
     var metadata = HashMap<String, String>()  // metadata
 
     open fun set(groupName: String, serviceName: String) {
@@ -13,9 +16,12 @@ open class Service {
         this.serviceName = serviceName
     }
 
-    open fun validate() {
-        if (!this::groupName.isInitialized || !this::serviceName.isInitialized) {
-            throw IllegalStateException("Service未完成初始化，请先完成初始化")
+    override fun validate() {
+        if (!StringUtils.hasText(groupName)) {
+            throw IllegalStateException("groupName不能为空")
+        }
+        if (!StringUtils.hasText(serviceName)) {
+            throw IllegalStateException("serviceName不能为空")
         }
     }
 }

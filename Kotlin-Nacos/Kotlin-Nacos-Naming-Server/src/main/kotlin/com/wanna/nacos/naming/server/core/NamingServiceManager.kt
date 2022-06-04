@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * NamingService的Manager
+ * NamingService的Manager，负责管理Nacos的NamingService以及NamingInstance
  */
 @Component
 open class NamingServiceManager {
@@ -19,19 +19,24 @@ open class NamingServiceManager {
     enum class NamingInstanceAction { ADD, REMOVE }
 
     // serviceMap  (namespaceId-->(groupName::serviceName-->NamingService))
+    // 根据namespaceId可以去获取到该namespace下的NamingService列表
+    // 在获取到NamingService列表之后，可以根据groupName::serviceName去获取到具体的NamingService
     private val serviceMap = ConcurrentHashMap<String, MutableMap<String, NamingService>>()
 
     //-------------------------------for obtain NamingInstance-------------------------------------------------------------------
 
     /**
      * 给定namespaceId，serviceName，clusterName，ip和port，去获取一个实例
+     * * 1.通过namespaceId和serviceName可以去获取到NamingService
+     * * 2.根据clusterName可以去NamingService下去获取到该Cluster下的全部实例
+     * * 3.根据ip和port可以从该集群下的所有实例当中去进行匹配
      *
      * @param namespaceId namespaceId
      * @param serviceName serviceName
      * @param clusterName clusterName
      * @param ip ip
      * @param port port
-     * @return 如果找到了合适的NamingInstance，return；如果没有找到，return null
+     * @return 如果根据全部的属性去找到了合适的NamingInstance，return；如果没有找到，return null
      */
     open fun getInstance(
         namespaceId: String,
@@ -223,7 +228,9 @@ open class NamingServiceManager {
     open fun createServiceIfNecessary(namespaceId: String, serviceName: String, cluster: NamingCluster?) {
         var service = getService(namespaceId, serviceName)
         if (service == null) {
-            logger.info("创建一个空的NamingService[name=$serviceName]")
+            if (logger.isDebugEnabled) {
+                logger.debug("创建一个空的NamingService[name=$serviceName]")
+            }
             service = NamingService()
             service.set(namespaceId, serviceName, serviceName)
             // 如果给定的NamingCluster的话，将NamingCluster注册到当前给定的NamingService下

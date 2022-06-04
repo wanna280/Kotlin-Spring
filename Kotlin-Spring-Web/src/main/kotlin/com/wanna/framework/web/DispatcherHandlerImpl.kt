@@ -199,25 +199,26 @@ open class DispatcherHandlerImpl : DispatcherHandler {
         ex: Throwable
     ): ModelAndView? {
         var modelAndView: ModelAndView? = null
-        val exceptionResolvers = this.handlerExceptionResolvers
-        exceptionResolvers?.forEach {
-            modelAndView = it.resolveException(request, response, handler, ex)
-            // 返回一个非空的ModelAndView，终止后续的执行...
+        val exceptionResolvers = this.handlerExceptionResolvers ?: return null
+        // 遍历所有的ExceptionResolver，去进行异常的解析(例如解析@ExceptionHandler方法的Resolver)
+        for (resolver in exceptionResolvers) {
+            // 如果返回一个非空的ModelAndView，终止后续HandlerExceptionResolver的执行...
+            modelAndView = resolver.resolveException(request, response, handler, ex)
             if (modelAndView != null) {
-                return@forEach
+                break
             }
         }
 
         // 如果返回了视图的话...那么需要去进行解析...
         if (modelAndView != null) {
             // 如果是个空的ModelAndView，那么return null(比如@ResponseBody这种已经被处理过的情况)
-            if (modelAndView!!.isEmpty()) {
+            if (modelAndView.isEmpty()) {
                 return null
             }
             // 如果没有解析到modelAndView的话...那么这里也得设置默认的viewName
-            if (!modelAndView!!.hasView()) {
+            if (!modelAndView.hasView()) {
                 modelAndView = ModelAndView()
-                modelAndView!!.view = "/hello"
+                modelAndView.view = "/hello"
             }
         }
         return null

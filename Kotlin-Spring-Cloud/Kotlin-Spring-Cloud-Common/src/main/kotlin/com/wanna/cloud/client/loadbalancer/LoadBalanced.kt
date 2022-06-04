@@ -7,6 +7,6 @@ import com.wanna.framework.beans.factory.annotation.Qualifier
  *
  * @see Qualifier
  */
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+@Target(AnnotationTarget.FUNCTION, AnnotationTarget.FIELD)
 @Qualifier
 annotation class LoadBalanced

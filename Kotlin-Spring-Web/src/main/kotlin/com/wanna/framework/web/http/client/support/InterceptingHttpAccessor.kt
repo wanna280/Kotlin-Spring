@@ -7,7 +7,7 @@ import com.wanna.framework.web.http.client.InterceptingClientHttpRequestFactory
 import com.wanna.framework.web.client.RestTemplate
 
 /**
- * 带有拦截功能的HttpAccessor，它内部聚合了拦截器列表，支持去使用拦截器去拦截目标请求的执行
+ * 带有拦截功能的HttpAccessor，它内部聚合了拦截器列表，支持去使用拦截器去拦截目标请求的执行，不要直接使用，具体使用见RestTemplate
  *
  * @see RestTemplate
  * @see HttpAccessor
@@ -22,7 +22,9 @@ open class InterceptingHttpAccessor : HttpAccessor() {
     private var interceptingRequestFactory: ClientHttpRequestFactory? = null
 
     /**
-     * 设置拦截器列表
+     * 设置拦截器列表，支持自动使用比较器去进行拦截器列表的排序
+     *
+     * Note: 如果之前已经有拦截器了，那么将会替换掉之前的; 如果想要去之前的基础上进行扩展，需要先去进行get，再去进行set
      *
      * @param interceptors 你想要使用的拦截器列表
      */
@@ -52,6 +54,7 @@ open class InterceptingHttpAccessor : HttpAccessor() {
         if (interceptors.isNotEmpty()) {
             var factory = this.interceptingRequestFactory
             if (factory == null) {
+                // 创建一个支持拦截的RequestFactory，去包装原来的RequestFactory
                 factory = InterceptingClientHttpRequestFactory(super.getRequestFactory(), getInterceptors())
                 this.interceptingRequestFactory = factory
             }

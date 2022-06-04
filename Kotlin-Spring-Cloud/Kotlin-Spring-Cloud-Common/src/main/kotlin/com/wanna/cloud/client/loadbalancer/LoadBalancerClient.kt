@@ -29,7 +29,7 @@ interface LoadBalancerClient : ServiceInstanceChooser {
      * @return 执行请求的执行结果
      * @param T 执行的返回结果类型
      */
-    fun <T> execute(serviceId: String, request: LoadBalancerRequest<T>): T?
+    fun <T> execute(serviceId: String, request: LoadBalancerRequest<T>): T
 
     /**
      * 从LoadBalancer当中去选择一个合适的ServiceInstance去执行目标请求，并拿到响应的结果
@@ -40,14 +40,14 @@ interface LoadBalancerClient : ServiceInstanceChooser {
      * @return 执行请求的执行结果
      * @param T 执行的返回结果类型
      */
-    fun <T> execute(serviceId: String, serviceInstance: ServiceInstance, request: LoadBalancerRequest<T>): T?
+    fun <T> execute(serviceId: String, serviceInstance: ServiceInstance, request: LoadBalancerRequest<T>): T
 
     /**
      * 重新构造URI；在微服务的情况下，通过注册中心去进行服务发现时，原始的uri很可能是"http://serviceName/path"这样的格式；
      * 在真正地去发送网络请求时，需要将serviceName转换为真实的uri，也就是"host:port/path"的格式，这个方法的作用就是做这层uri的转换工作；
      *
      * @param serviceInstance 要去进行转换的ServiceInstance
-     * @param uri 候选的要去去进行转换的uri(内容为serviceName)
+     * @param uri 候选的要去去进行转换的uri(host部分的内容为serviceName的原始uri)
      * @return 将原始的uri经过转换之后的"host:port/path"这样的uri
      */
     fun reconstructURI(serviceInstance: ServiceInstance, uri: URI): URI

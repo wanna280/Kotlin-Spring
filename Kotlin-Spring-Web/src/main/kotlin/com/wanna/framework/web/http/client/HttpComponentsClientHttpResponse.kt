@@ -1,6 +1,8 @@
 package com.wanna.framework.web.http.client
 
 import com.wanna.framework.web.http.HttpHeaders
+import org.apache.http.HttpResponse
+import java.io.ByteArrayInputStream
 import java.io.InputStream
 
 /**
@@ -9,21 +11,17 @@ import java.io.InputStream
  * @see ClientHttpRequest
  * @see HttpComponentsClientHttpRequest
  */
-class HttpComponentsClientHttpResponse : ClientHttpResponse {
+class HttpComponentsClientHttpResponse(private val response: HttpResponse) : ClientHttpResponse {
 
-    private val headers = HttpHeaders()
+    override fun getBody(): InputStream = response.entity.content
 
-    private var body: InputStream? = null
-
-    fun setBody(body: InputStream) {
-        this.body = body
-    }
-
-    override fun getBody(): InputStream {
-        return body!!
-    }
+    override fun getStatusCode() = response.statusLine.statusCode
 
     override fun getHeaders(): HttpHeaders {
-        return headers
+        val httpHeaders = HttpHeaders()
+        response.allHeaders.forEach {
+            httpHeaders.add(it.name, it.value)
+        }
+        return httpHeaders
     }
 }

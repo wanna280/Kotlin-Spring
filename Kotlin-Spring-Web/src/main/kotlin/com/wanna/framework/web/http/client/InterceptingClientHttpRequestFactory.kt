@@ -1,12 +1,6 @@
 package com.wanna.framework.web.http.client
 
 import com.wanna.framework.web.bind.RequestMethod
-import org.apache.http.client.methods.HttpDelete
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.client.methods.HttpHead
-import org.apache.http.client.methods.HttpPost
-import org.apache.http.impl.client.HttpClients
-import java.io.ByteArrayOutputStream
 import java.net.URI
 
 /**
@@ -17,12 +11,21 @@ import java.net.URI
  * @param requestFactory RequestFactory
  * @param interceptors 拦截器列表
  */
-class InterceptingClientHttpRequestFactory(
+open class InterceptingClientHttpRequestFactory(
     private val requestFactory: ClientHttpRequestFactory,
     private val interceptors: List<ClientHttpRequestInterceptor>
 ) : ClientHttpRequestFactory {
 
-    override fun create(url: URI, method: RequestMethod): ClientHttpRequest {
-        return requestFactory.create(url, method)
+    override fun createRequest(url: URI, method: RequestMethod): ClientHttpRequest {
+        return createRequest(url, method, interceptors, requestFactory)
+    }
+
+    open fun createRequest(
+        url: URI,
+        method: RequestMethod,
+        interceptors: List<ClientHttpRequestInterceptor>,
+        requestFactory: ClientHttpRequestFactory
+    ): ClientHttpRequest {
+        return InterceptingClientHttpRequest(requestFactory, url, method, interceptors)
     }
 }

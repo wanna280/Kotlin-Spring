@@ -21,17 +21,30 @@ import java.net.URI
  */
 open class RibbonLoadBalancerClient(private val springClientFactory: SpringClientFactory) : LoadBalancerClient {
 
-    override fun <T> execute(serviceId: String, request: LoadBalancerRequest<T>): T? {
-        val serviceInstance = choose(serviceId) ?: return null
+    override fun <T> execute(serviceId: String, request: LoadBalancerRequest<T>): T {
+        val serviceInstance = choose(serviceId) ?: throw IllegalStateException("无法找到合适的ServiceInstance去处理请求")
         return execute(serviceId, serviceInstance, request)
     }
 
-    override fun <T> execute(serviceId: String, serviceInstance: ServiceInstance, request: LoadBalancerRequest<T>): T? {
+    override fun <T> execute(serviceId: String, serviceInstance: ServiceInstance, request: LoadBalancerRequest<T>): T {
         return request.apply(serviceInstance)
     }
 
     override fun reconstructURI(serviceInstance: ServiceInstance, uri: URI): URI {
-        return uri
+        val serviceUri = serviceInstance.getUri()
+
+        // 从ServiceInstance当中去获取到真实的主机地址
+        val host: String =
+            if (serviceUri.startsWith("http://")) serviceUri.substring(7)
+            else if (serviceUri.startsWith("https://")) serviceUri.substring(8)
+            else serviceUri
+
+        // 将原始的包含了serviceName的host替换成为ServiceInstance当中的真实host
+        val originUri = uri.toString()
+        val newUri = originUri.replace(serviceInstance.getServiceId(), host)
+
+        // 构建一个新的URI去进行return
+        return URI(newUri)
     }
 
     /**
@@ -52,28 +65,11 @@ open class RibbonLoadBalancerClient(private val springClientFactory: SpringClien
      * @see ServiceInstance
      */
     class RibbonServer(private val serviceId: String, private val server: Server) : ServiceInstance {
-        override fun getServiceId(): String {
-            return serviceId
-        }
-
-        override fun getInstanceId(): String? {
-            return server.id
-        }
-
-        override fun getHost(): String {
-            return server.id
-        }
-
-        override fun getPort(): Int {
-            return server.port
-        }
-
-        override fun getUri(): String {
-            return server.hostPort
-        }
-
-        override fun getMetadata(): Map<String, String> {
-            return emptyMap()
-        }
+        override fun getServiceId() = serviceId
+        override fun getInstanceId(): String = server.id
+        override fun getHost(): String = server.host
+        override fun getPort(): Int = server.port
+        override fun getUri(): String = "http://${server.hostPort}"
+        override fun getMetadata(): Map<String, String> = emptyMap()
     }
 }
