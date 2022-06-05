@@ -73,6 +73,11 @@ class MyModelController {
 
 @ControllerAdvice
 class MyControllerAdvice {
+    @ModelAttribute
+    fun model(): String {
+        return "ma"
+    }
+
     @InitBinder
     fun initBinder(webDataBinder: WebDataBinder) {
         println("ControllerAdvice-" + webDataBinder.getTarget())
@@ -81,6 +86,11 @@ class MyControllerAdvice {
 
 @Controller
 class MyController {
+    @ModelAttribute
+    fun ma(): String {
+        return "ma"
+    }
+
     @RequestMapping(["/mav"])
     fun mav(@RequestParam("id") id: Int?, @RequestHeader("Content-Type") contentType: String?): String {
         println("id=$id, contentType=$contentType")
@@ -90,6 +100,12 @@ class MyController {
     @RequestMapping(["/beanName"])
     fun beanName(): String {
         return "beanName"
+    }
+
+    @ModelAttribute
+    @RequestMapping(["/request"])
+    fun request(): User {
+        return User()
     }
 }
 

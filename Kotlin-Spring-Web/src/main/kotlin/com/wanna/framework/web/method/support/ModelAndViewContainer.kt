@@ -16,11 +16,25 @@ open class ModelAndViewContainer {
     // model
     var defaultModel = ModelMap()
 
+    // 当前请求是否已经被处理过了(比如@ResponseBody的数据已经直接写出了，就不需要使用ModelAndView了)
+    var requestHandled = false
+
+    // ResponseStatus
+    var responseStatus: Any? = null
+
     open fun getModel(): ModelMap {
         if (useDefaultModel()) {
             return defaultModel
         }
         return ModelMap()
+    }
+
+    open fun addAttribute(name: String, value: Any?) {
+        getModel()[name] = value
+    }
+
+    open fun containsAttribute(name: String): Boolean {
+        return getModel().containsKey(name)
     }
 
     open fun useDefaultModel(): Boolean = !redirectModelScenario

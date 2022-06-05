@@ -547,3 +547,20 @@
 [2J[2022-06-05 02:16:011] [32m[WARN][m --- [Thread-7] [35m[com.alibaba.nacos.common.notify.NotifyCenter][m [NotifyCenter] Start destroying Publisher 
 [2J[2022-06-05 02:16:011] [32m[WARN][m --- [Thread-7] [35m[com.alibaba.nacos.common.notify.NotifyCenter][m [NotifyCenter] Destruction of the end 
 [2J[2022-06-05 02:16:011] [32m[WARN][m --- [Thread-1] [35m[com.alibaba.nacos.common.http.HttpClientBeanHolder][m [HttpClientBeanHolder] Destruction of the end 
+[2J[2022-06-05 05:05:056] [32m[INFO][m --- [main] [35m[com.wanna.framework.web.server.netty.server.support.NettyServer][m Netty Server已经启动在[9966]端口 
+[2J[2022-06-05 05:06:024] [32m[WARN][m --- [nioEventLoopGroup-3-1] [35m[com.wanna.framework.web.DispatcherHandlerImpl][m [NOT-FOUND]--没有找到合适的Handler去处理本次请求[path=/favicon.ico] 
+[2J[2022-06-05 05:07:039] [32m[INFO][m --- [main] [35m[com.wanna.framework.web.server.netty.server.support.NettyServer][m Netty Server已经启动在[9966]端口 
+[2J[2022-06-05 05:08:048] [32m[INFO][m --- [main] [35m[com.wanna.framework.web.server.netty.server.support.NettyServer][m Netty Server已经启动在[9966]端口 
+[2J[2022-06-05 05:09:050] [32m[INFO][m --- [main] [35m[com.wanna.framework.web.server.netty.server.support.NettyServer][m Netty Server已经启动在[9966]端口 
+[2J[2022-06-05 05:10:055] [32m[INFO][m --- [main] [35m[com.wanna.framework.web.server.netty.server.support.NettyServer][m Netty Server已经启动在[9966]端口 
+[2J[2022-06-05 05:11:022] [32m[ERROR][m --- [nioEventLoopGroup-3-1] [35m[com.wanna.framework.web.DispatcherHandlerImpl][m 处理请求[uri=/beanName]失败，原因是[java.lang.IllegalStateException: HandlerMethod的参数列表不能为null] 
+[2J[2022-06-05 05:11:052] [32m[INFO][m --- [main] [35m[com.wanna.framework.web.server.netty.server.support.NettyServer][m Netty Server已经启动在[9966]端口 
+[2J[2022-06-05 05:12:043] [32m[ERROR][m --- [nioEventLoopGroup-3-1] [35m[com.wanna.framework.web.DispatcherHandlerImpl][m 处理请求[uri=/beanName]失败，原因是[java.lang.IllegalStateException: HandlerMethod的参数列表不能为null] 
+[2J[2022-06-05 05:13:012] [32m[INFO][m --- [main] [35m[com.wanna.framework.web.server.netty.server.support.NettyServer][m Netty Server已经启动在[9966]端口 
+[2J[2022-06-05 05:14:006] [32m[ERROR][m --- [nioEventLoopGroup-3-1] [35m[com.wanna.framework.web.DispatcherHandlerImpl][m 处理请求[uri=/beanName]失败，原因是[java.lang.IllegalStateException: HandlerMethod的参数列表不能为null] 
+[2J[2022-06-05 05:14:016] [32m[INFO][m --- [main] [35m[com.wanna.framework.web.server.netty.server.support.NettyServer][m Netty Server已经启动在[9966]端口 
+[2J[2022-06-05 05:19:049] [32m[INFO][m --- [main] [35m[com.wanna.framework.web.server.netty.server.support.NettyServer][m Netty Server已经启动在[9966]端口 
+[2J[2022-06-05 06:03:019] [32m[INFO][m --- [main] [35m[com.wanna.framework.web.server.netty.server.support.NettyServer][m Netty Server已经启动在[9966]端口 
+[2J[2022-06-05 06:05:004] [32m[INFO][m --- [main] [35m[com.wanna.framework.web.server.netty.server.support.NettyServer][m Netty Server已经启动在[9966]端口 
+[2J[2022-06-05 06:12:015] [32m[INFO][m --- [main] [35m[com.wanna.framework.web.server.netty.server.support.NettyServer][m Netty Server已经启动在[9966]端口 
+[2J[2022-06-05 06:12:024] [32m[INFO][m --- [main] [35m[com.wanna.framework.web.server.netty.server.support.NettyServer][m Netty Server已经启动在[9966]端口 

@@ -13,7 +13,7 @@ open class HandlerMethod {
     // bean or beanName
     var bean: Any? = null
 
-    // beanFactroy
+    // beanFactory
     var beanFactory: BeanFactory? = null
 
     // beanType
@@ -48,6 +48,13 @@ open class HandlerMethod {
      */
     fun getReturnValueType(returnValue: Any?): MethodParameter {
         return ReturnValueMethodParameter(returnValue)
+    }
+
+    /**
+     * 判断方法的返回值是否是void
+     */
+    fun isVoid() : Boolean {
+        return Void.TYPE == method!!.returnType
     }
 
     open inner class HandlerMethodParameter(index: Int) : MethodParameter(this@HandlerMethod.method!!, index) {

@@ -52,6 +52,7 @@ open class RequestResponseBodyMethodProcessor(
      *
      * @param returnValue 方法的返回值，可能为null
      * @param webRequest NativeWebRequest(request and response)
+     * @param mavContainer ModelAndViewContainer
      * @param returnType 方法的返回值类型
      */
     override fun handleReturnValue(
@@ -60,6 +61,8 @@ open class RequestResponseBodyMethodProcessor(
         returnType: MethodParameter,
         mavContainer: ModelAndViewContainer
     ) {
+        // 对于ResponseBody的情况下，直接设置请求已经被处理了，因此之后就不必去进行渲染视图了...
+        mavContainer.requestHandled = true
         writeWithMessageConverters(returnValue, returnType, webRequest)
     }
 

@@ -2,6 +2,7 @@ package com.wanna.framework.web.method.support
 
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.core.ParameterNameDiscoverer
 import com.wanna.framework.core.util.ReflectionUtils
 import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
@@ -36,7 +37,7 @@ open class InvocableHandlerMethod : HandlerMethod() {
     }
 
     // 参数名发现器
-    var parameterNameDiscoverer = DefaultParameterNameDiscoverer()
+    var parameterNameDiscoverer: ParameterNameDiscoverer = DefaultParameterNameDiscoverer()
 
     // 参数解析器列表
     var argumentResolvers: HandlerMethodArgumentResolverComposite? = HandlerMethodArgumentResolverComposite()
@@ -59,6 +60,15 @@ open class InvocableHandlerMethod : HandlerMethod() {
     ) {
         // 遍历所有的ArgumentResolver去解析方法参数，并反射执行目标方法
         val returnValue = invokeForRequest(webRequest, mavContainer, *provideArgs)
+
+        if (returnValue == null) {
+            if (mavContainer.responseStatus != null) {
+                mavContainer.requestHandled = true
+                return
+            }
+        }
+
+        mavContainer.requestHandled  =false
         val returnValueType = getReturnValueType(returnValue)
 
         // 遍历所有的ReturnValueHandler，去找到合适的一个去进行方法的返回值的处理...
