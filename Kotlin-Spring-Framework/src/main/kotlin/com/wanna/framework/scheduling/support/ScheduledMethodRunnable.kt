@@ -14,7 +14,7 @@ import java.lang.reflect.Method
 class ScheduledMethodRunnable(val target: Any, val method: Method) : Runnable {
     override fun run() {
         try {
-            ReflectionUtils.makeAccessiable(method)
+            ReflectionUtils.makeAccessible(method)
             ReflectionUtils.invokeMethod(method, target)
         } catch (ex: InvocationTargetException) {
             throw ex.targetException

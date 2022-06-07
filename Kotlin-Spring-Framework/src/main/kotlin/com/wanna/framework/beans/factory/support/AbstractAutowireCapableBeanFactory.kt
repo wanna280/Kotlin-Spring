@@ -414,7 +414,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
         // 如果beanDefinition当中设置了initMethodName的话，那么需要获取该方法去执行
         if (mbd != null && beanClass != NullBean::class.java && StringUtils.hasText(mbd.getInitMethodName())) {
             val initMethod = beanClass.getMethod(mbd.getInitMethodName()!!)
-            ReflectionUtils.makeAccessiable(initMethod)
+            ReflectionUtils.makeAccessible(initMethod)
             ReflectionUtils.invokeMethod(initMethod, bean)
         }
     }

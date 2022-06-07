@@ -60,7 +60,7 @@ open class SimpleInstantiationStrategy : InstantiationStrategy {
             // 如果没有运行时的方法重写，那么直接使用构造器去进行实例化
             // 如果有运行时方法重写，那么需要使用CGLIB去进行生成
             return if (!bd.hasMethodOverrides()) {
-                ReflectionUtils.makeAccessiable(ctor)
+                ReflectionUtils.makeAccessible(ctor)
                 if (args.isEmpty()) BeanUtils.instantiateClass(ctor) else BeanUtils.instantiateClass(ctor, *args)
             } else {
                 instantiateWithMethodInjection(bd, beanName, owner, ctor, args)
@@ -83,7 +83,7 @@ open class SimpleInstantiationStrategy : InstantiationStrategy {
         vararg args: Any?
     ): Any? {
         try {
-            ReflectionUtils.makeAccessiable(factoryMethod)  // make access
+            ReflectionUtils.makeAccessible(factoryMethod)  // make access
             // 记录之前的FactoryMethod(方便后续去进行恢复)，设置为当前的FactoryMethod
             val beforeFactoryMethod = currentlyInvokeFactoryMethod.get()
             try {

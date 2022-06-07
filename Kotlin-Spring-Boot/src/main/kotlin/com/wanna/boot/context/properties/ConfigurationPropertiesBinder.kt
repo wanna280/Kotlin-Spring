@@ -94,7 +94,7 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
                     if (conversionService.canConvert(String::class.java, it.type)) {
                         val convertedValue = conversionService.convert(property, it.type)
                         // 反射执行目标方法
-                        ReflectionUtils.makeAccessiable(setterMethod)
+                        ReflectionUtils.makeAccessible(setterMethod)
                         ReflectionUtils.invokeMethod(setterMethod, instance, convertedValue)
                     }
                 } catch (_: java.lang.reflect.InvocationTargetException) {

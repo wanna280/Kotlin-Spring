@@ -209,7 +209,7 @@ open class InitDestroyAnnotationBeanPostProcessor : DestructionAwareBeanPostProc
     private open class LifecycleElement(private val method: Method) {
         open fun getMethod(): Method = this.method
         open fun invoke(bean: Any) {
-            ReflectionUtils.makeAccessiable(method)
+            ReflectionUtils.makeAccessible(method)
             ReflectionUtils.invokeMethod(method, bean)
         }
     }

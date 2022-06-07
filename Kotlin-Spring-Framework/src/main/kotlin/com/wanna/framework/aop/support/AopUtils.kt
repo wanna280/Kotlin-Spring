@@ -94,7 +94,7 @@ object AopUtils {
     @JvmStatic
     fun invokeJoinpointUsingReflection(target: Any?, method: Method, args: Array<Any?>): Any? {
         try {
-            ReflectionUtils.makeAccessiable(method)
+            ReflectionUtils.makeAccessible(method)
             return ReflectionUtils.invokeMethod(method, target, *args)
         } catch (ex: InvocationTargetException) {
             throw ex.targetException

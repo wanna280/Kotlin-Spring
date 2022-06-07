@@ -172,7 +172,7 @@ open class InvocableHandlerMethod : HandlerMethod() {
      */
     protected open fun doInvoke(vararg args: Any?): Any? {
         val method = method ?: throw IllegalStateException("HandlerMethod当中方法为null")
-        ReflectionUtils.makeAccessiable(method)
+        ReflectionUtils.makeAccessible(method)
         try {
             return ReflectionUtils.invokeMethod(method, this.bean, *args)
         } catch (ex: IllegalArgumentException) {

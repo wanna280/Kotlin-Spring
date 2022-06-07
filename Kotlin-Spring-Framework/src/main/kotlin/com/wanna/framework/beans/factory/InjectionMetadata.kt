@@ -58,10 +58,10 @@ open class InjectionMetadata(val targetClass: Class<*>, private val elements: Co
         open fun inject(bean: Any, beanName: String, pvs: PropertyValues?) {
             val resourceToInject = getResourceToInject(bean, beanName)
             if (isField) {
-                ReflectionUtils.makeAccessiable(member as Field)
+                ReflectionUtils.makeAccessible(member as Field)
                 ReflectionUtils.setField(member, bean, resourceToInject)
             } else {
-                ReflectionUtils.makeAccessiable(member as Method)
+                ReflectionUtils.makeAccessible(member as Method)
                 ReflectionUtils.invokeMethod(member, bean, resourceToInject as Array<Any?>)
             }
         }
