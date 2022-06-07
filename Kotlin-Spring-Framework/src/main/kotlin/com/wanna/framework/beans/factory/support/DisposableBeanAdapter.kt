@@ -82,7 +82,7 @@ open class DisposableBeanAdapter(
         // 3.如果有destroy方法，那么去执行该方法
         val destroyMethod = this.destroyMethod
         if (destroyMethod != null) {
-            ReflectionUtils.makeAccessiable(destroyMethod)
+            ReflectionUtils.makeAccessible(destroyMethod)
             try {
                 ReflectionUtils.invokeMethod(destroyMethod, this.bean)
             } catch (ex: Throwable) {

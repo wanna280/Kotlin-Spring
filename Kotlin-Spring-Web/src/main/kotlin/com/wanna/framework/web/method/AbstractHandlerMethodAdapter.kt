@@ -7,7 +7,7 @@ import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 
 /**
- * 这是一个抽象的HandlerMethod的HandlerAdapter，它负责去处理Handler类型的HandlerMethod类型的Handler；
+ * 这是一个抽象的HandlerMethod的HandlerAdapter，它负责去处理Handler类型为HandlerMethod类型的请求
  *
  * @see HandlerAdapter
  */
@@ -15,11 +15,9 @@ abstract class AbstractHandlerMethodAdapter : HandlerAdapter, Ordered {
 
     private var order = Ordered.ORDER_LOWEST
 
-    override fun getOrder(): Int {
-        return this.order
-    }
+    override fun getOrder() = this.order
 
-    fun setOrder(order: Int) {
+    open fun setOrder(order: Int) {
         this.order = order
     }
 
@@ -29,9 +27,7 @@ abstract class AbstractHandlerMethodAdapter : HandlerAdapter, Ordered {
      * @param handler handler
      * @return 如果handler是HandlerMethod类型，return true；不然return false
      */
-    override fun supports(handler: Any): Boolean {
-        return handler is HandlerMethod && supportInternal(handler)
-    }
+    override fun supports(handler: Any) = handler is HandlerMethod && supportInternal(handler)
 
     /**
      * 处理目标请求，将handler限制为HandlerMethod，交给子类去进行实现

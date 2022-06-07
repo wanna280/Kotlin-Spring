@@ -20,8 +20,10 @@ import com.wanna.framework.web.method.HandlerMethod
 import com.wanna.framework.web.method.support.*
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
+import org.springframework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Predicate
 
 /**
  *
@@ -42,6 +44,20 @@ import java.util.concurrent.ConcurrentHashMap
  */
 open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFactoryAware, InitializingBean,
     ApplicationContextAware {
+
+    companion object {
+        // @InitBinder的方法过滤器
+        private val INIT_BINDER_METHODS =
+            Predicate<Method> { AnnotatedElementUtils.hasAnnotation(it, InitBinder::class.java) }
+
+        // @ModelAttribute的方法过滤器(需要匹配没有@RequestMapping注解的方法)
+        private val MODEL_ATTRIBUTE_METHODS = Predicate<Method> {
+            AnnotatedElementUtils.hasAnnotation(
+                it, ModelAttribute::class.java
+            ) && !AnnotatedElementUtils.hasAnnotation(it, RequestMapping::class.java)
+        }
+    }
+
     // beanFactory，通过BeanFactoryAware去进行自动回调获取到
     private var beanFactory: ConfigurableBeanFactory? = null
 
@@ -54,7 +70,7 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     // 交给外部去进行自定义的参数解析器(基于默认的去进行扩展)
     private var customArgumentResolvers: List<HandlerMethodArgumentResolver>? = null
 
-    // 交给外部去机械能自定义的返回值处理器(基于默认的去进行扩展)
+    // 交给外部去进行自定义的返回值处理器(基于默认的去进行扩展)
     private var customReturnValueHandlers: List<HandlerMethodReturnValueHandler>? = null
 
     // 参数解析器列表(内部组合)
@@ -73,16 +89,16 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     private var contentNegotiationManager: ContentNegotiationManager = ContentNegotiationManager()
 
     // 全局的@InitBinder方法的ControllerAdvice缓存，可以根据ControllerAdviceBean，去获取到@InitBinder的方法列表
-    private val initBinderAdviceCache = LinkedHashMap<ControllerAdviceBean, Set<Method>>()
+    private val initBinderAdviceCache = LinkedHashMap<ControllerAdviceBean, Set<Method>>(64)
 
     // 针对于某个Controller(Handler)内部的@InitBinder方法的缓存，可以根据handlerType去获取到对应的@InitBinder缓存
-    private val initBinderCache = ConcurrentHashMap<Class<*>, Set<Method>>()
+    private val initBinderCache = ConcurrentHashMap<Class<*>, Set<Method>>(64)
 
     // 全局的@ModelAttribute方法的ControllerAdvice缓存，可以根据ControllerAdviceBean，去获取到@ModelAttribute的方法列表
-    private val modelAttributeAdviceBean = LinkedHashMap<ControllerAdviceBean, Set<Method>>()
+    private val modelAttributeAdviceBean = LinkedHashMap<ControllerAdviceBean, Set<Method>>(64)
 
     // 针对某个Controller(Handler)内部的@ModelAttribute方法的缓存，可以根据handlerType去获取到对应的@ModelAttribute缓存
-    private val modelAttributeCache = ConcurrentHashMap<Class<*>, Set<Method>>()
+    private val modelAttributeCache = ConcurrentHashMap<Class<*>, Set<Method>>(64)
 
     /**
      * * 1.初始化ControllerAdvice缓存，构建@InitBinder和@ModelAttribute缓存
@@ -135,9 +151,14 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     ): ModelAndView? {
         // 将request和response封装到NativeWebRequest当中
         val serverWebRequest = ServerWebRequest(request, response)
-        val mavContainer = ModelAndViewContainer()
+
         // 创建WebDataBinderFactory，并往其中添加自定义的@InitBinder的方法，在调用createBinder方法时，会自动apply所有的InitBinder方法
+        // @InitBinder方法的参数解析器，需要使用特殊定制的参数解析器(大致和普通的@RequestMapping方法参数解析器一致)
         val binderFactory = getDataBinderFactory(handler)
+
+        // 获取ModelFactory，往其中加入自定义的@ModelAttribute方法，在ModelAndViewContainer初始化完成之后，自动将其中的数据合并到ModelAndViewContainer当中
+        // @ModelAttribute方法的参数解析器，使用最普通的@RequestMapping的参数解析器即可
+        val modelFactory = getModelFactory(handler, binderFactory)
 
         // 构建InvocableHandlerMethod，并去完成参数名发现器、DataBinderFactory、参数解析器以及返回值处理器的初始化
         val invocableHandlerMethod = InvocableHandlerMethod.newInvocableHandlerMethod(handler)
@@ -149,14 +170,31 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         if (this.returnValueHandlers != null) {
             invocableHandlerMethod.returnValueHandlers = this.returnValueHandlers
         }
+
+        // 创建一个ModelAndViewContainer，提前去存储ModelAndView的数据，因为之前ModelAndView并未创建，就需要一个渠道去存放之前的ModelAndView数据
+        val mavContainer = ModelAndViewContainer()
+        // 使用ModelFactory去初始化ModelAndViewContainer当中的Model数据，将@ModelAttribute方法当中的全部Model数据，全部apply到mavContainer当中
+        modelFactory.initModel(serverWebRequest, mavContainer, invocableHandlerMethod)
+
         // 执行目标RequestMapping方法(HandlerMethod)，并获取到ModelAndView
         invocableHandlerMethod.invokeAndHandle(serverWebRequest, mavContainer)
-        return getModelAndView(mavContainer)
+
+        // 从ModelAndViewContainer当中获取到ModelAndView
+        return getModelAndView(mavContainer, modelFactory, serverWebRequest)
     }
 
+    /**
+     * 从ModelAndViewContainer当中去获取ModelAndView
+     *
+     * * 1.如果请求已经被处理过了，那么return null(比如@ResponseBody)
+     * * 2.如果请求还没被处理过，就需要创建ModelAndView，在后续当中去渲染视图
+     */
     private fun getModelAndView(
-        mavContainer: ModelAndViewContainer
-    ): ModelAndView {
+        mavContainer: ModelAndViewContainer, modelFactory: ModelFactory, webRequest: ServerWebRequest
+    ): ModelAndView? {
+        if(mavContainer.requestHandled) {
+            return null
+        }
         val modelAndView = ModelAndView()
         modelAndView.view = mavContainer.view
         modelAndView.modelMap = mavContainer.defaultModel
@@ -181,12 +219,12 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         if (cachedLocalMethods == null) {
             val localBinderMethods = LinkedHashSet<Method>()
             ReflectionUtils.doWithMethods(beanType) {
-                if (it.isAnnotationPresent(InitBinder::class.java)) {
+                if (INIT_BINDER_METHODS.test(it)) {
                     localBinderMethods += it
                 }
             }
-            initBinderCache[beanType] = localBinderMethods
-            cachedLocalMethods = initBinderCache[beanType]
+            initBinderCache[beanType] = localBinderMethods  // put Cache
+            cachedLocalMethods = localBinderMethods
         }
 
         // 1.根据全局的@InitBinder方法，去构建HandlerMethod列表
@@ -195,8 +233,8 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
             methods.forEach { initMethods += createInitBinderMethod(bean.resolveBean(), it) }
         }
 
-        // 2.Handler内的局部@InitBinder方法列表，去构建HandlerMethod列表
-        cachedLocalMethods?.forEach {
+        // 2.Controller内的局部@InitBinder方法列表，去构建HandlerMethod列表
+        cachedLocalMethods.forEach {
             initMethods += createInitBinderMethod(bean, it)
         }
         // 创建DataBinderFactory
@@ -204,7 +242,49 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     }
 
     /**
-     * 初始化ControllerAdvice缓存，扫描全部的ControllerAdvice中的InitBinder和ModelAndAttribute等方法；
+     * 创建ModelFactory，并应用所有的ModelAttribute方法
+     * * 1.应用全局的ControllerAdvice的@ModelAttribute方法(缓存中获取)
+     * * 2.应用当前Controller内部的全部@ModelAttribute方法(如果必要的去构建，如果已经构建过了的话，从缓存当中获取)
+     *
+     * @param handlerMethod 要去执行的目标handlerMethod
+     * @param binderFactory binderFactory
+     * @return 包装有@ModelAttribute方法的ModelFactory
+     */
+    private fun getModelFactory(handlerMethod: HandlerMethod, binderFactory: WebDataBinderFactory): ModelFactory {
+        val beanType = handlerMethod.beanType ?: throw IllegalStateException("HandlerMethod的beanType不能为null")
+        val bean = handlerMethod.bean ?: throw IllegalStateException("HandlerMethod的Bean不能为null")
+        var cachedLocalMethods = modelAttributeCache[beanType]
+        if (cachedLocalMethods == null) {
+            val localModelAttributeMethods = LinkedHashSet<Method>()
+            ReflectionUtils.doWithMethods(beanType) {
+                if (MODEL_ATTRIBUTE_METHODS.test(it)) {
+                    localModelAttributeMethods += it
+                }
+            }
+            modelAttributeCache[beanType] = localModelAttributeMethods  // put Cache
+            cachedLocalMethods = localModelAttributeMethods
+        }
+
+        // 1. 根据全局的@ModelAttribute方法，去构建HandlerMethod
+        val modelAttributeMethods = ArrayList<InvocableHandlerMethod>()
+        modelAttributeAdviceBean.forEach { (bean, methods) ->
+            methods.forEach {
+                modelAttributeMethods += createModelAttributeMethod(
+                    binderFactory, bean.resolveBean(), it
+                )
+            }
+        }
+        // 2. 根据Controller局部的@ModelAttribute方法，去构建HandlerMethod列表
+        cachedLocalMethods.forEach {
+            modelAttributeMethods += createModelAttributeMethod(binderFactory, bean, it)
+        }
+
+        // 构建ModelFactory
+        return ModelFactory(modelAttributeMethods, binderFactory)
+    }
+
+    /**
+     * 初始化ControllerAdvice缓存，扫描全部的ControllerAdvice中的@InitBinder和@ModelAndAttribute等方法；
      *
      * 这些ControllerAdvice，将会应用给所有的RequestMapping的HandlerMethod
      */
@@ -216,17 +296,18 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
             val initBinderMethods = LinkedHashSet<Method>()
             val modelAttributeMethods = LinkedHashSet<Method>()
             ReflectionUtils.doWithMethods(it.getBeanType()) { method ->
-                if (method.isAnnotationPresent(InitBinder::class.java)) {
+                if (INIT_BINDER_METHODS.test(method)) {
                     initBinderMethods += method
                 }
-                if (method.isAnnotationPresent(ModelAttribute::class.java)) {
+                if (MODEL_ATTRIBUTE_METHODS.test(method)) {
                     modelAttributeMethods += method
                 }
             }
+
+            // put Cache
             initBinderAdviceCache[it] = initBinderMethods
             modelAttributeAdviceBean[it] = modelAttributeMethods
         }
-
     }
 
     /**
@@ -245,6 +326,25 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         handlerMethod.binderFactory = DefaultWebDataBinderFactory()
         handlerMethod.parameterNameDiscoverer = this.parameterNameDiscoverer
         return handlerMethod
+    }
+
+    /**
+     * 创建ModelAttribute方法，并初始化参数名发现器、参数解析器、BinderFactory
+     *
+     * @param binderFactory BinderFactory
+     * @param bean bean(@ModelAttribute方法所在的Bean)
+     * @param method method(@ModelAttribute方法)
+     */
+    private fun createModelAttributeMethod(
+        binderFactory: WebDataBinderFactory, bean: Any, method: Method
+    ): InvocableHandlerMethod {
+        val invocableHandlerMethod = InvocableHandlerMethod.newInvocableHandlerMethod(bean, method)
+        invocableHandlerMethod.parameterNameDiscoverer = this.parameterNameDiscoverer
+        if (this.argumentResolvers != null) {
+            invocableHandlerMethod.argumentResolvers = this.argumentResolvers
+        }
+        invocableHandlerMethod.binderFactory = binderFactory
+        return invocableHandlerMethod
     }
 
     /**
@@ -292,7 +392,8 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     }
 
     /**
-     * 如果不进行自定义，那么需要去获取默认的HandlerMethod的参数解析器列表去完成@InitBinder方法的执行
+     * 如果不进行自定义，那么需要去获取默认的HandlerMethod的参数解析器列表去完成@InitBinder方法的执行；
+     * 在@InitBinder方法当中因为不存在ModelAndViewContainer，因此它无法处理Model相关的数据，因此没有Model相关的参数解析器
      *
      * @return 默认的HandlerMethodArgumentResolver列表
      */
@@ -337,10 +438,10 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         // 添加Map方法处理器，去处理Map类型的返回值，将Map数据转移到ModelAndViewContainer当中
         handlers += MapMethodProcessor()
 
-        // 解析ViewName的处理器
+        // 解析ViewName的处理器(处理返回值是字符串的情况)
         handlers += ViewNameMethodReturnValueHandler()
 
-        // 添加一个ModelAttribute的方法处理器，处理方法返回值是ModelAttribute的情况
+        // 添加一个ModelAttribute的方法处理器，处理方法返回值是ModelAttribute或者返回值不是简单类型的情况
         handlers += ModelAttributeMethodProcessor()
 
         // 应用用户自定义的返回值处理器
@@ -370,8 +471,8 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         this.argumentResolvers = resolvers
     }
 
-    open fun getHttpMessageConverters(): List<HttpMessageConverter<*>> = this.messageConverters
-        ?: throw IllegalStateException("请先初始化RequestMappingHandlerAdapter的MessageConverter列表")
+    open fun getHttpMessageConverters(): List<HttpMessageConverter<*>> =
+        this.messageConverters ?: throw IllegalStateException("请先初始化RequestMappingHandlerAdapter的MessageConverter列表")
 
     open fun setHandlerMethodReturnValueHandlers(handlers: HandlerMethodReturnValueHandlerComposite) {
         this.returnValueHandlers = handlers

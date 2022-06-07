@@ -19,5 +19,5 @@ interface AopProxy {
      * 使用给定的类加载器去实现代理类的类加载
      * @param classLoader 给定的类加载器
      */
-    fun getProxy(classLoader: ClassLoader): Any
+    fun getProxy(classLoader: ClassLoader?): Any
 }

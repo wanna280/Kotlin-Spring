@@ -7,11 +7,14 @@ import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.format.FormatterRegistry
 import com.wanna.framework.context.format.support.DefaultFormattingConversionService
 import com.wanna.framework.context.format.support.FormattingConversionService
+import com.wanna.framework.web.DispatcherHandlerImpl
 import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.handler.HandlerExceptionResolver
 import com.wanna.framework.web.handler.ViewResolver
 import com.wanna.framework.web.http.converter.HttpMessageConverter
 import com.wanna.framework.web.http.converter.json.MappingJackson2HttpMessageConverter
+import com.wanna.framework.web.method.DefaultRequestToViewNameTranslator
+import com.wanna.framework.web.method.RequestToViewNameTranslator
 import com.wanna.framework.web.method.annotation.ExceptionHandlerExceptionResolver
 import com.wanna.framework.web.method.annotation.RequestMappingHandlerAdapter
 import com.wanna.framework.web.method.annotation.RequestMappingHandlerMapping
@@ -133,6 +136,12 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     @Qualifier("templateViewResolver")
     open fun templateViewResolver(): ViewResolver {
         return TemplateViewResolver()
+    }
+
+    @Bean("viewNameTranslator")
+    @Qualifier("viewNameTranslator")
+    open fun viewNameTranslator(): RequestToViewNameTranslator {
+        return DefaultRequestToViewNameTranslator()
     }
 
     protected open fun getArgumentResolvers(): List<HandlerMethodArgumentResolver> {

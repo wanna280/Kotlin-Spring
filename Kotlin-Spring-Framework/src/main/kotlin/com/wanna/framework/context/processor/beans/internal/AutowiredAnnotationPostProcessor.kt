@@ -16,6 +16,7 @@ import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.exception.BeanCreationException
 import com.wanna.framework.context.processor.beans.SmartInstantiationAwareBeanPostProcessor
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.core.PriorityOrdered
 import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.core.util.ReflectionUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
@@ -25,9 +26,11 @@ import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 处理Autowired/Inject/Value注解的BeanPostProcessor
+ *
+ * Note: (fixed)它必须是PriorityOrdered的，不然，会导致Ordered的BeanPostProcessor不能正常生效
  */
 open class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostProcessor, ApplicationContextAware,
-    Ordered {
+    PriorityOrdered {
 
     private var applicationContext: ApplicationContext? = null
 
@@ -269,7 +272,7 @@ open class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostPro
             val value = resolveFieldValue(field, beanName, bean)
             // 如果解析到的字段值不为空的话，那么使用反射去完成字段值的设置
             if (value != null) {
-                ReflectionUtils.makeAccessiable(field)
+                ReflectionUtils.makeAccessible(field)
                 ReflectionUtils.setField(field, bean, value)
             }
         }
@@ -301,7 +304,7 @@ open class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostPro
 
             // 如果解析到了方法参数列表，那么使用反射去执行
             if (methodParams != null) {
-                ReflectionUtils.makeAccessiable(method)
+                ReflectionUtils.makeAccessible(method)
                 ReflectionUtils.invokeMethod(method, bean, *methodParams)
             }
         }

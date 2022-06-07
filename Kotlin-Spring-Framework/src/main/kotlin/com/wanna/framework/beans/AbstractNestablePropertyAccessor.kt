@@ -33,7 +33,7 @@ abstract class AbstractNestablePropertyAccessor : AbstractPropertyAccessor() {
 
         // 如果找不到字段直接return
         val field = getField(name) ?: return
-        ReflectionUtils.makeAccessiable(field)
+        ReflectionUtils.makeAccessible(field)
         if (value is Collection<*> && !ClassUtils.isAssignFrom(Collection::class.java, field.type)) {
             val targetToInject: Any? = if (value.isNotEmpty()) value.iterator().next() else null
             ReflectionUtils.setField(field, getWrappedInstance(), convertIfNecessary(targetToInject, field.type))
@@ -63,7 +63,7 @@ abstract class AbstractNestablePropertyAccessor : AbstractPropertyAccessor() {
     override fun getPropertyValue(name: String): Any? {
         // 如果找不到字段那么直接return null
         val field = getField(name) ?: return null
-        ReflectionUtils.makeAccessiable(field)
+        ReflectionUtils.makeAccessible(field)
         return ReflectionUtils.getField(field, getWrappedInstance())
     }
 

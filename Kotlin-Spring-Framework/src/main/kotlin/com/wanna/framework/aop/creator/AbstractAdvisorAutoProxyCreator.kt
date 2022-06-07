@@ -4,16 +4,30 @@ import com.wanna.framework.aop.Advisor
 import com.wanna.framework.aop.PointcutAdvisor
 import com.wanna.framework.aop.TargetSource
 import com.wanna.framework.aop.framework.autoproxy.BeanFactoryAdvisorRetrievalHelper
+import com.wanna.framework.aop.support.AopUtils
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.util.ReflectionUtils
 
+/**
+ * 它为AbstractAutoProxyCreator提供了获取Advisor的来源，尝试去beanFactory当中去探测Advisor；
+ * 在探寻到的所有Advisor之后，挨个去进行比较，判断它能否应用给当前正在创建的Bean
+ *
+ * @see AbstractAutoProxyCreator
+ */
 abstract class AbstractAdvisorAutoProxyCreator : AbstractAutoProxyCreator() {
 
     // 协助去进行BeanFactory当中的Advisor进行寻找
     private var advisorRetrievalHelper: BeanFactoryAdvisorRetrievalHelper? = null
 
+    /**
+     * 实现父类的模板方法，提供Advisor的获取
+     *
+     * @param beanClass beanClass
+     * @param beanName beanName
+     * @param targetSource targetSource
+     */
     override fun getAdvicesAndAdvisorsForBean(
         beanClass: Class<*>, beanName: String, targetSource: TargetSource?
     ): Array<Any>? {
@@ -41,16 +55,16 @@ abstract class AbstractAdvisorAutoProxyCreator : AbstractAutoProxyCreator() {
      * @see extendsAdvisors
      */
     open fun findEligibleAdvisors(beanClass: Class<*>, beanName: String): List<Advisor> {
-        // 找出所有的候选的Advisor列表
+        // 1.找出所有的候选的Advisor列表
         val candidateAdvisors = findCandidateAdvisors()
 
-        // 找出可以进行应用的Advisor，主要是使用ClassFilter去对类进行匹配，使用MethodMatcher去遍历所有的方法去进行匹配
-        val eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName)
+        // 2.找出可以进行应用的Advisor，主要是使用ClassFilter去对类进行匹配，使用MethodMatcher去遍历所有的方法去进行匹配
+        val eligibleAdvisors = ArrayList(findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName))
 
-        // 扩展Advisor列表，钩子方法，交给子类去进行实现
+        // 3.扩展Advisor列表，钩子方法，交给子类去进行实现
         extendsAdvisors(eligibleAdvisors)
 
-        // 完成Advisor的排序并返回
+        // 4,完成Advisor的排序并返回
         return if (eligibleAdvisors.isNotEmpty()) sortAdvisors(eligibleAdvisors) else eligibleAdvisors
     }
 
@@ -79,31 +93,16 @@ abstract class AbstractAdvisorAutoProxyCreator : AbstractAutoProxyCreator() {
 
     /**
      * 找出可以进行应用给当前的Bean的Advisor，主要是使用ClassFilter去对类进行匹配，使用MethodMatcher去遍历所有的方法去进行匹配
+     *
+     * @param advisors 要去进行匹配的Advisor列表
+     * @param beanClass beanClass
+     * @param beanName beanName
+     * @return 匹配到的可以应用给当前Bean的Advisor列表
      */
     protected open fun findAdvisorsThatCanApply(
         advisors: MutableList<Advisor>, beanClass: Class<*>, beanName: String
-    ): MutableList<Advisor> {
-        val result = ArrayList<Advisor>()
-        advisors.forEach {
-            if (it is PointcutAdvisor) {
-                val pointcut = it.getPointcut()
-                if (pointcut.getClassFilter().matches(beanClass)) {
-                    var matches = false
-                    ReflectionUtils.doWithLocalMethods(beanClass) { method ->
-                        // 如果MethodMatcher对当前方法去进行匹配时，不匹配，那么return
-                        if (!pointcut.getMethodMatcher().matches(method, beanClass)) {
-                            return@doWithLocalMethods  // Kotlin当中，可以指定要return的方法
-                        }
-                        matches = true
-                    }
-                    // 如果方法和类都匹配的话，那么说明该Advisor对当前的beanClass是匹配的，那么往最终结果当中去进行一安吉
-                    if (matches) {
-                        result += it
-                    }
-                }
-            }
-        }
-        return result
+    ): List<Advisor> {
+        return AopUtils.findAdvisorsThatCanApply(advisors, beanClass)
     }
 
     /**

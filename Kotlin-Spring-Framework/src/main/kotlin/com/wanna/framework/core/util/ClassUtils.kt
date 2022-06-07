@@ -98,4 +98,27 @@ object ClassUtils {
         val lastIndexOfDot = clazz.name.lastIndexOf(DOT)
         return clazz.name.substring(lastIndexOfDot + 1) + CLASS_FILE_SUFFIX
     }
+
+    /**
+     * 获取一个类的全部父接口
+     *
+     * @param clazz 目标类
+     */
+    @JvmStatic
+    fun getAllInterfacesForClassAsSet(clazz: Class<*>): Set<Class<*>> {
+        val interfaces = LinkedHashSet<Class<*>>()
+
+        // 如果它是接口的话，直接return
+        if (clazz.isInterface) {
+            return setOf(clazz)
+        }
+        var current: Class<*>? = clazz
+        while (current != null && current != Any::class.java) {
+            val itfs = clazz.interfaces
+            interfaces += itfs
+            current = current.superclass
+        }
+
+        return interfaces
+    }
 }

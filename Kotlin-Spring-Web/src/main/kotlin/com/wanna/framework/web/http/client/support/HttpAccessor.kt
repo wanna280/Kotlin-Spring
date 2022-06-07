@@ -3,15 +3,9 @@ package com.wanna.framework.web.http.client.support
 import com.wanna.framework.web.bind.RequestMethod
 import com.wanna.framework.web.http.client.ClientHttpRequest
 import com.wanna.framework.web.http.client.ClientHttpRequestFactory
-import com.wanna.framework.web.http.client.HttpComponentsClientHttpRequest
-import org.apache.http.client.methods.HttpDelete
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.client.methods.HttpHead
-import org.apache.http.client.methods.HttpPost
-import org.apache.http.impl.client.HttpClients
 import java.net.URI
 import com.wanna.framework.web.client.RestTemplate
-import com.wanna.framework.web.http.HttpComponentsClientHttpRequestFactory
+import com.wanna.framework.web.http.client.HttpComponentsClientHttpRequestFactory
 
 /**
  * 它是一个基础的HttpAccessor，提供Http访问的入口，不要直接使用，具体的使用见RestTemplate

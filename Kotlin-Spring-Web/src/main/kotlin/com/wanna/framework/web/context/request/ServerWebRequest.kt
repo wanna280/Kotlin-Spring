@@ -7,13 +7,8 @@ import com.wanna.framework.web.server.HttpServerResponse
  * 它是NativeWebRequest的实现，使用HttpServerRequest作为request，使用HttpServerResponse作为response
  */
 
-open class ServerWebRequest(private val request: HttpServerRequest, private val response: HttpServerResponse?) :
+open class ServerWebRequest(private val request: HttpServerRequest, private val response: HttpServerResponse? = null) :
     NativeWebRequest {
-
-    /**
-     * 提供只使用Request的构造器
-     */
-    constructor(request: HttpServerRequest) : this(request, null)
 
     override fun getNativeRequest(): Any {
         return request

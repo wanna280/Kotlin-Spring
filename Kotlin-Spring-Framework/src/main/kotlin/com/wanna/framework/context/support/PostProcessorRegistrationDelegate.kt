@@ -14,7 +14,13 @@ import com.wanna.framework.core.comparator.OrderComparator
 import com.wanna.framework.core.metrics.ApplicationStartup
 
 /**
- * 这是一个执行PostProcessor的委托类，可以委托去完成BeanFactoryPostProcessor和BeanPostProcessor的执行
+ * 这是一个执行PostProcessor的委托类，可以委托去完成BeanFactoryPostProcessor和BeanPostProcessor的执行；
+ *
+ * Note: 在注册阶段当中必须分开去进行getBean，最开始只能统计beanName列表(至于为什么PriorityOrdered可以提前getBean？因为它是第一个getBean的阶段，
+ * 这样，PriorityOrdered的Bean就不必经历存放beanName的阶段，直接就经历了getBean阶段即可)
+ * 后面才能去进行getBean，至于为什么？因为在getBean时，会导致该Bean提前完成初始化工作，但是该Bean很可能需要应用之前的一些
+ * PostProcessor，但是如果你提前getBean了，那么很明显，是不能做到的！
+ * 因为PriorityOrdered/Ordered/NonOrdered是分步注册的，必须保证前一个阶段的PostProcessor全部注册之后后一个阶段的Bean才能去进行注册
  *
  * @see BeanPostProcessor
  * @see BeanFactoryPostProcessor
@@ -64,7 +70,7 @@ object PostProcessorRegistrationDelegate {
                     currentRegistryPostProcessors.add(
                         beanFactory.getBean(
                             beanName, BeanDefinitionRegistryPostProcessor::class.java
-                        )!!
+                        )
                     )
                     // 标识这个Bean已经被处理
                     processedBeans.add(beanName)
@@ -89,7 +95,7 @@ object PostProcessorRegistrationDelegate {
                     currentRegistryPostProcessors.add(
                         beanFactory.getBean(
                             beanName, BeanDefinitionRegistryPostProcessor::class.java
-                        )!!
+                        )
                     )
                     // 标识这个Bean已经被处理
                     processedBeans.add(beanName)
@@ -111,7 +117,7 @@ object PostProcessorRegistrationDelegate {
                     currentRegistryPostProcessors.add(
                         beanFactory.getBean(
                             beanName, BeanDefinitionRegistryPostProcessor::class.java
-                        )!!
+                        )
                     )
                     // 标识这个Bean已经被处理
                     processedBeans.add(beanName)
@@ -130,90 +136,119 @@ object PostProcessorRegistrationDelegate {
             invokeBeanFactoryPostProcessors(regularProcessors, beanFactory)
         }
 
-        // 完成BeanRegistryDefinitionPostProcessor的处理之后，需要完成普通的BeanFactoryPostProcessor的执行
+        // 2.完成BeanRegistryDefinitionPostProcessor的处理之后，需要完成普通的BeanFactoryPostProcessor的执行
         val postProcessorNames = beanFactory.getBeanNamesForType(BeanFactoryPostProcessor::class.java)
 
         // 分别找出PriorityOrdered，Ordered，以及NonOrdered的BeanFactoryPostProcessor并进行分开
         val priorityOrderedProcessors = ArrayList<BeanFactoryPostProcessor>()
-        val orderedProcessors = ArrayList<BeanFactoryPostProcessor>()
-        val nonOrderedProcessors = ArrayList<BeanFactoryPostProcessor>()
+        val orderedProcessorNames = ArrayList<String>()
+        val nonOrderedProcessorNames = ArrayList<String>()
+
+        // 2.1 排序并执行所有的PriorityOrdered的BeanFactoryPostProcessor
         postProcessorNames.forEach { beanName ->
             if (processedBeans.contains(beanName)) {  // skip because it has been processed
                 return@forEach
             }
-            val postProcessor = beanFactory.getBean(beanName, BeanFactoryPostProcessor::class.java)!!
+            val postProcessor = beanFactory.getBean(beanName, BeanFactoryPostProcessor::class.java)
             if (beanFactory.isTypeMatch(beanName, PriorityOrdered::class.java)) {
                 priorityOrderedProcessors += postProcessor
             } else if (beanFactory.isTypeMatch(beanName, Ordered::class.java)) {
-                orderedProcessors += postProcessor
+                orderedProcessorNames += beanName
             } else {
-                nonOrderedProcessors += postProcessor
+                nonOrderedProcessorNames += beanName
             }
         }
-
-        // 排序并执行所有的PriorityOrdered的BeanFactoryPostProcessor
         sortProcessors(priorityOrderedProcessors, beanFactory)
         invokeBeanFactoryPostProcessors(priorityOrderedProcessors, beanFactory)
 
-        // 排序并执行所有的Ordered的BeanFactoryPostProcessor
+
+        // 2.2 排序并执行所有的Ordered的BeanFactoryPostProcessor
+        val orderedProcessors = ArrayList<BeanFactoryPostProcessor>()
+        orderedProcessorNames.forEach {
+            orderedProcessors += beanFactory.getBean(it, BeanFactoryPostProcessor::class.java)
+        }
         sortProcessors(orderedProcessors, beanFactory)
         invokeBeanFactoryPostProcessors(orderedProcessors, beanFactory)
 
-        // 执行所有的普通的BeanFactoryPostProcessor
+        // 2.3 执行所有的普通(NonOrdered)的BeanFactoryPostProcessor
+        val nonOrderedProcessors = ArrayList<BeanFactoryPostProcessor>()
+        nonOrderedProcessorNames.forEach {
+            nonOrderedProcessors += beanFactory.getBean(it, BeanFactoryPostProcessor::class.java)
+        }
         invokeBeanFactoryPostProcessors(nonOrderedProcessors, beanFactory)
     }
 
 
     /**
      * 注册所有的BeanPostProcessor
+     *
+     * @param beanFactory beanFactory
+     * @param applicationContext ApplicationContext
      */
     @JvmStatic
     fun registerBeanPostProcessors(
         beanFactory: ConfigurableListableBeanFactory, applicationContext: AbstractApplicationContext
     ) {
-
         val postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor::class.java)
-
         val priorityOrderedProcessors = ArrayList<BeanPostProcessor>()
-        val orderedProcessors = ArrayList<BeanPostProcessor>()
-        val nonOrderedProcessors = ArrayList<BeanPostProcessor>()
+        val orderedProcessorNames = ArrayList<String>()
+        val nonOrderedProcessorNames = ArrayList<String>()
         val internalProcessors = ArrayList<BeanPostProcessor>()
 
+        // 1.注册所有的PriorityOrdered的BeanPostProcessor
         postProcessorNames.forEach { beanName ->
-            val postProcessor = beanFactory.getBean(beanName, BeanPostProcessor::class.java)!!
             if (beanFactory.isTypeMatch(beanName, PriorityOrdered::class.java)) {
+                val postProcessor = beanFactory.getBean(beanName, BeanPostProcessor::class.java)
                 priorityOrderedProcessors += postProcessor
+                // 如果是MergedBeanDefinitionPostProcessor
+                if (postProcessor is MergedBeanDefinitionPostProcessor) {
+                    internalProcessors += postProcessor
+                }
             } else if (beanFactory.isTypeMatch(beanName, Ordered::class.java)) {
-                orderedProcessors += postProcessor
+                orderedProcessorNames += beanName
             } else {
-                nonOrderedProcessors += postProcessor
+                nonOrderedProcessorNames += beanName
             }
-            // 如果是MergedBeanDefinitionPostProcessor
+        }
+        sortProcessors(priorityOrderedProcessors, beanFactory)
+        registerBeanPostProcessors(priorityOrderedProcessors, beanFactory)
+
+        // 2.注册所有的Ordered的BeanPostProcessor
+        val orderedProcessors = ArrayList<BeanPostProcessor>()
+        orderedProcessorNames.forEach {
+            val postProcessor = beanFactory.getBean(it, BeanPostProcessor::class.java)
+            orderedProcessors += postProcessor
             if (postProcessor is MergedBeanDefinitionPostProcessor) {
                 internalProcessors += postProcessor
             }
         }
-        // 注册所有PriorityOrdered的BeanPostProcessor
-        sortProcessors(priorityOrderedProcessors, beanFactory)
-        registerBeanPostProcessors(priorityOrderedProcessors, beanFactory)
-
-        // 注册所有Ordered的BeanPostProcessor
         sortProcessors(orderedProcessors, beanFactory)
         registerBeanPostProcessors(orderedProcessors, beanFactory)
 
-        // 注册所有的正常的BeanPostProcessor
+        // 3.注册所有的NonOrdered的BeanPostProcessor...
+        val nonOrderedProcessors = ArrayList<BeanPostProcessor>()
+        nonOrderedProcessorNames.forEach {
+            val postProcessor = beanFactory.getBean(it, BeanPostProcessor::class.java)
+            nonOrderedProcessors += postProcessor
+            if (postProcessor is MergedBeanDefinitionPostProcessor) {
+                internalProcessors += postProcessor
+            }
+        }
         registerBeanPostProcessors(nonOrderedProcessors, beanFactory)
 
-        // 注册所有的internalBeanPostProcessor，保证它一定是最后被执行的...
+        // 4.注册所有的internalBeanPostProcessor，最后注册的，可以保证它一定是最后被执行的...
         sortProcessors(internalProcessors, beanFactory)
         registerBeanPostProcessors(internalProcessors, beanFactory)
 
-        // 添加ApplicationListenerDetector，完成ApplicationListener的检测并注册到容器当中
+        // end: 添加ApplicationListenerDetector，完成ApplicationListener的检测并注册到容器当中
         beanFactory.addBeanPostProcessor(ApplicationListenerDetector(applicationContext))
     }
 
     /**
      * 对BeanFactoryPostProcessor/BeanPostProcessor去进行排序
+     *
+     * @param processors 要去进行排序的列表
+     * @param beanFactory beanFactory(为了获取依赖比较器)
      */
     @JvmStatic
     private fun sortProcessors(processors: MutableList<*>, beanFactory: ConfigurableListableBeanFactory) {

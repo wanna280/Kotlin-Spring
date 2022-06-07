@@ -19,7 +19,7 @@ open class BeanFactoryAdvisorRetrievalHelper(private val beanFactory: Configurab
         }
         advisorNames!!.forEach { beanName ->
             if (isEligibleBean(beanName)) {
-                advisors += beanFactory.getBean(beanName, Advisor::class.java)!!
+                advisors += beanFactory.getBean(beanName, Advisor::class.java)
             }
         }
         return advisors

@@ -438,7 +438,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
             // 3.1 如果根本没有找到候选的Bean，那么需要处理required=true/false并return
             if (matchingBeans.isEmpty()) {
-                if (descriptor.isRequired()) {
+                if (isRequired(descriptor)) {
                     throw NoSuchBeanDefinitionException("至少需要一个该类型的Bean-->[beanType=$type]，但是在BeanFactory当中没有找到合适的Bean")
                 }
                 return null
@@ -478,6 +478,16 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             // 复原InjectionPoint
             ConstructorResolver.setCurrentInjectionPoint(previousInjectionPoint)
         }
+    }
+
+    /**
+     * 判断该依赖是否是必须的？
+     *
+     * @param descriptor 依赖描述符
+     * @return 如果该依赖是必要的，return true；否则return false
+     */
+    protected open fun isRequired(descriptor: DependencyDescriptor): Boolean {
+        return getAutowireCandidateResolver().isRequired(descriptor)
     }
 
     /**
@@ -609,11 +619,11 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         // 2.遍历容器中的所有的类型匹配的Bean，去进行挨个地匹配...为了AutowireCandidate的Bean
         candidateNames.forEach {
             // 从DependencyDescriptor当中解析到合适的依赖，判断该Bean，是否是一个Autowire候选Bean？
+            // 比较类型和Qualifier(beanName)是否匹配？
             if (isAutowireCandidate(it, descriptor)) {
                 result[it] = descriptor.resolveCandidate(it, requiredType, this)
             }
         }
-
         return result
     }
 
@@ -639,9 +649,6 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             val componentType = type.componentType
             // 获取所有的候选的Bean，包括resolvableDependencies当中的依赖和beanFactory当中的对应的类型的Bean
             val candidates = findAutowireCandidates(requestingBeanName, componentType, descriptor)
-            if (candidates.isEmpty()) {
-                return null
-            }
             // 交给TypeConverter，去利用Java的反射(java.lang.reflect.Array)去创建数组，交给JVM去创建一个合成的数组类型
             val typeArray = (typeConverter ?: getTypeConverter()).convertIfNecessary(candidates.values, type)
 
@@ -672,12 +679,24 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             val valueType = generics[0].resolve()
             // 找到所有的候选类型的Bean
             val candidates = findAutowireCandidates(requestingBeanName, valueType!!, descriptor)
-
             val collection = (typeConverter ?: getTypeConverter()).convertIfNecessary(candidates.values, type)
             autowiredBeanName?.addAll(candidates.keys)
             return collection
         }
         return null  // return null to fallback match single bean
+    }
+
+    /**
+     * 判断是否是一个MultipleBean
+     *
+     * @param type type
+     * @return 它是否是MultipleBean
+     */
+    private fun indicatesMultipleBeans(type: Class<*>): Boolean {
+        return type.isArray || ClassUtils.isAssignFrom(
+            Collection::class.java,
+            type
+        ) || ClassUtils.isAssignFrom(Map::class.java, type)
     }
 
     /**

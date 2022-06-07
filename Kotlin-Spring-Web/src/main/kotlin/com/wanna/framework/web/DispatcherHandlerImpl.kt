@@ -15,6 +15,7 @@ import com.wanna.framework.web.handler.HandlerAdapter
 import com.wanna.framework.web.handler.HandlerExceptionResolver
 import com.wanna.framework.web.handler.ModelAndView
 import com.wanna.framework.web.handler.ViewResolver
+import com.wanna.framework.web.method.RequestToViewNameTranslator
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 import com.wanna.framework.web.ui.DefaultView
@@ -44,6 +45,9 @@ open class DispatcherHandlerImpl : DispatcherHandler {
 
         // 默认的ViewResolver的beanName
         private const val VIEW_RESOLVER_BEAN_BEAN = "viewResolver"
+
+        // 默认的RequestToViewNameTranslator的beanName
+        private const val REQUEST_TO_VIEW_NAME_TRANSLATOR_BEAN_NAME = "viewNameTranslator"
     }
 
     // 是否要从容器当中去探测HandlerAdapter？
@@ -73,6 +77,9 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     // ApplicationContext
     private var applicationContext: ApplicationContext? = null
 
+    // 视图名的翻译器，在方法的返回值解析器没有找到合适的视图名时，它需要从请求当中去获取到对应的视图名
+    private var viewNameTranslator: RequestToViewNameTranslator? = null
+
     override fun doDispatch(request: HttpServerRequest, response: HttpServerResponse) {
         var mappedHandler: HandlerExecutionChain? = null
         try {
@@ -99,6 +106,8 @@ open class DispatcherHandlerImpl : DispatcherHandler {
                 // 真正地去执行Handler，交给HandlerAdapter去解析参数、执行目标方法、处理返回值
                 mv = handlerAdapter.handle(request, response, mappedHandler.getHandler())
 
+                // 如果必要的话，需要使用视图名翻译器，将请求路径翻译成为视图名...
+                applyDefaultViewName(request, mv)
                 // 逆方向去执行拦截器链的所有的postHandle方法
                 mappedHandler.applyPostHandle(request, response)
             } catch (ex: Throwable) {
@@ -116,7 +125,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     }
 
     /**
-     * 处理派发的结果
+     * 处理派发的结果，如果是异常情况的话，需要使用异常解析器去解析异常，如果不是异常情况的话，要去进行视图的渲染
      *
      * @param request request
      * @param response response
@@ -184,6 +193,31 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     }
 
     /**
+     * 如果ModelAndViewContainer当中还没有视图的话，需要去应用默认的视图名
+     *
+     * @param request request
+     * @param mav ModelAndView
+     */
+    protected open fun applyDefaultViewName(request: HttpServerRequest, mav: ModelAndView?) {
+        if (mav != null && !mav.hasView()) {
+            val defaultViewName = getDefaultViewName(request)
+            if (defaultViewName != null) {
+                mav.setViewName(defaultViewName)
+            }
+        }
+    }
+
+    /**
+     * 使用viewNameTranslator去获取默认的视图名
+     *
+     * @param request request
+     * @return 如果获取到了默认的视图名的话，那么return 获取到的视图名；不然return null
+     */
+    protected open fun getDefaultViewName(request: HttpServerRequest): String? {
+        return if (viewNameTranslator != null) viewNameTranslator!!.getViewName(request) else null
+    }
+
+    /**
      * 交给ExceptionResolver去进行处理HandlerException
      *
      * @param request request
@@ -193,10 +227,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      * @return 处理异常得到的ModelAndView(可以为null，代表不去渲染视图)
      */
     protected open fun processHandlerException(
-        request: HttpServerRequest,
-        response: HttpServerResponse,
-        handler: Any?,
-        ex: Throwable
+        request: HttpServerRequest, response: HttpServerResponse, handler: Any?, ex: Throwable
     ): ModelAndView? {
         var modelAndView: ModelAndView? = null
         val exceptionResolvers = this.handlerExceptionResolvers ?: return null
@@ -287,6 +318,9 @@ open class DispatcherHandlerImpl : DispatcherHandler {
 
         // 初始化所有的视图解析器
         initViewResolvers(applicationContext)
+
+        // 初始化视图名的翻译器
+        initViewNameTranslator(applicationContext)
     }
 
     /**
@@ -318,6 +352,25 @@ open class DispatcherHandlerImpl : DispatcherHandler {
 
     open fun getApplicationContext(): ApplicationContext? {
         return this.applicationContext
+    }
+
+    /**
+     * 初始化ViewName的翻译器
+     *
+     * * 1.尝试从applicationContext去进行获取
+     * * 2.ApplicationContext当中没有，那么从配置文件当中去进行加载
+     *
+     * @param applicationContext ApplicationContext
+     */
+    private fun initViewNameTranslator(applicationContext: ApplicationContext) {
+        try {
+            this.viewNameTranslator = applicationContext.getBean(
+                REQUEST_TO_VIEW_NAME_TRANSLATOR_BEAN_NAME, RequestToViewNameTranslator::class.java
+            )
+        } catch (ex: NoSuchBeanDefinitionException) {
+            this.viewNameTranslator =
+                getDefaultStrategies(applicationContext, RequestToViewNameTranslator::class.java)[0]
+        }
     }
 
     /**
@@ -429,8 +482,10 @@ open class DispatcherHandlerImpl : DispatcherHandler {
                 throw BeansException("在DispatcherHandler的初始化过程当中，无法找到类[$it]")
             }
         }
-        if (logger.isTraceEnabled) {
-            logger.info("没有从容器当中找到[${strategyInterface.name}]的具体实现，从配置文件当中加载到如下实现[$property]")
+        if(classNames.isEmpty()) {
+            if (logger.isTraceEnabled) {
+                logger.info("没有从容器当中找到[${strategyInterface.name}]的具体实现，从配置文件当中加载到如下实现[$property]")
+            }
         }
         return result
     }

@@ -131,6 +131,7 @@ class AopConfigUtils {
          * @see AspectJAwareAdvisorAutoProxyCreator 优先级其次
          * @see AnnotationAwareAspectJAutoProxyCreator 优先级最高
          */
+        @JvmStatic
         private fun registerOrEscalateApcAsRequired(
             clazz: Class<*>,
             beanDefinitionRegistry: BeanDefinitionRegistry,

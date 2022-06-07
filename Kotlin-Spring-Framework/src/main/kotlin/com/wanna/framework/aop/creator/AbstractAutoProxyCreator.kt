@@ -61,6 +61,8 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
 
     override fun postProcessBeforeInstantiation(beanName: String, beanClass: Class<*>): Any? {
         val cacheKey = getCacheKey(beanClass, beanName)
+
+        // 尝试去获取自定义的TargetSource，如果针对该Bean获取到了合适的TargetSource的话，那么需要创建代理
         val customTargetSource = getCustomTargetSource(beanClass, beanName)
         if (customTargetSource != null) {
             if (beanName.isNotBlank()) {
@@ -68,12 +70,14 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
             }
             // 为当前Bean找到合适的Advisor列表
             val specificInterceptors = getAdvicesAndAdvisorsForBean(beanClass, beanName, null)
-            // 创建代理对象
-            val proxy = createProxy(beanClass, beanName, specificInterceptors!!, customTargetSource)
+            if (specificInterceptors !== DO_NOT_PROXY) {
+                // 创建代理对象
+                val proxy = createProxy(beanClass, beanName, specificInterceptors!!, customTargetSource)
 
-            // 缓存已经完成代理的proxyType
-            proxyTypes[cacheKey] = proxy::class.java
-            return proxy
+                // 缓存已经完成代理的proxyType
+                proxyTypes[cacheKey] = proxy::class.java
+                return proxy
+            }
         }
         return null
     }
@@ -108,7 +112,7 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
         val specificInterceptors = getAdvicesAndAdvisorsForBean(bean::class.java, beanName, null)
 
         // 如果没有找到合适的Advisor，那么就不创建代理；如果找到了合适的Advisor，那么就需要去创建代理
-        if (!specificInterceptors.contentEquals(DO_NOT_PROXY)) {
+        if (specificInterceptors !== DO_NOT_PROXY) {
             advisedBeans[cachedKey] = true
             // 创建代理对象
             val proxy = createProxy(bean::class.java, beanName, specificInterceptors!!, SingletonTargetSource(bean))
@@ -136,6 +140,8 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
     /**
      * 判断一个类是否是基础设施的类？只要它是Advice/Advisor/Pointcut/AopInfrastructureBean的子类，
      * 那么它就会被判断为一个基础设施的Class，log：不要尝试在基础设施Bean上去创建代理！
+     *
+     * @param beanClass beanClass
      */
     protected open fun isInfrastructureClass(beanClass: Class<*>): Boolean {
         return ClassUtils.isAssignFrom(Advice::class.java, beanClass) || ClassUtils.isAssignFrom(

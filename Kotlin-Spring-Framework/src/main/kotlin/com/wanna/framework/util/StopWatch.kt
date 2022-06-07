@@ -3,7 +3,7 @@ package com.wanna.framework.util
 import java.util.concurrent.TimeUnit
 
 /**
- * 这是一个秒表的工具
+ * 这是一个秒表的工具，Note: 它不是线程安全的
  */
 class StopWatch(_id: String) {
     constructor() : this("")
