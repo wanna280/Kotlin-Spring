@@ -89,16 +89,16 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     private var contentNegotiationManager: ContentNegotiationManager = ContentNegotiationManager()
 
     // 全局的@InitBinder方法的ControllerAdvice缓存，可以根据ControllerAdviceBean，去获取到@InitBinder的方法列表
-    private val initBinderAdviceCache = LinkedHashMap<ControllerAdviceBean, Set<Method>>()
+    private val initBinderAdviceCache = LinkedHashMap<ControllerAdviceBean, Set<Method>>(64)
 
     // 针对于某个Controller(Handler)内部的@InitBinder方法的缓存，可以根据handlerType去获取到对应的@InitBinder缓存
-    private val initBinderCache = ConcurrentHashMap<Class<*>, Set<Method>>()
+    private val initBinderCache = ConcurrentHashMap<Class<*>, Set<Method>>(64)
 
     // 全局的@ModelAttribute方法的ControllerAdvice缓存，可以根据ControllerAdviceBean，去获取到@ModelAttribute的方法列表
-    private val modelAttributeAdviceBean = LinkedHashMap<ControllerAdviceBean, Set<Method>>()
+    private val modelAttributeAdviceBean = LinkedHashMap<ControllerAdviceBean, Set<Method>>(64)
 
     // 针对某个Controller(Handler)内部的@ModelAttribute方法的缓存，可以根据handlerType去获取到对应的@ModelAttribute缓存
-    private val modelAttributeCache = ConcurrentHashMap<Class<*>, Set<Method>>()
+    private val modelAttributeCache = ConcurrentHashMap<Class<*>, Set<Method>>(64)
 
     /**
      * * 1.初始化ControllerAdvice缓存，构建@InitBinder和@ModelAttribute缓存
@@ -157,7 +157,7 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         val binderFactory = getDataBinderFactory(handler)
 
         // 获取ModelFactory，往其中加入自定义的@ModelAttribute方法，在ModelAndViewContainer初始化完成之后，自动将其中的数据合并到ModelAndViewContainer当中
-        // @ModelAttribute方法的参数解析器，使用@RequestMapping的参数解析器即可
+        // @ModelAttribute方法的参数解析器，使用最普通的@RequestMapping的参数解析器即可
         val modelFactory = getModelFactory(handler, binderFactory)
 
         // 构建InvocableHandlerMethod，并去完成参数名发现器、DataBinderFactory、参数解析器以及返回值处理器的初始化
@@ -173,7 +173,7 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
 
         // 创建一个ModelAndViewContainer，提前去存储ModelAndView的数据，因为之前ModelAndView并未创建，就需要一个渠道去存放之前的ModelAndView数据
         val mavContainer = ModelAndViewContainer()
-        // 初始化Model数据，将@ModelAttribute方法当中的全部Model数据，全部apply到mavContainer当中
+        // 使用ModelFactory去初始化ModelAndViewContainer当中的Model数据，将@ModelAttribute方法当中的全部Model数据，全部apply到mavContainer当中
         modelFactory.initModel(serverWebRequest, mavContainer, invocableHandlerMethod)
 
         // 执行目标RequestMapping方法(HandlerMethod)，并获取到ModelAndView
@@ -303,6 +303,8 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
                     modelAttributeMethods += method
                 }
             }
+
+            // put Cache
             initBinderAdviceCache[it] = initBinderMethods
             modelAttributeAdviceBean[it] = modelAttributeMethods
         }

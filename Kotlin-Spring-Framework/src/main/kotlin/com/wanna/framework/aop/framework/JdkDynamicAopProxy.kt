@@ -22,7 +22,7 @@ open class JdkDynamicAopProxy(var advised: AdvisedSupport) : AopProxy, Invocatio
      * @param args 方法的参数列表
      * @return 执行完成代理之后方法的返回值
      */
-    override fun invoke(proxy: Any, method: Method, args: Array<out Any>?): Any? {
+    override fun invoke(proxy: Any, method: Method, args: Array<Any?>?): Any? {
         val targetSource = advised.getTargetSource()
         val target = targetSource.getTarget()
         if (method.declaringClass === Any::class.java) {
@@ -32,7 +32,7 @@ open class JdkDynamicAopProxy(var advised: AdvisedSupport) : AopProxy, Invocatio
             return ReflectionUtils.invokeMethod(method, target, args)
         }
 
-        var returnVal: Any? = null
+        val returnVal: Any?
 
         // 获取MethodInterceptor链
         val chain = advised.getInterceptorsAndDynamicInterceptionAdvice(method, method.declaringClass)
@@ -48,7 +48,7 @@ open class JdkDynamicAopProxy(var advised: AdvisedSupport) : AopProxy, Invocatio
         return getProxy(ClassUtils.getDefaultClassLoader())
     }
 
-    override fun getProxy(classLoader: ClassLoader): Any {
+    override fun getProxy(classLoader: ClassLoader?): Any {
         return Proxy.newProxyInstance(classLoader, proxiesInterfaces, this)
     }
 }

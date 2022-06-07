@@ -24,25 +24,28 @@ import java.util.concurrent.ConcurrentHashMap
  * @see HandlerExceptionResolver
  */
 open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, ApplicationContextAware, InitializingBean {
-
     companion object {
         private val logger = LoggerFactory.getLogger(ExceptionHandlerMethodResolver::class.java)
     }
-
+    // 消息转换器列表
     private var messageConverters: List<HttpMessageConverter<*>>? = null
 
-    private var argumentResolvers: List<HandlerMethodArgumentResolver>? = null
-
-    // 交给外部去进行自定义的参数解析器(基于默认的去进行扩展)
+    // @ExceptionHandler的自定义的参数解析器(基于默认的去进行扩展)
     private var customArgumentResolvers: List<HandlerMethodArgumentResolver>? = null
 
-    // 交给外部去进行自定义的返回值处理器(基于默认的去进行扩展)
+    // @ExceptionHandler方法的自定义的返回值处理器(基于默认的去进行扩展)
     private var customReturnValueHandlers: List<HandlerMethodReturnValueHandler>? = null
 
+    // @ExceptionHandler的参数解析器
+    private var argumentResolvers: List<HandlerMethodArgumentResolver>? = null
+
+    // @ExceptionHandler的返回值的处理器
     private var returnValueHandlers: List<HandlerMethodReturnValueHandler>? = null
 
+    // 内容协商管理器
     private var contentNegotiationManager: ContentNegotiationManager = ContentNegotiationManager()
 
+    // ApplicationContext
     private var applicationContext: ApplicationContext? = null
 
     // ExceptionHandler的缓存，key-handlerType(Controller)，value-ExceptionHandlerMethodResolver
@@ -62,29 +65,29 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
             response.sendError(500) // send Error
             return null
         }
-
-        // 初始化方法解析器和返回值解析器
-        if (this.argumentResolvers != null) {
-            if (this.argumentResolvers!!.isEmpty()) {
-                this.argumentResolvers = ArrayList(getDefaultArgumentResolvers())
+        var argumentResolvers = this.argumentResolvers
+        var returnValueHandlers = this.returnValueHandlers
+        // 初始化@ExceptionHandler方法解析器和返回值解析器
+        if (argumentResolvers != null) {
+            if (argumentResolvers.isEmpty()) {
+                argumentResolvers = ArrayList(getDefaultArgumentResolvers())
+                this.argumentResolvers = argumentResolvers
             }
-            val composite = HandlerMethodArgumentResolverComposite()
-            composite.addArgumentResolvers(this.argumentResolvers!!)
+            val composite = HandlerMethodArgumentResolverComposite().addArgumentResolvers(argumentResolvers)
             exceptionHandlerMethod.argumentResolvers = composite
         }
-        if (this.returnValueHandlers != null) {
-            if (this.returnValueHandlers!!.isEmpty()) {
-                this.returnValueHandlers = ArrayList(getDefaultReturnValueHandlers())
+        if (returnValueHandlers != null) {
+            if (returnValueHandlers.isEmpty()) {
+                returnValueHandlers = ArrayList(getDefaultReturnValueHandlers())
+                this.returnValueHandlers = returnValueHandlers
             }
-            val composite = HandlerMethodReturnValueHandlerComposite()
-            composite.addReturnValueHandlers(this.returnValueHandlers!!)
+            val composite = HandlerMethodReturnValueHandlerComposite().addReturnValueHandlers(returnValueHandlers)
             exceptionHandlerMethod.returnValueHandlers = composite
         }
 
         val mavContainer = ModelAndViewContainer()
         val webRequest = ServerWebRequest(request, response)
-
-        // 获取cause列表，因为下层的异常有可能被上层抓了，因此得拿到所有的cause列表传递下去去进行匹配
+        // 获取cause列表，因为下层的异常有可能被上层抓了，因此得拿到所有的cause列表传递给@ExceptionHandler的方法去进行匹配
         val exceptions = ArrayList<Throwable>()
         if (logger.isDebugEnabled) {
             logger.info("使用@ExceptionHandler[$exceptionHandlerMethod]去处理异常")
@@ -168,6 +171,9 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
             if (handlerMethodResolver.hasExceptionMappings()) {
                 exceptionHandlerAdviceCache[it] = handlerMethodResolver
             }
+        }
+        if (logger.isDebugEnabled) {
+            logger.debug("寻找到@ControllerAdvice[${exceptionHandlerAdviceCache.size}]个存在有@ExceptionHandler")
         }
     }
 

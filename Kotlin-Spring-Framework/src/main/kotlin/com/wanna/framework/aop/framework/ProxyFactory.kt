@@ -28,7 +28,7 @@ open class ProxyFactory() : ProxyCreatorSupport() {
         }
     }
 
-    open fun getProxy(classLoader: ClassLoader): Any {
+    open fun getProxy(classLoader: ClassLoader?): Any {
         synchronized(this) {
             return createProxy().getProxy(classLoader)
         }

@@ -2,7 +2,7 @@ package com.wanna.framework.aop
 
 import com.wanna.framework.aop.framework.InterceptorAndDynamicMethodMatcher
 import com.wanna.framework.aop.intercept.MethodInterceptor
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.aop.support.AopUtils
 import java.lang.reflect.Method
 
 /**
@@ -12,7 +12,7 @@ open class ReflectiveMethodInvocation(
     private val proxy: Any,
     private val target: Any?,
     private val method: Method,
-    private var args: Array<out Any?>?,
+    private var args: Array<Any?>?,
     private val targetClass: Class<*>?,
     private val interceptorsAndDynamicMethodMatchers: List<Any>
 ) : ProxyMethodInvocation {
@@ -27,15 +27,15 @@ open class ReflectiveMethodInvocation(
         return this.proxy
     }
 
-    open fun getTarget() : Any? {
+    open fun getTarget(): Any? {
         return this.target
     }
 
     override fun setArguments(vararg args: Any?) {
-        this.args = args
+        this.args = arrayOf(args)
     }
 
-    override fun getArguments(): Array<out Any?>? {
+    override fun getArguments(): Array<Any?>? {
         return this.args
     }
 
@@ -88,11 +88,7 @@ open class ReflectiveMethodInvocation(
      * 执行Joinpoint，也就是执行目标方法
      */
     protected open fun invokeJoinpoint(): Any? {
-        ReflectionUtils.makeAccessiable(this.method)
-        // 如果args=null，那么
-        if (args == null) {
-            return ReflectionUtils.invokeMethod(method, target)
-        }
-        return ReflectionUtils.invokeMethod(method, target, *args!!)
+        val argsToUse = if (args == null) emptyArray() else args!!
+        return AopUtils.invokeJoinpointUsingReflection(target, method, argsToUse)
     }
 }

@@ -21,7 +21,7 @@ abstract class AbstractBeanFactoryPointcutAdvisor : AbstractPointcutAdvisor(), B
 
     private var advisorLock: Any = Any()
 
-    fun getBeanFactory(): BeanFactory? {
+    open fun getBeanFactory(): BeanFactory? {
         return beanFactory
     }
 
@@ -39,13 +39,13 @@ abstract class AbstractBeanFactoryPointcutAdvisor : AbstractPointcutAdvisor(), B
         }
     }
 
-    fun setAdvice(advice: Advice) {
+    open fun setAdvice(advice: Advice) {
         synchronized(advisorLock) {
             this.advice = advice
         }
     }
 
-    fun setAdviceBeanName(adviceBeanName: String) {
+    open fun setAdviceBeanName(adviceBeanName: String) {
         this.adviceBeanName = adviceBeanName
     }
 
@@ -53,17 +53,17 @@ abstract class AbstractBeanFactoryPointcutAdvisor : AbstractPointcutAdvisor(), B
         if (advice != null) {
             return advice!!
         }
-        checkNotNull(adviceBeanName) { "adviceBeanName和advice不能同时为空" }
-        checkNotNull(beanFactory) { "beanFactory不能为空" }
-        if (beanFactory!!.isSingleton(adviceBeanName!!)) {
-            val advice = beanFactory!!.getBean(adviceBeanName!!, Advice::class.java)!!
+        val beanFactory = beanFactory ?: throw IllegalStateException("beanFactory不能为空")
+        val adviceBeanName = adviceBeanName ?: throw IllegalStateException("adviceBeanName和advice不能同时为空")
+        if (beanFactory.isSingleton(adviceBeanName)) {
+            val advice = beanFactory.getBean(adviceBeanName, Advice::class.java)
             this.advice = advice
             return advice
         } else {
             synchronized(advisorLock) {
                 var advice = this.advice
                 if (advice == null) {
-                    advice = beanFactory!!.getBean(adviceBeanName!!, Advice::class.java)!!
+                    advice = beanFactory.getBean(adviceBeanName, Advice::class.java)
                 }
                 this.advice = advice
                 return advice

@@ -17,7 +17,7 @@ open class CglibAopProxy(private val config: AdvisedSupport) : AopProxy {
         return getProxy(ClassUtils.getDefaultClassLoader())
     }
 
-    override fun getProxy(classLoader: ClassLoader): Any {
+    override fun getProxy(classLoader: ClassLoader?): Any {
         val enhancer = Enhancer()
         enhancer.setCallback(DynamicAdvisedInterceptor(this.config))
         enhancer.setSuperclass(config.getTargetClass())
@@ -26,7 +26,7 @@ open class CglibAopProxy(private val config: AdvisedSupport) : AopProxy {
     }
 
     private class DynamicAdvisedInterceptor(private val advised: AdvisedSupport) : MethodInterceptor {
-        override fun intercept(proxy: Any, method: Method, args: Array<out Any>?, methodProxy: MethodProxy): Any? {
+        override fun intercept(proxy: Any, method: Method, args: Array<Any?>?, methodProxy: MethodProxy): Any? {
             val targetSource = advised.getTargetSource()
             val target = targetSource.getTarget()
             val targetClass = targetSource.getTargetClass()
@@ -41,7 +41,7 @@ open class CglibAopProxy(private val config: AdvisedSupport) : AopProxy {
         _proxy: Any,
         _target: Any?,
         _method: Method,
-        _args: Array<out Any?>?,
+        _args: Array<Any?>?,
         _targetClass: Class<*>?,
         _interceptorsAndDynamicMethodMatchers: List<Any>,
         _methodProxy: MethodProxy

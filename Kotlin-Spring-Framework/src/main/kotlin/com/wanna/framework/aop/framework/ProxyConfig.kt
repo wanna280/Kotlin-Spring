@@ -14,7 +14,10 @@ open class ProxyConfig : java.io.Serializable {
     var exposeProxy = false
 
     /**
-     * 从某个也实现了ProxyConfig的类当中，拷贝它对代理的配置属性
+     * 从某个也实现了ProxyConfig的类当中，拷贝它对代理的配置属性的这种方式；
+     * 这个方法是很常用的，在一些SpringAop的BeanPostProcessor当中，就很需要将相关的属性从BeanPostProcessor拷贝到
+     * ProxyFactory当中，而SpringAop的BeanPostProcessor本身是ProxyConfig，而ProxyFactory，也是ProxyConfig。
+     *
      * @param config 要从哪个ProxyConfig对象去进行拷贝
      */
     open fun copyFrom(config: ProxyConfig) {

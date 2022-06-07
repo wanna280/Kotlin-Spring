@@ -17,10 +17,12 @@ open class InfrastructureAdvisorAutoProxyCreator : AbstractAdvisorAutoProxyCreat
 
     /**
      * 只要从BeanDefinition当中去判断它是一个基础设施Bean，那么它就是一个符合条件的Advisor的Bean
+     *
+     * @param name beanName
      */
     override fun isEligibleBean(name: String): Boolean {
-        return this.beanFactory != null && beanFactory!!.containsBeanDefinition(name) && beanFactory!!.getBeanDefinition(
-            name
-        )!!.getRole() == BeanDefinition.ROLE_INFRASTRUCTURE
+        val beanFactory = beanFactory ?: return false
+        return beanFactory.containsBeanDefinition(name) && beanFactory.getBeanDefinition(name)
+            .getRole() == BeanDefinition.ROLE_INFRASTRUCTURE
     }
 }

@@ -15,6 +15,7 @@ object AnnotationAttributesUtils {
      * @param annotation 目标注解
      * @return 目标注解的属性的包装对象AnnotationAttributes对象当中
      */
+    @JvmStatic
     fun asAnnotationAttributes(annotation: Annotation?): AnnotationAttributes? {
         if (annotation == null) {
             return null
@@ -42,6 +43,7 @@ object AnnotationAttributesUtils {
      *
      * @param annotations 目标注解列表
      */
+    @JvmStatic
     fun asAnnotationAttributesSet(vararg annotations: Annotation?): Set<AnnotationAttributes?> {
         val attributesSet: MutableSet<AnnotationAttributes?> = HashSet()
         for (annotation in annotations) {
@@ -55,6 +57,7 @@ object AnnotationAttributesUtils {
      *
      * @param annotations 目标注解列表
      */
+    @JvmStatic
     fun asAnnotationAttributesSet(annotations: Collection<*>): Set<AnnotationAttributes> {
         return annotations.filterIsInstance<Annotation?>().mapNotNull { asAnnotationAttributes(it) }.toSet()
     }
@@ -65,6 +68,7 @@ object AnnotationAttributesUtils {
      * @param map map
      * @return AnnotationAttributes对象
      */
+    @JvmStatic
     fun fromMap(map: Map<String, Any>): AnnotationAttributes {
         val attributes = AnnotationAttributes()
         attributes.putAll(map)

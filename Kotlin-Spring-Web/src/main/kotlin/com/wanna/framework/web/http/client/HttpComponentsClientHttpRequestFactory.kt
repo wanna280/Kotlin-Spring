@@ -1,4 +1,4 @@
-package com.wanna.framework.web.http
+package com.wanna.framework.web.http.client
 
 import com.wanna.framework.web.bind.RequestMethod
 import com.wanna.framework.web.http.client.ClientHttpRequest

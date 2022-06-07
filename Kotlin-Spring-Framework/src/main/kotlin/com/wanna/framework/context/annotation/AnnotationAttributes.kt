@@ -8,7 +8,7 @@ import com.wanna.framework.context.annotation.AnnotationAttributesUtils.asAnnota
  * 而value则是这个注解属性的key对应的配置的内容
  */
 @Suppress("UNCHECKED_CAST")
-class AnnotationAttributes : LinkedHashMap<String, Any> {
+open class AnnotationAttributes : LinkedHashMap<String, Any> {
     /**
      * 注解的类型
      */

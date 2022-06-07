@@ -5,5 +5,5 @@ package com.wanna.framework.aop.intercept
  * Invocation包括MethodInvocation和ConstructorInvocation
  */
 interface Invocation : JoinPoint {
-    fun getArguments(): Array<out Any?>?
+    fun getArguments(): Array<Any?>?
 }
