@@ -20,7 +20,7 @@ abstract class RequestMappingInfoHandlerMapping : AbstractHandlerMethodMapping<R
      * @return Mapping当中的路径列表
      */
     override fun getDirectPaths(mapping: RequestMappingInfo): Set<String> {
-        return mapping.paths.toSet()
+        return mapping.getPaths()
     }
 
     /**
@@ -31,6 +31,6 @@ abstract class RequestMappingInfoHandlerMapping : AbstractHandlerMethodMapping<R
      * @return 如果匹配的话，return Mapping；不然return null
      */
     override fun getMatchingMapping(request: HttpServerRequest, mapping: RequestMappingInfo): RequestMappingInfo? {
-        return if (mapping.methods.isEmpty() || mapping.methods.contains(request.getMethod())) mapping else null
+        return mapping.getMatchingCondition(request)
     }
 }

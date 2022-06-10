@@ -50,7 +50,8 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
     }
 
     /**
-     * 如果描述符当中给定了required=false，那么就return false；如果required=true，那么就得检查一下Autowired注解
+     * 如果描述符当中给定了required=false，那么就return false；如果required=true，那么就得检查一下Autowired注解；
+     * 如果依赖描述符上给定的required=true，并且Autowired上required=false，那么也得return false；
      *
      * @param descriptor 依赖描述符
      * @return 该依赖是否是必须的？

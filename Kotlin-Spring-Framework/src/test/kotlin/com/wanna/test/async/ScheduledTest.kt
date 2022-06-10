@@ -13,7 +13,7 @@ import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 
 @EnableScheduling
-//@Configuration(proxyBeanMethods = false)
+@Configuration(proxyBeanMethods = false)
 open class ScheduledTest {
 
     @Scheduled(initialDelay = 5000L, fixedDelay = 5000L)

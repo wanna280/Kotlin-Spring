@@ -67,7 +67,7 @@ interface HttpServerResponse {
     /**
      * 获取响应状态码
      *
-     * @return 响应状态码(比如404，500)
+     * @return 响应状态码(比如200/404/500)
      */
     fun getStatusCode(): Int
 

@@ -32,4 +32,12 @@ interface ConverterRegistry {
      * @param converter converter
      */
     fun addConverter(converter: GenericConverter)
+
+    /**
+     * 移除一个处理sourceType-->targetType的Converter
+     *
+     * @param sourceType sourceType
+     * @param targetType targetType
+     */
+    fun removeConvertible(sourceType: Class<*>, targetType: Class<*>)
 }

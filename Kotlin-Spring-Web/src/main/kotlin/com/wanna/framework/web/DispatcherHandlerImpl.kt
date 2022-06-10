@@ -106,7 +106,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
                 // 真正地去执行Handler，交给HandlerAdapter去解析参数、执行目标方法、处理返回值
                 mv = handlerAdapter.handle(request, response, mappedHandler.getHandler())
 
-                // 如果必要的话，需要使用视图名翻译器，将请求路径翻译成为视图名...
+                // 如果必要的话，需要使用视图名翻译器，将请求路径直接翻译成为视图名...
                 applyDefaultViewName(request, mv)
                 // 逆方向去执行拦截器链的所有的postHandle方法
                 mappedHandler.applyPostHandle(request, response)

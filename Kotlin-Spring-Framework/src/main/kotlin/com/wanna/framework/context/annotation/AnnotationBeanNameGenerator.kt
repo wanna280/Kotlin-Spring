@@ -5,6 +5,7 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.core.util.ClassUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
+import java.beans.Introspector
 
 /**
  * 基于注解的BeanName生成器，它会从Component/ManagedBean/Named等注解当中去找到合适的beanName，
@@ -43,11 +44,11 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
      * 从注解当中去推断出来合适的BeanName
      */
     open fun determineBeanNameFromAnnotation(beanDefinition: AnnotatedBeanDefinition): String {
-        if (isCandidateAnnotation(beanDefinition.getBeanClass()!!)) {
-
+        val beanClass = beanDefinition.getBeanClass() ?: throw IllegalStateException("beanClass不能为null")
+        if (isCandidateAnnotation(beanClass)) {
             // 获取@Component注解的相关属性
             val component = AnnotatedElementUtils.getMergedAnnotation(
-                beanDefinition.getBeanClass()!!,
+                beanClass,
                 ClassUtils.getAnnotationClassFromString(COMPONENT_ANNOTATION_CLASSNAME)
             )
             val componentAttr = AnnotationAttributesUtils.asAnnotationAttributes(component)
@@ -78,11 +79,18 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
     }
 
     /**
-     * 构建默认的beanName，默认采用的是首字母小写的方式去进行生成
+     * 构建默认的beanName，默认采用的是首字母小写的方式去进行生成；
+     *
+     * * 1.如果是一个普通的外层的类，它的类名不含有"$"，因此直接首字母小写即可；
+     * * 2.如果它是一个内部类，那么它的className会有一个"$"，需要获取内部类的类名去进行生成。("shortName=外部类名$内部类名")
+     *
+     * @param beanDefinition BeanDefinition
      */
-    open fun buildDefaultBeanName(beanDefinition: BeanDefinition): String {
-        val shortName = ClassUtils.getShortName(beanDefinition.getBeanClassName()!!).toCharArray()
-        shortName[0] = shortName[0].lowercaseChar()  // 首字母小写
-        return String(shortName)  // charArray to String
+    protected open fun buildDefaultBeanName(beanDefinition: BeanDefinition): String {
+        val beanClassName = beanDefinition.getBeanClassName() ?: throw IllegalStateException("beanClass不能为null")
+        val shortName = ClassUtils.getShortName(beanClassName)
+        val innerIndex = shortName.lastIndexOf("$")  // 找到内部类"$"字符所在的index(Note: lastIndexOf)
+        return if (innerIndex == -1) Introspector.decapitalize(shortName)
+        else Introspector.decapitalize(shortName.substring(innerIndex + 1))
     }
 }

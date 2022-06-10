@@ -6,10 +6,12 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
- * 这是对拦截器链的封装，内部组合了拦截器链以及处理本次请求的Handler
+ * 这是对拦截器链的封装，内部组合了拦截器链以及处理本次请求的Handler，对于每个HandlerMapping应该返回的就是一个HandlerExecutionChain
  *
  * @param handler 处理请求的Handler(例如HandlerMethod)，具体是什么类型，交给HandlerMapping自己去决定，这里使用的是Any(Object)类型
  * @param interceptors 要使用的拦截器列表
+ *
+ * @see HandlerInterceptor
  */
 open class HandlerExecutionChain(private val handler: Any, interceptors: Collection<HandlerInterceptor>? = null) {
     companion object {
@@ -23,6 +25,7 @@ open class HandlerExecutionChain(private val handler: Any, interceptors: Collect
     private var interceptorIndex = -1
 
     init {
+        // 将构造器当中的拦截器列表添加到拦截器列表当中
         if (interceptors != null) {
             interceptorList += interceptors
         }

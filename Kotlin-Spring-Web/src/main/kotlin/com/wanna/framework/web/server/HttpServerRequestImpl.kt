@@ -6,6 +6,9 @@ import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.server.HttpServerRequest.Companion.COMMA
 import java.io.ByteArrayInputStream
 import java.io.InputStream
+import java.util.*
+import kotlin.collections.HashSet
+import kotlin.collections.LinkedHashMap
 
 open class HttpServerRequestImpl : HttpServerRequest {
     companion object {
@@ -27,6 +30,9 @@ open class HttpServerRequestImpl : HttpServerRequest {
 
     // params
     private val params = LinkedMultiValueMap<String, String>()
+
+    // attributes
+    private val attributes = LinkedHashMap<String, Any?>()
 
     private var inputStream: InputStream? = null
 
@@ -71,6 +77,10 @@ open class HttpServerRequestImpl : HttpServerRequest {
         }
     }
 
+    override fun getFirstParam(name: String): String? {
+        return params.getFirst(name)
+    }
+
     /**
      * 根据name获取param
      *
@@ -97,6 +107,10 @@ open class HttpServerRequestImpl : HttpServerRequest {
      */
     override fun removeParam(name: String) {
         this.params -= name
+    }
+
+    override fun getParamNames(): Set<String> {
+        return HashSet(this.params.keys)
     }
 
     /**
@@ -133,6 +147,10 @@ open class HttpServerRequestImpl : HttpServerRequest {
         return this.headers[name]?.joinToString(COMMA)
     }
 
+    override fun getFirstHeader(name: String): String? {
+        return this.headers.getFirst(name)
+    }
+
     /**
      * 获取当前request的HttpHeaders
      *
@@ -142,6 +160,25 @@ open class HttpServerRequestImpl : HttpServerRequest {
         return this.headers
     }
 
+    override fun getHeaderNames(): Set<String> {
+        return kotlin.collections.HashSet(this.headers.keys)
+    }
+
+    override fun getAttribute(name: String): Any? {
+        return this.attributes[name]
+    }
+
+    override fun setAttribute(name: String, value: Any?) {
+        this.attributes[name] = value
+    }
+
+    override fun removeAttribute(name: String) {
+        this.attributes.remove(name)
+    }
+
+    override fun getAttributeNames(): Set<String> {
+        return HashSet(this.attributes.keys)
+    }
 
     open fun setUri(uri: String) {
         parseUriUrlAndParams(uri)
@@ -165,6 +202,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
             this.params.add(key, value)
         }
     }
+
 
     override fun getUri() = this.uri
     override fun getUrl() = this.url

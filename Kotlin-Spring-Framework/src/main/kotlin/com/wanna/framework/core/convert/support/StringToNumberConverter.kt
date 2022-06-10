@@ -12,9 +12,8 @@ import com.wanna.framework.core.convert.converter.GenericConverter.ConvertiblePa
 open class StringToNumberConverter : GenericConverter {
     private val convertiblePairs = HashSet<ConvertiblePair>()
 
+    // 初始化它支持转换的映射列表
     init {
-        // 初始化它支持转换的映射列表
-
         // 1.初始化它转为基础数据类型的映射列表
         convertiblePairs.add(ConvertiblePair(String::class.java, Int::class.java))
         convertiblePairs.add(ConvertiblePair(String::class.java, Byte::class.java))

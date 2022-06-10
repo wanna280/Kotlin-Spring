@@ -24,7 +24,7 @@ abstract class AbstractAsyncConfiguration : ImportAware {
     protected var exceptionHandler: Supplier<AsyncUncaughtExceptionHandler>? = null
 
     /**
-     * 注入标注@EnableAsync注解的类的元信息，方便去获取到@EnableAsync注解的相关属性
+     * Spring自动注入标注@EnableAsync注解的类的元信息，方便去获取到@EnableAsync注解的相关属性
      *
      * @param annotationMetadata 注解元信息
      */

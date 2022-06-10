@@ -11,6 +11,7 @@ import java.lang.reflect.Method
 interface InstantiationStrategy {
     /**
      * 实例化方式1：只给BeanDefinition，那么需要从BeanDefinition当中去解析合适的Constructor去进行实例
+     *
      * @param bd MergedBeanDefinition
      * @param beanName beanName
      * @param owner beanFactory
@@ -20,6 +21,7 @@ interface InstantiationStrategy {
 
     /**
      * 实例化方式2：给了BeanDefinition，还给了构造器，直接通过构造器去完成Bean的实例化
+     *
      * @param bd MergedBeanDefinition
      * @param beanName beanName
      * @param owner beanFactory
@@ -33,6 +35,7 @@ interface InstantiationStrategy {
 
     /**
      * 实例化方式3：给了BeanDefinition，还给了factoryMethod和factoryBean，需要通过工厂(@Bean)方法去完成对象的实例化
+     *
      * @param bd MergedBeanDefinition
      * @param beanName beanName
      * @param owner beanFactory

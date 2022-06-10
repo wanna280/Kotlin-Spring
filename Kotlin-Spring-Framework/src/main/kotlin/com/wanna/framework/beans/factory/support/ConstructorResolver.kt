@@ -14,7 +14,7 @@ import java.lang.reflect.Executable
 import java.lang.reflect.Method
 
 /**
- * 这是一个构造器的解析器，负责完成Bean的构造器的解析，并使用构造器去完成Bean的创建，并支持对构造器/方法的参数这两张方式去进行Autowire
+ * 这是一个构造器的解析器，负责完成Bean的构造器的解析，并使用构造器去完成Bean的创建，并支持对构造器/方法的参数这两种方式去进行Autowire
  *
  * @see AbstractAutowireCapableBeanFactory.instantiateUsingFactoryMethod
  * @see ConstructorResolver.autowireConstructor  使用构造器去进行实例化和注入
@@ -26,7 +26,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
         // 空参数的标识符
         private val EMPTY_ARGS = emptyArray<Any>()
 
-        // 当前的InjectionPoint(字段/方法参数)
+        // 当前正在注入的的InjectionPoint(字段/方法参数)
         private val currentInjectionPoint = NamedThreadLocal<InjectionPoint>("Current Injection Point")
 
         /**
@@ -46,7 +46,8 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
 
 
     /**
-     * 使用Constructor去完成Bean的实例化和自动注入，需要从候选的构造器当中，选出合适的构造器，如果没有合适的构造器，那么需要自己解析出来合适的构造器
+     * 使用Constructor去完成Bean的实例化和自动注入，需要从候选的构造器当中，选出合适的构造器；
+     * 如果没有合适的构造器，那么需要自己解析出来合适的构造器
      *
      * @param beanName beanName
      * @param mbd MergedBeanDefinition
@@ -114,11 +115,14 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
                 // 从beanFactory当中去获取参数名的发现器，去提供参数名的发现的支持
                 val parameterNameDiscoverer = this.beanFactory.getParameterNameDiscoverer()
 
-                // 如果必要的话，从JDK当中提供的@ConstructorProperties注解当中去寻找
+                // 如果必要的话，从JDK当中提供的@ConstructorProperties注解当中去寻找构造器参数名...
+                // 如果没有@ConstructorProperties注解的话，需要使用参数名发现器去进行构造器的参数名的获取...
                 val cp = constructorToUse!!.getAnnotation(ConstructorProperties::class.java)
                 val parameterNames: Array<String>? =
                     cp?.value ?: parameterNameDiscoverer?.getParameterNames(constructorToUse!!)
 
+
+                // 在解析完所有的构造器参数名之后，需要去为该构造器去创建参数列表
                 argsToUse = createArgumentArray(
                     beanName, mbd, beanWrapper, null,
                     constructorToUse!!.parameterTypes, parameterNames, constructorToUse!!
@@ -133,6 +137,13 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
 
     /**
      * 解析出来合适的构造器以及构造器参数之后，就可以使用指定的构造器去完成Bean的实例化
+     *
+     * @param bd beanDefinition
+     * @param beanName beanName(可以为null)
+     * @param owner beanFactory
+     * @param ctor 要进行实例化使用的构造器
+     * @param args 构造器的方法参数列表
+     * @return 创建好的beanInstance
      */
     private fun instantiate(
         bd: RootBeanDefinition, beanName: String?, owner: BeanFactory, ctor: Constructor<*>, vararg args: Any?
@@ -186,7 +197,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
     }
 
     /**
-     * 给指定的方法/构造器去创建参数数组
+     * 给指定的方法/构造器去创建参数数组，根据每个方法参数，去构建一个DependencyDescriptor交给beanFactory去进行依赖的解析
      *
      * @param beanName beanName
      * @param mbd MergedBeanDefinition
@@ -208,6 +219,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
         autowiring: Boolean = true
     ): Array<Any?> {
         // 创建一个参数数组(Array<Any?>)，去获取到方法需要的参数列表
+        // 设置依赖描述符上的required=true，如果该方法参数上有"@Autowired(required=false)"时，在解析过程当中也支持
         val params: Array<Any?> = Array(paramTypes.size) {
             val methodParameter = MethodParameter(executable, it)
             beanFactory.resolveDependency(DependencyDescriptor(methodParameter, true), beanName)  // return
