@@ -13,5 +13,6 @@ annotation class RequestMapping(
     @get:AliasFor("value")
     val path: Array<String> = [],
     val method: Array<RequestMethod> = [],
-    val params: Array<String> = []
+    val params: Array<String> = [],
+    val header: Array<String> = []
 )

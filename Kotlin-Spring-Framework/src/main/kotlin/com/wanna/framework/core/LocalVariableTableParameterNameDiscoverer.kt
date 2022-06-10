@@ -209,11 +209,7 @@ open class LocalVariableTableParameterNameDiscoverer : ParameterNameDiscoverer {
             var currentIndex = if (isStatic) 0 else 1
             for (index in parameterTypes.indices) {
                 lvtSlotIndex[index] = currentIndex
-                if (isWideType(parameterTypes[index])) {
-                    currentIndex += 2
-                } else {
-                    currentIndex += 1
-                }
+                currentIndex += if (isWideType(parameterTypes[index])) 2 else 1
             }
 
             return lvtSlotIndex as Array<Int> // cast to not null array

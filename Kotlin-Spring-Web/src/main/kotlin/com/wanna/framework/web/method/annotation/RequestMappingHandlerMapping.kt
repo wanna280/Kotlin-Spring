@@ -24,8 +24,10 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping() {
      * @return 它是否是一个Handler(如果标注了@Controller/@RequestMapping注解return true)
      */
     override fun isHandler(beanType: Class<*>): Boolean {
-        return AnnotatedElementUtils.isAnnotated(beanType, Controller::class.java) ||
-                AnnotatedElementUtils.isAnnotated(beanType, RequestMapping::class.java)
+        return AnnotatedElementUtils.isAnnotated(beanType, Controller::class.java) || AnnotatedElementUtils.isAnnotated(
+            beanType,
+            RequestMapping::class.java
+        )
     }
 
     /**
@@ -42,10 +44,27 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping() {
         // 如果方法上找到了@RequestMapping注解，那么尝试去类上去进行寻找
         if (info != null) {
             val typeInfo = getRequestMappingInfo(handlerType)
-            // 将类上的@RequestMapping的路径合并到方法的@RequestMapping的path上
-            typeInfo?.paths?.forEach { prefix -> info.paths = info.paths.map { prefix + it }.toMutableList() }
+            // 如果类上也有@RequestMapping的话，需要联合两个RequestMappingInfo
+            if (typeInfo != null) {
+                return combine(info, typeInfo)
+            }
         }
         return info
+    }
+
+    /**
+     * 联合两个RequestMappingInfo
+     *
+     * @param info info1
+     * @param newInfo info2
+     * @return 联合之后的新的RequestMappingInfo
+     */
+    protected open fun combine(info: RequestMappingInfo, newInfo: RequestMappingInfo): RequestMappingInfo {
+        val combinedMethods = info.methodsCondition.combine(newInfo.methodsCondition)
+        val combinedPath = info.pathPatternsCondition.combine(newInfo.pathPatternsCondition)
+        val combinedParam = info.paramsCondition.combine(newInfo.paramsCondition)
+        val combinedHeader = info.headersCondition.combine(newInfo.headersCondition)
+        return RequestMappingInfo(combinedMethods, combinedPath, combinedParam, combinedHeader)
     }
 
     /**
@@ -57,7 +76,7 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping() {
     protected open fun getRequestMappingInfo(element: AnnotatedElement): RequestMappingInfo? {
         val requestMapping =
             AnnotatedElementUtils.getMergedAnnotation(element, RequestMapping::class.java) ?: return null
-
-        return RequestMappingInfo.Builder().paths(*requestMapping.path).params(*requestMapping.params).build()
+        return RequestMappingInfo.Builder().methods(*requestMapping.method).paths(*requestMapping.path)
+            .params(*requestMapping.params).headers(*requestMapping.header).build()
     }
 }

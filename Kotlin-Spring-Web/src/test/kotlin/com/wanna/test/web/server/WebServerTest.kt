@@ -6,6 +6,7 @@ import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.context.stereotype.Controller
 import com.wanna.framework.web.DispatcherHandlerImpl
+import com.wanna.framework.web.bind.RequestMethod
 import com.wanna.framework.web.bind.WebDataBinder
 import com.wanna.framework.web.bind.annotation.RestController
 import com.wanna.framework.web.config.annotation.DelegatingWebMvcConfiguration
@@ -84,6 +85,7 @@ class MyControllerAdvice {
     }
 }
 
+@RequestMapping(["/user"], method = [RequestMethod.GET, RequestMethod.POST])
 @Controller
 class MyController {
     @ModelAttribute
@@ -97,9 +99,11 @@ class MyController {
         return "mav"
     }
 
-    @RequestMapping(["/beanName"])
-    fun beanName(): String {
-        return "beanName"
+    @ResponseBody
+    @GetMapping(["/{name}/beanName"])
+    fun beanName(@PathVariable name: String, @PathVariable vars: Map<String, String>): Any {
+        println("$name---$vars")
+        return vars
     }
 
     @ModelAttribute

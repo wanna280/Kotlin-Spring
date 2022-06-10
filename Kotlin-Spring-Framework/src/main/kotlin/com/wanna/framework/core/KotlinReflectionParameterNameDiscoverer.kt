@@ -29,7 +29,7 @@ open class KotlinReflectionParameterNameDiscoverer : ParameterNameDiscoverer {
     }
 
     /**
-     * 给定具体的方法/构造器，去进行参数名的发现
+     * 给定具体的方法/构造器，去进行参数名的发现，获取到该方法/构造器的参数名列表
      *
      * @param executable 要获取参数名的方法/构造器
      * @return 该方法或者构造器当中的参数名列表；如果获取不到对应的Kotlin的KFunction，那么return null

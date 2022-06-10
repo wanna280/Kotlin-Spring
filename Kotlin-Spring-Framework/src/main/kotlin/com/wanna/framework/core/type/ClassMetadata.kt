@@ -5,8 +5,6 @@ package com.wanna.framework.core.type
  */
 interface ClassMetadata {
     fun getClassName() : String
-
     fun getPackageName() : String
-
     fun isInterface() : Boolean
 }

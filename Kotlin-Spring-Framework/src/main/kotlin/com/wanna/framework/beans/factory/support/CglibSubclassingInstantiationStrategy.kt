@@ -34,12 +34,9 @@ open class CglibSubclassingInstantiationStrategy : SimpleInstantiationStrategy()
     override fun instantiateWithMethodInjection(
         bd: RootBeanDefinition, beanName: String?, owner: BeanFactory, ctor: Constructor<*>?, vararg args: Any?
     ): Any {
+        // 创建一个Cglib的子类生成器，去提供子类生成的支持
         val cglibSubClassCreator = CglibSubClassCreator(bd, owner)
-        return if (args.isEmpty()) {
-            cglibSubClassCreator.instantiate(ctor)
-        } else {
-            cglibSubClassCreator.instantiate(ctor, *args)
-        }
+        return cglibSubClassCreator.instantiate(ctor, *args)
     }
 
     /**
@@ -55,25 +52,6 @@ open class CglibSubclassingInstantiationStrategy : SimpleInstantiationStrategy()
             )
         }
 
-        /**
-         * 使用无参数构造去实例化一个Cglib子类对象
-         */
-        fun instantiate(ctor: Constructor<*>?): Any {
-            // 使用CGLIB生成子类
-            val subClass = createEnhancedSubClass(beanDefinition)
-            val instance: Any
-
-            // 如果没有给定构造器的话，那么将会根据clazz去使用无参数构造器去创建对象
-            if (ctor == null) {
-                instance = BeanUtils.instantiateClass(subClass)
-            } else {
-                // 从子类当中去找到相同的构造器参数的构造器，并进行实例化
-                val subClassConstructor = subClass.getDeclaredConstructor(*ctor.parameterTypes)
-                instance = subClassConstructor.newInstance()
-            }
-            return setCallbacks(instance)
-        }
-
         private fun setCallbacks(instance: Any): Any {
             val factory = instance as Factory
             factory.callbacks = arrayOf(
@@ -85,25 +63,30 @@ open class CglibSubclassingInstantiationStrategy : SimpleInstantiationStrategy()
         }
 
         /**
-         * 使用有参数构造器去实例化一个Cglib子类对象
+         * 使用构造器去实例化一个Cglib生成的子类对象
+         *
+         * @param ctor 要使用的构造器
+         * @param args 构造器的参数列表
          */
         fun instantiate(ctor: Constructor<*>?, vararg args: Any?): Any {
             // 使用CGLIB生成子类
             val subClass = createEnhancedSubClass(beanDefinition)
-            val instance: Any
+
             // 如果没有给定构造器的话，那么将会根据clazz去使用无参数构造器去创建对象
-            if (ctor == null) {
-                instance = BeanUtils.instantiateClass(subClass)
+            val instance = if (ctor == null) {
+                BeanUtils.instantiateClass(subClass)
             } else {
                 // 从子类当中去找到相同的构造器参数的构造器，并进行实例化
-                val subClassConstructor = subClass.getDeclaredConstructor(*ctor.parameterTypes)
-                instance = subClassConstructor.newInstance(*args)
+                subClass.getDeclaredConstructor(*ctor.parameterTypes).newInstance(*args)
             }
+            // 之前创建子类时，没有设置callback(设置的callbackTypes)，这里需要设置callback给实例
             return setCallbacks(instance)
         }
 
         /**
-         * 创建一个被增强的子类
+         * 使用CGLIB的Enhancer去创建一个被增强的子类
+         *
+         * @return 被CGLIB增强之后的子类
          */
         private fun createEnhancedSubClass(beanDefinition: RootBeanDefinition): Class<*> {
             val enhancer = Enhancer()
@@ -142,7 +125,7 @@ open class CglibSubclassingInstantiationStrategy : SimpleInstantiationStrategy()
             val lookupOverride = beanDefinition.getMethodOverrides().getMethodOverride(method) as LookupOverride
             val beanName = lookupOverride.beanName
             if (beanName.isNotBlank()) {
-                return owner.getBean(beanName, method.returnType)!!
+                return owner.getBean(beanName, method.returnType)
             }
             return owner.getBean(method.returnType)!!
         }
@@ -157,7 +140,7 @@ open class CglibSubclassingInstantiationStrategy : SimpleInstantiationStrategy()
         override fun intercept(obj: Any?, method: Method, args: Array<out Any>?, proxy: MethodProxy?): Any {
             val replaceOverride = beanDefinition.getMethodOverrides().getMethodOverride(method) as ReplaceOverride
             val methodReplacer = owner.getBean(replaceOverride.replacerBeanName, MethodReplacer::class.java)
-            return methodReplacer!!.reimplement(obj, method, args)
+            return methodReplacer.reimplement(obj, method, args)
         }
     }
 }

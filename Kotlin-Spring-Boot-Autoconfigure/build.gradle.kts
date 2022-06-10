@@ -14,6 +14,11 @@ dependencies {
     implementation(project(":Kotlin-Spring-Boot"))
     implementation(project(":Kotlin-Spring-Framework"))
 
+    // CompileOnly Optional
+    compileOnly(project(":Kotlin-Spring-Web"))
+    compileOnly("io.netty:netty-codec-http:$nettyVersion")
+    compileOnly("org.aspectj:aspectjweaver:$aspectJVersion")
+
 
     implementation("com.google.guava:guava:$guavaVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")

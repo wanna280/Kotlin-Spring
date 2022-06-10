@@ -31,7 +31,7 @@ open class GenericTypeAwareAutowireCandidateResolver : BeanFactoryAware, SimpleA
      * 检查泛型的类型
      */
     private fun checkGenericTypeMatch(bdHolder: BeanDefinitionHolder, descriptor: DependencyDescriptor): Boolean {
-        val beanClass = bdHolder.beanDefinition.getBeanClass() ?: throw IllegalStateException("无法获取到BeanClass")
+        val beanClass = bdHolder.beanDefinition.getBeanClass() ?: return true
         val dependencyType = descriptor.getDependencyType()
 
         // 如果需要的是数组的话...
@@ -50,7 +50,10 @@ open class GenericTypeAwareAutowireCandidateResolver : BeanFactoryAware, SimpleA
             // 比如List<String>并不是List<CharSequence>的子类...
             if (ClassUtils.isAssignFrom(Collection::class.java, dependencyType)) {
                 val beanResolveType = ResolvableType.forClass(beanClass).asCollection()
-                return beanResolveType.getGenerics()[0].resolveType() == resolvableType.getGenerics()[0].resolveType()
+                if(beanResolveType.getGenerics().isNotEmpty() && resolvableType.getGenerics().isNotEmpty()) {
+                    return beanResolveType.getGenerics()[0].resolveType() == resolvableType.getGenerics()[0].resolveType()
+                }
+                return true
             } else {
                 // 如果bean的类型不是Collection，但是要解析的依赖是泛型的话，那么匹配泛型的类型和beanClass
                 return ClassUtils.isAssignFrom(resolvableType.getGenerics()[0].resolve(), beanClass)

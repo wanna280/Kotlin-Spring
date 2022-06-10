@@ -8,8 +8,10 @@ import com.wanna.framework.context.format.FormatterRegistry
 import com.wanna.framework.context.format.support.DefaultFormattingConversionService
 import com.wanna.framework.context.format.support.FormattingConversionService
 import com.wanna.framework.web.DispatcherHandlerImpl
+import com.wanna.framework.web.HandlerMapping
 import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.handler.HandlerExceptionResolver
+import com.wanna.framework.web.handler.SimpleUrlHandlerMapping
 import com.wanna.framework.web.handler.ViewResolver
 import com.wanna.framework.web.http.converter.HttpMessageConverter
 import com.wanna.framework.web.http.converter.json.MappingJackson2HttpMessageConverter
@@ -23,6 +25,8 @@ import com.wanna.framework.web.method.support.HandlerMethodArgumentResolver
 import com.wanna.framework.web.method.support.HandlerMethodReturnValueHandler
 import com.wanna.framework.web.method.view.BeanNameViewResolver
 import com.wanna.framework.web.method.view.TemplateViewResolver
+import com.wanna.framework.web.mvc.HttpRequestHandlerAdapter
+import com.wanna.framework.web.mvc.SimpleControllerHandlerAdapter
 
 /**
  * 为WebMvc提供支持的配置类，它为WebMvc的正常运行提供的一些默认的相关组件，并配置到容器当中...
@@ -144,6 +148,24 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         return DefaultRequestToViewNameTranslator()
     }
 
+    @Bean("urlHandlerMapping")
+    @Qualifier("urlHandlerMapping")
+    open fun urlHandlerMapping(): HandlerMapping {
+        return SimpleUrlHandlerMapping()
+    }
+
+    @Bean("httpRequestHandlerAdapter")
+    @Qualifier("httpRequestHandlerAdapter")
+    open fun httpRequestHandlerAdapter(): HttpRequestHandlerAdapter {
+        return HttpRequestHandlerAdapter()
+    }
+
+    @Bean("simpleControllerHandlerAdapter")
+    @Qualifier("simpleControllerHandlerAdapter")
+    open fun simpleControllerHandlerAdapter() : SimpleControllerHandlerAdapter {
+        return SimpleControllerHandlerAdapter()
+    }
+
     protected open fun getArgumentResolvers(): List<HandlerMethodArgumentResolver> {
         var argumentResolvers = this.argumentResolvers
         if (argumentResolvers == null) {
@@ -153,7 +175,6 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         }
         return argumentResolvers
     }
-
 
     protected open fun getReturnValueResolvers(): List<HandlerMethodReturnValueHandler> {
         var handlers = this.returnValueHandlers

@@ -66,10 +66,8 @@ object BeanUtils {
     @JvmStatic
     fun getParameterNames(ctor: Constructor<*>): Array<String> {
         val cp = ctor.getAnnotation(ConstructorProperties::class.java)
-        val parameterNames: Array<String>? = cp?.value ?: parameterNameDiscoverer.getParameterNames(ctor)
-        if (parameterNames == null) {
-            throw IllegalStateException("无法从目标构造器[ctor=$ctor]上获取到参数名列表")
-        }
+        val parameterNames: Array<String> = cp?.value ?: parameterNameDiscoverer.getParameterNames(ctor)
+        ?: throw IllegalStateException("无法从目标构造器[ctor=$ctor]上获取到参数名列表")
         if (parameterNames.size != ctor.parameterCount) {
             throw IllegalStateException("匹配到的参数名的数量和目标构造器的参数数量不相同")
         }

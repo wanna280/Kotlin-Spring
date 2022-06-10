@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
  * @param order @Async的处理器的优先级
  * @param annotation 要使用的Async注解，默认为@Async
  */
-@Target(AnnotationTarget.TYPE, AnnotationTarget.CLASS)
+@Target(AnnotationTarget.CLASS)
 @Import([AsyncConfigurationSelector::class])
 annotation class EnableAsync(
     val order: Int = Ordered.ORDER_LOWEST,

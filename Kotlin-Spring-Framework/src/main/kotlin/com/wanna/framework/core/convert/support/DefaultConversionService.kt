@@ -16,12 +16,13 @@ open class DefaultConversionService : GenericConversionService() {
     }
 
     companion object {
-
         // 共享的实例
         private var sharedInstance: DefaultConversionService? = null
 
         /**
          * 获取共享的ConversionService，使用DCL完成获取
+         *
+         * @return 共享的DefaultConversionService
          */
         @JvmStatic
         fun getSharedInstance(): DefaultConversionService {

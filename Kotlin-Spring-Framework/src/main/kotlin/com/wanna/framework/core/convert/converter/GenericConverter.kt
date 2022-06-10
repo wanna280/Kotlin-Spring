@@ -22,19 +22,19 @@ interface GenericConverter {
     /**
      * 这是一个可以转换的类型的Pair对，维护了sourceType和targetType；
      * 需要去重写equals方法和hashCode方法，保证该类型可以作为Key去参与hash计算，并获取到对应的value
+     *
+     * @param sourceType sourceType
+     * @param targetType targetType
      */
-    class ConvertiblePair(var sourceType: Class<*>, var targetType: Class<*>) {
+    class ConvertiblePair(val sourceType: Class<*>, val targetType: Class<*>) {
+        override fun hashCode(): Int = 31 * sourceType.hashCode() + targetType.hashCode()
+        override fun toString() = "${sourceType.name} --> ${targetType.name}"
+
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
             other as ConvertiblePair
             return sourceType == other.sourceType && targetType == other.targetType
-        }
-
-        override fun hashCode(): Int {
-            var result = sourceType.hashCode()
-            result = 31 * result + targetType.hashCode()
-            return result
         }
     }
 }

@@ -3,6 +3,7 @@ package com.wanna.framework.web.server
 import com.wanna.framework.web.bind.RequestMethod
 import com.wanna.framework.web.http.HttpHeaders
 import java.io.InputStream
+import java.util.Enumeration
 
 /**
  * HttpServerRequest
@@ -40,6 +41,14 @@ interface HttpServerRequest {
      * 根据name获取param
      *
      * @param name paramName
+     * @return 给定paramName获取到的参数列表(如果存在有多个param，那么return第一个paramValue)
+     */
+    fun getFirstParam(name: String) : String?
+
+    /**
+     * 根据name获取param
+     *
+     * @param name paramName
      * @return 给定paramName获取到的参数列表(如果存在有多个param，那么使用"; "去进行分割)
      */
     fun getParam(name: String): String?
@@ -57,6 +66,13 @@ interface HttpServerRequest {
      * @param name paramName
      */
     fun removeParam(name: String)
+
+    /**
+     * 获取参数名列表
+     *
+     * @return paramName列表
+     */
+    fun getParamNames(): Set<String>
 
     /**
      * 添加Header，如果value为空的话，标识移除该name的header
@@ -83,11 +99,56 @@ interface HttpServerRequest {
     fun getHeader(name: String): String?
 
     /**
+     * 根据name去获取到headerValue
+     *
+     * @param name headerName
+     * @return 根据name去获取到的headerValue(如果该header存在有多个值，那么返回第一个)
+     */
+    fun getFirstHeader(name: String) : String?
+
+    /**
      * 获取当前request的HttpHeaders
      *
      * @return HttpHeaders of request
      */
     fun getHeaders(): HttpHeaders
+
+    /**
+     * 获取header的属性名列表
+     *
+     * @return header属性名列表
+     */
+    fun getHeaderNames(): Set<String>
+
+    /**
+     * 从请求属性当中根据name去获取一个属性
+     *
+     * @param name 属性名
+     * @return 属性值
+     */
+    fun getAttribute(name: String): Any?
+
+    /**
+     * 设置一个属性值
+     *
+     * @param name 属性名
+     * @param value 属性值
+     */
+    fun setAttribute(name: String, value: Any?)
+
+    /**
+     * 根据属性名从request当中去移除一个属性值
+     *
+     * @param name 属性名
+     */
+    fun removeAttribute(name: String)
+
+    /**
+     * 返回当前request当中的属性名列表
+     *
+     * @return 属性名列表
+     */
+    fun getAttributeNames(): Set<String>
 
     /**
      * 获取当前请求的uri(包含url和query参数)

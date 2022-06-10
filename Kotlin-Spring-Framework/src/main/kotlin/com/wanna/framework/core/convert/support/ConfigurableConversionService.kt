@@ -9,6 +9,4 @@ import com.wanna.framework.core.convert.converter.ConverterRegistry
  * @see ConversionService
  * @see ConverterRegistry
  */
-interface ConfigurableConversionService : ConversionService, ConverterRegistry {
-
-}
+interface ConfigurableConversionService : ConversionService, ConverterRegistry

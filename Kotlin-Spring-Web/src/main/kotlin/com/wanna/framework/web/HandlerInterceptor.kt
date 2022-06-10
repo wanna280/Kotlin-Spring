@@ -5,6 +5,8 @@ import com.wanna.framework.web.server.HttpServerResponse
 
 /**
  * 这是处理请求当中的拦截器，支持在处理本次请求之前/之后去进行请求的拦截，并在请求处理完成之后去进行相关的收尾工作
+ *
+ * @see HandlerExecutionChain
  */
 interface HandlerInterceptor {
 

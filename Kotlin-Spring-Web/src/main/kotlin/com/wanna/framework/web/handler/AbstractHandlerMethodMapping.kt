@@ -2,6 +2,7 @@ package com.wanna.framework.web.handler
 
 import com.wanna.framework.beans.factory.InitializingBean
 import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.LinkedMultiValueMap
 import com.wanna.framework.web.method.HandlerMethod
 import com.wanna.framework.web.server.HttpServerRequest
 import java.lang.reflect.Method
@@ -48,12 +49,17 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     override fun getHandlerInternal(request: HttpServerRequest): Any? {
         // 从request当中去获取到要进行寻找的path
         val lookupPath = initLookupPath(request)
+        this.mappingRegistry.acquireReadLock()  // acquire read lock
+        try {
+            // 从MappingRegistry当中寻找合适的处理请求的HandlerMethod
+            val handlerMethod = lookupHandlerMethod(lookupPath, request)
 
-        // 从MappingRegistry当中寻找合适的处理请求的HandlerMethod
-        val handlerMethod = lookupHandlerMethod(lookupPath, request)
+            // 如果必要的话，在运行时(接收请求时)，需要将HandlerMethod当中的beanName替换为真正的Bean
+            return handlerMethod?.createWithResolvedBean()
+        } finally {
+            this.mappingRegistry.releaseReadLock()  // release read lock
+        }
 
-        // 如果必要的话，在运行时(接收请求时)，需要将HandlerMethod当中的beanName替换为真正的Bean
-        return handlerMethod?.createWithResolvedBean()
     }
 
     /**
@@ -133,22 +139,37 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     protected open fun lookupHandlerMethod(lookupPath: String, request: HttpServerRequest): HandlerMethod? {
         mappingRegistry.acquireReadLock()
         try {
-            // 根据path，直接去获取mapping列表
-            val mappings = mappingRegistry.getMappingsByDirectPath(lookupPath)
             val matches = ArrayList<Match>()
 
-            // 交给子类去匹配，哪些Mapping是匹配的？
-            addMatchingMappings(matches, request, mappings)
+            // 根据path，直接去获取mapping列表
+            val directPathMatches = mappingRegistry.getMappingsByDirectPath(lookupPath)
+
+            // 如果根据直接路径就匹配到了合适的Mapping，那么交给子类去匹配，哪些Mapping是匹配的？
+            if (directPathMatches.isNotEmpty()) {
+                addMatchingMappings(matches, request, directPathMatches)
+            }
+
+            // 如果根据直接路径没有匹配到合适的Mapping，那么遍历所有的Mapping去进行匹配...
+            if (matches.isEmpty()) {
+                addMatchingMappings(matches, request, mappingRegistry.getRegistrations().keys)
+            }
+
 
             // 如果没有匹配到合适的结果的话...return null
             if (matches.isEmpty()) {
                 return null
             }
+            val bestMatch = matches.iterator().next()
             // 获取处理请求的HandlerMethod
-            return matches.iterator().next().getHandlerMethod()
+            handleMatch(bestMatch.mapping, bestMatch.getHandlerMethod(), request)
+            return bestMatch.getHandlerMethod()
         } finally {
             mappingRegistry.releaseReadLock()
         }
+    }
+
+    protected open fun handleMatch(mapping: T, handlerMethod: HandlerMethod, request: HttpServerRequest) {
+
     }
 
     /**
@@ -158,7 +179,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
      * @param request request
      * @param mappings 匹配的Mapping列表
      */
-    private fun addMatchingMappings(matches: MutableList<Match>, request: HttpServerRequest, mappings: List<T>) {
+    private fun addMatchingMappings(matches: MutableList<Match>, request: HttpServerRequest, mappings: Collection<T>) {
         for (mapping in mappings) {
             val match = getMatchingMapping(request, mapping)
             if (match != null) {
@@ -189,7 +210,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
         private val readWriteLock = ReentrantReadWriteLock()
 
         // 根据path去进行寻找，value-RequestMappingInfo(@RequestMapping注解的相关信息)
-        private val pathLookup = ConcurrentHashMap<String, MutableList<T>>()
+        private val pathLookup = LinkedMultiValueMap<String, T>()
 
         // 根据name去进行寻找到合适的HandlerMethod的Map(key-name,value-HandlerMethod List)
         private val nameLookup = ConcurrentHashMap<String, MutableList<HandlerMethod>>()
@@ -284,8 +305,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
          * @param mapping mapping
          */
         private fun addPathLookup(path: String, mapping: T) {
-            this.pathLookup.putIfAbsent(path, ArrayList())
-            this.pathLookup[path]!! += mapping
+            this.pathLookup.add(path, mapping)
         }
 
         /**

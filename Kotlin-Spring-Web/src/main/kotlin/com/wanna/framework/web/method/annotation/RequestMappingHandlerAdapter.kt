@@ -192,7 +192,7 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     private fun getModelAndView(
         mavContainer: ModelAndViewContainer, modelFactory: ModelFactory, webRequest: ServerWebRequest
     ): ModelAndView? {
-        if(mavContainer.requestHandled) {
+        if (mavContainer.requestHandled) {
             return null
         }
         val modelAndView = ModelAndView()
@@ -373,6 +373,10 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         resolvers += ServerRequestMethodArgumentResolver()
         resolvers += ServerResponseMethodArgumentResolver()
 
+        // 添加处理路径变量的参数解析器
+        resolvers += PathVariableHandlerMethodArgumentResolver()
+        resolvers += PathVariableMapHandlerMethodArgumentResolver()
+
         // 添加Model方法处理器，处理Model类型的参数，将ModelAndViewContainer当中的Model传递下去
         resolvers += ModelMethodProcessor()
         // 添加Map方法处理器，处理Map类型的参数，将ModelAndViewContainer当中的Model传递下去
@@ -407,6 +411,10 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         // 处理ServerRequest和ServerResponse的参数处理器
         resolvers += ServerRequestMethodArgumentResolver()
         resolvers += ServerResponseMethodArgumentResolver()
+
+        // 添加处理路径变量的参数解析器
+        resolvers += PathVariableHandlerMethodArgumentResolver()
+        resolvers += PathVariableMapHandlerMethodArgumentResolver()
 
         // 添加RequestResponseBody的方法处理器(处理@RequestBody注解)
         resolvers += RequestResponseBodyMethodProcessor(getHttpMessageConverters(), getContentNegotiationManager())
