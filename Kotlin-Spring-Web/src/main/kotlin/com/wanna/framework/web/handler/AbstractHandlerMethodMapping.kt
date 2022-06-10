@@ -159,11 +159,17 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
             if (matches.isEmpty()) {
                 return null
             }
+            val bestMatch = matches.iterator().next()
             // 获取处理请求的HandlerMethod
-            return matches.iterator().next().getHandlerMethod()
+            handleMatch(bestMatch.mapping, bestMatch.getHandlerMethod(), request)
+            return bestMatch.getHandlerMethod()
         } finally {
             mappingRegistry.releaseReadLock()
         }
+    }
+
+    protected open fun handleMatch(mapping: T, handlerMethod: HandlerMethod, request: HttpServerRequest) {
+
     }
 
     /**

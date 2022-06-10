@@ -99,9 +99,11 @@ class MyController {
         return "mav"
     }
 
-    @GetMapping(["/**/beanName"])
-    fun beanName(): String {
-        return "beanName"
+    @ResponseBody
+    @GetMapping(["/{name}/beanName"])
+    fun beanName(@PathVariable name: String, @PathVariable vars: Map<String, String>): Any {
+        println("$name---$vars")
+        return vars
     }
 
     @ModelAttribute

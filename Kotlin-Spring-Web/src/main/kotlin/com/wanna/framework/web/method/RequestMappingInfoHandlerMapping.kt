@@ -1,5 +1,8 @@
 package com.wanna.framework.web.method
 
+import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.AntPathMatcher
+import com.wanna.framework.web.HandlerMapping
 import com.wanna.framework.web.handler.AbstractHandlerMethodMapping
 import com.wanna.framework.web.server.HttpServerRequest
 
@@ -21,6 +24,13 @@ abstract class RequestMappingInfoHandlerMapping : AbstractHandlerMethodMapping<R
      */
     override fun getDirectPaths(mapping: RequestMappingInfo): Set<String> {
         return mapping.getPaths()
+    }
+
+    override fun handleMatch(mapping: RequestMappingInfo, handlerMethod: HandlerMethod, request: HttpServerRequest) {
+        val url = request.getUrl()
+        val pattern = mapping.pathPatternsCondition.getContent().iterator().next()
+        val uriTemplateVariables = pattern.extractUriTemplateVariables(url)
+        request.setAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, uriTemplateVariables)
     }
 
     /**

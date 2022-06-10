@@ -1,19 +1,18 @@
 package com.wanna.framework.web.mvc.condition
 
-import com.wanna.framework.util.AntPathMatcher
-import com.wanna.framework.util.PathMatcher
 import com.wanna.framework.web.server.HttpServerRequest
+import com.wanna.framework.web.util.PathPattern
 
 /**
  * 基于路径的模式匹配
  */
-open class PathPatternsRequestCondition(private val paths: Set<String>) :
+open class PathPatternsRequestCondition(private val patterns: Set<PathPattern>) :
     AbstractRequestCondition<PathPatternsRequestCondition>() {
-    constructor(vararg paths: String) : this(setOf(*paths))
+    constructor(vararg paths: String) : this(LinkedHashSet(paths.map { PathPattern(it) }.toList()))
 
-    private val matcher: PathMatcher = AntPathMatcher()
+    val paths = patterns.map { it.pattern }.toList()
 
-    override fun getContent() = paths
+    override fun getContent() = patterns
     override fun getToStringInfix() = " && "
 
     override fun combine(other: PathPatternsRequestCondition): PathPatternsRequestCondition {
@@ -22,7 +21,7 @@ open class PathPatternsRequestCondition(private val paths: Set<String>) :
         }
         val paths = HashSet<String>()
         other.paths.forEach { o -> this.paths.forEach { paths += "$o$it" } }
-        return PathPatternsRequestCondition(paths)
+        return PathPatternsRequestCondition(*paths.toTypedArray())
     }
 
     /**
@@ -32,8 +31,11 @@ open class PathPatternsRequestCondition(private val paths: Set<String>) :
      */
     override fun getMatchingCondition(request: HttpServerRequest): PathPatternsRequestCondition? {
         val url = request.getUrl()
-        paths.forEach {
-            if (matcher.match(it, url)) {
+        patterns.forEach {
+            if (it.match(url)) {
+                val paths = LinkedHashSet<PathPattern>()
+                paths += it
+                paths += paths
                 return this
             }
         }

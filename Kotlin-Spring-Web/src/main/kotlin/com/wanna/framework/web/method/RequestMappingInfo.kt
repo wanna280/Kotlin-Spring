@@ -16,7 +16,7 @@ open class RequestMappingInfo(
     val paramsCondition: ParamsRequestCondition = ParamsRequestCondition(),
     val headersCondition: HeadersRequestCondition = HeadersRequestCondition()
 ) {
-    open fun getPaths(): Set<String> = HashSet(pathPatternsCondition.getContent())
+    open fun getPaths(): Set<String> = HashSet(pathPatternsCondition.paths)
 
     /**
      * 对请求去进行匹配，看当前的Mapping是否支持处理该request
@@ -34,6 +34,25 @@ open class RequestMappingInfo(
         headersCondition.getMatchingCondition(request) ?: return null
         return this
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is RequestMappingInfo) return false
+        if (methodsCondition != other.methodsCondition) return false
+        if (pathPatternsCondition != other.pathPatternsCondition) return false
+        if (paramsCondition != other.paramsCondition) return false
+        if (headersCondition != other.headersCondition) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = methodsCondition.hashCode()
+        result = 31 * result + pathPatternsCondition.hashCode()
+        result = 31 * result + paramsCondition.hashCode()
+        result = 31 * result + headersCondition.hashCode()
+        return result
+    }
+
 
     /**
      * Builder，方便更方便地去构建RequestMappingInfo

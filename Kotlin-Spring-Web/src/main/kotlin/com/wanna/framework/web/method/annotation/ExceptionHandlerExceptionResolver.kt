@@ -9,6 +9,7 @@ import com.wanna.framework.web.handler.HandlerExceptionResolver
 import com.wanna.framework.web.handler.ModelAndView
 import com.wanna.framework.web.http.converter.HttpMessageConverter
 import com.wanna.framework.web.method.ControllerAdviceBean
+import com.wanna.framework.web.method.HandlerMethod
 import com.wanna.framework.web.method.support.*
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
@@ -60,7 +61,7 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
     ): ModelAndView? {
 
         // 遍历所有的ControllerAdvice，去寻找合适的ExceptionHandler去处理异常
-        val exceptionHandlerMethod = getExceptionHandlerMethod(handler as InvocableHandlerMethod, ex)
+        val exceptionHandlerMethod = getExceptionHandlerMethod(handler as HandlerMethod, ex)
         if (exceptionHandlerMethod == null) {
             response.sendError(500) // send Error
             return null
@@ -122,7 +123,7 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
      * @return 找到的处理当前异常的ExceptionHandler的方法(如果获取不到return null)
      */
     protected open fun getExceptionHandlerMethod(
-        handlerMethod: InvocableHandlerMethod?,
+        handlerMethod: HandlerMethod?,
         ex: Throwable
     ): InvocableHandlerMethod? {
 
@@ -188,6 +189,10 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
         // 添加@RequestParam、@RequestHeader的参数解析器
         resolvers += RequestHeaderMethodArgumentResolver()
         resolvers += RequestParamMethodArgumentResolver()
+
+        // 添加处理路径变量的参数解析器
+        resolvers += PathVariableHandlerMethodArgumentResolver()
+        resolvers += PathVariableMapHandlerMethodArgumentResolver()
 
         // 处理ServerRequest和ServerResponse的参数处理器
         resolvers += ServerRequestMethodArgumentResolver()
