@@ -109,14 +109,16 @@ open class CommonAnnotationPostProcessor : InitDestroyAnnotationBeanPostProcesso
     }
 
     /**
-     * 构建@Resource的Metadata元信息
+     * 构建@Resource的Metadata元信息，方便后期去进行主任
      *
-     * @param clazz 要去寻找@Resource的目标类
+     * @param clazz 要去寻找@Resource的目标类(支持寻找它的父类)
      * @return 构建好的InjectMetadata
      */
     private fun buildResourceMetadata(clazz: Class<*>): InjectionMetadata {
         // 存放clazz当中要去进行注入的元素列表
         val elements = ArrayList<InjectionMetadata.InjectedElement>()
+
+        // 从当前给定的clazz开始，遍历它的所有父类
         var targetClass: Class<*>? = clazz
         do {
             targetClass!!
@@ -125,11 +127,13 @@ open class CommonAnnotationPostProcessor : InitDestroyAnnotationBeanPostProcesso
                     if (Modifier.isStatic(it.modifiers)) {
                         throw IllegalStateException("@Resource注解不能标注在static方法上")
                     }
+                    if (it.parameterCount > 1) {
+                        throw IllegalStateException("@Resource注解的方法参数不能超过1个")
+                    }
                     elements += ResourceElement(it, it)
                 }
             }
             ReflectionUtils.doWithLocalFields(targetClass) {
-
                 if (it.isAnnotationPresent(Resource::class.java)) {
                     if (Modifier.isStatic(it.modifiers)) {
                         throw IllegalStateException("@Resource注解不能标注在static字段上")
@@ -152,6 +156,8 @@ open class CommonAnnotationPostProcessor : InitDestroyAnnotationBeanPostProcesso
         InjectionMetadata.InjectedElement(_member) {
         private var name: String = element.getAnnotation(Resource::class.java).name
 
+        private var lazyLookup = false
+
         init {
             // 如果必要的话，需要去解析resourceName
             if (!StringUtils.hasText(name)) {
@@ -164,6 +170,9 @@ open class CommonAnnotationPostProcessor : InitDestroyAnnotationBeanPostProcesso
                     }
                 }
             }
+            val lazy: com.wanna.framework.context.annotation.Lazy? =
+                element.getAnnotation(com.wanna.framework.context.annotation.Lazy::class.java)
+            lazyLookup = lazy?.value ?: false
         }
 
         /**
@@ -173,7 +182,7 @@ open class CommonAnnotationPostProcessor : InitDestroyAnnotationBeanPostProcesso
          * @param beanName beanName
          * @return 去执行自动注入的元素
          */
-        override fun getResourceToInject(bean: Any, beanName: String): Any? {
+        override fun getResourceToInject(bean: Any, beanName: String): Any {
             return beanFactory.getBean(name)
         }
     }

@@ -10,9 +10,8 @@ import com.wanna.framework.web.http.MediaType
  */
 @FunctionalInterface
 interface ContentNegotiationStrategy {
-
     companion object {
-        val MEDIA_TYPE_ALL_LIST = arrayListOf<MediaType>(MediaType.ALL)
+        val MEDIA_TYPE_ALL_LIST = arrayListOf(MediaType.ALL)
     }
 
     /**

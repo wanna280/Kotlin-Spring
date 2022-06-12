@@ -38,10 +38,10 @@ open class DispatcherHandlerImpl : DispatcherHandler {
         private const val HANDLER_ADAPTER_BEAN_NAME = "handlerAdapter"
 
         // 默认的HandlerMapping的beanName
-        private const val HANDLER_MAPPING_BEAN_NAME = "handlerAdapter"
+        private const val HANDLER_MAPPING_BEAN_NAME = "handlerMapping"
 
         // 默认的HandlerExceptionHandler的beanName
-        private const val HANDLER_EXCEPTION_HANDLER_BEAN_NAME = "handlerAdapter"
+        private const val HANDLER_EXCEPTION_HANDLER_BEAN_NAME = "handlerExceptionResolver"
 
         // 默认的ViewResolver的beanName
         private const val VIEW_RESOLVER_BEAN_BEAN = "viewResolver"
