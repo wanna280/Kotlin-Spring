@@ -10,7 +10,6 @@ import com.wanna.framework.web.bind.RequestMethod
 import com.wanna.framework.web.bind.WebDataBinder
 import com.wanna.framework.web.bind.annotation.RestController
 import com.wanna.framework.web.config.annotation.DelegatingWebMvcConfiguration
-import com.wanna.framework.web.config.annotation.WebMvcConfigurationSupport
 import com.wanna.framework.web.context.support.AnnotationConfigWebApplicationContext
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.MediaType

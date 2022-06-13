@@ -1,6 +1,7 @@
 package com.wanna.framework.aop.framework
 
 import com.wanna.framework.aop.ReflectiveMethodInvocation
+import com.wanna.framework.aop.cglib.SpringNamingPolicy
 import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.core.util.ReflectionUtils
 import net.sf.cglib.proxy.Enhancer
@@ -11,6 +12,8 @@ import java.lang.reflect.Modifier
 
 /**
  * 基于Cglib的动态代理，需要使用基于ASM技术去实现的Enhancer去进行创建代理
+ *
+ * @param config AdvisedSupport，维护了代理需要用到的相关的各个组件
  */
 open class CglibAopProxy(private val config: AdvisedSupport) : AopProxy {
     override fun getProxy(): Any {
@@ -18,11 +21,36 @@ open class CglibAopProxy(private val config: AdvisedSupport) : AopProxy {
     }
 
     override fun getProxy(classLoader: ClassLoader?): Any {
-        val enhancer = Enhancer()
+        val enhancer = createEnhancer()
+
+        val rootClass = this.config.getTargetClass() ?: throw IllegalStateException("CGLIB代理当中必须设置targetClass")
+        var proxySuperClass = rootClass
+
+        // 如果含有'$$'，说明已经被CGLIB代理过，需要使用它的父类去生成代理
+        if (rootClass.name.contains("$$")) {
+            proxySuperClass = rootClass.superclass
+            val additionalInterfaces = rootClass.interfaces
+            additionalInterfaces.forEach { this.config.addInterface(it) }
+        }
+
+        if (classLoader != null) {
+            enhancer.classLoader = classLoader  // set ClassLoader
+        }
+        enhancer.namingPolicy = SpringNamingPolicy.INSTANCE  // set NamingPolicy
         enhancer.setCallback(DynamicAdvisedInterceptor(this.config))
-        enhancer.setSuperclass(config.getTargetClass())
+        enhancer.setSuperclass(proxySuperClass)
         enhancer.setInterfaces(config.getInterfaces().toTypedArray())
+
+        // create proxy Instance
+        return createProxyClassAndInstance(enhancer)
+    }
+
+    protected open fun createProxyClassAndInstance(enhancer: Enhancer): Any {
         return enhancer.create()
+    }
+
+    protected open fun createEnhancer(): Enhancer {
+        return Enhancer()
     }
 
     private class DynamicAdvisedInterceptor(private val advised: AdvisedSupport) : MethodInterceptor {
@@ -58,10 +86,10 @@ open class CglibAopProxy(private val config: AdvisedSupport) : AopProxy {
         }
 
         override fun invokeJoinpoint(): Any? {
-            if (methodProxy != null) {
-                return methodProxy!!.invoke(this.getTarget(), this.getArguments())
+            return if (methodProxy != null) {
+                methodProxy!!.invoke(this.getTarget(), this.getArguments())
             } else {
-                return super.invokeJoinpoint()
+                super.invokeJoinpoint()
             }
         }
     }

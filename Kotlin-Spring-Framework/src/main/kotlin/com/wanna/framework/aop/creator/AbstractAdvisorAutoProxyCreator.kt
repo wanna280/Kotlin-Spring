@@ -30,7 +30,7 @@ abstract class AbstractAdvisorAutoProxyCreator : AbstractAutoProxyCreator() {
      */
     override fun getAdvicesAndAdvisorsForBean(
         beanClass: Class<*>, beanName: String, targetSource: TargetSource?
-    ): Array<Any>? {
+    ): Array<Any> {
         val advisors = findEligibleAdvisors(beanClass, beanName)
         return if (advisors.isEmpty()) DO_NOT_PROXY else advisors.toTypedArray()
     }
@@ -87,8 +87,9 @@ abstract class AbstractAdvisorAutoProxyCreator : AbstractAutoProxyCreator() {
      * 寻找候选的Advisor列表，默认实现方式为从容器当中获取到所有的Advisor的Bean列表
      * 在子类当中，可以去进行重写，实现从别的来源当中去产生Advisor，比如使用AspectJ相关的注解
      */
-    protected open fun findCandidateAdvisors(): MutableList<Advisor> {
-        return advisorRetrievalHelper!!.findAdvisorBeans()
+    protected open fun findCandidateAdvisors(): List<Advisor> {
+        return advisorRetrievalHelper?.findAdvisorBeans()
+            ?: throw IllegalStateException("AbstractAdvisorAutoProxyCreator的advisorRetrievalHelper不能为空")
     }
 
     /**
@@ -100,7 +101,7 @@ abstract class AbstractAdvisorAutoProxyCreator : AbstractAutoProxyCreator() {
      * @return 匹配到的可以应用给当前Bean的Advisor列表
      */
     protected open fun findAdvisorsThatCanApply(
-        advisors: MutableList<Advisor>, beanClass: Class<*>, beanName: String
+        advisors: List<Advisor>, beanClass: Class<*>, beanName: String
     ): List<Advisor> {
         return AopUtils.findAdvisorsThatCanApply(advisors, beanClass)
     }

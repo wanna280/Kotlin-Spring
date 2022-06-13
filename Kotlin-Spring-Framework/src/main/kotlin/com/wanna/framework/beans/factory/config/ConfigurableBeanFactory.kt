@@ -90,6 +90,21 @@ interface ConfigurableBeanFactory : HierarchicalBeanFactory, SingletonBeanRegist
     fun registerScope(name: String, scope: Scope)
 
     /**
+     * 设置某个Bean是否正在创建当中的状态
+     *
+     * @param beanName beanName
+     * @param inCreation inCreation
+     */
+    fun setCurrentlyInCreation(beanName: String, inCreation: Boolean)
+
+    /**
+     * 是否当前Bean正在创建当中
+     *
+     * @param beanName beanName
+     */
+    fun isCurrentlyInCreation(beanName: String): Boolean
+
+    /**
      * 获取合并之后的BeanDefinition(支持从parentBeanFactory当中去进行获取)，提供公开的对外访问的接口
      *
      * @param name 想要去获取MergedBeanDefinition的beanName

@@ -17,7 +17,7 @@ class AnnotationAwareAspectJAutoProxyCreator : AspectJAwareAdvisorAutoProxyCreat
      *
      * // TODO
      */
-    override fun findCandidateAdvisors(): MutableList<Advisor> {
+    override fun findCandidateAdvisors(): List<Advisor> {
         val candidateAdvisors = super.findCandidateAdvisors()
         return candidateAdvisors
     }

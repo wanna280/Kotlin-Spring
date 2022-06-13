@@ -22,10 +22,11 @@ import java.util.concurrent.ConcurrentHashMap
 abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcessor, BeanFactoryAware,
     AopInfrastructureBean, ProxyProcessorSupport() {
 
+
     companion object {
         // 不进行创建代理的FLAG常量
         @JvmField
-        val DO_NOT_PROXY: Array<Any>? = null
+        val DO_NOT_PROXY: Array<Any> = emptyArray()
     }
 
     private lateinit var beanFactory: BeanFactory
@@ -41,6 +42,9 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
 
     // 自定义的TargetSourceCreator
     private var customTargetSourceCreators: Array<TargetSourceCreator>? = null
+
+    // 早期引用的Bean列表
+    private var earlyReferences = ConcurrentHashMap<Any, Any>()
 
     override fun setBeanFactory(beanFactory: BeanFactory) {
         this.beanFactory = beanFactory
@@ -59,6 +63,19 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
     override fun predictBeanType(beanClass: Class<*>, beanName: String): Class<*>? =
         if (proxyTypes.isEmpty()) null else proxyTypes[getCacheKey(beanClass, beanName)]
 
+    /**
+     * 获取早期引用，如果必要的话，提前生成代理对象
+     *
+     * @param bean bean
+     * @param beanName beanName
+     * @return 如果必要的话，返回代理对象；不然，返回Bean
+     */
+    override fun getEarlyReference(bean: Any, beanName: String): Any {
+        val cacheKey = getCacheKey(bean::class.java, beanName)
+        this.earlyReferences[cacheKey] = bean
+        return wrapIfNecessary(bean, beanName, cacheKey)
+    }
+
     override fun postProcessBeforeInstantiation(beanName: String, beanClass: Class<*>): Any? {
         val cacheKey = getCacheKey(beanClass, beanName)
 
@@ -72,7 +89,7 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
             val specificInterceptors = getAdvicesAndAdvisorsForBean(beanClass, beanName, null)
             if (specificInterceptors !== DO_NOT_PROXY) {
                 // 创建代理对象
-                val proxy = createProxy(beanClass, beanName, specificInterceptors!!, customTargetSource)
+                val proxy = createProxy(beanClass, beanName, specificInterceptors, customTargetSource)
 
                 // 缓存已经完成代理的proxyType
                 proxyTypes[cacheKey] = proxy::class.java
@@ -84,8 +101,11 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
 
     override fun postProcessAfterInitialization(beanName: String, bean: Any): Any? {
         val cacheKey = getCacheKey(bean::class.java, beanName)
-        val proxy = wrapIfNecessary(bean, beanName, cacheKey)
-        return proxy
+        // 如果这个Bean，没有被引用过的话，那么需要去检查是否生成代理
+        if (earlyReferences.remove(cacheKey) != bean) {
+            return wrapIfNecessary(bean, beanName, cacheKey)
+        }
+        return bean
     }
 
     /**
@@ -108,14 +128,14 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
             return bean
         }
 
-        // 为当前Bean找到合适的Advisor列表
+        // 为当前Bean找到应该去进行apply的所有的合适的Advisor列表(交给子类去进行实现)
         val specificInterceptors = getAdvicesAndAdvisorsForBean(bean::class.java, beanName, null)
 
         // 如果没有找到合适的Advisor，那么就不创建代理；如果找到了合适的Advisor，那么就需要去创建代理
         if (specificInterceptors !== DO_NOT_PROXY) {
             advisedBeans[cachedKey] = true
-            // 创建代理对象
-            val proxy = createProxy(bean::class.java, beanName, specificInterceptors!!, SingletonTargetSource(bean))
+            // 根据给定Advisor列表去创建Aop代理对象
+            val proxy = createProxy(bean::class.java, beanName, specificInterceptors, SingletonTargetSource(bean))
             // 缓存已经处理过的代理的proxyType
             proxyTypes[cachedKey] = proxy::class.java
             return proxy
@@ -125,16 +145,31 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
     }
 
     /**
-     * 创建SpringAOP代理
+     * 根据给定的beanClass/specificInterceptors/targetSource，去创建SpringAOP代理对象
+     *
+     * @param beanClass beanClass
+     * @param beanName beanName
+     * @param specificInterceptors 候选的Advisor列表
+     * @param targetSource targetSource
+     * @return 创建完成代理之后的Bean
      */
     protected open fun createProxy(
-        beanClass: Class<*>, beanName: String, specificInterceptors: Array<Any>?, targetSource: TargetSource?
+        beanClass: Class<*>, beanName: String, specificInterceptors: Array<Any>?, targetSource: TargetSource
     ): Any {
         val proxyFactory = ProxyFactory()
+        // fixed: Copy Aop属性到ProxyFactory当中
+        proxyFactory.copyFrom(this)
+
+        // fixed: 构建Advisor列表，设置到ProxyFactory当中
+        proxyFactory.addAdvisors(buildAdvisors(beanName, specificInterceptors))
+        // 设置TargetSource
         proxyFactory.setTargetSource(targetSource)
-        proxyFactory.setInterfaces(*targetSource!!.getTargetClass()!!.interfaces)
-        val proxy = proxyFactory.getProxy()
-        return proxy
+        // 设置代理对象应该拥有的接口列表...
+        proxyFactory.setInterfaces(*ClassUtils.getAllInterfacesForClassAsSet(beanClass).toTypedArray())
+
+        // add: 交给子类去自定义ProxyFactory
+        customizeProxyFactory(proxyFactory)
+        return proxyFactory.getProxy(getProxyClassLoader())
     }
 
     /**
@@ -144,11 +179,10 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
      * @param beanClass beanClass
      */
     protected open fun isInfrastructureClass(beanClass: Class<*>): Boolean {
-        return ClassUtils.isAssignFrom(Advice::class.java, beanClass) || ClassUtils.isAssignFrom(
-            Advisor::class.java, beanClass
-        ) || ClassUtils.isAssignFrom(
-            Pointcut::class.java, beanClass
-        ) || ClassUtils.isAssignFrom(AopInfrastructureBean::class.java, beanClass)
+        return ClassUtils.isAssignFrom(Advice::class.java, beanClass)
+                || ClassUtils.isAssignFrom(Advisor::class.java, beanClass)
+                || ClassUtils.isAssignFrom(Pointcut::class.java, beanClass)
+                || ClassUtils.isAssignFrom(AopInfrastructureBean::class.java, beanClass)
     }
 
     /**
@@ -161,6 +195,10 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
     /**
      * 从TargetSourceCreator列表当中去，获取自定义的TargetSource，如果匹配到了合适的TargetSource，那么需要在后续完成AOP代理，
      * 去为该Bean设置TargetSource，也就是为Bean的自定义来源，可以是从ThreadLocal，Prototype等别的地方来
+     *
+     * @param beanClass beanClass
+     * @param beanName beanName
+     * @return 如果有合适的TargetSource，那么return TargetSource；不然return null
      */
     protected open fun getCustomTargetSource(beanClass: Class<*>, beanName: String): TargetSource? {
         val customTargetSourceCreators = this.customTargetSourceCreators
@@ -175,6 +213,31 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
         return null
     }
 
+    /**
+     * 根据给定的specificInterceptors，去构建Advisor列表
+     *
+     * @param specificInterceptors 候选的Advisor列表
+     * @return 构建好的Advisor列表
+     */
+    protected open fun buildAdvisors(beanName: String?, specificInterceptors: Array<Any>?): Array<Advisor> {
+        val result = ArrayList<Advisor>()
+        specificInterceptors?.forEach {
+            if (it is Advisor) {
+                result += it
+            }
+        }
+        return result.toTypedArray()
+    }
+
+    /**
+     * 自定义ProxyFactory的逻辑(模板方法，交给子类去进行实现)
+     *
+     * @param proxyFactory ProxyFactory
+     */
+    protected open fun customizeProxyFactory(proxyFactory: ProxyFactory) {
+
+    }
+
 
     /**
      * 针对于给定的Bean去获取Advices和Advisors，具体怎么获取这些Advice和Advisor？交给子类去进行实现，
@@ -184,5 +247,5 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
      */
     abstract fun getAdvicesAndAdvisorsForBean(
         beanClass: Class<*>, beanName: String, targetSource: TargetSource?
-    ): Array<Any>?
+    ): Array<Any>
 }

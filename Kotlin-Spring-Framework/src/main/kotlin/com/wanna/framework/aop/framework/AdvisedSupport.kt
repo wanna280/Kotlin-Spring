@@ -84,12 +84,20 @@ open class AdvisedSupport : ProxyConfig(), Advised {
         this.advisors[pos] = advisor
     }
 
+    override fun addAdvisors(advisors: Array<Advisor>) {
+        this.advisors += advisors
+    }
+
     override fun addAdvisor(advisor: Advisor) {
         this.advisors += advisor
     }
 
     override fun addAdvice(advice: Advice) {
         addAdvice(advisors.size, advice)
+    }
+
+    override fun addAdvices(advices: Array<Advice>) {
+        advices.forEach { addAdvice(it) }
     }
 
     override fun addAdvice(pos: Int, advice: Advice) {
