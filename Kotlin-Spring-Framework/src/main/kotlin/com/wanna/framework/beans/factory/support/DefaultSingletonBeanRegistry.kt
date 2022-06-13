@@ -25,6 +25,9 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     // 二级缓存，维护了早期的单实例Bean
     private val earlySingletonObjects = ConcurrentHashMap<String, Any>(16)
 
+    // 用来检查去进行应该排除的beanName
+    private val inCreationCheckExclusions = Collections.newSetFromMap<String>(ConcurrentHashMap(64))
+
     // 三级缓存维护了ObjectFactory
     private val singletonFactories = HashMap<String, ObjectFactory<*>>(16)
 
@@ -126,7 +129,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     open fun beforeSingletonCreation(beanName: String) {
         // 如果添加失败，说明之前已经添加过，那么抛出当前Bean已经正在创建中的异常...
         if (!singletonsCurrentlyInCreation.add(beanName)) {
-            throw BeanCurrentlyInCreationException("[$beanName] is current in creation")
+            throw BeanCurrentlyInCreationException("[$beanName] is current in creation，当前正在创建的Bean包括[$singletonsCurrentlyInCreation]")
         }
     }
 
@@ -179,6 +182,18 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
      */
     open fun isSingletonCurrentlyInCreation(beanName: String): Boolean {
         return singletonsCurrentlyInCreation.contains(beanName)
+    }
+
+    open fun setCurrentlyInCreation(beanName: String, inCreation: Boolean) {
+        if (!inCreation) {
+            this.inCreationCheckExclusions -= beanName
+        } else {
+            this.inCreationCheckExclusions += beanName
+        }
+    }
+
+    open fun isCurrentlyInCreation(beanName: String): Boolean {
+        return this.inCreationCheckExclusions.contains(beanName) || this.isSingletonCurrentlyInCreation(beanName)
     }
 
     /**

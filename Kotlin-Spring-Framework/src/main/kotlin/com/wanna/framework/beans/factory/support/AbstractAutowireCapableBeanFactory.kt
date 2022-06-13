@@ -111,25 +111,21 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
         val beanInstance = beanWrapper.getWrappedInstance()
         val beanType = beanWrapper.getWrappedClass()
 
-        val allowEarlyExposure =
+        val earlySingletonExposure =
             mbd.isSingleton() && allowCircularReferences && isSingletonCurrentlyInCreation(beanName)
         // 如果设置了允许早期引用，那么将Bean放入到三级缓存当中...
-        if (allowEarlyExposure) {
+        if (earlySingletonExposure) {
             // 添加到SingletonFactory当中，ObjectFactory当中包装的是一getEarlyReference，当从SingletonFactory中获取对象时
             // 会自动回调getEarlyReference方法完成对象的创建
             addSingletonFactory(beanName, object : ObjectFactory<Any> {
-                override fun getObject(): Any {
-                    return getEarlyReference(beanInstance, beanName)
-                }
+                override fun getObject() = getEarlyReference(beanInstance, beanName)
             })
         }
 
         synchronized(mbd.postProcessLock) {
             if (!mbd.postProcessed) {
-                /**
-                 * 在Bean实例化之后，可以获取到BeanClass的真正类型，可以去完成BeanDefinition的Merged工作
-                 * 给BeanPostProcessor一个机会，让它可以将parent BeanDefinition中的属性可以合并到当前的BeanDefinition当中
-                 */
+                // 在Bean实例化之后，可以获取到BeanClass的真正类型，可以去完成BeanDefinition的Merged工作
+                // 给BeanPostProcessor一个机会，让它可以将parent BeanDefinition中的属性可以合并到当前的BeanDefinition当中
                 try {
                     applyMergedBeanDefinitionPostProcessor(mbd, beanType, beanName)
                 } catch (ex: Throwable) {
@@ -139,14 +135,13 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
             }
         }
 
-        val exposedBean: Any
-
+        var exposedBean: Any = beanInstance
         try {
-            // 填充属性
+            // 填充Bean的属性
             populateBean(beanWrapper, mbd, beanName)
 
             // 初始化Bean
-            exposedBean = initializeBean(beanWrapper.getWrappedInstance(), beanName, mbd)
+            exposedBean = initializeBean(exposedBean, beanName, mbd)
         } catch (ex: Throwable) {
             if (ex is BeanCreationException) {
                 throw ex
@@ -155,8 +150,27 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
             throw BeanCreationException("初始化Bean失败", ex, beanName)
         }
 
-        // registerDisposableBeanIfNecessary
-        registerDisposableBeanIfNecessary(beanName, beanInstance, mbd)
+        // 这是Spring解决循环依赖的很关键的一步，将exposedBean设置为getSingleton获取到的earlySingletonReference
+        // 因为在A注入B过程当中出现了循环依赖，如果A需要被代理，那么getEarlyReference可以保证放进最开始放入缓存的确实是代理对象A'
+        // 但是这里，在A完成注入和初始化之后，返回的exposedBean，并不是代理对象A'，而是未代理的对象A；因此我们应该从缓存当中获取早期引用A'作为真实的Bean
+        // 而不是使用最开始的exposedBean作为要去进行使用的Bean，不然有可能出现，把未完成代理的对象加入到缓存当中去覆盖了之前的已经完成代理的对象...
+
+        // 为什么说，完成注入和初始化的是A对象，而不是A'对象？因为A'是调用getEarlyReference去生成的，我原来的A的操作是不受任何的影响的(除了A不会在初始化过程中生成代理)，
+        // 因此注入和初始化都是操作的A对象，而不是A'对象；那么，既然代理对象没有完成注入和初始化，代理对象是否是半成品对象，导致最终的运行结果不正确？
+        // 不会！因为创建代理时，将A包装到TargetSource里了，而在运行时调用代理方法，都是通过TargetSource.getTarget去获取到的A对象去进行委托完成，而不是使用A'去进行的操作；
+        // 也就是说，在代理对象内调用this，其实获取到的是A对象，而不是代理对象A'，这也是为什么在@Transational方法里调用this.XXX(也是一个@Transactional方法)时不生效的原因
+        if (earlySingletonExposure) {
+            val earlySingletonReference = getSingleton(beanName, false)
+            if (earlySingletonReference != null) {
+                // 如果exposedBean == bean，那么要使用的exposedBean，应该是早期引用，而不是原始的Bean，因此这里需要替换exposedBean
+                if (exposedBean == beanInstance) {
+                    exposedBean = earlySingletonReference
+                }
+            }
+        }
+
+        // registerDisposableBeanIfNecessary，注册destroy的回调函数
+        registerDisposableBeanIfNecessary(beanName, exposedBean, mbd)
         return exposedBean
     }
 
@@ -166,7 +180,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
      * (2)如果指定了factoryMethodName，那么从factoryMethod当中去进行获取Bean(@Bean方法)
      */
     protected open fun createBeanInstance(
-        beanName: String, mbd: RootBeanDefinition, args: Array<out Any?>?
+        beanName: String, mbd: RootBeanDefinition, args: Array<Any?>?
     ): BeanWrapper {
         val beanClass = mbd.getBeanClass()
 

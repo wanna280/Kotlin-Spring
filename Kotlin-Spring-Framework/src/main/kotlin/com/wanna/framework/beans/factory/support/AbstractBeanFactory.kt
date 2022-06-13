@@ -687,6 +687,14 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         return false
     }
 
+    override fun setCurrentlyInCreation(beanName: String, inCreation: Boolean) {
+        super.setCurrentlyInCreation(beanName, inCreation)
+    }
+
+    override fun isCurrentlyInCreation(beanName: String): Boolean {
+        return super.isCurrentlyInCreation(beanName)
+    }
+
     /**
      * 如果必要的话，给Bean去注册DisposableBean的回调，根据Bean的作用域的不同，走Scope对应的注册回调的逻辑
      *

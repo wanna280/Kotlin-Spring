@@ -1,5 +1,7 @@
 package com.wanna.framework.core.util
 
+import java.lang.reflect.Method
+
 /**
  * 这是一个Class的相关工具类
  */
@@ -88,6 +90,17 @@ object ClassUtils {
             classLoader = ClassLoader.getSystemClassLoader()
         }
         return classLoader!!
+    }
+
+    /**
+     * 获取一个方法的权限定名
+     *
+     * @param method method
+     * @param clazz clazz(如果为null，将会使用method.declaringClass)
+     */
+    @JvmStatic
+    fun getQualifiedMethodName(method: Method, clazz: Class<*>?): String {
+        return (clazz ?: method.declaringClass).name + "." + method.name
     }
 
     /**

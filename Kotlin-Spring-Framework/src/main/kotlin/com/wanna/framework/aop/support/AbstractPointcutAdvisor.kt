@@ -7,7 +7,7 @@ abstract class AbstractPointcutAdvisor : PointcutAdvisor, Ordered, java.io.Seria
 
     private var order: Int? = null
 
-    fun setOrder(order: Int) {
+    open fun setOrder(order: Int) {
         this.order = order
     }
 

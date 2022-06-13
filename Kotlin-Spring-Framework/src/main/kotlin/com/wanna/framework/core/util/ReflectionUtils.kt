@@ -406,7 +406,7 @@ object ReflectionUtils {
             // 将declaredMethod列表和defaultMethod列表全部拷贝到result当中，并放入到缓存当中(如果为空的话，需要放入一个空方法的常量值)
             // Array，第二个参数是传递的数组的index->Array[index]的元素产生方法
             result = Array(declaredMethods.size + defaultMethods.size) { index ->
-                if (index < declaredMethods.size) declaredMethods[index] else defaultMethods[index]
+                if (index < declaredMethods.size) declaredMethods[index] else defaultMethods[index - declaredMethods.size]  // fixed: index->index - declaredMethods.size
             }
             declaredMethodsCache[clazz] = if (result.isEmpty()) EMPTY_METHOD_ARRAY else result
         }

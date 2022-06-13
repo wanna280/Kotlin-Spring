@@ -6,6 +6,7 @@ import com.wanna.framework.aop.MethodMatcher
 import com.wanna.framework.aop.Pointcut
 import com.wanna.framework.aop.interceptor.AsyncUncaughtExceptionHandler
 import com.wanna.framework.aop.support.AbstractPointcutAdvisor
+import com.wanna.framework.aop.support.StaticMethodMatcherPointcut
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
 import org.springframework.core.annotation.AnnotatedElementUtils
@@ -69,32 +70,19 @@ open class AsyncAnnotationAdvisor() : AbstractPointcutAdvisor(), BeanFactoryAwar
      * @return Pointcut
      */
     protected open fun buildPointcut(asyncAnnotationTypes: Set<Class<out Annotation>>): Pointcut {
-        val pointcut = object : Pointcut {
-            override fun getClassFilter() = ClassFilter.TRUE
-
-            override fun getMethodMatcher(): MethodMatcher {
-                return object : MethodMatcher {
-                    override fun matches(method: Method, targetClass: Class<*>): Boolean {
-                        asyncAnnotationTypes.forEach {
-                            if (AnnotatedElementUtils.hasAnnotation(targetClass, it)) {
-                                return true
-                            }
-                            if (AnnotatedElementUtils.hasAnnotation(method, it)) {
-                                return true
-                            }
-                        }
-                        return false
+        return object : StaticMethodMatcherPointcut() {
+            override fun matches(method: Method, targetClass: Class<*>): Boolean {
+                asyncAnnotationTypes.forEach {
+                    if (AnnotatedElementUtils.hasAnnotation(targetClass, it)) {
+                        return true
                     }
-
-                    override fun isRuntime() = false
-
-                    override fun matches(method: Method, targetClass: Class<*>, vararg args: Any?): Boolean {
-                        throw IllegalStateException("不应该到达这里！")
+                    if (AnnotatedElementUtils.hasAnnotation(method, it)) {
+                        return true
                     }
                 }
+                return false
             }
         }
-        return pointcut
     }
 
     override fun setBeanFactory(beanFactory: BeanFactory) {

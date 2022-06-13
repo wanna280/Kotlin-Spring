@@ -21,6 +21,9 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
     implementation("cglib:cglib:$cglibVersion")
     implementation("javax.annotation:javax.annotation-api:$javaxAnnotationVersion")
+
+    testImplementation("com.alibaba:druid:1.2.10")
+    testImplementation("mysql:mysql-connector-java:8.0.29")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
