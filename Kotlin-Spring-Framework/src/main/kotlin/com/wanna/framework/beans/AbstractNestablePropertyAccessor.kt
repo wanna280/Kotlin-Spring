@@ -28,43 +28,57 @@ abstract class AbstractNestablePropertyAccessor : AbstractPropertyAccessor() {
         return getWrappedInstance()::class.java
     }
 
+    /**
+     * 设置属性值，应该使用setter的方式去进行设置
+     *
+     * @param name name
+     * @param value value
+     */
     override fun setPropertyValue(name: String, value: Any?) {
         // TODO 这里应该进行更多的类型判断和转换工作
 
-        // 如果找不到字段直接return
-        val field = getField(name) ?: return
-        ReflectionUtils.makeAccessible(field)
-        if (value is Collection<*> && !ClassUtils.isAssignFrom(Collection::class.java, field.type)) {
-            val targetToInject: Any? = if (value.isNotEmpty()) value.iterator().next() else null
-            ReflectionUtils.setField(field, getWrappedInstance(), convertIfNecessary(targetToInject, field.type))
-            return
+        // add: 采用setter的方式去设置属性值，替换之前的字段设置
+        val writeMethodName = "set" + name[0].uppercase() + name.substring(1)
+        var isFound = false
+        ReflectionUtils.doWithMethods(getWrappedClass()) {
+            if (isFound) {
+                return@doWithMethods
+            }
+            val parameterTypes = it.parameterTypes
+            if (it.name == writeMethodName && it.parameterCount == 1) {
+                ReflectionUtils.makeAccessible(it)
+                var targetToInject: Any? = value
+                if (value is Collection<*> && !ClassUtils.isAssignFrom(Collection::class.java, parameterTypes[0])) {
+                    targetToInject = if (value.isNotEmpty()) value.iterator().next() else null
+                }
+                ReflectionUtils.invokeMethod(
+                    it, getWrappedInstance(), convertIfNecessary(targetToInject, parameterTypes[0])
+                )
+                isFound = true
+            }
         }
-        ReflectionUtils.setField(field, getWrappedInstance(), convertIfNecessary(value, field.type))
     }
 
     private fun processKeyedProperty(propertyValue: PropertyValue) {
 
     }
 
-    /**
-     * beanClass以及它的父类当前去获取指定name的字段，如果没有找到，return null；
-     * 如果找到了多个，优先返回子类当中的字段
-     */
-    private fun getField(name: String): Field? {
-        val result: ArrayList<Field> = ArrayList()
-        ReflectionUtils.doWithFields(getWrappedClass()) {
-            if (name == it.name) {
-                result += it
+    override fun getPropertyValue(name: String): Any? {
+        // add: 采用getter的方式去获取属性值
+        val readMethodName = "get" + name[0].uppercase() + name.substring(1)
+        var isFound = false
+        var returnValue: Any? = null
+        ReflectionUtils.doWithMethods(getWrappedClass()) {
+            if (isFound) {
+                return@doWithMethods
+            }
+            if (it.name == readMethodName && it.parameterCount == 0) {
+                ReflectionUtils.makeAccessible(it)
+                returnValue = ReflectionUtils.invokeMethod(it, getWrappedInstance())
+                isFound = true
             }
         }
-        return if (result.isEmpty()) null else result[0]
-    }
-
-    override fun getPropertyValue(name: String): Any? {
-        // 如果找不到字段那么直接return null
-        val field = getField(name) ?: return null
-        ReflectionUtils.makeAccessible(field)
-        return ReflectionUtils.getField(field, getWrappedInstance())
+        return returnValue
     }
 
 }

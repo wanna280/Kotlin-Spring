@@ -10,10 +10,35 @@ import javax.sql.DataSource
 
 /**
  * 为SpringTransaction提供DataSource操作的工具类
+ *
+ * @see TransactionSynchronizationManager
  */
 object DataSourceUtils {
 
     private val logger = LoggerFactory.getLogger(DataSourceUtils::class.java)
+
+    /**
+     * 根据数据源，从事务同步管理器当中去去获取连接
+     */
+    @JvmStatic
+    fun getConnection(dataSource: DataSource?): Connection {
+        if (dataSource == null) {
+            throw IllegalStateException("没有给定DataSource，无法获取到Connection")
+        }
+        return doGetConnection(dataSource)
+    }
+
+    @JvmStatic
+    private fun doGetConnection(dataSource: DataSource): Connection {
+        val connectionHolder = TransactionSynchronizationManager.getResource(dataSource) as ConnectionHolder?
+        var connection = connectionHolder?.connection
+        if (connection != null) {
+            return connection
+        }
+        connection = dataSource.connection
+        TransactionSynchronizationManager.bindResource(dataSource, ConnectionHolder(connection))
+        return connection
+    }
 
     /**
      * 释放一条连接
@@ -34,6 +59,16 @@ object DataSourceUtils {
                 logger.debug("关闭连接过程中出现了未知错误", ex)
             }
         }
+    }
+
+    /**
+     * 判断当前连接事务是事务连接
+     */
+    @JvmStatic
+    fun isConnectionTransactional(connection: Connection, dataSource: DataSource?): Boolean {
+        if (dataSource == null) return false
+        val connectionHolder = TransactionSynchronizationManager.getResource(connection) as ConnectionHolder?
+        return connectionHolder?.connection == connection
     }
 
     /**

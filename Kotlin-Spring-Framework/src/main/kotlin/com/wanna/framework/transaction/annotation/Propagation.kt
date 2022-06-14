@@ -6,6 +6,8 @@ import com.wanna.framework.transaction.TransactionDefinition
  * 事务传播属性，每个传播属性会对应一个value，对应TransactionDefinition当中的常量值
  *
  * @see TransactionDefinition
+ *
+ * @param value propagation value
  */
 enum class Propagation(val value: Int) {
     REQUIRED(TransactionDefinition.PROPAGATION_REQUIRED),

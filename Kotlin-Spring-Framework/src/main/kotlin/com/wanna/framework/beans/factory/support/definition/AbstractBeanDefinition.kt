@@ -49,6 +49,8 @@ abstract class AbstractBeanDefinition constructor(_beanClass: Class<*>?) : BeanD
             target.methodOverrides = MethodOverrides(origin.getMethodOverrides())
             target.propertyValues = MutablePropertyValues(MutablePropertyValues())
             target.constructorArgumentValues = ConstructorArgumentValues(origin.getConstructorArgumentValues())
+            this.getPropertyValues()
+                .addPropertyValues(origin.getPropertyValues().getPropertyValues().toList())
         }
     }
 

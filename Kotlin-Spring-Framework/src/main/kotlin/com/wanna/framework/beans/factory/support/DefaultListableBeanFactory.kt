@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import java.util.function.Predicate
 import javax.inject.Provider
+import kotlin.collections.LinkedHashMap
 
 
 /**
@@ -594,7 +595,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      *
      * @param beanName beanName
      * @param beanInstance beanInstance
-     * @return 该Bean是否是Primary的？
+     * @return 该Bean是否是Primary的？如果是return true，不然return false
      */
     private fun isPrimary(beanName: String, beanInstance: Any) = getMergedBeanDefinition(beanName).isPrimary()
 
@@ -606,10 +607,10 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         beanName: String?, requiredType: Class<*>, descriptor: DependencyDescriptor
     ): MutableMap<String, Any> {
         // 从BeanFactory(以及它的parentBeanFactory)当中中拿到所有的类型匹配requiredType的beanName列表
-        val candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this, requiredType)
-        val result = HashMap<String, Any>()
+        val candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this, requiredType, true, descriptor.isEager())
+        val result = LinkedHashMap<String, Any>()
 
-        // 1.从BeanFactory当中注册的可解析的依赖(resolvableDependencies)当中尝试去进行解析
+        // 1.从BeanFactory当中注册的可解析的依赖(resolvableDependencies)当中尝试去进行解析，比如BeanFactory/ApplicationContext等
         this.resolvableDependencies.forEach { (type, obj) ->
             if (ClassUtils.isAssignFrom(type, requiredType) && requiredType.isInstance(obj)) {
                 result[requiredType.name] = obj
@@ -872,9 +873,44 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @return beanType对应的beanName列表
      */
     override fun getBeanNamesForType(type: Class<*>): List<String> {
+        return doGetBeanNamesForType(type, true, true)
+    }
+
+    /**
+     * 给定具体类型(type)，去容器中找到所有的类型匹配的单实例Bean
+     *
+     * Note：这里不能去getBean的，只能从BeanDefinition当中去进行匹配...
+     *
+     * @param type beanType
+     * @return beanType对应的beanName列表
+     */
+    override fun getBeanNamesForType(
+        type: Class<*>,
+        includeNonSingletons: Boolean,
+        allowEagerInit: Boolean
+    ): List<String> {
+        return doGetBeanNamesForType(type, includeNonSingletons, allowEagerInit)
+    }
+
+    /**
+     * 给定具体类型(type)，去容器中找到所有的类型匹配的单实例Bean
+     *
+     * Note：这里不能去getBean的，只能从BeanDefinition当中去进行匹配...
+     *
+     * @param type beanType
+     * @param includeNonSingletons 是否允许非单例对象？
+     * @param allowEagerInit 是否允许去进行eager加载
+     * @return beanType对应的beanName列表
+     */
+    private fun doGetBeanNamesForType(
+        type: Class<*>,
+        includeNonSingletons: Boolean,
+        allowEagerInit: Boolean
+    ): List<String> {
         val beanNames = ArrayList<String>()
         getBeanDefinitionNames().forEach { beanName ->
-            if (isTypeMatch(beanName, type)) {
+            val allowFactoryBeanInit = allowEagerInit || containsBeanDefinition(beanName)
+            if (isTypeMatch(beanName, type, allowFactoryBeanInit)) {
                 beanNames += beanName
             }
         }

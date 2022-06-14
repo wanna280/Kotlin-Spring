@@ -65,9 +65,9 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
         val applicationContext = this.applicationContext
 
         val context = if (beanFactory != null) {
-            beanFactory.getBean(FeignContext::class.java)!!
+            beanFactory.getBean(FeignContext::class.java)
         } else if (applicationContext != null) {
-            applicationContext.getBean(FeignContext::class.java)!!
+            applicationContext.getBean(FeignContext::class.java)
         } else {
             throw IllegalStateException("BeanFactory和ApplicationContext不能都为空")
         }

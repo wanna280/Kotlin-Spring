@@ -9,6 +9,13 @@ interface ListableBeanFactory : BeanFactory {
     fun getBeanNamesForType(type: Class<*>): List<String>
 
     /**
+     * 根据type去匹配容器中所有该类型的Bean的beanName
+     *
+     * @param type 要去进行匹配的类型
+     */
+    fun getBeanNamesForType(type: Class<*>, includeNonSingletons: Boolean, allowEagerInit: Boolean) : List<String>
+
+    /**
      * 给定具体类型type，去容器中找到该类型的所有Bean列表
      *
      * @param type 要去进行匹配的类型

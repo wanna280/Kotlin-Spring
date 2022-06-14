@@ -16,6 +16,10 @@ abstract class ResourceHolderSupport : ResourceHolder {
         this.timeout = seconds * 1000L
     }
 
+    open fun getTimeInMillSeconds() = this.timeout
+
+    open fun getTimeInSeconds() = this.timeout
+
     override fun isVoid(): Boolean {
         return false
     }

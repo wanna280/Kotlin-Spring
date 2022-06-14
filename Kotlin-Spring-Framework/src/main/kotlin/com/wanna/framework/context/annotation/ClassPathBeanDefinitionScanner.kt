@@ -20,8 +20,8 @@ import com.wanna.framework.core.util.ClassDiscoveryUtils
  * 在指定的包下寻找组件，可以重写findCandidateComponents方法去进行自定义扫描的逻辑...
  */
 open class ClassPathBeanDefinitionScanner(
-    private val registry: BeanDefinitionRegistry,
-    useDefaultFilters: Boolean,  // 是否需要应用默认的Filter？
+    val registry: BeanDefinitionRegistry,
+    useDefaultFilters: Boolean = true,  // 是否需要应用默认的Filter？
 ) {
     // includeFilters
     private var includeFilters = ArrayList<TypeFilter>()
@@ -58,6 +58,8 @@ open class ClassPathBeanDefinitionScanner(
 
     /**
      * 扫描指定的包中的BeanDefinition，并注册到容器当中，返回值为扫描到的BeanDefinition的数量
+     *
+     * @return 扫描到的BeanDefinition的数量
      */
     open fun scan(vararg packages: String): Int {
         val beforeCount = registry.getBeanDefinitionCount()  // before Count
@@ -85,6 +87,7 @@ open class ClassPathBeanDefinitionScanner(
             val candidateComponents = findCandidateComponents(packageName)
             candidateComponents
                 .filter { isCandidateComponent(it.getBeanClass()) }  // 判断是否是候选Bean
+                .filter { isCandidateComponent(it as AnnotatedBeanDefinition) }  // 判断BeanDefinition是否合法
                 .forEach { beanDefinition ->
                     // 利用beanNameGenerator给beanDefinition生成beanName，并注册到BeanDefinitionRegistry当中
                     val beanName = beanNameGenerator.generateBeanName(beanDefinition, registry)
@@ -114,7 +117,8 @@ open class ClassPathBeanDefinitionScanner(
      * @param packageName 指定的包名
      */
     open fun findCandidateComponents(packageName: String): Set<BeanDefinition> {
-        return ClassDiscoveryUtils.scan(packageName).map { ScannedGenericBeanDefinition(it) }.filter { isCandidateComponent(it.getBeanClass()) }.toSet()
+        return ClassDiscoveryUtils.scan(packageName).map { ScannedGenericBeanDefinition(it) }
+            .filter { isCandidateComponent(it.getBeanClass()) }.toSet()
     }
 
     /**
@@ -123,12 +127,6 @@ open class ClassPathBeanDefinitionScanner(
      * @param clazz 候选类
      */
     protected open fun isCandidateComponent(clazz: Class<*>?): Boolean {
-        if (clazz == null) {
-            return false
-        }
-        if (clazz.name.startsWith("java.")) {
-            return false
-        }
         // 如果被excludeFilter匹配，直接return false
         this.excludeFilters.forEach {
             if (it.matches(clazz)) {
@@ -142,6 +140,21 @@ open class ClassPathBeanDefinitionScanner(
             }
         }
         return false
+    }
+
+    /**
+     * 使用BeanDefinition，去进行判断是否合法
+     *
+     * @param beanDefinition 要去进行匹配的BeanDefinition
+     */
+    protected open fun isCandidateComponent(beanDefinition: AnnotatedBeanDefinition): Boolean {
+        if (beanDefinition.getBeanClass() == null) {
+            return false
+        }
+        if (beanDefinition.getBeanClass()!!.name.startsWith("java.")) {
+            return false
+        }
+        return true
     }
 
     /**

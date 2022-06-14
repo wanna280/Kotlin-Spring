@@ -6,6 +6,8 @@ import com.wanna.framework.transaction.TransactionDefinition
  * 事务的隔离级别的枚举，每个隔离级别会对应一个int类型的level
  *
  * @see TransactionDefinition
+ *
+ * @param level levelInt
  */
 enum class Isolation(val level: Int) {
     DEFAULT(TransactionDefinition.ISOLATION_DEFAULT),

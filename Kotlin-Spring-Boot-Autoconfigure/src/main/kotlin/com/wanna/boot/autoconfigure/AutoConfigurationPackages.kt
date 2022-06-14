@@ -1,17 +1,22 @@
 package com.wanna.boot.autoconfigure
 
+import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
+import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.GenericBeanDefinition
 import com.wanna.framework.context.annotation.ImportBeanDefinitionRegistrar
+import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.core.type.AnnotationMetadata
+import com.wanna.framework.core.util.ClassUtils
 import java.util.function.Supplier
 
 /**
  * 这是一个给SpringBoot当中去进行自动配置包的类，这个类的主要作用是，往容器当中注册一个BasePackages组件，
- * 后期可以从容器当中获取到这个组件从而获取到自动配置的包的列表
+ * 后期可以从容器当中获取到这个组件从而获取到自动配置的包的列表，比如MyBatis的Starter，就使用了自动匹配包
  *
  * @see AutoConfigurationPackage
+ * @see get
  */
 class AutoConfigurationPackages {
     companion object {
@@ -34,6 +39,35 @@ class AutoConfigurationPackages {
                 registry.registerBeanDefinition(AUTO_CONFIGURATION_PACKAGES_BEAN, BasePackagesBeanDefinition(packages))
             }
         }
+
+        /**
+         * 获取自动配置的包的列表，供外部去进行使用
+         *
+         * @param beanFactory beanFactory
+         * @return 获取SpringBoot自动配置的包的列表
+         * @throws NoSuchBeanDefinitionException 如果找不到自动配置包
+         */
+        @JvmStatic
+        fun get(beanFactory: BeanFactory): List<String> {
+            val autoConfigurationPackages =
+                beanFactory.getBean(AUTO_CONFIGURATION_PACKAGES_BEAN, BasePackages::class.java)
+            return autoConfigurationPackages.basePackages
+        }
+
+        /**
+         * 判断BeanFactory当中是否存在有自动配置包？
+         *
+         * @param beanFactory
+         */
+        @JvmStatic
+        fun has(beanFactory: BeanFactory): Boolean {
+            return try {
+                beanFactory.getBean(AUTO_CONFIGURATION_PACKAGES_BEAN, BasePackages::class.java)
+                true
+            } catch (ex: NoSuchBeanDefinitionException) {
+                false
+            }
+        }
     }
 
 
@@ -51,7 +85,7 @@ class AutoConfigurationPackages {
     }
 
     /**
-     * BasePackages的Bean，会被SpringBoot注册到容器当中
+     * BasePackages的Bean，会被SpringBoot注册到容器当中，方便外部去获取到SpringBoot自动配置的包的列表
      *
      * @see BasePackagesBeanDefinition
      */
@@ -99,7 +133,7 @@ class AutoConfigurationPackages {
             packages += (attributes["basePackages"] as Array<String>)
             packages += (attributes["basePackageClasses"] as Array<Class<*>>).map { it.packageName }.toList()
             if (packages.isEmpty()) {
-                packages += annotationMetadata.getClassName()
+                packages += ClassUtils.getPackageName(annotationMetadata.getClassName())  // fixed: use packageName to replace old className
             }
         }
 

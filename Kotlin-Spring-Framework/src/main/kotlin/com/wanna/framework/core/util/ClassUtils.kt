@@ -113,6 +113,15 @@ object ClassUtils {
     }
 
     /**
+     * 指定一个className，获取它的包名
+     */
+    @JvmStatic
+    fun getPackageName(fullQualifierName: String): String {
+        val lastIndex = fullQualifierName.lastIndexOf(DOT)
+        return if (lastIndex == -1) fullQualifierName else fullQualifierName.substring(0, lastIndex)
+    }
+
+    /**
      * 获取一个类的全部父接口
      *
      * @param clazz 目标类

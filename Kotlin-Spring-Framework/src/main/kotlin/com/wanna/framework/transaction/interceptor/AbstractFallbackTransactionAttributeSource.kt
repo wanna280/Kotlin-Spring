@@ -4,7 +4,10 @@ import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
 /**
- * 提供了支持fallback的方式去进行获取@Transactional注解的方式的模板方
+ * 提供了支持fallback的方式去进行获取@Transactional注解的方式的模板方法；
+ *
+ * * 1.首先会尝试去指定的方法上去找@Transactional
+ * * 2.尝试去指定的方法所在的类上去找@Transactional
  *
  * @see findTransactionAttribute
  * @see TransactionAttribute

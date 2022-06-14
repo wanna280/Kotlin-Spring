@@ -127,7 +127,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         // 转换name成为真正的beanName，去掉FactoryBean的前缀"&"去进行解引用
         val beanName = transformedBeanName(name)
 
-        val beanInstance: Any
+        var beanInstance: Any
 
         // 尝试从单实例Bean的注册中心当中去获取Bean
         val sharedInstance = getSingleton(beanName)
@@ -181,6 +181,9 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
                             }
                         }
                     })!!
+
+                    // fixed: getObjectForBeanInstance
+                    beanInstance = getObjectForBeanInstance(beanInstance, name, beanName, mbd)
                     // 如果Bean是Prototype的
                 } else if (mbd.isPrototype()) {
                     val prototypeInstance: Any

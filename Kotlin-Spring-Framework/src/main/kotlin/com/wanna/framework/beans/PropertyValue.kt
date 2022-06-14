@@ -8,7 +8,7 @@ import com.wanna.framework.beans.factory.support.definition.config.BeanMetadataA
  * @param name propertyName
  * @param value propertyValue
  */
-open class PropertyValue(val name: String, val value: Any?) :
+open class PropertyValue(val name: String, var value: Any?) :
     BeanMetadataAttributeAccessor() {
 
     // 该PropertyValue是否是可选的？

@@ -6,12 +6,13 @@ include(":Kotlin-Spring-Web")
 include(":Kotlin-Spring-Boot")
 include(":Kotlin-Spring-Boot-Autoconfigure")
 
+include(":Kotlin-Spring-MyBatis")
+
 include(":Kotlin-Logger:logger-api")
 include(":Kotlin-Logger:logger-impl")
 include(":Kotlin-Logger:logger-temp")
 include(":Kotlin-Logger:logger-test")
 include(":Kotlin-Logger:logger-slf4j-impl")
-
 
 include(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Context")
 include(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Common")
