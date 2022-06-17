@@ -41,11 +41,21 @@ open class MybatisAutoConfiguration {
         private val logger = LoggerFactory.getLogger(MybatisAutoConfiguration::class.java)
     }
 
+    @Autowired
+    private lateinit var properties: MybatisProperties
+
+    @Autowired(required = false)
+    private lateinit var interceptors: Array<Interceptor>
+
+    @Autowired(required = false)
+    private lateinit var typeHandlers: Array<TypeHandler<*>>
+
+    @Autowired(required = false)
+    private lateinit var customizers: Array<ConfigurationCustomizer>
+
     @Bean
     @ConditionOnMissingBean
-    open fun sqlSessionTemplate(
-        sqlSessionFactory: SqlSessionFactory, properties: MybatisProperties
-    ): SqlSessionTemplate {
+    open fun sqlSessionTemplate(sqlSessionFactory: SqlSessionFactory): SqlSessionTemplate {
         if (properties.executorType != null) {
             return SqlSessionTemplate(sqlSessionFactory, properties.executorType!!)
         }
@@ -54,13 +64,7 @@ open class MybatisAutoConfiguration {
 
     @Bean
     @ConditionOnMissingBean
-    open fun sqlSessionFactory(
-        dataSource: DataSource,
-        @Autowired(required = false) interceptors: Array<Interceptor>,
-        @Autowired(required = false) typeHandlers: Array<TypeHandler<*>>,
-        @Autowired properties: MybatisProperties,
-        @Autowired(required = false) customizers: Array<ConfigurationCustomizer>
-    ): SqlSessionFactory {
+    open fun sqlSessionFactory(dataSource: DataSource): SqlSessionFactoryBean {
         val sqlSessionFactoryBean = SqlSessionFactoryBean()
         sqlSessionFactoryBean.dataSource = dataSource
         sqlSessionFactoryBean.configLocation = properties.configLocation
@@ -68,7 +72,7 @@ open class MybatisAutoConfiguration {
         sqlSessionFactoryBean.typeHandlersPackage = properties.typeHandlersPackage
         sqlSessionFactoryBean.plugins = interceptors
         sqlSessionFactoryBean.typeHandlers = typeHandlers
-        return sqlSessionFactoryBean.getObject()
+        return sqlSessionFactoryBean
     }
 
     /**
@@ -105,9 +109,11 @@ open class MybatisAutoConfiguration {
             }
             logger.debug("开始去寻找标注了@Mapper注解的接口去进行注册...")
 
+
+            // 获取SpringBoot的自动配置包的列表
             val packages = AutoConfigurationPackages.get(this.beanFactory)
             if (logger.isDebugEnabled) {
-                packages.forEach { logger.debug("正在处理自动配置包当中的[$it]Mapper") }
+                packages.forEach { logger.debug("正在处理自动配置包[$it]当中的Mapper") }
             }
             val beanDefinition = GenericBeanDefinition(MapperScannerConfigurer::class.java)
             val packagesString = StringUtils.collectionToCommaDelimitedString(packages)

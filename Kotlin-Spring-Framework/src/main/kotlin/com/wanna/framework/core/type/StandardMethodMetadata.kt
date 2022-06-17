@@ -12,8 +12,6 @@ import java.lang.reflect.Modifier
  * @see AnnotatedTypeMetadata
  */
 open class StandardMethodMetadata(private val method: Method) : MethodMetadata {
-
-
     override fun getAnnotations(): Array<Annotation> {
         return method.annotations
     }

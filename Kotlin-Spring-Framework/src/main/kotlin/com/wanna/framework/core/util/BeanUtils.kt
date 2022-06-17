@@ -52,7 +52,8 @@ object BeanUtils {
      */
     @JvmStatic
     fun <T> instantiateClass(clazz: Class<T>): T {
-        return clazz.getDeclaredConstructor().newInstance()
+        val constructor = clazz.getDeclaredConstructor()
+        return constructor.newInstance()
     }
 
     /**

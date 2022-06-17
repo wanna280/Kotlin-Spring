@@ -117,10 +117,11 @@ open class MapperScannerRegistrar : ImportBeanDefinitionRegistrar {
     }
 
     /**
-     * 生成MapperScannerConfigurer的beanName
+     * 使用合适的生成策略去生成MapperScannerConfigurer的beanName
      *
      * @param importClassMetadata MapperScan的注解元信息
      * @param index index
+     * @return 生成的beanName
      */
     private fun generateBaseBeanName(importClassMetadata: AnnotationMetadata, index: Int): String =
         importClassMetadata.getClassName() + "#" + MapperScannerRegistrar::class.java.simpleName + "#" + index

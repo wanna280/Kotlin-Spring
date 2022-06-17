@@ -28,7 +28,7 @@ import java.util.function.Supplier
 /**
  * 这是一个拥有Autowire能力的BeanFactory，不仅提供了普通的BeanFactory的能力，也可以提供createBean等Autowire相关工作
  */
-abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), AutowireCapableBeanFactory {
+abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), AutowireCapableBeanFactory {
 
     // 是否开启了循环依赖？默认设置为true
     private var allowCircularReferences: Boolean = true
@@ -311,9 +311,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
     private fun applyMergedBeanDefinitionPostProcessor(mbd: RootBeanDefinition, beanType: Class<*>, beanName: String) {
         if (getBeanPostProcessorCache().hasMergedDefinition()) {
             getBeanPostProcessorCache().mergedDefinitions.forEach {
-                it.postProcessMergedBeanDefinition(
-                    mbd, beanType, beanName
-                )
+                it.postProcessMergedBeanDefinition(mbd, beanType, beanName)
             }
         }
     }
@@ -321,6 +319,9 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
     /**
      * 对Bean去完成初始化，执行Bean的初始化回调方法，以及对Bean的初始化前后的去进行干涉的BeanPostProcessor
      *
+     * @param beanName beanName
+     * @param bean 要去进行初始化的Bean
+     * @param mbd MergedBeanDefinition
      * @throws BeanCreationException 执行初始化过程当中发生了异常
      * @throws Throwable 在执行初始化之前/之后的方法当中，发生的异常将会直接往上抛
      */
@@ -446,6 +447,8 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
     /**
      * 通过byType的方式去进行自动注入，需要解析所有的非简单属性的setter，将其添加到pvs当中
      *
+     * Note: Autowired注入时，eager=true，必须去进行注入，就算是FactoryBean也得给我注入进来
+     *
      * @param beanName beanName
      * @param mbd MergedBeanDefinition
      * @param beanWrapper beanWrapper
@@ -459,7 +462,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
     ) {
         val propertyNames = unsatisfiedNonSimpleProperties(mbd, beanWrapper)
         propertyNames.forEach { (propertyName, method) ->
-            val dependency = resolveDependency(DependencyDescriptor(MethodParameter(method, 0), false), beanName)
+            val dependency = resolveDependency(DependencyDescriptor(MethodParameter(method, 0), false, true), beanName)
             if (dependency != null) {
                 pvs.addPropertyValue(propertyName, dependency)
             }

@@ -6,7 +6,7 @@ import com.wanna.framework.transaction.TransactionDefinition.Companion.PROPAGATI
 import com.wanna.framework.transaction.TransactionDefinition.Companion.TIMEOUT_DEFAULT
 
 /**
- * 对于TransactionDefinition的具体实现，对需要提供的各个属性提供了getter/setter；
+ * 对于TransactionDefinition的具体实现，对需要提供的各个事务属性提供了getter/setter；
  * 各个getter/setter方法都会被直接设置为final的，不允许子类去进行重写
  *
  * @see TransactionDefinition

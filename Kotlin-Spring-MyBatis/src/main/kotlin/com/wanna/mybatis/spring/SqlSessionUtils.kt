@@ -6,7 +6,9 @@ import org.apache.ibatis.session.SqlSession
 import org.apache.ibatis.session.SqlSessionFactory
 
 /**
- * SqlSession的工具类
+ * SqlSession的单例工具类，提供从Spring的TransactionManager当中去进行SqlSession的获取、注册、关闭等操作
+ *
+ * @see TransactionSynchronizationManager
  */
 object SqlSessionUtils {
 
@@ -19,21 +21,25 @@ object SqlSessionUtils {
      */
     @JvmStatic
     fun getSqlSession(sqlSessionFactory: SqlSessionFactory, executorType: ExecutorType): SqlSession {
+
+        // 1.如果存在有事务的话，那么可以从事务同步管理器当中去获取SqlSession，这样就保证每次CRUD操作，都获取到的是该SqlSession
         val sqlSessionHolder = TransactionSynchronizationManager.getResource(sqlSessionFactory) as SqlSessionHolder?
         var sqlSession = sqlSessionHolder?.sqlSession
         if (sqlSession != null) {
             return sqlSession
         }
+
+        // 如果不存在已经有的事务的话，那么使用SqlSessionFactory.openSession去获取到SqlSession
         sqlSession = sqlSessionFactory.openSession(executorType)
 
-        // 把SqlSession入到ThreadLocal当中
+        // 把SqlSession入到事务同步管理器的ThreadLocal当中，下次再去getSqlSession，就可以从ThreadLocal当中去进行获取了
         registerSessionHolder(sqlSessionFactory, executorType, sqlSession)
 
         return sqlSession
     }
 
     /**
-     * 如果必要的话，关闭SqlSession
+     * 如果必要的话，需要去关闭SqlSession
      *
      * * 1.如果是事务的SqlSession，调用release去释放连接
      * * 2.如果不是事务的SqlSession，那么直接关闭SqlSession
@@ -53,6 +59,13 @@ object SqlSessionUtils {
         }
     }
 
+    /**
+     * 注册SqlSessionHolder到事务同步管理器当中
+     *
+     * @param sqlSessionFactory SqlSessionFactory
+     * @param executorType 执行器类型(SIMPLE/BATCH/REUSE)
+     * @param sqlSession SqlSession
+     */
     @JvmStatic
     private fun registerSessionHolder(
         sqlSessionFactory: SqlSessionFactory, executorType: ExecutorType, sqlSession: SqlSession

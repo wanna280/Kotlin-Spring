@@ -16,13 +16,11 @@ import com.wanna.framework.context.exception.BeansException
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.processor.beans.*
 import com.wanna.framework.core.NamedThreadLocal
+import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.support.DefaultConversionService
 import com.wanna.framework.core.metrics.ApplicationStartup
-import com.wanna.framework.core.util.BeanFactoryUtils
-import com.wanna.framework.core.util.BeanUtils
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.core.util.*
 import org.slf4j.LoggerFactory
 import java.beans.PropertyEditor
 import java.util.concurrent.ConcurrentHashMap
@@ -36,8 +34,8 @@ import java.util.concurrent.CopyOnWriteArrayList
  * @see FactoryBeanRegistrySupport
  * @see DefaultSingletonBeanRegistry
  */
-abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) : BeanFactory, ConfigurableBeanFactory,
-    ListableBeanFactory, FactoryBeanRegistrySupport() {
+abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? = null) : BeanFactory,
+    ConfigurableBeanFactory, ListableBeanFactory, FactoryBeanRegistrySupport() {
 
     // beanClassLoader
     private var beanClassLoader: ClassLoader = ClassLoader.getSystemClassLoader()
@@ -157,8 +155,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
             // 如果从单例Bean注册中心当中获取不到Bean实例，那么需要获取MergedBeanDefinition，去完成Bean的创建
             val mbd = getMergedLocalBeanDefinition(beanName)
 
-            val beanCreation = this.applicationStartup.start("spring.beans.instantiate")
-                .tag("beanName", name)
+            val beanCreation = this.applicationStartup.start("spring.beans.instantiate").tag("beanName", name)
             try {
                 // tag requiredType
                 if (requiredType != null) {
@@ -263,8 +260,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
 
             // 如果当前是HashSet，说明之前已经放入过两个以上的元素了，这里直接往HashSet当中添加即可
         } else {
-            @Suppress("UNCHECKED_CAST")
-            val beanNameSet = current as HashSet<String>
+            @Suppress("UNCHECKED_CAST") val beanNameSet = current as HashSet<String>
             beanNameSet += beanName
         }
     }
@@ -282,8 +278,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
 
             // 如果之前是HashSet，那么需要移除一个元素
         } else {
-            @Suppress("UNCHECKED_CAST")
-            val beanNameSet = current as HashSet<String>
+            @Suppress("UNCHECKED_CAST") val beanNameSet = current as HashSet<String>
             beanNameSet -= beanName
             // 如果最后一个元素都被删掉了，那么直接remove...
             if (beanNameSet.isEmpty()) {
@@ -416,11 +411,13 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
      * @return 是否类型匹配？
      */
     override fun isTypeMatch(name: String, type: Class<*>): Boolean {
-        return isTypeMatch(name, type, true)
+        return isTypeMatch(name, type, false)
     }
 
     /**
      * 判断容器当中的beanName对应的类型是否和type匹配？(支持去匹配FactoryBeanObject)
+     *
+     * 这个方法实现巨复杂(目前并未是西安)，应该研究研究！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
      *
      * @param name beanName
      * @param type beanName应该匹配的类型？
@@ -431,7 +428,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         val beanName = transformedBeanName(name)
         val factoryDereference = BeanFactoryUtils.isFactoryDereference(name)
 
-        // 1，先尝试去检验一波已经有SingletonBean的情况
+        // 1，先尝试去检验一波已经有SingletonBean的情况，可以直接根据类型去进行匹配
         val singleton = getSingleton(beanName, false)
         if (singleton != null && singleton::class.java != NullBean::class.java) {
             // 如果获取到的SingletonBean是FactoryBean的话
@@ -456,6 +453,34 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         // 3.如果从SingletonBean当中都无法获取到的话，那么也只能从BeanDefinition当中去进行判断了...
         val beanDefinition = getMergedLocalBeanDefinition(beanName)
         val beanClass = beanDefinition.getBeanClass()
+
+        // 预测Bean的类型
+        val predictBeanType = predictBeanType(beanName, beanDefinition) ?: return false
+
+        // 4.如果预测的类型是FactoryBean的话，那么尝试从FactoryBean上去进行尝试
+        if (ClassUtils.isAssignFrom(FactoryBean::class.java, predictBeanType)) {
+            // 如果给定的类型是&beanName的形式，直接去匹配类型即可
+            if (factoryDereference) {
+                return ClassUtils.isAssignFrom(type, predictBeanType)
+            }
+
+            // 如果给定的类型不是&beanName的形式，那么需要去匹配FactoryBeanObjectType
+            // 我们这里使用的是@Bean的方法的返回值去进行泛型的解析的方式去进行判断
+            // 这种方式也必须去进行尝试，不然会容易出现匹配@Bean方法的时候出现循环依赖
+            // 比如A类有一个@Bean的方法B，A有一个要注入的元素C
+            // 那么匹配B时，就会出现，需要先创建A的情况，而创建A又需要注入C，又会遇到isTypeMatch
+            // 又会去匹配到B的情况，但是B之前已经在创建当中了，但是还没完成创建，这时就出现了循环依赖...
+            // 典型的就是A=MyBatisAutoConfiguration，B=SqlSessionFactoryBean，C=MyBatisProperties这种情况
+            if (beanDefinition.getFactoryMethodName() != null) {
+                val factoryClass = beanDefinition.getResolvedFactoryMethod()!!.declaringClass
+                val resolvableType =
+                    getTypeForFactoryBeanFromMethod(factoryClass, beanDefinition.getFactoryMethodName()!!)
+                if (resolvableType != null) {
+                    return ClassUtils.isAssignFrom(type, resolvableType.resolve())
+                }
+            }
+        }
+
 
         // 如果有beanClass的话，那么直接使用beanClass去进行匹配
         if (beanClass != null) {
@@ -515,6 +540,26 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
     }
 
     /**
+     * 从方法上去获取FactoryBean的类型，通过解析返回值的泛型的方式去进行解析
+     *
+     * @param factoryClass FactoryBeanClass
+     * @param factoryMethodName factoryMethodName
+     * @return 解析到的FactoryBeanObjectClass
+     */
+    private fun getTypeForFactoryBeanFromMethod(factoryClass: Class<*>, factoryMethodName: String): ResolvableType? {
+        var resolvableType: ResolvableType? = null
+        ReflectionUtils.doWithMethods(factoryClass) {
+            if (it.name == factoryMethodName && ClassUtils.isAssignFrom(FactoryBean::class.java, it.returnType)) {
+                resolvableType =
+                    ResolvableType.forType(it.genericReturnType, variableResolver = null).`as`(FactoryBean::class.java)
+                        .getGenerics()[0]
+            }
+        }
+        return resolvableType
+    }
+
+
+    /**
      * 根据beanName获取到该Bean在容器中的类型
      */
     override fun getType(beanName: String): Class<*>? {
@@ -553,17 +598,20 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
      * @param mbd 合并的RootBeanDefinition
      */
     protected open fun getTypeForFactoryBean(beanName: String, mbd: RootBeanDefinition, allowInit: Boolean): Class<*>? {
+        val type = mbd.getAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE) as Class<*>?
+        if (type != null) {
+            return type;
+        }
+
         if (allowInit && mbd.isSingleton()) {
-            val factoryBean = getBean(FACTORY_BEAN_PREFIX + beanName, FactoryBean::class.java) as FactoryBean
+            val factoryBean = getBean(FACTORY_BEAN_PREFIX + beanName, FactoryBean::class.java)
             return getTypeForFactoryBean(factoryBean)
         }
         return null
     }
 
-
-    override fun getBeanNamesForTypeIncludingAncestors(type: Class<*>): List<String> {
-        return BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this, type).toList()
-    }
+    override fun getBeanNamesForTypeIncludingAncestors(type: Class<*>): List<String> =
+        getBeanNamesForTypeIncludingAncestors(type, true, true)
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> getBeansForTypeIncludingAncestors(type: Class<T>): Map<String, T> {
@@ -571,6 +619,13 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         val beanNamesForTypeIncludingAncestors = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this, type)
         beanNamesForTypeIncludingAncestors.forEach { beans[it] = getBean(it) as T }
         return beans
+    }
+
+    override fun getBeanNamesForTypeIncludingAncestors(
+        type: Class<*>, includeNonSingletons: Boolean, allowEagerInit: Boolean
+    ): List<String> {
+        return BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this, type, includeNonSingletons, allowEagerInit)
+            .toList()
     }
 
     /**

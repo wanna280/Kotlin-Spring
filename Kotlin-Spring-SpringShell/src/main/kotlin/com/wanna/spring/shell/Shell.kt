@@ -30,7 +30,7 @@ open class Shell(private val resultHandler: ResultHandler<Any>) : CommandRegistr
      */
     override fun afterSingletonsInstantiated() {
         val commandRegistry = DefaultCommandRegistry()
-        applicationContext.getBeanNamesForType(MethodTargetRegistrar::class.java).forEach {
+        applicationContext.getBeanNamesForType(MethodTargetRegistrar::class.java, true, true).forEach {
             val registrar = applicationContext.getBean(it, MethodTargetRegistrar::class.java)
             registrar.register(commandRegistry)
         }

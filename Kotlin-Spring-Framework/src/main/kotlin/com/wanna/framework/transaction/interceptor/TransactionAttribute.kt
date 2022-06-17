@@ -10,7 +10,7 @@ import com.wanna.framework.transaction.TransactionDefinition
 interface TransactionAttribute : TransactionDefinition {
 
     /**
-     * 获取Qualifier
+     * 获取TransactionManager的Qualifier
      *
      * @return Qualifier
      */

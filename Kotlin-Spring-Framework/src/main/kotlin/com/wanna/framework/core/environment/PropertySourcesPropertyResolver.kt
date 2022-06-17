@@ -6,6 +6,8 @@ package com.wanna.framework.core.environment
  * @see PropertyResolver
  * @see PropertySources
  * @see MutablePropertySources
+ *
+ * @param propertySources PropertySources，提供解析属性时的属性来源
  */
 open class PropertySourcesPropertyResolver(private val propertySources: PropertySources) : AbstractPropertyResolver() {
 

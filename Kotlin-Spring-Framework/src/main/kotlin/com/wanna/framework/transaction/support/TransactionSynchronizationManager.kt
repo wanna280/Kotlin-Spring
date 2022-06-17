@@ -4,7 +4,7 @@ import com.wanna.framework.core.NamedThreadLocal
 import org.slf4j.LoggerFactory
 
 /**
- * 事务同步管理器，维护了事务相关的一系列的ThreadLocal
+ * 事务同步管理器，维护了事务相关的一系列的ThreadLocal资源
  */
 object TransactionSynchronizationManager {
 

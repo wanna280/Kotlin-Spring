@@ -12,8 +12,8 @@ import com.wanna.framework.core.util.ClassUtils
 import java.util.function.Supplier
 
 /**
- * 这是一个给SpringBoot当中去进行自动配置包的类，这个类的主要作用是，往容器当中注册一个BasePackages组件，
- * 后期可以从容器当中获取到这个组件从而获取到自动配置的包的列表，比如MyBatis的Starter，就使用了自动匹配包
+ * 这是一个给SpringBoot当中去进行自动配置包的类，这个类的主要作用是，往容器当中注册一个BasePackages组件，供第三方的整合所使用
+ * 后期可以从容器当中获取到这个组件从而获取到自动配置的包的列表，比如MyBatis的Starter，就使用了自动配置包去进行@Mapper注解的扫描
  *
  * @see AutoConfigurationPackage
  * @see get
@@ -41,11 +41,11 @@ class AutoConfigurationPackages {
         }
 
         /**
-         * 获取自动配置的包的列表，供外部去进行使用
+         * 获取SpringBoot自动配置的包的列表，供外部去进行使用，去提供自动装配的功能
          *
          * @param beanFactory beanFactory
          * @return 获取SpringBoot自动配置的包的列表
-         * @throws NoSuchBeanDefinitionException 如果找不到自动配置包
+         * @throws NoSuchBeanDefinitionException 如果找不到自动配置的包
          */
         @JvmStatic
         fun get(beanFactory: BeanFactory): List<String> {
@@ -55,7 +55,7 @@ class AutoConfigurationPackages {
         }
 
         /**
-         * 判断BeanFactory当中是否存在有自动配置包？
+         * 判断给定的BeanFactory当中是否存在有自动配置包？
          *
          * @param beanFactory
          */

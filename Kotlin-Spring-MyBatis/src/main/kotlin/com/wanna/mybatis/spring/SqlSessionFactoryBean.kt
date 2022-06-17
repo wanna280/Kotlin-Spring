@@ -92,12 +92,14 @@ open class SqlSessionFactoryBean : FactoryBean<SqlSessionFactory>, InitializingB
             Optional.ofNullable(this.configurationProperties).ifPresent(targetConfiguration::setVariables)
         }
         // 添加要apply的插件
-        if (this.plugins != null) {
-            this.plugins!!.forEach { targetConfiguration.addInterceptor(it) }
-        }
+        Optional.ofNullable(this.plugins)
+            .ifPresent { it.forEach { interceptor -> targetConfiguration.addInterceptor(interceptor) } }
+
         // 添加TypeHandler
-        if (this.typeHandlers != null) {
-            this.typeHandlers!!.forEach { targetConfiguration.typeHandlerRegistry.typeHandlers.add(it) }
+        Optional.ofNullable(this.typeHandlers).ifPresent {
+            it.forEach { typeHandler ->
+                targetConfiguration.typeHandlerRegistry.typeHandlers.add(typeHandler)
+            }
         }
         Optional.ofNullable(this.cache).ifPresent(targetConfiguration::addCache)
         Optional.ofNullable(this.typeHandlersPackage).ifPresent(targetConfiguration.typeHandlerRegistry::register)
@@ -107,14 +109,15 @@ open class SqlSessionFactoryBean : FactoryBean<SqlSessionFactory>, InitializingB
         targetConfiguration.environment =
             Environment(environment, this.transactionFactory ?: SpringManagedTransactionFactory(), this.dataSource)
 
-        // 处理给定的MapperLocation，解析Xml的Mapper配置文件
-        if (this.mapperLocations != null) {
-            this.mapperLocations!!.forEach {
-                XMLMapperBuilder(getInputStream(it), targetConfiguration, it, targetConfiguration.sqlFragments).parse()
+        // 处理给定的MapperLocations，解析Xml的Mapper配置文件
+        Optional.ofNullable(this.mapperLocations).ifPresent {
+            it.forEach { location ->
+                XMLMapperBuilder(
+                    getInputStream(location), targetConfiguration, location, targetConfiguration.sqlFragments
+                ).parse()
             }
         }
-        val sessionFactory = DefaultSqlSessionFactory(targetConfiguration)
-        this.sqlSessionFactory = sessionFactory
+        this.sqlSessionFactory = DefaultSqlSessionFactory(targetConfiguration)
     }
 
     override fun getObject(): SqlSessionFactory {
@@ -128,15 +131,20 @@ open class SqlSessionFactoryBean : FactoryBean<SqlSessionFactory>, InitializingB
      * 给定资源路径，获取该资源的输入流
      *
      * @param location 资源路径
+     * @throws FileNotFoundException 如果给定的文件没有找到
      */
     private fun getInputStream(location: String): InputStream {
         try {
             if (location.startsWith("classpath:")) {
-                return SqlSessionFactoryBean::class.java.classLoader.getResourceAsStream(location.substring("classpath:".length))
+                return SqlSessionFactoryBean::class.java.classLoader.getResourceAsStream(location.substring("classpath:".length))!!
             }
             return FileInputStream(location)
-        } catch (ex: IOException) {
-            throw FileNotFoundException("给定的文件路径[$location]没有找到")
+        } catch (ex: Exception) {
+            when (ex) {
+                is IOException -> throw FileNotFoundException("给定的文件路径[$location]没有找到")
+                is NullPointerException -> throw FileNotFoundException("给定的文件路径[$location]没有找到")
+                else -> throw ex
+            }
         }
     }
 

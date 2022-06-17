@@ -1,5 +1,6 @@
 package com.wanna.mybatis.spring.mapper
 
+import com.wanna.framework.beans.factory.FactoryBean
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.beans.factory.config.RuntimeBeanReference
@@ -13,6 +14,7 @@ import com.wanna.framework.core.util.BeanUtils
 import com.wanna.mybatis.spring.SqlSessionTemplate
 import org.apache.ibatis.session.SqlSessionFactory
 import org.slf4j.LoggerFactory
+import java.util.Optional
 
 /**
  * 类路径下的Mapper的扫描器，负责扫描类路径下的合适的接口作为Mapper，并将Mapper接口的BeanDefinition替换成为MapperFactoryBean
@@ -29,7 +31,7 @@ open class ClassPathMapperScanner(registry: BeanDefinitionRegistry) : ClassPathB
         private val logger = LoggerFactory.getLogger(ClassPathMapperScanner::class.java)
     }
 
-    // 是否要添加Mapper到Configuration当中
+    // 是否要添加Mapper到MyBatis的Configuration当中
     var addToConfig = true
 
     // 是否要懒加载？默认为false
@@ -61,19 +63,22 @@ open class ClassPathMapperScanner(registry: BeanDefinitionRegistry) : ClassPathB
 
     /**
      * 注册处理注解/指定markerInterface的所有的Mapper接口的匹配规则的TypeFilter
+     *
+     * * 1.如果需要匹配注解的话，那么添加注解的匹配器
+     * * 2.如果需要匹配接口的话，那么添加类型的匹配器
+     * * 3.如果接口和类型都不需要去进行匹配的话，那么添加一个放行所有接口的匹配器
      */
     open fun registerFilters() {
         var acceptAllInterfaces = true
-
         // 如果需要匹配注解的话，那么添加一个TypeFilter
-        if (this.annotationClass != null) {
-            addIncludeFilter(AnnotationTypeFilter(this.annotationClass!!))
+        Optional.ofNullable(this.annotationClass).ifPresent {
+            addIncludeFilter(AnnotationTypeFilter(it))
             acceptAllInterfaces = false
         }
 
         // 如果需要匹配父接口的话，那么添加一个TypeFilter
-        if (this.markerInterface != null) {
-            addIncludeFilter(AssignableTypeFilter(this.markerInterface!!))
+        Optional.ofNullable(this.markerInterface).ifPresent {
+            addIncludeFilter(AssignableTypeFilter(it))
             acceptAllInterfaces = false
         }
 
@@ -131,6 +136,9 @@ open class ClassPathMapperScanner(registry: BeanDefinitionRegistry) : ClassPathB
                     mapperFactoryBeanClass
                 )
             }
+
+            // for predict beanType
+            beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, beanClass)
             propertyValues.addPropertyValue("addToConfig", this.addToConfig)
 
             // 是否已经找到了合适的SqlSessionFactory？

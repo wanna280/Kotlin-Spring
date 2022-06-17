@@ -1,15 +1,20 @@
 package com.wanna.framework.core.io.support
 
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.io.InputStream
 import java.util.*
 
 /**
  * 这是一个Properties的Loader的工具类，可以完成Properties的加载
+ *
+ * @see SpringFactoriesLoader
  */
 object PropertiesLoaderUtils {
 
-    const val XML_EXTENSION = ".xml"
+    private const val XML_EXTENSION = ".xml"
+
+    private const val PROPERTIES_EXTENSION = ".properties"
 
     /**
      * 使用默认的classLoader去完成Properties的属性信息的加载
@@ -22,7 +27,7 @@ object PropertiesLoaderUtils {
     }
 
     /**
-     * 使用指定classLoader去完成Properties的属性信息的加载
+     * 使用指定指定的ClassLoader去完成Properties的属性信息的加载
      *
      * @param classpath 类路径
      * @param classLoader classLoader(如果为空，使用默认的classLoader)
@@ -35,28 +40,30 @@ object PropertiesLoaderUtils {
             val resources = classLoaderToUse.getResources(classpath)
             while (resources.hasMoreElements()) {
                 val element = resources.nextElement()
-                if (classpath.endsWith(XML_EXTENSION)) {
-                    properties += loadPropertiesFromXml(element.openStream())
+                properties += if (classpath.endsWith(XML_EXTENSION)) {
+                    loadPropertiesFromXml(element.openStream())
+                } else if (classpath.endsWith(PROPERTIES_EXTENSION)) {
+                    loadPropertiesFromProperties(element.openStream())
                 } else {
-                    properties += loadPropertiesFromProperties(element.openStream())
+                    throw IllegalStateException("不支持处理该类型的文件[$classpath]")
                 }
             }
-        } catch (ex: Exception) {
+        } catch (ex: IOException) {
             throw FileNotFoundException("无法加载Properties资源文件，路径为[$classpath]")
         }
         return properties
     }
 
     /**
-     * 从Properties文件当中去加载Properties
+     * 从".properties"文件当中去加载Properties
      *
      * @param inputStream Properties文件的路径
-     * @return 加载完成的Proerties
+     * @return 加载完成的Properties
      */
     @JvmStatic
     fun loadPropertiesFromProperties(inputStream: InputStream): Properties {
         val properties = Properties()
-        properties.load(inputStream)
+        inputStream.use { properties.load(inputStream) }  // use method for close io stream
         return properties
     }
 
@@ -68,7 +75,7 @@ object PropertiesLoaderUtils {
      */
     private fun loadPropertiesFromXml(inputStream: InputStream): Properties {
         val properties = Properties()
-        properties.loadFromXML(inputStream)
+        inputStream.use { properties.loadFromXML(inputStream) }
         return properties
     }
 }

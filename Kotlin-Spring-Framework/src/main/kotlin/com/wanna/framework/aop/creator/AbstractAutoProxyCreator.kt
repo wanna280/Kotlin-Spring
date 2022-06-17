@@ -17,12 +17,12 @@ import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 这是一个用来完成代理的BeanPostProcessor，通过Creator工厂模式去完成代理的自动生成
+ * 这是一个用来完成SpringAOP代理的BeanPostProcessor，通过Creator工厂模式去完成代理的自动生成
+ *
+ * @see AbstractAdvisorAutoProxyCreator
  */
 abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcessor, BeanFactoryAware,
     AopInfrastructureBean, ProxyProcessorSupport() {
-
-
     companion object {
         // 不进行创建代理的FLAG常量
         @JvmField

@@ -33,6 +33,7 @@ open class SqlSessionDaoSupport : InitializingBean {
     /**
      * 给定SqlSessionFactory，去创建SqlSessionTemplate
      *
+     * @param sqlSessionFactory SqlSessionFactory
      * @return SqlSessionTemplate
      */
     protected open fun createSqlSessionTemplate(sqlSessionFactory: SqlSessionFactory): SqlSessionTemplate {

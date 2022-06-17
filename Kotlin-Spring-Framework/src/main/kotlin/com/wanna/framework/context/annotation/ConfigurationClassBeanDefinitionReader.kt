@@ -128,6 +128,7 @@ open class ConfigurationClassBeanDefinitionReader(
 
         if (metadata is StandardMethodMetadata) {
             beanDefinition.setResolvedFactoryMethod(metadata.getMethod())
+            beanDefinition.setBeanClass(metadata.getMethod().returnType)
         }
 
         // 设置autowiredMode为构造器注入
@@ -147,7 +148,6 @@ open class ConfigurationClassBeanDefinitionReader(
         // 设置是否是AutowireCandidate以及AutowireMode
         beanDefinition.setAutowireCandidate(beanAnnotation.autowireCandidate)
         beanDefinition.setAutowireMode(beanAnnotation.autowireMode)
-
 
         // 解析scope
         val scope = metadata.getAnnotationAttributes(Scope::class.java.name)

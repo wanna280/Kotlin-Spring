@@ -4,6 +4,7 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.annotation.Role
+import com.wanna.framework.scheduling.config.TaskManagementConfigUtils
 
 /**
  * 为@Async的方法提供代理的配置类导入一个BeanPostProcessor，去将匹配@Async的Advisor应用给方法/类上标注了@Async注解的Bean；
@@ -30,7 +31,7 @@ open class ProxyAsyncConfiguration : AbstractAsyncConfiguration() {
      * @see AsyncAnnotationAdvisor
      * @see AnnotationAsyncExecutionInterceptor
      */
-    @Bean("internalAsyncAnnotationProcessor")
+    @Bean(TaskManagementConfigUtils.ASYNC_ANNOTATION_PROCESSOR_BEAN_NAME)
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     open fun asyncAdvisor(): AsyncAnnotationBeanPostProcessor {
         val asyncAnnotationBeanPostProcessor = AsyncAnnotationBeanPostProcessor()

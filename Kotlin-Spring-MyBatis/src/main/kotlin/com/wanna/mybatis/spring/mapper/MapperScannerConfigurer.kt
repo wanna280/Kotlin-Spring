@@ -8,6 +8,7 @@ import com.wanna.framework.context.processor.factory.BeanDefinitionRegistryPostP
 import com.wanna.framework.core.util.StringUtils
 import com.wanna.mybatis.spring.SqlSessionTemplate
 import org.apache.ibatis.session.SqlSessionFactory
+import java.util.Optional
 
 /**
  * MapperScan的Configurer，负责真正地对@MapperScan去进行处理
@@ -52,9 +53,8 @@ open class MapperScannerConfigurer : BeanDefinitionRegistryPostProcessor {
         if (StringUtils.hasText(lazyInitialization)) {
             scanner.lazyInitialization = lazyInitialization!!.toBoolean()
         }
-        if (mapperFactoryBeanClass != null) {
-            scanner.mapperFactoryBeanClass = mapperFactoryBeanClass!!
-        }
+        Optional.ofNullable(this.mapperFactoryBeanClass).ifPresent { scanner.mapperFactoryBeanClass = it }
+
         scanner.defaultScope = defaultScope
         scanner.sqlSessionTemplateBeanName = sqlSessionTemplateBeanName
         scanner.sqlSessionFactoryBeanName = sqlSessionFactoryBeanName

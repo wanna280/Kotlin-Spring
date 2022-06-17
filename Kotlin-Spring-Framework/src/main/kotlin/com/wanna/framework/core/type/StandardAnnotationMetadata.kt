@@ -6,7 +6,7 @@ import com.wanna.framework.core.util.ReflectionUtils
 import org.springframework.core.annotation.AnnotatedElementUtils
 
 /**
- * 这是一个标准的的AnnotationMetadata
+ * 这是一个标准的的AnnotationMetadata的实现
  */
 open class StandardAnnotationMetadata(val clazz: Class<*>) : AnnotationMetadata {
 

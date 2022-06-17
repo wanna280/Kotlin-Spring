@@ -6,7 +6,7 @@ import com.wanna.mybatis.spring.mapper.MapperFactoryBean
 import kotlin.reflect.KClass
 
 /**
- * MapperScan，负责扫描指定的包下的Mapper
+ * MapperScan，负责扫描指定的包下的Mapper，默认情况下只要是该包下的一个接口，就能去被扫描成为一个Mapper
  *
  * @see MapperScannerRegistrar
  *

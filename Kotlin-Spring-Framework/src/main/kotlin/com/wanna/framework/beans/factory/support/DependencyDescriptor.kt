@@ -16,7 +16,7 @@ import java.lang.reflect.Type
  * @param eager 解析依赖的时候，是否允许依赖被eagerInit(比如FactoryBean被提前创建)
  */
 open class DependencyDescriptor protected constructor(
-    field: Field?, parameter: MethodParameter?, private val required: Boolean, private val eager: Boolean = true
+    field: Field?, parameter: MethodParameter?, private val required: Boolean, private val eager: Boolean = false
 ) : InjectionPoint(field, parameter) {
     constructor(field: Field?, required: Boolean) : this(field, null, required)
     constructor(field: Field?, required: Boolean, eager: Boolean) : this(field, null, required, eager)

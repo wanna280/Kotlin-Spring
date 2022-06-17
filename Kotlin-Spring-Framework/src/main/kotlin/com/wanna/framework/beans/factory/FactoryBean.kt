@@ -5,6 +5,10 @@ package com.wanna.framework.beans.factory
  */
 interface FactoryBean<T> {
 
+    companion object {
+        const val OBJECT_TYPE_ATTRIBUTE = "factoryBeanObjectType";
+    }
+
     /**
      * 获取当前的FactoryBean要导入的组件的类型
      */

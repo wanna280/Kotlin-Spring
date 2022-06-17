@@ -2,12 +2,7 @@ package com.wanna.mybatis.spring
 
 import org.apache.ibatis.cursor.Cursor
 import org.apache.ibatis.executor.BatchResult
-import org.apache.ibatis.session.Configuration
-import org.apache.ibatis.session.ExecutorType
-import org.apache.ibatis.session.ResultHandler
-import org.apache.ibatis.session.RowBounds
-import org.apache.ibatis.session.SqlSession
-import org.apache.ibatis.session.SqlSessionFactory
+import org.apache.ibatis.session.*
 import org.apache.ibatis.session.defaults.DefaultSqlSession
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
@@ -21,7 +16,7 @@ import java.sql.Connection
  */
 class SqlSessionTemplate(
     val sqlSessionFactory: SqlSessionFactory,
-    val executorType: ExecutorType = ExecutorType.SIMPLE
+    val executorType: ExecutorType = ExecutorType.SIMPLE,
 ) : SqlSession {
 
     // 使用Jdk动态代理，生成SqlSessionProxy，把执行目标方法的逻辑交给委托的SqlSession去进行完成

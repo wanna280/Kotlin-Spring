@@ -321,7 +321,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
         applicationListeners.forEach { getApplicationEventMulticaster().addApplicationListener(it) }
 
         // 将之前已经注册到容器当中的ApplicationListener注册到ApplicationEventMulticaster当中
-        val listerNames = getBeanNamesForType(ApplicationListener::class.java)
+        val listerNames = getBeanNamesForType(ApplicationListener::class.java, true, false)
         listerNames.forEach { getApplicationEventMulticaster().addApplicationListenerBean(it) }
 
         val earlyApplicationEventsToProcess = this.earlyApplicationEvents!!
@@ -439,6 +439,12 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     override fun getBeanNamesForType(
         type: Class<*>, includeNonSingletons: Boolean, allowEagerInit: Boolean
     ): List<String> = getBeanFactory().getBeanNamesForType(type, includeNonSingletons, allowEagerInit)
+
+    override fun getBeanNamesForTypeIncludingAncestors(
+        type: Class<*>,
+        includeNonSingletons: Boolean,
+        allowEagerInit: Boolean
+    ): List<String> = getBeanFactory().getBeanNamesForTypeIncludingAncestors(type, includeNonSingletons, allowEagerInit)
 
     override fun getParentBeanFactory(): BeanFactory? {
         return getParent()
