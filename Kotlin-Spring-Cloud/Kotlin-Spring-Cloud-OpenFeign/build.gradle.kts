@@ -1,14 +1,4 @@
-plugins {
-    kotlin("jvm")
-    java
-}
 
-group = "com.wanna"
-version = "1.0-SNAPSHOT"
-
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     testApi(project(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Nacos:Kotlin-Spring-Cloud-Nacos-Discovery"))
@@ -21,12 +11,9 @@ dependencies {
     implementation(project(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Context"))
     implementation(project(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Ribbon"))
 
-    implementation("org.slf4j:slf4j-api:$slf4jApiVersion")
-    implementation("org.springframework:spring-core:$springCoreVersion")
     implementation("com.netflix.ribbon:ribbon-loadbalancer:$ribbonVersion")
     implementation("com.netflix.ribbon:ribbon-core:$ribbonVersion")
     implementation("org.apache.httpcomponents:httpclient:$apacheHttpClientVersion")
     implementation("io.github.openfeign:feign-httpclient:$feignHttpClientVersion")
     implementation("io.github.openfeign:feign-core:$feignVersion")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 }

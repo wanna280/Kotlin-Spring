@@ -13,7 +13,7 @@ class RegistryTest
 class MyController {
 
     @Autowired
-    var array: Array<RegistryTest>? = null
+    private lateinit var array: Array<RegistryTest>
 
     @RequestMapping(["/user"])
     fun user(): String {

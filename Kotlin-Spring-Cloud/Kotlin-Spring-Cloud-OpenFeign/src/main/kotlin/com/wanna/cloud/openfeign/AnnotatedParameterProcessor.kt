@@ -4,7 +4,7 @@ import feign.MethodMetadata
 import java.lang.reflect.Method
 
 /**
- * 注解的参数处理器
+ * OpenFeign的注解的参数处理器
  */
 interface AnnotatedParameterProcessor {
 

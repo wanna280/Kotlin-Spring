@@ -1,5 +1,7 @@
 package com.wanna.cloud.client.loadbalancer
 
+import com.wanna.boot.autoconfigure.condition.ConditionOnBean
+import com.wanna.boot.autoconfigure.condition.ConditionOnClass
 import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
 import com.wanna.framework.beans.SmartInitializingSingleton
 import com.wanna.framework.context.annotation.Autowired
@@ -9,7 +11,14 @@ import com.wanna.framework.web.client.RestTemplate
 
 /**
  * SpringCloud的LoadBalancer的自动配置类，主要为SpringWebClient当中提供RestTemplate提供LoadBalance的扩展功能
+ *
+ * 需要在LoadBalancerClient的情况下才去进行自动装配，因为导入这个依赖的Application，其实并不一定需要用到负载均衡，
+ * 但是如果不进行装配的话，会出现Autowired注入时，缺少LoadBalancerClient的情况
+ *
+ * @see LoadBalancerClient
  */
+@ConditionOnClass(value = [RestTemplate::class])
+@ConditionOnBean(value = [LoadBalancerClient::class])
 @Configuration(proxyBeanMethods = false)
 open class LoadBalancerAutoConfiguration {
 

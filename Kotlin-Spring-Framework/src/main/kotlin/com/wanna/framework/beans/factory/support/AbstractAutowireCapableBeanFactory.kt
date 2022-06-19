@@ -9,6 +9,7 @@ import com.wanna.framework.beans.PropertyValues
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.ObjectFactory
 import com.wanna.framework.beans.BeanWrapperImpl
+import com.wanna.framework.beans.factory.FactoryBean
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.BeanNameAware
@@ -17,7 +18,9 @@ import com.wanna.framework.context.exception.BeansException
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ParameterNameDiscoverer
+import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.util.BeanUtils
+import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.core.util.ReflectionUtils
 import com.wanna.framework.core.util.StringUtils
 import java.beans.Introspector
@@ -467,6 +470,62 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
                 pvs.addPropertyValue(propertyName, dependency)
             }
         }
+    }
+    /**
+     * 根据给定的BeanDefinition，去进行获取一个FactoryBean的类型
+     *
+     * @param allowInit 是否允许进行初始化
+     * @param beanName beanName
+     * @param mbd 合并的RootBeanDefinition
+     */
+    override fun getTypeForFactoryBean(beanName: String, mbd: RootBeanDefinition, allowInit: Boolean): Class<*>? {
+        // 尝试从BeanDefinitionAttribute当中去进行解析
+        val type = mbd.getAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE) as Class<*>?
+        if (type != null) {
+            return type;
+        }
+
+        // 预测Bean的类型
+        val predictBeanType = predictBeanType(beanName, mbd) ?: return null
+        // 如果预测的类型是FactoryBean的话，那么我们直接尝试从@Bean方法的返回值类型上去进行类型的推断...
+        if (ClassUtils.isAssignFrom(FactoryBean::class.java, predictBeanType)) {
+            // 如果给定的类型不是&beanName的形式，那么需要去匹配FactoryBeanObjectType
+            // 我们这里使用的是@Bean的方法的返回值去进行泛型的解析的方式去进行判断
+            // 这种方式也必须去进行尝试，不然会容易出现匹配@Bean方法的时候出现循环依赖
+            // 比如A类有一个@Bean的方法B，A有一个要注入的元素C
+            // 那么匹配B时，就会出现，需要先创建A的情况，而创建A又需要注入C，又会遇到isTypeMatch
+            // 又会去匹配到B的情况，但是B之前已经在创建当中了，但是还没完成创建，这时就出现了循环依赖...
+            // 典型的就是A=MyBatisAutoConfiguration，B=SqlSessionFactoryBean，C=MyBatisProperties这种情况
+            if (mbd.getFactoryMethodName() != null) {
+                val factoryClass = mbd.getResolvedFactoryMethod()!!.declaringClass
+                val resolvableType =
+                    getTypeForFactoryBeanFromMethod(factoryClass, mbd.getFactoryMethodName()!!)
+                if (resolvableType != null) {
+                    return resolvableType.resolve()
+                }
+            }
+        }
+
+        return super.getTypeForFactoryBean(beanName, mbd, allowInit)
+    }
+
+    /**
+     * 从方法上去获取FactoryBean的类型，通过解析返回值的泛型的方式去进行解析
+     *
+     * @param factoryClass FactoryBeanClass
+     * @param factoryMethodName factoryMethodName
+     * @return 解析到的FactoryBeanObjectClass(没有解析到return null)
+     */
+    protected open fun getTypeForFactoryBeanFromMethod(factoryClass: Class<*>, factoryMethodName: String): ResolvableType? {
+        var resolvableType: ResolvableType? = null
+        ReflectionUtils.doWithMethods(factoryClass) {
+            if (it.name == factoryMethodName && ClassUtils.isAssignFrom(FactoryBean::class.java, it.returnType)) {
+                resolvableType =
+                    ResolvableType.forType(it.genericReturnType, variableResolver = null).`as`(FactoryBean::class.java)
+                        .getGenerics()[0]
+            }
+        }
+        return resolvableType
     }
 
     /**

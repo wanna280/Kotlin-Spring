@@ -18,9 +18,9 @@ import javax.sql.DataSource
 
 @EnableTransactionManagement
 @SpringBootApplication
-class MyBatisApp {
+open class MyBatisApp {
     @Bean
-    fun dataSource(): DataSource {
+    open fun dataSource(): DataSource {
         val dataSource = DruidDataSource()
         dataSource.url = "jdbc:mysql://127.0.0.1/online_print"
         dataSource.username = "root"
@@ -28,7 +28,7 @@ class MyBatisApp {
     }
 
     @Bean
-    fun platformTransactionManager(dataSource: DataSource): PlatformTransactionManager {
+    open fun platformTransactionManager(dataSource: DataSource): PlatformTransactionManager {
         val dataSourceTransactionManager = DataSourceTransactionManager()
         dataSourceTransactionManager.setDataSource(dataSource)
         return dataSourceTransactionManager

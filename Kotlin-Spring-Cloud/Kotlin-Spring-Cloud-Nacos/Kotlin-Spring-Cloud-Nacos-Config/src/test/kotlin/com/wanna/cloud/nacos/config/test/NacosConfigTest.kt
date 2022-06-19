@@ -10,9 +10,7 @@ import java.util.concurrent.TimeUnit
 
 @EnableConfigurationProperties
 @SpringBootApplication
-class NacosConfigTest {
-
-}
+open class NacosConfigTest
 
 @RefreshScope
 @Component

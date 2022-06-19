@@ -1,14 +1,3 @@
-plugins {
-    kotlin("jvm")
-    java
-}
-
-group = "com.wanna"
-version = "1.0-SNAPSHOT"
-
-repositories.flatDir {
-    dirs("libs")
-}
 
 dependencies {
     implementation(project(":Kotlin-Logger:logger-slf4j-impl"))

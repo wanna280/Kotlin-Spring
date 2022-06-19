@@ -12,7 +12,7 @@ import com.wanna.framework.web.method.annotation.RequestMapping
 
 @EnableFeignClients(value = ["com.wanna.cloud.openfeign.test"])
 @SpringBootApplication
-class FeignTest
+open class FeignTest
 
 @FeignClient(contextId = "wanna", path = "user")
 interface MyFeignClient {

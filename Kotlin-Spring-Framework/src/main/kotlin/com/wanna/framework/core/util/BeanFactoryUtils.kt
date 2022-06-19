@@ -10,6 +10,8 @@ import com.wanna.framework.beans.factory.ListableBeanFactory
 object BeanFactoryUtils {
     /**
      * 判断beanName是否是以FactoryBean的前缀(&)作为开始
+     *
+     * @param beanName 要去进行匹配的beanName
      */
     @JvmStatic
     fun isFactoryDereference(beanName: String): Boolean {

@@ -1,10 +1,4 @@
-plugins {
-    kotlin("jvm")
-    java
-}
 
-group = "com.wanna"
-version = "1.0-SNAPSHOT"
 
 /**
  * 在Kotlin的Gradle DSL当中，使用task.getByName方法去获取到插件当中的某个任务；

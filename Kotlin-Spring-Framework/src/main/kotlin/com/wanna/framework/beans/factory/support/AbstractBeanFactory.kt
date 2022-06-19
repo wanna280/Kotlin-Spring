@@ -417,7 +417,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     /**
      * 判断容器当中的beanName对应的类型是否和type匹配？(支持去匹配FactoryBeanObject)
      *
-     * 这个方法实现巨复杂(目前并未是西安)，应该研究研究！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
+     * 这个方法实现巨复杂(目前并未实现完全)，应该研究研究！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
      *
      * @param name beanName
      * @param type beanName应该匹配的类型？
@@ -426,20 +426,23 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      */
     protected open fun isTypeMatch(name: String, type: Class<*>, allowFactoryBeanInit: Boolean): Boolean {
         val beanName = transformedBeanName(name)
-        val factoryDereference = BeanFactoryUtils.isFactoryDereference(name)
+        val isFactoryDereference = BeanFactoryUtils.isFactoryDereference(name)
 
-        // 1，先尝试去检验一波已经有SingletonBean的情况，可以直接根据类型去进行匹配
+        // 1，先尝试去检验一波已经有SingletonBean的情况，这种情况下，肯定是可以直接根据类型去进行匹配
         val singleton = getSingleton(beanName, false)
         if (singleton != null && singleton::class.java != NullBean::class.java) {
-            // 如果获取到的SingletonBean是FactoryBean的话
+            // 如果获取到的SingletonBean是FactoryBean的话，那么需要判断你是不是想要FactoryBean来进行决定匹配什么类型
             return if (singleton is FactoryBean<*>) {
-                if (!factoryDereference) { // 如果给的name没有以"&"开头，说明有可能需要匹配FactoryBeanObject
+                // 如果给的name没有以"&"开头，说明你需要FactoryBeanObject，就需要需要匹配FactoryBeanObject
+                if (!isFactoryDereference) {
                     val typeForFactoryBean = getTypeForFactoryBean(singleton)
                     ClassUtils.isAssignFrom(type, typeForFactoryBean)
-                } else { // 如果给的name含有"&"，那么说明想要的是FactoryBean，而不是FactoryBeanObject，直接匹配FactoryBean的类型
+
+                    // 如果给的name含有"&"，那么说明你想要的是FactoryBean，而不是FactoryBeanObject，直接匹配FactoryBean的类型
+                } else {
                     type.isInstance(singleton)
                 }
-                // 如果不是FactoryBean的话，那么直接匹配类型...
+                // 如果Singleton根本就不是FactoryBean的话，那么直接匹配类型就行...
             } else {
                 type.isInstance(singleton)
             }
@@ -454,43 +457,16 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         val beanDefinition = getMergedLocalBeanDefinition(beanName)
         val beanClass = beanDefinition.getBeanClass()
 
-        // 预测Bean的类型
-        val predictBeanType = predictBeanType(beanName, beanDefinition) ?: return false
-
-        // 4.如果预测的类型是FactoryBean的话，那么尝试从FactoryBean上去进行尝试
-        if (ClassUtils.isAssignFrom(FactoryBean::class.java, predictBeanType)) {
-            // 如果给定的类型是&beanName的形式，直接去匹配类型即可
-            if (factoryDereference) {
-                return ClassUtils.isAssignFrom(type, predictBeanType)
-            }
-
-            // 如果给定的类型不是&beanName的形式，那么需要去匹配FactoryBeanObjectType
-            // 我们这里使用的是@Bean的方法的返回值去进行泛型的解析的方式去进行判断
-            // 这种方式也必须去进行尝试，不然会容易出现匹配@Bean方法的时候出现循环依赖
-            // 比如A类有一个@Bean的方法B，A有一个要注入的元素C
-            // 那么匹配B时，就会出现，需要先创建A的情况，而创建A又需要注入C，又会遇到isTypeMatch
-            // 又会去匹配到B的情况，但是B之前已经在创建当中了，但是还没完成创建，这时就出现了循环依赖...
-            // 典型的就是A=MyBatisAutoConfiguration，B=SqlSessionFactoryBean，C=MyBatisProperties这种情况
-            if (beanDefinition.getFactoryMethodName() != null) {
-                val factoryClass = beanDefinition.getResolvedFactoryMethod()!!.declaringClass
-                val resolvableType =
-                    getTypeForFactoryBeanFromMethod(factoryClass, beanDefinition.getFactoryMethodName()!!)
-                if (resolvableType != null) {
-                    return ClassUtils.isAssignFrom(type, resolvableType.resolve())
-                }
-            }
-        }
-
-
         // 如果有beanClass的话，那么直接使用beanClass去进行匹配
         if (beanClass != null) {
             if (isFactoryBean(beanName, beanDefinition)) {
                 // 如果是FactoryBean，那么有可能需要匹配FactoryBean/FactoryBeanObject
-                // 1.如果name以"&"开头，那么需要匹配的是FactoryBean，直接使用isAssignFrom去进行匹配就行
-                // 2.如果name没有以"&"开头，那么需要匹配的就是FactoryBeanObject(需要提前去完成FactoryBean的实例化)
-                if (allowFactoryBeanInit && !factoryDereference) {
-                    val factoryBean = getBean(FACTORY_BEAN_PREFIX + beanName, type) as FactoryBean<*>
-                    return ClassUtils.isAssignFrom(type, factoryBean.getObjectType())
+                // 1.如果name以"&"开头，那么需要的是FactoryBean，直接使用isAssignFrom去进行匹配就行
+                // 2.如果name没有以"&"开头，那么需要的是FactoryBeanObject(有可能需要提前去完成FactoryBean的实例化)
+                if (!isFactoryDereference) {
+                    val factoryBeanType =
+                        getTypeForFactoryBean(FACTORY_BEAN_PREFIX + beanName, beanDefinition, allowFactoryBeanInit)
+                    return ClassUtils.isAssignFrom(type, factoryBeanType)
                 } else {
                     return ClassUtils.isAssignFrom(type, beanClass)
                 }
@@ -539,25 +515,6 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         return null
     }
 
-    /**
-     * 从方法上去获取FactoryBean的类型，通过解析返回值的泛型的方式去进行解析
-     *
-     * @param factoryClass FactoryBeanClass
-     * @param factoryMethodName factoryMethodName
-     * @return 解析到的FactoryBeanObjectClass
-     */
-    private fun getTypeForFactoryBeanFromMethod(factoryClass: Class<*>, factoryMethodName: String): ResolvableType? {
-        var resolvableType: ResolvableType? = null
-        ReflectionUtils.doWithMethods(factoryClass) {
-            if (it.name == factoryMethodName && ClassUtils.isAssignFrom(FactoryBean::class.java, it.returnType)) {
-                resolvableType =
-                    ResolvableType.forType(it.genericReturnType, variableResolver = null).`as`(FactoryBean::class.java)
-                        .getGenerics()[0]
-            }
-        }
-        return resolvableType
-    }
-
 
     /**
      * 根据beanName获取到该Bean在容器中的类型
@@ -591,18 +548,21 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     }
 
     /**
-     * 获取一个FactoryBean的类型，如果是单例的并且允许去进行初始化，才会尝试去进行解析
+     * 根据给定的BeanDefinition，去进行获取一个FactoryBean的类型
      *
      * @param allowInit 是否允许进行初始化
      * @param beanName beanName
      * @param mbd 合并的RootBeanDefinition
      */
     protected open fun getTypeForFactoryBean(beanName: String, mbd: RootBeanDefinition, allowInit: Boolean): Class<*>? {
+
+        // 1.尝试从BeanDefinitionAttribute当中去进行解析
         val type = mbd.getAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE) as Class<*>?
         if (type != null) {
             return type;
         }
 
+        // 2.如果允许去进行初始化，那么走到这里去进行类型的匹配
         if (allowInit && mbd.isSingleton()) {
             val factoryBean = getBean(FACTORY_BEAN_PREFIX + beanName, FactoryBean::class.java)
             return getTypeForFactoryBean(factoryBean)
