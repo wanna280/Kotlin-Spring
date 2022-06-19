@@ -14,3 +14,4 @@ const val ribbonVersion = "2.3.0"  // ribbon Version
 const val feignVersion = "11.8" // feign Version
 const val apacheHttpClientVersion = "4.5.13"  // apache HttpClient Version
 const val feignHttpClientVersion = "11.8"  // feign HttpClient Version
+const val mybatisVersion = "3.5.10" // mybatis Version

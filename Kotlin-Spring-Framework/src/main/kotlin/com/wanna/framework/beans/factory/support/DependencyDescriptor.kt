@@ -11,6 +11,9 @@ import java.lang.reflect.Type
 /**
  * 这是一个依赖的描述符，可以描述一个方法的参数，或者是一个字段，当然，也可以是一个构造器的参数也是可以的
  * 在Spring当中需要去进行依赖的解析时，就会将依赖的相关信息都封装成为一个DependencyDescriptor，方便BeanFactory当中可以对依赖去进行解析工作
+ *
+ * @param required 该依赖是否是必须的？
+ * @param eager 解析依赖的时候，是否允许依赖被eagerInit(比如FactoryBean被提前创建)
  */
 open class DependencyDescriptor protected constructor(
     field: Field?, parameter: MethodParameter?, private val required: Boolean, private val eager: Boolean = false

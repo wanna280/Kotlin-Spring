@@ -125,7 +125,7 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
      * 根据type从容器当中去获取到beanNames
      */
     private fun getBeanNamesForType(beanFactory: ConfigurableListableBeanFactory, type: String): List<String> {
-        return beanFactory.getBeanNamesForType(ClassUtils.forName<Any>(type))
+        return beanFactory.getBeanNamesForType(ClassUtils.forName<Any>(type), true, false)
     }
 
     /**

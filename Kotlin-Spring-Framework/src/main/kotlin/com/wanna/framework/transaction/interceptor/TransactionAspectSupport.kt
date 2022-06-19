@@ -79,11 +79,10 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
      * @param method 目标方法
      * @param targetClass 目标类
      * @param callback 执行目标方法的callback
+     * @return callback方法的返回值
      */
     protected open fun invokeWithinTransaction(
-        method: Method,
-        targetClass: Class<*>?,
-        callback: InvocationCallback
+        method: Method, targetClass: Class<*>?, callback: InvocationCallback
     ): Any? {
         // 使用TransactionAttributeSource，去解析各类的@Transactional注解，并封装成为TransactionAttribute
         val txSource = getTransactionAttributeSource()
@@ -98,7 +97,7 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
 
         // 这里是标准的的getTransaction and commit/rollback的调用的分隔符...
 
-        // 下面将会需要去创建事务并完成事务的提交和回滚操作了...
+        // 下面将会需要去创建事务并完成事务的提交和回滚操作了...事务的相关信息都会保存到txInfo当中
         val txInfo = createTransactionIfNecessary(ptm, txAttr, joinpointIdentification)
 
         val returnVal: Any?
@@ -187,7 +186,7 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
      *
      * @param ptm 事务管理器
      * @param txAttr 事务属性
-     * @param joinpointIdentification 方法id签订符号
+     * @param joinpointIdentification 方法id限定符号
      * @return TransactionInfo(包装了事务的各个组件，包括ptm,txAttr,joinpointIdentification,transactionStatus)
      */
     protected open fun createTransactionIfNecessary(
@@ -214,10 +213,11 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
     /**
      * 准备TransactionInfo，将事务(TransactionInfo)绑定给当前线程
      *
-     * @param ptm 事务管理器
+     * @param ptm 平台的事务管理器
      * @param txAttr 事务属性
      * @param joinpointIdentification 方法id限定符号
      * @param status 当前最新的事务状态信息
+     * @return 包装了ptm/txAtr/joinpointIdentification/status等组件的TransactionInfo
      */
     protected open fun prepareTransactionInfo(
         ptm: PlatformTransactionManager,

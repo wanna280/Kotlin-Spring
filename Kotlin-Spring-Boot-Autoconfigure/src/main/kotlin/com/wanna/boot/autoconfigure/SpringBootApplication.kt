@@ -22,7 +22,7 @@ import kotlin.reflect.KClass
 @EnableAutoConfiguration  // 自动配置，使用DeferredImportSelector去完成
 annotation class SpringBootApplication(
     /**
-     * 自动配置过程当中，需要排除哪些配置类？以kclass的方式给出
+     * 自动配置过程当中，需要排除哪些配置类？以KClass的方式给出
      *
      * @see EnableAutoConfiguration.exclude
      */

@@ -46,8 +46,6 @@ open class TxApp {
         val connection = connectionHolder!!.connection
         val statement = connection.createStatement()
         val update = statement.executeUpdate("insert into test (name, age) values ('wanna', 18)")
-        println(update)
-        println(connectionHolder)
         throw MyException()
     }
 

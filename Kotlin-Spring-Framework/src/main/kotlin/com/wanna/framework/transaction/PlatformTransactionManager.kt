@@ -1,7 +1,7 @@
 package com.wanna.framework.transaction
 
 /**
- * 平台事务的管理器，支持去获取事务、提交事务、回滚事务
+ * 平台事务的管理器，支持去获取事务、提交事务、回滚事务等事务的相关操作
  *
  * @see TransactionManager
  */

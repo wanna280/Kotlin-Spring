@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import java.util.function.Predicate
 import javax.inject.Provider
+import kotlin.collections.LinkedHashMap
 
 
 /**
@@ -45,7 +46,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
         init {
             try {
-                javaxInjectProviderClass = Class.forName("javax.inject.Provider")
+                javaxInjectProviderClass =
+                    ClassUtils.forName<Any>("javax.inject.Provider", DefaultListableBeanFactory::class.java.classLoader)
             } catch (ignored: ClassNotFoundException) {
 
             }
@@ -77,9 +79,9 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     private var manualSingletonNames = LinkedHashSet<String>()
 
     /**
-     * 按照类型去注入一个可以被解析的依赖
+     * 按照类型去注入一个可以被解析的依赖，比如BeanFactory/ApplicationContext，就需要去进行注册，方便使用者可以去进行@Autowired注入
      *
-     * @param dependencyType 依赖的类型
+     * @param dependencyType 要注册的依赖的类型
      * @param autowireValue 要去进行注入的值
      */
     override fun registerResolvableDependency(dependencyType: Class<*>, autowireValue: Any) {
@@ -552,7 +554,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
                 } else {
                     // 如果遇到了highOrder==priority的情况，那么抛出Bean不唯一异常
                     if (highOrder == priority) {
-                        throw NoUniqueBeanDefinitionException("需要的Bean类型[requiredType=$requiredType]不唯一，无法从容器中找到一个这样的¬合适的Bean")
+                        throw NoUniqueBeanDefinitionException("需要的Bean类型[requiredType=$requiredType]不唯一，无法从容器中找到一个这样的合适的Bean")
                     } else if (highOrder!! > priority) {
                         highOrder = priority
                         highOrderCandidate = beanName
@@ -594,7 +596,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      *
      * @param beanName beanName
      * @param beanInstance beanInstance
-     * @return 该Bean是否是Primary的？
+     * @return 该Bean是否是Primary的？如果是return true，不然return false
      */
     private fun isPrimary(beanName: String, beanInstance: Any) = getMergedBeanDefinition(beanName).isPrimary()
 
@@ -606,10 +608,11 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         beanName: String?, requiredType: Class<*>, descriptor: DependencyDescriptor
     ): MutableMap<String, Any> {
         // 从BeanFactory(以及它的parentBeanFactory)当中中拿到所有的类型匹配requiredType的beanName列表
-        val candidateNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this, requiredType)
-        val result = HashMap<String, Any>()
+        val candidateNames =
+            BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this, requiredType, true, descriptor.isEager())
+        val result = LinkedHashMap<String, Any>()
 
-        // 1.从BeanFactory当中注册的可解析的依赖(resolvableDependencies)当中尝试去进行解析
+        // 1.从BeanFactory当中注册的可解析的依赖(resolvableDependencies)当中尝试去进行解析，比如BeanFactory/ApplicationContext等
         this.resolvableDependencies.forEach { (type, obj) ->
             if (ClassUtils.isAssignFrom(type, requiredType) && requiredType.isInstance(obj)) {
                 result[requiredType.name] = obj
@@ -621,11 +624,33 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             // 从DependencyDescriptor当中解析到合适的依赖，判断该Bean，是否是一个Autowire候选Bean？
             // 比较类型和Qualifier(beanName)是否匹配？
             if (isAutowireCandidate(it, descriptor)) {
-                result[it] = descriptor.resolveCandidate(it, requiredType, this)
+                addCandidateEntry(result, it, descriptor, requiredType)
             }
         }
         return result
     }
+
+    private fun addCandidateEntry(
+        candidates: MutableMap<String, Any>,
+        candidateName: String,
+        descriptor: DependencyDescriptor,
+        requiredType: Class<*>
+    ) {
+        val resolveCandidate = descriptor.resolveCandidate(candidateName, requiredType, this)
+        candidates[candidateName] = resolveCandidate
+    }
+
+    /**
+     * 多个元素的DependencyDescriptor
+     *
+     * @param descriptor 原始的Descriptor
+     */
+    private class MultiElementDescriptor(descriptor: DependencyDescriptor) : DependencyDescriptor(
+        descriptor.getField(),
+        descriptor.getMethodParameter(),
+        descriptor.isRequired(),
+        descriptor.isEager()
+    )
 
     /**
      * 解析多个Bean的情况，比如Collection/Map/Array等类型的依赖的解析，有可能会需要用到Converter去完成类型的转换
@@ -648,7 +673,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             // 获取数组的元素类型，可以通过componentType去进行获取
             val componentType = type.componentType
             // 获取所有的候选的Bean，包括resolvableDependencies当中的依赖和beanFactory当中的对应的类型的Bean
-            val candidates = findAutowireCandidates(requestingBeanName, componentType, descriptor)
+            val candidates =
+                findAutowireCandidates(requestingBeanName, componentType, MultiElementDescriptor(descriptor))
             // 交给TypeConverter，去利用Java的反射(java.lang.reflect.Array)去创建数组，交给JVM去创建一个合成的数组类型
             val typeArray = (typeConverter ?: getTypeConverter()).convertIfNecessary(candidates.values, type)
 
@@ -670,7 +696,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
                 return null
             }
             // 获取所有的候选Bean
-            val candidates = findAutowireCandidates(requestingBeanName, valueGeneric as Class<*>, descriptor)
+            val candidates =
+                findAutowireCandidates(requestingBeanName, valueGeneric as Class<*>, MultiElementDescriptor(descriptor))
             autowiredBeanName?.addAll(candidates.keys)
             return LinkedHashMap(candidates)
 
@@ -678,7 +705,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             val generics = descriptor.getResolvableType().asCollection().getGenerics()
             val valueType = generics[0].resolve()
             // 找到所有的候选类型的Bean
-            val candidates = findAutowireCandidates(requestingBeanName, valueType!!, descriptor)
+            val candidates = findAutowireCandidates(requestingBeanName, valueType!!, MultiElementDescriptor(descriptor))
             val collection = (typeConverter ?: getTypeConverter()).convertIfNecessary(candidates.values, type)
             autowiredBeanName?.addAll(candidates.keys)
             return collection
@@ -694,8 +721,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      */
     private fun indicatesMultipleBeans(type: Class<*>): Boolean {
         return type.isArray || ClassUtils.isAssignFrom(
-            Collection::class.java,
-            type
+            Collection::class.java, type
         ) || ClassUtils.isAssignFrom(Map::class.java, type)
     }
 
@@ -872,10 +898,68 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @return beanType对应的beanName列表
      */
     override fun getBeanNamesForType(type: Class<*>): List<String> {
+        return doGetBeanNamesForType(type, true, true)
+    }
+
+    /**
+     * 给定具体类型(type)，去容器中找到所有的类型匹配的单实例Bean
+     *
+     * Note：这里不能去getBean的，只能从BeanDefinition当中去进行匹配...
+     *
+     * @param type beanType
+     * @param includeNonSingletons 是否允许非单例对象？
+     * @param allowEagerInit 是否允许去进行eager加载
+     * @return beanType对应的beanName列表
+     */
+    override fun getBeanNamesForType(
+        type: Class<*>, includeNonSingletons: Boolean, allowEagerInit: Boolean
+    ): List<String> {
+        return doGetBeanNamesForType(type, includeNonSingletons, allowEagerInit)
+    }
+
+    /**
+     * 给定具体类型(type)，去容器中找到所有的类型匹配的单实例Bean，也支持FactoryBean的匹配
+     *
+     * Note：这里不能去getBean的，只能从BeanDefinition当中去进行匹配...
+     *
+     * @param type beanType
+     * @param includeNonSingletons 是否允许非单例对象？
+     * @param allowEagerInit 是否允许去进行eager加载
+     * @return beanType对应的beanName列表
+     */
+    private fun doGetBeanNamesForType(
+        type: Class<*>, includeNonSingletons: Boolean, allowEagerInit: Boolean
+    ): List<String> {
         val beanNames = ArrayList<String>()
         getBeanDefinitionNames().forEach { beanName ->
-            if (isTypeMatch(beanName, type)) {
-                beanNames += beanName
+            var beanNameToUse = beanName
+            val mbd = getMergedLocalBeanDefinition(beanNameToUse)
+            val isFactoryBean = isFactoryBean(beanNameToUse, mbd)
+
+            val allowFactoryBeanInit = allowEagerInit || containsSingleton(beanNameToUse)
+
+            var matchFound = false
+            // 如果它不是一个FactoryBean的话，那么直接去匹配就行
+            if (!isFactoryBean) {
+                if (isTypeMatch(beanNameToUse, type, allowFactoryBeanInit)) {
+                    matchFound = true
+                }
+                // 如果它是一个FactoryBean的话，那么需要匹配beanName，也要匹配&beanName
+            } else {
+                if (isTypeMatch(beanNameToUse, type, allowFactoryBeanInit)) {
+                    matchFound = true
+                }
+                if (!matchFound) {
+                    // fixed: 如果是FactoryBean才匹配了你给的类型，那么说明你想要的是FactoryBean，我们必须给beanName加上&
+                    beanNameToUse = FACTORY_BEAN_PREFIX + beanName
+                    if (isTypeMatch(beanNameToUse, type, allowFactoryBeanInit)) {
+                        matchFound = true
+
+                    }
+                }
+            }
+            if (matchFound) {
+                beanNames += beanNameToUse
             }
         }
         // 匹配已经注册的单实例Bean的列表

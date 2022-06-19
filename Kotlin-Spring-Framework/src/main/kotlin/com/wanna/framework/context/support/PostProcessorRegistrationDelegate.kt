@@ -62,7 +62,7 @@ object PostProcessorRegistrationDelegate {
             val currentRegistryPostProcessors = ArrayList<BeanDefinitionRegistryPostProcessor>()
             // 从容器中拿到所有的BeanRegistryPostProcessor
             var postProcessorNames =
-                beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor::class.java)
+                beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor::class.java, true, false)
 
             // 1.2 从容器中的所有的BeanDefinitionRegistryPostProcessor中找到所有实现了PriorityOrdered接口的Bean进行排序执行
             postProcessorNames.forEach { beanName ->
@@ -84,7 +84,8 @@ object PostProcessorRegistrationDelegate {
             currentRegistryPostProcessors.clear()  // clear掉
 
             // 在执行之前，必须再次去进行getBeanForType，因为有可能有扫描出来了BeanDefinitionRegistryPostProcessor
-            postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor::class.java)
+            postProcessorNames =
+                beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor::class.java, true, false)
 
             // 1.3 从容器中的所有的BeanDefinitionRegistryPostProcessor中找到所有实现了Ordered接口的Bean进行排序执行
             postProcessorNames.forEach { beanName ->
@@ -109,7 +110,8 @@ object PostProcessorRegistrationDelegate {
             currentRegistryPostProcessors.clear()  // clear掉
 
             // 在执行之前，必须再次去进行getBeanForType，因为有可能有扫描出来了BeanDefinitionRegistryPostProcessor
-            postProcessorNames = beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor::class.java)
+            postProcessorNames =
+                beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor::class.java, true, false)
 
             // 1.4  从容器中的所有的BeanDefinitionRegistryPostProcessor中找到不是Ordered也不是PriorityOrdered的Bean进行排序执行
             postProcessorNames.forEach { beanName ->
@@ -137,7 +139,7 @@ object PostProcessorRegistrationDelegate {
         }
 
         // 2.完成BeanRegistryDefinitionPostProcessor的处理之后，需要完成普通的BeanFactoryPostProcessor的执行
-        val postProcessorNames = beanFactory.getBeanNamesForType(BeanFactoryPostProcessor::class.java)
+        val postProcessorNames = beanFactory.getBeanNamesForType(BeanFactoryPostProcessor::class.java, true, false)
 
         // 分别找出PriorityOrdered，Ordered，以及NonOrdered的BeanFactoryPostProcessor并进行分开
         val priorityOrderedProcessors = ArrayList<BeanFactoryPostProcessor>()
@@ -189,7 +191,7 @@ object PostProcessorRegistrationDelegate {
     fun registerBeanPostProcessors(
         beanFactory: ConfigurableListableBeanFactory, applicationContext: AbstractApplicationContext
     ) {
-        val postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor::class.java)
+        val postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor::class.java, true, false)
         val priorityOrderedProcessors = ArrayList<BeanPostProcessor>()
         val orderedProcessorNames = ArrayList<String>()
         val nonOrderedProcessorNames = ArrayList<String>()

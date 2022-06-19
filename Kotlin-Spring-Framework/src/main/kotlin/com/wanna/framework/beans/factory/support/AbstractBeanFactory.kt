@@ -16,13 +16,11 @@ import com.wanna.framework.context.exception.BeansException
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.processor.beans.*
 import com.wanna.framework.core.NamedThreadLocal
+import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.support.DefaultConversionService
 import com.wanna.framework.core.metrics.ApplicationStartup
-import com.wanna.framework.core.util.BeanFactoryUtils
-import com.wanna.framework.core.util.BeanUtils
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.core.util.*
 import org.slf4j.LoggerFactory
 import java.beans.PropertyEditor
 import java.util.concurrent.ConcurrentHashMap
@@ -36,8 +34,8 @@ import java.util.concurrent.CopyOnWriteArrayList
  * @see FactoryBeanRegistrySupport
  * @see DefaultSingletonBeanRegistry
  */
-abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) : BeanFactory, ConfigurableBeanFactory,
-    ListableBeanFactory, FactoryBeanRegistrySupport() {
+abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? = null) : BeanFactory,
+    ConfigurableBeanFactory, ListableBeanFactory, FactoryBeanRegistrySupport() {
 
     // beanClassLoader
     private var beanClassLoader: ClassLoader = ClassLoader.getSystemClassLoader()
@@ -127,7 +125,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         // 转换name成为真正的beanName，去掉FactoryBean的前缀"&"去进行解引用
         val beanName = transformedBeanName(name)
 
-        val beanInstance: Any
+        var beanInstance: Any
 
         // 尝试从单实例Bean的注册中心当中去获取Bean
         val sharedInstance = getSingleton(beanName)
@@ -157,8 +155,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
             // 如果从单例Bean注册中心当中获取不到Bean实例，那么需要获取MergedBeanDefinition，去完成Bean的创建
             val mbd = getMergedLocalBeanDefinition(beanName)
 
-            val beanCreation = this.applicationStartup.start("spring.beans.instantiate")
-                .tag("beanName", name)
+            val beanCreation = this.applicationStartup.start("spring.beans.instantiate").tag("beanName", name)
             try {
                 // tag requiredType
                 if (requiredType != null) {
@@ -181,6 +178,9 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
                             }
                         }
                     })!!
+
+                    // fixed: getObjectForBeanInstance
+                    beanInstance = getObjectForBeanInstance(beanInstance, name, beanName, mbd)
                     // 如果Bean是Prototype的
                 } else if (mbd.isPrototype()) {
                     val prototypeInstance: Any
@@ -260,8 +260,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
 
             // 如果当前是HashSet，说明之前已经放入过两个以上的元素了，这里直接往HashSet当中添加即可
         } else {
-            @Suppress("UNCHECKED_CAST")
-            val beanNameSet = current as HashSet<String>
+            @Suppress("UNCHECKED_CAST") val beanNameSet = current as HashSet<String>
             beanNameSet += beanName
         }
     }
@@ -279,8 +278,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
 
             // 如果之前是HashSet，那么需要移除一个元素
         } else {
-            @Suppress("UNCHECKED_CAST")
-            val beanNameSet = current as HashSet<String>
+            @Suppress("UNCHECKED_CAST") val beanNameSet = current as HashSet<String>
             beanNameSet -= beanName
             // 如果最后一个元素都被删掉了，那么直接remove...
             if (beanNameSet.isEmpty()) {
@@ -413,11 +411,13 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
      * @return 是否类型匹配？
      */
     override fun isTypeMatch(name: String, type: Class<*>): Boolean {
-        return isTypeMatch(name, type, true)
+        return isTypeMatch(name, type, false)
     }
 
     /**
      * 判断容器当中的beanName对应的类型是否和type匹配？(支持去匹配FactoryBeanObject)
+     *
+     * 这个方法实现巨复杂(目前并未实现完全)，应该研究研究！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
      *
      * @param name beanName
      * @param type beanName应该匹配的类型？
@@ -426,20 +426,23 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
      */
     protected open fun isTypeMatch(name: String, type: Class<*>, allowFactoryBeanInit: Boolean): Boolean {
         val beanName = transformedBeanName(name)
-        val factoryDereference = BeanFactoryUtils.isFactoryDereference(name)
+        val isFactoryDereference = BeanFactoryUtils.isFactoryDereference(name)
 
-        // 1，先尝试去检验一波已经有SingletonBean的情况
+        // 1，先尝试去检验一波已经有SingletonBean的情况，这种情况下，肯定是可以直接根据类型去进行匹配
         val singleton = getSingleton(beanName, false)
         if (singleton != null && singleton::class.java != NullBean::class.java) {
-            // 如果获取到的SingletonBean是FactoryBean的话
+            // 如果获取到的SingletonBean是FactoryBean的话，那么需要判断你是不是想要FactoryBean来进行决定匹配什么类型
             return if (singleton is FactoryBean<*>) {
-                if (!factoryDereference) { // 如果给的name没有以"&"开头，说明有可能需要匹配FactoryBeanObject
+                // 如果给的name没有以"&"开头，说明你需要FactoryBeanObject，就需要需要匹配FactoryBeanObject
+                if (!isFactoryDereference) {
                     val typeForFactoryBean = getTypeForFactoryBean(singleton)
                     ClassUtils.isAssignFrom(type, typeForFactoryBean)
-                } else { // 如果给的name含有"&"，那么说明想要的是FactoryBean，而不是FactoryBeanObject，直接匹配FactoryBean的类型
+
+                    // 如果给的name含有"&"，那么说明你想要的是FactoryBean，而不是FactoryBeanObject，直接匹配FactoryBean的类型
+                } else {
                     type.isInstance(singleton)
                 }
-                // 如果不是FactoryBean的话，那么直接匹配类型...
+                // 如果Singleton根本就不是FactoryBean的话，那么直接匹配类型就行...
             } else {
                 type.isInstance(singleton)
             }
@@ -458,11 +461,12 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         if (beanClass != null) {
             if (isFactoryBean(beanName, beanDefinition)) {
                 // 如果是FactoryBean，那么有可能需要匹配FactoryBean/FactoryBeanObject
-                // 1.如果name以"&"开头，那么需要匹配的是FactoryBean，直接使用isAssignFrom去进行匹配就行
-                // 2.如果name没有以"&"开头，那么需要匹配的就是FactoryBeanObject(需要提前去完成FactoryBean的实例化)
-                if (allowFactoryBeanInit && !factoryDereference) {
-                    val factoryBean = getBean(FACTORY_BEAN_PREFIX + beanName, type) as FactoryBean<*>
-                    return ClassUtils.isAssignFrom(type, factoryBean.getObjectType())
+                // 1.如果name以"&"开头，那么需要的是FactoryBean，直接使用isAssignFrom去进行匹配就行
+                // 2.如果name没有以"&"开头，那么需要的是FactoryBeanObject(有可能需要提前去完成FactoryBean的实例化)
+                if (!isFactoryDereference) {
+                    val factoryBeanType =
+                        getTypeForFactoryBean(FACTORY_BEAN_PREFIX + beanName, beanDefinition, allowFactoryBeanInit)
+                    return ClassUtils.isAssignFrom(type, factoryBeanType)
                 } else {
                     return ClassUtils.isAssignFrom(type, beanClass)
                 }
@@ -511,6 +515,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         return null
     }
 
+
     /**
      * 根据beanName获取到该Bean在容器中的类型
      */
@@ -543,24 +548,30 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
     }
 
     /**
-     * 获取一个FactoryBean的类型，如果是单例的并且允许去进行初始化，才会尝试去进行解析
+     * 根据给定的BeanDefinition，去进行获取一个FactoryBean的类型
      *
      * @param allowInit 是否允许进行初始化
      * @param beanName beanName
      * @param mbd 合并的RootBeanDefinition
      */
     protected open fun getTypeForFactoryBean(beanName: String, mbd: RootBeanDefinition, allowInit: Boolean): Class<*>? {
+
+        // 1.尝试从BeanDefinitionAttribute当中去进行解析
+        val type = mbd.getAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE) as Class<*>?
+        if (type != null) {
+            return type;
+        }
+
+        // 2.如果允许去进行初始化，那么走到这里去进行类型的匹配
         if (allowInit && mbd.isSingleton()) {
-            val factoryBean = getBean(FACTORY_BEAN_PREFIX + beanName, FactoryBean::class.java) as FactoryBean
+            val factoryBean = getBean(FACTORY_BEAN_PREFIX + beanName, FactoryBean::class.java)
             return getTypeForFactoryBean(factoryBean)
         }
         return null
     }
 
-
-    override fun getBeanNamesForTypeIncludingAncestors(type: Class<*>): List<String> {
-        return BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this, type).toList()
-    }
+    override fun getBeanNamesForTypeIncludingAncestors(type: Class<*>): List<String> =
+        getBeanNamesForTypeIncludingAncestors(type, true, true)
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> getBeansForTypeIncludingAncestors(type: Class<T>): Map<String, T> {
@@ -568,6 +579,13 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory?) 
         val beanNamesForTypeIncludingAncestors = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this, type)
         beanNamesForTypeIncludingAncestors.forEach { beans[it] = getBean(it) as T }
         return beans
+    }
+
+    override fun getBeanNamesForTypeIncludingAncestors(
+        type: Class<*>, includeNonSingletons: Boolean, allowEagerInit: Boolean
+    ): List<String> {
+        return BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this, type, includeNonSingletons, allowEagerInit)
+            .toList()
     }
 
     /**

@@ -321,7 +321,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
         applicationListeners.forEach { getApplicationEventMulticaster().addApplicationListener(it) }
 
         // 将之前已经注册到容器当中的ApplicationListener注册到ApplicationEventMulticaster当中
-        val listerNames = getBeanNamesForType(ApplicationListener::class.java)
+        val listerNames = getBeanNamesForType(ApplicationListener::class.java, true, false)
         listerNames.forEach { getApplicationEventMulticaster().addApplicationListenerBean(it) }
 
         val earlyApplicationEventsToProcess = this.earlyApplicationEvents!!
@@ -382,9 +382,8 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
 
     override fun publishEvent(event: Any) {
         // 如果要发布的事件对象不是ApplicationEvent，需要使用PayloadApplicationEvent去进行包装一层
-        val applicationEvent: ApplicationEvent =
-            if (event is ApplicationEvent) event
-            else PayloadApplicationEvent(this, event)
+        val applicationEvent: ApplicationEvent = if (event is ApplicationEvent) event
+        else PayloadApplicationEvent(this, event)
 
         // 如果早期事件不为空，那么加入到早期事件列表当中(此时事件多拨器还没准备好，就需要一个容器去保存早期的事件)
         // 等到ApplicationEventMulticaster已经准备好了，那么就可以使用ApplicationEventMulticaster去完成事件的发布了
@@ -417,9 +416,9 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
      * 创建Environment
      */
     protected open fun createEnvironment(): ConfigurableEnvironment = StandardEnvironment()
-    override fun getBean(beanName: String) : Any = getBeanFactory().getBean(beanName)
+    override fun getBean(beanName: String): Any = getBeanFactory().getBean(beanName)
     override fun <T> getBean(beanName: String, type: Class<T>): T = getBeanFactory().getBean(beanName, type)
-    override fun <T> getBean(type: Class<T>) : T = getBeanFactory().getBean(type)
+    override fun <T> getBean(type: Class<T>): T = getBeanFactory().getBean(type)
     override fun isSingleton(beanName: String) = getBeanFactory().isSingleton(beanName)
     override fun isPrototype(beanName: String) = getBeanFactory().isPrototype(beanName)
     override fun addBeanPostProcessor(processor: BeanPostProcessor) = getBeanFactory().addBeanPostProcessor(processor)
@@ -436,6 +435,16 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     override fun getApplicationStartup() = this.applicationStartup
     override fun getBeanNamesForTypeIncludingAncestors(type: Class<*>) =
         getBeanFactory().getBeanNamesForTypeIncludingAncestors(type)
+
+    override fun getBeanNamesForType(
+        type: Class<*>, includeNonSingletons: Boolean, allowEagerInit: Boolean
+    ): List<String> = getBeanFactory().getBeanNamesForType(type, includeNonSingletons, allowEagerInit)
+
+    override fun getBeanNamesForTypeIncludingAncestors(
+        type: Class<*>,
+        includeNonSingletons: Boolean,
+        allowEagerInit: Boolean
+    ): List<String> = getBeanFactory().getBeanNamesForTypeIncludingAncestors(type, includeNonSingletons, allowEagerInit)
 
     override fun getParentBeanFactory(): BeanFactory? {
         return getParent()

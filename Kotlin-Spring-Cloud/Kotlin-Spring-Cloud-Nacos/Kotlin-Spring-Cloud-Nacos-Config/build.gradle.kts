@@ -1,10 +1,3 @@
-plugins {
-    kotlin("jvm")
-    java
-}
-
-group = "com.wanna"
-version = "1.0-SNAPSHOT"
 
 dependencies {
     implementation(project(":Kotlin-Spring-Framework"))
@@ -15,7 +8,6 @@ dependencies {
     implementation(project(":Kotlin-Spring-Cloud:Kotlin-Spring-Cloud-Common"))
 
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("com.alibaba.nacos:nacos-client:$nacosClientVersion")
 }
 

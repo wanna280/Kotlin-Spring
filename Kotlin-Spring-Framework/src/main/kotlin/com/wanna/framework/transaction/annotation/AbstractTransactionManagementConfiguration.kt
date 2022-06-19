@@ -13,12 +13,18 @@ import com.wanna.framework.transaction.TransactionManager
  * @see ProxyTransactionManagementConfiguration
  */
 abstract class AbstractTransactionManagementConfiguration : ImportAware {
-    // @EnableTransactionManagement的相关属性
+
+    // @EnableTransactionManagement的注解当中的各个属性
     protected var enableTx: AnnotationAttributes? = null
 
     // Spring事务的TransactionManager，可以没有，直接从BeanFactory当中去进行获取
     protected var transactionManager: TransactionManager? = null
 
+    /**
+     * 自动注入导入这个配置类的注解信息，去获取到@EnableTransactionManagement的注解当中的各个属性去进行保存
+     *
+     * @param annotationMetadata 注解元信息
+     */
     override fun setImportMetadata(annotationMetadata: AnnotationMetadata) {
         val attributes = annotationMetadata.getAnnotationAttributes(EnableTransactionManagement::class.java)
         if (attributes.isEmpty()) {
@@ -28,8 +34,13 @@ abstract class AbstractTransactionManagementConfiguration : ImportAware {
     }
 
 
+    /**
+     * 自动注入容器中所有的TransactionManagementConfigurer，对transactionManager去进行自定义
+     *
+     * @throws IllegalStateException 如果容器中的TransactionManagementConfigurer数量不止一个
+     */
     @Autowired(required = false)
-    fun setConfigurers(configurers: Collection<TransactionManagementConfigurer>) {
+    open fun setConfigurers(configurers: Collection<TransactionManagementConfigurer>) {
         if (configurers.isEmpty()) {
             return
         }

@@ -30,8 +30,7 @@ open class RootBeanDefinition constructor(beanClass: Class<*>?) : AbstractBeanDe
             this.factoryMethodToIntrospect = beanDefinition.factoryMethodToIntrospect
             this.resolvedConstructorArguments = beanDefinition.resolvedConstructorArguments
             this.constructorArgumentsResolved = beanDefinition.constructorArgumentsResolved
-            this.getPropertyValues()
-                .addPropertyValues(beanDefinition.getPropertyValues().getPropertyValues().toCollection(ArrayList()))
+
         }
     }
 

@@ -23,7 +23,6 @@ open class LocalVariableTableParameterNameDiscoverer : ParameterNameDiscoverer {
     companion object {
         // 标识没有任何的debug info的Flag，代码当中没有debug info，自然也就无法从局部变量表当中去进行参数的获取
         private val NO_DEBUG_INFO_MAP = emptyMap<Executable, Array<String>>()
-
         // ASM Version
         private const val ASM_VERSION = Opcodes.ASM7
     }

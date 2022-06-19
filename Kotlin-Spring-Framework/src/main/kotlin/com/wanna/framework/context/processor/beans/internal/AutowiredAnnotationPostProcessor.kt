@@ -173,7 +173,7 @@ open class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostPro
     override fun postProcessProperties(pvs: PropertyValues?, bean: Any, beanName: String): PropertyValues? {
         val injectionMetadata = findAutowiringMetadata(bean::class.java, beanName, pvs)
         injectionMetadata.inject(bean, beanName, pvs)
-        return null
+        return pvs
     }
 
     /**
@@ -282,7 +282,7 @@ open class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostPro
          */
         private fun resolveFieldValue(field: Field, beanName: String, bean: Any): Any? {
             // 根据field和required去构建一个DependencyDescriptor
-            val descriptor = DependencyDescriptor(field, required)
+            val descriptor = DependencyDescriptor(field, required, true)
             val autowiredBeans = HashSet<String>()
             val typeConverter = beanFactory?.getTypeConverter()
             // 交给BeanFactory去解析依赖

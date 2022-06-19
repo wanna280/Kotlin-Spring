@@ -8,6 +8,7 @@ import com.wanna.framework.transaction.config.TransactionManagementConfigUtils
 import com.wanna.framework.transaction.interceptor.BeanFactoryTransactionAttributeSourceAdvisor
 import com.wanna.framework.transaction.interceptor.TransactionAttributeSource
 import com.wanna.framework.transaction.interceptor.TransactionInterceptor
+import java.util.Optional
 
 /**
  * Spring事务需要用到的配置类，负责给SpringBeanFactory当中导入Spring事务需要用到的Advisor/Advice，以及@Transactional的注解属性匹配
@@ -35,9 +36,7 @@ open class ProxyTransactionManagementConfiguration : AbstractTransactionManageme
         val transactionAdvisor = BeanFactoryTransactionAttributeSourceAdvisor()
         transactionAdvisor.setTransactionAttributeSource(transactionAttributeSource)
         transactionAdvisor.setAdvice(transactionInterceptor)  // setAdvice
-        if (this.enableTx != null) {
-            transactionAdvisor.setOrder(this.enableTx!!.getInt("order"))
-        }
+        Optional.ofNullable(this.enableTx).ifPresent { transactionAdvisor.setOrder(it.getInt("order")) }
         return transactionAdvisor
     }
 
@@ -63,9 +62,7 @@ open class ProxyTransactionManagementConfiguration : AbstractTransactionManageme
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     open fun transactionInterceptor(transactionAttributeSource: TransactionAttributeSource): TransactionInterceptor {
         val transactionInterceptor = TransactionInterceptor()
-        if (this.transactionManager != null) {
-            transactionInterceptor.setTransactionManager(this.transactionManager!!)
-        }
+        Optional.ofNullable(this.transactionManager).ifPresent { transactionInterceptor.setTransactionManager(it) }
         transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource)
         return transactionInterceptor
     }

@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit
 @ConditionOnMissingClass(value = ["com.wanna.boot.autoconfigure.MyReactiveWebServerFactory1"])
 @SpringBootApplication
 @EnableConfigurationProperties([ConfigurationPropertiesConstructorBinding::class])
-class ConditionTest {
+open class ConditionTest {
 
     @Bean
     fun loadTimeWeavingConfigurer(): LoadTimeWeavingConfigurer {

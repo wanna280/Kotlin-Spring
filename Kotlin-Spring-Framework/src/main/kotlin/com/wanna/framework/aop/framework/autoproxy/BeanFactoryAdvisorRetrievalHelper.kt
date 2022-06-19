@@ -26,7 +26,7 @@ open class BeanFactoryAdvisorRetrievalHelper(private val beanFactory: Configurab
         val advisors = ArrayList<Advisor>()
         var advisorNames = this.cachedAdvisorNames
         if (advisorNames == null) {
-            advisorNames = beanFactory.getBeanNamesForType(Advisor::class.java)
+            advisorNames = beanFactory.getBeanNamesForType(Advisor::class.java, true, false)
             this.cachedAdvisorNames = advisorNames
         }
         advisorNames.forEach { beanName ->

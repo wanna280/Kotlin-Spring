@@ -15,16 +15,14 @@ import com.wanna.framework.core.convert.ConversionService
  * @see MutablePropertySources
  * @see ConversionService
  */
-abstract class AbstractEnvironment() : ConfigurableEnvironment {
+abstract class AbstractEnvironment(
+    private val propertySources: MutablePropertySources = MutablePropertySources(),
+    private val propertyResolver: PropertySourcesPropertyResolver = PropertySourcesPropertyResolver(propertySources)
+) : ConfigurableEnvironment {
 
     constructor(propertySources: MutablePropertySources) : this() {
         propertySources.forEach { this.propertySources.addLast(it) }
     }
-
-    private val propertySources = MutablePropertySources()
-
-    // 创建PropertySources的PropertyResolver，去完成属性值的解析
-    private val propertyResolver = PropertySourcesPropertyResolver(propertySources)
 
     // 活跃的profiles
     private var activeProfiles = HashSet<String>()
@@ -39,6 +37,8 @@ abstract class AbstractEnvironment() : ConfigurableEnvironment {
 
     /**
      * 子类有可能需要根据MutablePropertySources去对其进行自定义，需要提供这么一个扩展接口
+     *
+     * @param propertySources PropertySources列表
      */
     protected open fun customizePropertySources(propertySources: MutablePropertySources) {
 

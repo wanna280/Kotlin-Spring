@@ -50,6 +50,7 @@ abstract class AbstractAdvisorAutoProxyCreator : AbstractAutoProxyCreator() {
 
     /**
      * 寻找有资格针对于指定的Bean去产生代理的Advisor列表
+     *
      * @see findCandidateAdvisors
      * @see findAdvisorsThatCanApply
      * @see extendsAdvisors
@@ -70,6 +71,8 @@ abstract class AbstractAdvisorAutoProxyCreator : AbstractAutoProxyCreator() {
 
     /**
      * 自定义扩展Advisor逻辑，这是是一个模板方法，交给子类去进行扩展
+     *
+     * @param eligibleAdvisors 合法的Advisor列表
      */
     protected open fun extendsAdvisors(eligibleAdvisors: MutableList<Advisor>) {
 
@@ -77,6 +80,8 @@ abstract class AbstractAdvisorAutoProxyCreator : AbstractAutoProxyCreator() {
 
     /**
      * 完成Advisor的排序，默认排序规则为按照Order的注解以及Ordered注解的方式去进行排序
+     *
+     * @param advisors 待去进行排序的Advisor列表
      */
     protected open fun sortAdvisors(advisors: MutableList<Advisor>): MutableList<Advisor> {
         AnnotationAwareOrderComparator.sort(advisors)
@@ -85,7 +90,7 @@ abstract class AbstractAdvisorAutoProxyCreator : AbstractAutoProxyCreator() {
 
     /**
      * 寻找候选的Advisor列表，默认实现方式为从容器当中获取到所有的Advisor的Bean列表
-     * 在子类当中，可以去进行重写，实现从别的来源当中去产生Advisor，比如使用AspectJ相关的注解
+     * 在子类当中，当然也可以去进行重写，实现从别的来源当中去产生Advisor，比如使用AspectJ相关的注解
      */
     protected open fun findCandidateAdvisors(): List<Advisor> {
         return advisorRetrievalHelper?.findAdvisorBeans()
@@ -108,6 +113,9 @@ abstract class AbstractAdvisorAutoProxyCreator : AbstractAutoProxyCreator() {
 
     /**
      * 是否是一个有资格成为Advisor的Bean
+     *
+     * @param name 要去进行匹配的beanName
+     * @return 如果有资格，return true；没有资格则return false
      */
     protected open fun isEligibleBean(name: String): Boolean {
         return true

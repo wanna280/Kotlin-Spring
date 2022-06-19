@@ -38,6 +38,6 @@ interface InstantiationAwareBeanPostProcessor : BeanPostProcessor {
      * @param bean bean
      */
     fun postProcessProperties(pvs: PropertyValues?, bean: Any, beanName: String): PropertyValues? {
-        return null
+        return pvs
     }
 }

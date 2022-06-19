@@ -9,6 +9,7 @@ import com.wanna.framework.context.event.ApplicationEventMulticaster
 import com.wanna.framework.context.event.SimpleApplicationEventMulticaster
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.environment.ConfigurableEnvironment
+import org.slf4j.LoggerFactory
 
 /**
  * 这是一个Spring的事件发布的运行监听器，它负责回调所有的监听器
@@ -16,6 +17,10 @@ import com.wanna.framework.core.environment.ConfigurableEnvironment
 open class EventPublishingRunListener(
     private val springApplication: SpringApplication, private val args: Array<String>
 ) : SpringApplicationRunListener, Ordered {
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(EventPublishingRunListener::class.java)
+    }
 
     private var order: Int = 0
 
@@ -115,6 +120,7 @@ open class EventPublishingRunListener(
      * @see SpringApplication.handleRunException
      */
     override fun failed(context: ConfigurableApplicationContext?, ex: Throwable) {
+        logger.error("启动SpringApplication发生异常", ex)
         if (context == null) {
             this.initialMulticaster.multicastEvent(ApplicationFailedEvent(context, springApplication, args, ex))
         } else {

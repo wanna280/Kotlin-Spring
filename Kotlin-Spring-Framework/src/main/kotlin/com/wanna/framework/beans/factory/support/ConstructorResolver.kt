@@ -222,7 +222,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
         // 设置依赖描述符上的required=true，如果该方法参数上有"@Autowired(required=false)"时，在解析过程当中也支持
         val params: Array<Any?> = Array(paramTypes.size) {
             val methodParameter = MethodParameter(executable, it)
-            beanFactory.resolveDependency(DependencyDescriptor(methodParameter, true), beanName)  // return
+            beanFactory.resolveDependency(DependencyDescriptor(methodParameter, true, true), beanName)  // return
         }
         return params
     }

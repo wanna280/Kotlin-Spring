@@ -22,7 +22,7 @@ open class ControllerAdviceBean() {
         @JvmStatic
         fun findAnnotatedBeans(applicationContext: ApplicationContext): List<ControllerAdviceBean> {
             val result = ArrayList<ControllerAdviceBean>()
-            val beanNames = applicationContext.getBeanNamesForTypeIncludingAncestors(Any::class.java)
+            val beanNames = applicationContext.getBeanNamesForTypeIncludingAncestors(Any::class.java, true, false)
             beanNames.forEach { name ->
                 val type = applicationContext.getType(name)
                 if (type != null && AnnotatedElementUtils.isAnnotated(type, ControllerAdvice::class.java)) {

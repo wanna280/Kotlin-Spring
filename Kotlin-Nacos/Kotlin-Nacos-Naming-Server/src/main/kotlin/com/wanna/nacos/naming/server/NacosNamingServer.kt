@@ -4,7 +4,7 @@ import com.wanna.boot.autoconfigure.SpringBootApplication
 import com.wanna.boot.runSpringApplication
 
 @SpringBootApplication
-class NacosNamingServer
+open class NacosNamingServer
 
 fun main(vararg args: String) {
     runSpringApplication<NacosNamingServer>(*args)

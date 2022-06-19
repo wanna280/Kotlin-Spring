@@ -6,6 +6,7 @@ import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.util.ClassUtils
+import java.util.Optional
 
 /**
  * 它是一个抽象的ApplicationEventMulticaster，它提供了ApplicationListener的注册工作的相关的默认实现
@@ -149,11 +150,11 @@ abstract class AbstractApplicationEventMulticaster : ApplicationEventMulticaster
         fun getAllApplicationListeners(): Collection<ApplicationListener<*>> {
             val listeners = ArrayList<ApplicationListener<*>>()
             listeners += applicationListeners  // 添加实例对象的ApplicationListener对象列表
-            if (getBeanFactory() != null) {
+            Optional.ofNullable(getBeanFactory()).ifPresent { beanFactory ->
                 applicationListenerBeans.forEach {
-                    val listener = getBeanFactory()!!.getBean(it, ApplicationListener::class.java)
+                    val listener = beanFactory.getBean(it, ApplicationListener::class.java)
                     if (!listeners.contains(listener)) {
-                        listeners += listener as ApplicationListener<*>
+                        listeners += listener
                     }
                 }
             }

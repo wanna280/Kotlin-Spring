@@ -9,21 +9,29 @@ import com.wanna.framework.beans.PropertyValues
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.ObjectFactory
 import com.wanna.framework.beans.BeanWrapperImpl
+import com.wanna.framework.beans.factory.FactoryBean
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.BeanNameAware
 import com.wanna.framework.context.exception.BeanCreationException
+import com.wanna.framework.context.exception.BeansException
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
+import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ParameterNameDiscoverer
+import com.wanna.framework.core.ResolvableType
+import com.wanna.framework.core.util.BeanUtils
+import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.core.util.ReflectionUtils
 import com.wanna.framework.core.util.StringUtils
+import java.beans.Introspector
 import java.lang.reflect.Constructor
+import java.lang.reflect.Method
 import java.util.function.Supplier
 
 /**
  * 这是一个拥有Autowire能力的BeanFactory，不仅提供了普通的BeanFactory的能力，也可以提供createBean等Autowire相关工作
  */
-abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), AutowireCapableBeanFactory {
+abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), AutowireCapableBeanFactory {
 
     // 是否开启了循环依赖？默认设置为true
     private var allowCircularReferences: Boolean = true
@@ -306,9 +314,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
     private fun applyMergedBeanDefinitionPostProcessor(mbd: RootBeanDefinition, beanType: Class<*>, beanName: String) {
         if (getBeanPostProcessorCache().hasMergedDefinition()) {
             getBeanPostProcessorCache().mergedDefinitions.forEach {
-                it.postProcessMergedBeanDefinition(
-                    mbd, beanType, beanName
-                )
+                it.postProcessMergedBeanDefinition(mbd, beanType, beanName)
             }
         }
     }
@@ -316,6 +322,9 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
     /**
      * 对Bean去完成初始化，执行Bean的初始化回调方法，以及对Bean的初始化前后的去进行干涉的BeanPostProcessor
      *
+     * @param beanName beanName
+     * @param bean 要去进行初始化的Bean
+     * @param mbd MergedBeanDefinition
      * @throws BeanCreationException 执行初始化过程当中发生了异常
      * @throws Throwable 在执行初始化之前/之后的方法当中，发生的异常将会直接往上抛
      */
@@ -358,17 +367,20 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
 
         val resolvedAutowireMode = mbd.getAutowireMode()
         // 如果解析到的AutowireMode为byName或者是byType去进行注入的话，那么需要解析相关的依赖，并放入到pvs当中
+        // 这是很有用的，本来是应用在XML的Spring当中的，但是就算是在注解版Spring当中，它也非常重要，它能支持去寻找所有的Setter，并将其添加到pvs当中
         if (resolvedAutowireMode == AbstractBeanDefinition.AUTOWIRE_BY_NAME || resolvedAutowireMode == AbstractBeanDefinition.AUTOWIRE_BY_TYPE) {
-            val newPvs = MutablePropertyValues(pvs)
-            if (resolvedAutowireMode == AbstractBeanDefinition.AUTOWIRE_BY_TYPE) {
+            val newPvs = MutablePropertyValues(pvs)  // copy PropertyValues
+            if (resolvedAutowireMode == AbstractBeanDefinition.AUTOWIRE_BY_NAME) {
                 autowireByName(beanName, mbd, wrapper, newPvs)
             }
-            if (resolvedAutowireMode == AbstractBeanDefinition.AUTOWIRE_BY_NAME) {
+            if (resolvedAutowireMode == AbstractBeanDefinition.AUTOWIRE_BY_TYPE) {
                 autowireByType(beanName, mbd, wrapper, newPvs)
             }
-            pvs = newPvs  // 使用newPvs替换之前的pvs
+            pvs = newPvs  // 使用newPvs替换之前的pvs，作为要去进行使用的pvs
         }
 
+        // 如果必要的话，遍历所有的BeanPostProcessor，去进行Autowire自动注入的处理...
+        // 它有可能会涉及到pvs的移除，因为有些BeanPostProcessor它已经完成注入了，就不必再次使用属性值去进行注入了...
         if (getBeanPostProcessorCache().hasInstantiationAware()) {
             // 完成Bean的属性填充
             for (postProcessor in getBeanPostProcessorCache().instantiationAwareCache) {
@@ -386,6 +398,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
 
     /**
      * 应用所有的PropertyValues到BeanWrapper当中，可以通过PropertyValue去对Bean的某些字段值去进行设置
+     *
      * @param pvs PropertyValues
      * @param mbd MergedBeanDefinition
      * @param beanWrapper beanWrapper
@@ -394,26 +407,148 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(null), A
     protected open fun applyPropertyValues(
         beanName: String, mbd: RootBeanDefinition, beanWrapper: BeanWrapper, pvs: PropertyValues
     ) {
-        // 通过beanWrapper去设置propertyValues
-        beanWrapper.setPropertyValues(pvs)
+
+        val beanDefinitionValueResolver = BeanDefinitionValueResolver(this, beanName, mbd, beanWrapper)
+
+        pvs.getPropertyValues().forEach { pv ->
+            // BeanDefinition的值解析器，需要解析比如RuntimeBeanReference等多种的情况
+            val resolvedValue = beanDefinitionValueResolver.resolveValueIfNecessary(pv, pv.value)
+            pv.value = resolvedValue
+        }
+
+        try {
+            // 通过beanWrapper去设置propertyValues
+            beanWrapper.setPropertyValues(pvs)
+        } catch (ex: BeansException) {
+            throw BeanCreationException("给beanName=[$beanName]的Bean去进行属性赋值的过程当中出现了异常")
+        }
     }
 
     /**
-     * 通过byName的方式去进行自动注入
+     * 通过byName的方式去进行自动注入，需要解析所有的非简单属性的setter，将其添加到pvs当中
+     *
+     * @param name beanName
+     * @param mbd MergedBeanDefinition
+     * @param beanWrapper beanWrapper
+     * @param pvs PropertyValues
+     *
+     * @see AbstractBeanDefinition.AUTOWIRE_BY_NAME
+     * @see AbstractBeanDefinition.setAutowireMode
      */
     protected open fun autowireByName(
         name: String, mbd: RootBeanDefinition, beanWrapper: BeanWrapper, pvs: MutablePropertyValues
     ) {
-
+        val propertyNames = unsatisfiedNonSimpleProperties(mbd, beanWrapper)
+        propertyNames.forEach { (propertyName, _) ->
+            if (containsBeanDefinition(propertyName)) {
+                val bean = getBean(propertyName)
+                pvs.addPropertyValue(propertyName, bean)
+            }
+        }
     }
 
     /**
-     * 通过byType的方式去进行自动注入
+     * 通过byType的方式去进行自动注入，需要解析所有的非简单属性的setter，将其添加到pvs当中
+     *
+     * Note: Autowired注入时，eager=true，必须去进行注入，就算是FactoryBean也得给我注入进来
+     *
+     * @param beanName beanName
+     * @param mbd MergedBeanDefinition
+     * @param beanWrapper beanWrapper
+     * @param pvs PropertyValues
+     *
+     * @see AbstractBeanDefinition.AUTOWIRE_BY_TYPE
+     * @see AbstractBeanDefinition.setAutowireMode
      */
     protected open fun autowireByType(
         beanName: String, mbd: RootBeanDefinition, beanWrapper: BeanWrapper, pvs: MutablePropertyValues
     ) {
+        val propertyNames = unsatisfiedNonSimpleProperties(mbd, beanWrapper)
+        propertyNames.forEach { (propertyName, method) ->
+            val dependency = resolveDependency(DependencyDescriptor(MethodParameter(method, 0), false, true), beanName)
+            if (dependency != null) {
+                pvs.addPropertyValue(propertyName, dependency)
+            }
+        }
+    }
+    /**
+     * 根据给定的BeanDefinition，去进行获取一个FactoryBean的类型
+     *
+     * @param allowInit 是否允许进行初始化
+     * @param beanName beanName
+     * @param mbd 合并的RootBeanDefinition
+     */
+    override fun getTypeForFactoryBean(beanName: String, mbd: RootBeanDefinition, allowInit: Boolean): Class<*>? {
+        // 尝试从BeanDefinitionAttribute当中去进行解析
+        val type = mbd.getAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE) as Class<*>?
+        if (type != null) {
+            return type;
+        }
 
+        // 预测Bean的类型
+        val predictBeanType = predictBeanType(beanName, mbd) ?: return null
+        // 如果预测的类型是FactoryBean的话，那么我们直接尝试从@Bean方法的返回值类型上去进行类型的推断...
+        if (ClassUtils.isAssignFrom(FactoryBean::class.java, predictBeanType)) {
+            // 如果给定的类型不是&beanName的形式，那么需要去匹配FactoryBeanObjectType
+            // 我们这里使用的是@Bean的方法的返回值去进行泛型的解析的方式去进行判断
+            // 这种方式也必须去进行尝试，不然会容易出现匹配@Bean方法的时候出现循环依赖
+            // 比如A类有一个@Bean的方法B，A有一个要注入的元素C
+            // 那么匹配B时，就会出现，需要先创建A的情况，而创建A又需要注入C，又会遇到isTypeMatch
+            // 又会去匹配到B的情况，但是B之前已经在创建当中了，但是还没完成创建，这时就出现了循环依赖...
+            // 典型的就是A=MyBatisAutoConfiguration，B=SqlSessionFactoryBean，C=MyBatisProperties这种情况
+            if (mbd.getFactoryMethodName() != null) {
+                val factoryClass = mbd.getResolvedFactoryMethod()!!.declaringClass
+                val resolvableType =
+                    getTypeForFactoryBeanFromMethod(factoryClass, mbd.getFactoryMethodName()!!)
+                if (resolvableType != null) {
+                    return resolvableType.resolve()
+                }
+            }
+        }
+
+        return super.getTypeForFactoryBean(beanName, mbd, allowInit)
+    }
+
+    /**
+     * 从方法上去获取FactoryBean的类型，通过解析返回值的泛型的方式去进行解析
+     *
+     * @param factoryClass FactoryBeanClass
+     * @param factoryMethodName factoryMethodName
+     * @return 解析到的FactoryBeanObjectClass(没有解析到return null)
+     */
+    protected open fun getTypeForFactoryBeanFromMethod(factoryClass: Class<*>, factoryMethodName: String): ResolvableType? {
+        var resolvableType: ResolvableType? = null
+        ReflectionUtils.doWithMethods(factoryClass) {
+            if (it.name == factoryMethodName && ClassUtils.isAssignFrom(FactoryBean::class.java, it.returnType)) {
+                resolvableType =
+                    ResolvableType.forType(it.genericReturnType, variableResolver = null).`as`(FactoryBean::class.java)
+                        .getGenerics()[0]
+            }
+        }
+        return resolvableType
+    }
+
+    /**
+     * 获取非简单属性的列表
+     *
+     * @param mbd BeanDefinition
+     * @param bw BeanWrapper
+     */
+    protected open fun unsatisfiedNonSimpleProperties(
+        mbd: AbstractBeanDefinition,
+        bw: BeanWrapper
+    ): Map<String, Method> {
+        val result = HashMap<String, Method>()
+        val propertyValues = mbd.getPropertyValues()
+        ReflectionUtils.doWithMethods(bw.getWrappedClass()) {
+            if (it.name.startsWith("set") && it.parameterCount == 1 && !BeanUtils.isSimpleProperty(it.parameterTypes[0])) {
+                val propertyName = Introspector.decapitalize(it.name.substring(3))
+                if (!propertyValues.containsProperty(propertyName)) {
+                    result += propertyName to it
+                }
+            }
+        }
+        return result
     }
 
     /**

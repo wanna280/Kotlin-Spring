@@ -10,6 +10,8 @@ import com.wanna.framework.beans.factory.ListableBeanFactory
 object BeanFactoryUtils {
     /**
      * 判断beanName是否是以FactoryBean的前缀(&)作为开始
+     *
+     * @param beanName 要去进行匹配的beanName
      */
     @JvmStatic
     fun isFactoryDereference(beanName: String): Boolean {
@@ -41,12 +43,30 @@ object BeanFactoryUtils {
      */
     @JvmStatic
     fun beanNamesForTypeIncludingAncestors(lbf: ListableBeanFactory, type: Class<*>): Array<String> {
+        return beanNamesForTypeIncludingAncestors(lbf, type, true, true)
+    }
+
+    /**
+     * 从beanFactory当中去获取符合指定类型的BeanName列表(包含parentBeanFactory)
+     *
+     * @param lbf 目标BeanFactory
+     * @param type 要去BeanFactory当中去进行获取的指定类型
+     * @param includeNonSingletons 是否包括非单例对象？
+     * @param allowEagerInit 是否允许eagerInit？
+     * @return 该类型的所有BeanNames
+     */
+    @JvmStatic
+    fun beanNamesForTypeIncludingAncestors(
+        lbf: ListableBeanFactory, type: Class<*>, includeNonSingletons: Boolean, allowEagerInit: Boolean
+    ): Array<String> {
         // 先获取当前BeanFactory当中的
-        val result = ArrayList(lbf.getBeanNamesForType(type))
+        val result = ArrayList(lbf.getBeanNamesForType(type, includeNonSingletons, allowEagerInit))
         if (lbf is HierarchicalBeanFactory) {
             val parentBeanFactory = lbf.getParentBeanFactory()
             if (parentBeanFactory is ListableBeanFactory) {
-                result += beanNamesForTypeIncludingAncestors(parentBeanFactory, type)  // 递归
+                result += beanNamesForTypeIncludingAncestors(
+                    parentBeanFactory, type, includeNonSingletons, allowEagerInit
+                )  // 递归
             }
         }
         return result.toTypedArray()

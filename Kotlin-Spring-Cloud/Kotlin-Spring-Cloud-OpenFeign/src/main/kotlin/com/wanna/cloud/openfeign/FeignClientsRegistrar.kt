@@ -19,6 +19,9 @@ import com.wanna.framework.core.util.StringUtils
 
 /**
  * 用来处理@EnableFeignClients以及@FeignClient的ImportBeanDefinitionRegistrar；
+ *
+ * @see EnableFeignClients
+ * @see FeignClient
  */
 @Suppress("UNCHECKED_CAST")
 open class FeignClientsRegistrar : ImportBeanDefinitionRegistrar, EnvironmentAware {

@@ -482,7 +482,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
                 throw BeansException("在DispatcherHandler的初始化过程当中，无法找到类[$it]")
             }
         }
-        if(classNames.isEmpty()) {
+        if (classNames.isEmpty()) {
             if (logger.isTraceEnabled) {
                 logger.info("没有从容器当中找到[${strategyInterface.name}]的具体实现，从配置文件当中加载到如下实现[$property]")
             }
