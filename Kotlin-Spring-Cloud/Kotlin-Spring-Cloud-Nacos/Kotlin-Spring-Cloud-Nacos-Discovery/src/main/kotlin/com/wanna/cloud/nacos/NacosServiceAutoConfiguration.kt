@@ -1,6 +1,6 @@
 package com.wanna.cloud.nacos
 
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 
@@ -8,7 +8,7 @@ import com.wanna.framework.context.annotation.Configuration
 open class NacosServiceAutoConfiguration {
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun nacosServiceManager() : NacosServiceManager {
         return NacosServiceManager()
     }

@@ -2,7 +2,7 @@ package com.wanna.cloud.nacos.ribbon
 
 import com.wanna.cloud.netflix.ribbon.SpringClientFactory
 import com.netflix.client.config.IClientConfig
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.cloud.nacos.NacosDiscoveryProperties
 import com.wanna.cloud.nacos.NacosServiceManager
 import com.wanna.framework.context.annotation.Bean
@@ -27,7 +27,7 @@ open class NacosRibbonClientConfiguration {
      * @param config RibbonClient的配置信息
      */
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun nacosServerList(
         discoveryProperties: NacosDiscoveryProperties, manager: NacosServiceManager, config: IClientConfig
     ): NacosServerList {

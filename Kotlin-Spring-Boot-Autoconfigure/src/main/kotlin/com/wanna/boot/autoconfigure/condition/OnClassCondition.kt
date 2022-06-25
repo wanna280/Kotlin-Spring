@@ -10,8 +10,8 @@ import com.wanna.framework.core.type.AnnotatedTypeMetadata
 /**
  * 这是一个基于Class的Condition，它主要用来处理@ConditionOnClass/@ConditionOnMissingClass等注解
  *
- * @see ConditionOnClass
- * @see ConditionOnMissingClass
+ * @see ConditionalOnClass
+ * @see ConditionalOnMissingClass
  * @see FilteringSpringBootCondition
  * @see SpringBootCondition
  */
@@ -83,7 +83,7 @@ open class OnClassCondition : FilteringSpringBootCondition() {
                     // 检查ClassCondition的所有className是否都已经存在
                     val onClassTypes = autoConfigurationMetadata.getSet(autoConfigurationClass, "OnClassCondition")
                     // base=start，offset=index-start
-                    outcomes[index - start] = getOutcome(onClassTypes, ConditionOnClass::class.java)
+                    outcomes[index - start] = getOutcome(onClassTypes, ConditionalOnClass::class.java)
                 }
             }
             return outcomes
@@ -131,8 +131,8 @@ open class OnClassCondition : FilteringSpringBootCondition() {
     override fun getConditionOutcome(context: ConditionContext, metadata: AnnotatedTypeMetadata): ConditionOutcome {
         val message = ConditionMessage.empty()
         // 匹配@ConditionOnClass
-        if (metadata.isAnnotated(ConditionOnClass::class.java.name)) {
-            val onClassAttrs = metadata.getAnnotationAttributes(ConditionOnClass::class.java.name)
+        if (metadata.isAnnotated(ConditionalOnClass::class.java.name)) {
+            val onClassAttrs = metadata.getAnnotationAttributes(ConditionalOnClass::class.java.name)
 
             // 获取用户配置的所有classNames
             val classNames = (onClassAttrs["name"] as Array<String>).toMutableList()
@@ -147,8 +147,8 @@ open class OnClassCondition : FilteringSpringBootCondition() {
             }
         }
         // 匹配@ConditionOnMissingClass
-        if (metadata.isAnnotated(ConditionOnMissingClass::class.java.name)) {
-            val onMissingClassAttrs = metadata.getAnnotationAttributes(ConditionOnMissingClass::class.java.name)
+        if (metadata.isAnnotated(ConditionalOnMissingClass::class.java.name)) {
+            val onMissingClassAttrs = metadata.getAnnotationAttributes(ConditionalOnMissingClass::class.java.name)
             // 获取用户配置的所有classNames
             val classNames = (onMissingClassAttrs["value"] as Array<String>).toMutableList()
 

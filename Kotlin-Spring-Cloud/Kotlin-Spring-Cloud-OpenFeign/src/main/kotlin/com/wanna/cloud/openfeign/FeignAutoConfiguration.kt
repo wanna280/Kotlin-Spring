@@ -1,9 +1,9 @@
 package com.wanna.cloud.openfeign
 
 import com.wanna.boot.autoconfigure.AutoConfigureAfter
-import com.wanna.boot.autoconfigure.condition.ConditionOnClass
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingClass
+import com.wanna.boot.autoconfigure.condition.ConditionalOnClass
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingClass
 import com.wanna.cloud.openfeign.ribbon.FeignRibbonClientAutoConfiguration
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.Bean
@@ -33,10 +33,10 @@ open class FeignAutoConfiguration {
      * 如果存在有CircuitBreaker的话，那么使用SpringCloud的CircuitBreaker
      */
     @Configuration(proxyBeanMethods = false)
-    @ConditionOnClass(name = ["com.wanna.cloud.client.circuitbreaker.CircuitBreaker"])
+    @ConditionalOnClass(name = ["com.wanna.cloud.client.circuitbreaker.CircuitBreaker"])
     open class CircuitBreakerPresentFeignTargeterConfiguration {
         @Bean
-        @ConditionOnMissingBean
+        @ConditionalOnMissingBean
         open fun feignCircuitBreakerTargeter(): FeignCircuitBreakerTargeter {
             return FeignCircuitBreakerTargeter()
         }
@@ -46,10 +46,10 @@ open class FeignAutoConfiguration {
      * 如果没有别的，那么才需要导入默认的Targeter
      */
     @Configuration(proxyBeanMethods = false)
-    @ConditionOnMissingClass(["com.wanna.cloud.client.circuitbreaker.CircuitBreaker"])
+    @ConditionalOnMissingClass(["com.wanna.cloud.client.circuitbreaker.CircuitBreaker"])
     open class DefaultFeignTargeterConfiguration {
         @Bean
-        @ConditionOnMissingBean
+        @ConditionalOnMissingBean
         open fun targeter(): Targeter {
             return DefaultTargeter()
         }

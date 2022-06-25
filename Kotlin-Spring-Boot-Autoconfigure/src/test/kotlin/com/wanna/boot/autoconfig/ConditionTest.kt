@@ -2,7 +2,7 @@ package com.wanna.boot.autoconfig
 
 import com.wanna.boot.SpringApplication
 import com.wanna.boot.autoconfigure.SpringBootApplication
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingClass
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingClass
 import com.wanna.boot.context.properties.ConfigurationProperties
 import com.wanna.boot.context.properties.ConstructorBinding
 import com.wanna.boot.context.properties.EnableConfigurationProperties
@@ -18,7 +18,7 @@ import org.aspectj.lang.annotation.Pointcut
 import java.util.concurrent.TimeUnit
 
 @EnableAspectJWeaving
-@ConditionOnMissingClass(value = ["com.wanna.boot.autoconfigure.MyReactiveWebServerFactory1"])
+@ConditionalOnMissingClass(value = ["com.wanna.boot.autoconfigure.MyReactiveWebServerFactory1"])
 @SpringBootApplication
 @EnableConfigurationProperties([ConfigurationPropertiesConstructorBinding::class])
 open class ConditionTest {

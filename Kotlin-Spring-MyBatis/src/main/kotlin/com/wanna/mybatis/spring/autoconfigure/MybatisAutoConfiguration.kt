@@ -1,8 +1,8 @@
 package com.wanna.mybatis.spring.autoconfigure
 
 import com.wanna.boot.autoconfigure.AutoConfigurationPackages
-import com.wanna.boot.autoconfigure.condition.ConditionOnClass
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnClass
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.boot.autoconfigure.condition.ConditionalOnSingleCandidate
 import com.wanna.boot.context.properties.EnableConfigurationProperties
 import com.wanna.framework.beans.BeanFactoryAware
@@ -32,7 +32,7 @@ import javax.sql.DataSource
  * @see SqlSessionFactory
  * @see SqlSessionTemplate
  */
-@ConditionOnClass([SqlSessionFactory::class, SqlSessionFactoryBean::class])
+@ConditionalOnClass([SqlSessionFactory::class, SqlSessionFactoryBean::class])
 @EnableConfigurationProperties([MybatisProperties::class])
 @ConditionalOnSingleCandidate(DataSource::class)
 @Configuration(proxyBeanMethods = false)
@@ -54,7 +54,7 @@ open class MybatisAutoConfiguration {
     private lateinit var customizers: Array<ConfigurationCustomizer>
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun sqlSessionTemplate(sqlSessionFactory: SqlSessionFactory): SqlSessionTemplate {
         if (properties.executorType != null) {
             return SqlSessionTemplate(sqlSessionFactory, properties.executorType!!)
@@ -63,7 +63,7 @@ open class MybatisAutoConfiguration {
     }
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun sqlSessionFactory(dataSource: DataSource): SqlSessionFactoryBean {
         val sqlSessionFactoryBean = SqlSessionFactoryBean()
         sqlSessionFactoryBean.dataSource = dataSource
@@ -83,7 +83,7 @@ open class MybatisAutoConfiguration {
      */
     @Import([AutoConfiguredMapperScannerRegistrar::class])
     @Configuration(proxyBeanMethods = false)
-    @ConditionOnMissingBean([MapperFactoryBean::class, MapperScannerConfigurer::class])
+    @ConditionalOnMissingBean([MapperFactoryBean::class, MapperScannerConfigurer::class])
     open class MapperScannerRegistrarNotFoundConfiguration : InitializingBean {
         override fun afterPropertiesSet() {
             if (logger.isDebugEnabled) {

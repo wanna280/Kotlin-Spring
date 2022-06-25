@@ -15,8 +15,8 @@ import com.wanna.framework.core.util.ClassUtils
 /**
  * 这是用于匹配Bean的SpringBootCondition，主要处理@ConditionOnBean/@ConditionOnMissingBean/@ConditionOnSingleCandidate等注解
  *
- * @see ConditionOnBean
- * @see ConditionOnMissingBean
+ * @see ConditionalOnBean
+ * @see ConditionalOnMissingBean
  */
 @Order(Ordered.ORDER_LOWEST)
 @Suppress("UNCHECKED_CAST")
@@ -37,7 +37,7 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
 
                 // 首先，检查OnBeanCondition的所有className是否都已经存在
                 val onBeanTypes = autoConfigurationMetadata.getSet(autoConfigurationClass, "OnBeanCondition")
-                outcomes[index] = getOutcome(onBeanTypes, ConditionOnBean::class.java)
+                outcomes[index] = getOutcome(onBeanTypes, ConditionalOnBean::class.java)
                 // 如果OnBeanCondition的所有className都已经存在，那么再去检查一下onSingleCandidate的所有className是否都已经存在
                 if (outcomes[index] == null) {
                     val onSingletonCandidateTypes =
@@ -64,17 +64,17 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
     }
 
     override fun getConditionOutcome(context: ConditionContext, metadata: AnnotatedTypeMetadata): ConditionOutcome {
-        if (metadata.isAnnotated(ConditionOnBean::class.java.name)) {
+        if (metadata.isAnnotated(ConditionalOnBean::class.java.name)) {
             // 构建Spec对象
-            val spec = Spec(context, metadata, ConditionOnBean::class.java)
+            val spec = Spec(context, metadata, ConditionalOnBean::class.java)
             val matchResult: MatchResult = getMatchBeans(context, spec)
             if (!matchResult.isAllMatch()) {  // 如果不是全部匹配，return false
                 return ConditionOutcome.noMatch()
             }
         }
-        if (metadata.isAnnotated(ConditionOnMissingBean::class.java.name)) {
+        if (metadata.isAnnotated(ConditionalOnMissingBean::class.java.name)) {
             // 构建Spec对象
-            val spec = Spec(context, metadata, ConditionOnMissingBean::class.java)
+            val spec = Spec(context, metadata, ConditionalOnMissingBean::class.java)
             val matchResult: MatchResult = getMatchBeans(context, spec)
             if (matchResult.isAnyMatch()) {  // 如果有部分匹配，那么return false
                 return ConditionOutcome.noMatch()
@@ -199,8 +199,8 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
     /**
      * 这是Spring当中对于Condition匹配的相关条件的去进行封装的类，它是对于ConditionOnBean/ConditionOnMissingBean的进行的一层抽象
      *
-     * @see ConditionOnBean
-     * @see ConditionOnMissingBean
+     * @see ConditionalOnBean
+     * @see ConditionalOnMissingBean
      */
     private open class Spec<A : Annotation>(
         context: ConditionContext, metadata: AnnotatedTypeMetadata, annotationType: Class<A>

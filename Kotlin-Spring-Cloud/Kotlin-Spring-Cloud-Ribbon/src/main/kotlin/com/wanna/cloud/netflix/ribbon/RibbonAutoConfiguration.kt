@@ -1,6 +1,6 @@
 package com.wanna.cloud.netflix.ribbon
 
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.cloud.client.loadbalancer.LoadBalancerClient
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.Bean
@@ -23,7 +23,7 @@ open class RibbonAutoConfiguration {
      * * 2.它会自动将App容器当中的全部RibbonClientSpecification，直接apply给SpringClientFactory，也就是直接apply给对应的childContext；
      */
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun springClientFactory(): SpringClientFactory {
         val springClientFactory = SpringClientFactory()
         springClientFactory.setConfigurations(specifications)
@@ -37,7 +37,7 @@ open class RibbonAutoConfiguration {
      * @param springClientFactory SpringClientFactory
      */
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun loadBalancerClient(springClientFactory: SpringClientFactory) : LoadBalancerClient {
         return RibbonLoadBalancerClient(springClientFactory)
     }

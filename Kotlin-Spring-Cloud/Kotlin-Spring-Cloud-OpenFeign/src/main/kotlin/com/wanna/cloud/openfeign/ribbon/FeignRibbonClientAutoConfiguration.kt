@@ -1,6 +1,6 @@
 package com.wanna.cloud.openfeign.ribbon
 
-import com.wanna.boot.autoconfigure.condition.ConditionOnClass
+import com.wanna.boot.autoconfigure.condition.ConditionalOnClass
 import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.annotation.Import
 
@@ -12,7 +12,7 @@ import com.wanna.framework.context.annotation.Import
  * @see DefaultFeignLoadBalancedConfiguration
  * @see RibbonLoadBalancerFeignClient
  */
-@ConditionOnClass(name = ["com.netflix.loadbalancer.ILoadBalancer", "feign.Feign"])
+@ConditionalOnClass(name = ["com.netflix.loadbalancer.ILoadBalancer", "feign.Feign"])
 // import order is very import!!!default must be the last
 @Import([HttpClientFeignLoadBalancedConfiguration::class, DefaultFeignLoadBalancedConfiguration::class])
 @Configuration(proxyBeanMethods = false)

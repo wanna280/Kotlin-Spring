@@ -1,6 +1,6 @@
 package com.wanna.cloud.openfeign.clientconfig
 
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 import org.apache.http.impl.client.CloseableHttpClient
@@ -14,7 +14,7 @@ import org.apache.http.impl.client.HttpClients
 open class HttpClientFeignConfiguration {
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun httpClient(): CloseableHttpClient {
         return HttpClients.custom().build()
     }

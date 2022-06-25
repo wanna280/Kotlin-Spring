@@ -5,7 +5,7 @@ import com.netflix.client.config.DefaultClientConfigImpl
 import com.netflix.client.config.IClientConfig
 import com.netflix.client.config.IClientConfigKey
 import com.netflix.loadbalancer.*
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.boot.context.properties.EnableConfigurationProperties
 import com.wanna.framework.beans.factory.annotation.Value
 import com.wanna.framework.context.annotation.Bean
@@ -40,7 +40,7 @@ open class RibbonClientConfiguration : EnvironmentAware {
      * 给childContext当中去导入Client的配置信息
      */
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun ribbonClientConfig(): IClientConfig {
         val config = DefaultClientConfigImpl()
         config.loadProperties(clientName)
@@ -54,7 +54,7 @@ open class RibbonClientConfiguration : EnvironmentAware {
      * 给容器中导入一个默认的负载均衡的规则，配置ILoadBalancer去完成
      */
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun ribbonRule(config: IClientConfig): IRule {
         val rule = ZoneAvoidanceRule()
         rule.initWithNiwsConfig(config)
@@ -62,13 +62,13 @@ open class RibbonClientConfiguration : EnvironmentAware {
     }
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun ribbonPing(): IPing {
         return DummyPing()
     }
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun ribbonServerList(config: IClientConfig): ServerList<Server> {
         val serverList = ConfigurationBasedServerList()
         serverList.initWithNiwsConfig(config)
@@ -76,13 +76,13 @@ open class RibbonClientConfiguration : EnvironmentAware {
     }
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun ribbonServerListUpdater(config: IClientConfig): ServerListUpdater {
         return PollingServerListUpdater(config)
     }
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun ribbonServerListFilter(config: IClientConfig): ServerListFilter<Server> {
         val filter = ZoneAffinityServerListFilter<Server>()
         filter.initWithNiwsConfig(config)
@@ -93,7 +93,7 @@ open class RibbonClientConfiguration : EnvironmentAware {
      * ILoadBalancer，去提供负载均衡的Server的选择
      */
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun ribbonLoadBalancer(
         config: IClientConfig,
         serverList: ServerList<Server>,

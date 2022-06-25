@@ -1,6 +1,6 @@
 package com.wanna.cloud.openfeign.ribbon
 
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.cloud.netflix.ribbon.SpringClientFactory
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
@@ -12,7 +12,7 @@ import feign.Client
 @Configuration(proxyBeanMethods = false)
 open class DefaultFeignLoadBalancedConfiguration {
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun loadBalancerFeignClient(springClientFactory: SpringClientFactory): Client {
         return RibbonLoadBalancerFeignClient(springClientFactory, Client.Default(null, null))
     }

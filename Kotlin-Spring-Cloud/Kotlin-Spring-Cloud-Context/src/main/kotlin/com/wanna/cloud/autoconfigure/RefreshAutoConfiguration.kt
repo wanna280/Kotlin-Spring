@@ -1,6 +1,6 @@
 package com.wanna.cloud.autoconfigure
 
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.cloud.context.endpoint.event.RefreshEventListener
 import com.wanna.cloud.context.refresh.ContextRefresher
 import com.wanna.cloud.context.scope.refresh.RefreshScope
@@ -15,13 +15,13 @@ import com.wanna.framework.context.annotation.Configuration
 open class RefreshAutoConfiguration {
 
     @Bean
-    @ConditionOnMissingBean([RefreshScope::class])
+    @ConditionalOnMissingBean([RefreshScope::class])
     open fun refreshScope(): RefreshScope {
         return RefreshScope()
     }
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun contextRefresher(context: ConfigurableApplicationContext, scope: RefreshScope): ContextRefresher {
         return ContextRefresher(context, scope)
     }

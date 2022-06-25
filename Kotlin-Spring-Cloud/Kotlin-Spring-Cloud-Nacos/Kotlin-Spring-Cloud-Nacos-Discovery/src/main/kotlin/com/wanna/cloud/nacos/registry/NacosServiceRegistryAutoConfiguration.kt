@@ -1,7 +1,7 @@
 package com.wanna.cloud.nacos.registry
 
 import com.wanna.boot.autoconfigure.AutoConfigureAfter
-import com.wanna.boot.autoconfigure.condition.ConditionOnBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnBean
 import com.wanna.boot.context.properties.EnableConfigurationProperties
 import com.wanna.cloud.client.serviceregistry.AutoServiceRegistrationConfiguration
 import com.wanna.cloud.client.serviceregistry.AutoServiceRegistrationProperties
@@ -43,7 +43,7 @@ open class NacosServiceRegistryAutoConfiguration {
      * @param properties NacosDiscoveryProperties，Nacos服务注册和发现的配置信息
      */
     @Bean
-    @ConditionOnBean([AutoServiceRegistrationProperties::class])
+    @ConditionalOnBean([AutoServiceRegistrationProperties::class])
     open fun nacosRegistration(
         @Autowired(required = false) customizers: List<NacosRegistrationCustomizer>,
         properties: NacosDiscoveryProperties
@@ -59,7 +59,7 @@ open class NacosServiceRegistryAutoConfiguration {
      * @param registration NacosRegistration(要进行自动服务注册的实例)
      */
     @Bean
-    @ConditionOnBean([AutoServiceRegistrationProperties::class])
+    @ConditionalOnBean([AutoServiceRegistrationProperties::class])
     open fun nacosAutoServiceRegistration(
         properties: AutoServiceRegistrationProperties, registry: NacosServiceRegistry, registration: NacosRegistration
     ): NacosAutoServiceRegistration {

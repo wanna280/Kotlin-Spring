@@ -1,6 +1,6 @@
 package com.wanna.spring.shell.command
 
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 
@@ -8,13 +8,13 @@ import com.wanna.framework.context.annotation.Configuration
 open class ShellCommandAutoConfiguration {
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun quit(): Quit {
         return Quit()
     }
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun help(): Help {
         return Help()
     }

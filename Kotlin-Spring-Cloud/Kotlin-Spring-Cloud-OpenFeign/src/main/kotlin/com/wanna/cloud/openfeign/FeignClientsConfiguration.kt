@@ -1,9 +1,8 @@
 package com.wanna.cloud.openfeign
 
-import com.wanna.boot.autoconfigure.condition.ConditionOnClass
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingClass
-import com.wanna.cloud.client.circuitbreaker.CircuitBreaker
+import com.wanna.boot.autoconfigure.condition.ConditionalOnClass
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingClass
 import com.wanna.cloud.openfeign.support.SpringDecoder
 import com.wanna.cloud.openfeign.support.SpringEncoder
 import com.wanna.cloud.openfeign.support.SpringMvcContract
@@ -35,19 +34,19 @@ open class FeignClientsConfiguration {
 
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun feignRetryer(): Retryer {
         return Retryer.NEVER_RETRY
     }
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun feignSpringDecoder(@Autowired(required = false) messageConverters: List<HttpMessageConverter<*>>): Decoder {
         return SpringDecoder(messageConverters)
     }
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun feignSpringEncoder(@Autowired(required = false) messageConverters: List<HttpMessageConverter<*>>): Encoder {
         return SpringEncoder(messageConverters)
     }
@@ -56,7 +55,7 @@ open class FeignClientsConfiguration {
      * 它主要用来处理注解等参数的情况
      */
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun springMvcContract(
         @Autowired(required = false) processors: MutableList<AnnotatedParameterProcessor>,
         conversionService: FormattingConversionService
@@ -65,12 +64,12 @@ open class FeignClientsConfiguration {
     }
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun messageConverters(): HttpMessageConverter<*> {
         return MappingJackson2HttpMessageConverter()
     }
 
-    @ConditionOnClass(name = ["com.wanna.cloud.client.circuitbreaker.CircuitBreaker"])
+    @ConditionalOnClass(name = ["com.wanna.cloud.client.circuitbreaker.CircuitBreaker"])
     @Configuration(proxyBeanMethods = false)
     open class CircuitBreakerPresentFeignBuilderConfiguration {
 
@@ -82,10 +81,10 @@ open class FeignClientsConfiguration {
     }
 
     @Configuration(proxyBeanMethods = false)
-    @ConditionOnMissingClass(["com.wanna.cloud.client.circuitbreaker.CircuitBreaker"])
+    @ConditionalOnMissingClass(["com.wanna.cloud.client.circuitbreaker.CircuitBreaker"])
     open class DefaultFeignBuilderConfiguration {
         @Bean
-        @ConditionOnMissingBean
+        @ConditionalOnMissingBean
         @Scope(BeanDefinition.SCOPE_PRTOTYPE)
         open fun feignBuilder(retryer: Retryer): Feign.Builder {
             return Feign.builder().retryer(retryer)

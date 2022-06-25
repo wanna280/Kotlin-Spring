@@ -1,6 +1,6 @@
 package com.wanna.boot.autoconfigure.web.mvc
 
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.boot.autoconfigure.condition.ConditionalOnWebApplication
 import com.wanna.boot.context.properties.EnableConfigurationProperties
 import com.wanna.boot.web.mvc.server.WebServerFactory
@@ -31,7 +31,7 @@ open class NettyMvcAutoConfiguration : ApplicationContextAware {
     }
 
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun dispatcherHandler(): DispatcherHandler {
         val dispatcherHandler = DispatcherHandlerImpl()
         dispatcherHandler.setApplicationContext(this.applicationContext!!)

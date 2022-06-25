@@ -1,8 +1,8 @@
 package com.wanna.cloud.client.loadbalancer
 
-import com.wanna.boot.autoconfigure.condition.ConditionOnBean
-import com.wanna.boot.autoconfigure.condition.ConditionOnClass
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnClass
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.framework.beans.SmartInitializingSingleton
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.Bean
@@ -17,8 +17,8 @@ import com.wanna.framework.web.client.RestTemplate
  *
  * @see LoadBalancerClient
  */
-@ConditionOnClass(value = [RestTemplate::class])
-@ConditionOnBean(value = [LoadBalancerClient::class])
+@ConditionalOnClass(value = [RestTemplate::class])
+@ConditionalOnBean(value = [LoadBalancerClient::class])
 @Configuration(proxyBeanMethods = false)
 open class LoadBalancerAutoConfiguration {
 
@@ -56,7 +56,7 @@ open class LoadBalancerAutoConfiguration {
          * LoadBalancerRequest的Factory，提供去创建LoadBalancerRequest，供LoadBalancerRequest去进行执行
          */
         @Bean
-        @ConditionOnMissingBean
+        @ConditionalOnMissingBean
         open fun loadBalancerRequestFactory(loadBalancerClient: LoadBalancerClient): LoadBalancerRequestFactory {
             return LoadBalancerRequestFactory(loadBalancerClient)
         }

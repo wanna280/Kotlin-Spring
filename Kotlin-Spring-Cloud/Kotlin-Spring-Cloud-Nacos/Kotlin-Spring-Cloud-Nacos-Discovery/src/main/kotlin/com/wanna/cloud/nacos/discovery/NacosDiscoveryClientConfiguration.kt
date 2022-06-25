@@ -1,6 +1,6 @@
 package com.wanna.cloud.nacos.discovery
 
-import com.wanna.boot.autoconfigure.condition.ConditionOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 
@@ -16,7 +16,7 @@ open class NacosDiscoveryClientConfiguration {
      * @param nacosServiceDiscovery NacosServiceDiscovery，提供Nacos的服务发现
      */
     @Bean
-    @ConditionOnMissingBean
+    @ConditionalOnMissingBean
     open fun nacosDiscoveryClient(nacosServiceDiscovery: NacosServiceDiscovery): NacosDiscoveryClient {
         return NacosDiscoveryClient(nacosServiceDiscovery)
     }
