@@ -2,7 +2,7 @@ package com.wanna.framework.core.type
 
 /**
  * 这是一个被注解标注的的类型的Metadata信息，支持去获取到注解的相关属性；
- * 主要有两类AnnotatedTypeMetadata的实现，一类是方法的Metadata(MethodMetadata)，另外一类是类的Metadata(MethodMetadata)；
+ * 主要有两类AnnotatedTypeMetadata的实现，一类是方法的Metadata(MethodMetadata)，另外一类是类的Metadata(AnnotationMetadata)；
  *
  * @see MethodMetadata
  * @see MethodMetadata

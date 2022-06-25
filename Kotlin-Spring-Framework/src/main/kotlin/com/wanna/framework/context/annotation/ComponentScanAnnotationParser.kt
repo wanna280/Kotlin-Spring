@@ -27,8 +27,8 @@ open class ComponentScanAnnotationParser(
         scanner.setBeanNameGenerator(componentScanBeanNameGenerator)
 
         val packages = ArrayList<String>()
-        packages += attributes.getStringArray("basePackages")!!
-        packages += (attributes.getClassArray("basePackageClasses")!!).map { it.packageName }.toList()
+        packages.addAll(attributes.getStringArray("basePackages")!!)
+        packages.addAll((attributes.getClassArray("basePackageClasses")!!).map { it.packageName }.toList())
 
         // 添加includeFilters/excludeFilters到Scanner当中
         val includeFilters = attributes["includeFilters"] as Array<ComponentScan.Filter>

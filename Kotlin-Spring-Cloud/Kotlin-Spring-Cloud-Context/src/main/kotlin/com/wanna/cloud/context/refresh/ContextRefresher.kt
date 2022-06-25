@@ -33,10 +33,10 @@ open class ContextRefresher(
      */
     @Synchronized
     open fun refresh(): Set<String> {
-        // 刷新Environment，并通知所有的监听器，对已经完成绑定的ConfigurationPropertiesBean去进行重新绑定(destroy&initialize)
+        // first: 刷新Environment，并通知所有的监听器，对已经完成绑定的ConfigurationPropertiesBean去进行重新绑定(destroy&initialize)
         val keys = refreshEnvironment()
 
-        // 刷新Scope，将RefreshScope当中的全部Bean去进行destroy
+        // second: 刷新Scope，将RefreshScope当中的全部Bean去进行destroy
         this.scope.refreshAll()
         return keys
     }
@@ -46,7 +46,7 @@ open class ContextRefresher(
      */
     @Synchronized
     open fun refreshEnvironment(): Set<String> {
-        // 记录之前的...
+        // 记录之前的所有属性值的k-v列表...
         val before = extract(this.applicationContext.getEnvironment().getPropertySources())
 
         // 将配置文件更新到环境当中，构建一个新的SpringApplication，为了实现在ApplicationContext初始化时去完成新的信息的加载...

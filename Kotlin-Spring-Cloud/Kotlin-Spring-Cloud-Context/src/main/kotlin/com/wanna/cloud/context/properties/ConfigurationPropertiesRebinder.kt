@@ -16,12 +16,16 @@ import com.wanna.framework.context.stereotype.Component
 @Component
 open class ConfigurationPropertiesRebinder(private val beans: ConfigurationPropertiesBeans) : ApplicationContextAware,
     ApplicationListener<EnvironmentChangeEvent> {
-    private var applicationContext: ApplicationContext? = null
+
+    private lateinit var applicationContext: ApplicationContext
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext
     }
 
+    /**
+     * 监听环境改变事件，负责对维护的@ConfigurationProperties的Bean去进行rebind
+     */
     override fun onApplicationEvent(event: EnvironmentChangeEvent) {
         if (event.source == this.applicationContext) {
             rebind()

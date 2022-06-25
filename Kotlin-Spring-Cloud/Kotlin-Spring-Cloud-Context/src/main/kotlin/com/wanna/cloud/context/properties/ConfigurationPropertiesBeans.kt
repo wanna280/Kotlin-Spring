@@ -16,7 +16,7 @@ import com.wanna.framework.context.stereotype.Component
 @Component
 open class ConfigurationPropertiesBeans : ApplicationContextAware, BeanPostProcessor {
 
-    private var applicationContext: ApplicationContext? = null
+    private lateinit var applicationContext: ApplicationContext
 
     private var beanFactory: ConfigurableListableBeanFactory? = null
 
@@ -56,7 +56,7 @@ open class ConfigurationPropertiesBeans : ApplicationContextAware, BeanPostProce
      * @return 该Bean是否在RefreshScope当中？
      */
     private fun isRefreshScoped(beanName: String): Boolean {
-        val beanFactory = this.beanFactory!!
+        val beanFactory = this.beanFactory ?: return false  // not BeanFactory return false
         if (!this.refreshScopeInitialized && this.refreshScope == null) {
             this.refreshScopeInitialized = true
             beanFactory.getRegisteredScopeNames().forEach {
