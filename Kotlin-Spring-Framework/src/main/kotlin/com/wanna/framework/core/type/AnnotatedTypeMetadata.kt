@@ -5,7 +5,7 @@ package com.wanna.framework.core.type
  * 主要有两类AnnotatedTypeMetadata的实现，一类是方法的Metadata(MethodMetadata)，另外一类是类的Metadata(AnnotationMetadata)；
  *
  * @see MethodMetadata
- * @see MethodMetadata
+ * @see AnnotationMetadata
  */
 interface AnnotatedTypeMetadata {
     /**
