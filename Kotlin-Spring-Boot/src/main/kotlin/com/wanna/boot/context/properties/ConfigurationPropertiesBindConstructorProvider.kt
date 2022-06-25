@@ -1,6 +1,6 @@
 package com.wanna.boot.context.properties
 
-import org.springframework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.Constructor
 
 /**

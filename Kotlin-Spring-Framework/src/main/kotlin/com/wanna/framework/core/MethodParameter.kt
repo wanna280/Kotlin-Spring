@@ -1,6 +1,6 @@
 package com.wanna.framework.core
 
-import org.springframework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
 import java.lang.reflect.Member

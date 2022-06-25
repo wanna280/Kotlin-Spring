@@ -6,6 +6,7 @@ import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinit
 import com.wanna.framework.beans.factory.support.definition.AnnotatedGenericBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase.REGISTER_BEAN
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.MethodMetadata
@@ -14,7 +15,6 @@ import com.wanna.framework.core.util.AnnotationConfigUtils
 import com.wanna.framework.core.util.BeanUtils
 import com.wanna.framework.core.util.StringUtils
 import org.slf4j.LoggerFactory
-import org.springframework.core.annotation.AnnotatedElementUtils
 
 /**
  * 这是一个配置类的BeanDefinitionReader，负责从ConfigurationClass当中去读取BeanDefinition

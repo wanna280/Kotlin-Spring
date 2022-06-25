@@ -122,14 +122,14 @@ object ClassUtils {
     }
 
     /**
-     * 获取一个类的全部父接口
+     * 获取一个类的全部父接口，并以Set的方式去进行返回
      *
-     * @param clazz 目标类
+     * @param clazz 要获取接口的目标类
+     * @return 该类的所有接口
      */
     @JvmStatic
     fun getAllInterfacesForClassAsSet(clazz: Class<*>): Set<Class<*>> {
         val interfaces = LinkedHashSet<Class<*>>()
-
         // 如果它是接口的话，直接return
         if (clazz.isInterface) {
             return setOf(clazz)
@@ -140,7 +140,17 @@ object ClassUtils {
             interfaces += itfs
             current = current.superclass
         }
-
         return interfaces
+    }
+
+    /**
+     * 获取一个类的全部子接口作为Array<Class<*>>
+     *
+     * @param clazz 要去获取接口的类
+     * @return 目标类的所有接口(以数组的方式去进行返回)
+     */
+    @JvmStatic
+    fun getAllInterfacesForClass(clazz: Class<*>): Array<Class<*>> {
+        return getAllInterfacesForClassAsSet(clazz).toList().toTypedArray()
     }
 }

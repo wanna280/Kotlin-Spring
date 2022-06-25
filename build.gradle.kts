@@ -29,7 +29,6 @@ allprojects {
         implementation("org.slf4j:slf4j-api:$slf4jApiVersion")
         compileOnly("javax.inject:javax.inject:1")
         implementation("javax.annotation:javax.annotation-api:$javaxAnnotationVersion")
-        implementation("org.springframework:spring-core:$springCoreVersion")
         testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     }

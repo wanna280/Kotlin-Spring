@@ -2,8 +2,8 @@ package com.wanna.framework.transaction.annotation
 
 import com.wanna.framework.context.annotation.AnnotationAttributes
 import com.wanna.framework.context.annotation.AnnotationAttributesUtils
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.transaction.interceptor.*
-import org.springframework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.AnnotatedElement
 
 /**
