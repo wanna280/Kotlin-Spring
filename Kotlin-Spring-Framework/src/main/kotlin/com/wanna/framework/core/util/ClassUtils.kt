@@ -151,6 +151,6 @@ object ClassUtils {
      */
     @JvmStatic
     fun getAllInterfacesForClass(clazz: Class<*>): Array<Class<*>> {
-        return getAllInterfacesForClass(clazz).toList().toTypedArray()
+        return getAllInterfacesForClassAsSet(clazz).toList().toTypedArray()
     }
 }
