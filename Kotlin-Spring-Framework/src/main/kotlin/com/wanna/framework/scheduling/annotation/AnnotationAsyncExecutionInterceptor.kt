@@ -2,7 +2,7 @@ package com.wanna.framework.scheduling.annotation
 
 import com.wanna.framework.aop.interceptor.AsyncExecutionInterceptor
 import com.wanna.framework.aop.interceptor.AsyncUncaughtExceptionHandler
-import org.springframework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.Method
 import java.util.concurrent.Executor
 import java.util.function.Supplier

@@ -3,12 +3,12 @@ package com.wanna.spring.shell.annotation
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.util.ReflectionUtils
 import com.wanna.spring.shell.Command
 import com.wanna.spring.shell.ConfigurableCommandRegistry
 import com.wanna.spring.shell.MethodTarget
 import com.wanna.spring.shell.MethodTargetRegistrar
-import org.springframework.core.annotation.AnnotatedElementUtils
 
 /**
  * ShellCommand的MethodTarget的注册器

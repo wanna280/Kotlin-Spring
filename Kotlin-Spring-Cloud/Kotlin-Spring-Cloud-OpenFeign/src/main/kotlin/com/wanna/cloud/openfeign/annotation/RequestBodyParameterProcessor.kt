@@ -2,7 +2,6 @@ package com.wanna.cloud.openfeign.annotation
 
 import com.wanna.cloud.openfeign.AnnotatedParameterProcessor
 import com.wanna.framework.web.method.annotation.RequestBody
-import org.springframework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.Method
 
 /**

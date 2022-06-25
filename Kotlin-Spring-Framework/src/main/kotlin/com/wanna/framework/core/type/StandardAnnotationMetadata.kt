@@ -1,9 +1,9 @@
 package com.wanna.framework.core.type
 
 import com.wanna.framework.context.annotation.AnnotationAttributesUtils
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.core.util.ReflectionUtils
-import org.springframework.core.annotation.AnnotatedElementUtils
 
 /**
  * 这是一个标准的的AnnotationMetadata的实现

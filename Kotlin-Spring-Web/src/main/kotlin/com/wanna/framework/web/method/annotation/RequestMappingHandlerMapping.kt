@@ -1,9 +1,9 @@
 package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.context.stereotype.Controller
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.web.method.RequestMappingInfo
 import com.wanna.framework.web.method.RequestMappingInfoHandlerMapping
-import org.springframework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Method
 

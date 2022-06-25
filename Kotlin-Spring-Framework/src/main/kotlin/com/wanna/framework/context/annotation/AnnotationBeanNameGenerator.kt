@@ -3,8 +3,8 @@ package com.wanna.framework.context.annotation
 import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.util.ClassUtils
-import org.springframework.core.annotation.AnnotatedElementUtils
 import java.beans.Introspector
 
 /**

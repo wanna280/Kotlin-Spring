@@ -14,6 +14,7 @@ import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
 import com.wanna.framework.context.processor.beans.DestructionAwareBeanPostProcessor
 import com.wanna.framework.context.processor.beans.MergedBeanDefinitionPostProcessor
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.util.ReflectionUtils
 import com.wanna.framework.core.util.StringUtils
 import com.wanna.framework.scheduling.TaskScheduler
@@ -23,7 +24,6 @@ import com.wanna.framework.scheduling.config.ScheduledTask
 import com.wanna.framework.scheduling.config.ScheduledTaskRegistrar
 import com.wanna.framework.scheduling.support.ScheduledMethodRunnable
 import org.slf4j.LoggerFactory
-import org.springframework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.Method
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap

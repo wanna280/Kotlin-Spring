@@ -5,6 +5,7 @@ import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase
 import com.wanna.framework.context.stereotype.Component
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.environment.CompositePropertySource
 import com.wanna.framework.core.environment.ConfigurableEnvironment
@@ -16,7 +17,6 @@ import com.wanna.framework.core.util.BeanUtils
 import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.core.util.StringUtils
 import org.slf4j.LoggerFactory
-import org.springframework.core.annotation.AnnotatedElementUtils
 import java.util.LinkedList
 import java.util.function.Predicate
 

@@ -1,8 +1,8 @@
 package com.wanna.framework.core.type
 
 import com.wanna.framework.context.annotation.AnnotationAttributesUtils
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.util.ClassUtils
-import org.springframework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
