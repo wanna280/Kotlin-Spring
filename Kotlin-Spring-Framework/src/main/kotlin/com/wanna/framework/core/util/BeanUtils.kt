@@ -29,9 +29,11 @@ object BeanUtils {
     }
 
     /**
-     * 通过有参数构造器去创建对象
+     * 通过有参数构造器去创建对象，需要指定构造器的参数列表
+     *
      * @param ctor 构造器
      * @param args 参数列表
+     * @return 实例化完成的对象
      */
     @JvmStatic
     fun <T> instantiateClass(ctor: Constructor<T>, vararg args: Any?): T {
@@ -40,7 +42,9 @@ object BeanUtils {
 
     /**
      * 通过无参数构造器去创建对象
+     *
      * @param ctor 无参构造器
+     * @return 实例化完成的对象
      */
     @JvmStatic
     fun <T> instantiateClass(ctor: Constructor<T>): T {
@@ -49,6 +53,9 @@ object BeanUtils {
 
     /**
      * 通过无参数构造器创建对象
+     *
+     * @param clazz 想要去进行实例化的类
+     * @return 实例化完成的对象
      */
     @JvmStatic
     fun <T> instantiateClass(clazz: Class<T>): T {
@@ -57,9 +64,9 @@ object BeanUtils {
     }
 
     /**
-     * 获取一个构造器的参数名列表；
-     * 如果存在有JDK当中提供的@ConstructorProperties注解，那么从它上面去找；
-     * 如果没有@ConstructorProperties注解，那么使用DefaultParameterNameDiscoverer去进行寻找
+     * 获取一个构造器的参数名列表，支持使用下面的两种策略：
+     * * 1.如果存在有JDK当中提供的@ConstructorProperties注解，那么从它上面去找；
+     * * 2.如果没有@ConstructorProperties注解，那么使用DefaultParameterNameDiscoverer去进行寻找
      *
      * @param ctor 要获取参数名的目标构造器
      * @throws IllegalStateException 如果没有找到合适的参数名列表/找到的参数名列表长度不对
@@ -76,13 +83,20 @@ object BeanUtils {
     }
 
     /**
-     * 判断它是否是一个简单类型
+     * 判断给定的类，是否是一个简单类型
+     *
+     * @param type 想要去进行判断的类
+     * @return 如果是一个简单类型，return true；否则return false
      */
     @JvmStatic
     fun isSimpleProperty(type: Class<*>): Boolean {
+
+        // 如果是一个基础类型/基础雷系的包装类型，那么return true
         if (isPrimitive(type) || isPrimitiveWrapper(type)) {
             return true
         }
+
+        // 下面这些也被当做一个简单类型，
         if (type == Class::class.java || ClassUtils.isAssignFrom(
                 CharSequence::class.java, type
             ) || ClassUtils.isAssignFrom(Number::class.java, type)

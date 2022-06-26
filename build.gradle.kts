@@ -24,6 +24,7 @@ allprojects {
     }
 
     dependencies {
+        implementation("org.springframework:spring-core:$springCoreVersion")
         implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
         implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
         implementation("org.slf4j:slf4j-api:$slf4jApiVersion")

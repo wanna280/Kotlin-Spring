@@ -66,10 +66,10 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
         }
 
         // 从SpringFactories当中去加载到所有的EnableAutoConfiguration配置类的className列表
-        var configurations = getCandidateConfigurations(metadata, null)
+        var configurations = ArrayList(getCandidateConfigurations(metadata, null))
 
         // 对加载出来的自动配置类列表利用LinkedHashSet去进行去重
-        configurations = removeDuplicates(configurations)
+        configurations = ArrayList(removeDuplicates(configurations))
 
         // 从配置文件/注解配置信息当中去加载要排除的className列表
         val excludes = getExcludes(metadata, null)
@@ -78,7 +78,7 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
         configurations.removeAll(excludes)
 
         // 利用AutoConfigurationImportFilter，利用autoconfiguration-metadata配置文件去完成自动配置类的提前过滤
-        configurations = getConfigurationClassFilter().filter(configurations)
+        configurations = ArrayList(getConfigurationClassFilter().filter(configurations))
 
         // 发布AutoConfigurationImportEvent，通知所有的监听器去处理该事件
         fireAutoConfigurationImportEvents(configurations, excludes)
@@ -89,10 +89,13 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
 
     /**
      * 获取候选的配置类，从SpringFactories当中去加载到所有的EnableAutoConfiguration导入的自动配置类的className列表
+     *
+     * @param metadata 注解元信息
+     * @param attributes 注解属性
      */
     protected open fun getCandidateConfigurations(
         metadata: AnnotationMetadata, attributes: AnnotationAttributes?
-    ): MutableList<String> {
+    ): List<String> {
         return ArrayList(SpringFactoriesLoader.loadFactoryNames(getAnnotationClass()))
     }
 
@@ -112,11 +115,13 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     }
 
 
-
     /**
      * 将候选的Configuration配置类className列表去重
+     *
+     * @param configurations 原始的自动配置类
+     * @return 利用LinkedHashSet去重之后的配置类列表
      */
-    protected open fun removeDuplicates(configurations: MutableList<String>): MutableList<String> {
+    protected open fun removeDuplicates(configurations: List<String>): List<String> {
         return ArrayList(LinkedHashSet(configurations))
     }
 
@@ -137,6 +142,7 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     protected open fun getConfigurationClassFilter(): ConfigurationClassFilter {
         var configurationClassFilter = this.configurationClassFilter
         if (configurationClassFilter == null) {
+
             // 从SpringFactories当中去加载AutoConfigurationImportFilter列表，并创建ConfigurationClassFilter对象
             // 这里一般情况下，会加载到OnBeanCondition/OnClassCondition等AutoConfigurationImportFilter...
             val importFilters =
@@ -148,7 +154,10 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     }
 
     /**
-     * 是否要开启SpringBoot的自动配置，默认情况下开启，除非在配置文件当中将"spring.boot.enableautoconfiguration"设为了false
+     * 是否要开启SpringBoot的自动配置，默认情况下开启，除非自己在配置文件
+     * 当中将"spring.boot.enableautoconfiguration"设为了false
+     *
+     * @param metadata @EnableAutoConfiguration的注解源信息
      */
     protected open fun isEnabled(metadata: AnnotationMetadata): Boolean {
         if (this::class.java == AutoConfigurationImportSelector::class.java) {
@@ -159,7 +168,7 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     }
 
     /**
-     * 这是一个AutoConfiguration的配置类的列表
+     * 这是一个AutoConfiguration的配置类的列表，包括自动配置类列表以及要去进行排除的类的列表两个部分组件
      *
      * @param configurations 维护了要导入了配置类列表
      * @param excludes 维护了要进行排除的配置类列表
@@ -171,7 +180,7 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     /**
      * 配置类的ClassFilter，对要排除的配置类去进行排除，内部组合了AutoConfigurationImportFilter的列表
      *
-     * @param classLoader classLoader
+     * @param classLoader classLoader，用来加载自动配置的元信息
      * @param filters AutoConfigurationImportFilters
      */
     inner class ConfigurationClassFilter(
@@ -186,10 +195,12 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
          * @param configurations 候选的AutoConfiguration的配置类
          * @return 使用AutoConfigurationImportFilter去完成过滤之后的配置类列表
          */
-        fun filter(configurations: List<String>): MutableList<String> {
+        fun filter(configurations: List<String>): List<String> {
             // 将AutoConfiguration配置类列表转换为Array<String?>，因为需要将某个位置的元素设置为null，需要使用?类型
             val candidates = ArrayList<String?>(configurations).toTypedArray()
-            // 遍历所有的AutoConfigurationImportFilter去进行匹配，如果matches[index]=false，那么就将candidates[index]设置为null
+
+            // 遍历所有的AutoConfigurationImportFilter去进行匹配，
+            // 如果matches[index]=false，那么就将candidates[index]设置为null
             filters.forEach {
                 invokeAwareMethods(it)  // invoke Aware Methods
                 val matches = it.matches(candidates, autoConfigurationMetadata)
@@ -205,27 +216,11 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     }
 
     /**
-     * 获取自动配置的注解，默认为EnableAutoConfiguration
+     * 获取自动配置的注解，默认为@EnableAutoConfiguration
+     *
+     * @return 自动配置类的注解
      */
-    protected open fun getAnnotationClass(): Class<*> {
-        return EnableAutoConfiguration::class.java
-    }
-
-    override fun setBeanFactory(beanFactory: BeanFactory) {
-        this.beanFactory = beanFactory
-    }
-
-    override fun setBeanClassLoader(classLoader: ClassLoader) {
-        this.classLoader = classLoader
-    }
-
-    override fun setEnvironment(environment: Environment) {
-        this.environment = environment
-    }
-
-    override fun getOrder(): Int {
-        return this.order
-    }
+    protected open fun getAnnotationClass(): Class<out Annotation> = EnableAutoConfiguration::class.java
 
     /**
      * 对于一个Bean，如果必要的话，需要去执行Aware接口当中的方法
@@ -241,4 +236,18 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
             instance.setBeanClassLoader(this.classLoader)
         }
     }
+
+    override fun setBeanFactory(beanFactory: BeanFactory) {
+        this.beanFactory = beanFactory
+    }
+
+    override fun setBeanClassLoader(classLoader: ClassLoader) {
+        this.classLoader = classLoader
+    }
+
+    override fun setEnvironment(environment: Environment) {
+        this.environment = environment
+    }
+
+    override fun getOrder() = this.order
 }

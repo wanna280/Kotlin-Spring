@@ -1,7 +1,5 @@
 package com.wanna.logger.impl.utils
 
-import com.wanna.logger.impl.layout.LoggerLayout
-
 object ReflectionUtils {
     /**
      * 寻找调用方的相关信息，遍历整个栈轨迹，找到第一个不是以com.wanna.logger包开头的

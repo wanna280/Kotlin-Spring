@@ -3,7 +3,6 @@ repositories.flatDir {
 }
 
 dependencies {
-    implementation("org.springframework:spring-core:$springCoreVersion")
     compileOnly(project(":Kotlin-Spring-Instrument"))  // compileOnly
     compileOnly("org.aspectj:aspectjweaver:$aspectJVersion")
     implementation(project(":Kotlin-Logger:logger-slf4j-impl"))
