@@ -12,6 +12,7 @@ import java.util.Optional
  * 它是一个抽象的ApplicationEventMulticaster，它提供了ApplicationListener的注册工作的相关的默认实现
  *
  * @see ApplicationEventMulticaster
+ * @see SimpleApplicationEventMulticaster
  */
 abstract class AbstractApplicationEventMulticaster : ApplicationEventMulticaster, BeanFactoryAware,
     BeanClassLoaderAware {
@@ -32,9 +33,7 @@ abstract class AbstractApplicationEventMulticaster : ApplicationEventMulticaster
         this.beanClassLoader = classLoader
     }
 
-    open fun getBeanClassLoader(): ClassLoader? {
-        return this.beanClassLoader
-    }
+    open fun getBeanClassLoader(): ClassLoader? = this.beanClassLoader
 
     override fun addApplicationListener(listener: ApplicationListener<*>) {
         synchronized(this.defaultRetriever) {
@@ -71,30 +70,6 @@ abstract class AbstractApplicationEventMulticaster : ApplicationEventMulticaster
         synchronized(this.defaultRetriever) {
             return this.defaultRetriever.getAllApplicationListeners()
         }
-    }
-
-    /**
-     * 根据ApplicationEvent以及eventType，去找到合适的ApplicationListener列表
-     *
-     * @param event 目标事件
-     * @param eventType 目标事件的类型
-     * @return 能够支持处理当前事件的Listener列表
-     */
-    protected open fun getApplicationListeners(
-        event: ApplicationEvent,
-        eventType: Class<out ApplicationEvent>
-    ): Collection<ApplicationListener<*>> {
-        val applicationListeners = ArrayList<ApplicationListener<*>>()
-        getApplicationListeners().forEach {
-            if (it is SmartApplicationListener) {
-                if (it.supportEventType(eventType)) {
-                    applicationListeners += it
-                }
-            } else {
-                applicationListeners += it
-            }
-        }
-        return applicationListeners
     }
 
     /**
@@ -147,9 +122,16 @@ abstract class AbstractApplicationEventMulticaster : ApplicationEventMulticaster
         val applicationListeners = LinkedHashSet<ApplicationListener<*>>()
         val applicationListenerBeans = LinkedHashSet<String>()
 
+        /**
+         * 获取所有的ApplicationListener，包括单例Bean以及beanName
+         *
+         * @return 所有的ApplicationListener的列表(完成排序工作)
+         */
         fun getAllApplicationListeners(): Collection<ApplicationListener<*>> {
-            val listeners = ArrayList<ApplicationListener<*>>()
-            listeners += applicationListeners  // 添加实例对象的ApplicationListener对象列表
+            // 1.添加实例对象的ApplicationListener对象列表
+            val listeners = ArrayList<ApplicationListener<*>>(this.applicationListeners)
+
+            // 2.对所有的ApplicationListener的beanName的列表去完成getBean，并加入到候选的Listeners列表当中
             Optional.ofNullable(getBeanFactory()).ifPresent { beanFactory ->
                 applicationListenerBeans.forEach {
                     val listener = beanFactory.getBean(it, ApplicationListener::class.java)
@@ -158,7 +140,7 @@ abstract class AbstractApplicationEventMulticaster : ApplicationEventMulticaster
                     }
                 }
             }
-            // 完成排序
+            // 完成对所有的ApplicationListener的排序工作
             AnnotationAwareOrderComparator.sort(listeners)
             return listeners
         }

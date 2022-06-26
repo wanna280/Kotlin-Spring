@@ -25,6 +25,7 @@ object ReflectionUtils {
 
     /**
      * 让一个字段变得可以访问
+     *
      * @param field 目标字段
      */
     @JvmStatic
@@ -42,6 +43,7 @@ object ReflectionUtils {
 
     /**
      * 让一个方法变得可以访问
+     *
      * @param method 目标方法
      */
     @JvmStatic
@@ -57,6 +59,7 @@ object ReflectionUtils {
 
     /**
      * 让一个构造器变得可以访问
+     *
      * @param constructor 目标构造器
      */
     @JvmStatic
@@ -73,6 +76,7 @@ object ReflectionUtils {
 
     /**
      * 在一个类上name和type都匹配的字段，如果没找到，return null
+     *
      * @param clazz 目标类
      * @param name 字段名
      */
@@ -83,6 +87,7 @@ object ReflectionUtils {
 
     /**
      * 在一个类上name和type都匹配的字段，如果没找到，return null
+     *
      * @param clazz 目标类
      * @param name 字段名(如果name为空，那么类型匹配就行)
      * @param type 字段类型(如果type==null，那么匹配所有类型，找到就return)
@@ -93,7 +98,7 @@ object ReflectionUtils {
         do {
             val declaredFields = getDeclaredFields(targetClass!!, false)
             for (field in declaredFields) {
-                // 如果typename匹配的话，return
+                // 如果type&name匹配的话，return
                 if ((field.name == name && type == null)
                     || (name == null && field.type == type)
                     || (field.name == name && field.type == type)
@@ -122,7 +127,7 @@ object ReflectionUtils {
      *
      * @param clazz 目标类
      * @param action 对方法要执行的操作
-     * @param filter 哪些方法需要进行操作？
+     * @param filter 哪些方法需要进行操作？使用Filter去进行过滤出来
      */
     @JvmStatic
     fun doWithFields(clazz: Class<*>, action: (Field) -> Unit, filter: (Field) -> Boolean) {
@@ -135,6 +140,7 @@ object ReflectionUtils {
 
     /**
      * 对一个类当中定义的所有字段，去执行某一个操作(action)
+     *
      * @param clazz 目标类
      * @param action 对方法要执行的操作
      */
@@ -167,9 +173,11 @@ object ReflectionUtils {
     }
 
     /**
-     * 获取一个类定义的所有字段
+     * 获取一个类当中定义的所有字段
+     *
      * @param clazz 目标类
      * @param defensive 是否具有侵入性的，如果defensive=true，那么需要克隆一份进行返回
+     * @return 一个类当中的所有定义的字段列表
      */
     @JvmStatic
     fun getDeclaredFields(clazz: Class<*>, defensive: Boolean): Array<Field> {
@@ -186,6 +194,7 @@ object ReflectionUtils {
 
     /**
      * 获取某个字段的值
+     *
      * @param field 字段
      * @param target 要获取的字段的目标对象
      */
@@ -196,6 +205,7 @@ object ReflectionUtils {
 
     /**
      * 设置某个字段的值
+     *
      * @param field 要进行设置的字段
      * @param target 要设置的目标对象
      * @param value 该字段即将要设置的值
@@ -237,7 +247,8 @@ object ReflectionUtils {
     }
 
     /**
-     * 反射执行目标方法
+     * 使用Java反射的方式，去执行给定的目标方法
+     *
      * @param method 目标方法
      * @param target 目标方法要传递的this对象
      * @param args 执行目标方法需要的参数列表，在拿到参数之后，会是以数组的方式去进行获取，但是method.invoke时
@@ -278,6 +289,7 @@ object ReflectionUtils {
 
     /**
      * 判断一个方法是否是equals方法
+     *
      * @param method 要进行判断的方法
      */
     @JvmStatic
@@ -288,6 +300,7 @@ object ReflectionUtils {
 
     /**
      * 判断一个方法是否是toString方法
+     *
      * @param method 要进行判断的方法
      */
     @JvmStatic
@@ -297,6 +310,7 @@ object ReflectionUtils {
 
     /**
      * 判断一个方法是否是hashCode方法
+     *
      * @param method 要进行判断的方法
      */
     @JvmStatic
@@ -306,6 +320,7 @@ object ReflectionUtils {
 
     /**
      * 判断这个方法是否来自于Object类，可以重写的equals/hashCode/toString方法也需要进行判断
+     *
      * @param method 要进行判断的方法
      */
     @JvmStatic
@@ -328,6 +343,7 @@ object ReflectionUtils {
 
     /**
      * 对一个类当中定义的所有方法，执行同样的操作
+     *
      * @param clazz 要执行方法的类
      * @param action 要执行的操作
      * @param filter 该方法是否要执行的Filter？return true->执行，else->不执行
@@ -351,6 +367,7 @@ object ReflectionUtils {
 
     /**
      * 对一个类以及它父类当中定义的所有方法，执行同样的操作
+     *
      * @param clazz 要执行方法的类
      * @param action 要执行的操作
      * @param filter 该方法是否要执行的Filter？return true->执行，else->不执行
@@ -372,13 +389,16 @@ object ReflectionUtils {
 
     /**
      * 获取一个类当中定义的所有的方法，包括所有的父类方法
+     *
+     * @param clazz 要匹配的类
+     * @return 该类当中的所有定义的方法
      */
     @JvmStatic
     fun getAllDeclaredMethods(clazz: Class<*>): Array<Method> {
         val allDeclaredMethods = ArrayList<Method>()
         // 因为doWithMethods，正好会遍历所有的方法，正好利用该方法...
         doWithMethods(clazz, allDeclaredMethods::add)
-        return allDeclaredMethods.toArray(emptyArray<Method>())
+        return allDeclaredMethods.toTypedArray()
     }
 
     /**
@@ -393,8 +413,10 @@ object ReflectionUtils {
 
     /**
      * 获取一个类定义的所有方法
+     *
      * @param clazz 要获取方法的类
      * @param defensive 这个方法是否具有侵入性？也就是需不需要将数据clone一份出来返回？true代表需要，反之不需要
+     * @return 解析完成的方法数组
      */
     @JvmStatic
     fun getDeclaredMethods(clazz: Class<*>, defensive: Boolean): Array<Method> {
@@ -404,7 +426,7 @@ object ReflectionUtils {
             val declaredMethods: Array<Method> = clazz.declaredMethods
             val defaultMethods: List<Method> = findConcreteMethodsOnInterfaces(clazz)
             // 将declaredMethod列表和defaultMethod列表全部拷贝到result当中，并放入到缓存当中(如果为空的话，需要放入一个空方法的常量值)
-            // Array，第二个参数是传递的数组的index->Array[index]的元素产生方法
+            // Array，第二个参数是传递的数组的index->Array[index]的元素产生方法的callback
             result = Array(declaredMethods.size + defaultMethods.size) { index ->
                 if (index < declaredMethods.size) declaredMethods[index] else defaultMethods[index - declaredMethods.size]  // fixed: index->index - declaredMethods.size
             }
@@ -416,6 +438,7 @@ object ReflectionUtils {
 
     /**
      * 在一个类的所有接口上去上寻找Concrete(具体的，已经进行实现的)方法，也就是default方法
+     *
      * @return 如果没有找到default方法，那么只是返回一个空的list，而不是null
      */
     @JvmStatic

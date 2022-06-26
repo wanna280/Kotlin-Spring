@@ -6,6 +6,9 @@ import com.wanna.framework.core.util.BeanFactoryUtils
 
 /**
  * 这是一个BeanDefinitionHolder，里面包装了BeanDefinition和beanName
+ *
+ * @param beanDefinition beanDefinition
+ * @param beanName beanName
  */
 open class BeanDefinitionHolder(val beanDefinition: BeanDefinition, val beanName: String) :
     BeanMetadataAttributeAccessor() {
