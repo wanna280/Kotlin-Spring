@@ -1,9 +1,18 @@
 package com.wanna.framework.beans.factory.config
 
+import com.wanna.framework.beans.MutablePropertyValues
+import com.wanna.framework.beans.factory.support.BeanDefinitionValueResolver
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition
+import com.wanna.framework.beans.factory.support.AbstractAutowireCapableBeanFactory
+
 /**
- * Bean的引用，暂时设置为beanName，后期支持去进行自动解析
+ * 运行时去进行解析的Bean的引用，暂时设置为beanName，后期支持交给BeanFactory去进行自动解析
  *
  * @param beanName beanName
+ * @see AbstractAutowireCapableBeanFactory.applyPropertyValues
+ * @see BeanDefinitionValueResolver.resolveValueIfNecessary
+ * @see BeanDefinition.getPropertyValues
+ * @see MutablePropertyValues.addPropertyValue
  */
 open class RuntimeBeanReference(private val beanName: String) : BeanReference {
 

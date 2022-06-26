@@ -13,7 +13,7 @@ import java.util.function.Supplier
 /**
  * 这是一个抽象的BeanDefinition，它继承了BeanMetadataAttributeAccessor，支持进行属性的设置和获取
  */
-abstract class AbstractBeanDefinition constructor(_beanClass: Class<*>?) : BeanDefinition,
+abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*>? = null) : BeanDefinition,
     BeanMetadataAttributeAccessor() {
     companion object {
         const val DEFAULT_SCOPE = ""
@@ -25,11 +25,12 @@ abstract class AbstractBeanDefinition constructor(_beanClass: Class<*>?) : BeanD
 
     /**
      * copy对象
+     *
+     * @param origin 原始的BeanDefinition
+     * @param target 要去拷贝到目标BeanDefinition的对象
      */
     open fun <T : BeanDefinition> copy(origin: BeanDefinition?, target: T) {
-        if (origin == null) {
-            return
-        }
+        origin ?: return
         target.setBeanClass(origin.getBeanClass())
         target.setAbstract(origin.isAbstract())
         target.setPrimary(origin.isPrimary())
@@ -53,8 +54,6 @@ abstract class AbstractBeanDefinition constructor(_beanClass: Class<*>?) : BeanD
                 .addPropertyValues(origin.getPropertyValues().getPropertyValues().toList())
         }
     }
-
-    private var beanClass: Class<*>? = _beanClass  // beanClass
 
     private var primary: Boolean = false  // 在进行autowire时，它是否是优先注入的Bean？
     private var initMethodName: String? = null  // 初始化方法的name

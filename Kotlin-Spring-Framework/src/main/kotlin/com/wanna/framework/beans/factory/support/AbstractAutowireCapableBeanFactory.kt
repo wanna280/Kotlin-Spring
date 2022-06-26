@@ -666,7 +666,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
     }
 
     /**
-     * 摧毁一个Bean，回调的它的destory方法，供beanFactory外部去进行使用
+     * 摧毁一个Bean，回调的它的destroy方法，供beanFactory外部去进行使用
      *
      * @param existingBean 要进行摧毁的已经存在于容器当中的Bean
      */
