@@ -3,7 +3,7 @@ package com.wanna.cloud.nacos
 import com.wanna.cloud.client.ServiceInstance
 
 /**
- * Nacos针对于SpringCloud的ServiceInsance的实现
+ * Nacos针对于SpringCloud的ServiceInstance的实现
  */
 open class NacosServiceInstance : ServiceInstance {
 

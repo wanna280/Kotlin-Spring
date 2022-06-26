@@ -38,12 +38,14 @@ open class ClassPathBeanDefinitionScanner(
     // 是否包含注解版的配置？如果开启了，使用它进行扫描时，就会往容器中注册注解的通用处理器
     private var includeAnnotationConfig: Boolean = true
 
+    // Scope的Metadata的Resolver
     private var scopeMetadataResolver: ScopeMetadataResolver = AnnotationScopeMetadataResolver()
 
+    // 扫描进来的Bean是否需要设置成为lazyInit的？
     private var lazyInit: Boolean = false
 
     init {
-        // 是否要应用默认的Filter？去匹配Component组件
+        // 是否要应用默认的Filter？默认情况下，需要去匹配@Component的Bean
         if (useDefaultFilters) {
             this.registerDefaultFilters()
         }
@@ -51,6 +53,9 @@ open class ClassPathBeanDefinitionScanner(
 
     /**
      * 注册默认的Filters
+     *
+     * @see AnnotationTypeFilter
+     * @see Component
      */
     protected open fun registerDefaultFilters() {
         this.includeFilters += AnnotationTypeFilter(Component::class.java)
@@ -97,8 +102,12 @@ open class ClassPathBeanDefinitionScanner(
                     if (beanDefinition is AnnotatedBeanDefinition) {
                         AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition)
                     }
+
+                    // set Scope
                     val metadata = scopeMetadataResolver.resolveScopeMetadata(beanDefinition)
                     beanDefinition.setScope(metadata.scopeName)
+
+                    // set lazyInit if necessary
                     if (lazyInit) {
                         beanDefinition.setLazyInit(true)
                     }
@@ -115,6 +124,7 @@ open class ClassPathBeanDefinitionScanner(
      * 从指定的包下，扫描出来所有的BeanDefinitions列表，默认实现是创建ScannedGenericBeanDefinition
      *
      * @param packageName 指定的包名
+     * @return 指定的包下的所有的BeanDefinition的列表
      */
     open fun findCandidateComponents(packageName: String): Set<BeanDefinition> {
         return ClassDiscoveryUtils.scan(packageName).map { ScannedGenericBeanDefinition(it) }
@@ -125,6 +135,7 @@ open class ClassPathBeanDefinitionScanner(
      * 是否是候选的要导入的组件？使用includeFilter和excludeFilter去进行挨个匹配
      *
      * @param clazz 候选类
+     * @return 该类是否是候选的组件？
      */
     protected open fun isCandidateComponent(clazz: Class<*>?): Boolean {
         // 如果被excludeFilter匹配，直接return false
@@ -143,7 +154,7 @@ open class ClassPathBeanDefinitionScanner(
     }
 
     /**
-     * 使用BeanDefinition，去进行判断是否合法
+     * 使用BeanDefinition的方法，去进行判断是否合法
      *
      * @param beanDefinition 要去进行匹配的BeanDefinition
      */

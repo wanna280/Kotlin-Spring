@@ -5,11 +5,14 @@ import kotlin.reflect.KClass
 
 /**
  * 扫描指定的包下的所有类下匹配的注解(不一定只扫描某个类型的组件，也可以自己去通过Filter去自己指定类型)
+ *
+ * @see ComponentScanAnnotationParser
+ * @see ClassPathBeanDefinitionScanner
  */
 @Repeatable
 annotation class ComponentScan(
     /**
-     * 要扫描哪些包？和basePackages一致
+     * 要扫描哪些包？具体的作用和basePackages一致
      *
      * @see basePackageClasses
      * @see basePackages
@@ -17,7 +20,7 @@ annotation class ComponentScan(
     @get:AliasFor("basePackages") val value: Array<String> = [],
 
     /**
-     * 要扫描哪些包？
+     * 要扫描哪些包？具体作用和value一直
      */
     @get:AliasFor("value") val basePackages: Array<String> = [],
 
@@ -27,12 +30,12 @@ annotation class ComponentScan(
     val basePackageClasses: Array<KClass<*>> = [],
 
     /**
-     * 扫描过程当中需要使用的beanNameGenerator
+     * 扫描过程当中需要使用的beanNameGenerator去生成beanName
      */
     val nameGenerator: KClass<out BeanNameGenerator> = BeanNameGenerator::class,
 
     /**
-     * 需要匹配的条件才能导入进来的Filter
+     * 需要匹配的条件才能导入进来的Filter，只要匹配其中一个条件，就支持被扫描进来
      */
     val includeFilters: Array<Filter> = [],
 
@@ -47,7 +50,7 @@ annotation class ComponentScan(
     val useDefaultFilters: Boolean = true,
 
     /**
-     * 是否设置成为懒加载？
+     * 是否要将导入进来的Bean全部都设置成为懒加载？
      */
     val lazyInit: Boolean = false
 ) {
@@ -63,5 +66,4 @@ annotation class ComponentScan(
         @get:AliasFor("classes") val value: Array<KClass<*>> = [],  // 想要当做Filter的类
         @get:AliasFor("value") val classes: Array<KClass<*>> = []   // 想要当做Filter的类
     )
-
 }
