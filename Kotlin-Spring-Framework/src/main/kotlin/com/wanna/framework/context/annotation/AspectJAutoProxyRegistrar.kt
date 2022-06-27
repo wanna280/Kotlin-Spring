@@ -11,8 +11,7 @@ open class AspectJAutoProxyRegistrar : ImportBeanDefinitionRegistrar {
 
     override fun registerBeanDefinitions(
         annotationMetadata: AnnotationMetadata,
-        registry: BeanDefinitionRegistry,
-        beanNameGenerator: BeanNameGenerator
+        registry: BeanDefinitionRegistry
     ) {
 
         // 给容器中注册一个AnnotationAwareAspectJAutoProxy组件，完成AOP代理，并支持注解版的AspectJ方式去完成代理

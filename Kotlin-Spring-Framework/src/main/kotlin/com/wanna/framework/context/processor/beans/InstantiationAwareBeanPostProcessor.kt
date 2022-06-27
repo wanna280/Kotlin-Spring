@@ -3,7 +3,14 @@ package com.wanna.framework.context.processor.beans
 import com.wanna.framework.beans.PropertyValues
 
 /**
- * 这是一个可以干预Bean去进行实例化的BeanPostProcessor
+ * 这是一个可以干预Bean去进行实例化的BeanPostProcessor，主要提供如下的功能：
+ * * 1.在实例化之前，尝试对Bean去进行干预，支持去自定义创建Bean的逻辑
+ * * 2.在完成Bean的实例化之后，可以尝试去对Bean去进行干预，完成自定义的处理逻辑
+ * * 3.支持去对Bean去进行属性的填充(Autowire)的回调callback
+ *
+ * 它的子类SmartInstantiationAwareBeanPostProcessor可以实现更多的功能
+ *
+ * @see SmartInstantiationAwareBeanPostProcessor
  */
 interface InstantiationAwareBeanPostProcessor : BeanPostProcessor {
 
@@ -36,6 +43,7 @@ interface InstantiationAwareBeanPostProcessor : BeanPostProcessor {
      * @param pvs 属性值列表(有可能为null)
      * @param beanName beanName
      * @param bean bean
+     * @return PropertyValues
      */
     fun postProcessProperties(pvs: PropertyValues?, bean: Any, beanName: String): PropertyValues? {
         return pvs

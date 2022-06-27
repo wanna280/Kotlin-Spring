@@ -24,7 +24,8 @@ open class StandardAnnotationMetadata(val clazz: Class<*>) : AnnotationMetadata 
     }
 
     override fun isAnnotated(annotationName: String): Boolean {
-        return AnnotatedElementUtils.isAnnotated(clazz, annotationName)
+        val annotationClass = ClassUtils.getAnnotationClassFromString<Annotation>(annotationName)
+        return AnnotatedElementUtils.getMergedAnnotation(clazz, annotationClass) != null
     }
 
     override fun getAnnotatedMethods(annotationName: String): Set<MethodMetadata> {

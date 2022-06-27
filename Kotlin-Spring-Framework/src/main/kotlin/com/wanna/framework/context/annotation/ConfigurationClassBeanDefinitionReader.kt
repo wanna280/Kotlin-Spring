@@ -199,7 +199,9 @@ open class ConfigurationClassBeanDefinitionReader(
     }
 
     /**
-     * 从BeanDefinitionImportRegistrar当中去加载BeanDefinition
+     * 从BeanDefinitionImportRegistrar当中去加载BeanDefinition到SpringBeanFactory当中
+     *
+     * @param registrars ImportBeanDefinitionRegistrar列表(value是导入该组件的注解信息)
      */
     open fun loadBeanDefinitionsFromRegistrars(registrars: Map<ImportBeanDefinitionRegistrar, AnnotationMetadata>) {
         registrars.forEach { (registrar, annotationMetadata) ->

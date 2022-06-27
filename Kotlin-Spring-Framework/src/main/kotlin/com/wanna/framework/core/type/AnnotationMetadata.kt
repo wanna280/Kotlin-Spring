@@ -30,9 +30,7 @@ interface AnnotationMetadata : AnnotatedTypeMetadata, ClassMetadata {
      * @param annotationName 注解全类名
      * @return 如果找到了标注给注解的方法，return true；否则，return false
      */
-    fun hasAnnotatedMethods(annotationName: String): Boolean {
-        return getAnnotatedMethods(annotationName).isNotEmpty()
-    }
+    fun hasAnnotatedMethods(annotationName: String) = getAnnotatedMethods(annotationName).isNotEmpty()
 
     /**
      * 获取该类当中标注了某个注解的方法的列表
