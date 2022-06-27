@@ -4,7 +4,7 @@ import com.wanna.boot.ApplicationType
 import com.wanna.boot.SpringApplication
 import com.wanna.framework.context.annotation.Configuration
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class App
 
 fun main(vararg args: String) {

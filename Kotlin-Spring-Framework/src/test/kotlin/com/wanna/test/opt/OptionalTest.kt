@@ -7,11 +7,11 @@ import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.stereotype.Component
 import java.util.Optional
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @ComponentScan(["com.wanna.test.opt"])
 class OptionalTest
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class Config {
 
     @Autowired

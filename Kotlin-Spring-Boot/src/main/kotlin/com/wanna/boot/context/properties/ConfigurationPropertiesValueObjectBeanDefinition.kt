@@ -35,7 +35,7 @@ class ConfigurationPropertiesValueObjectBeanDefinition(
         try {
             return binder.bindOrCreate(propertiesBean)
         } catch (ex: Exception) {
-            throw ConfigurationPropertiesBindException(propertiesBean, ex)
+            throw ConfigurationPropertiesBindException(bean = propertiesBean, cause = ex)
         }
     }
 

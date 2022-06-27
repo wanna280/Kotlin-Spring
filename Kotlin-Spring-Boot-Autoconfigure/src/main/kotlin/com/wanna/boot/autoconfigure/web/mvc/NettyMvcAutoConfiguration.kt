@@ -19,12 +19,15 @@ import com.wanna.framework.web.config.annotation.DelegatingWebMvcConfiguration
 import com.wanna.framework.web.method.annotation.RequestMappingHandlerMapping
 import com.wanna.framework.web.server.netty.server.support.NettyServerHandler
 
+/**
+ * 只有在WebMvc下才生效的自动配置类
+ */
 @ConditionalOnWebApplication(ConditionalOnWebApplication.Type.MVC)
-@EnableConfigurationProperties([NettyWebServerProperties::class])
+@EnableConfigurationProperties([NettyWebServerProperties::class])  // 导入WebServerProperties配置文件
 @Configuration(proxyBeanMethods = false)
 open class NettyMvcAutoConfiguration : ApplicationContextAware {
 
-    private var applicationContext: ApplicationContext? = null
+    private lateinit var applicationContext: ApplicationContext
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext
@@ -34,22 +37,28 @@ open class NettyMvcAutoConfiguration : ApplicationContextAware {
     @ConditionalOnMissingBean
     open fun dispatcherHandler(): DispatcherHandler {
         val dispatcherHandler = DispatcherHandlerImpl()
-        dispatcherHandler.setApplicationContext(this.applicationContext!!)
+        dispatcherHandler.setApplicationContext(this.applicationContext)
         return dispatcherHandler
     }
 
     /**
-     * 给容器中导入一个NettyWebServerFactory
+     * 给SpringBeanFactory当中导入一个NettyWebServerFactory
+     * 它的作用是，为Spring的ApplicationContext去提供WebServer，并完成启动
+     *
+     * @param properties WebServer的配置文件
      */
     @Bean
     open fun nettyWebServerFactory(properties: NettyWebServerProperties): WebServerFactory {
         val nettyWebServerFactory = NettyWebServerFactory()
-        nettyWebServerFactory.setHandler(NettyServerHandler(this.applicationContext!!))
+        nettyWebServerFactory.setHandler(NettyServerHandler(this.applicationContext))
         nettyWebServerFactory.setPort(properties.port)
         return nettyWebServerFactory
     }
 
-    @Component
+    /**
+     * 开启SpringMVC的的配置的类，导入SpringMVC需要用到的各个相关的组件
+     */
+    @Configuration(proxyBeanMethods = false)
     open class EnableWebMvcConfiguration : DelegatingWebMvcConfiguration() {
 
         @Primary  // set to Primary

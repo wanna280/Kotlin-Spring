@@ -7,6 +7,5 @@ import com.wanna.framework.context.annotation.Conditional
  */
 @Conditional([OnWebApplicationCondition::class])
 annotation class ConditionalOnWebApplication(val type: Type = Type.ANY) {
-
     enum class Type { ANY, MVC }
 }

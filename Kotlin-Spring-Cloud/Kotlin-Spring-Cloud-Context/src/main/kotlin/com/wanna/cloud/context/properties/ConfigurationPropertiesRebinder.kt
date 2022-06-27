@@ -40,25 +40,24 @@ open class ConfigurationPropertiesRebinder(private val beans: ConfigurationPrope
     }
 
     /**
-     * 将RefreshScope内的全部Bean，去进行重新绑定
+     * 将RefreshScope内的全部Bean去进行重新绑定
+     * 交给BeanFactory去进行初始化时，就会走@ConfigurationProperties的重新绑定；
      *
-     * @param name beanName
+     * @param name 要去进行绑定的beanName
+     * @return 如果绑定成功，return true；否则return false
      */
     open fun rebind(name: String): Boolean {
+        // 如果该beanName都不在给定的ConfigurationPropertiesBean当中，那么return false
         if (!this.beans.getBeanNames().contains(name)) {
             return false
         }
-        val applicationContext = this.applicationContext
-        if (applicationContext != null) {
-            val bean = applicationContext.getBean(name)
-            val beanFactory = applicationContext.getAutowireCapableBeanFactory()
-            // destroy Bean and reinitialize it...
-            if (bean != null) {
-                beanFactory.destroy(bean)
-                beanFactory.initializeBean(bean, name)
-            }
-            return true
-        }
-        return false
+        val bean = applicationContext.getBean(name)
+        val beanFactory = applicationContext.getAutowireCapableBeanFactory()
+
+
+        // destroy Bean and reinitialize it...
+        beanFactory.destroy(bean)
+        beanFactory.initializeBean(bean, name)
+        return true
     }
 }

@@ -41,7 +41,8 @@ interface AutowireCapableBeanFactory : BeanFactory {
     ): Any?
 
     /**
-     * 初始化Bean，供beanFactory外部去进行使用
+     * 初始化一个Bean，供beanFactory外部去进行使用，完成一个Bean的初始化工作；
+     * 在初始化Bean时，会自动执行beforeInitialization/afterInitialization方法，也会执行Aware的接口；
      *
      * @param bean bean
      * @param beanName beanName
