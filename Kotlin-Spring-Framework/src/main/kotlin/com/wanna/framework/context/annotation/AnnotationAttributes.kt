@@ -59,11 +59,11 @@ open class AnnotationAttributes(private var annotationType: Class<out Annotation
         return asAnnotationAttributesSet(*annotations)
     }
 
-    fun <T> getForType(key: String?, type: Class<T>): T {
+    fun <T> getForType(key: String, type: Class<T>): T {
         return get(key) as T
     }
 
-    fun <T> getForTypeArray(key: String?, type: Class<T>): Array<T> {
+    fun <T> getForTypeArray(key: String, type: Class<T>): Array<T> {
         return get(key) as Array<T>
     }
 }

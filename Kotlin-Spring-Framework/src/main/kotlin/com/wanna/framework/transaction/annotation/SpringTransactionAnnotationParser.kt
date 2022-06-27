@@ -22,7 +22,7 @@ open class SpringTransactionAnnotationParser : TransactionAnnotationParser {
      */
     override fun parseTransactionAnnotation(element: AnnotatedElement): TransactionAttribute? {
         val transactional = AnnotatedElementUtils.getMergedAnnotation(element, Transactional::class.java) ?: return null
-        val attributes = AnnotationAttributesUtils.asAnnotationAttributes(transactional) ?: return null
+        val attributes = AnnotationAttributesUtils.asNonNullAnnotationAttributes(transactional)
         return parseTransactionAnnotation(attributes)
     }
 
@@ -33,7 +33,7 @@ open class SpringTransactionAnnotationParser : TransactionAnnotationParser {
      * @return 事务相关的属性信息
      */
     protected open fun parseTransactionAnnotation(transactional: Transactional): TransactionAttribute {
-        return parseTransactionAnnotation(AnnotationAttributesUtils.asAnnotationAttributes(transactional)!!)
+        return parseTransactionAnnotation(AnnotationAttributesUtils.asNonNullAnnotationAttributes(transactional))
     }
 
     /**

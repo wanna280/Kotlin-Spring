@@ -56,7 +56,7 @@ open class ComponentScanAnnotationParser(
     private fun getTypeFilters(filters: Array<ComponentScan.Filter>): List<TypeFilter> {
         val typeFilters = ArrayList<TypeFilter>()
         AnnotationAttributesUtils.asAnnotationAttributesSet(*filters).forEach { attr ->
-            val filterType = attr!!["filterType"] as FilterType
+            val filterType = attr["filterType"] as FilterType
             val classArray = attr.getClassArray("classes")
             classArray.forEach {
                 when (filterType) {
