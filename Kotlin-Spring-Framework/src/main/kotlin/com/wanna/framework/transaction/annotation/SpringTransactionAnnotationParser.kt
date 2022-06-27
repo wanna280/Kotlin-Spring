@@ -45,15 +45,15 @@ open class SpringTransactionAnnotationParser : TransactionAnnotationParser {
     protected open fun parseTransactionAnnotation(attributes: AnnotationAttributes): TransactionAttribute {
         val transactionAttribute = RuleBasedTransactionAttribute()
 
-        val transactionManager = attributes.getString("transactionManager")!!
+        val transactionManager = attributes.getString("transactionManager")
         val timeout = attributes.getInt("timeout")
         val readOnly = attributes.getBoolean("readOnly")
-        val isolation = attributes.getForType("isolation", Isolation::class.java)!!
-        val propagation = attributes.getForType("propagation", Propagation::class.java)!!
-        val rollbackForClassName = attributes.getStringArray("rollbackForClassName")!!
-        val rollbackForClass = attributes.getClassArray("rollbackFor")!!
-        val noRollbackForClassName = attributes.getStringArray("noRollbackForClassName")!!
-        val noRollbackForClass = attributes.getClassArray("noRollbackFor")!!
+        val isolation = attributes.getForType("isolation", Isolation::class.java)
+        val propagation = attributes.getForType("propagation", Propagation::class.java)
+        val rollbackForClassName = attributes.getStringArray("rollbackForClassName")
+        val rollbackForClass = attributes.getClassArray("rollbackFor")
+        val noRollbackForClassName = attributes.getStringArray("noRollbackForClassName")
+        val noRollbackForClass = attributes.getClassArray("noRollbackFor")
 
         // 收集所有的RollBack的规则
         val rollbackRuleAttributes = ArrayList<RollbackRuleAttribute>()
