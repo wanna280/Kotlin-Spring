@@ -50,11 +50,11 @@ open class AnnotationAttributes(private var annotationType: Class<out Annotation
         return get(key) as Array<Any>
     }
 
-    fun getAnnotationArray(key: String): Array<AnnotationAttributes?> {
+    fun getAnnotationArray(key: String): Array<AnnotationAttributes> {
         return getAnnotationSet(key).toTypedArray()
     }
 
-    fun getAnnotationSet(key: String): Set<AnnotationAttributes?> {
+    fun getAnnotationSet(key: String): Set<AnnotationAttributes> {
         val annotations = get(key) as Array<Annotation>
         return asAnnotationAttributesSet(*annotations)
     }
