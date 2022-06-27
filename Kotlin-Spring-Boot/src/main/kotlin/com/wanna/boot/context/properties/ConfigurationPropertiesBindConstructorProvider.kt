@@ -9,7 +9,7 @@ import java.lang.reflect.Constructor
  *
  * @see ConfigurationPropertiesBean
  */
-class ConfigurationPropertiesBindConstructorProvider {
+open class ConfigurationPropertiesBindConstructorProvider {
 
     companion object {
         @JvmField

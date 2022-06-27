@@ -20,6 +20,8 @@ import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
 
 object AnnotationConfigUtils {
+
+    // BeanNameGenerator的beanName
     const val CONFIGURATION_BEAN_NAME_GENERATOR = "com.wanna.framework.context.annotation.internBeanNameGenerator"
 
     const val CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME = "com.wanna.framework.context.annotation.internalConfigurationAnnotationProcessor"

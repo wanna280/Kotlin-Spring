@@ -226,14 +226,26 @@ object ReflectionUtils {
     }
 
     /**
-     * 根据name和参数类型列表去指定类当中去寻找方法，有可能没找到，return null
+     * 根据name和参数类型列表去指定类当中去寻找方法，有可能没找到，return null；
+     * 会尝试去搜索所有的父类当中的所有方法，去进行匹配，直到，方法名和参数列表都完全匹配时，return
+     *
      * @param clazz 目标类
      * @param name 方法name
      * @param parameterTypes 方法的参数类型
      */
     @JvmStatic
     fun findMethod(clazz: Class<*>, name: String, vararg parameterTypes: Class<*>): Method? {
-        return clazz.getDeclaredMethod(name, *parameterTypes)
+        var searchType: Class<*>? = clazz
+        do {
+            val methods = if (searchType!!.isInterface) searchType.methods else getDeclaredMethods(searchType, false)
+            methods.forEach {
+                if (it.name == name && parameterTypes.contentEquals(it.parameterTypes)) {
+                    return it
+                }
+            }
+            searchType = searchType.superclass
+        } while (searchType != null && searchType != Any::class.java)
+        return null
     }
 
     /**

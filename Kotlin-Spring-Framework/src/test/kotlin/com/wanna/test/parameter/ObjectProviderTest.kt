@@ -9,7 +9,7 @@ import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.stereotype.Component
 
 @ComponentScan(["com.wanna.test.parameter"])
-@Configuration
+@Configuration(proxyBeanMethods = false)
 open class ObjectProviderTest
 
 @Component

@@ -8,7 +8,7 @@ import com.wanna.framework.context.annotation.Import
 import com.wanna.framework.context.stereotype.Component
 
 @Import([UserFactoryBean::class])
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class FactoryBeanTest {
 
     @Autowired

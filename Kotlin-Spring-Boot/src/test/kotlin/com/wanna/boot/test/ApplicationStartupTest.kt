@@ -12,7 +12,7 @@ import java.util.function.Supplier
 /**
  * 用于对ApplicationStartup去进行功能设置，对过程当中产生的数据去以日志的形式去进行输出
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class ApplicationStartupTest
 
 class MyApplicationStartup : ApplicationStartup {

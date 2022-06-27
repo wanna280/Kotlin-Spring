@@ -95,7 +95,9 @@ object ClassUtils {
         try {
             return Class.forName(clazzName, false, classLoaderToUse) as Class<T>
         } catch (ex: ClassNotFoundException) {
-            logger.error("无法从当前JVM的依赖当中去解析到给定的className=[$clazzName]的类")
+            if (logger.isTraceEnabled) {
+                logger.trace("无法从当前JVM的依赖当中去解析到给定的className=[$clazzName]的类")
+            }
             throw ex
         }
     }

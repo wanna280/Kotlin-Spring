@@ -9,8 +9,7 @@ import com.wanna.framework.context.exception.BeanCreationException
  * @see ConfigurationProperties
  */
 open class ConfigurationPropertiesBindException(
-    private val bean: ConfigurationPropertiesBean?,
-    cause: Throwable
-) : BeanCreationException(null, cause, null) {
-
-}
+    message: String? = null,
+    private val bean: ConfigurationPropertiesBean? = null,
+    cause: Throwable? = null
+) : BeanCreationException(message, cause, bean?.getName())

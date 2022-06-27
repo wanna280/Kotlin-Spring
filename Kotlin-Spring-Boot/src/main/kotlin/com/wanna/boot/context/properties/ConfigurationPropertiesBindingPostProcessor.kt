@@ -61,14 +61,12 @@ open class ConfigurationPropertiesBindingPostProcessor : BeanPostProcessor, Appl
      */
     private fun bind(bean: ConfigurationPropertiesBean?) {
         // 如果该Bean没有标注@ConfigurationProperties注解，那么pass
-        if (bean == null) {
-            return
-        }
+        bean ?: return
         // 如果该Bean标注了@ConfigurationProperties注解，那么把它注册到Binder当中
         try {
             binder!!.bind(bean)
         } catch (ex: Exception) {
-            throw ConfigurationPropertiesBindException(bean, ex)
+            throw ConfigurationPropertiesBindException(bean = bean, cause = ex)
         }
     }
 

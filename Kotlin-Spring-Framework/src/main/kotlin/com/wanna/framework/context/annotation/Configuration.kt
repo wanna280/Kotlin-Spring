@@ -11,10 +11,9 @@ import org.springframework.core.annotation.AliasFor
 annotation class Configuration(
     @get:AliasFor(annotation = Component::class, value = "name")
     val name: String = "",
-
     @get:AliasFor(annotation = Component::class, value = "value")
     val value: String = "",
 
-    // 是否代理@Bean方法？
+    // 是否需要去代理@Bean方法？
     val proxyBeanMethods: Boolean = true
 )

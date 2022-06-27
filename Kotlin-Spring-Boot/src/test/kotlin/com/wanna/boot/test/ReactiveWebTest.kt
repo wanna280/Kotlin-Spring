@@ -7,7 +7,7 @@ import com.wanna.framework.context.annotation.ComponentScan
 import com.wanna.framework.context.stereotype.Component
 
 @ComponentScan(["com.wanna.boot.web"])
-@SpringBootConfiguration
+@SpringBootConfiguration(proxyBeanMethods = false)
 class AppTest
 
 @Component

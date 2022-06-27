@@ -329,4 +329,11 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
     override fun setBeanClass(beanClass: Class<*>?) {
         this.beanClass = beanClass
     }
+
+    /**
+     * 判断是否有beanClass
+     *
+     * @return 如果当前BeanDefinition当中已经有beanClass了，return true；否则return false
+     */
+    open fun hasBeanClass(): Boolean = beanClass != null
 }

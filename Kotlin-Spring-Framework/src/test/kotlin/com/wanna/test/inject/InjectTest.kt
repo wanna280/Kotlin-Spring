@@ -5,7 +5,7 @@ import com.wanna.framework.context.annotation.*
 import com.wanna.framework.context.stereotype.Component
 
 @ComponentScan(["com.wanna.test.inject"])
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class Main
 
 @Scope(BeanDefinition.SCOPE_PRTOTYPE)

@@ -16,32 +16,40 @@ open class ConfigurationPropertiesBean(
     private val annotation: ConfigurationProperties,
     private val beanType: Class<*>
 ) {
+
+    // 绑定方式，是采用Setter的方式去进行注入还是使用构造器的方式去进行注入
     private val bindMethod = BindMethod.forType(beanType)
 
     /**
      * 获取ConfigurationPropertiesBean的BeanName
      */
-    fun getName() = name
+    open fun getName() = name
 
     /**
      * 获取包装的Bean，可以为null；表示运行时在去进行实例化(构造器绑定方式)
      */
-    fun getInstance(): Any? = instance
+    open fun getInstance(): Any? = instance
 
     /**
      * 获取@ConfigurationProperties注解信息
+     *
+     * @return @ConfigurationProperties注解
      */
-    fun getAnnotation() = annotation
+    open fun getAnnotation() = annotation
 
     /**
      * 获取绑定方式，是采用JavaBean的Setter还是构造器的方式去完成绑定？
+     *
+     * @return BindMethod(Setter/Constructor)
      */
-    fun getBindMethod() = bindMethod
+    open fun getBindMethod() = bindMethod
 
     /**
      * 获取ConfigurationPropertiesBean的BeanType
+     *
+     * @return beanType of ConfigurationPropertiesBean
      */
-    fun getBeanType() = this.beanType
+    open fun getBeanType() = this.beanType
 
     /**
      * 提供一些静态方法去进行ConfigurationPropertiesBean的构建

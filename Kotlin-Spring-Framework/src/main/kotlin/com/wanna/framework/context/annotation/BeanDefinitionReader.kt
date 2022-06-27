@@ -5,5 +5,5 @@ package com.wanna.framework.context.annotation
  */
 interface BeanDefinitionReader {
 
-    fun loadBeanDefinitions(location:String) : Int
+    fun loadBeanDefinitions(location: String): Int
 }

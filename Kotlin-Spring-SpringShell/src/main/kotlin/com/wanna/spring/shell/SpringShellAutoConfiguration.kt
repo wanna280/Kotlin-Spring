@@ -14,7 +14,7 @@ import com.wanna.spring.shell.result.SpringShellResultConfiguration
 /**
  * SpringShell的自动配置类
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @Import([ShellCommandMethodTargetRegistrar::class, SpringShellResultConfiguration::class])
 open class SpringShellAutoConfiguration {
 
