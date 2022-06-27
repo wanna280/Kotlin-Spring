@@ -8,70 +8,62 @@ import com.wanna.framework.context.annotation.AnnotationAttributesUtils.asAnnota
  * 而value则是这个注解属性的key对应的配置的内容
  */
 @Suppress("UNCHECKED_CAST")
-open class AnnotationAttributes : LinkedHashMap<String, Any> {
-    /**
-     * 注解的类型
-     */
-    var annotationType: Class<out Annotation>? = null
+open class AnnotationAttributes(private var annotationType: Class<out Annotation>? = null) :
+    LinkedHashMap<String, Any>() {
+    constructor() : this(null)
 
-    constructor() : super() {}
-    constructor(annotationType: Class<out Annotation>?) : super() {
-        this.annotationType = annotationType
-    }
+    fun getString(key: String) = get(key) as String
 
-    fun getString(key: String?) = get(key) as String?
-
-
-    fun getInt(key: String?): Int {
+    fun getInt(key: String): Int {
         return get(key) as Int
     }
 
-    fun getLong(key: String?): Long {
+    fun getLong(key: String): Long {
         return get(key) as Long
     }
 
-    fun getShort(key: String?): Short {
+    fun getShort(key: String): Short {
         return get(key) as Short
     }
 
-    fun getBoolean(key: String?): Boolean {
+    fun getBoolean(key: String): Boolean {
         return get(key) as Boolean
     }
 
-    fun getDouble(key: String?): Double {
+    fun getDouble(key: String): Double {
         return get(key) as Double
     }
 
-    fun getStringArray(key: String?): Array<String>? {
-        return get(key) as Array<String>?
+    fun getStringArray(key: String): Array<String> {
+        return get(key) as Array<String>
     }
 
-    fun getClass(key: String?): Class<*>? {
-        return get(key) as Class<*>?
+    fun getClass(key: String): Class<*> {
+        return get(key) as Class<*>
     }
 
-    fun getClassArray(key: String?): Array<Class<*>>? {
-        return get(key) as Array<Class<*>>?
+    fun getClassArray(key: String): Array<Class<*>> {
+        return get(key) as Array<Class<*>>
     }
 
-    fun getObjectArray(key: String?): Array<Any>? {
-        return get(key) as Array<Any>?
+    fun getObjectArray(key: String): Array<Any> {
+        return get(key) as Array<Any>
     }
 
-    fun getAnnotationArray(key: String?): Array<AnnotationAttributes?> {
+    fun getAnnotationArray(key: String): Array<AnnotationAttributes> {
         return getAnnotationSet(key).toTypedArray()
     }
 
-    fun getAnnotationSet(key: String?): Set<AnnotationAttributes?> {
-        val annotations = get(key) as Array<Annotation>?
-        return asAnnotationAttributesSet(*annotations!!)
+    fun getAnnotationSet(key: String): Set<AnnotationAttributes> {
+        val annotations = get(key) as Array<Annotation>
+        return asAnnotationAttributesSet(*annotations)
     }
 
-    fun <T> getForType(key: String?, type: Class<T>?): T? {
-        return get(key) as T?
+    fun <T> getForType(key: String, type: Class<T>): T {
+        return get(key) as T
     }
 
-    fun <T> getForTypeArray(key: String?, type: Class<T>?): Array<T>? {
-        return get(key) as Array<T>?
+    fun <T> getForTypeArray(key: String, type: Class<T>): Array<T> {
+        return get(key) as Array<T>
     }
 }

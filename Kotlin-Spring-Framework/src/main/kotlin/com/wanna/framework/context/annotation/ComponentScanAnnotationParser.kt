@@ -28,8 +28,8 @@ open class ComponentScanAnnotationParser(
         scanner.setBeanNameGenerator(componentScanBeanNameGenerator)
 
         val packages = ArrayList<String>()
-        packages.addAll(attributes.getStringArray("basePackages")!!)
-        packages.addAll((attributes.getClassArray("basePackageClasses")!!).map { it.packageName }.toList())
+        packages.addAll(attributes.getStringArray("basePackages"))
+        packages.addAll((attributes.getClassArray("basePackageClasses")).map { it.packageName }.toList())
 
         // 添加includeFilters/excludeFilters到Scanner当中
         val includeFilters = attributes["includeFilters"] as Array<ComponentScan.Filter>
@@ -56,8 +56,8 @@ open class ComponentScanAnnotationParser(
     private fun getTypeFilters(filters: Array<ComponentScan.Filter>): List<TypeFilter> {
         val typeFilters = ArrayList<TypeFilter>()
         AnnotationAttributesUtils.asAnnotationAttributesSet(*filters).forEach { attr ->
-            val filterType = attr!!["filterType"] as FilterType
-            val classArray = attr.getClassArray("classes") as Array<Class<*>>
+            val filterType = attr["filterType"] as FilterType
+            val classArray = attr.getClassArray("classes")
             classArray.forEach {
                 when (filterType) {
                     FilterType.ANNOTATION -> typeFilters += AnnotationTypeFilter(it as Class<out Annotation>)

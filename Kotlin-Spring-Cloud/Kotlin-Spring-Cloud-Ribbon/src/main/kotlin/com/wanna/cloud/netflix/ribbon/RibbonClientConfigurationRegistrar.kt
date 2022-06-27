@@ -17,7 +17,7 @@ open class RibbonClientConfigurationRegistrar : ImportBeanDefinitionRegistrar {
             // 遍历RibbonClients当中的所有RibbonClient注解，去进行处理
             val ribbonClients = clientsAttributes["value"] as Array<RibbonClient>
             ribbonClients.forEach {
-                registerRibbonClient(registry, AnnotationAttributesUtils.asAnnotationAttributes(it)!!)
+                registerRibbonClient(registry, AnnotationAttributesUtils.asNonNullAnnotationAttributes(it))
             }
 
             // 将defaultConfiguration注册一下，需要加上前缀"default."代表对所有的childContext(Service)生效...

@@ -5,6 +5,7 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.core.util.StringUtils
 import java.beans.Introspector
 
 /**
@@ -54,7 +55,7 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
             val componentAttr = AnnotationAttributesUtils.asAnnotationAttributes(component)
             if (componentAttr != null) {
                 val name = componentAttr.getString("value")
-                if (name != null) {
+                if (StringUtils.hasText(name)) {
                     return name
                 }
             }

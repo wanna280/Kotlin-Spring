@@ -170,8 +170,8 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
         }
 
         // 如果没有成对匹配的话，那么需要fallback去匹配Qualifier注解与beanName的情况...
-        val attributes = AnnotationAttributesUtils.asAnnotationAttributes(annotation)
-        attributes?.forEach { (k, v) ->
+        val attributes = AnnotationAttributesUtils.asNonNullAnnotationAttributes(annotation)
+        attributes.forEach { (k, v) ->
             if (k == "value" && bdHolder.matchesName(v.toString())) {
                 return true
             }
@@ -238,7 +238,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
     private fun findValue(annotations: Array<Annotation>): Any? {
         for (annotation in annotations) {
             if (valueAnnotationType == annotation.annotationClass.java) {
-                return extractValue(AnnotationAttributesUtils.asAnnotationAttributes(annotation))
+                return extractValue(AnnotationAttributesUtils.asNonNullAnnotationAttributes(annotation))
             }
         }
         return null

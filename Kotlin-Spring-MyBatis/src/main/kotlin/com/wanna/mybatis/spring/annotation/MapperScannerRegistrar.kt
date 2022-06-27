@@ -55,25 +55,25 @@ open class MapperScannerRegistrar : ImportBeanDefinitionRegistrar {
         propertyValues.addPropertyValue("processPropertyPlaceHolders", true)
 
         // 设置annotationClass
-        val annotationClass = attributes.getClass("annotationClass")!!
+        val annotationClass = attributes.getClass("annotationClass")
         if (annotationClass != Annotation::class.java) {
             propertyValues.addPropertyValue("annotationClass", annotationClass)
         }
 
         // set MarkerInterface
-        val markerInterface = attributes.getClass("markerInterface")!!
+        val markerInterface = attributes.getClass("markerInterface")
         if (markerInterface != Class::class.java) {
             propertyValues.addPropertyValue("markerInterface", markerInterface)
         }
 
         // add BeanNameGenerator
-        val nameGenerator = attributes.getClass("nameGenerator")!!
+        val nameGenerator = attributes.getClass("nameGenerator")
         if (nameGenerator != BeanNameGenerator::class.java) {
             propertyValues.addPropertyValue("nameGenerator", BeanUtils.instantiateClass(nameGenerator))
         }
 
         // set MapperFactoryBean
-        val factoryBean = attributes.getClass("factoryBean")!!
+        val factoryBean = attributes.getClass("factoryBean")
         if (factoryBean != MapperFactoryBean::class.java) {
             propertyValues.addPropertyValue("mapperFactoryBeanClass", factoryBean)
         }
@@ -92,9 +92,9 @@ open class MapperScannerRegistrar : ImportBeanDefinitionRegistrar {
 
         // 添加basePackages
         val basePackages = ArrayList<String>()
-        attributes.getStringArray("value")!!.filter { StringUtils.hasText(it) }.forEach(basePackages::add)
-        attributes.getStringArray("basePackages")!!.filter { StringUtils.hasText(it) }.forEach(basePackages::add)
-        attributes.getClassArray("basePackageClasses")!!.map { it.packageName }.forEach(basePackages::add)
+        attributes.getStringArray("value").filter { StringUtils.hasText(it) }.forEach(basePackages::add)
+        attributes.getStringArray("basePackages").filter { StringUtils.hasText(it) }.forEach(basePackages::add)
+        attributes.getClassArray("basePackageClasses").map { it.packageName }.forEach(basePackages::add)
         if (basePackages.isEmpty()) {  // 如果必要的话，需要获取默认的basePackages
             basePackages.add(getDefaultBasePackage(importClassMetadata))
         }

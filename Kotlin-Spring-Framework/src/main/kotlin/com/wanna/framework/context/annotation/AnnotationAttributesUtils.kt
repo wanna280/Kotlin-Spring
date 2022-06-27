@@ -15,9 +15,7 @@ object AnnotationAttributesUtils {
      */
     @JvmStatic
     fun asAnnotationAttributes(annotation: Annotation?): AnnotationAttributes? {
-        if (annotation == null) {
-            return null
-        }
+        annotation ?: return null
         val annotationType: Class<out Annotation> = annotation.annotationClass.java
         val attributes = AnnotationAttributes(annotationType)
         // 获取到目标注解对应的全部方法，将其解析出来放到AnnotationAttributes中去
@@ -37,17 +35,12 @@ object AnnotationAttributesUtils {
     }
 
     /**
-     * 给定一个指定的注解列表，将其包装成为一个属性集合
+     * 将给定的注解去转换成为一个非空的AnnotationAttributes
      *
-     * @param annotations 目标注解列表
+     * @param annotation 注解
      */
-    @JvmStatic
-    fun asAnnotationAttributesSet(vararg annotations: Annotation?): Set<AnnotationAttributes?> {
-        val attributesSet: MutableSet<AnnotationAttributes?> = HashSet()
-        for (annotation in annotations) {
-            attributesSet.add(asAnnotationAttributes(annotation))
-        }
-        return attributesSet
+    fun asNonNullAnnotationAttributes(annotation: Annotation): AnnotationAttributes {
+        return asAnnotationAttributes(annotation)!!
     }
 
     /**
@@ -56,9 +49,17 @@ object AnnotationAttributesUtils {
      * @param annotations 目标注解列表
      */
     @JvmStatic
-    fun asAnnotationAttributesSet(annotations: Collection<*>): Set<AnnotationAttributes> {
-        return annotations.filterIsInstance<Annotation?>().mapNotNull { asAnnotationAttributes(it) }.toSet()
-    }
+    fun asAnnotationAttributesSet(vararg annotations: Annotation): Set<AnnotationAttributes> =
+        annotations.mapNotNull { asAnnotationAttributes(it) }.toSet()
+
+    /**
+     * 给定一个指定的注解列表，将其包装成为一个属性集合
+     *
+     * @param annotations 目标注解列表
+     */
+    @JvmStatic
+    fun asAnnotationAttributesSet(annotations: Collection<*>): Set<AnnotationAttributes> =
+        annotations.filterIsInstance<Annotation>().mapNotNull { asAnnotationAttributes(it) }.toSet()
 
     /**
      * 从一个Map转换到Attributes对象
