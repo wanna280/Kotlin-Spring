@@ -394,7 +394,9 @@ open class ResolvableType() {
             resolvableType: ResolvableType,
             vararg generics: ResolvableType
         ): ResolvableType {
-            resolvableType.generics = arrayOf(*generics)
+            if (generics.isNotEmpty()) {
+                resolvableType.generics = arrayOf(*generics)
+            }
             return resolvableType
         }
     }

@@ -4,7 +4,8 @@ import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.converter.ConverterRegistry
 
 /**
- * 这是一个默认的ConversionService，它是一个支持泛型的ConversionService，并且添加了很多默认的Converter，去提供基础的类型转换功能
+ * 这是一个默认的ConversionService的实现，它是一个支持泛型的ConversionService，
+ * 并且添加了很多默认的Converter，去提供基础的类型转换功能
  *
  * @see GenericConversionService
  * @see ConfigurableConversionService
@@ -41,11 +42,19 @@ open class DefaultConversionService : GenericConversionService() {
         @JvmStatic
         fun addDefaultConverters(registry: ConverterRegistry) {
             registry.addConverter(StringToNumberConverter())
-            registry.addConverter(StringToStringConverter())
+            registry.addConverter(ArrayToStringConverter())
+            registry.addConverter(CollectionToStringConverter())
+
             if (registry is ConversionService) {
+                // Collection To Array/Collection
                 registry.addConverter(CollectionToArrayConverter(registry))
                 registry.addConverter(CollectionToCollectionConverter(registry))
+
+                // String to Array/Collection
+                registry.addConverter(StringToCollectionConverter(registry))
+                registry.addConverter(StringToArrayConverter(registry))
             }
+            registry.addConverter(StringToStringConverter())
         }
     }
 }

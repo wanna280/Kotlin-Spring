@@ -9,12 +9,8 @@ open class TypeConverterSupport : PropertyEditorRegistrySupport(), TypeConverter
     protected lateinit var delegate: TypeConverterDelegate
 
     override fun <T> convertIfNecessary(value: Any?, requiredType: Class<T>?): T? {
-        if (value == null) {
-            return null
-        }
-        if (requiredType == null) {
-            return null
-        }
+        value ?: return null
+        requiredType ?: return null
         return delegate.convertIfNecessary(null, null, value, requiredType)
     }
 }

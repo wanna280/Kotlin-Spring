@@ -22,7 +22,7 @@ class TypeConverterDelegate(private val registry: PropertyEditorRegistrySupport)
 
         if (conversionService != null) {
             if (conversionService.canConvert(newValue::class.java, requiredType)) {
-                return conversionService.convert(newValue, requiredType) as T?
+                return conversionService.convert(newValue, requiredType)
             }
         }
         var convertedValue: Any = newValue

@@ -1,5 +1,6 @@
 package com.wanna.framework.core.convert.support
 
+import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.convert.converter.GenericConverter
 import com.wanna.framework.core.convert.converter.GenericConverter.ConvertiblePair
 
@@ -35,9 +36,7 @@ open class StringToNumberConverter : GenericConverter {
         convertiblePairs.add(ConvertiblePair(String::class.java, Boolean::class.javaObjectType))
     }
 
-    override fun getConvertibleTypes(): Set<ConvertiblePair> {
-        return convertiblePairs
-    }
+    override fun getConvertibleTypes() = this.convertiblePairs
 
     override fun <S, T> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
         val sourceStr = source?.toString() ?: return null
@@ -68,4 +67,9 @@ open class StringToNumberConverter : GenericConverter {
         }
         throw UnsupportedOperationException("不支持将sourceType=[$sourceType]转换为targetType=[$targetType]")
     }
+
+    override fun convert(source: Any?, sourceType: TypeDescriptor, targetType: TypeDescriptor): Any? =
+        convert(source, sourceType.type, targetType.type)
+
+    override fun toString() = getConvertibleTypes().toString()
 }

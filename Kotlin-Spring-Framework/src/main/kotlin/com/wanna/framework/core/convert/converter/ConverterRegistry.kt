@@ -1,7 +1,7 @@
 package com.wanna.framework.core.convert.converter
 
 /**
- * 这是一个Converter的注册中心，可以通过它去管理Converter
+ * 这是一个Converter的注册中心，可以通过它去管理Converter，提供相关的增删改查操作
  *
  * @see Converter
  * @see GenericConverter

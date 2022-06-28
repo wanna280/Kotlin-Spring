@@ -1,6 +1,7 @@
 package com.wanna.framework.core.convert.support
 
 import com.wanna.framework.core.ResolvableType
+import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.convert.converter.Converter
 import com.wanna.framework.core.convert.converter.GenericConverter
 import com.wanna.framework.core.convert.converter.GenericConverter.ConvertiblePair
@@ -25,28 +26,46 @@ open class GenericConversionService : ConfigurableConversionService {
     /**
      * 判断Converter注册中心当中，是否存在有这样的Converter，能去完成从sourceType->targetType的类型转换？
      *
-     * @param sourceType
-     * @param targetType
+     * @param sourceType sourceType
+     * @param targetType targetType
      * @return 是否能支持从sourceType->targetType？
      */
-    override fun canConvert(sourceType: Class<*>, targetType: Class<*>): Boolean {
-        val convertersForPair = converters.getConverter(sourceType, targetType)
-        return convertersForPair.converters.isNotEmpty()
-    }
+    override fun canConvert(sourceType: Class<*>, targetType: Class<*>) =
+        converters.getConverter(sourceType, targetType).hasConverter()
 
     /**
-     * 遍历ConversionService当中已经注册的所有的Converter，去进行判断，看它是否能进行转换？
+     * 判断Converter注册中心当中，是否存在有这样的Converter，能去完成从sourceType->targetType的类型转换？
+     *
+     * @param sourceType sourceType
+     * @param targetType targetType
+     * @return 是否能支持从sourceType->targetType？
+     */
+    override fun canConvert(sourceType: TypeDescriptor, targetType: TypeDescriptor) =
+        canConvert(sourceType.type, targetType.type)
+
+    /**
+     * 将source转换为targetType的类型转换
+     *
+     * @param targetType 要将source对象转换成什么类型
+     * @param source 要去进行转换的对象
+     * @return 转换完成的对象(如果无法完成转换，那么return null)
      */
     @Suppress("UNCHECKED_CAST")
-    override fun <T> convert(source: Any?, targetType: Class<T>): T? {
-        if (source == null) {
-            return null
-        }
-        val converter = converters.getConverter(source::class.java, targetType)
-        if (converter.converters.isNotEmpty()) {
-            return converter.convert(source, targetType) as T?
-        }
-        return null
+    override fun <T> convert(source: Any?, targetType: Class<T>) =
+        convert(source, TypeDescriptor.forClass(targetType)) as T?
+
+    /**
+     * 将source转换为targetType的类型转换
+     *
+     * @param targetType 要将source对象转换成什么类型
+     * @param source 要去进行转换的对象
+     * @return 转换完成的对象(如果无法完成转换，那么return null)
+     */
+    override fun convert(source: Any?, targetType: TypeDescriptor): Any? {
+        source ?: return null  // if null, return null
+        // 获取到支持将sourceType-->targetType的转换器列表
+        val converter = converters.getConverter(source::class.java, targetType.type)
+        return if (converter.hasConverter()) converter.convert(source, targetType) else null
     }
 
     /**
@@ -65,14 +84,33 @@ open class GenericConversionService : ConfigurableConversionService {
         addConverter(ConverterAdapter(converter).addConvertibleType(generics[0].resolve()!!, generics[1].resolve()!!))
     }
 
+    /**
+     * 往"sourceType-->targetType"的映射当中去添加一个Converter，
+     * 因为Converter本身并不包含泛型信息，因此，我们应该尝试去进行converter的父类当中的泛型的类型去进行解析
+     *
+     * @param sourceType sourceType
+     * @param targetType targetType
+     * @param converter 你想要添加的Converter
+     */
     override fun <S, T> addConverter(sourceType: Class<S>, targetType: Class<T>, converter: Converter<S, T>) {
         addConverter(ConverterAdapter(converter).addConvertibleType(sourceType, targetType))
     }
 
+    /**
+     * 直接添加一个GenericConverter到Converter注册中心当中
+     *
+     * @param converter 你想要添加的GenericConverter
+     */
     override fun addConverter(converter: GenericConverter) {
         converters.addConverter(converter)
     }
 
+    /**
+     * 根据"sourceType-->targetType"的映射关系，去移除该映射下的Converter列表
+     *
+     * @param sourceType sourceType
+     * @param targetType targetType
+     */
     override fun removeConvertible(sourceType: Class<*>, targetType: Class<*>) {
         this.converters.removeConverter(sourceType, targetType)
     }
@@ -91,7 +129,7 @@ open class GenericConversionService : ConfigurableConversionService {
 
         // Converter注册中心当中维护的Converter列表
         // key-(sourceType->targetType)的Pair映射对
-        // value-能完成key对应的Pair映射的Converter列表
+        // value-能完成(sourceType->targetType)对应的Pair映射的Converter列表
         val converters = ConcurrentHashMap<ConvertiblePair, ConvertersForPair>()
 
         /**
@@ -133,6 +171,7 @@ open class GenericConversionService : ConfigurableConversionService {
 
         /**
          * 遍历所有的Converter去进行继承关系的匹配，因为有可能给出的是它的子类...
+         * 我们需要检查类型是否匹配，从而去进行找到合适的Converter
          *
          * @param type 要去进行匹配的sourceType和targetType
          * @return 寻找到的Converters(如果没有找到return null)
@@ -166,16 +205,19 @@ open class GenericConversionService : ConfigurableConversionService {
      * @see ConvertiblePair
      */
     class ConvertersForPair {
-        var converters = ConcurrentLinkedDeque<GenericConverter>()
+        val converters = ConcurrentLinkedDeque<GenericConverter>()
 
         fun addConverter(converter: GenericConverter): ConvertersForPair {
             converters += converter
             return this
         }
 
-        fun convert(source: Any, targetType: Class<*>): Any? {
-            return converters.first.convert(source, source::class.java, targetType)
-        }
+        fun hasConverter() = converters.isNotEmpty()
+
+        fun convert(source: Any, targetType: Class<*>): Any? = convert(source, TypeDescriptor.forClass(targetType))
+
+        fun convert(source: Any, targetType: TypeDescriptor): Any? =
+            converters.first.convert(source, TypeDescriptor.forClass(source::class.java), targetType)
     }
 
     /**
@@ -185,14 +227,15 @@ open class GenericConversionService : ConfigurableConversionService {
      */
     @Suppress("UNCHECKED_CAST")
     private class ConverterAdapter(private val converter: Converter<*, *>) : GenericConverter {
-        // 可以转换的类型映射
+        // 包装的普通的Converter，可以支持的转换的类型映射
         private val convertibleTypes = HashSet<ConvertiblePair>()
 
         /**
-         * 添加可以转换的类型到列表当中(source->target的映射关系)
+         * 添加可以转换的类型到列表当中("sourceType->targetType"的映射关系)
          *
-         * @param sourceType 源类型
-         * @param targetType 目标类型
+         * @param sourceType souceType
+         * @param targetType targetType
+         * @return this
          */
         fun addConvertibleType(sourceType: Class<*>, targetType: Class<*>): ConverterAdapter {
             this.convertibleTypes.add(ConvertiblePair(sourceType, targetType))
@@ -200,16 +243,34 @@ open class GenericConversionService : ConfigurableConversionService {
         }
 
         /**
-         * 获取当前Converter支持转换的类型列表
+         * 获取当前Converter支持转换的类型映射(Mapping)列表
          *
          * @return 当前这个Converter支持的转换的映射列表
          */
-        override fun getConvertibleTypes(): Set<ConvertiblePair> {
-            return convertibleTypes
-        }
+        override fun getConvertibleTypes(): Set<ConvertiblePair> = convertibleTypes
 
-        override fun <S, T> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
-            return converter.convert(source as Nothing?) as T?
-        }
+        /**
+         * 将source去进行类型的转换("sourceType-->targetType")
+         *
+         * @param source 要去进行转换的对象
+         * @param sourceType sourceType
+         * @param targetType targetType
+         * @return 经过Converter转换之后的对象
+         */
+        override fun <S, T> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? =
+            (converter as Converter<Any, Any>).convert(source) as T?
+
+        /**
+         * 将source去进行类型的转换("sourceType-->targetType")
+         *
+         * @param source 要去进行转换的对象
+         * @param sourceType sourceType
+         * @param targetType targetType
+         * @return 经过Converter转换之后的对象
+         */
+        override fun convert(source: Any?, sourceType: TypeDescriptor, targetType: TypeDescriptor): Any? =
+            (converter as Converter<Any, Any>).convert(source)
+
+        override fun toString() = getConvertibleTypes().toString()
     }
 }
