@@ -74,7 +74,7 @@ open class FeignClientsConfiguration {
     open class CircuitBreakerPresentFeignBuilderConfiguration {
 
         @Bean
-        @Scope(BeanDefinition.SCOPE_PRTOTYPE)
+        @Scope(BeanDefinition.SCOPE_PROTOTYPE)
         fun circuitBreakerFeignBuilder(): Feign.Builder {
             return FeignCircuitBreaker.builder()
         }
@@ -85,7 +85,7 @@ open class FeignClientsConfiguration {
     open class DefaultFeignBuilderConfiguration {
         @Bean
         @ConditionalOnMissingBean
-        @Scope(BeanDefinition.SCOPE_PRTOTYPE)
+        @Scope(BeanDefinition.SCOPE_PROTOTYPE)
         open fun feignBuilder(retryer: Retryer): Feign.Builder {
             return Feign.builder().retryer(retryer)
         }

@@ -143,7 +143,7 @@ open class DisposableBeanAdapter(
             }
             var destroyMethodName = mbd.resolvedDestroyMethodName
             if (destroyMethodName == null) {
-                destroyMethodName = mbd.getDestoryMethodName()
+                destroyMethodName = mbd.getDestroyMethodName()
                 if (destroyMethodName == null && bean is AutoCloseable) {
                     if (bean !is DisposableBean) {
                         try {

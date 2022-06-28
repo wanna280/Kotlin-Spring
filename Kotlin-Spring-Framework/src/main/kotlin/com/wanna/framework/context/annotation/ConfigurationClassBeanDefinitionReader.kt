@@ -142,7 +142,7 @@ open class ConfigurationClassBeanDefinitionReader(
             beanDefinition.setInitMethodName(beanAnnotation.initMethod)
         }
         if (StringUtils.hasText(beanAnnotation.destroyMethod)) {
-            beanDefinition.setDestoryMethodName(beanAnnotation.destroyMethod)
+            beanDefinition.setDestroyMethodName(beanAnnotation.destroyMethod)
         }
 
         // 设置是否是AutowireCandidate以及AutowireMode

@@ -79,13 +79,13 @@ open class MapperScannerRegistrar : ImportBeanDefinitionRegistrar {
         }
 
         // set sqlSessionTemplateRef
-        val sqlSessionTemplateRef = attributes.getString("sqlSessionTemplateRef")!!
+        val sqlSessionTemplateRef = attributes.getString("sqlSessionTemplateRef")
         if (StringUtils.hasText(sqlSessionTemplateRef)) {
             propertyValues.addPropertyValue("sqlSessionTemplateBeanName", sqlSessionTemplateRef)
         }
 
         // set SqlSessionFactoryBean
-        val sqlSessionFactoryRef = attributes.getString("sqlSessionFactoryRef")!!
+        val sqlSessionFactoryRef = attributes.getString("sqlSessionFactoryRef")
         if (StringUtils.hasText(sqlSessionFactoryRef)) {
             propertyValues.addPropertyValue("sqlSessionFactoryBeanName", sqlSessionFactoryRef)
         }
@@ -101,13 +101,13 @@ open class MapperScannerRegistrar : ImportBeanDefinitionRegistrar {
         propertyValues.addPropertyValue("basePackages", StringUtils.collectionToCommaDelimitedString(basePackages))
 
         // 解析是否要懒加载的属性？
-        val lazyInitialization = attributes.getString("lazyInitialization")!!
+        val lazyInitialization = attributes.getString("lazyInitialization")
         if (StringUtils.hasText(lazyInitialization)) {
             propertyValues.addPropertyValue("lazyInitialization", lazyInitialization)
         }
 
         // 如果必要的话，设置scope
-        val defaultScope = attributes.getString("defaultScope")!!
+        val defaultScope = attributes.getString("defaultScope")
         if (StringUtils.hasText(defaultScope)) {
             propertyValues.addPropertyValue("defaultScope", defaultScope)
         }

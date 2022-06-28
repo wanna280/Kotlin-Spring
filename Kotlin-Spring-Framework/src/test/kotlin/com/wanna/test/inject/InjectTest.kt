@@ -8,7 +8,7 @@ import com.wanna.framework.context.stereotype.Component
 @Configuration(proxyBeanMethods = false)
 class Main
 
-@Scope(BeanDefinition.SCOPE_PRTOTYPE)
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 @Component
 class User1 {
 
@@ -17,7 +17,7 @@ class User1 {
 
 }
 
-@Scope(BeanDefinition.SCOPE_PRTOTYPE)
+@Scope(BeanDefinition.SCOPE_PROTOTYPE)
 @Component
 class User2 {
     @Autowired

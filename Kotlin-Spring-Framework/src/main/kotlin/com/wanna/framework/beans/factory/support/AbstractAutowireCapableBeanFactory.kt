@@ -77,7 +77,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
     @Suppress("UNCHECKED_CAST")
     override fun <T> createBean(clazz: Class<T>): T {
         val rootBeanDefinition = RootBeanDefinition(clazz)
-        rootBeanDefinition.setScope(BeanDefinition.SCOPE_PRTOTYPE)
+        rootBeanDefinition.setScope(BeanDefinition.SCOPE_PROTOTYPE)
         return createBean(clazz.name, rootBeanDefinition) as T
     }
 

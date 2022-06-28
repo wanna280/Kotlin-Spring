@@ -8,14 +8,14 @@ import com.wanna.framework.beans.method.MethodOverrides
 import java.util.function.Supplier
 
 /**
- * 提供对Bean的相关信息的管理，它
+ * 提供对Bean的相关信息的管理，它提供的属性的
  */
 interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
 
     companion object {
         // Bean的作用域
-        const val SCOPE_SINGLETON = "singleton";  // 单例的scope名称
-        const val SCOPE_PRTOTYPE = "prototype";  // 原型的scope名称
+        const val SCOPE_SINGLETON = "singleton"  // 单例的scope名称
+        const val SCOPE_PROTOTYPE = "prototype"  // 原型的scope名称
 
         // Bean的角色，包括Application(默认)、Support和Infrastructure(基础设施)
         const val ROLE_APPLICATION = 0
@@ -65,16 +65,16 @@ interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
     fun getFactoryBeanName(): String?
 
     /**
-     * Bean的初始化方法
+     * Bean的初始化回调方法
      */
     fun getInitMethodName(): String?
     fun setInitMethodName(initMethodName: String?)
 
     /**
-     * Bean的摧毁方法
+     * Bean的摧毁的预先回调方法
      */
-    fun setDestoryMethodName(destoryMethodName: String?)
-    fun getDestoryMethodName(): String?
+    fun setDestroyMethodName(destroyMethodName: String?)
+    fun getDestroyMethodName(): String?
 
     /**
      * Bean的作用域，包括单例/原型等

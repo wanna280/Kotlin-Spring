@@ -1,13 +1,13 @@
 package com.wanna.framework.beans.factory.support.definition
 
-import com.wanna.framework.beans.factory.config.ConstructorArgumentValues
 import com.wanna.framework.beans.MutablePropertyValues
+import com.wanna.framework.beans.factory.config.ConstructorArgumentValues
+import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition.Companion.ROLE_APPLICATION
-import com.wanna.framework.beans.factory.support.definition.BeanDefinition.Companion.SCOPE_PRTOTYPE
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition.Companion.SCOPE_PROTOTYPE
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition.Companion.SCOPE_SINGLETON
 import com.wanna.framework.beans.factory.support.definition.config.BeanMetadataAttributeAccessor
 import com.wanna.framework.beans.method.MethodOverrides
-import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory
 import java.util.function.Supplier
 
 /**
@@ -35,7 +35,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
         target.setAbstract(origin.isAbstract())
         target.setPrimary(origin.isPrimary())
         target.setInitMethodName(origin.getInitMethodName())
-        target.setDestoryMethodName(origin.getDestoryMethodName())
+        target.setDestroyMethodName(origin.getDestroyMethodName())
         target.setScope(origin.getScope())
         target.setRole(origin.getRole())
         target.setInstanceSupplier(origin.getInstanceSupplier())
@@ -56,8 +56,8 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
     }
 
     private var primary: Boolean = false  // 在进行autowire时，它是否是优先注入的Bean？
-    private var initMethodName: String? = null  // 初始化方法的name
-    private var destoryMethodName: String? = null // destory的方法name
+    private var initMethodName: String? = null  // 初始化回调方法的name
+    private var destroyMethodName: String? = null // destroy的回调方法name
 
     private var scope: String = DEFAULT_SCOPE  // bean的作用域，比如singleton/prototype
     private var role: Int = ROLE_APPLICATION   // bean的角色，Application(0)、Support(1)和Infrastructure(2)
@@ -91,7 +91,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      *
      * @return 如果是原型的return true，如果不是原型的，return false
      */
-    override fun isPrototype() = scope == SCOPE_PRTOTYPE
+    override fun isPrototype() = scope == SCOPE_PROTOTYPE
 
     /**
      * 判断当前BeanDefinition是否是一个PrimaryBean？
@@ -153,10 +153,10 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
     /**
      * 设置当前BeanDefinition的destroyMethodName
      *
-     * @param destoryMethodName 你想要设置的destroyMethodName
+     * @param destroyMethodName 你想要设置的destroyMethodName
      */
-    override fun setDestoryMethodName(destoryMethodName: String?) {
-        this.destoryMethodName = destoryMethodName
+    override fun setDestroyMethodName(destroyMethodName: String?) {
+        this.destroyMethodName = destroyMethodName
     }
 
     /**
@@ -164,7 +164,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      *
      * @return destroyMethodName
      */
-    override fun getDestoryMethodName() = this.destoryMethodName
+    override fun getDestroyMethodName() = this.destroyMethodName
 
     /**
      * 设置当前BeanDefinition的scopeName
