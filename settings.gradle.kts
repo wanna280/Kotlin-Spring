@@ -10,6 +10,8 @@ include(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Web")
 // for SpringBoot subProjects
 include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot")
 include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Autoconfigure")
+include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Actuator")
+include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Actuator-Autoconfigure")
 
 // for SpringCloud subProject
 include(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Context")

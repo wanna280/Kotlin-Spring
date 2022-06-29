@@ -26,10 +26,11 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
 
     // Mapping注册中心，维护了从path -> mapping, name -> mapping, mapping -> MappingRegistration的映射关系
     // 根据path -> mapping -> MappingRegistration，可以获取到path对应的表项当中的具体信息
-    private val mappingRegistry = MappingRegistry()
+    protected val mappingRegistry = MappingRegistry()
 
     // HandlerMethod的映射的命名策略(默认为Controller的大写字母#方法名，比如UserController的getUser方法，会被命名为UC#getUser)
     private var namingStrategy: HandlerMethodMappingNamingStrategy<T>? = null
+
 
     /**
      * 在初始化HandlerMapping的Bean时，应当从容器当中拿出所有的Bean，去初始化HandlerMethod列表
@@ -63,7 +64,8 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     }
 
     /**
-     * 遍历所有的Bean，去判断它是否是一个Handler？如果是一个Handler的话，把它所有的HandlerMethod注册到MappingRegistry当中
+     * 遍历所有的Bean，去判断它是否是一个Handler？
+     * 如果是一个Handler的话，把它所有的HandlerMethod注册到MappingRegistry当中
      *
      * @see detectHandlerMethods
      */
