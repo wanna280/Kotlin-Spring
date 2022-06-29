@@ -1,0 +1,5 @@
+com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
+  com.wanna.boot.actuate.autoconfigure.endpoint.web.mvc.WebMvcEndpointManagementContextConfiguration,\
+  com.wanna.boot.actuate.autoconfigure.beans.BeansEndpointAutoConfiguration,\
+  com.wanna.boot.actuate.autoconfigure.scheduling.ScheduledTasksEndpointAutoConfiguration,\
+  com.wanna.boot.actuate.autoconfigure.env.EnvironmentEndpointAutoConfiguration
