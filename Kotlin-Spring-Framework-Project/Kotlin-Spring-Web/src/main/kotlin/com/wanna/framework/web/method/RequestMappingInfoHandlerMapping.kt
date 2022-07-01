@@ -26,6 +26,7 @@ abstract class RequestMappingInfoHandlerMapping : AbstractHandlerMethodMapping<R
 
     override fun handleMatch(mapping: RequestMappingInfo, handlerMethod: HandlerMethod, request: HttpServerRequest) {
         val url = request.getUrl()
+        // 解析路径当中的模板参数(UrlTemplateVariables)
         val pattern = mapping.pathPatternsCondition.getContent().iterator().next()
         val uriTemplateVariables = pattern.extractUriTemplateVariables(url)
         request.setAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, uriTemplateVariables)

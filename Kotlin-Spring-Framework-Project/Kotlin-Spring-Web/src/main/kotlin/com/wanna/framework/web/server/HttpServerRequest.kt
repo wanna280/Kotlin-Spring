@@ -42,7 +42,7 @@ interface HttpServerRequest {
      * @param name paramName
      * @return 给定paramName获取到的参数列表(如果存在有多个param，那么return第一个paramValue)
      */
-    fun getFirstParam(name: String) : String?
+    fun getFirstParam(name: String): String?
 
     /**
      * 根据name获取param
@@ -103,7 +103,7 @@ interface HttpServerRequest {
      * @param name headerName
      * @return 根据name去获取到的headerValue(如果该header存在有多个值，那么返回第一个)
      */
-    fun getFirstHeader(name: String) : String?
+    fun getFirstHeader(name: String): String?
 
     /**
      * 获取当前request的HttpHeaders
@@ -162,6 +162,20 @@ interface HttpServerRequest {
      * @return url of request
      */
     fun getUrl(): String
+
+    /**
+     * 获取本地的主机名
+     *
+     * @return localHost
+     */
+    fun getLocalHost(): String
+
+    /**
+     * 获取远程的主机名
+     *
+     * @return remoteHost
+     */
+    fun getRemoteHost() : String
 
     /**
      * 获取当前请求的请求方式

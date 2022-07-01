@@ -80,24 +80,27 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
      */
     private fun parseRequest(msg: FullHttpRequest): HttpServerRequest {
         val request = HttpServerRequestImpl()
+        // 初始化request的相关信息
+        request.init {
+            // 解析uri和url
+            parseUriUrlAndParams(msg.uri())
 
-        // 设置uri和method
-        request.setUri(msg.uri())
-        request.setMethod(RequestMethod.forName(msg.method().name()))
+            // 设置RequestMethod
+            setMethod(RequestMethod.forName(msg.method().name()))
 
-        // 解析header
-        val iterator = msg.headers().iteratorAsString()
-        while (iterator.hasNext()) {
-            val (n, v) = iterator.next()
-            request.addHeader(n, v)
+            // 解析HttpHeader
+            val iterator = msg.headers().iteratorAsString()
+            while (iterator.hasNext()) {
+                val (n, v) = iterator.next()
+                addHeader(n, v)
+            }
+
+            // 将RequestBody当中的内容包装成为InputStream
+            val content = msg.content()
+            val byteArray = ByteArray(content.readableBytes())
+            content.readBytes(byteArray)
+            setInputStream(ByteArrayInputStream(byteArray))
         }
-
-        val content = msg.content()
-        val byteArray = ByteArray(content.readableBytes())
-        content.readBytes(byteArray)
-
-        // 将request当中的内容包装成为InputStream
-        request.setInputStream(ByteArrayInputStream(byteArray))
         return request
     }
 }

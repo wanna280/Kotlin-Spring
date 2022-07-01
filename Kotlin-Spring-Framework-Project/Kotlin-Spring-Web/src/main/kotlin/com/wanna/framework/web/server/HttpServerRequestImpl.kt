@@ -4,6 +4,7 @@ import com.wanna.framework.util.LinkedMultiValueMap
 import com.wanna.framework.web.bind.RequestMethod
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.server.HttpServerRequest.Companion.COMMA
+import io.netty.handler.codec.http.FullHttpRequest
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import kotlin.collections.HashSet
@@ -23,6 +24,9 @@ open class HttpServerRequestImpl : HttpServerRequest {
 
     // 请求路径，不包含query部分
     private var url = "/"
+
+    // remoteHost
+    private var remoteHost: String = ""
 
     // headers
     private val headers = HttpHeaders()
@@ -180,10 +184,12 @@ open class HttpServerRequestImpl : HttpServerRequest {
     }
 
     open fun setUri(uri: String) {
-        parseUriUrlAndParams(uri)
+        this.uri = uri
     }
 
-    private fun parseUriUrlAndParams(uri: String) {
+    open fun init(init: HttpServerRequestImpl.() -> Unit) = init.invoke(this)
+
+    open fun parseUriUrlAndParams(uri: String) {
         this.uri = uri
         val indexOf = uri.indexOf("?")
         if (indexOf == -1) {
@@ -202,6 +208,9 @@ open class HttpServerRequestImpl : HttpServerRequest {
         }
     }
 
+    override fun getLocalHost() = headers.getHost()
+
+    override fun getRemoteHost() = this.remoteHost
 
     override fun getUri() = this.uri
     override fun getUrl() = this.url

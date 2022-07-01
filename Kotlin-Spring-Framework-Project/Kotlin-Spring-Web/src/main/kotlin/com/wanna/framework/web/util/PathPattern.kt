@@ -24,9 +24,5 @@ class PathPattern(val pattern: String, private val antMatcher: AntPathMatcher = 
         return true
     }
 
-    override fun hashCode(): Int {
-        return pattern.hashCode()
-    }
-
-
+    override fun hashCode() = pattern.hashCode()
 }

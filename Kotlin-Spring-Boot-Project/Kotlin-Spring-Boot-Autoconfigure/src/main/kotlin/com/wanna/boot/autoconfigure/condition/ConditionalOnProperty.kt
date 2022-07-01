@@ -4,7 +4,7 @@ import com.wanna.framework.context.annotation.Conditional
 
 @Target(AnnotationTarget.TYPE, AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
 @Conditional([OnPropertyCondition::class])
-annotation class ConditionOnProperty(
+annotation class ConditionalOnProperty(
     val value: Array<String> = [],
     val name: Array<String> = [],
     val prefix: String = "",

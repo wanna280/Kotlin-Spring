@@ -2,9 +2,10 @@ package com.wanna.boot.actuate.env
 
 import com.wanna.boot.actuate.endpoint.annotation.Endpoint
 import com.wanna.boot.actuate.endpoint.annotation.ReadOperation
-import com.wanna.framework.core.environment.ConfigurableEnvironment
-import com.wanna.framework.core.environment.EnumerablePropertySource
-import com.wanna.framework.core.environment.Environment
+import com.wanna.framework.core.environment.*
+import com.wanna.framework.lang.Nullable
+import java.util.function.Predicate
+import java.util.regex.Pattern
 
 /**
  * 暴露Spring的Environment的描述信息作为一个Endpoint，供外界调用和查看
@@ -17,20 +18,66 @@ open class EnvironmentEndpoint(private val environment: ConfigurableEnvironment)
     /**
      * 暴露环境信息给外界去进行查看，将环境当中的各个属性源的信息都去进行暴露
      *
+     * @param pattern 要去进行匹配的正则表达式
      * @return EnvironmentDescriptor(环境描述符)
      */
     @ReadOperation
-    open fun environment(): EnvironmentDescriptor {
+    open fun environment(@Nullable pattern: String?): EnvironmentDescriptor {
+        // 如果没有指定pattern的话，那么Predicate=true
+        pattern ?: return getEnvironmentDescriptor { true }
+        // 如果指定了Predicate的话，使用正则表达式作为Predicate
+        return getEnvironmentDescriptor(Pattern.compile(pattern).asPredicate())
+    }
+
+    /**
+     * 获取Environment的描述信息，遍历所有的EnumerablePropertySource，去进行描述
+     *
+     * @param namePredicate 匹配propertyName的Predicate，只有匹配的情况下，才会去进行return
+     * @return EnvironmentDescriptor
+     */
+    private fun getEnvironmentDescriptor(namePredicate: Predicate<String>): EnvironmentDescriptor {
         val propertySources = environment.getPropertySources()
             .filterIsInstance<EnumerablePropertySource<*>>()
-            .map { propertySource ->
-                val properties = HashMap<String, PropertyValueDescriptor>()
-                propertySource.getPropertyNames().forEach { propertyName ->
-                    properties[propertyName] = PropertyValueDescriptor(environment.getProperty(propertyName))
-                }
-                PropertySourceDescriptor(propertySource.name, properties) // return PropertySourceDescriptor
-            }.toList()
+            .map { describePropertySource(it.name, it, environment, namePredicate) }
+            .toList()
         return EnvironmentDescriptor(environment.getActiveProfiles().toList(), propertySources)
+    }
+
+    /**
+     * 描述一个PropertySource的相关信息
+     *
+     * @param propertySourceName PropertySourceName
+     * @param propertySource PropertySource
+     * @param propertyResolver PropertyResolver
+     * @param namePredicate 要去匹配propertyName的断言
+     */
+    private fun describePropertySource(
+        propertySourceName: String,
+        propertySource: EnumerablePropertySource<*>,
+        propertyResolver: PropertyResolver,
+        namePredicate: Predicate<String>
+    ): PropertySourceDescriptor {
+        val properties = propertySource.getPropertyNames()
+            .filter(namePredicate::test)
+            .associateWith { describeValueOf(it, propertySource, propertyResolver) }
+        return PropertySourceDescriptor(propertySourceName, properties) // return PropertySourceDescriptor
+    }
+
+    /**
+     * 描述一个具体的属性值，如果必要的话，需要将属性值去进行占位符解析
+     *
+     * @param name propertyName
+     * @param propertySource PropertySource
+     * @param resolver PropertyResolver
+     * @return PropertyValueDescriptor
+     */
+    private fun describeValueOf(
+        name: String,
+        propertySource: PropertySource<*>,
+        resolver: PropertyResolver
+    ): PropertyValueDescriptor {
+        val resolved = resolver.resolvePlaceholders(propertySource.getProperty(name)!!.toString())
+        return PropertyValueDescriptor(resolved)
     }
 
     /**

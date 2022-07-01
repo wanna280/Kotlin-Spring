@@ -92,8 +92,19 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
         ReflectionUtils.doWithMethods(handlerType) {
             // 交给子类去告诉我，当前的方法是否是一个HandlerMethod？如果return null，则不是；return not null，则是
             val mapping = getMappingForMethod(it, handlerType) ?: return@doWithMethods
-            mappingRegistry.registerHandlerMethod(handler, it, mapping)
+            registerHandlerMethod(handler, it, mapping)
         }
+    }
+
+    /**
+     * 注册HandlerMethod到MappingRegistry当中
+     *
+     * @param handler handler
+     * @param method method
+     * @param mapping mapping
+     */
+    protected open fun registerHandlerMethod(handler: Any, method: Method, mapping: T) {
+        mappingRegistry.registerHandlerMethod(handler, method, mapping)
     }
 
     /**

@@ -6,12 +6,14 @@ import com.wanna.boot.actuate.endpoint.web.ExposableWebEndpoint
 import com.wanna.boot.actuate.endpoint.web.WebOperation
 import com.wanna.boot.actuate.endpoint.web.WebOperationRequestPredicate
 import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.web.HandlerMapping
 import com.wanna.framework.web.bind.RequestMethod
 import com.wanna.framework.web.method.RequestMappingInfo
 import com.wanna.framework.web.method.RequestMappingInfoHandlerMapping
 import com.wanna.framework.web.method.annotation.RequestBody
 import com.wanna.framework.web.method.annotation.ResponseBody
 import com.wanna.framework.web.server.HttpServerRequest
+import com.wanna.framework.web.server.HttpServerResponse
 import java.lang.reflect.Method
 
 /**
@@ -26,14 +28,16 @@ import java.lang.reflect.Method
  *
  * @param endpoints  当前HandlerMapping当中已经注册的所有的Endpoint列表
  * @param endpointMapping Endpoint的Mapping
+ * @param shouldRegisterLinksMapping 是否应该注册所有的endpoint的链接的映射关系(发现页，Discovery Page)
  */
 abstract class AbstractWebMvcEndpointHandlerMapping(
     private val endpoints: List<ExposableWebEndpoint>,
-    private val endpointMapping: EndpointMapping
+    private val endpointMapping: EndpointMapping,
+    private val shouldRegisterLinksMapping: Boolean
 ) : RequestMappingInfoHandlerMapping() {
 
     // 处理请求的Handler方法(指向Operation的handle方法)
-    private val handleMethod =
+    private val handlerMethod =
         ReflectionUtils.findMethod(
             OperationHandler::class.java,
             "handle",
@@ -51,6 +55,37 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
                 registerMappingForOperation(endpoint, operation)
             }
         }
+
+        // 如果需要注册链接的映射关系，那么需要注册一个发现页，一般默认也就是"/actuator"页面
+        // 用来去暴露当前应用当中的所有的endpoint的name以及url信息，方便用户去进行查询
+        if (shouldRegisterLinksMapping) {
+            registerLinksMapping()
+        }
+    }
+
+    /**
+     * 注册要去进行暴露的endpoint的链接的映射关系的RequestMapping
+     *
+     * @see LinksHandler
+     */
+    private fun registerLinksMapping() {
+        val linksHandler = getLinksHandler()
+        // 处理endpoint的链接的映射的方法
+        val linksMethod = ReflectionUtils.findMethod(
+            linksHandler::class.java,
+            "links",
+            HttpServerRequest::class.java,
+            HttpServerResponse::class.java
+        )!!
+        // build RequestMappingInfo
+        val mappingInfo =
+            RequestMappingInfo.Builder()
+                .paths(endpointMapping.createSubPath(""))
+                .methods(RequestMethod.GET)
+                .build()
+
+        // 注册一个RequestMapping到MappingRegistry当中，设置HandlerMethod为"LinksHandler.links"
+        registerMapping(mappingInfo, linksHandler, linksMethod)
     }
 
     /**
@@ -68,7 +103,7 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
 
         // register RequestMappingInfo到MappingRegistry当中
         // 要使用的HandlerObject为OperationHandler(相当于SpringMVC的Controller)，要使用的HandlerMethod为"handle"方法
-        registerMapping(mappingInfo, OperationHandler(MvcWebOperationAdapter(webOperation)), this.handleMethod)
+        registerMapping(mappingInfo, OperationHandler(MvcWebOperationAdapter(webOperation)), this.handlerMethod)
     }
 
     /**
@@ -108,6 +143,13 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
     override fun getMappingForMethod(method: Method, handlerType: Class<*>): RequestMappingInfo? = null
 
     /**
+     * 获取LinksHandler，交给子类去完成
+     *
+     * @return 你想要使用的LinksHandler
+     */
+    protected abstract fun getLinksHandler(): LinksHandler
+
+    /**
      * Mvc的WebOperation
      */
     @FunctionalInterface
@@ -120,10 +162,35 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
      *
      * @param operation WebOperation
      */
-    class MvcWebOperationAdapter(val operation: WebOperation) : MvcWebOperation {
+    class MvcWebOperationAdapter(private val operation: WebOperation) : MvcWebOperation {
         override fun handle(request: HttpServerRequest, body: Map<String, String>): Any? {
-            val context = InvocationContext(emptyMap())
+            val arguments = getArguments(request, body)
+            val context = InvocationContext(arguments)
             return operation.invoke(context)
+        }
+
+        /**
+         * 获取request当中的各种类型的参数列表(PathVariables/RequestParam/RequestBody)
+         *
+         * @param request request
+         * @param body RequestBody
+         * @return 从请求当中解析出来的参数列表
+         */
+        @Suppress("UNCHECKED_CAST")
+        private fun getArguments(request: HttpServerRequest, body: Map<String, String>): Map<String, Any> {
+            val arguments = HashMap<String, Any>()
+            val urlVariables = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)
+            // 1.add Url Template Variables(PathVariables)
+            if (urlVariables is Map<*, *>) {
+                arguments.putAll(urlVariables as Map<String, Any>)
+            }
+            // 2.add Request Body
+            if (request.getMethod() == RequestMethod.POST) {
+                arguments.putAll(body)
+            }
+            // 3.add Request Param
+            request.getParamMap().forEach { (name, value) -> arguments[name] = if (value.size > 1) value else value[0] }
+            return arguments
         }
     }
 
@@ -138,5 +205,12 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
         @ResponseBody
         fun handle(request: HttpServerRequest, @RequestBody body: Map<String, String>): Any? =
             operation.handle(request, body)
+    }
+
+    /**
+     * LinksHandler
+     */
+    interface LinksHandler {
+        fun links(request: HttpServerRequest, response: HttpServerResponse): Any
     }
 }
