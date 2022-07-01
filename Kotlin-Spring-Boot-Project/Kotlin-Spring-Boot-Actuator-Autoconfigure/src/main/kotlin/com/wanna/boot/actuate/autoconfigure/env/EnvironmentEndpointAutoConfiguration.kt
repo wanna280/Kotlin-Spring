@@ -7,14 +7,13 @@ import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 
 /**
- * 暴露环境信息的端点的自动配置类
+ * 暴露Spring的Environment(环境)信息的端点的自动配置类
  */
 @Configuration(proxyBeanMethods = false)
 open class EnvironmentEndpointAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    open fun environmentEndpoint(environment: ConfigurableEnvironment): EnvironmentEndpoint {
-        return EnvironmentEndpoint(environment)
-    }
+    open fun environmentEndpoint(environment: ConfigurableEnvironment): EnvironmentEndpoint =
+        EnvironmentEndpoint(environment)
 }
