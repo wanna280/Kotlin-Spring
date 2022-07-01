@@ -13,7 +13,6 @@ open class ScheduledTasksEndpointAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnBean([ScheduledTaskHolder::class])  // Condition On Enable Scheduling
-    open fun scheduledTasksEndpoint(holder: ScheduledTaskHolder): ScheduledTasksEndpoint {
-        return ScheduledTasksEndpoint(holder)
-    }
+    open fun scheduledTasksEndpoint(holder: ScheduledTaskHolder): ScheduledTasksEndpoint =
+        ScheduledTasksEndpoint(holder)
 }

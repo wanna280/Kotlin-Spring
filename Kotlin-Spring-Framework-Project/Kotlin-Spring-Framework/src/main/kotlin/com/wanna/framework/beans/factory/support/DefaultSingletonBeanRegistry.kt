@@ -13,8 +13,12 @@ import java.util.concurrent.ConcurrentHashMap
 open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
 
     companion object {
+        // Logger
         private val logger = LoggerFactory.getLogger(DefaultSingletonBeanRegistry::class.java)
     }
+
+    // 标识当前已经正在销毁Bean了
+    private var singletonsCurrentlyInDestruction = false
 
     // 当前Bean是否正在创建当中？
     private val singletonsCurrentlyInCreation = Collections.newSetFromMap<String>(ConcurrentHashMap(16))
@@ -34,7 +38,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     // 已经注册到SingletonBeanRegistry当中的singletonBean的列表，对它的所有操作，都需要使用singletonObjects锁
     private val registeredSingletons = LinkedHashSet<String>()
 
-    // 注册了destroy的回调的Bean，交给SingletonBeanRegistry统一管理
+    // 注册了destroy的回调的Bean，交给SingletonBeanRegistry统一管理(使用LinkedHashMap保证顺序)
     private val disposableBeans = LinkedHashMap<String, DisposableBean>()
 
     /**
@@ -308,5 +312,34 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
         synchronized(this.singletonObjects) {
             return this.registeredSingletons.toTypedArray()
         }
+    }
+
+    /**
+     * clear掉当前的SingletonBeanRegistry当中的所有的已经注册的SingletonBean的缓存
+     */
+    protected open fun clearSingletonCache() {
+        synchronized(this.singletonObjects) {
+            this.singletonObjects.clear()
+            this.earlySingletonObjects.clear()
+            this.singletonFactories.clear()
+            this.registeredSingletons.clear()
+            this.singletonsCurrentlyInDestruction = false
+        }
+    }
+
+    /**
+     * 摧毁当前的SingleBeanRegistry所有的单实例Bean
+     */
+    open fun destroySingletons() {
+        // set inDestruction to true
+        synchronized(this.singletonObjects) {
+            this.singletonsCurrentlyInDestruction = true
+        }
+
+        // 逆序回调所有的DisposableBean，去完成Bean的摧毁工作
+        this.disposableBeans.keys.reversed().forEach(this::destroySingleton)
+
+        // clear singleton Cache & set inDestruction to false
+        this.clearSingletonCache()
     }
 }

@@ -13,7 +13,6 @@ import com.wanna.framework.context.annotation.Configuration
 open class BeansEndpointAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
-    open fun beansEndpoint(applicationContext: ConfigurableApplicationContext): BeansEndpoint {
-        return BeansEndpoint(applicationContext)
-    }
+    open fun beansEndpoint(applicationContext: ConfigurableApplicationContext): BeansEndpoint =
+        BeansEndpoint(applicationContext)
 }
