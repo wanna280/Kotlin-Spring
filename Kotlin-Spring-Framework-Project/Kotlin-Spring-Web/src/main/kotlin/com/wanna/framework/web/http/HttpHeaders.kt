@@ -112,4 +112,6 @@ class HttpHeaders : MultiValueMap<String, String> {
     override fun remove(key: String): MutableList<String>? {
         return httpHeaders.remove(key)
     }
+
+    fun getHost(): String = httpHeaders[HOST]?.joinToString() ?: ""
 }

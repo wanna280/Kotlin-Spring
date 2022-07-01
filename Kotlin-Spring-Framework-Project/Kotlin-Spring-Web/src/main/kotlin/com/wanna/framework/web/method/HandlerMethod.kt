@@ -2,6 +2,7 @@ package com.wanna.framework.web.method
 
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.web.method.support.HandlerMethodUtil
 import java.lang.reflect.Method
 
@@ -53,7 +54,7 @@ open class HandlerMethod {
     /**
      * 判断方法的返回值是否是void
      */
-    fun isVoid() : Boolean {
+    fun isVoid(): Boolean {
         return Void.TYPE == method!!.returnType
     }
 
@@ -75,16 +76,16 @@ open class HandlerMethod {
      * @param returnValue 方法的返回值
      */
     open inner class ReturnValueMethodParameter(private val returnValue: Any?) : HandlerMethodParameter(-1) {
-        override fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T? {
-            return method!!.getAnnotation(annotationClass)
-        }
+        override fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T? =
+            AnnotatedElementUtils.getMergedAnnotation(method!!, annotationClass)
 
         /**
-         * 获取方法的返回值
+         * 获取方法的返回值，如果返回值不为空，那么使用返回值的类型；如果返回值为空，那么直接使用"method.returnType"
+         *
+         * @return 方法的返回值类型
          */
-        override fun getParameterType(): Class<*> {
-            return if (returnValue == null) method!!.returnType else returnValue::class.java
-        }
+        override fun getParameterType(): Class<*> =
+            if (returnValue == null) method!!.returnType else returnValue::class.java
     }
 
     companion object {

@@ -67,8 +67,18 @@ open class RequestMappingInfo(
             return this
         }
 
+        fun paths(pathPatternsCondition: PathPatternsRequestCondition): Builder {
+            this.pathPatternsCondition = pathPatternsCondition
+            return this
+        }
+
         fun params(vararg params: String): Builder {
             this.paramsCondition = ParamsRequestCondition(*params)
+            return this
+        }
+
+        fun params(paramsRequestCondition: ParamsRequestCondition): Builder {
+            this.paramsCondition = paramsRequestCondition
             return this
         }
 
@@ -77,8 +87,18 @@ open class RequestMappingInfo(
             return this
         }
 
+        fun methods(methodsCondition: RequestMethodsRequestCondition) : Builder {
+            this.methodsCondition = methodsCondition
+            return this
+        }
+
         fun headers(vararg headers: String): Builder {
             this.headersCondition = HeadersRequestCondition(*headers)
+            return this
+        }
+
+        fun headers(headersRequestCondition: HeadersRequestCondition) : Builder {
+            this.headersCondition = headersCondition
             return this
         }
 

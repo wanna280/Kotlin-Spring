@@ -5,10 +5,9 @@ import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
 
 /**
- * 这是一个BeanFactory，提供Bean的管理
+ * Spring的BeanFactory，提供SpringBean的管理
  */
 interface BeanFactory {
-
     companion object {
         const val FACTORY_BEAN_PREFIX = "&"  // FactoryBean的前缀，static final变量
     }
@@ -21,6 +20,16 @@ interface BeanFactory {
      * @throws NoSuchBeanDefinitionException 如果没有找到合适的Bean的话
      */
     fun getBean(beanName: String): Any
+
+    /**
+     * 通过name去容器中getBean
+     *
+     * @param beanName beanName
+     * @param args 明确(explicit)指定创建Bean时应该使用的参数(创建一个新的实例时才能生效)
+     * @return 根据name获取到的Bean
+     * @throws NoSuchBeanDefinitionException 如果没有找到合适的Bean的话
+     */
+    fun getBean(beanName: String, vararg args: Any?): Any
 
     /**
      * 通过name和type去进行获取Bean
