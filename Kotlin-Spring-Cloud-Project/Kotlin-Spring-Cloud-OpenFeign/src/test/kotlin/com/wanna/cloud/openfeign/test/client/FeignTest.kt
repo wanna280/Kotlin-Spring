@@ -5,10 +5,10 @@ import com.wanna.boot.autoconfigure.SpringBootApplication
 import com.wanna.boot.runSpringApplication
 import com.wanna.cloud.openfeign.EnableFeignClients
 import com.wanna.cloud.openfeign.FeignClient
-import com.wanna.framework.web.bind.RequestMethod
-import com.wanna.framework.web.method.annotation.RequestBody
-import com.wanna.framework.web.method.annotation.RequestHeader
-import com.wanna.framework.web.method.annotation.RequestMapping
+import com.wanna.framework.web.bind.annotation.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestBody
+import com.wanna.framework.web.bind.annotation.RequestHeader
+import com.wanna.framework.web.bind.annotation.RequestMapping
 
 @EnableFeignClients(value = ["com.wanna.cloud.openfeign.test"])
 @SpringBootApplication

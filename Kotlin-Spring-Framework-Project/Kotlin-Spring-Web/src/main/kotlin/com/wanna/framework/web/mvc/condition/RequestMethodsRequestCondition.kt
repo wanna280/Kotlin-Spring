@@ -1,6 +1,6 @@
 package com.wanna.framework.web.mvc.condition
 
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.server.HttpServerRequest
 
 /**

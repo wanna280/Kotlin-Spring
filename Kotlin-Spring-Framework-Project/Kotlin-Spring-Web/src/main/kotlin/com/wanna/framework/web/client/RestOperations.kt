@@ -1,6 +1,6 @@
 package com.wanna.framework.web.client
 
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.http.ResponseEntity
 import java.net.URI
 

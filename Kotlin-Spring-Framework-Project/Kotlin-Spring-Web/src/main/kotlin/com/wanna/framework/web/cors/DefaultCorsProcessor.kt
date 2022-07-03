@@ -1,7 +1,7 @@
 package com.wanna.framework.web.cors
 
 import com.wanna.framework.lang.Nullable
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.server.HttpServerRequest

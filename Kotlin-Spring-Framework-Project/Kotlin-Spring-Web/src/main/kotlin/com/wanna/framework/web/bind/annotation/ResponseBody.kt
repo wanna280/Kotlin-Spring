@@ -1,4 +1,4 @@
-package com.wanna.framework.web.method.annotation
+package com.wanna.framework.web.bind.annotation
 
 /**
  * 标识这是一个ResponseBody，方法的返回值，将以ResponseBody的方式去进行写出，它会被RequestResponseBodyMethodProcessor所处理；

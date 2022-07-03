@@ -1,14 +1,13 @@
-package com.wanna.framework.web.method.annotation
+package com.wanna.framework.web.bind.annotation
 
-import com.wanna.framework.web.bind.RequestMethod
 import org.springframework.core.annotation.AliasFor
 
 /**
- * 标识这是一个支持PUT请求的RequestMapping
+ * 标识这是一个支持DELETE请求的RequestMapping
  */
-@RequestMapping(method = [RequestMethod.PUT])
+@RequestMapping(method = [RequestMethod.DELETE])
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.CLASS, AnnotationTarget.TYPE)
-annotation class PutMapping(
+annotation class DeleteMapping(
     @get:AliasFor("path", annotation = RequestMapping::class)
     val value: Array<String> = [],
     @get:AliasFor("value", annotation = RequestMapping::class)
@@ -16,4 +15,3 @@ annotation class PutMapping(
     @get:AliasFor("params", annotation = RequestMapping::class)
     val params: Array<String> = []
 )
-

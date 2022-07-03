@@ -2,7 +2,7 @@ package com.wanna.framework.web.cors
 
 import com.wanna.framework.core.util.StringUtils
 import com.wanna.framework.lang.Nullable
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -74,7 +74,19 @@ open class CorsConfiguration() {
         this.allowedOrigins = allowedOrigins
     }
 
+    open fun addAllowedOrigin(allowedOrigin: String) {
+        val allowedOrigins = if (this.allowedOrigins == null) ArrayList() else ArrayList(this.allowedOrigins!!)
+        allowedOrigins += allowedOrigin
+        this.allowedOrigins = allowedOrigins
+    }
+
     open fun setAllowedHeaders(allowedHeaders: List<String>) {
+        this.allowedHeaders = allowedHeaders
+    }
+
+    open fun addAllowedHeader(allowHeader: String) {
+        val allowedHeaders = if (this.allowedHeaders == null) ArrayList() else ArrayList(this.allowedHeaders!!)
+        allowedHeaders += allowHeader
         this.allowedHeaders = allowedHeaders
     }
 
@@ -100,11 +112,31 @@ open class CorsConfiguration() {
             }
             this.resolvedMethods = resolvedMethods
         }
+    }
 
+    open fun addAllowedMethod(allowMethod: String) {
+        val allowedMethods = if (this.allowedMethods == null) ArrayList() else ArrayList(this.allowedMethods!!)
+        allowedMethods += allowMethod
+        this.allowedMethods = allowedMethods
+        if (allowMethod == ALL) {
+            this.resolvedMethods = null
+            return
+        }
+        // add ResolvedMethod
+        val resolvedMethods = if (this.resolvedMethods == null) ArrayList() else ArrayList(this.resolvedMethods!!)
+        resolvedMethods += RequestMethod.forName(allowMethod)
+        this.resolvedMethods = resolvedMethods
     }
 
     open fun setAllowedOriginPatterns(allowedOriginPatterns: List<String>) {
-        this.allowedOriginPatterns = allowedOriginPatterns.map { OriginPattern(it) }.toList()
+        this.allowedOriginPatterns = allowedOriginPatterns.map { OriginPattern(it) }
+    }
+
+    open fun addAllowedOriginPattern(allowedOriginPattern: String) {
+        val allowedOriginPatterns =
+            if (this.allowedOriginPatterns == null) ArrayList() else ArrayList(this.allowedOriginPatterns!!)
+        allowedOriginPatterns += OriginPattern(allowedOriginPattern)
+        this.allowedOriginPatterns = allowedOriginPatterns
     }
 
     open fun setMaxAge(maxAge: Long) {
@@ -115,6 +147,12 @@ open class CorsConfiguration() {
     open fun getExposeHeaders(): List<String>? = this.exposeHeaders
 
     open fun setExposeHeaders(exposeHeaders: List<String>) {
+        this.exposeHeaders = exposeHeaders
+    }
+
+    open fun addExposeHeader(exposeHeader: String) {
+        val exposeHeaders = if (this.exposeHeaders == null) ArrayList() else ArrayList(this.exposeHeaders!!)
+        exposeHeaders += exposeHeader
         this.exposeHeaders = exposeHeaders
     }
 

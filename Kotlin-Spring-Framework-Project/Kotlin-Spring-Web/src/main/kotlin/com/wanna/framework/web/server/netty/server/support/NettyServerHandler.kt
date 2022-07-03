@@ -3,7 +3,7 @@ package com.wanna.framework.web.server.netty.server.support
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.core.util.StringUtils
 import com.wanna.framework.web.DispatcherHandler
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.server.HttpServerRequestImpl
 import com.wanna.framework.web.server.HttpServerResponseImpl

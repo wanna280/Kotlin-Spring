@@ -3,8 +3,8 @@ package com.wanna.nacos.naming.server.controller
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.web.bind.annotation.RestController
-import com.wanna.framework.web.method.annotation.RequestMapping
-import com.wanna.framework.web.method.annotation.RequestParam
+import com.wanna.framework.web.bind.annotation.RequestMapping
+import com.wanna.framework.web.bind.annotation.RequestParam
 import com.wanna.nacos.api.common.NamingConstants.DEFAULT_CLUSTER_NAME
 import com.wanna.nacos.api.common.NamingConstants.DEFAULT_NAMESPACE_ID
 import com.wanna.nacos.naming.server.core.NamingInstance

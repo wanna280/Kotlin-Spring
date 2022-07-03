@@ -7,7 +7,7 @@ import com.wanna.boot.actuate.endpoint.web.Link
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.cors.CorsConfiguration
 import com.wanna.framework.web.method.RequestMappingInfo
-import com.wanna.framework.web.method.annotation.ResponseBody
+import com.wanna.framework.web.bind.annotation.ResponseBody
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 import java.lang.reflect.Method

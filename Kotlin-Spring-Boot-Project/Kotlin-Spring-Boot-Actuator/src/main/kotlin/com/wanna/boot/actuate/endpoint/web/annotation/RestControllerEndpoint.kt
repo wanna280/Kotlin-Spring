@@ -1,6 +1,6 @@
 package com.wanna.boot.actuate.endpoint.web.annotation
 
-import com.wanna.framework.web.method.annotation.ResponseBody
+import com.wanna.framework.web.bind.annotation.ResponseBody
 import org.springframework.core.annotation.AliasFor
 
 @Target(AnnotationTarget.CLASS)

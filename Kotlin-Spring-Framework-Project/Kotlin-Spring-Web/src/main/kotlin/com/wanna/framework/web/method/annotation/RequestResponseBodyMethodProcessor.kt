@@ -3,6 +3,8 @@ package com.wanna.framework.web.method.annotation
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.web.accept.ContentNegotiationManager
+import com.wanna.framework.web.bind.annotation.RequestBody
+import com.wanna.framework.web.bind.annotation.ResponseBody
 import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.http.converter.HttpMessageConverter

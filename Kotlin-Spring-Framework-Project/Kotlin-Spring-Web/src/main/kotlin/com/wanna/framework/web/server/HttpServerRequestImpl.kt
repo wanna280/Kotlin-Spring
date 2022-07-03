@@ -1,10 +1,9 @@
 package com.wanna.framework.web.server
 
 import com.wanna.framework.util.LinkedMultiValueMap
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.server.HttpServerRequest.Companion.COMMA
-import io.netty.handler.codec.http.FullHttpRequest
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.net.URL

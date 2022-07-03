@@ -76,13 +76,15 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
         // 1.尝试去寻找Handler，如果没有合适的Handler的话，采用默认的Handler，如果也没有的话，return null
         var handler = getHandlerInternal(request) ?: getDefaultHandler() ?: return null
         // 如果返回的Handler是String，那么去进行getBean
-        if (handler is String) {
-            handler = obtainApplicationContext().getBean(handler)
-        }
+        handler = if (handler is String) obtainApplicationContext().getBean(handler) else handler
+
+        // 获取HandlerExecutionChain
         var handlerExecutionChain = getHandlerExecutionChain(request, handler)
+
+
         // 1.如果当前HandlerMapping当中，确实存在有CorsConfigurationSource，则说明需要去匹配跨域
         // 2.如果当前请求是浏览器发送的一个预检请求(OPTIONS)，那么也需要去处理跨域请求(把处理请求的Handler换掉)
-        if (hasCorsConfigurationSource(handlerExecutionChain) || CorsUtils.isPreFlightRequest(request)) {
+        if (hasCorsConfigurationSource(handler) || CorsUtils.isPreFlightRequest(request)) {
             // 获取到HandlerMapping当中的GlobalCorsConfiguration
             val globalConfig = getCorsConfigurationSource()?.getCorsConfiguration(request)
 

@@ -1,4 +1,4 @@
-package com.wanna.framework.web.method.annotation
+package com.wanna.framework.web.bind.annotation
 
 import com.wanna.framework.web.bind.WebDataBinder
 import com.wanna.framework.web.bind.WebRequestDataBinder

@@ -15,9 +15,9 @@ import com.wanna.framework.web.HandlerInterceptor
 import com.wanna.framework.web.bind.annotation.RestController
 import com.wanna.framework.web.config.annotation.InterceptorRegistry
 import com.wanna.framework.web.config.annotation.WebMvcConfigurer
-import com.wanna.framework.web.method.annotation.RequestBody
-import com.wanna.framework.web.method.annotation.RequestMapping
-import com.wanna.framework.web.method.annotation.RequestParam
+import com.wanna.framework.web.bind.annotation.RequestBody
+import com.wanna.framework.web.bind.annotation.RequestMapping
+import com.wanna.framework.web.bind.annotation.RequestParam
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 import java.io.InputStream

@@ -1,4 +1,4 @@
-package com.wanna.framework.web.method.annotation
+package com.wanna.framework.web.bind.annotation
 
 /**
  * 获取请求路径变量当中的值

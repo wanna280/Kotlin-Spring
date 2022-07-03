@@ -4,7 +4,7 @@ import com.wanna.framework.core.util.StringUtils
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.LinkedMultiValueMap
 import com.wanna.framework.util.MultiValueMap
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
 
 /**
  * HttpHeaders

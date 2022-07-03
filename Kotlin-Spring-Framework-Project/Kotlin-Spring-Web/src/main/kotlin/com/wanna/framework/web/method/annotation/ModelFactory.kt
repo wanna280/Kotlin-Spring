@@ -2,6 +2,7 @@ package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.web.bind.annotation.ModelAttribute
 import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.method.HandlerMethod

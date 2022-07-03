@@ -1,7 +1,7 @@
 package com.wanna.framework.web.http.client
 
 import com.wanna.framework.util.StreamUtils
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.http.HttpHeaders
 import java.net.URI
 

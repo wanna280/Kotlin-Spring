@@ -19,7 +19,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
  * * 2.对于判断Bean是否是一个Handler，以及如何获取Handler中的HandlerMethod，都作为抽象的模板方法的方式交给子类；
  * * 3.因为它是HandlerMethod的HandlerMapping，因此它应该去处理请求的Handler对象就是HandlerMethod；
  * 也就是说，它会根据path，去找到一个合适的HandlerMethod去包装到HandlerExecutionChain当中；
- * * 4.扩展了父类当中对于Cors的功能，对Cors提供类级别的控制以及方法级别的控制(@CrosOrigin)
+ * * 4.扩展了父类当中对于Cors的功能，对Cors提供类级别的控制以及方法级别的控制(@CrossOrigin)
  *
  * @see afterPropertiesSet
  * @see isHandler
@@ -211,6 +211,38 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     }
 
     /**
+     * 针对指定的HandlerMethod，如果必要的话，去进行初始化CorsConfiguration
+     *
+     * @param handler handler
+     * @param mapping mapping
+     * @param method method
+     * @return CorsConfiguration
+     */
+    @Nullable
+    protected open fun initCorsConfiguration(handler: Any, method: Method, mapping: T): CorsConfiguration? {
+        return null
+    }
+
+    /**
+     * 我们这是针对HandlerMethod的HandlerMapping，因此对于获取CorsConfiguration的逻辑我们应该去进行扩展，
+     * 如果之前已经有过CorsConfig(比如Handler本身就是CorsConfigurationSource)，
+     * 现在的HandlerMethod上也有CorsConfig，那么我们需要去进行扩展(combine)并构建一个合适的CorsConfiguration去进行返回
+     *
+     * @param request request
+     * @param handler handler
+     * @return CorsConfiguration
+     */
+    @Nullable
+    override fun getCorsConfiguration(request: HttpServerRequest, handler: Any): CorsConfiguration? {
+        var corsConfig = super.getCorsConfiguration(request, handler)
+        if (handler is HandlerMethod) {
+            val corsConfigFromMethod = this.mappingRegistry.getCorsConfiguration(handler)
+            corsConfig = corsConfig?.combine(corsConfigFromMethod) ?: corsConfigFromMethod
+        }
+        return corsConfig
+    }
+
+    /**
      * 添加匹配到Mapping，遍历所有的Mapping，交给子类去决定该Mapping是否是匹配当前的请求的？
      *
      * @param matches 最终匹配的结果，输出参数
@@ -288,11 +320,15 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
         }
 
         /**
-         * 根据给定的HandlerMethod，去找到合适的CorsConfiguration
+         * 根据给定的HandlerMethod，去找到合适的CorsConfiguration；
+         * 因为HandlerMethod，很可能是将beanName解析成为了beanObject，
+         * 因此，我们有可能需要获取的是原始的HandlerMethod
+         *
+         * @param handlerMethod HandlerMethod
          */
         @Nullable
         fun getCorsConfiguration(handlerMethod: HandlerMethod): CorsConfiguration? {
-            return this.corsLookup[handlerMethod]
+            return this.corsLookup[handlerMethod.resolvedFromHandlerMethod ?: handlerMethod]
         }
 
         /**
@@ -432,37 +468,5 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     @Nullable
     open fun getHandlerMethodMappingNamingStrategy(): HandlerMethodMappingNamingStrategy<T>? {
         return this.namingStrategy
-    }
-
-    /**
-     * 针对指定的HandlerMethod，如果必要的话，去进行初始化CorsConfiguration
-     *
-     * @param handler handler
-     * @param mapping mapping
-     * @param method method
-     * @return CorsConfiguration
-     */
-    @Nullable
-    protected open fun initCorsConfiguration(handler: Any, method: Method, mapping: T): CorsConfiguration? {
-        return null
-    }
-
-    /**
-     * 我们这是针对HandlerMethod的HandlerMapping，因此对于获取CorsConfiguration的逻辑我们应该去进行扩展，
-     * 如果之前已经有过CorsConfig(比如Handler本身就是CorsConfigurationSource)，
-     * 现在的HandlerMethod上也有CorsConfig，那么我们需要去进行扩展(combine)并构建一个合适的CorsConfiguration去进行返回
-     *
-     * @param request request
-     * @param handler handler
-     * @return CorsConfiguration
-     */
-    @Nullable
-    override fun getCorsConfiguration(request: HttpServerRequest, handler: Any): CorsConfiguration? {
-        var corsConfig = super.getCorsConfiguration(request, handler)
-        if (handler is HandlerMethod) {
-            val corsConfigFromMethod = this.mappingRegistry.getCorsConfiguration(handler)
-            corsConfig = corsConfig?.combine(corsConfigFromMethod) ?: corsConfigFromMethod
-        }
-        return corsConfig
     }
 }

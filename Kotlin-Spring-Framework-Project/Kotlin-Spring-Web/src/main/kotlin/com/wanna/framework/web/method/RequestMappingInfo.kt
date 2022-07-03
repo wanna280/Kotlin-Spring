@@ -1,6 +1,6 @@
 package com.wanna.framework.web.method
 
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.mvc.condition.HeadersRequestCondition
 import com.wanna.framework.web.mvc.condition.ParamsRequestCondition
 import com.wanna.framework.web.mvc.condition.PathPatternsRequestCondition
