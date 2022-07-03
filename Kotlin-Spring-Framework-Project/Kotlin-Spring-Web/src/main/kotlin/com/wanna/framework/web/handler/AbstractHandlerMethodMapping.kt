@@ -102,6 +102,24 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     }
 
     /**
+     * 创建HandlerMethod，如果handler is String，说明它是beanName，需要后期再从容器getBean；
+     * 如果它不是String类型，说明它就是一个真正的Bean，后期不必再去进行解析了，直接去构建HandlerMethod即可
+     *
+     * @param handler handler(beanName or beanObject)
+     * @param method handlerMethod
+     * @return 构建好的HandlerMethod
+     */
+    protected open fun createHandlerMethod(handler: Any, method: Method): HandlerMethod {
+        if (handler !is String) {
+            return HandlerMethod.newHandlerMethod(handler, method)
+        }
+
+        // 基于beanName、beanFactory、method去进行构建HandlerMethod
+        val beanFactory = obtainApplicationContext().getAutowireCapableBeanFactory()
+        return HandlerMethod.newHandlerMethod(beanFactory, handler, method)
+    }
+
+    /**
      * 注册HandlerMethod到MappingRegistry当中
      *
      * @param handler handler
@@ -404,23 +422,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
             this.pathLookup.add(path, mapping)
         }
 
-        /**
-         * 创建HandlerMethod，如果handler is String，说明它是beanName，需要后期再从容器getBean；
-         * 如果它不是String类型，说明它就是一个真正的Bean，后期不必再去进行解析了，直接去构建HandlerMethod即可
-         *
-         * @param handler handler(beanName or beanObject)
-         * @param method handlerMethod
-         * @return 构建好的HandlerMethod
-         */
-        private fun createHandlerMethod(handler: Any, method: Method): HandlerMethod {
-            if (handler !is String) {
-                return HandlerMethod.newHandlerMethod(handler, method)
-            }
 
-            // 基于beanName、beanFactory、method去进行构建HandlerMethod
-            val beanFactory = obtainApplicationContext().getAutowireCapableBeanFactory()
-            return HandlerMethod.newHandlerMethod(beanFactory, handler, method)
-        }
     }
 
     /**

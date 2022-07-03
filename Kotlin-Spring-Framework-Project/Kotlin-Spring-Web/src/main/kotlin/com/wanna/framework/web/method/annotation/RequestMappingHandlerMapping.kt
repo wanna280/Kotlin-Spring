@@ -9,6 +9,7 @@ import com.wanna.framework.web.bind.annotation.CrossOrigin
 import com.wanna.framework.web.bind.annotation.RequestMapping
 import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.cors.CorsConfiguration
+import com.wanna.framework.web.method.HandlerMethod
 import com.wanna.framework.web.method.RequestMappingInfo
 import com.wanna.framework.web.method.RequestMappingInfoHandlerMapping
 import io.netty.handler.codec.http.cors.CorsConfig
@@ -77,7 +78,7 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
      */
     @Nullable
     override fun initCorsConfiguration(handler: Any, method: Method, mapping: RequestMappingInfo): CorsConfiguration? {
-        val handlerType = handler::class.java
+        val handlerType = createHandlerMethod(handler, method).beanType!!
         val typeAnnotation = AnnotatedElementUtils.getMergedAnnotation(handlerType, CrossOrigin::class.java)
         val methodAnnotation = AnnotatedElementUtils.getMergedAnnotation(method, CrossOrigin::class.java)
         if (typeAnnotation == null && methodAnnotation == null) {
