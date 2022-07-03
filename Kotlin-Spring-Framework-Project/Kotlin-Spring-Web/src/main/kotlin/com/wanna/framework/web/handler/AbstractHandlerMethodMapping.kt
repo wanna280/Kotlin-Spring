@@ -2,20 +2,24 @@ package com.wanna.framework.web.handler
 
 import com.wanna.framework.beans.factory.InitializingBean
 import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.LinkedMultiValueMap
+import com.wanna.framework.web.cors.CorsConfiguration
 import com.wanna.framework.web.method.HandlerMethod
 import com.wanna.framework.web.server.HttpServerRequest
 import java.lang.reflect.Method
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 /**
  * 这是一个抽象的HandlerMethod的HandlerMapping，它支持使用HandlerMethod作为HandlerMapping的handler；
- * 它实现了InitializingBean，目的是从容器当中遍历所有的Bean，去初始化MappingRegistry当中的所有的Mapping
- * 对于判断Bean是否是一个Handler，以及如何获取Handler中的HandlerMethod，都作为抽象的模板方法的方式交给子类；
  *
- * 因为它是HandlerMethod的HandlerMapping，因此它应该去处理请求的Handler对象就是HandlerMethod；
- * 也就是说，它会根据path，去找到一个合适的HandlerMethod去包装到HandlerExecutionChain当中
+ * * 1.它实现了InitializingBean，目的是从容器当中遍历所有的Bean，去初始化MappingRegistry当中的所有的Mapping
+ * * 2.对于判断Bean是否是一个Handler，以及如何获取Handler中的HandlerMethod，都作为抽象的模板方法的方式交给子类；
+ * * 3.因为它是HandlerMethod的HandlerMapping，因此它应该去处理请求的Handler对象就是HandlerMethod；
+ * 也就是说，它会根据path，去找到一个合适的HandlerMethod去包装到HandlerExecutionChain当中；
+ * * 4.扩展了父类当中对于Cors的功能，对Cors提供类级别的控制以及方法级别的控制(@CrosOrigin)
  *
  * @see afterPropertiesSet
  * @see isHandler
@@ -29,6 +33,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     protected val mappingRegistry = MappingRegistry()
 
     // HandlerMethod的映射的命名策略(默认为Controller的大写字母#方法名，比如UserController的getUser方法，会被命名为UC#getUser)
+    @Nullable
     private var namingStrategy: HandlerMethodMappingNamingStrategy<T>? = null
 
 
@@ -149,8 +154,9 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
      * @param request request
      * @return 匹配到的HandlerMethod，如果没有找到的话，return null
      */
+    @Nullable
     protected open fun lookupHandlerMethod(lookupPath: String, request: HttpServerRequest): HandlerMethod? {
-        mappingRegistry.acquireReadLock()
+        mappingRegistry.acquireReadLock()   // acquire read Lock
         try {
             val matches = ArrayList<Match>()
 
@@ -163,26 +169,45 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
             }
 
             // 如果根据直接路径没有匹配到合适的Mapping，那么遍历所有的Mapping去进行匹配...
+            // 挨个去进行path/headers/params的匹配，如果找到了合适的匹配结果，将结果放入到matches当中
             if (matches.isEmpty()) {
                 addMatchingMappings(matches, request, mappingRegistry.getRegistrations().keys)
             }
-
 
             // 如果没有匹配到合适的结果的话...return null
             if (matches.isEmpty()) {
                 return null
             }
             val bestMatch = matches.iterator().next()
-            // 获取处理请求的HandlerMethod
             handleMatch(bestMatch.mapping, bestMatch.getHandlerMethod(), request)
+            // 获取处理请求的HandlerMethod
             return bestMatch.getHandlerMethod()
         } finally {
-            mappingRegistry.releaseReadLock()
+            mappingRegistry.releaseReadLock()  // release readLock
         }
     }
 
+    /**
+     * 在找到了合适的Handler去处理本次请求之后，有可能需要去进行扩展，因此，需要流出足够的模板方法
+     *
+     * @param mapping mapping
+     * @param handlerMethod HandlerMethod
+     * @param request request
+     */
     protected open fun handleMatch(mapping: T, handlerMethod: HandlerMethod, request: HttpServerRequest) {
 
+    }
+
+    /**
+     * 是否有CorsConfiguration？我们要去扩展父类的是否有CorsConfigurationSource的逻辑，
+     * 因为我们有针对具体的HandlerMethod去配置具体的CorsConfiguration，我们这里需要去进行检查MappingRegistry
+     *
+     * @param handler handler
+     * @return 如果MappingRegistry当中有CorsConfiguration，那么return true
+     */
+    override fun hasCorsConfigurationSource(handler: Any): Boolean {
+        return super.hasCorsConfigurationSource(handler)
+                || (handler is HandlerMethod && this.mappingRegistry.getCorsConfiguration(handler) != null)
     }
 
     /**
@@ -231,6 +256,9 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
         // MappingRegistry(key-mapping,value-MappingRegistration)
         private val registry: MutableMap<T, MappingRegistration<T>> = LinkedHashMap()
 
+        // 存放CorsConfiguration的映射关系，提供根据key去寻找CorsConfiguration的方式
+        private val corsLookup: MutableMap<HandlerMethod, CorsConfiguration> = LinkedHashMap()
+
         /**
          * 获取MappingRegistry的读锁
          */
@@ -260,6 +288,14 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
         }
 
         /**
+         * 根据给定的HandlerMethod，去找到合适的CorsConfiguration
+         */
+        @Nullable
+        fun getCorsConfiguration(handlerMethod: HandlerMethod): CorsConfiguration? {
+            return this.corsLookup[handlerMethod]
+        }
+
+        /**
          * 往MappingRegistry当中注册一个HandlerMethod，需要涉及到MappingRegistry的写，需要获取写锁
          *
          * @param handler handler(beanName or beanObject)
@@ -277,16 +313,22 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
                 paths.forEach { addPathLookup(it, mapping) }
 
                 var mappingName: String? = null
+                // 如果有命名策略的话，那么需要生成mappingName并去注册
                 val namingStrategy = getHandlerMethodMappingNamingStrategy()
+                Optional.ofNullable(namingStrategy).ifPresent {
+                    mappingName = it.getName(handlerMethod, mapping)
+                    addNameToLookup(mappingName!!, handlerMethod)
+                }
 
-                // 如果有命名策略的话，那么需要生成name并去注册
-                if (namingStrategy != null) {
-                    mappingName = namingStrategy.getName(handlerMethod, mapping)
-                    addNameToLookup(mappingName, handlerMethod)
+                // 交给子类去初始化CorsConfiguration，将该HandlerMethod的CorsConfiguration去进行注册
+                val corsConfig = initCorsConfiguration(handler, method, mapping)
+                if (corsConfig != null) {
+                    this.corsLookup[handlerMethod] = corsConfig
                 }
 
                 // 将Mapping作为key，注册到registry当中
-                this.registry[mapping] = MappingRegistration(mapping, paths, handlerMethod, mappingName)
+                this.registry[mapping] =
+                    MappingRegistration(mapping, paths, handlerMethod, mappingName, corsConfig != null)
             } finally {
                 this.readWriteLock.writeLock().unlock()  // releaseWriteLock
             }
@@ -294,19 +336,24 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
 
         /**
          * 将name->List<HandlerMethod>注册到MappingRegistry当中
+         *
+         * @param name name
+         * @param handlerMethod HadlerMethod
          */
         private fun addNameToLookup(name: String, handlerMethod: HandlerMethod) {
             var handlerMethods = this.nameLookup[name]
             if (handlerMethods == null) {
                 handlerMethods = ArrayList()
             }
+
+            // 检查是否已经存在，如果直接存在，那么直接pass掉
             handlerMethods.forEach {
                 if (it == handlerMethod) {
                     return
                 }
             }
-            // copy一份，去进行添加，使用CopyOnWrite机制去进行实现
-            val newHandlerMethods = ArrayList<HandlerMethod>(handlerMethods)
+            // 如果之前并不存在的话，那么我们需要去copy一份，去进行添加，使用CopyOnWrite机制去进行实现
+            val newHandlerMethods = ArrayList(handlerMethods)
             newHandlerMethods += handlerMethod
             this.nameLookup[name] = newHandlerMethods
         }
@@ -347,9 +394,14 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
      * @param directPaths 路径列表
      * @param handlerMethod handlerMethod(bean+method)
      * @param name mappingName
+     * @param corsConfig 该Registration是否有CorsConfig？
      */
     class MappingRegistration<T>(
-        val mapping: T, val directPaths: Set<String>, val handlerMethod: HandlerMethod, val name: String?
+        val mapping: T,
+        val directPaths: Set<String>,
+        val handlerMethod: HandlerMethod,
+        val name: String?,
+        val corsConfig: Boolean
     )
 
     /**
@@ -363,11 +415,54 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
         fun getDirectPaths() = registration.directPaths
     }
 
-    open fun setHandlerMethodMappingNamingStrategy(namingStrategy: HandlerMethodMappingNamingStrategy<T>) {
+    /**
+     * 设置HandlerMethodMaping的命名生成策略
+     *
+     * @param namingStrategy 你想要使用的namingStrategy
+     */
+    open fun setHandlerMethodMappingNamingStrategy(@Nullable namingStrategy: HandlerMethodMappingNamingStrategy<T>?) {
         this.namingStrategy = namingStrategy
     }
 
+    /**
+     * 获取HandlerMethodMapping的命名生成策略
+     *
+     * @return namingStrategy
+     */
+    @Nullable
     open fun getHandlerMethodMappingNamingStrategy(): HandlerMethodMappingNamingStrategy<T>? {
         return this.namingStrategy
+    }
+
+    /**
+     * 针对指定的HandlerMethod，如果必要的话，去进行初始化CorsConfiguration
+     *
+     * @param handler handler
+     * @param mapping mapping
+     * @param method method
+     * @return CorsConfiguration
+     */
+    @Nullable
+    protected open fun initCorsConfiguration(handler: Any, method: Method, mapping: T): CorsConfiguration? {
+        return null
+    }
+
+    /**
+     * 我们这是针对HandlerMethod的HandlerMapping，因此对于获取CorsConfiguration的逻辑我们应该去进行扩展，
+     * 如果之前已经有过CorsConfig(比如Handler本身就是CorsConfigurationSource)，
+     * 现在的HandlerMethod上也有CorsConfig，那么我们需要去进行扩展(combine)并构建一个合适的CorsConfiguration去进行返回
+     *
+     * @param request request
+     * @param handler handler
+     * @return CorsConfiguration
+     */
+    @Nullable
+    override fun getCorsConfiguration(request: HttpServerRequest, handler: Any): CorsConfiguration? {
+        var corsConfig = super.getCorsConfiguration(request, handler)
+        if (handler is HandlerMethod) {
+            val corsConfigFromMethod = this.mappingRegistry.getCorsConfiguration(handler)
+            corsConfig = corsConfig?.combine(corsConfigFromMethod) ?: corsConfigFromMethod
+        }
+        return corsConfig
     }
 }

@@ -88,7 +88,7 @@ open class HandlerExecutionChain(private val handler: Any, interceptors: Collect
     }
 
     open fun addInterceptor(index: Int, interceptor: HandlerInterceptor) {
-        this.interceptorList[index] = interceptor
+        this.interceptorList.add(index, interceptor)
     }
 
     open fun addInterceptors(interceptors: Collection<HandlerInterceptor>) {
@@ -98,6 +98,13 @@ open class HandlerExecutionChain(private val handler: Any, interceptors: Collect
     open fun addInterceptors(vararg interceptors: HandlerInterceptor) {
         this.interceptorList += interceptors
     }
+
+    /**
+     * 获取当前的HandlerExecutionChain当中的拦截器列表
+     *
+     * @return HandlerInterceptor列表
+     */
+    open fun getInterceptors(): List<HandlerInterceptor> = this.interceptorList
 
     override fun toString() = "HandlerExecution[handler=${this.handler}, interceptorSize=${this.interceptorList.size}]"
 }

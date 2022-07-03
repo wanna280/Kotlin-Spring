@@ -77,4 +77,11 @@ interface WebMvcConfigurer {
      * @param formatterRegistry SpringWebMvc的Formatter注册中心
      */
     fun addFormatters(formatterRegistry: FormatterRegistry) {}
+
+    /**
+     * 添加CorsMapping
+     *
+     * @param registry CorsRegistry
+     */
+    fun addCorsMapping(registry: CorsRegistry) {}
 }

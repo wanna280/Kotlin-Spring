@@ -3,8 +3,14 @@ package com.wanna.boot.web.mvc.server
 import com.wanna.boot.web.server.WebServer
 
 /**
- * 这是一个Reactive的WebServerFactory
+ * 这是一个WebServerFactory，负责创建一个WebServer
  */
 interface WebServerFactory {
-    fun getWebServer() : WebServer
+
+    /**
+     * 获取到WebServer
+     *
+     * @return WebServer
+     */
+    fun getWebServer(): WebServer
 }

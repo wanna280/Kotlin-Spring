@@ -1,5 +1,6 @@
 package com.wanna.framework.web
 
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.server.HttpServerRequest
 
 /**
@@ -20,5 +21,6 @@ interface HandlerMapping {
      * @see HandlerExecutionChain
      * @return 如果当前HandlerMapping能处理本次请求，那么return HandlerExecutionChain；如果不能处理，return null
      */
+    @Nullable
     fun getHandler(request: HttpServerRequest): HandlerExecutionChain?
 }

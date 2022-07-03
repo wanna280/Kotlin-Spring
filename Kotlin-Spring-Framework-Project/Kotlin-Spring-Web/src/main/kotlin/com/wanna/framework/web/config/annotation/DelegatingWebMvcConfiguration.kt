@@ -20,7 +20,9 @@ open class DelegatingWebMvcConfiguration : WebMvcConfigurationSupport() {
     private val webMvcConfigurerComposite = WebMvcConfigurerComposite()
 
     /**
-     * 自动注入所有的WebMvcConfigurer，去对WebMvc去进行扩展
+     * 自动注入BeanFactory当中的所有的WebMvcConfigurer，去对WebMvc去进行扩展
+     *
+     * @param configurers BeanFactory当中的WebMvcConfigurer的Bean的列表
      */
     @Autowired(required = false)
     open fun setWebMvcConfigurers(configurers: List<WebMvcConfigurer>) {
@@ -61,5 +63,9 @@ open class DelegatingWebMvcConfiguration : WebMvcConfigurationSupport() {
 
     override fun addFormatters(formatterRegistry: FormatterRegistry) {
         this.webMvcConfigurerComposite.addFormatters(formatterRegistry)
+    }
+
+    override fun addCorsMapping(registry: CorsRegistry) {
+        this.webMvcConfigurerComposite.addCorsMapping(registry)
     }
 }

@@ -4,7 +4,7 @@ import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 
 /**
- * 超级反射工具，用来去反射调用目标Handler方法，去处理请求
+ * SpringMVC的超级反射工具，用来去反射调用目标Handler方法，去处理请求
  */
 interface HandlerAdapter {
 

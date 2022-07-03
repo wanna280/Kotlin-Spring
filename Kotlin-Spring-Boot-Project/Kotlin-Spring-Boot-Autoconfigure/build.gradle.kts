@@ -10,9 +10,6 @@ dependencies {
 
 
     implementation("com.google.guava:guava:$guavaVersion")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-    implementation("org.springframework:spring-core:$springCoreVersion")
-    implementation("javax.annotation:javax.annotation-api:$javaxAnnotationVersion")
 
 
     testImplementation(project(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Web"))

@@ -7,6 +7,7 @@ import com.wanna.framework.web.server.HttpServerRequest.Companion.COMMA
 import io.netty.handler.codec.http.FullHttpRequest
 import java.io.ByteArrayInputStream
 import java.io.InputStream
+import java.net.URL
 import kotlin.collections.HashSet
 import kotlin.collections.LinkedHashMap
 
@@ -18,6 +19,9 @@ open class HttpServerRequestImpl : HttpServerRequest {
 
     // 请求方式
     private var method = RequestMethod.GET
+
+    // schema(protocol)
+    var scheme: String = "http"
 
     // 完成请求路径，包括query部分
     private var uri = "/"
@@ -163,6 +167,12 @@ open class HttpServerRequestImpl : HttpServerRequest {
         return this.headers
     }
 
+    override fun getHeaders(name: String): Collection<String> {
+        val headers = LinkedHashSet<String>()
+        this.headers[name]?.forEach(headers::add)
+        return headers
+    }
+
     override fun getHeaderNames(): Set<String> {
         return kotlin.collections.HashSet(this.headers.keys)
     }
@@ -208,9 +218,19 @@ open class HttpServerRequestImpl : HttpServerRequest {
         }
     }
 
-    override fun getLocalHost() = headers.getHost()
+    override fun getLocalHost() = headers.getHost() ?: ""
 
     override fun getRemoteHost() = this.remoteHost
+
+    override fun getServerPort() = URL(getSchema() + "://" + getLocalHost()).port
+
+    override fun getSchema() = this.scheme
+
+    open fun setSchema(scheme: String) {
+        this.scheme = scheme
+    }
+
+    override fun getServerName() = URL(getSchema() + "://" + getLocalHost()).host!!
 
     override fun getUri() = this.uri
     override fun getUrl() = this.url

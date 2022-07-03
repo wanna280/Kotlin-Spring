@@ -1,6 +1,8 @@
 package com.wanna.framework.web.server
 
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.http.HttpHeaders
+import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.http.MediaType
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
@@ -13,9 +15,14 @@ open class HttpServerResponseImpl : HttpServerResponse {
         private const val DEFAULT_CONTENT_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE
     }
 
-    private var statusCode: Int = 200 // 响应状态码，默认为200
+    // flush Callback
+    private var flushCallback: ((HttpServerResponseImpl) -> Unit)? = null
 
-    private var message: String = ""  // message
+    // 响应状态码，默认为200
+    private var statusCode: Int = HttpStatus.SUCCESS.value
+
+    // message
+    private var message: String = HttpStatus.SUCCESS.reasonPhase
 
     // ResponseBody的输出流
     private val outputStream = ByteArrayOutputStream(1024)
@@ -28,9 +35,7 @@ open class HttpServerResponseImpl : HttpServerResponse {
      *
      * @return HttpHeaders of this response
      */
-    override fun getHeaders(): HttpHeaders {
-        return headers
-    }
+    override fun getHeaders() = this.headers
 
     /**
      * 根据headerName，去移除一个header
@@ -38,9 +43,8 @@ open class HttpServerResponseImpl : HttpServerResponse {
      * @param name headerName
      * @return 之前的旧的headerValue(如果有多个，使用"; "去进行分割)
      */
-    override fun removeHeader(name: String): String? {
-        return this.headers.remove(name)?.joinToString(COMMA)
-    }
+    @Nullable
+    override fun removeHeader(name: String) = this.headers.remove(name)?.joinToString(COMMA)
 
     /**
      * 根据name和value去设置一个Header(如果之前已经有该header，那么直接清除掉之前所有的)
@@ -76,54 +80,58 @@ open class HttpServerResponseImpl : HttpServerResponse {
      * @param name headerName
      * @return headerValue(如果有多个，使用"; "去进行分割；如果不存在return null)
      */
-    override fun getHeader(name: String): String? {
-        return headers[name]?.joinToString(COMMA)
-    }
+    override fun getHeader(name: String) = headers[name]?.joinToString(COMMA)
 
     /**
      * 获取response的响应类型
      *
      * @return 响应类型(比如"application/json")
      */
-    override fun getContentType(): String {
-        return headers.getFirst(HttpHeaders.CONTENT_TYPE) ?: DEFAULT_CONTENT_TYPE
-    }
+    override fun getContentType() = headers.getFirst(HttpHeaders.CONTENT_TYPE) ?: DEFAULT_CONTENT_TYPE
 
     /**
      * 获取响应状态码
      *
      * @return 响应状态码(比如404，500)
      */
-    override fun getStatusCode(): Int {
-        return statusCode
-    }
+    override fun getStatusCode() = this.statusCode
 
     /**
      * 获取响应的消息，配合状态码去进行使用
      *
      * @return 响应携带的消息
      */
-    override fun getMessage(): String {
-        return message
-    }
+    override fun getMessage() = this.message
 
     /**
      * 获取HttpServerResponse的ResponseBody输出流
      *
      * @return 当前的response的ResponseBody输出流
      */
-    override fun getOutputStream(): OutputStream {
-        return outputStream
-    }
+    override fun getOutputStream() = this.outputStream
 
     /**
      * sendError，msg采用默认的msg
      *
      * @param statusCode 状态码
      */
-    override fun sendError(statusCode: Int) {
-        sendError(statusCode, "")
+    override fun sendError(statusCode: Int) = sendError(statusCode, "")
+
+    /**
+     * 设置响应状态码
+     *
+     * @param statusCode 响应状态码
+     */
+    override fun setStatus(statusCode: Int) {
+        this.statusCode = statusCode
     }
+
+    /**
+     * 设置响应状态吗
+     *
+     * @param status 响应状态码
+     */
+    override fun setStatus(status: HttpStatus): Unit = setStatus(status.value)
 
     /**
      * sendError，并同时设置Error的消息
@@ -134,5 +142,22 @@ open class HttpServerResponseImpl : HttpServerResponse {
     override fun sendError(statusCode: Int, msg: String) {
         this.statusCode = statusCode
         this.message = msg
+    }
+
+    /**
+     * 设置flush的回调callback
+     *
+     * @param callback 你先要去进行刷新的操作的callback
+     */
+    open fun initFlushCallback(callback: HttpServerResponseImpl.() -> Unit) {
+        this.flushCallback = callback
+    }
+
+    /**
+     * flush
+     */
+    override fun flush() {
+        this.flushCallback?.invoke(this)  // invoke callback
+        this.outputStream.reset()  // reset
     }
 }

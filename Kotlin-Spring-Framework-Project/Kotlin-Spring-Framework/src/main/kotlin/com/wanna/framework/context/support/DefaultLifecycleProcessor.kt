@@ -15,8 +15,11 @@ import com.wanna.framework.beans.BeanFactoryAware
  */
 open class DefaultLifecycleProcessor : LifecycleProcessor, BeanFactoryAware {
 
-    private lateinit var beanFactory: ConfigurableListableBeanFactory
+    // beanFactory
+    private var beanFactory: ConfigurableListableBeanFactory? = null
 
+    // 全权交给Spring去进行管理，只有一个线程可以启动ApplicationContext，也只有一个线程可以关闭ApplicationContext
+    // 因此这里并不存在多线程访问的情况，无需使用AtomicInteger去保证线程安全
     private var running: Boolean = false
 
     override fun start() {
@@ -29,23 +32,17 @@ open class DefaultLifecycleProcessor : LifecycleProcessor, BeanFactoryAware {
         this.running = false
     }
 
-    override fun isRunning(): Boolean {
-        return this.running
-    }
+    override fun isRunning() = this.running
 
-    override fun onRefresh() {
-        start()
-    }
+    override fun onRefresh() = start()
 
-    override fun onClose() {
-        stop()
-    }
+    override fun onClose() = stop()
 
     override fun setBeanFactory(beanFactory: BeanFactory) {
         this.beanFactory = beanFactory as ConfigurableListableBeanFactory
     }
 
-    fun getBeanFactory(): ConfigurableListableBeanFactory = this.beanFactory
+    open fun getBeanFactory(): ConfigurableListableBeanFactory? = this.beanFactory
 
     /**
      * 启动所有的Bean，拿出容器当中的所有的Lifecycle，去执行start
@@ -69,10 +66,11 @@ open class DefaultLifecycleProcessor : LifecycleProcessor, BeanFactoryAware {
      * @return 容器当中找到的Lifecycle的Bean的列表
      */
     private fun getLifecycleBeans(): List<Lifecycle> {
-        val lifecycles = beanFactory.getBeansForType(Lifecycle::class.java)
+        val lifecycles =
+            beanFactory?.getBeansForType(Lifecycle::class.java) ?: throw IllegalStateException("BeanFactory不能为空")
         val lifecycleBeans = ArrayList<Lifecycle>()
         lifecycles.forEach { (_, bean) ->
-            if (bean != this) {
+            if (bean != this) {  // 除掉this
                 lifecycleBeans += bean
             }
         }

@@ -15,17 +15,28 @@ import org.slf4j.LoggerFactory
 
 /**
  * 这是一个基于Netty去进行实现的HttpServer
+ *
+ * @see WebServer
  */
 open class NettyServer : WebServer {
-    private val logger: Logger = LoggerFactory.getLogger(NettyServer::class.java)
+    companion object {
+        // Logger
+        private val logger: Logger = LoggerFactory.getLogger(NettyServer::class.java)
 
-    private var port = 9966
-    private val bossGroup: EventLoopGroup = NioEventLoopGroup(1)
-    private val workerGroup: EventLoopGroup = NioEventLoopGroup()
+        // 默认端口
+        const val DEFAULT_SERVER_PORT = 9966
+
+        // 默认的Boss数量
+        const val DEFAULT_BOSS_GROUP_THREADS = 1
+
+        // 默认的Worker的数量
+        val DEFAULT_WORKER_GROUP_THREADS = Runtime.getRuntime().availableProcessors() * 2
+    }
+
+    private var port = DEFAULT_SERVER_PORT
+    private var bossGroup: EventLoopGroup = NioEventLoopGroup(DEFAULT_BOSS_GROUP_THREADS)
+    private var workerGroup: EventLoopGroup = NioEventLoopGroup(DEFAULT_WORKER_GROUP_THREADS)
     private val serverBootstrap: ServerBootstrap = ServerBootstrap()
-        .group(bossGroup, workerGroup)
-        .channel(NioServerSocketChannel::class.java)
-        .childOption(ChannelOption.SO_KEEPALIVE, true)
 
     /**
      * 自定义ChannelInitializer
@@ -34,6 +45,14 @@ open class NettyServer : WebServer {
      */
     open fun setInitializer(initializer: ChannelInitializer<SocketChannel>) {
         serverBootstrap.childHandler(initializer)
+    }
+
+    open fun setBossGroupThreads(nThreads: Int) {
+        this.bossGroup = NioEventLoopGroup(nThreads)
+    }
+
+    open fun setWorkerGroupThreads(nThreads: Int) {
+        this.workerGroup = NioEventLoopGroup(nThreads)
     }
 
     /**
@@ -49,13 +68,19 @@ open class NettyServer : WebServer {
         this.port = port
     }
 
-    override fun getPort(): Int {
-        return this.port
-    }
+    override fun getPort() = this.port
 
     override fun start() {
-        serverBootstrap.bind(this.port).sync()
-        logger.info("Netty Server已经启动在[${this.port}]端口")
+        initServerBootstrap()  // init ServerBootstrap
+        serverBootstrap.bind(this.port).sync()  // sync
+        logger.info("Netty Web Server在[${this.port}]端口启动")
+    }
+
+    private fun initServerBootstrap() {
+        serverBootstrap
+            .group(bossGroup, workerGroup)
+            .channel(NioServerSocketChannel::class.java)
+            .childOption(ChannelOption.SO_KEEPALIVE, true)
     }
 
     override fun stop() {

@@ -24,6 +24,13 @@ abstract class RequestMappingInfoHandlerMapping : AbstractHandlerMethodMapping<R
         return mapping.getPaths()
     }
 
+    /**
+     * 在找到合适的Handler去处理本次请求之后，我们应该去解析PathVariables，并放入到属性当中方便后续去进行获取
+     *
+     * @param mapping mapping
+     * @param handlerMethod HandlerMethod
+     * @param request request
+     */
     override fun handleMatch(mapping: RequestMappingInfo, handlerMethod: HandlerMethod, request: HttpServerRequest) {
         val url = request.getUrl()
         // 解析路径当中的模板参数(UrlTemplateVariables)
@@ -33,7 +40,7 @@ abstract class RequestMappingInfoHandlerMapping : AbstractHandlerMethodMapping<R
     }
 
     /**
-     * 判断当前Mapping是否匹配当前的请求？目前我们提供的是，基于方法的匹配规则
+     * 判断当前Mapping是否匹配当前的请求？
      *
      * @param request request
      * @param mapping mapping(RequestMappingInfo)

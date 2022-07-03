@@ -1,6 +1,7 @@
 package com.wanna.framework.web.server
 
 import com.wanna.framework.web.http.HttpHeaders
+import com.wanna.framework.web.http.HttpStatus
 import java.io.OutputStream
 
 /**
@@ -47,7 +48,7 @@ interface HttpServerResponse {
      * @param name headerName
      * @param value headerValue(为null时表示移除)
      */
-    fun addHeader(name: String,value: String?)
+    fun addHeader(name: String, value: String?)
 
     /**
      * 根据headerName去设置一个Header
@@ -79,6 +80,20 @@ interface HttpServerResponse {
     fun getMessage(): String
 
     /**
+     * 设置HttpStatus
+     *
+     * @param statusCode statusInt
+     */
+    fun setStatus(statusCode: Int)
+
+    /**
+     * 设置HttpStatus
+     *
+     * @param status status
+     */
+    fun setStatus(status: HttpStatus)
+
+    /**
      * sendError，msg采用默认的msg
      *
      * @param statusCode 状态码
@@ -92,4 +107,9 @@ interface HttpServerResponse {
      * @param msg message of error
      */
     fun sendError(statusCode: Int, msg: String)
+
+    /**
+     * flush Response，将Buffer当中的数据写出给客户端
+     */
+    fun flush()
 }
