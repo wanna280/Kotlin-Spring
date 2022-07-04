@@ -58,11 +58,21 @@ open class FactoryBeanRegistrySupport : DefaultSingletonBeanRegistry() {
 
     /**
      * 对FactoryBean去完成后置处理，模板方法，交给子类去进行实现
+     *
+     * @param factoryBeanObject FactoryBeanObject
+     * @param beanName beanName
+     * @return 完成后置处理的FactoryBeanObject
      */
     protected open fun postProcessObjectFromFactoryBean(factoryBeanObject: Any, beanName: String): Any {
         return factoryBeanObject
     }
 
+    /**
+     * 从FactoryBean当中去获取到FactoryBeanObject
+     *
+     * @param factoryBean FactoryBean
+     * @return FactoryBeanObject
+     */
     open fun doGetObjectFromFactoryBean(factoryBean: FactoryBean<*>): Any {
         try {
             return factoryBean.getObject() as Any
@@ -74,6 +84,9 @@ open class FactoryBeanRegistrySupport : DefaultSingletonBeanRegistry() {
 
     /**
      * 获取FactoryBean的Object的Type
+     *
+     * @param factoryBean FactoryBean
+     * @return FactoryBeanObjectType
      */
     open fun getTypeForFactoryBean(factoryBean: FactoryBean<*>): Class<*> {
         return factoryBean.getObjectType()

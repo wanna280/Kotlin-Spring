@@ -304,7 +304,8 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
 
 
     /**
-     * 应用所有的MergedBeanDefinitionPostProcessor，去完成BeanDefinition的合并，此时得到的beanType为实例化之后得到的对象的真实beanType
+     * 应用所有的MergedBeanDefinitionPostProcessor，去完成BeanDefinition的合并，
+     * 因此此时得到的beanType为实例化之后得到的对象的真实beanType
      */
     private fun applyMergedBeanDefinitionPostProcessor(mbd: RootBeanDefinition, beanType: Class<*>, beanName: String) {
         if (getBeanPostProcessorCache().hasMergedDefinition()) {
@@ -525,6 +526,20 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
             }
         }
         return resolvableType
+    }
+
+    /**
+     * 完成对FactoryBean方式导入的FactoryBeanObject的后置处理工作
+     *
+     * @param factoryBeanObject FactoryBeanObject
+     * @param beanName beanName
+     * @return 经过后置处理的FactoryBeanObject
+     */
+    override fun postProcessObjectFromFactoryBean(factoryBeanObject: Any, beanName: String): Any {
+        if (this.beanPostProcessors.isNotEmpty()) {
+            return applyBeanPostProcessorsAfterInitialization(factoryBeanObject, beanName)
+        }
+        return factoryBeanObject
     }
 
     /**

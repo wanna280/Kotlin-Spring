@@ -3,6 +3,7 @@ package com.wanna.framework.beans.factory.support
 import com.wanna.framework.beans.factory.ObjectFactory
 import com.wanna.framework.beans.factory.config.SingletonBeanRegistry
 import com.wanna.framework.context.exception.BeanCurrentlyInCreationException
+import com.wanna.framework.lang.Nullable
 import org.slf4j.LoggerFactory
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
@@ -201,21 +202,22 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     }
 
     /**
-     * 移除一个Singleton单实例Bean，同时尝试从三级缓存当中移除(within lock)
+     * 移除一个Singleton单实例Bean，同时尝试从三级缓存当中移除(within singleton lock)
      *
      * @param beanName beanName
      */
     protected open fun removeSingleton(beanName: String) {
         synchronized(singletonObjects) {
-            this.singletonObjects -= beanName
-            this.earlySingletonObjects -= beanName
-            this.singletonFactories -= beanName
-            this.registeredSingletons -= beanName
+            this.singletonObjects.remove(beanName)
+            this.earlySingletonObjects.remove(beanName)
+            this.singletonFactories.remove(beanName)
+            this.registeredSingletons.remove(beanName)
         }
     }
 
     /**
-     * 从BeanDefinitionRegistry当中去摧毁一个单例Bean，同时从三个缓存当中去移除，并回调DisposableBean
+     * 从BeanDefinitionRegistry当中去摧毁一个单例Bean，
+     * 同时从三个缓存当中去移除，并回调DisposableBean
      *
      * @param beanName beanName
      */
@@ -223,13 +225,14 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
         // 1.从三级缓存当中去移除单实例Bean
         removeSingleton(beanName)
 
-        // 2.从DisposableBeans列表当中去移除一个DisposableBean
+        // 2.从DisposableBeans列表当中去移除一个DisposableBean，
+        // 如果之前已经存在，那么会将移除的DisposableBean去进行return...
         val disposableBean: DisposableBean?
         synchronized(this.disposableBeans) {
             disposableBean = this.disposableBeans.remove(beanName)
         }
 
-        // 3.如果必要的话，去回调它的destroy方法
+        // 3.如果必要的话，去回调它(DisposableBean)的destroy方法
         destoryBean(beanName, disposableBean)
     }
 
@@ -239,7 +242,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
      * @param beanName beanName
      * @param disposableBean disposableBean(有可能为null)
      */
-    protected open fun destoryBean(beanName: String, disposableBean: DisposableBean?) {
+    protected open fun destoryBean(beanName: String, @Nullable disposableBean: DisposableBean?) {
         if (disposableBean != null) {
             try {
                 disposableBean.destroy()

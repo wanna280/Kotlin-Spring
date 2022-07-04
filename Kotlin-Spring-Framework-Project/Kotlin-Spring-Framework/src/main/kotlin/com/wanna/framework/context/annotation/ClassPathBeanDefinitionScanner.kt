@@ -127,7 +127,8 @@ open class ClassPathBeanDefinitionScanner(
      * @return 指定的包下的所有的BeanDefinition的列表
      */
     open fun findCandidateComponents(packageName: String): Set<BeanDefinition> {
-        return ClassDiscoveryUtils.scan(packageName).map { ScannedGenericBeanDefinition(it) }
+        return ClassDiscoveryUtils.scan(packageName)
+            .map { ScannedGenericBeanDefinition(it) }
             .filter { isCandidateComponent(it.getBeanClass()) }.toSet()
     }
 

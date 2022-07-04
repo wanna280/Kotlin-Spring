@@ -1,7 +1,7 @@
 package com.wanna.nacos.naming.server.controller
 
 import com.wanna.framework.web.bind.annotation.ControllerAdvice
-import com.wanna.framework.web.method.annotation.ExceptionHandler
+import com.wanna.framework.web.bind.annotation.ExceptionHandler
 import com.wanna.framework.web.bind.annotation.ResponseBody
 import com.wanna.framework.web.method.support.InvocableHandlerMethod
 
