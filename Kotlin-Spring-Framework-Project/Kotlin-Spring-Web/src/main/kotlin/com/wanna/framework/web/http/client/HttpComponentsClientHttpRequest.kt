@@ -1,6 +1,6 @@
 package com.wanna.framework.web.http.client
 
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.http.HttpHeaders
 import org.apache.http.HttpEntityEnclosingRequest
 import org.apache.http.client.HttpClient

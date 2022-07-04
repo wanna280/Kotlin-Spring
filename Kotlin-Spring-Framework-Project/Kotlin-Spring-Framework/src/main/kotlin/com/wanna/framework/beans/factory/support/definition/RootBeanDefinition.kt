@@ -43,6 +43,9 @@ open class RootBeanDefinition constructor(beanClass: Class<*>?) : AbstractBeanDe
     // 是否已经被merged？
     var postProcessed: Boolean = false
 
+    // 当前的BeanDefinition，是否已经陈旧了？需要去进行re-merge？
+    var stale: Boolean = false
+
     // 操作构造器的锁
     val constructorArgumentLock = Any()
 

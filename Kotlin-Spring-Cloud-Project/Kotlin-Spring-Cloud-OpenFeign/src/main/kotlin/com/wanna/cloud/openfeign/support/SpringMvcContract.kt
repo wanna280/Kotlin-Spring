@@ -9,7 +9,7 @@ import com.wanna.cloud.openfeign.annotation.RequestParamParameterProcessor
 import com.wanna.framework.context.format.support.FormattingConversionService
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import com.wanna.framework.web.method.annotation.RequestMapping
+import com.wanna.framework.web.bind.annotation.RequestMapping
 import feign.Feign
 import feign.MethodMetadata
 import feign.Request.HttpMethod.*

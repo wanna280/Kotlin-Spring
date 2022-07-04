@@ -20,6 +20,7 @@ import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.core.util.AnnotationConfigUtils
 import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.lang.Nullable
 import org.slf4j.LoggerFactory
 
 /**
@@ -42,15 +43,18 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
     private var order: Int = 0
 
     // beanClassLoader
-    private var classLoader: ClassLoader? = null
+    @Nullable
+    private var classLoader: ClassLoader? = ClassUtils.getDefaultClassLoader()
 
     // 环境对象
     private var environment: Environment? = null
 
     // 配置类的解析器
+    @Nullable
     private var parser: ConfigurationClassParser? = null
 
     // 配置类的reader
+    @Nullable
     private var reader: ConfigurationClassBeanDefinitionReader? = null
 
     // componentScan的beanNameGenerator，默认使用simpleName作为生成方式
@@ -86,7 +90,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         // 如果必要的话，需要尝试去增强配置类(@Configuration)
         enhanceConfigurationClasses(beanFactory)
 
-        // 给容器当中注册处理ImportAware的BeanPostProcessor
+        // 给BeanFactory当中注册处理ImportAware的BeanPostProcessor
         beanFactory.addBeanPostProcessor(ImportAwareBeanPostProcessor(beanFactory))
     }
 

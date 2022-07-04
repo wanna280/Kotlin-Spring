@@ -626,11 +626,22 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     protected open fun getMergedLocalBeanDefinition(beanName: String): RootBeanDefinition {
         val rootBeanDefinition = mergedBeanDefinitions[beanName]
         // 先进行一次检查(fast check)，避免立刻加锁进行操作
-        if (rootBeanDefinition != null) {
+        // 检查该BeanDefinition是否已经过期/是否还没完成Merge？
+        if (rootBeanDefinition != null && !rootBeanDefinition.stale) {
             return rootBeanDefinition
         }
-        // 如果确实是没有，那么必须得加锁(slow check)去进行Merged了
+        // 如果确实是没有(或者已经失效)，那么必须得加锁(slow check)去进行Merged了
         return getMergedBeanDefinition(beanName, getBeanDefinition(beanName))
+    }
+
+    /**
+     * clear掉一个MergedBeanDefinition，将RootBeanDefinition1的stale标志位设置为true，
+     * 下次需要获取MergedBeanDefinition时，需要重写去进行Merge，不能直接从缓存当中去进行获取
+     *
+     * @param beanName beanName
+     */
+    protected open fun clearMergedBeanDefinition(beanName: String) {
+        this.mergedBeanDefinitions[beanName]?.stale = true
     }
 
 
@@ -645,8 +656,8 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         synchronized(mergedBeanDefinitions) {
             var mbd = mergedBeanDefinitions[beanName]  // 从缓存中拿
 
-            // 如果缓存中没有，那么需要完成RootBeanDefinition构建
-            if (mbd == null) {
+            // 如果缓存中没有(或者之前Merged的已经过期了)，那么需要完成RootBeanDefinition构建
+            if (mbd == null || mbd.stale) {
                 mbd = RootBeanDefinition(beanDefinition)
 
                 // 如果scope为默认的，那么修改为Singleton
@@ -695,14 +706,13 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         if (mbd.getBeanClass() == NullBean::class.java) {  // except NullBean
             return false
         }
-        // 判断它是否有destory方法，如果有return true(支持AutoCloseable/DisposableBean以及BeanDefinition当中的destoryMethod等)
+        // 判断它是否有destroy方法，如果有return true(支持AutoCloseable/DisposableBean以及BeanDefinition当中的destoryMethod等)
         if (DisposableBeanAdapter.hasDestroyMethod(bean, mbd)) {
             return true
         }
         // 判断是否有DestructionAwareBeanPostProcessor可以应用给当前的Bean，如果有的话，return true
-        if (getBeanPostProcessorCache().hasDestructionAwareCache() && DisposableBeanAdapter.hasApplicableProcessors(
-                bean, getBeanPostProcessorCache().destructionAwareCache
-            )
+        if (getBeanPostProcessorCache().hasDestructionAwareCache() &&
+            DisposableBeanAdapter.hasApplicableProcessors(bean, getBeanPostProcessorCache().destructionAwareCache)
         ) {
             return true
         }

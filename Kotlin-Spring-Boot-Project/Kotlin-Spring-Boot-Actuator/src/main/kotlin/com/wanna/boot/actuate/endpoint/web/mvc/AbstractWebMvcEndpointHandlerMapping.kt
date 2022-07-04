@@ -7,11 +7,11 @@ import com.wanna.boot.actuate.endpoint.web.WebOperation
 import com.wanna.boot.actuate.endpoint.web.WebOperationRequestPredicate
 import com.wanna.framework.core.util.ReflectionUtils
 import com.wanna.framework.web.HandlerMapping
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.method.RequestMappingInfo
 import com.wanna.framework.web.method.RequestMappingInfoHandlerMapping
-import com.wanna.framework.web.method.annotation.RequestBody
-import com.wanna.framework.web.method.annotation.ResponseBody
+import com.wanna.framework.web.bind.annotation.RequestBody
+import com.wanna.framework.web.bind.annotation.ResponseBody
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 import java.lang.reflect.Method

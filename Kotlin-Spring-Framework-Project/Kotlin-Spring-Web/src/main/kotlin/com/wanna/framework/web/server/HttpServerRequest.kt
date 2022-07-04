@@ -1,6 +1,6 @@
 package com.wanna.framework.web.server
 
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.http.HttpHeaders
 import java.io.InputStream
 
@@ -113,6 +113,14 @@ interface HttpServerRequest {
     fun getHeaders(): HttpHeaders
 
     /**
+     * 根据headerName，去获取当前request的HttpHeaders当中对应header的值的列表
+     *
+     * @param name headerName
+     * @return 给定的headerName对应的headerValue列表
+     */
+    fun getHeaders(name: String): Collection<String>
+
+    /**
      * 获取header的属性名列表
      *
      * @return header属性名列表
@@ -175,7 +183,28 @@ interface HttpServerRequest {
      *
      * @return remoteHost
      */
-    fun getRemoteHost() : String
+    fun getRemoteHost(): String
+
+    /**
+     * 获取ServerPost
+     *
+     * @return serverPost
+     */
+    fun getServerPort(): Int
+
+    /**
+     * 获取schema
+     *
+     * @return scheme(例如"http:")
+     */
+    fun getSchema(): String
+
+    /**
+     * 获取serverName
+     *
+     * @return serverName
+     */
+    fun getServerName(): String
 
     /**
      * 获取当前请求的请求方式

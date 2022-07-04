@@ -37,6 +37,13 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable {
     fun refresh();
 
     /**
+     * 当前的ApplicationContext是否还是存活的？
+     *
+     * @return 如果当前ApplicationContext没被关闭，return true，被关闭了则return false
+     */
+    fun isActive() : Boolean
+
+    /**
      * 关闭ApplicationContext并释放掉所有的资源
      */
     override fun close();

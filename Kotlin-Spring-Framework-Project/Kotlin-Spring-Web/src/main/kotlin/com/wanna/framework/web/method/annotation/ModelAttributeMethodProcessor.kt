@@ -4,6 +4,7 @@ import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.util.BeanUtils
 import com.wanna.framework.web.bind.WebDataBinder
 import com.wanna.framework.web.bind.WebRequestDataBinder
+import com.wanna.framework.web.bind.annotation.ModelAttribute
 import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.method.support.HandlerMethodArgumentResolver

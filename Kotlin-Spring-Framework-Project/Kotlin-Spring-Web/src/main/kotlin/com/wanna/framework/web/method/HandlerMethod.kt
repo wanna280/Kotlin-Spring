@@ -3,6 +3,7 @@ package com.wanna.framework.web.method
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.method.support.HandlerMethodUtil
 import java.lang.reflect.Method
 
@@ -22,6 +23,9 @@ open class HandlerMethod {
 
     var handlerMethod: HandlerMethod? = null
 
+    // 获取当前的HandlerMethod的解析之前的HandlerMethod(有可能现在变成了BeanObject，而之前是beanName)
+    var resolvedFromHandlerMethod: HandlerMethod? = null
+
     // 方法的参数列表
     var parameters: Array<MethodParameter>? = null
 
@@ -38,7 +42,9 @@ open class HandlerMethod {
         if (handler is String) {
             handler = this.beanFactory!!.getBean(handler)
         }
-        return newHandlerMethod(this, handler!!)
+        val newHandlerMethod = newHandlerMethod(this, handler!!)
+        newHandlerMethod.resolvedFromHandlerMethod = this  // set ResolvedFromHandlerMethod
+        return newHandlerMethod
     }
 
     /**
@@ -56,6 +62,24 @@ open class HandlerMethod {
      */
     fun isVoid(): Boolean {
         return Void.TYPE == method!!.returnType
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as HandlerMethod
+
+        if (bean != other.bean) return false
+        if (method != other.method) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = bean?.hashCode() ?: 0
+        result = 31 * result + (method?.hashCode() ?: 0)
+        return result
     }
 
     open inner class HandlerMethodParameter(index: Int) : MethodParameter(this@HandlerMethod.method!!, index) {
@@ -87,6 +111,7 @@ open class HandlerMethod {
         override fun getParameterType(): Class<*> =
             if (returnValue == null) method!!.returnType else returnValue::class.java
     }
+
 
     companion object {
         @JvmStatic

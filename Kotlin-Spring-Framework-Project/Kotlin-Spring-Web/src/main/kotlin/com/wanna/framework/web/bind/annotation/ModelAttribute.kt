@@ -1,4 +1,4 @@
-package com.wanna.framework.web.method.annotation
+package com.wanna.framework.web.bind.annotation
 
 /**
  * 对于@ModelAttribute注解标注的方法，在该方法参数当中，可以去使用SpringWebMvc当中的全部参数，比如@RequestParam/@RequestHeader；

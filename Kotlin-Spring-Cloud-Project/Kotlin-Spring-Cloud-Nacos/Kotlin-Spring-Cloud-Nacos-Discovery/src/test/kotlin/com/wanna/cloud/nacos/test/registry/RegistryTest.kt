@@ -4,7 +4,7 @@ import com.wanna.boot.autoconfigure.SpringBootApplication
 import com.wanna.boot.runSpringApplication
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.web.bind.annotation.RestController
-import com.wanna.framework.web.method.annotation.RequestMapping
+import com.wanna.framework.web.bind.annotation.RequestMapping
 
 @SpringBootApplication
 class RegistryTest

@@ -1,6 +1,5 @@
-package com.wanna.framework.web.method.annotation
+package com.wanna.framework.web.bind.annotation
 
-import com.wanna.framework.web.bind.RequestMethod
 import org.springframework.core.annotation.AliasFor
 
 /**

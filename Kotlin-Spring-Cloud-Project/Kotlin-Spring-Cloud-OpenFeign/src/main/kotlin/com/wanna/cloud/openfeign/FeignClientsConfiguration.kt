@@ -65,6 +65,7 @@ open class FeignClientsConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    @ConditionalOnClass(name = ["com.fasterxml.jackson.databind.ObjectMapper"])
     open fun messageConverters(): HttpMessageConverter<*> {
         return MappingJackson2HttpMessageConverter()
     }

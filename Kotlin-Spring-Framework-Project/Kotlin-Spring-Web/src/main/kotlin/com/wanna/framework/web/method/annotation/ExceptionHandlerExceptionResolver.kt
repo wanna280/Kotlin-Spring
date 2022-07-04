@@ -61,7 +61,7 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
     ): ModelAndView? {
 
         // 遍历所有的ControllerAdvice，去寻找合适的ExceptionHandler去处理异常
-        val exceptionHandlerMethod = getExceptionHandlerMethod(handler as HandlerMethod, ex)
+        val exceptionHandlerMethod = getExceptionHandlerMethod(handler as HandlerMethod?, ex)
         if (exceptionHandlerMethod == null) {
             response.sendError(500) // send Error
             return null

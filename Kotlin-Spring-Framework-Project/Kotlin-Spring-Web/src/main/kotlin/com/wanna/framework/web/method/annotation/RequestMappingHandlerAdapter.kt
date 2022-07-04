@@ -8,8 +8,12 @@ import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.core.util.ReflectionUtils
 import com.wanna.framework.web.accept.ContentNegotiationManager
+import com.wanna.framework.web.bind.annotation.InitBinder
+import com.wanna.framework.web.bind.annotation.ModelAttribute
+import com.wanna.framework.web.bind.annotation.RequestMapping
 import com.wanna.framework.web.bind.support.DefaultWebDataBinderFactory
 import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.ServerWebRequest
@@ -56,6 +60,8 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
                 it, ModelAttribute::class.java
             ) && !AnnotatedElementUtils.hasAnnotation(it, RequestMapping::class.java)
         }
+
+        private val jackson2Present = ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper")
     }
 
     // beanFactory，通过BeanFactoryAware去进行自动回调获取到

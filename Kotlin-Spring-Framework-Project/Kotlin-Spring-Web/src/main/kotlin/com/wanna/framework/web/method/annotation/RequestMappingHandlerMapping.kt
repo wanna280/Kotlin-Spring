@@ -1,9 +1,18 @@
 package com.wanna.framework.web.method.annotation
 
+import com.wanna.framework.beans.util.StringValueResolver
+import com.wanna.framework.context.EmbeddedValueResolverAware
 import com.wanna.framework.context.stereotype.Controller
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.lang.Nullable
+import com.wanna.framework.web.bind.annotation.CrossOrigin
+import com.wanna.framework.web.bind.annotation.RequestMapping
+import com.wanna.framework.web.bind.annotation.RequestMethod
+import com.wanna.framework.web.cors.CorsConfiguration
+import com.wanna.framework.web.method.HandlerMethod
 import com.wanna.framework.web.method.RequestMappingInfo
 import com.wanna.framework.web.method.RequestMappingInfoHandlerMapping
+import io.netty.handler.codec.http.cors.CorsConfig
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Method
 
@@ -15,7 +24,10 @@ import java.lang.reflect.Method
  * @see RequestMapping
  * @see Controller
  */
-open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping() {
+open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), EmbeddedValueResolverAware {
+
+    @Nullable
+    private var embeddedValueResolver: StringValueResolver? = null
 
     /**
      * 怎么判断它是否是一个Handler？只需要类上加了@Controller/@RequestMapping注解，它就是一个Handler
@@ -28,6 +40,10 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping() {
             beanType,
             RequestMapping::class.java
         )
+    }
+
+    override fun setEmbeddedValueResolver(resolver: StringValueResolver) {
+        this.embeddedValueResolver = resolver
     }
 
     /**
@@ -50,6 +66,76 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping() {
             }
         }
         return info
+    }
+
+    /**
+     * 初始化CORS的配置信息，我们需要处理@CrossOrigin注解
+     *
+     * @param handler handler
+     * @param mapping mapping
+     * @param method method
+     * @return CorsConfiguration
+     */
+    @Nullable
+    override fun initCorsConfiguration(handler: Any, method: Method, mapping: RequestMappingInfo): CorsConfiguration? {
+        val handlerType = createHandlerMethod(handler, method).beanType!!
+        val typeAnnotation = AnnotatedElementUtils.getMergedAnnotation(handlerType, CrossOrigin::class.java)
+        val methodAnnotation = AnnotatedElementUtils.getMergedAnnotation(method, CrossOrigin::class.java)
+        if (typeAnnotation == null && methodAnnotation == null) {
+            return null
+        }
+        val corsConfig = CorsConfiguration()
+
+        // 1. 如果类上有配置@CrossOrigin，需要添加到CrosConfig
+        updateCorsConfig(corsConfig, typeAnnotation)
+        // 2. 如果方法上有@CrossOrigin，那么需要继续添加配置信息
+        updateCorsConfig(corsConfig, methodAnnotation)
+
+        // if null,apply default to permit
+        return corsConfig.applyPermitDefaultValues()
+    }
+
+    /**
+     * 根据@Cross注解，去更新当前的Cors的配置信息
+     *
+     * @param crossOrigin CrossOrigin注解(可以为null)
+     * @param corsConfig CorsConfig
+     */
+    private fun updateCorsConfig(corsConfig: CorsConfiguration, @Nullable crossOrigin: CrossOrigin?) {
+        crossOrigin ?: return
+
+        // set AllowedMethods
+        crossOrigin.methods.map(RequestMethod::name).forEach(corsConfig::addAllowedMethod)
+
+        // set AllowedHeaders
+        crossOrigin.allowedHeaders.map(this::resolveCorsAnnotationValue).forEach(corsConfig::addAllowedHeader)
+
+        // set ExposedHeaders
+        crossOrigin.exposedHeaders.map(this::resolveCorsAnnotationValue).forEach(corsConfig::addExposeHeader)
+
+        // set AllowedOrigins
+        crossOrigin.origins.map(this::resolveCorsAnnotationValue).forEach(corsConfig::addAllowedOrigin)
+
+        // set AllowOriginPatterns
+        crossOrigin.originPatterns.map(this::resolveCorsAnnotationValue).forEach(corsConfig::addAllowedOriginPattern)
+
+        // set AllowCredentials
+        corsConfig.setAllowCredentials(crossOrigin.allowCredentials.toBoolean())
+
+        // set MaxAge
+        if (crossOrigin.maxAge >= 0) {
+            corsConfig.setMaxAge(crossOrigin.maxAge)
+        }
+    }
+
+    /**
+     * 如果必要的话，使用嵌入式的值解析器，去解析Cors注解的值
+     *
+     * @param value value
+     */
+    private fun resolveCorsAnnotationValue(value: String): String {
+        return if (this.embeddedValueResolver != null) this.embeddedValueResolver?.resolveStringValue(value) ?: ""
+        else value
     }
 
     /**

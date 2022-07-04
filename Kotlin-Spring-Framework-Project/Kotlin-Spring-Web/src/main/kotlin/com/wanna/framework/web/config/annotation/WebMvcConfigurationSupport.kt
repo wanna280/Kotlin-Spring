@@ -7,8 +7,10 @@ import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.format.FormatterRegistry
 import com.wanna.framework.context.format.support.DefaultFormattingConversionService
 import com.wanna.framework.context.format.support.FormattingConversionService
+import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.web.HandlerMapping
 import com.wanna.framework.web.accept.ContentNegotiationManager
+import com.wanna.framework.web.cors.CorsConfiguration
 import com.wanna.framework.web.handler.HandlerExceptionResolver
 import com.wanna.framework.web.handler.SimpleUrlHandlerMapping
 import com.wanna.framework.web.handler.ViewResolver
@@ -36,6 +38,10 @@ import com.wanna.framework.web.mvc.SimpleControllerHandlerAdapter
  */
 open class WebMvcConfigurationSupport : ApplicationContextAware {
 
+    companion object {
+        private val jackson2Present = ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper")
+    }
+
     private lateinit var applicationContext: ApplicationContext
 
     private var interceptors: MutableList<Any>? = null
@@ -47,6 +53,8 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     private var contentNegotiationManager: ContentNegotiationManager? = null
 
     private var messageConverters: MutableList<HttpMessageConverter<*>>? = null
+
+    private var corsConfigurations: Map<String, CorsConfiguration>? = null
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext
@@ -61,6 +69,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         val mapping = createRequestMappingHandlerMapping()
         // 设置Interceptors列表
         mapping.setInterceptors(*getInterceptors(conversionService))
+        mapping.setCorsConfigurations(getCorsConfigurations())
         return mapping
     }
 
@@ -150,7 +159,9 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     @Bean("urlHandlerMapping")
     @Qualifier("urlHandlerMapping")
     open fun urlHandlerMapping(): HandlerMapping {
-        return SimpleUrlHandlerMapping()
+        val urlHandlerMapping = SimpleUrlHandlerMapping()
+        urlHandlerMapping.setCorsConfigurations(getCorsConfigurations())
+        return urlHandlerMapping
     }
 
     @Bean("httpRequestHandlerAdapter")
@@ -161,7 +172,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
 
     @Bean("simpleControllerHandlerAdapter")
     @Qualifier("simpleControllerHandlerAdapter")
-    open fun simpleControllerHandlerAdapter() : SimpleControllerHandlerAdapter {
+    open fun simpleControllerHandlerAdapter(): SimpleControllerHandlerAdapter {
         return SimpleControllerHandlerAdapter()
     }
 
@@ -210,7 +221,9 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
      * 应用默认的MessageConverter列表
      */
     protected open fun applyDefaultMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
-        converters += MappingJackson2HttpMessageConverter()
+        if (jackson2Present) {
+            converters += MappingJackson2HttpMessageConverter()
+        }
     }
 
     protected open fun createRequestMappingHandlerAdapter(): RequestMappingHandlerAdapter {
@@ -236,22 +249,42 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         return interceptors.toTypedArray()
     }
 
+    /**
+     * 获取Cors的配置信息，它将会apply给所有的HandlerMapping当中
+     *
+     * @return Cors配置信息，key-pathPattern，value-CorsConfiguration
+     */
+    protected fun getCorsConfigurations(): Map<String, CorsConfiguration> {
+        var corsConfigurations = this.corsConfigurations
+        if (corsConfigurations == null) {
+            val corsRegistry = CorsRegistry()
+            addCorsMapping(corsRegistry)
+            corsConfigurations = corsRegistry.getCorsConfigurations()
+        }
+        return corsConfigurations
+    }
+
 
     /**
-     * 应用默认的异常解析器
+     * 应用默认的异常解析器，添加一个处理@ExceptionHandler的ExceptionResolver
+     *
+     * @param contentNegotiationManager 内容协商管理器
+     * @param resolvers 支持去进行扩展的HandlerExceptionResolver
      */
     protected open fun applyDefaultHandlerExceptionResolver(
         resolvers: MutableList<HandlerExceptionResolver>, contentNegotiationManager: ContentNegotiationManager
     ) {
+        // 创建一个ExceptionHandler的ExceptionResolver(它需要的组件，和HandlerAdapter完全类似)
+        // 并配置内容协商管理器，参数解析器、返回值处理器、消息转换器
         val exceptionHandlerExceptionResolver = ExceptionHandlerExceptionResolver()
-
         exceptionHandlerExceptionResolver.setContentNegotiationManager(contentNegotiationManager)
         exceptionHandlerExceptionResolver.setHandlerMethodArgumentResolvers(getArgumentResolvers())
         exceptionHandlerExceptionResolver.setHttpMessageConverters(getMessageConverters())
         exceptionHandlerExceptionResolver.setHandlerMethodReturnValueHandlers(getReturnValueResolvers())
 
 
-        // 手动设置ApplicationContext，并完成初始化工作...因为它不是一个SpringBean，无法自动初始化...
+        // 手动设置ApplicationContext，并完成初始化工作...
+        // 因为它不是一个SpringBean，无法自动初始化...我们尝试去进行手动初始化
         exceptionHandlerExceptionResolver.setApplicationContext(this.applicationContext)
         exceptionHandlerExceptionResolver.afterPropertiesSet()
 
@@ -263,65 +296,54 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
      *
      * @param registry 拦截器的注册中心，可以通过往其中添加拦截器实现拦截器的注册
      */
-    protected open fun addInterceptors(registry: InterceptorRegistry) {
-
-    }
+    protected open fun addInterceptors(registry: InterceptorRegistry) {}
 
     /**
      * 自定义默认的默认的异常解析器(模板方法，交给子类去进行实现)
      */
-    protected open fun configureHandlerExceptionResolver(resolvers: MutableList<HandlerExceptionResolver>) {
-
-    }
+    protected open fun configureHandlerExceptionResolver(resolvers: MutableList<HandlerExceptionResolver>) {}
 
     /**
      * 扩展自定义的异常解析器(模板方法，交给子类去进行实现)
      */
-    protected open fun extendsHandlerExceptionResolver(resolvers: MutableList<HandlerExceptionResolver>) {
+    protected open fun extendsHandlerExceptionResolver(resolvers: MutableList<HandlerExceptionResolver>) {}
 
-    }
-
-    protected open fun addFormatters(formatterRegistry: FormatterRegistry) {
-
-    }
+    protected open fun addFormatters(formatterRegistry: FormatterRegistry) {}
 
     /**
      * 自定义MessageConverter列表，交给子类去进行自定义
      *
      * @param converters 将要应用的MessageConverter列表
      */
-    protected open fun configureMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
-
-    }
+    protected open fun configureMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {}
 
     /**
      * 扩展MessageConverter列表，交给子类去扩展
      *
      * @param converters 将要应用的MessageConverter列表
      */
-    protected open fun extendsMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
-
-    }
+    protected open fun extendsMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {}
 
 
     /**
      * 扩展参数解析器，交给子类去进行扩展(模板方法)
      */
-    protected open fun extendsArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
-
-    }
+    protected open fun extendsArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {}
 
     /**
      * 扩展返回值处理器，交给子类去进行扩展(模板方法)
      */
-    protected open fun extendsReturnValueHandlers(handlers: MutableList<HandlerMethodReturnValueHandler>) {
-
-    }
+    protected open fun extendsReturnValueHandlers(handlers: MutableList<HandlerMethodReturnValueHandler>) {}
 
     /**
      * 自定义内容协商策略，交给子类去进行扩展(模板方法)
      */
-    protected open fun configureContentNegotiation(contentNegotiationConfigurer: ContentNegotiationConfigurer) {
+    protected open fun configureContentNegotiation(contentNegotiationConfigurer: ContentNegotiationConfigurer) {}
 
-    }
+    /**
+     * 交给子类去扩展CorsMapping，可以自行往其中去添加Cors的配置信息
+     *
+     * @param registry CorsRegistry
+     */
+    protected open fun addCorsMapping(registry: CorsRegistry) {}
 }

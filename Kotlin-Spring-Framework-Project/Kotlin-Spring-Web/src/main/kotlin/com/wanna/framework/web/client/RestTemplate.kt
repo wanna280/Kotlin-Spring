@@ -1,6 +1,7 @@
 package com.wanna.framework.web.client
 
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.http.MediaType
 import com.wanna.framework.web.http.ResponseEntity
 import com.wanna.framework.web.http.client.ClientHttpRequest
@@ -22,10 +23,17 @@ import java.net.URI
  */
 open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
 
+    companion object {
+        private val jackson2Present = ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper")
+    }
+
+
     private val messageConverters = ArrayList<HttpMessageConverter<*>>()
 
     init {
-        messageConverters.add(MappingJackson2HttpMessageConverter())
+        if (jackson2Present) {
+            messageConverters.add(MappingJackson2HttpMessageConverter())
+        }
     }
 
     override fun <T> getForObject(

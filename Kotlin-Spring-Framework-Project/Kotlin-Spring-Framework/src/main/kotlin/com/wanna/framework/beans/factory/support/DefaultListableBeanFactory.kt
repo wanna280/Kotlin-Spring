@@ -92,6 +92,9 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * 预实例化所有的单例Bean，在这里会完成后容器中所有非懒加载的单实例Bean的实例化和初始化工作
      */
     override fun preInstantiateSingletons() {
+        if (logger.isTraceEnabled) {
+            logger.trace("在[$this]当中完成所有的单实例Bean的初始化工作")
+        }
         // copy一份BeanDefinitionNames去进行实例化，避免在初始化过程当中又遇到了新注册进来的BeanDefinition的情况，这时候会出现并发修改异常
         val beanDefinitionNames = ArrayList(this.beanDefinitionNames)
 
@@ -131,7 +134,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * 给定一个beanName，去判断该Bean是否是FactoryBean
      *
      * @param name beanName
-     * @return 该Bean是否是FactoryMethod
+     * @return 该Bean是否是FactoryBean？
      */
     override fun isFactoryBean(name: String): Boolean {
         //将beanName当中的&前缀全部去掉
@@ -177,11 +180,14 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
     /**
      * 获取Autowire的候选的解析器，用于匹配该Bean是否是一个可以作为目标依赖的候选注入Bean
+     *
+     * @return AutowireCandidateResolver
      */
     open fun getAutowireCandidateResolver(): AutowireCandidateResolver = this.autowireCandidateResolver
 
     /**
-     * 判断一个候选Bean能否注入给DependencyDescriptor的目标元素？会匹配BeanDefinition当中的AutowireCandidate属性以及Qualifier注解等情况
+     * 判断一个候选Bean能否注入给DependencyDescriptor的目标元素？
+     * 支持去进行匹配BeanDefinition当中的AutowireCandidate属性以及Qualifier注解等情况
      *
      * @param beanName beanName
      * @param descriptor 依赖描述符
@@ -732,27 +738,36 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
     /**
      * 获取BeanFactory当中的beanDefinition的数量
+     *
+     * @return BeanDefinition的数量
      */
     override fun getBeanDefinitionCount(): Int = beanDefinitionNames.size
 
     /**
      * 将FactoryBean的引用符号&去掉，称为"解引用"
+     *
      * @param beanName 要去进行转换的name
      */
     private fun transformBeanName(beanName: String): String = BeanFactoryUtils.transformBeanName(beanName)
 
     /**
      * 获取BeanFactory当中的BeanDefinition的name列表
+     *
+     * @return 当前的BeanFactory当中的所有的BeanDefinition的name
      */
     override fun getBeanDefinitionNames(): List<String> = ArrayList(beanDefinitionNames)
 
     /**
-     * 获取BeanDefinition列表
+     * 获取BeanFactory当中已经完成注册的BeanDefinition列表
+     *
+     * @return 当前的BeanFactory当中的所有的BeanDefinition的列表
      */
     override fun getBeanDefinitions(): List<BeanDefinition> = ArrayList(beanDefinitionMap.values)
 
     /**
      * 获取Spring BeanFactory的依赖比较器(可以为null)
+     *
+     * @return Spring BeanFactory的依赖比较器
      */
     open fun getDependencyComparator(): Comparator<Any?>? = dependencyComparator
 
@@ -774,7 +789,13 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @see containsBeanDefinition
      */
     override fun getBeanDefinition(beanName: String): BeanDefinition {
-        return beanDefinitionMap[beanName] ?: throw NoSuchBeanDefinitionException(beanName)
+        val beanDefinition = beanDefinitionMap[beanName]
+        if (beanDefinition == null) {
+            if (logger.isTraceEnabled) {
+                logger.trace("给定的beanName[$beanName]在[$this]当中不存在")
+            }
+        }
+        return beanDefinition ?: throw NoSuchBeanDefinitionException(beanName)
     }
 
     /**
@@ -793,6 +814,19 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             this.beanDefinitionNames = beanDefinitionNames
             this.beanDefinitionMap -= name
         }
+
+        // clear Merged BeanDefinition
+        clearMergedBeanDefinition(name)
+    }
+
+    /**
+     * clear掉MergedBeanDefinition，对于一个BeanDefinition，在完成Merge之后，
+     * 有可能之后BeanDefinition已经去进行更新过，因此，就需要去进行重新Merge
+     *
+     * @param beanName beanName
+     */
+    override fun clearMergedBeanDefinition(beanName: String) {
+        super.clearMergedBeanDefinition(beanName)
     }
 
     /**
@@ -833,12 +867,12 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     override fun destroySingleton(beanName: String) {
         super.destroySingleton(beanName)
 
-        // 从manualSingletonName当中也进行移除掉
+        //将手动注册的SingletonBean，也需要尝试去进行移除掉
         removeManualSingletonName(beanName)
     }
 
     /**
-     * 移除一个已经注册的Singleton，仅仅是移除通过registerSingleton注册到BeanFactory当中的，别的方式注册的不会移除
+     * 移除一个已经注册的Singleton，仅仅是移除手动通过registerSingleton注册到BeanFactory当中的，别的方式注册的不会移除
      *
      * @param beanName beanName
      */
@@ -847,10 +881,10 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     /**
-     * 更新已经注册的单实例Bean的列表，更新什么，如何更新都通过Function去进行给定
+     * 更新所有已经进行手动注册的单实例Bean的列表，对于更新什么，如何更新都通过Function去进行给定
      *
      * @param action 要执行操作(Consumer)
-     * @param filter 去匹配的filter(filter匹配时，才去执行action)
+     * @param filter 去匹配的filter(filter匹配时，才去执行给定的action)
      */
     protected open fun updateManualSingleNames(action: Consumer<MutableSet<String>>, filter: Predicate<Set<String>>) {
         synchronized(this.beanDefinitionMap) {
@@ -863,8 +897,11 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     /**
-     * 重写注册DefaultSingletonBeanRegistry的registerSingleton方法，目的是添加singletonBeanName去进行保存，方便后续去进行寻找；
-     * 因为有可能直接使用registerSingleton去注册一个单例Bean到容器当中，但是该Bean没有被BeanDefinitionMap所管理，我们得找个地方去进行存储
+     * 重写注册DefaultSingletonBeanRegistry的registerSingleton方法，
+     * 目的是添加singletonBeanName去进行保存，方便后续去进行寻找；
+     * 因为有可能直接使用registerSingleton去注册一个单例Bean到容器当中，
+     * 但是该Bean没有被BeanDefinitionMap所管理，我们得找个地方去进行存储，
+     * 需要去对手动管理的单例Bean，去提供管理，因为我们也许会用到获取SingletonBean的情况
      *
      * @see manualSingletonNames
      * @param beanName beanName
@@ -873,9 +910,10 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     override fun registerSingleton(beanName: String, singleton: Any) {
         super.registerSingleton(beanName, singleton)
 
-        // Note: 操作manualSingletonNames ，需要加上BeanDefinitionMap的锁
+        // Note: 操作manualSingletonNames ，也需要加上BeanDefinitionMap的锁
         synchronized(this.beanDefinitionMap) {
-            // Note: 如果在BeanDefinition当中没有这个beanName，才需要去进行添加==>它里面的内容和BeanDefinitionMap当中不会冲突
+            // Note: 如果在BeanDefinition当中没有这个beanName，才需要去进行添加
+            // 因此，manualSingletonNames里面的内容和BeanDefinitionMap当中不会冲突
             updateManualSingleNames({ it.add(beanName) }, { !this.beanDefinitionMap.contains(beanName) })
         }
     }
@@ -977,8 +1015,14 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         return beanNames
     }
 
+    /**
+     * 摧毁掉当前BeanFactory当中的所有的Singleton
+     * 对于父类SingletonBeanRegistry当中，已经摧毁了它当中的所有的单例Bean，
+     * 在这个类当中，我们新增了手动注册SingletonBean的方式，因此，我们需要将
+     * 全部手动注册的Bean，都去进行destroy
+     */
     override fun destroySingletons() {
-        // super.destroySingletons，清除所有的单实例Bean
+        // super.destroySingletons，清除Registry当中的所有的单实例Bean
         super.destroySingletons()
         // clear掉所有的手动去进行管理的SingletonBean
         updateManualSingleNames({ it.clear() }) { it.isNotEmpty() }

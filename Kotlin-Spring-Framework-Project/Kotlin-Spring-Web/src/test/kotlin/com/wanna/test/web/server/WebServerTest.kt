@@ -6,14 +6,15 @@ import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.context.stereotype.Controller
 import com.wanna.framework.web.DispatcherHandlerImpl
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.bind.WebDataBinder
-import com.wanna.framework.web.bind.annotation.RestController
+import com.wanna.framework.web.bind.annotation.*
+import com.wanna.framework.web.config.annotation.CorsRegistry
 import com.wanna.framework.web.config.annotation.DelegatingWebMvcConfiguration
+import com.wanna.framework.web.config.annotation.WebMvcConfigurer
 import com.wanna.framework.web.context.support.AnnotationConfigWebApplicationContext
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.MediaType
-import com.wanna.framework.web.method.annotation.*
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 import com.wanna.framework.web.server.netty.server.support.NettyServer
@@ -22,7 +23,7 @@ import com.wanna.framework.web.ui.View
 
 @ComponentScan(["com.wanna.test.web.server"])
 @Configuration(proxyBeanMethods = false)
-class WebServerTest {
+open class WebServerTest {
     @Configuration(proxyBeanMethods = false)
     class WebMvcConfig : DelegatingWebMvcConfiguration()
 
@@ -45,6 +46,15 @@ class WebServerTest {
                 val readAllBytes = fis?.readAllBytes() ?: throw IllegalStateException("无法找到指定的资源[$mavViewUrl]")
                 response.getOutputStream().write(readAllBytes)
                 response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE)
+            }
+        }
+    }
+
+    @Bean
+    fun webMvcConfigurer(): WebMvcConfigurer {
+        return object : WebMvcConfigurer {
+            override fun addCorsMapping(registry: CorsRegistry) {
+                registry.addMapping("/**").allowedMethods("GET", "POST")
             }
         }
     }

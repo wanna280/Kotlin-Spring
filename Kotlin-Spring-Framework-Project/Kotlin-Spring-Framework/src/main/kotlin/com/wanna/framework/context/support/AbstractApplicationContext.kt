@@ -69,10 +69,10 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     // 早期的监听器
     private var earlyApplicationListeners: MutableSet<ApplicationListener<*>>? = null
 
-    // 应用的启动大锁，只要拿到这个锁，才能去对容器去进行启动或者关闭
+    // ApplicationContext的应用的启动大锁，只要拿到这个锁，才能去对容器去进行启动或者关闭
     private val startupShutdownMonitor = Any()
 
-    // 生命周期处理器
+    // 生命周期处理器，负责回调所有的LifecycleBean(比如WebServer)
     private var lifecycleProcessor: LifecycleProcessor? = null
 
     // ApplicationStartup，记录Spring应用启动过程当中的步骤信息
@@ -429,7 +429,10 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
         return this.environment!!
     }
 
+    override fun isActive() = this.active.get()
+
     override fun close() {
+        // acquire startup shutdown Lock
         synchronized(this.startupShutdownMonitor) {
             doClose()  //  doClose
             if (this.shutdownHook != null) {

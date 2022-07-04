@@ -52,4 +52,8 @@ open class WebMvcConfigurerComposite : WebMvcConfigurer {
     override fun addFormatters(formatterRegistry: FormatterRegistry) {
         this.webMvcConfigurers.forEach { it.addFormatters(formatterRegistry) }
     }
+
+    override fun addCorsMapping(registry: CorsRegistry) {
+        this.webMvcConfigurers.forEach { it.addCorsMapping(registry) }
+    }
 }

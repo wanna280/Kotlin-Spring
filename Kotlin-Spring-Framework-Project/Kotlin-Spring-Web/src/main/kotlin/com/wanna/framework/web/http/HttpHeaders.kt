@@ -1,12 +1,15 @@
 package com.wanna.framework.web.http
 
+import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.LinkedMultiValueMap
 import com.wanna.framework.util.MultiValueMap
+import com.wanna.framework.web.bind.annotation.RequestMethod
 
 /**
  * HttpHeaders
  */
-class HttpHeaders : MultiValueMap<String, String> {
+open class HttpHeaders : MultiValueMap<String, String> {
     companion object {
         /**
          * 客户端想要接收什么媒体类型的响应？比如"application/json"、"text/html"
@@ -19,6 +22,9 @@ class HttpHeaders : MultiValueMap<String, String> {
          */
         const val CONNECTION = "Connection"
 
+        /**
+         * 请求的响应类型，比如"text/html","application/json"
+         */
         const val CONTENT_TYPE = "Content-Type"
 
         const val HOST = "Host"
@@ -26,6 +32,51 @@ class HttpHeaders : MultiValueMap<String, String> {
         const val USER_AGENT = "UserAgent"
 
         const val UPGRADE = "Upgrade"
+
+        const val VARY = "Vary"
+
+        /**
+         * Http请求源，在CORS请求的，"PreFlight"(预检)请求当中需要携带请求的"Origin"
+         */
+        const val ORIGIN = "Origin"
+
+        /**
+         * 服务器端的CORS的访问控制允许的源(只有给定的这些源地址，才能去对资源去进行访问，用于去完成跨域的配置)
+         */
+        const val ACCESS_CONTROL_ALLOW_ORIGIN = "Access-Control-Allow-Origin"
+
+        const val ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials"
+
+        /**
+         * 服务器端的CORS的访问控制允许的请求方式，在匹配完客户端的请求方式之后，会将其值写出给Response
+         */
+        const val ACCESS_CONTROL_ALLOW_METHODS = "Access-Control-Allow-Methods"
+
+        /**
+         * 服务器端的CORS的访问控制允许的Headers，在匹配完客户端的请求方式之后，会将其值写出给Response
+         */
+        const val ACCESS_CONTROL_ALLOW_HEADERS = "Access-Control-Allow-Headers"
+
+        /**
+         * CORS的访问控制的最大存活时间(需要由服务器端去告诉浏览器，多长时间内不用再次发送"PreFlight"预检请求)
+         */
+        const val ACCESS_CONTROL_MAX_AGE = "Access-Control-Max-Age"
+
+        /**
+         * CORS的访问控制当中要暴露的Headers，在CORS请求当中，会将该Header写入到Response当中
+         */
+        const val ACCESS_CONTROL_EXPOSE_HEADERS = "Access-Control-Expose-Headers"
+
+        /**
+         * CORS的访问控制客户端请求时，"PreFlight"(请求)请求携带的Headers列表
+         */
+        const val ACCESS_CONTROL_REQUEST_HEADERS = "Access-Control-Request-Headers"
+
+        /**
+         * CORS的访问控制的客户端的请求方式(对于"PreFlight"请求当中，请求方式为"OPTIONS"，
+         * 就需要在"Access-Control-Request-Method"这个请求头当中携带真实的CORS请求的真实请求方式)
+         */
+        const val ACCESS_CONTROL_REQUEST_METHOD = "Access-Control-Request-Method"
 
         /**
          * addHeader，"Transfer-Encoding=chucked"，标识将数据去进行分块传输
@@ -37,55 +88,42 @@ class HttpHeaders : MultiValueMap<String, String> {
          *
          * 下面是一个Demo的Http报文的格式：
          *
+         * ```
          * socket.write('HTTP/1.1 200 OK\r\n');   // request line
          * socket.write('Transfer-Encoding: chunked\r\n');
          * socket.write('\r\n');
-
          * socket.write('b\r\n');   // 告诉浏览器，当前的chuck长度为11(0xb)
          * socket.write('01234567890\r\n');
-
          * socket.write('5\r\n');  // 告诉浏览器，当前的chuck长度为5
          * socket.write('12345\r\n');
-
          * socket.write('0\r\n');  // 最后一个chuck，长度为0，告诉浏览器到这里文档结束
          * socket.write('\r\n');
+         * ```
          */
         const val TRANSFER_ENCODING = "Transfer-Encoding"
     }
 
     private val httpHeaders = LinkedMultiValueMap<String, String>()
 
-    override fun getFirst(key: String): String? {
-        return httpHeaders.getFirst(key)
-    }
+    @Nullable
+    override fun getFirst(key: String) = httpHeaders.getFirst(key)
 
-    override fun add(key: String, value: String) {
-        return httpHeaders.add(key, value)
-    }
+    override fun add(key: String, value: String) = httpHeaders.add(key, value)
 
-    override fun addAll(key: String, values: List<String>) {
-        return httpHeaders.addAll(key, values)
-    }
+    override fun addAll(key: String, values: List<String>) = httpHeaders.addAll(key, values)
 
-    override fun set(key: String, value: String) {
-        return httpHeaders.set(key, value)
-    }
+    override fun set(key: String, value: String) = httpHeaders.set(key, value)
 
-    override fun toSingleValueMap(): Map<String, String> {
-        return httpHeaders.toSingleValueMap()
-    }
+    override fun toSingleValueMap() = httpHeaders.toSingleValueMap()
 
     override val size: Int
         get() = httpHeaders.size
 
-    override fun containsKey(key: String): Boolean {
-        return httpHeaders.containsKey(key)
-    }
+    override fun containsKey(key: String) = httpHeaders.containsKey(key)
 
-    override fun containsValue(value: MutableList<String>): Boolean {
-        return httpHeaders.containsValue(value)
-    }
+    override fun containsValue(value: MutableList<String>) = httpHeaders.containsValue(value)
 
+    @Nullable
     override fun get(key: String) = httpHeaders[key]
 
     override fun isEmpty() = httpHeaders.isEmpty()
@@ -97,21 +135,182 @@ class HttpHeaders : MultiValueMap<String, String> {
     override val values: MutableCollection<MutableList<String>>
         get() = httpHeaders.values
 
-    override fun clear() {
-        httpHeaders.clear()
+    override fun clear() = httpHeaders.clear()
+
+    @Nullable
+    override fun put(key: String, value: MutableList<String>): MutableList<String>? = httpHeaders.put(key, value)
+
+    override fun putAll(from: Map<out String, MutableList<String>>) = httpHeaders.putAll(from)
+
+    @Nullable
+    override fun remove(key: String): MutableList<String>? = httpHeaders.remove(key)
+
+    /**
+     * 获取客户端的CORS的访问控制的请求头
+     *
+     * @return 请求的Header当中"Access-Control-Request-Headers"字段的值
+     */
+    open fun getAccessControlRequestHeaders(): List<String> {
+        val value = getFirst(ACCESS_CONTROL_REQUEST_HEADERS) ?: return emptyList()
+        return StringUtils.commaDelimitedListToStringArray(value, ",").toList()
     }
 
-    override fun put(key: String, value: MutableList<String>): MutableList<String>? {
-        return httpHeaders.put(key, value)
+    /**
+     * 设置访问控制的请求头
+     *
+     * @param headers 访问控制的请求头列表当中"Access-Control-Request-Headers"字段的值
+     */
+    open fun setAccessControlRequestHeaders(headers: List<String>) {
+        set(ACCESS_CONTROL_REQUEST_HEADERS, headers.toMutableList())
     }
 
-    override fun putAll(from: Map<out String, MutableList<String>>) {
-        httpHeaders.putAll(from)
+    /**
+     * 获取浏览器的申请去进行访问控制的请求方式
+     *
+     * @return 如果header当中不存在"Access-Control-Request-Method"，那么return null；如果存在，那么return 该字段的值
+     */
+    @Nullable
+    open fun getAccessControlRequestMethod(): RequestMethod? {
+        val name = getFirst(ACCESS_CONTROL_REQUEST_METHOD) ?: return null
+        return RequestMethod.forName(name)
     }
 
-    override fun remove(key: String): MutableList<String>? {
-        return httpHeaders.remove(key)
+    /**
+     * 设置访问控制的请求方式
+     *
+     * @param method 想要使用的访问控制的请求方式
+     */
+    open fun setAccessControlRequestMethod(method: RequestMethod) {
+        set(ACCESS_CONTROL_REQUEST_METHOD, method.name)
     }
 
-    fun getHost(): String = httpHeaders[HOST]?.joinToString() ?: ""
+    /**
+     * set allowCredentials
+     *
+     * @param allowCredentials
+     */
+    open fun setAccessControlAllowCredentials(allowCredentials: Boolean) {
+        this.set(ACCESS_CONTROL_ALLOW_CREDENTIALS, allowCredentials.toString())
+    }
+
+    /**
+     * get allowCredentials
+     *
+     * @return allowCredentials default to false
+     */
+    open fun getAccessControlAllowCredentials(): Boolean =
+        getFirst(ACCESS_CONTROL_ALLOW_CREDENTIALS)?.toBoolean() ?: false
+
+    /**
+     * 设置访问控制要去进行暴露的Headers
+     *
+     * @param exposeHeaders 要去进行暴露的headers
+     */
+    open fun setAccessControlExposeHeaders(exposeHeaders: List<String>) {
+        set(ACCESS_CONTROL_EXPOSE_HEADERS, exposeHeaders.toMutableList())
+    }
+
+    /**
+     * 获取访问控制要去暴露的Headers列表
+     *
+     * @return 访问控制要去暴露的Headers
+     */
+    open fun getAccessControlExposeHeaders(): List<String> {
+        val value = getFirst(ACCESS_CONTROL_EXPOSE_HEADERS) ?: return emptyList()
+        return StringUtils.commaDelimitedListToStringArray(value).toList()
+    }
+
+    /**
+     * 设置访问控制允许的Headers
+     *
+     * @param allowHeaders 允许的headers列表
+     */
+    open fun setAccessControlAllowHeaders(allowHeaders: List<String>) {
+        set(ACCESS_CONTROL_ALLOW_HEADERS, allowHeaders.toMutableList())
+    }
+
+    /**
+     * 获取访问控制允许的Headers
+     *
+     * @return 允许的Headers列表
+     */
+    open fun getAccessControlAllowHeaders(): List<String> {
+        val value = getFirst(ACCESS_CONTROL_ALLOW_HEADERS) ?: return emptyList()
+        return StringUtils.commaDelimitedListToStringArray(value).toList()
+    }
+
+
+    /**
+     * 访问控制允许的请求的请求方法("Access-Control-Allow-Methods")
+     *
+     * @param allowMethods 允许的请求方法
+     */
+    open fun setAccessControlAllowMethods(allowMethods: List<RequestMethod>) {
+        set(ACCESS_CONTROL_ALLOW_METHODS, allowMethods.map { it.name }.toMutableList())
+    }
+
+    /**
+     * 获取访问控制允许的请求方法("Access-Control-Allow-Methods")
+     *
+     * @return 访问控制允许的请求方式列表
+     */
+    open fun getAccessControlAllowMethods(): List<RequestMethod> {
+        val value = getFirst(ACCESS_CONTROL_ALLOW_METHODS) ?: return emptyList()
+        return StringUtils.commaDelimitedListToStringArray(value).map { RequestMethod.forName(it) }.toList()
+    }
+
+    /**
+     * 设置访问控制允许的最大的存活时间
+     *
+     * @param maxAge 需要设置的"Access-Control-Max-Age"的值
+     */
+    open fun setAccessControlMaxAge(maxAge: Long) = this.set(ACCESS_CONTROL_MAX_AGE, maxAge.toString())
+
+    /**
+     * 获取访问控制允许的最大时间
+     *
+     * @return "Access-Control-Max-Age"的值，如果没有，那么return -1
+     */
+    open fun getAccessControlMaxAge(): Long {
+        return getFirst(ACCESS_CONTROL_MAX_AGE)?.toLong() ?: -1
+    }
+
+    /**
+     * 设置HttpHeader当中的访问控制允许的源(Origin)
+     *
+     * @param allowedOrigin 允许的Origin(为null代表删除)
+     */
+    open fun setAccessControlAllowOrigin(@Nullable allowedOrigin: String?) {
+        if (allowedOrigin == null) {
+            this.remove(ACCESS_CONTROL_ALLOW_ORIGIN)
+        } else {
+            this.set(ACCESS_CONTROL_ALLOW_ORIGIN, allowedOrigin)
+        }
+    }
+
+    /**
+     * HttpHeaders当中是否有包含"Access-Control-Allow-Origin"呢？
+     *
+     * @return 如果有包含""Access-Control-Allow-Origin""，return其值；没有则return null
+     */
+    @Nullable
+    open fun getAccessControllerAllowOrigin(): String? = getFieldValues(ACCESS_CONTROL_ALLOW_ORIGIN)
+
+    /**
+     * 获取给定的字段的值
+     *
+     * @param name name
+     * @return 如果不存在的话，return null；如果存在多个，使用","去进行拼接
+     */
+    @Nullable
+    protected open fun getFieldValues(name: String): String? {
+        val origin = this[name] ?: return null
+        return StringUtils.collectionToCommaDelimitedString(origin)
+    }
+
+    @Nullable
+    open fun getOrigin(): String? = getFirst(ORIGIN)
+
+    @Nullable
+    open fun getHost(): String? = getFirst(HOST)
 }

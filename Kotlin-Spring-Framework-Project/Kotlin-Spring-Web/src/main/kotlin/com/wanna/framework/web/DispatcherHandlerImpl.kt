@@ -11,6 +11,7 @@ import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.io.support.PropertiesLoaderUtils
 import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.handler.HandlerAdapter
 import com.wanna.framework.web.handler.HandlerExceptionResolver
 import com.wanna.framework.web.handler.ModelAndView
@@ -291,6 +292,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      * @param request request
      * @return 如果找到了合适的Handler，那么return HandlerExecutionChain；否则，return null
      */
+    @Nullable
     protected open fun getHandler(request: HttpServerRequest): HandlerExecutionChain? {
         this.handlerMappings?.forEach {
             val handler = it.getHandler(request)

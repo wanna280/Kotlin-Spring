@@ -1,7 +1,6 @@
 package com.wanna.framework.web.bind.annotation
 
 import com.wanna.framework.context.stereotype.Controller
-import com.wanna.framework.web.method.annotation.ResponseBody
 import org.springframework.core.annotation.AliasFor
 
 /**

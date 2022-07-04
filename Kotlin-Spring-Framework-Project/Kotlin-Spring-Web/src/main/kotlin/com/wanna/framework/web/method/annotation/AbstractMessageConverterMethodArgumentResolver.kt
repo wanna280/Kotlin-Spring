@@ -1,7 +1,8 @@
 package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestBody
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpInputMessage

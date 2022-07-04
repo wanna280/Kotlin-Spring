@@ -19,7 +19,10 @@ import com.wanna.framework.web.method.annotation.RequestMappingHandlerMapping
 import com.wanna.framework.web.server.netty.server.support.NettyServerHandler
 
 /**
- * 只有在WebMvc下才生效的自动配置类
+ * 只有在WebMvc下才生效的自动配置类，给SpringBeanFactory当中导入MVC相关的配置类
+ *
+ * @see DelegatingWebMvcConfiguration
+ * @see DispatcherHandler
  */
 @ConditionalOnWebApplication(ConditionalOnWebApplication.Type.MVC)
 @EnableConfigurationProperties([NettyWebServerProperties::class])  // 导入WebServerProperties配置文件
@@ -42,15 +45,19 @@ open class NettyMvcAutoConfiguration : ApplicationContextAware {
 
     /**
      * 给SpringBeanFactory当中导入一个NettyWebServerFactory
-     * 它的作用是，为Spring的ApplicationContext去提供WebServer，并完成启动
+     * 它的作用是，为Spring的ApplicationContext去提供WebServer，
+     * 并提供WebServer启动与关闭等相关的操作
      *
-     * @param properties WebServer的配置文件
+     * @param properties WebServer的配置信息
      */
     @Bean
+    @ConditionalOnMissingBean
     open fun nettyWebServerFactory(properties: NettyWebServerProperties): WebServerFactory {
         val nettyWebServerFactory = NettyWebServerFactory()
         nettyWebServerFactory.setHandler(NettyServerHandler(this.applicationContext))
         nettyWebServerFactory.setPort(properties.port)
+        nettyWebServerFactory.setBossGroupThreads(properties.bossCount)
+        nettyWebServerFactory.setWorkerGroupThreads(properties.workerCount)
         return nettyWebServerFactory
     }
 

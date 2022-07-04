@@ -1,6 +1,6 @@
 package com.wanna.framework.web.http
 
-import com.wanna.framework.web.bind.RequestMethod
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import java.net.URI
 
 /**

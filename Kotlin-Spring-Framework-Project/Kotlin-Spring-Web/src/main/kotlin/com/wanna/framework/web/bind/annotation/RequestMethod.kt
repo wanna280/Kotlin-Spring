@@ -1,4 +1,4 @@
-package com.wanna.framework.web.bind
+package com.wanna.framework.web.bind.annotation
 
 /**
  * 这是对HTTP请求方式的枚举
