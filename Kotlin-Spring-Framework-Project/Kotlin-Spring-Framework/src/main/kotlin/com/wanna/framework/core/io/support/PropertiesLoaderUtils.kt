@@ -63,7 +63,7 @@ object PropertiesLoaderUtils {
     @JvmStatic
     fun loadPropertiesFromProperties(inputStream: InputStream): Properties {
         val properties = Properties()
-        inputStream.use { properties.load(inputStream) }  // use method for close io stream
+        inputStream.use { properties.load(inputStream) }  // use method for close io stream automatically
         return properties
     }
 
@@ -75,7 +75,7 @@ object PropertiesLoaderUtils {
      */
     private fun loadPropertiesFromXml(inputStream: InputStream): Properties {
         val properties = Properties()
-        inputStream.use { properties.loadFromXML(inputStream) }
+        inputStream.use { properties.loadFromXML(inputStream) }  // use method for close io stream automatically
         return properties
     }
 }

@@ -115,7 +115,7 @@ open class PropertyPlaceholderHelper(
                 if (propertyValue != null) {
                     // 递归去进行解析
                     propertyValue = parseStringValue(propertyValue, placeholderResolver, visitedPlaceholder)
-                    // 将字符串的"%{...}"部分，去替换成为解析完成的属性值(propertValue)...
+                    // 将字符串的"%{...}"部分，去替换成为解析完成的属性值(propertyValue)...
                     builder.replace(startIndex, endIndex + suffix.length, propertyValue)
 
                     // 重新计算startIndex，找到后续的下一个占位符

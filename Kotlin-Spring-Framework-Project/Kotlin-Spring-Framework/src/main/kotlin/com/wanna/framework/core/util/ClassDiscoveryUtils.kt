@@ -19,7 +19,7 @@ object ClassDiscoveryUtils {
      * @return 指定的包下递归扫描到的类的集合
      */
     fun scan(vararg packages: String, classLoader: ClassLoader? = null): Set<Class<*>> {
-        val classLoaderToUse = classLoader ?: Thread.currentThread().contextClassLoader
+        val classLoaderToUse = classLoader ?: ClassUtils.getDefaultClassLoader()
         val classes: MutableSet<Class<*>> = HashSet()
         packages.forEach { classes.addAll(getClassesForPackage(it, classLoaderToUse)) }
         return classes
@@ -114,7 +114,6 @@ object ClassDiscoveryUtils {
                             // 添加到classes
                             classes.add(Class.forName("$packageName.$className", false, classLoader))
                         } catch (e: ClassNotFoundException) {
-                            // .error("添加用户自定义视图类错误 找不到此类的.class文件");
                             e.printStackTrace()
                         }
                     }

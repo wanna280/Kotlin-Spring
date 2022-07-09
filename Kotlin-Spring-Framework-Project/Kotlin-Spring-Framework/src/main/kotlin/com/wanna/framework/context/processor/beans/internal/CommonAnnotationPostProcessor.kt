@@ -15,6 +15,7 @@ import java.lang.reflect.Member
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
+import javax.annotation.Nullable
 import javax.annotation.PostConstruct
 import javax.annotation.PreDestroy
 import javax.annotation.Resource
@@ -41,10 +42,21 @@ open class CommonAnnotationPostProcessor : InitDestroyAnnotationBeanPostProcesso
         }
     }
 
-    private lateinit var beanFactory: BeanFactory
+    @Nullable
+    private var resourceFactory: BeanFactory? = null
+
+    @Nullable
+    private var beanFactory: BeanFactory? = null
+
+    open fun setResourceFactory(resourceFactory: BeanFactory) {
+        this.resourceFactory = resourceFactory
+    }
 
     override fun setBeanFactory(beanFactory: BeanFactory) {
         this.beanFactory = beanFactory
+        if (this.resourceFactory == null) {
+            this.resourceFactory = beanFactory
+        }
     }
 
     // InjectionMetadataCache，维护要去进行自动注入的相关信息
@@ -187,7 +199,7 @@ open class CommonAnnotationPostProcessor : InitDestroyAnnotationBeanPostProcesso
          * @return 去执行自动注入的元素
          */
         override fun getResourceToInject(bean: Any, beanName: String): Any {
-            return beanFactory.getBean(name)
+            return resourceFactory?.getBean(name) ?: throw IllegalStateException("没有ResourceFactory去提供@Resource的注入")
         }
     }
 }

@@ -57,7 +57,7 @@ open class GenericScope : Scope, BeanDefinitionRegistryPostProcessor, Disposable
             val lock = locks[it.getName()]!!
             lock.lock()
             try {
-                it.destory()
+                it.destroy()
             } finally {
                 lock.unlock()
             }
@@ -76,7 +76,7 @@ open class GenericScope : Scope, BeanDefinitionRegistryPostProcessor, Disposable
             val lock = this.locks[wrapper.getName()]!!
             lock.lock()
             try {
-                wrapper.destory()
+                wrapper.destroy()
             } finally {
                 lock.unlock()
             }
@@ -108,14 +108,14 @@ open class GenericScope : Scope, BeanDefinitionRegistryPostProcessor, Disposable
     }
 
     /**
-     * 给指定的beanName的Bean去注册Destory的回调
+     * 给指定的beanName的Bean去注册Destroy的回调
      *
      * @param name beanName
      * @param callback 要设置的destroy回调
      */
     override fun registerDestructionCallback(name: String, callback: Runnable) {
         val lifecycleWrapper = this.cache.get(name) ?: return
-        lifecycleWrapper.setDestoryCallback(callback)
+        lifecycleWrapper.setDestroyCallback(callback)
     }
 
     /**
@@ -176,11 +176,11 @@ open class GenericScope : Scope, BeanDefinitionRegistryPostProcessor, Disposable
             return this.bean!!
         }
 
-        fun setDestoryCallback(callback: Runnable) {
+        fun setDestroyCallback(callback: Runnable) {
             this.callback = callback
         }
 
-        fun destory() {
+        fun destroy() {
             if (this.callback != null) {
                 callback!!.run()
             }

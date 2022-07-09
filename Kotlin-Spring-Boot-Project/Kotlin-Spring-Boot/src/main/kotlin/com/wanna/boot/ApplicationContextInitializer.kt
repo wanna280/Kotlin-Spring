@@ -7,6 +7,7 @@ import com.wanna.framework.context.ConfigurableApplicationContext
  *
  * @see SpringApplication.run
  */
+@FunctionalInterface
 interface ApplicationContextInitializer<T : ConfigurableApplicationContext> {
     fun initialize(applicationContext: T)
 }
