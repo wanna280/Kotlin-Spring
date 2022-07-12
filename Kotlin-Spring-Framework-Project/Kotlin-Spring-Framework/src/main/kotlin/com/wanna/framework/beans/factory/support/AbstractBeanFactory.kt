@@ -20,6 +20,7 @@ import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.support.DefaultConversionService
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.core.util.*
+import com.wanna.framework.lang.Nullable
 import org.slf4j.LoggerFactory
 import java.beans.PropertyEditor
 import java.util.concurrent.ConcurrentHashMap
@@ -37,7 +38,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     ConfigurableBeanFactory, ListableBeanFactory, FactoryBeanRegistrySupport() {
 
     // beanClassLoader
-    private var beanClassLoader: ClassLoader = ClassLoader.getSystemClassLoader()
+    private var beanClassLoader: ClassLoader = ClassUtils.getDefaultClassLoader()
 
     // 在BeanFactory当中已经完成注册的Scope列表，除了(except)singleton/prototype的所有Scope，都会被注册到这里
     private val scopes: MutableMap<String, Scope> = LinkedHashMap()
@@ -77,8 +78,9 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     private val prototypesCurrentlyInCreation = NamedThreadLocal<Any>("Prototype Beans Current In Creation")
 
     override fun getBeanClassLoader() = this.beanClassLoader
-    override fun setBeanClassLoader(classLoader: ClassLoader?) {
-        this.beanClassLoader = classLoader ?: ClassLoader.getSystemClassLoader()
+
+    override fun setBeanClassLoader(@Nullable classLoader: ClassLoader?) {
+        this.beanClassLoader = classLoader ?: ClassUtils.getDefaultClassLoader()
     }
 
     /**

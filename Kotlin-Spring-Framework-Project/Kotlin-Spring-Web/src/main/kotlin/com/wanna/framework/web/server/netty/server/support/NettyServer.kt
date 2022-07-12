@@ -81,6 +81,7 @@ open class NettyServer : WebServer {
             .group(bossGroup, workerGroup)
             .channel(NioServerSocketChannel::class.java)
             .childOption(ChannelOption.SO_KEEPALIVE, true)
+            .option(ChannelOption.SO_REUSEADDR, true)
     }
 
     override fun stop() {

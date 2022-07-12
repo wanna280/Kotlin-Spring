@@ -154,14 +154,20 @@ object ClassUtils {
     @JvmStatic
     fun getDefaultClassLoader(): ClassLoader {
         var classLoader: ClassLoader? = null
+
+        // 1.最优先考虑使用线程的类加载器
         try {
             classLoader = Thread.currentThread().contextClassLoader
         } catch (ignored: Throwable) {
 
         }
+
+        // 2.其次考虑ClassUtils类的类加载器
         if (classLoader == null) {
             classLoader = ClassUtils::class.java.classLoader
         }
+
+        // 3.之后考虑SystemClassLoader
         if (classLoader == null) {
             classLoader = ClassLoader.getSystemClassLoader()
         }

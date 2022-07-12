@@ -1,5 +1,7 @@
 package com.wanna.boot.autoconfigure
 
+import com.wanna.framework.core.util.ClassUtils
+
 /**
  * 完成AutoConfiguration自动配置类的排序，主要处理AutoConfigureAfter/AutoConfigureBefore等注解；
  *
@@ -18,7 +20,7 @@ open class AutoConfigurationSorter {
 
         // 再检查AutoConfigureAfter去进行排序...
         configurations.forEach {
-            val clazz = AutoConfigurationSorter::class.java.classLoader.loadClass(it)
+            val clazz = ClassUtils.getDefaultClassLoader().loadClass(it)
             val after = clazz.getAnnotation(AutoConfigureAfter::class.java)
             if (after != null) {
                 val names = ArrayList(after.name.toList())
