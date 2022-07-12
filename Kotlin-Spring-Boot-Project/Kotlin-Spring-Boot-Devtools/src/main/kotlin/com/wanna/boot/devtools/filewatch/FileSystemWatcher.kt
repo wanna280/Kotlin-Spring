@@ -141,7 +141,8 @@ class FileSystemWatcher(
     }
 
     /**
-     * 创建一个初始的Snapshot，为directories的value当中去进行填值从而完成初始化工作
+     * 创建已经添加的目录的Snapshot列表，为directories的value当中去进行填值
+     * 从而完成初始化工作，因为在之前注册时DirectorySnapshot被初始化为null
      */
     private fun createOrRestoreInitialSnapshots() {
         @Suppress("UNCHECKED_CAST")
@@ -204,17 +205,25 @@ class FileSystemWatcher(
         override fun run() {
             var remainingScans = this.remainingScans.get()
             while (remainingScans > 0 || remainingScans == -1) {
-                if (remainingScans > 0) {
-                    this.remainingScans.decrementAndGet()
+
+                try {
+                    if (remainingScans > 0) {
+                        this.remainingScans.decrementAndGet()
+                    }
+                    scan()
+                } catch (ex: InterruptedException) {
+                    Thread.currentThread().interrupt()  // interrupt
                 }
-                scan()
                 remainingScans = this.remainingScans.get()
             }
         }
 
         /**
          * 遍历所有的要去进行扫描的文件夹，去检查是否有文件夹下的文件内容发生变化？
+         *
+         * @throws IllegalStateException 如果在睡眠的过程当中被interrupt
          */
+        @kotlin.jvm.Throws(InterruptedException::class)
         private fun scan() {
             Thread.sleep(pollInterval - quietPeriod)
             var previous: Map<File, DirectorySnapshot>

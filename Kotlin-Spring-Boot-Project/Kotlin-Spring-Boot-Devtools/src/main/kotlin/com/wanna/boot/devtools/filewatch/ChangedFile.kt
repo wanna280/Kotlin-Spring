@@ -12,6 +12,17 @@ import java.io.File
 class ChangedFile(val sourceDirectory: File, val file: File, val type: Type) {
 
     /**
+     * 获取"file"相对于"sourceDirectory"的相对路径，有可能并不是只相差了一级目录，有可能相差了多级的目录
+     *
+     * @return relativeName
+     */
+    fun getRelativeName(): String {
+        val directoryPath = sourceDirectory.absoluteFile.path
+        val filePath = file.absoluteFile.path
+        return filePath.substring(directoryPath.length + 1)
+    }
+
+    /**
      * 文件发生改变的类型的枚举值
      */
     enum class Type { ADD, DELETE, MODIFY }

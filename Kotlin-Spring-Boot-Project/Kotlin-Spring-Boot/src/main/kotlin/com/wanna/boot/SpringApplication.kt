@@ -451,7 +451,7 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
             newSource.addPropertySource(SimpleCommandLinePropertySource("springApplicationCommandLineArgs", *args))
             environment.getPropertySources().replace(sourceName, newSource)  // replace old
         } else {
-            environment.getPropertySources().addLast(SimpleCommandLinePropertySource(sourceName, *args))
+            environment.getPropertySources().addLast(SimpleCommandLinePropertySource(sourceName, arrayOf(*args)))
         }
     }
 

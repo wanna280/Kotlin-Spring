@@ -8,15 +8,22 @@ import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.core.util.ReflectionUtils
 import com.wanna.framework.lang.Nullable
+import com.wanna.boot.devtools.settings.DevToolsSettings
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.beans.Introspector
 import java.net.URL
+import java.util.concurrent.Callable
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.LinkedBlockingDeque
+import java.util.concurrent.ThreadFactory
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.system.exitProcess
 
 /**
- * SpringBoot Application的Restarter，负责重启整个SpringBootApplication
+ * SpringBoot Application的Restarter，负责重启整个SpringBootApplication；
+ * 一般使用单例对象去进行使用，可以通过`Restarter.getInstance`获取到全局唯一的Restarter，
+ * 这样就保证了不管是第几次去进行重启SpringApplication，都是使用的同一个"Restarter"
  *
  * @param thread Restarter要使用的线程
  * @param mainClassName mainClassName
@@ -38,11 +45,6 @@ open class Restarter(
         thread.uncaughtExceptionHandler, initializer.getInitialUrls(thread)
     )
 
-    init {
-        SilentExitExceptionHandler.setup(thread)  // 将SilentExitExceptionHandler绑定给当前线程
-        this.exceptionHandler = thread.uncaughtExceptionHandler  // 修改(重设)为正确的SilentExitExceptionHandler
-    }
-
     // 当前的Restarter当中需要去进行维护的RootContext列表，使用COW去实现线程安全的访问
     private val rootContexts = CopyOnWriteArrayList<ConfigurableApplicationContext>()
 
@@ -61,8 +63,22 @@ open class Restarter(
     // 每次重启时，需要额外去进行加载的类
     private var classLoaderFiles: ClassLoaderFiles = ClassLoaderFiles()
 
+    // 使用BlockingQueue去维护不会产生泄露的线程列表
+    private var leakSafeThreads = LinkedBlockingDeque<LeakSafeThread>()
+
     // 用于去进行关闭(stop)的锁，避免出现并发stop的情况
     private val stopLock = ReentrantLock()
+
+    init {
+        // 将SilentExitExceptionHandler绑定给当前线程
+        SilentExitExceptionHandler.setup(thread)
+
+        // 修改(重设)为正确的SilentExitExceptionHandler
+        this.exceptionHandler = thread.uncaughtExceptionHandler
+
+        // 初始化时添加一个LeakSafe线程，方便后续操作
+        this.leakSafeThreads.add(LeakSafeThread())
+    }
 
     /**
      * 获取/添加一个属性到Restarter当中
@@ -106,10 +122,20 @@ open class Restarter(
      * 重启整个SpringApplication
      */
     open fun restart() {
-        Thread {
+        restart(FailureHandler.NONE)
+    }
+
+    /**
+     * 重启整个SpringApplication
+     *
+     * @param failureHandler 处理失败的Handler
+     */
+    open fun restart(failureHandler: FailureHandler) {
+        getLeakSafeThread().call {
             this@Restarter.stop()
-            this@Restarter.start()
-        }.start()
+            this@Restarter.start(failureHandler)
+            null
+        }
     }
 
     /**
@@ -130,30 +156,31 @@ open class Restarter(
 
     /**
      * 即刻去进行重启，因为此时ApplicationContext都没准备好，因此，不必去完成stop；
-     * 在这里我们需要使用别的线程去启动restart线程，并将当前线程退出；
-     * 如果我们不将当前线程退出的话，原来的Application将和restart的Application并行进行，
-     * 从而会产生很多问题，比如端口被重复使用，因此我们必须将之前的线程去退出掉；
+     * 在这里我们需要使用别的线程去启动restart线程，并将当前线程(第一次执行重启时，也就是main线程)退出；
+     * 如果我们不将当前线程退出的话，原来的Application将和restartApplication将会并行地进行，
+     * 从而会产生很多问题，比如端口被重复使用，因此在启用新的SpringApplication时，我们必须将之前的线程去退出掉；
      */
     private fun immediateRestart() {
-        // 使用别的线程去启动restart线程
-        Thread {
-            this.start()
-        }.start()
+        // 使用别的线程去启动restart线程，并且直接在这去等着它执行完
+        getLeakSafeThread().callAndWait {
+            this.start(FailureHandler.NONE)
+            clearupCaches()
+            null
+        }
 
-        // 抛出异常去退出当前线程
+        // 抛出异常去退出当前线程(默默退出，直接替换线程的ExceptionHandler去忽略掉异常)
         SilentExitExceptionHandler.exitCurrentThread()
     }
 
     /**
-     * 关闭所有维护的RootContext
+     * 关闭Restarter当中已经去进行维护的所有Root ApplicationContext
      */
     protected open fun stop() {
         stopLock.lock()  // lock
         try {
             rootContexts.forEach {
                 it.close()
-
-                // 因为这里是使用COW的集合，因此我们直接可以remove RootContext
+                // Note: 因为这里是使用COW的集合，因此我们直接可以去remove RootContext
                 // 如果不是COW的集合，我们这里是不能去进行remove的，会触发并发修改异常的情况
                 rootContexts.remove(it)
             }
@@ -173,7 +200,7 @@ open class Restarter(
      * 在SpringApplication开始准备(发布ApplicationPreparedEvent)时，
      * 需要将ApplicationContext去添加到Restarter当中
      *
-     * @param context 需要去进行添加的ApplicationContext
+     * @param context 需要去进行添加到Restarter当中的ApplicationContext
      */
     open fun prepare(context: ApplicationContext) {
         if (context is ConfigurableApplicationContext) {
@@ -193,10 +220,19 @@ open class Restarter(
     /**
      * 启动Application，使用RestartClassLoader去加载类，并使用
      * RestartLauncher去反射执行目标main方法
+     *
+     * @param failureHandler 启动失败的异常处理器，可以决策启动失败应该怎么办？应该放弃，还是应该重试？
      */
-    protected open fun start() {
+    protected open fun start(failureHandler: FailureHandler) {
         while (true) {
+
+            // doStart，如果start成功，那么直接return
             val error = doStart() ?: return
+
+            // 如果Failure的决策结果是ABORT，那么return
+            if (failureHandler.handle(error) == FailureHandler.Outcome.ABORT) {
+                return
+            }
         }
     }
 
@@ -204,7 +240,11 @@ open class Restarter(
      * 获取DevTools的InitialUrls
      *
      * @return initialUrls
+     * @see DefaultRestartInitializer
+     * @see ChangeableUrls
+     * @see DevToolsSettings
      */
+    @Nullable
     open fun getInitialUrls(): Array<URL>? = this.initialUrls
 
     /**
@@ -212,27 +252,97 @@ open class Restarter(
      *
      * @return 执行restart过程中的异常信息(有可能为null)
      */
+    @Nullable
     protected open fun doStart(): Throwable? {
+        val updatedFiles = ClassLoaderFiles(this.classLoaderFiles)
         val classLoader =
-            RestartClassLoader(urls.toTypedArray(), this.applicationClassLoader, classLoaderFiles, this.logger)
+            RestartClassLoader(urls.toTypedArray(), this.applicationClassLoader, updatedFiles, this.logger)
         if (logger.isDebugEnabled) {
-            logger.debug("正在使用主类[$mainClassName], Urls[$urls]去启动Application")
+            logger.debug("正在使用主类[$mainClassName], URLs[$urls]去启动Application")
         }
         return relaunch(classLoader)
     }
 
     /**
-     * 使用合适的ClassLoader，去完成真正的重启工作
+     * 使用合适的ClassLoader(例如RestartClassLoader)，去完成真正的重启工作
      *
-     * @param classLoader 要使用的ClassLoader
+     * @param classLoader 要用来加载"main"类的ClassLoader
      * @return 启动过程当中出现的异常信息(有可能为null)
      */
     @Nullable
     protected open fun relaunch(classLoader: ClassLoader): Throwable? {
-        val restartLauncher = RestartLauncher(this.mainClassName, this.args, classLoader, exceptionHandler)
+        val restartLauncher = RestartLauncher(this.mainClassName, this.args, classLoader, this.exceptionHandler)
         restartLauncher.start()
         restartLauncher.join()  // join for restart
         return restartLauncher.error
+    }
+
+    /**
+     * 获取ThreadFactory
+     *
+     * @return ThreadFactory
+     */
+    open fun getThreadFactory(): ThreadFactory = LeakSafeThreadFactory()
+
+    private fun getLeakSafeThread(): LeakSafeThread {
+        try {
+            return this.leakSafeThreads.takeFirst()
+        } catch (ex: InterruptedException) {
+            Thread.currentThread().interrupt()
+            throw IllegalStateException(ex)
+        }
+    }
+
+    /**
+     * 不被RestartClassLoader所持有的线程，它的栈轨迹当中不含RestartClassLoader
+     */
+    private inner class LeakSafeThread : Thread() {
+
+        private var callable: Callable<*>? = null
+
+        private var result: Any? = null
+
+        init {
+            this.isDaemon = false
+        }
+
+        fun call(callable: Callable<*>) {
+            this.callable = callable
+            this.start()
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        fun <V> callAndWait(callable: Callable<V>): V? {
+            this.callable = callable
+            start()
+            try {
+                join()  // join for result
+                return this.result as V?
+            } catch (ex: InterruptedException) {
+                currentThread().interrupt()
+                throw IllegalStateException(ex)
+            }
+        }
+
+        override fun run() {
+            this@Restarter.leakSafeThreads.put(LeakSafeThread())
+            try {
+                this.result = this.callable?.call()
+            } catch (ex: InterruptedException) {
+                ex.printStackTrace()
+                exitProcess(1)
+            }
+        }
+    }
+
+    private inner class LeakSafeThreadFactory : ThreadFactory {
+        override fun newThread(r: Runnable): Thread {
+            return getLeakSafeThread().callAndWait {
+                val leakSafeThread = Thread(r)
+                leakSafeThread.contextClassLoader = this@Restarter.applicationClassLoader
+                leakSafeThread
+            }!!
+        }
     }
 
     companion object {
@@ -251,6 +361,27 @@ open class Restarter(
         fun getInstance(): Restarter? {
             synchronized(this.INSTANCE_MONITOR) {
                 return this.instance
+            }
+        }
+
+        /**
+         * clear掉已经初始化的Restarter
+         */
+        @JvmStatic
+        fun clearInstance() {
+            synchronized(this.INSTANCE_MONITOR) {
+                this.instance = null
+            }
+        }
+
+        /**
+         * 设置Restarter，去替换掉之前的Restarter
+         *
+         * @param instance 你想要使用的Restarter
+         */
+        fun setInstance(instance: Restarter) {
+            synchronized(this.INSTANCE_MONITOR) {
+                this.instance = instance
             }
         }
 

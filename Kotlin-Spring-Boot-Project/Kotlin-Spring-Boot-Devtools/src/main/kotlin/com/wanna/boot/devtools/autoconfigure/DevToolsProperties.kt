@@ -9,8 +9,13 @@ import com.wanna.boot.context.properties.NestedConfigurationProperty
 @ConfigurationProperties("spring.devtools")
 open class DevToolsProperties {
 
+    // 本地的关于Restart的配置信息
     @NestedConfigurationProperty
     var restart = Restart()
+
+    // 远程的Restart的相关配置信息
+    @NestedConfigurationProperty
+    var remote = RemoteDevToolsProperties()
 
     /**
      * 关于DevTools的重启相关的配置信息
@@ -19,7 +24,7 @@ open class DevToolsProperties {
         companion object {
             // 默认要去进行排除的路径
             const val DEFAULT_EXCLUDE =
-                "resource/**,META-INF/maven/**,META-INF/resources/**,public/**,static/**,template/**"
+                "resource/**,META-INF/maven/**,META-INF/resources/**,public/**,static/**,template/**,META-INF/docs/**"
         }
 
         // 是否要开启Restart？

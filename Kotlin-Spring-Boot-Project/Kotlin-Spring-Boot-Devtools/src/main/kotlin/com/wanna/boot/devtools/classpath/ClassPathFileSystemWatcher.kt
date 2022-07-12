@@ -63,7 +63,8 @@ class ClassPathFileSystemWatcher(
     }
 
     /**
-     * 来自Spring的DisposableBean的destroy方法，我们需要去关闭FileSystemWatcher
+     * 来自Spring的DisposableBean的destroy方法，
+     * 在SpringBeanFactory关闭时，我们需要去关闭FileSystemWatcher
      *
      * @see FileSystemWatcher.stop
      */
