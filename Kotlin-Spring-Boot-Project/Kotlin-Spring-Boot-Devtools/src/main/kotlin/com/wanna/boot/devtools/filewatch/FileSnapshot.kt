@@ -7,7 +7,7 @@ import java.io.File
  *
  * @param file 要去进行描述的文件
  */
-class FileSnapshot(val file: File) {
+open class FileSnapshot(val file: File) {
     // 文件的长度
     val length = file.length()
 
@@ -25,7 +25,6 @@ class FileSnapshot(val file: File) {
         if (length != other.length) return false
         if (lastModified != other.lastModified) return false
         if (exists != other.exists) return false
-
         return true
     }
 

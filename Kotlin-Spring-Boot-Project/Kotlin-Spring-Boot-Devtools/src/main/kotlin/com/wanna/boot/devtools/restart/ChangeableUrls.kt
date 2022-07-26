@@ -22,6 +22,7 @@ class ChangeableUrls(urls: Array<URL>) : Iterable<URL> {
         val settings = DevToolsSettings.get()
 
         // 对给出的URL列表去进行过滤，过滤出来需要去apply给Restart的URL的列表
+        // 默认情况下，会过滤出来所有的目录的URL作为候选；当然也可以交给Setting去进行自定义
         this.urls += urls.filter {
             (settings.isRestartInclude(it) || isDirectoryUrl(it.toString())) && !settings.isRestartExclude(it)
         }.toList()
@@ -61,7 +62,7 @@ class ChangeableUrls(urls: Array<URL>) : Iterable<URL> {
         }
 
         /**
-         * 给定一个urlString，判断该文件夹是否是一个文件夹
+         * 给定一个urlString，判断该文件夹是否是一个文件夹(对于一个文件夹，它的URL末尾是"/"，因此我们可以这么去进行判断)
          *
          * @param urlString urlString
          * @return 如果它是一个文件夹return true；否则return false

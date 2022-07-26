@@ -32,7 +32,7 @@ open class RemoteUrlPropertyExtractor : ApplicationListener<ApplicationEnvironme
         try {
             URI(remoteUrl!!)
         } catch (ex: URISyntaxException) {
-            throw IllegalStateException("传递的remoteUrl不合法[$remoteUrl]")
+            throw IllegalStateException("通过命令行传递的remoteUrl不合法[$remoteUrl]")
         }
 
         // add PropertySource

@@ -13,19 +13,18 @@ import java.util.concurrent.atomic.AtomicInteger
  * @param snapshotStateRepository 存放快照的仓库
  */
 class FileSystemWatcher(
-    private val daemon: Boolean, private val pollInterval: Long, private val quietPeriod: Long,
+    private val daemon: Boolean = true,
+    private val pollInterval: Long = DEFAULT_POLL_INTERVAL,
+    private val quietPeriod: Long = DEFAULT_QUIET_PERIOD,
     private val snapshotStateRepository: SnapshotStateRepository = SnapshotStateRepository.NONE
 ) {
     companion object {
-        // 默认的轮询时间
+        // 默认的轮询时间(ms)
         private const val DEFAULT_POLL_INTERVAL = 1000L
 
-        // 默认的安静的间隔
+        // 默认的安静的间隔(ms)
         private const val DEFAULT_QUIET_PERIOD = 400L
     }
-
-    // 提供一个无参数构造器
-    constructor() : this(true, DEFAULT_POLL_INTERVAL, DEFAULT_QUIET_PERIOD)
 
     // 当文件发生变化时，需要回调的所有监听器
     private val listeners = ArrayList<FileChangeListener>()
@@ -33,28 +32,27 @@ class FileSystemWatcher(
     // Monitor锁
     private val monitor = Any()
 
-    // 负责去进行观察的线程(在启动时会自动初始化)
+    // 负责去进行观察的线程(Watcher线程)，在启动时会自动初始化
     private var watchThread: Thread? = null
 
-    // 要去进行检测的目录信息
+    // Watcher要去进行检测是否有发生文件变更的目录信息
     private val directories: MutableMap<File, DirectorySnapshot?> = LinkedHashMap()
 
-    // 剩下的扫描次数，默认为-1，代表一直扫描
+    // Watcher剩下的扫描次数(如果为-1，代表一直扫描；如果＞0代表剩余的扫描次数，默认为-1)
     private val remainingScans = AtomicInteger(-1)
 
-    // 触发Restart的FileFilter
+    // 触发Restart的FileFilter，只有符合该Filter的条件的文件才需要Restart(如果不进行指定，那么任何一个文件的改变，都将作为触发的条件)
     private var triggerFilter: FileFilter? = null
 
     /**
-     * 检查一个Watcher线程是否已经启动了
+     * 检查当前Watcher线程是否已经启动了
      *
      * @throws IllegalStateException 如果一个线程已经启动过了
      */
     @Throws(IllegalStateException::class)
     private fun checkStarted() {
-        this.watchThread?.run {
-            throw IllegalStateException("已经有Watcher线程启动了，不能再去进行操作")
-        }
+        this.watchThread ?: return  // 如果watcher线程为null，直接return
+        throw IllegalStateException("已经有Watcher线程启动了，不能再去进行操作")  // 如果已经初始化过watcher线程，那么丢出异常
     }
 
     /**
@@ -100,7 +98,7 @@ class FileSystemWatcher(
     /**
      * 添加多个SourceDirectory
      *
-     * @param directories 要去添加的目录列表
+     * @param directories 要去添加的目录列表(必须保证每个File都是Directory)
      * @throws IllegalStateException 如果给定的File列表存在有不是文件夹的情况
      */
     @Throws(IllegalStateException::class)
@@ -117,7 +115,7 @@ class FileSystemWatcher(
     fun start() {
         synchronized(this.monitor) {
 
-            // 因为addSourceDirectory时，只是生成了Key，Value并未填充
+            // 因为addSourceDirectory时，只是生成了Key，Value=null，并未完成填充
             // 因此在这里，我们需要去填充Value，从而完成文件夹的缓存列表的初始化
             createOrRestoreInitialSnapshots()
 
@@ -229,16 +227,16 @@ class FileSystemWatcher(
             var previous: Map<File, DirectorySnapshot>
             var current: Map<File, DirectorySnapshot> = directories
 
-            // 只要触发的文件还有发生变更，就一直去进行poll，
-            // 如果等了很久了都没发生变更了，那么自动跳出循环
+            // 只要触发的文件还有发生变更，就一直去进行poll(因为用户一直在写代码呢，我们得等着用户继续写代码)
+            // 如果等了很久了文件都没发生变更了，那么自动跳出循环(应该是用户已经改好代码了，可以重启了)
             do {
                 previous = current
                 current = getCurrentSnapshots()
-                Thread.sleep(quietPeriod)  // 睡一会
+                Thread.sleep(quietPeriod)  // 睡一会，起来再去进行继续检查
             } while (isDifferent(previous, current))
 
             // 如果当前的文件夹下的信息相比最初的文件夹下的信息发生了变化的话，那么需要更新snapshot
-            // 就算是这个过程当中文件出现ABA的情况，也不应该去进行update(没有必要)
+            // 就算是这个过程当中文件出现ABA的情况，也不应该去进行update(因为完全没有必要更新)
             if (isDifferent(this.directories, current)) {
                 updateSnapshots(current.values)
             }
@@ -255,7 +253,7 @@ class FileSystemWatcher(
             previous: Map<File, DirectorySnapshot>,
             current: Map<File, DirectorySnapshot>
         ): Boolean {
-            // 之前和现在的目录列表发生改变了，那么return true
+            // 之前和现在的目录列表发生改变了(比如数量变了，文件夹内容变了)，那么return true
             if (previous.keys != current.keys) {
                 return true
             }
@@ -273,7 +271,7 @@ class FileSystemWatcher(
          * 如果文件夹下的文件信息发生了变化，那么需要去更新维护的文件夹的Snapshot信息，
          * 并将变更的文件列表，去告知所有的监听器，让它们去对文件发生变更的事件去进行处理
          *
-         * @param snapshots Snapshots
+         * @param snapshots current DirectorySnapshots
          */
         private fun updateSnapshots(snapshots: Collection<DirectorySnapshot?>) {
             val updated = LinkedHashMap<File, DirectorySnapshot>()

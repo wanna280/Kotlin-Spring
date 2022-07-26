@@ -19,13 +19,9 @@ open class EnvironmentPostProcessorApplicationListener : SmartApplicationListene
     }
 
     override fun supportEventType(eventType: Class<out ApplicationEvent>): Boolean {
-        return ClassUtils.isAssignFrom(
-            ApplicationEnvironmentPreparedEvent::class.java,
-            eventType
-        ) || ClassUtils.isAssignFrom(ApplicationPreparedEvent::class.java, eventType) || ClassUtils.isAssignFrom(
-            ApplicationFailedEvent::class.java,
-            eventType
-        )
+        return ClassUtils.isAssignFrom(ApplicationEnvironmentPreparedEvent::class.java, eventType)
+                || ClassUtils.isAssignFrom(ApplicationPreparedEvent::class.java, eventType)
+                || ClassUtils.isAssignFrom(ApplicationFailedEvent::class.java, eventType)
     }
 
     /**
@@ -35,8 +31,8 @@ open class EnvironmentPostProcessorApplicationListener : SmartApplicationListene
      */
     open fun onApplicationEnvironmentPreparedEvent(event: ApplicationEnvironmentPreparedEvent) {
         getEnvironmentPostProcessors().forEach {
-                it.postProcessEnvironment(event.environment, event.application)
-            }
+            it.postProcessEnvironment(event.environment, event.application)
+        }
     }
 
     /**

@@ -11,7 +11,7 @@ import javax.annotation.Nullable
  *
  * @param directory 要去进行描述的文件夹
  */
-class DirectorySnapshot(val directory: File) {
+open class DirectorySnapshot(val directory: File) {
     companion object {
         // ("."/"..")文件夹的情况，它不是个真正的文件夹
         val DOTS = setOf(".", "..")
@@ -39,7 +39,7 @@ class DirectorySnapshot(val directory: File) {
      *
      * @return 该目录下已经发生变更的文件列表(ChangedFiles)
      */
-    fun getChangedFiles(snapshot: DirectorySnapshot, triggerFilter: FileFilter?): ChangedFiles {
+    open fun getChangedFiles(snapshot: DirectorySnapshot, triggerFilter: FileFilter?): ChangedFiles {
         val changes = ArrayList<ChangedFile>()
         // 获取之前的文件信息(key-File, value-FileSnapshot)
         val previousFiles = LinkedHashMap(getFileMap())
@@ -102,7 +102,7 @@ class DirectorySnapshot(val directory: File) {
      * @param filter 触发文件的FileFilter(为null时，所有的文件都会被当中触发文件)
      * @return 如果之前和之后的触发文件的内容不同则return false；如果触发文件的内容相同，return true
      */
-    fun equals(@Nullable other: DirectorySnapshot?, filter: FileFilter? = null): Boolean {
+    open fun equals(@Nullable other: DirectorySnapshot?, filter: FileFilter? = null): Boolean {
         return this == other && filter(filter, other.files) == filter(filter, this.files)
     }
 
@@ -125,9 +125,7 @@ class DirectorySnapshot(val directory: File) {
      * @param triggerFilter 触发的FileFilter
      * @param fileSnapshot 要去进行匹配的文件
      */
-    private
-
-    fun acceptChangedFile(triggerFilter: FileFilter?, fileSnapshot: FileSnapshot): Boolean {
+    private fun acceptChangedFile(triggerFilter: FileFilter?, fileSnapshot: FileSnapshot): Boolean {
         return triggerFilter == null || !triggerFilter.accept(fileSnapshot.file)
     }
 

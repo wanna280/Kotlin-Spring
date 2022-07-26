@@ -12,7 +12,7 @@ import java.net.URL
  * ClassPath下的文件系统的Watcher，负责包装一个FileSystemWatcher去完成对本地的输出目录去进行Watch；
  * 我们不必去监控jar包的改变，我们要做的，只是监控本地的输出目录当中的文件变化情况
  *
- * @param fileSystemWatcher FileSystemWatcher
+ * @param fileSystemWatcher FileSystemWatcher(负责监控FileSystem的文件的变化)
  * @param urls 候选的要去进行监控的URL列表(jar包/outputPath)
  * @param restartStrategy 重启策略，用来判断某个文件发生变更时，是否应该重启应用？
  */
@@ -22,9 +22,10 @@ class ClassPathFileSystemWatcher(
     private val restartStrategy: ClassPathRestartStrategy?
 ) : InitializingBean, DisposableBean, ApplicationContextAware {
 
-    // 在重启时，是否需要stopWatcher？
+    // 在重启(发布ClassPathChangedEvent)时，是否需要stopWatcher？
     var stopWatcherOnRestart: Boolean = true
 
+    // ApplicationContext
     private var applicationContext: ApplicationContext? = null
 
     init {
@@ -74,6 +75,8 @@ class ClassPathFileSystemWatcher(
 
     /**
      * Spring Application自动设置ApplicationContext
+     *
+     * @param applicationContext ApplicationContext
      */
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext

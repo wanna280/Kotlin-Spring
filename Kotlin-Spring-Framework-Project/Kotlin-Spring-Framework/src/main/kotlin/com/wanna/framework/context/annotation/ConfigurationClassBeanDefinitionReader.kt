@@ -1,10 +1,9 @@
 package com.wanna.framework.context.annotation
 
+import com.wanna.framework.beans.factory.BeanDefinitionStoreException
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
-import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
-import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
-import com.wanna.framework.beans.factory.support.definition.AnnotatedGenericBeanDefinition
-import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
+import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
+import com.wanna.framework.beans.factory.support.definition.*
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase.REGISTER_BEAN
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.environment.Environment
@@ -118,6 +117,7 @@ open class ConfigurationClassBeanDefinitionReader(
 
         // 创建一个ConfigurationClassBeanDefinition，让它能适配RootBeanDefinition和AnnotatedBeanDefinition
         // 因为去对注解信息去进行匹配时，需要用到AnnotatedBeanDefinition...
+        // 另外一方面也是标识作用，标识它是使用@Bean方法去进行导入的...
         val beanDefinition = ConfigurationClassBeanDefinition(configClass, metadata)
 
         // set factoryMethodName, factoryBeanName and factoryMethod
@@ -160,7 +160,7 @@ open class ConfigurationClassBeanDefinitionReader(
     }
 
     /**
-     * 判断是否应该替换掉之前的BeanDefinition？
+     * 如果之前已经存在过该beanName的BeanDefinition，需要去判断是否应该替换掉之前的BeanDefinition？
      *
      * @param beanMethod 现在的BeanMethod
      * @param beanName 现在的beanName
@@ -172,14 +172,33 @@ open class ConfigurationClassBeanDefinitionReader(
         }
         val existBeanDef = registry.getBeanDefinition(beanName)
 
-        // 如果之前也是一个ConfigurationClassBeanDefinition，说明之前也是在@Bean这里添加的...
+        // 1.如果之前也是一个ConfigurationClassBeanDefinition，说明之前也是在@Bean这里添加的一个Bean...
         if (existBeanDef is ConfigurationClassBeanDefinition) {
             // 判断之前的配置类名和现在的配置类名是否相同？如果相同的话，return true，应该pass掉...
             if (existBeanDef.getMetadata().getClassName() == beanMethod.configClass.metadata.getClassName()) {
                 return true
             }
+            return false
         }
-        return false
+
+        // 2.如果之前的BeanDefinition是被@ComponentScan扫描出来的，那么@Bean方法可以去替换掉它
+        if (existBeanDef is ScannedGenericBeanDefinition) {
+            return false
+        }
+
+        // 3.对于非Application级别的Bean，可以产生覆盖
+        if (existBeanDef.getRole() > BeanDefinition.ROLE_APPLICATION) {
+            return false
+        }
+
+        // 4.如果BeanFactory本身就不允许发生BeanDefinition的覆盖的话，那么需要丢出异常
+        if (this.registry is DefaultListableBeanFactory && !this.registry.isAllowBeanDefinitionOverriding()) {
+            throw BeanDefinitionStoreException(
+                beanName,
+                "@Bean方法的BeanDefinition尝试去替换掉之前的BeanDefinition $existBeanDef 的操作不合法"
+            )
+        }
+        return true
     }
 
     /**

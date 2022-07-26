@@ -9,7 +9,8 @@ import com.wanna.framework.lang.Nullable
  */
 interface ClassLoaderFileRepository {
     companion object {
-        // None，不管获取什么file都return null
+        // None的单例对象，不管获取什么file都return null
+        @JvmField
         val NONE = object : ClassLoaderFileRepository {
             override fun getFile(name: String): ClassLoaderFile? = null
         }

@@ -9,5 +9,5 @@ import java.io.File
  * @param files 该目录下发生改变的文件的列表
  */
 class ChangedFiles(val sourceDirectory: File, val files: List<ChangedFile>) : Iterable<ChangedFile> {
-    override fun iterator() = files.listIterator()
+    override fun iterator() = this.files.listIterator()
 }
