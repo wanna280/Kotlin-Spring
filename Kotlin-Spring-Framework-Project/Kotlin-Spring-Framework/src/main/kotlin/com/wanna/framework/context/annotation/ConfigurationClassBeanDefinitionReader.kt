@@ -167,6 +167,7 @@ open class ConfigurationClassBeanDefinitionReader(
      * @return 是否应该替换之前的？return true标识pass掉，return false则替换掉...
      */
     protected open fun isOverriddenByExistingDefinition(beanMethod: BeanMethod, beanName: String): Boolean {
+        // 如果之前根本就没有存在过该beanName的BeanDefinition，直接return false，去注册BeanMethod
         if (!registry.containsBeanDefinition(beanName)) {
             return false
         }
@@ -175,18 +176,25 @@ open class ConfigurationClassBeanDefinitionReader(
         // 1.如果之前也是一个ConfigurationClassBeanDefinition，说明之前也是在@Bean这里添加的一个Bean...
         if (existBeanDef is ConfigurationClassBeanDefinition) {
             // 判断之前的配置类名和现在的配置类名是否相同？如果相同的话，return true，应该pass掉...
+            // 因为配置类处理过程当中，是从子类向父类方向去进行扫描的，因此BeanMethod的遍历顺序也应该是这样的
+            // 如果当前BeanMethod和之前的BeanMethod在同一个类当中，说明之前注册的是子类的BeanMethod，现在是父类的BeanMethod
+            // 在这种情况下，我们不应该去替换掉之前的BeanMethod，因为我们要以子类的最终实现为准，而不是使用父类的实现
             if (existBeanDef.getMetadata().getClassName() == beanMethod.configClass.metadata.getClassName()) {
                 return true
             }
+
+            // 如果之前的@Bean方法所在的配置类和现在的@Bean方法所在的配置类并不相同，那么随便去进行替换。
             return false
         }
 
         // 2.如果之前的BeanDefinition是被@ComponentScan扫描出来的，那么@Bean方法可以去替换掉它
+        // 因为对于@Bean方法的BeanDefinition，拥有更加高的优先级，所以它支持去替换掉原来的@Component的BeanDefinition
         if (existBeanDef is ScannedGenericBeanDefinition) {
             return false
         }
 
-        // 3.对于非Application级别的Bean，可以产生覆盖
+        // 3.对于之前是一个非APPLICATION级别的Bean(是一个基础设施的Bean)，那么可以产生覆盖
+        // 因为当前的BeanDefinition是以@Bean方法去进行注册的，Role一定为APPLICATION
         if (existBeanDef.getRole() > BeanDefinition.ROLE_APPLICATION) {
             return false
         }
@@ -196,6 +204,13 @@ open class ConfigurationClassBeanDefinitionReader(
             throw BeanDefinitionStoreException(
                 beanName,
                 "@Bean方法的BeanDefinition尝试去替换掉之前的BeanDefinition $existBeanDef 的操作不合法"
+            )
+        }
+        if (logger.isDebugEnabled) {
+            logger.debug(
+                "之前已经存在有BeanDefinition[{}]，现在出现了一个新的@Bean方法[{}]，但是不能去替换掉之前的，这里直接skip",
+                existBeanDef,
+                beanMethod
             )
         }
         return true
