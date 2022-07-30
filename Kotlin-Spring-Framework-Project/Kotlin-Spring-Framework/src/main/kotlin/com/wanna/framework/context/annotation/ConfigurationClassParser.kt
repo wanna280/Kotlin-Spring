@@ -60,7 +60,7 @@ open class ConfigurationClassParser(
     private val importStack = ImportStack()
 
     /**
-     * 获取导入被@Import配置类的信息的注册中心(导入栈)
+     * 获取导入被@Import配置类的信息的注册中心(导入栈)，用来处理ImportAware接口的注入Metadata信息
      */
     open fun getImportRegistry(): ImportRegistry = this.importStack
 
@@ -70,7 +70,8 @@ open class ConfigurationClassParser(
     open fun getConfigurationClasses(): Set<ConfigurationClass> = this.configClasses.keys
 
     /**
-     * 解析容器中已经有的BeanDefinition当中的相关导入组件的配置类；一个BeanDefinitionHolder当中维护了beanDefinition和beanName信息
+     * 解析容器中已经有的BeanDefinition当中的相关导入组件的配置类；
+     * 一个BeanDefinitionHolder当中维护了beanDefinition和beanName信息
      *
      * @param candidates 候选的BeanDefinitionHolder
      * @see BeanDefinitionHolder
@@ -385,7 +386,7 @@ open class ConfigurationClassParser(
     private fun asSourceClasses(clazz: Class<*>, filter: Predicate<String>): Set<SourceClass> {
         val imports = AnnotatedElementUtils.findAllMergedAnnotations(clazz, Import::class.java)
         return AnnotationAttributesUtils.asAnnotationAttributesSet(imports)  // attributes(set)
-            .mapNotNull { it.getClassArray("value") }  // (classArray)
+            .map { it.getClassArray("value") }  // (classArray)
             .flatMap { it.toList() }  // flatMap，将classArray摊开
             .filter { !filter.test(it.name) }  // 使用filter去进行过滤
             .map { SourceClass(it) }  // 转为sourceClass
@@ -415,6 +416,12 @@ open class ConfigurationClassParser(
         }
     }
 
+    /**
+     * 描述了要去进行解析的一个配置类的相关信息，对于一个配置类来说，可能会存在有多个父类，
+     * 对于它以及它的所有的父类，都应该当做一个SourceClass去进行处理
+     *
+     * @param clazz 要去进行描述的配置类
+     */
     private class SourceClass(val clazz: Class<*>) {
         val metadata = AnnotationMetadata.introspect(clazz)
 
@@ -440,9 +447,7 @@ open class ConfigurationClassParser(
             return ClassUtils.isAssignFrom(parentClass, clazz)
         }
 
-        override fun toString(): String {
-            return "SourceClass(clazz=$clazz)"
-        }
+        override fun toString(): String = "SourceClass(clazz=$clazz)"
     }
 
 

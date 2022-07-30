@@ -13,6 +13,7 @@ import com.wanna.framework.core.Order
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.lang.Nullable
 
 /**
  * 这是一个ConfigurationClass的配置类，在ConfigurationClassPostProcessor扫描时，
@@ -109,6 +110,7 @@ object ConfigurationClassUtils {
 
     /**
      * 根据注解元信息，去判断判断一个类，是否有资格成为Spring的一个的配置类？
+     * 只要有Spring当中的一些标志性注解，那么它就有机会成为一个候选的配置类
      *
      * @param metadata 目标配置类的相关注解信息
      * @return 如果有资格，return true；否则return false
@@ -137,7 +139,7 @@ object ConfigurationClassUtils {
      * 从BeanDefinition的属性当中去获取到Order属性
      *
      * @param beanDefinition 要获取Order的BeanDefinition
-     * @return 如果找到了Order属性，那么return order；否则return Ordered>LOWEST
+     * @return 如果找到了Order属性，那么return order；否则return Ordered.LOWEST
      */
     @JvmStatic
     fun getOrder(beanDefinition: BeanDefinition): Int {
@@ -148,9 +150,10 @@ object ConfigurationClassUtils {
      * 从AnnotationMetadata当中去获取到@Order当中的value属性
      *
      * @param metadata AnnotationMetadata
-     * @return 找到的order属性，如果没有找到return null
+     * @return 从metadata当中找到的order属性，如果没有找到return null
      */
     @JvmStatic
+    @Nullable
     fun getOrder(metadata: AnnotationMetadata): Int? {
         val attributes = metadata.getAnnotationAttributes(Order::class.java.name)
         return attributes["value"] as Int?
