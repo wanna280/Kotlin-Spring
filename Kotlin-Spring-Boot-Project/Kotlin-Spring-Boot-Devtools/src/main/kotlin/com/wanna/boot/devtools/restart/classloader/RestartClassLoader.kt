@@ -8,7 +8,7 @@ import java.net.URLClassLoader
 /**
  * 负责处理"SpringBoot-Devtools"的重启的ClassLoader
  *
- * @param urls 当前的RestartClassLoader需要去进行负责加载的URL列表
+ * @param urls 当前的RestartClassLoader需要去进行负责加载的URL列表，对于不在这个url当中的类，交给parentClassLoader去进行加载
  * @param parent parent ClassLoader(如果当前的类加载器找不到要去进行加载的类，直接交给父类去进行加载)
  * @param updatedFiles 发生变更的文件，它可以保证被优先去进行加载
  * (因为有可能当前是运行到jar包当中，但是具体的类的资源是来自于网络等渠道，需要保证它拥有更高的优先级)

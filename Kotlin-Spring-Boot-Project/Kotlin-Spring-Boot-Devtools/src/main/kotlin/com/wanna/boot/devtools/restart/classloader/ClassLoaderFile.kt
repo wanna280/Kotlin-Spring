@@ -10,7 +10,7 @@ import java.io.Serializable
  * @see ClassLoaderFiles
  * @see ClassLoaderFileRepository
  *
- * @param contents 文件当中的内容(ByteArray)
+ * @param contents 文件当中的内容进行序列化之后的结果(ByteArray)
  * @param kind 文件发生变更的类型(ADDED/DELETED/MODIFIED)
  * @param lastModified 该文件的最后一次修改的时间
  */

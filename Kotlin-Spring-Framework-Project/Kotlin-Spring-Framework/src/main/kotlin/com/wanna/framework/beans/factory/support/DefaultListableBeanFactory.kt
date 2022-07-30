@@ -54,6 +54,9 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         }
     }
 
+    // 是否允许发生BeanDefinition的覆盖？后来的BeanDefinition是否有资格去替换掉之前的BeanDefinition？
+    private var allowBeanDefinitionOverriding: Boolean = false
+
     // beanDefinitionMap，使用ConcurrentHashMap去保证线程安全，也会作为操作beanDefinitionNames和manualSingletonNames的锁对象
     private val beanDefinitionMap = ConcurrentHashMap<String, BeanDefinition>()
 
@@ -1027,4 +1030,10 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         // clear掉所有的手动去进行管理的SingletonBean
         updateManualSingleNames({ it.clear() }) { it.isNotEmpty() }
     }
+
+    open fun setAllowBeanDefinitionOverriding(allowBeanDefinitionOverriding: Boolean) {
+        this.allowBeanDefinitionOverriding = allowBeanDefinitionOverriding
+    }
+
+    open fun isAllowBeanDefinitionOverriding() : Boolean  = this.allowBeanDefinitionOverriding
 }

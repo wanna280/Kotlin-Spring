@@ -35,6 +35,11 @@ class RemoteSpringApplication {
         waitIndefinitely()
     }
 
+    /**
+     * 获取RemoteClient的Initializer
+     *
+     * @return 要应用给当前的RemoteClient的ApplicationContextInitializer列表
+     */
     private fun getInitializers(): Collection<ApplicationContextInitializer<*>> {
         return listOf(RestartScopeInitializer())
     }

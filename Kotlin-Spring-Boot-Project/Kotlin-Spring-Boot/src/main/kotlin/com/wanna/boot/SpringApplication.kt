@@ -2,6 +2,7 @@ package com.wanna.boot
 
 import com.wanna.boot.web.mvc.context.AnnotationConfigMvcWebServerApplicationContext
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
+import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.annotation.AnnotationConfigApplicationContext
@@ -80,6 +81,9 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
 
     // 推测SpringApplication的主启动类
     private var mainApplicationClass: Class<*>? = deduceMainApplicationClass()
+
+    // 是否允许BeanDefinition去发生覆盖？
+    private var allowBeanDefinitionOverriding: Boolean = true
 
     // 是否需要添加ConversionService到容器当中？
     private var addConversionService = true
@@ -217,7 +221,9 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
 
         // 从SpringApplication的ApplicationContext当中获取到BeanFactory
         val beanFactory = context.getBeanFactory()
-
+        if (beanFactory is DefaultListableBeanFactory) {
+            beanFactory.setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding)
+        }
         // 把ApplicationArguments注册到beanFactory当中
         beanFactory.registerSingleton("applicationArguments", arguments)
 
@@ -620,4 +626,10 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         sources.addAll(this.sources)
         return sources
     }
+
+    open fun setAllowBeanDefinitionOverriding(allowBeanDefinitionOverriding: Boolean) {
+        this.allowBeanDefinitionOverriding = allowBeanDefinitionOverriding
+    }
+
+    open fun isAllowBeanDefinitionOverriding() = this.allowBeanDefinitionOverriding
 }
