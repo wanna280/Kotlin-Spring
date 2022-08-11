@@ -466,11 +466,12 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     /**
      * 如果不进行自定义，那么需要去获取默认的ReturnValueHandlers列表
      *
+     * Note: 这里的多个返回值处理器之间可能会发生冲突，需要安排合理的顺序...顺序是很关键的
+     *
      * @return 默认的HandlerMethodReturnValueHandler列表
      */
     private fun getDefaultReturnValueHandlers(): List<HandlerMethodReturnValueHandler> {
         val handlers = ArrayList<HandlerMethodReturnValueHandler>()
-
 
         // 解析ModelAndView的返回值的方法处理器
         handlers += ModelAndViewMethodReturnValueHandler()
@@ -478,17 +479,14 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         // 添加Model方法处理器，去处理Model类型的返回值，将Model数据转移到ModelAndViewContainer当中
         handlers += ModelMethodProcessor()
 
-        // 添加Map方法处理器，去处理Map类型的返回值，将Map数据转移到ModelAndViewContainer当中
-        handlers += MapMethodProcessor()
-
         // 添加一个处理返回值类型是Callable的返回值类型处理器，负责将Callable转换成为异步任务去进行执行
         handlers += CallableMethodReturnValueHandler()
 
         // 添加一个处理返回值类型为DeferredResult/CompletableFuture/ListenableFuture的处理器，负责去执行异步任务
         handlers += DeferredResultMethodReturnValueHandler()
 
-        // 添加一个ModelAttribute的方法处理器，处理方法返回值是ModelAttribute或者返回值不是简单类型的情况
-        handlers += ModelAttributeMethodProcessor()
+        // 添加一个ModelAttribute的方法处理器，处理方法返回值是ModelAttribute的类型(这里必须将参数设置为false，这里只去处理ModelAttribute)
+        handlers += ModelAttributeMethodProcessor(false)
 
         // RequestResponseBody的方法处理器
         handlers += RequestResponseBodyMethodProcessor(getHttpMessageConverters(), getContentNegotiationManager())
@@ -496,10 +494,16 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         // 解析ViewName的处理器(处理返回值是字符串的情况)
         handlers += ViewNameMethodReturnValueHandler()
 
+        // 添加Map方法处理器，去处理Map类型的返回值，将Map数据转移到ModelAndViewContainer当中
+        handlers += MapMethodProcessor()
+
         // 应用用户自定义的返回值处理器
         if (getCustomReturnValueHandlers() != null) {
             handlers += getCustomReturnValueHandlers()!!
         }
+
+        // 添加一个ModelAttribute的方法处理器，处理方法返回值是ModelAttribute的类型/不是简单类型的返回值类型
+        handlers += ModelAttributeMethodProcessor(true)
         return handlers
     }
 
