@@ -5,6 +5,8 @@ import com.wanna.framework.web.context.request.NativeWebRequest
 
 /**
  * 它是一个负责去处理HandlerMethod的返回值的处理器
+ *
+ * @see HandlerMethodArgumentResolver
  */
 interface HandlerMethodReturnValueHandler {
 

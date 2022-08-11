@@ -30,7 +30,7 @@ open class ModelAttributeMethodProcessor(private val annotationNotRequired: Bool
      * @return 只要它有ModelAttribute方法，或者它不是一个基础类型，return true；否则return false
      */
     override fun supportsParameter(parameter: MethodParameter): Boolean {
-        return parameter.getAnnotation(ModelAttribute::class.java) != null ||
+        return parameter.hasMethodAnnotation(ModelAttribute::class.java) ||
                 (annotationNotRequired && !BeanUtils.isSimpleProperty(parameter.getParameterType()))
     }
 

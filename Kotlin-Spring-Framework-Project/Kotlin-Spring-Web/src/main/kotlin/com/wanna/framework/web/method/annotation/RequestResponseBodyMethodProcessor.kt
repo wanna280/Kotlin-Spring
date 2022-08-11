@@ -44,9 +44,8 @@ open class RequestResponseBodyMethodProcessor(
      * @return 是否支持处理这样的返回值类型？
      */
     override fun supportsReturnType(parameter: MethodParameter): Boolean {
-        return parameter.getAnnotation(ResponseBody::class.java) != null || AnnotatedElementUtils.isAnnotated(
-            parameter.getContainingClass()!!, ResponseBody::class.java
-        )
+        return parameter.hasMethodAnnotation(ResponseBody::class.java)
+                || AnnotatedElementUtils.isAnnotated(parameter.getContainingClass(), ResponseBody::class.java)
     }
 
     /**

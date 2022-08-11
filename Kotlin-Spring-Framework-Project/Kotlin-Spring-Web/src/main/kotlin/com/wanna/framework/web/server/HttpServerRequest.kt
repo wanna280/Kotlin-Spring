@@ -212,4 +212,12 @@ interface HttpServerRequest {
      * @return request method of request
      */
     fun getMethod(): RequestMethod
+
+    /**
+     * 针对对应的ActionCode去执行对应的回调
+     *
+     * @param code code
+     * @param param 需要携带的附加参数
+     */
+    fun action(code: ActionCode, param: Any?)
 }

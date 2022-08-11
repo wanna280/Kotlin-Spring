@@ -37,7 +37,7 @@ open class HandlerMethod {
      *
      * @return 将beanName替换为Bean之后的新的HandlerMethod
      */
-    fun createWithResolvedBean(): HandlerMethod {
+    open fun createWithResolvedBean(): HandlerMethod {
         var handler = bean
         if (handler is String) {
             handler = this.beanFactory!!.getBean(handler)
@@ -53,14 +53,33 @@ open class HandlerMethod {
      * @param returnValue 方法处理的最终返回值
      * @return 方法的返回值类型封装的MethodParameter
      */
-    fun getReturnValueType(returnValue: Any?): MethodParameter {
+    open fun getReturnValueType(returnValue: Any?): MethodParameter {
         return ReturnValueMethodParameter(returnValue)
+    }
+
+    /**
+     * 获取方法上的注解
+     *
+     * @return 获取到的该方法上的注解，如果该方法上获取不到该注解，那么return null
+     */
+    open fun <T : Annotation> getMethodAnnotation(annotationType: Class<T>): T? {
+        return AnnotatedElementUtils.getMergedAnnotation(this.method!!, annotationType)
+    }
+
+    /**
+     * 判断方法上是否存在某种类型的注解？
+     *
+     * @param annotationClass 要去进行匹配的注解类型
+     * @return 如果该方法上有该注解，那么return true；否则return false
+     */
+    open fun hasMethodAnnotation(annotationClass: Class<out Annotation>): Boolean {
+        return AnnotatedElementUtils.isAnnotated(this.method!!, annotationClass)
     }
 
     /**
      * 判断方法的返回值是否是void
      */
-    fun isVoid(): Boolean {
+    open fun isVoid(): Boolean {
         return Void.TYPE == method!!.returnType
     }
 
@@ -82,20 +101,32 @@ open class HandlerMethod {
         return result
     }
 
+    /**
+     * 对于一个HandlerMethod的一个方法参数的封装，因为使用的是内部类的方式，它完全可以获取到外部类当中的HandlerMethod对象
+     *
+     * @param index 该参数位于方法当中的位置(对于返回值类型，那么index=-1)
+     */
     open inner class HandlerMethodParameter(index: Int) : MethodParameter(this@HandlerMethod.method!!, index) {
         override fun getMethodAnnotations(): Array<Annotation> {
             return this@HandlerMethod.method!!.annotations
         }
 
-        override fun getContainingClass(): Class<*>? {
-            return this@HandlerMethod.beanType
+        override fun getContainingClass(): Class<*> {
+            return this@HandlerMethod.beanType!!
         }
 
+        override fun <T : Annotation> getMethodAnnotation(annotationClass: Class<T>): T? {
+            return this@HandlerMethod.getMethodAnnotation(annotationClass)
+        }
 
+        override fun hasMethodAnnotation(annotationClass: Class<out Annotation>): Boolean {
+            return this@HandlerMethod.hasMethodAnnotation(annotationClass)
+        }
     }
 
     /**
-     * 这是对HandlerMethod的返回值的参数封装，让它能够适配到MethodParameter
+     * 这是对HandlerMethod的返回值的参数封装，让它能够适配到MethodParameter，
+     * 并且匹配注解时，应该采用原始的HandlerMethod上的注解去进行匹配
      *
      * @param returnValue 方法的返回值
      */

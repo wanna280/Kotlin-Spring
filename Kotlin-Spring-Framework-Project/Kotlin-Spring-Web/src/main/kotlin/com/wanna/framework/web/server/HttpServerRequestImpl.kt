@@ -40,6 +40,9 @@ open class HttpServerRequestImpl : HttpServerRequest {
     // attributes
     private val attributes = LinkedHashMap<String, Any?>()
 
+    // ActionHook，当给予对应的状态码时，应该产生的动作
+    private var actionHook: ActionHook? = null
+
     private var inputStream: InputStream? = null
 
     open fun setInputStream(inputStream: InputStream) {
@@ -237,5 +240,18 @@ open class HttpServerRequestImpl : HttpServerRequest {
 
     open fun setMethod(method: RequestMethod) {
         this.method = method
+    }
+
+    override fun action(code: ActionCode, param: Any?) {
+        this.actionHook?.action(code, param)
+    }
+
+    /**
+     * 设置ActionHook
+     *
+     * @param actionHook 你想要使用的ActionHook
+     */
+    open fun setActionHook(actionHook: ActionHook) {
+        this.actionHook = actionHook
     }
 }

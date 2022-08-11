@@ -12,6 +12,7 @@ import com.wanna.framework.core.io.support.PropertiesLoaderUtils
 import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.core.util.StringUtils
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.web.context.request.async.WebAsyncUtils
 import com.wanna.framework.web.handler.HandlerAdapter
 import com.wanna.framework.web.handler.HandlerExceptionResolver
 import com.wanna.framework.web.handler.ModelAndView
@@ -83,6 +84,9 @@ open class DispatcherHandlerImpl : DispatcherHandler {
 
     override fun doDispatch(request: HttpServerRequest, response: HttpServerResponse) {
         var mappedHandler: HandlerExecutionChain? = null
+
+        // 根据request去获取到WebAsyncManager
+        val asyncManager = WebAsyncUtils.getAsyncManager(request)
         try {
             var dispatchException: Throwable? = null
             var mv: ModelAndView? = null
@@ -106,6 +110,11 @@ open class DispatcherHandlerImpl : DispatcherHandler {
 
                 // 真正地去执行Handler，交给HandlerAdapter去解析参数、执行目标方法、处理返回值
                 mv = handlerAdapter.handle(request, response, mappedHandler.getHandler())
+
+                // 如果并发处理任务已经启动了，那么就直接return，不需要去进行向后的处理工作了...
+                if (asyncManager.isConcurrentHandlingStarted()) {
+                    return
+                }
 
                 // 如果必要的话，需要使用视图名翻译器，将请求路径直接翻译成为视图名...
                 applyDefaultViewName(request, mv)

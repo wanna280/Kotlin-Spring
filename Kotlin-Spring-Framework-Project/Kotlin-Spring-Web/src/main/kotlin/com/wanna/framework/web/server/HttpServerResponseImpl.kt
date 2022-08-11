@@ -25,7 +25,7 @@ open class HttpServerResponseImpl : HttpServerResponse {
     private var message: String = HttpStatus.SUCCESS.reasonPhase
 
     // ResponseBody的输出流
-    private val outputStream = ByteArrayOutputStream(1024)
+    private val outputStream = ResponseOutputStream(this, 1024)
 
     // headers
     private val headers = HttpHeaders()

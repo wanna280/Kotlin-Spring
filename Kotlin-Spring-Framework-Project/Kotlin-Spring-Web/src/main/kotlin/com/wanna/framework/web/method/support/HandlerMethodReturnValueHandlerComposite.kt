@@ -23,21 +23,21 @@ open class HandlerMethodReturnValueHandlerComposite : HandlerMethodReturnValueHa
         return this
     }
 
-    override fun supportsReturnType(parameter: MethodParameter): Boolean {
-        returnValueHandlers.forEach {
-            if (it.supportsReturnType(parameter)) {
-                return true
-            }
-        }
-        return false
-    }
+    /**
+     * 是否支持处理该类型的返回值类型？只要有其中一个ReturnValueHandler支持去匹配，那么就支持去进行处理
+     *
+     * @param parameter 返回值类型封装成为的MethodParameter
+     * @return 只要有其中一个ReturnValueHandler支持去处理，那么return true
+     */
+    override fun supportsReturnType(parameter: MethodParameter) =
+        this.returnValueHandlers.stream().anyMatch { it.supportsReturnType(parameter) }
 
     /**
-     * 从ReturnValueHandler列表当中，去选出合适的Handler，来处理给定的返回值
+     * 从内部组合的ReturnValueHandler列表当中，去选出合适的ReturnValueHandler，来处理给定的返回值结果
      *
-     * @param returnValue 返回值
+     * @param returnValue 返回值结果
      * @param webRequest NativeWebRequest(request and response)
-     * @param returnType 返回值类型
+     * @param returnType 返回值类型封装成为的MethodParameter
      * @return 如果找到了合适的Handler去进行处理，return Handler处理结果
      * @throws IllegalArgumentException 如果没有找到合适的Handler去处理
      */
@@ -59,7 +59,7 @@ open class HandlerMethodReturnValueHandlerComposite : HandlerMethodReturnValueHa
      *
      * @param returnValue 执行HandlerMethod的返回值
      * @param webRequest NativeWebRequest(request and response)
-     * @param returnType 返回值类型
+     * @param returnType 返回值类型封装成为的MethodParameter
      * @return 如果找到了合适的Handler去进行处理，return Handler；不然return null
      */
     private fun selectHandler(

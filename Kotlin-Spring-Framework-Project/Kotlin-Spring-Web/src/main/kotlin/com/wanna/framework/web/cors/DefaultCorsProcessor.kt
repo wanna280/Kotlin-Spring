@@ -154,7 +154,7 @@ open class DefaultCorsProcessor : CorsProcessor {
             responseHeaders.setAccessControlMaxAge(config.getMaxAge()!!)
         }
 
-//        response.flush()  // flush or not?
+        response.flush()  // flush
         return true
     }
 
