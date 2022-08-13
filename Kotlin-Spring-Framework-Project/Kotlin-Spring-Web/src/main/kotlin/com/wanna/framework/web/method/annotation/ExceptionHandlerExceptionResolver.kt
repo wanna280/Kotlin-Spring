@@ -225,8 +225,6 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
     private fun getDefaultReturnValueHandlers(): List<HandlerMethodReturnValueHandler> {
         val handlers = ArrayList<HandlerMethodReturnValueHandler>()
 
-        // RequestResponseBody的方法处理器
-        handlers += RequestResponseBodyMethodProcessor(getHttpMessageConverters(), getContentNegotiationManager())
 
         // 解析ModelAndView的返回值的方法处理器
         handlers += ModelAndViewMethodReturnValueHandler()
@@ -234,19 +232,31 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
         // 添加Model方法处理器，去处理Model类型的返回值，将Model数据转移到ModelAndViewContainer当中
         handlers += ModelMethodProcessor()
 
-        // 添加Map方法处理器，去处理Map类型的返回值，将Map数据转移到ModelAndViewContainer当中
-        handlers += MapMethodProcessor()
+        // 添加一个处理返回值类型是Callable的返回值类型处理器，负责将Callable转换成为异步任务去进行执行
+        handlers += CallableMethodReturnValueHandler()
 
-        // 解析ViewName的处理器
+        // 添加一个处理返回值类型为DeferredResult/CompletableFuture/ListenableFuture的处理器，负责去执行异步任务
+        handlers += DeferredResultMethodReturnValueHandler()
+
+        // 添加一个ModelAttribute的方法处理器，处理方法返回值是ModelAttribute的类型
+        handlers += ModelAttributeMethodProcessor(false)
+
+        // RequestResponseBody的方法处理器
+        handlers += RequestResponseBodyMethodProcessor(getHttpMessageConverters(), getContentNegotiationManager())
+
+        // 解析ViewName的处理器(处理返回值是字符串的情况)
         handlers += ViewNameMethodReturnValueHandler()
 
-        // 添加一个ModelAttribute的方法处理器，处理方法返回值是ModelAttribute的情况
-        handlers += ModelAttributeMethodProcessor()
+        // 添加Map方法处理器，去处理Map类型的返回值，将Map数据转移到ModelAndViewContainer当中
+        handlers += MapMethodProcessor()
 
         // 应用用户自定义的返回值处理器
         if (getCustomReturnValueHandlers() != null) {
             handlers += getCustomReturnValueHandlers()!!
         }
+
+        // 添加一个ModelAttribute的方法处理器，处理方法返回值是ModelAttribute的类型/不是简单类型的返回值类型
+        handlers += ModelAttributeMethodProcessor(true)
         return handlers
     }
 

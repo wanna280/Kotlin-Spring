@@ -7,6 +7,7 @@ dependencies {
     compileOnly("io.netty:netty-codec-http:$nettyVersion")
 
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
+    testImplementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // for test
     testImplementation(project(":Kotlin-Logger:logger-slf4j-impl"))
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
 }

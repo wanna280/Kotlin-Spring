@@ -41,6 +41,22 @@ interface AutowireCapableBeanFactory : BeanFactory {
     ): Any?
 
     /**
+     * 对外提供对Bean去完成BeforeInitialization工作，让外部也能通过BeanFactory去执行这个回调
+     *
+     * @param existingBean bean object
+     * @param beanName beanName
+     */
+    fun applyBeanPostProcessorsBeforeInitialization(existingBean: Any, beanName: String) : Any
+
+    /**
+     * 对外提供对Bean去完成AfterInitialization工作，让外部也能通过BeanFactory去执行这个回调
+     *
+     * @param existingBean bean object
+     * @param beanName beanName
+     */
+    fun applyBeanPostProcessorsAfterInitialization(existingBean: Any, beanName: String) : Any
+
+    /**
      * 初始化一个Bean，供beanFactory外部去进行使用，完成一个Bean的初始化工作；
      * 在初始化Bean时，会自动执行beforeInitialization/afterInitialization方法，也会执行Aware的接口；
      *
@@ -55,12 +71,12 @@ interface AutowireCapableBeanFactory : BeanFactory {
      * @param clazz 给定clazz
      * @return 创建好的Bean
      */
-    fun <T> createBean(clazz: Class<T>) : T
+    fun <T> createBean(clazz: Class<T>): T
 
     /**
      * 摧毁Bean，供beanFactory外部去进行使用
      *
      * @param existingBean 要进行摧毁的已经存在于容器当中的Bean
      */
-    fun destroy(existingBean:Any)
+    fun destroy(existingBean: Any)
 }

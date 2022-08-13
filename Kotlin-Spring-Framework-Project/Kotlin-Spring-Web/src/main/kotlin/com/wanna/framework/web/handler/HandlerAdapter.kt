@@ -10,6 +10,9 @@ interface HandlerAdapter {
 
     /**
      * 是否支持去处理这样的Handler？
+     *
+     * @param handler handler对象
+     * @return 如果支持处理Handler的情况，那么return true；如果不支持则return false
      */
     fun supports(handler: Any): Boolean
 

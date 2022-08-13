@@ -31,5 +31,6 @@ open class MappingJackson2HttpMessageConverter : HttpMessageConverter<Any> {
 
     override fun write(t: Any, mediaType: MediaType?, outputMessage: HttpOutputMessage) {
         objectMapper.writeValue(outputMessage.getBody(), t)
+        outputMessage.getBody().flush()  // flush
     }
 }

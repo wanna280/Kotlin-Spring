@@ -5,6 +5,8 @@ import com.wanna.framework.core.util.StringUtils
 import com.wanna.framework.web.DispatcherHandler
 import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.http.HttpHeaders
+import com.wanna.framework.web.server.ActionCode
+import com.wanna.framework.web.server.ActionHook
 import com.wanna.framework.web.server.HttpServerRequestImpl
 import com.wanna.framework.web.server.HttpServerResponseImpl
 import io.netty.buffer.Unpooled
@@ -29,13 +31,13 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
             val response = HttpServerResponseImpl()
 
             // 2.初始化request和response
-            initRequest(request, msg)
-            initResponse(response, ctx)
+            initRequest(request, response, msg, ctx)
+            initResponse(request, response, ctx)
 
             // 3.交给DispatcherHandler去处理本次HTTP请求
             dispatcherHandler.doDispatch(request, response)
-            // 4.flush
-            response.flush()
+            // fixed: not to flush，对于所有的flush操作，全部交给使用方去进行flush
+            // response.flush()
         }
     }
 
@@ -50,10 +52,15 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
     /**
      * 初始化Response，设置FlushCallback，在response调用flush时，就可以将数据写入给客户端了
      *
+     * @param request request
      * @param response response
      * @param ctx ChannelHandlerContext
      */
-    private fun initResponse(response: HttpServerResponseImpl, ctx: ChannelHandlerContext) {
+    private fun initResponse(
+        request: HttpServerRequestImpl,
+        response: HttpServerResponseImpl,
+        ctx: ChannelHandlerContext
+    ) {
         response.initFlushCallback {
             val responseByteBuf = Unpooled.copiedBuffer(getOutputStream().toByteArray())
 
@@ -87,10 +94,18 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
     /**
      * 从Netty的request当中去解析成为HttpServerRequest
      *
+     * @param request request
+     * @param response response
      * @param msg Netty的FullHttpRequest
+     * @param context ChannelContext
      * @return 解析完成的HttpServerResponse
      */
-    private fun initRequest(request: HttpServerRequestImpl, msg: FullHttpRequest) {
+    private fun initRequest(
+        request: HttpServerRequestImpl,
+        response: HttpServerResponseImpl,
+        msg: FullHttpRequest,
+        context: ChannelHandlerContext
+    ) {
         // 初始化request的相关信息
         request.init {
             // 解析uri和url
@@ -111,6 +126,17 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
             val byteArray = ByteArray(content.readableBytes())
             content.readBytes(byteArray)
             setInputStream(ByteArrayInputStream(byteArray))
+
+            // 设置ActionHook为重新使用DispatcherHandler去进行doDispatch
+            setActionHook(object : ActionHook {
+                override fun action(code: ActionCode, param: Any?) {
+                    when (code) {
+                        ActionCode.ASYNC_DISPATCH -> context.channel().eventLoop().execute {
+                            dispatcherHandler.doDispatch(request, response)
+                        }
+                    }
+                }
+            })
         }
     }
 }

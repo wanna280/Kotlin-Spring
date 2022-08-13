@@ -8,6 +8,7 @@ import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.task.SimpleAsyncTaskExecutor
 import com.wanna.framework.core.util.ClassUtils
 import com.wanna.framework.core.util.ReflectionUtils
 import com.wanna.framework.web.accept.ContentNegotiationManager
@@ -17,6 +18,7 @@ import com.wanna.framework.web.bind.annotation.RequestMapping
 import com.wanna.framework.web.bind.support.DefaultWebDataBinderFactory
 import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.ServerWebRequest
+import com.wanna.framework.web.context.request.async.WebAsyncUtils
 import com.wanna.framework.web.handler.ModelAndView
 import com.wanna.framework.web.http.converter.HttpMessageConverter
 import com.wanna.framework.web.method.AbstractHandlerMethodAdapter
@@ -106,6 +108,9 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     // 针对某个Controller(Handler)内部的@ModelAttribute方法的缓存，可以根据handlerType去获取到对应的@ModelAttribute缓存
     private val modelAttributeCache = ConcurrentHashMap<Class<*>, Set<Method>>(64)
 
+    // 处理异步任务的TaskExecutor
+    private var asyncTaskExecutor = SimpleAsyncTaskExecutor("MvcAsync")
+
     /**
      * * 1.初始化ControllerAdvice缓存，构建@InitBinder和@ModelAttribute缓存
      * * 2.初始化Handler方法的返回处理器和参数解析器
@@ -167,7 +172,7 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         val modelFactory = getModelFactory(handler, binderFactory)
 
         // 构建InvocableHandlerMethod，并去完成参数名发现器、DataBinderFactory、参数解析器以及返回值处理器的初始化
-        val invocableHandlerMethod = InvocableHandlerMethod.newInvocableHandlerMethod(handler)
+        var invocableHandlerMethod = InvocableHandlerMethod.newInvocableHandlerMethod(handler)
         invocableHandlerMethod.binderFactory = binderFactory
         invocableHandlerMethod.parameterNameDiscoverer = parameterNameDiscoverer
         if (this.argumentResolvers != null) {
@@ -182,8 +187,34 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         // 使用ModelFactory去初始化ModelAndViewContainer当中的Model数据，将@ModelAttribute方法当中的全部Model数据，全部apply到mavContainer当中
         modelFactory.initModel(serverWebRequest, mavContainer, invocableHandlerMethod)
 
+        // 构建出来一个异步的WebAsyncRequest
+        val asyncWebRequest = WebAsyncUtils.createAsyncWebRequest(request, response)
+
+        // 获取到request当中的WebAsyncManager
+        val asyncManager = WebAsyncUtils.getAsyncManager(request)
+        // 将构建好的AsyncWebRequest设置到WebAsyncManager当中，方便后续去进行异步结果的派发
+        asyncManager.setAsyncWebRequest(asyncWebRequest)
+        // 设置处理异步任务的TaskExecutor，用于处理返回值为Callable时需要用到
+        asyncManager.setAsyncTaskExecutor(this.asyncTaskExecutor)
+
+        // 如果有异步结果了，那么需要去处理异步任务的结果，构建一个新的HandlerMethod，去替换掉原来的HandlerMethod
+        // 不管怎么异步，最终的任务都得在这里去进行最终的处理工作...不会在别的地方去进行返回值的处理工作
+        if (asyncManager.hasConcurrentResult()) {
+
+            // 获取并发任务的执行结果
+            val concurrentResult = asyncManager.getConcurrentResult()
+
+            // 替换掉原来的HandlerMethod，只需要去处理返回值即可，对于参数等情况，完全不必去进行处理(Callable没有方法参数)
+            invocableHandlerMethod = invocableHandlerMethod.wrapConcurrentResult(concurrentResult)
+        }
+
         // 执行目标RequestMapping方法(HandlerMethod)，并获取到ModelAndView
         invocableHandlerMethod.invokeAndHandle(serverWebRequest, mavContainer)
+
+        // 如果该异步任务已经并发启动了，那么return null，不需要getModelAndView
+        if (asyncManager.isConcurrentHandlingStarted()) {
+            return null
+        }
 
         // 从ModelAndViewContainer当中获取到ModelAndView
         return getModelAndView(mavContainer, modelFactory, serverWebRequest)
@@ -435,13 +466,12 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     /**
      * 如果不进行自定义，那么需要去获取默认的ReturnValueHandlers列表
      *
+     * Note: 这里的多个返回值处理器之间可能会发生冲突，需要安排合理的顺序...顺序是很关键的
+     *
      * @return 默认的HandlerMethodReturnValueHandler列表
      */
     private fun getDefaultReturnValueHandlers(): List<HandlerMethodReturnValueHandler> {
         val handlers = ArrayList<HandlerMethodReturnValueHandler>()
-
-        // RequestResponseBody的方法处理器
-        handlers += RequestResponseBodyMethodProcessor(getHttpMessageConverters(), getContentNegotiationManager())
 
         // 解析ModelAndView的返回值的方法处理器
         handlers += ModelAndViewMethodReturnValueHandler()
@@ -449,19 +479,31 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         // 添加Model方法处理器，去处理Model类型的返回值，将Model数据转移到ModelAndViewContainer当中
         handlers += ModelMethodProcessor()
 
-        // 添加Map方法处理器，去处理Map类型的返回值，将Map数据转移到ModelAndViewContainer当中
-        handlers += MapMethodProcessor()
+        // 添加一个处理返回值类型是Callable的返回值类型处理器，负责将Callable转换成为异步任务去进行执行
+        handlers += CallableMethodReturnValueHandler()
+
+        // 添加一个处理返回值类型为DeferredResult/CompletableFuture/ListenableFuture的处理器，负责去执行异步任务
+        handlers += DeferredResultMethodReturnValueHandler()
+
+        // 添加一个ModelAttribute的方法处理器，处理方法返回值是ModelAttribute的类型(这里必须将参数设置为false，这里只去处理ModelAttribute)
+        handlers += ModelAttributeMethodProcessor(false)
+
+        // RequestResponseBody的方法处理器
+        handlers += RequestResponseBodyMethodProcessor(getHttpMessageConverters(), getContentNegotiationManager())
 
         // 解析ViewName的处理器(处理返回值是字符串的情况)
         handlers += ViewNameMethodReturnValueHandler()
 
-        // 添加一个ModelAttribute的方法处理器，处理方法返回值是ModelAttribute或者返回值不是简单类型的情况
-        handlers += ModelAttributeMethodProcessor()
+        // 添加Map方法处理器，去处理Map类型的返回值，将Map数据转移到ModelAndViewContainer当中
+        handlers += MapMethodProcessor()
 
         // 应用用户自定义的返回值处理器
         if (getCustomReturnValueHandlers() != null) {
             handlers += getCustomReturnValueHandlers()!!
         }
+
+        // 添加一个ModelAttribute的方法处理器，处理方法返回值是ModelAttribute的类型/不是简单类型的返回值类型
+        handlers += ModelAttributeMethodProcessor(true)
         return handlers
     }
 
@@ -503,6 +545,8 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
             this.beanFactory = beanFactory
         }
     }
+
+    open fun getBeanFactory(): ConfigurableBeanFactory? = this.beanFactory
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext

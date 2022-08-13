@@ -11,6 +11,8 @@ import com.wanna.framework.web.method.HandlerMethod
 import org.slf4j.LoggerFactory
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
+import java.util.concurrent.Callable
+import kotlin.jvm.Throws
 
 /**
  * 这是一个可以被执行的HandlerMethod，提供了invokeAndHandle方法，外部可以直接调用，去完成方法的调用
@@ -21,6 +23,9 @@ open class InvocableHandlerMethod : HandlerMethod() {
     companion object {
         // Logger
         private val logger = LoggerFactory.getLogger(InvocableHandlerMethod::class.java)
+
+        // 寻找到Callable的call方法
+        private val CALLABLE_METHOD = ReflectionUtils.findMethod(Callable::class.java, "call")!!
 
         // 空参数的常量
         private val EMPTY_ARGS = emptyArray<Any?>()
@@ -68,7 +73,7 @@ open class InvocableHandlerMethod : HandlerMethod() {
             }
         }
 
-        mavContainer.requestHandled  =false
+        mavContainer.requestHandled = false
         val returnValueType = getReturnValueType(returnValue)
 
         // 遍历所有的ReturnValueHandler，去找到合适的一个去进行方法的返回值的处理...
@@ -96,8 +101,8 @@ open class InvocableHandlerMethod : HandlerMethod() {
     protected open fun getMethodArgumentValues(
         webRequest: NativeWebRequest, mavContainer: ModelAndViewContainer?, vararg provideArgs: Any
     ): Array<Any?> {
-        val methodParameters = parameters ?: throw IllegalStateException("HandlerMethod的参数列表不能为null")
-        if (methodParameters.isEmpty()) {
+        val methodParameters = parameters
+        if (methodParameters == null || methodParameters.isEmpty()) {
             return EMPTY_ARGS
         }
         val params = arrayOfNulls<Any?>(methodParameters.size)
@@ -183,5 +188,60 @@ open class InvocableHandlerMethod : HandlerMethod() {
         } catch (ex: InvocationTargetException) {
             throw IllegalStateException("执行目标方法发生错误，原因是-->${ex.targetException}", ex)
         }
+    }
+
+    /**
+     * 包装异步的执行结果成为一个HandlerMethod，并将返回值封装成为一个MethodParameter，
+     * 设置匹配的注解是从原来的HandlerMethod上去进行搜索，而不是从Callable的call方法上去进行搜索
+     *
+     * @param result 异步任务处理的最终结果
+     * @return InvocableHandlerMethod
+     */
+    open fun wrapConcurrentResult(result: Any?): InvocableHandlerMethod {
+        val concurrentResultHandlerMethod = ConcurrentResultHandlerMethod(result, ReturnValueMethodParameter(result))
+        // copy returnValueHandlers
+        if (this.returnValueHandlers != null) {
+            concurrentResultHandlerMethod.returnValueHandlers = returnValueHandlers
+        }
+        return concurrentResultHandlerMethod
+    }
+
+
+    /**
+     * 处理并发任务的HandlerMethod，主要用于去替换掉原本的HandlerMethod，转换成为我们自定义的Handler的方式去处理本次请求
+     *
+     * @param result 异步任务执行的结果
+     * @param returnType 该方法的返回类型封装成为的返回值类型
+     */
+    private inner class ConcurrentResultHandlerMethod(result: Any?, private val returnType: MethodParameter) :
+        InvocableHandlerMethod() {
+        init {
+            this.bean = Callable {
+                if (result is Throwable) {
+                    throw result
+                }
+                result
+            }
+            this.method = CALLABLE_METHOD
+        }
+
+        /**
+         * 重写获取方法上的注解的方法，沿用外部类的寻找注解的方式去进行寻找
+         *
+         * @param annotationType annotationType
+         */
+        override fun <T : Annotation> getMethodAnnotation(annotationType: Class<T>) =
+            this@InvocableHandlerMethod.getMethodAnnotation(annotationType)
+
+        /**
+         * 判断该方法上是否有存在该注解？
+         *
+         * @param annotationClass 要去进行匹配的注解
+         * @return 如果该方法上有该注解，那么return true；否则return false
+         */
+        override fun hasMethodAnnotation(annotationClass: Class<out Annotation>) =
+            this@InvocableHandlerMethod.hasMethodAnnotation(annotationClass)
+
+        override fun getReturnValueType(returnValue: Any?) = this.returnType
     }
 }

@@ -12,6 +12,6 @@ class DefaultView : View {
      * @param response response
      */
     override fun render(model: Map<String, *>?, request: HttpServerRequest, response: HttpServerResponse) {
-
+        response.flush() // flush
     }
 }

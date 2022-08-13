@@ -14,6 +14,12 @@ open class ParameterContentNegotiationStrategy : ContentNegotiationStrategy {
     // 参数名，可以去进行自定义
     var parameterName = "format"
 
+    /**
+     * 解析客户端想要接收的媒体类型，这里主要提供从请求参数的"format"当中去获取到，并完成解析
+     *
+     * @param webRequest NativeWebRequest(request and response)
+     * @return 解析完成的MediaType列表
+     */
     override fun resolveMediaTypes(webRequest: NativeWebRequest): List<MediaType> {
         val request = webRequest.getNativeRequest(HttpServerRequest::class.java)
         val formatParam = request.getParam(parameterName)

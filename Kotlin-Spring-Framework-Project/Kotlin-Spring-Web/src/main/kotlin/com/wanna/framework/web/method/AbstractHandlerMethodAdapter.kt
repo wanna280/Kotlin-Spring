@@ -30,7 +30,7 @@ abstract class AbstractHandlerMethodAdapter : HandlerAdapter, Ordered {
     override fun supports(handler: Any) = handler is HandlerMethod && supportInternal(handler)
 
     /**
-     * 处理目标请求，将handler限制为HandlerMethod，交给子类去进行实现
+     * 处理目标请求，将handler限制为HandlerMethod这种类型，对于具体的处理逻辑，完全地交给子类去进行实现
      *
      * @param request request
      * @param response response
@@ -45,6 +45,9 @@ abstract class AbstractHandlerMethodAdapter : HandlerAdapter, Ordered {
      * 使用HandlerMethod去处理目标请求的具体实现逻辑，交给子类去进行实现
      *
      * @param handler HandlerMethod
+     * @param request request
+     * @param response response
+     * @return ModelAndView
      */
     abstract fun handleInternal(
         request: HttpServerRequest,

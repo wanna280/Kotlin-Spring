@@ -23,9 +23,19 @@ open class MethodParameter(
 ) {
 
     constructor(executable: Executable, parameterIndex: Int) : this(executable, parameterIndex, null, 1)
-    constructor(executable: Executable, parameterIndex: Int, nestingLevel: Int) : this(executable, parameterIndex, null, nestingLevel)
+    constructor(executable: Executable, parameterIndex: Int, nestingLevel: Int) : this(
+        executable,
+        parameterIndex,
+        null,
+        nestingLevel
+    )
 
-    constructor(executable: Executable, parameterIndex: Int, containingClass: Class<*>?) : this(executable, parameterIndex, containingClass, 1)
+    constructor(executable: Executable, parameterIndex: Int, containingClass: Class<*>?) : this(
+        executable,
+        parameterIndex,
+        containingClass,
+        1
+    )
 
     // 参数名发现器，提供该方法/构造器当中的方法的参数名列表的获取
     private var parameterNameDiscoverer: ParameterNameDiscoverer? = null
@@ -51,6 +61,26 @@ open class MethodParameter(
      */
     open fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T? {
         return AnnotatedElementUtils.getMergedAnnotation(this.getParameter(), annotationClass)
+    }
+
+    /**
+     * 获取方法上的某个类型的注解
+     *
+     * @param annotationClass 要去进行匹配的注解类型
+     * @return 如果方法上找到了该注解，那么返回该注解信息；如果方法上没有找到该注解，那么return null
+     */
+    open fun <T : Annotation> getMethodAnnotation(annotationClass: Class<T>): T? {
+        return AnnotatedElementUtils.getMergedAnnotation(this.executable, annotationClass)
+    }
+
+    /**
+     * 判断方法上是否有该注解？
+     *
+     * @param annotationClass 要去进行匹配的注解类型
+     * @return 如果方法上标注了该注解，那么return true；否则return false
+     */
+    open fun hasMethodAnnotation(annotationClass: Class<out Annotation>): Boolean {
+        return AnnotatedElementUtils.isAnnotated(this.executable, annotationClass);
     }
 
     /**
@@ -95,8 +125,8 @@ open class MethodParameter(
     /**
      * 获取包含的类
      */
-    open fun getContainingClass(): Class<*>? {
-        return containingClass
+    open fun getContainingClass(): Class<*> {
+        return containingClass ?: getDeclaringClass()
     }
 
     /**

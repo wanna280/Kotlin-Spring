@@ -23,7 +23,7 @@ import com.wanna.framework.web.ui.Model
  */
 open class ModelMethodProcessor : HandlerMethodArgumentResolver, HandlerMethodReturnValueHandler {
     override fun supportsParameter(parameter: MethodParameter): Boolean {
-        return ClassUtils.isAssignFrom(Map::class.java, parameter.getParameterType())
+        return ClassUtils.isAssignFrom(Model::class.java, parameter.getParameterType())
     }
 
     override fun resolveArgument(
@@ -36,7 +36,7 @@ open class ModelMethodProcessor : HandlerMethodArgumentResolver, HandlerMethodRe
     }
 
     override fun supportsReturnType(parameter: MethodParameter): Boolean {
-        return ClassUtils.isAssignFrom(Map::class.java, parameter.getParameterType())
+        return ClassUtils.isAssignFrom(Model::class.java, parameter.getParameterType())
     }
 
     override fun handleReturnValue(

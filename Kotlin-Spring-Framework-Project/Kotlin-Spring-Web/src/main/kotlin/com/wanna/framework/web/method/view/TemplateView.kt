@@ -19,8 +19,9 @@ open class TemplateView : View {
     var resourceUrl: String? = null
 
     override fun render(model: Map<String, *>?, request: HttpServerRequest, response: HttpServerResponse) {
-        val content = resourceStream?.readAllBytes() ?: throw IllegalStateException("无法读取到资源[vieeName=$viewName]数据")
+        val content = resourceStream?.readAllBytes() ?: throw IllegalStateException("无法读取到资源[viewName=$viewName]数据")
         response.getOutputStream().write(content)
         response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE)
+        response.flush()  // flush
     }
 }

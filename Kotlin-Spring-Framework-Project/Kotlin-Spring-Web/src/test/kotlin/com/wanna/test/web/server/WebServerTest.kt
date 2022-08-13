@@ -20,6 +20,8 @@ import com.wanna.framework.web.server.HttpServerResponse
 import com.wanna.framework.web.server.netty.server.support.NettyServer
 import com.wanna.framework.web.server.netty.server.support.NettyServerHandler
 import com.wanna.framework.web.ui.View
+import org.slf4j.LoggerFactory
+import java.util.concurrent.Callable
 
 @ComponentScan(["com.wanna.test.web.server"])
 @Configuration(proxyBeanMethods = false)
@@ -46,6 +48,7 @@ open class WebServerTest {
                 val readAllBytes = fis?.readAllBytes() ?: throw IllegalStateException("无法找到指定的资源[$mavViewUrl]")
                 response.getOutputStream().write(readAllBytes)
                 response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE)
+                response.flush()
             }
         }
     }
@@ -97,6 +100,11 @@ class MyControllerAdvice {
 @RequestMapping(["/user"], method = [RequestMethod.GET, RequestMethod.POST])
 @Controller
 class MyController {
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(MyController::class.java)
+    }
+
     @ModelAttribute
     fun ma(): String {
         return "ma"
@@ -119,6 +127,16 @@ class MyController {
     @RequestMapping(["/request"])
     fun request(): User {
         return User()
+    }
+
+    @ResponseBody
+    @RequestMapping(["/callable"])
+    fun callable(): Callable<String> {
+        logger.info("ThreadName=${Thread.currentThread().name}")
+        return Callable<String> {
+            logger.info("ThreadName=${Thread.currentThread().name}")
+            "wanna"
+        }
     }
 }
 
