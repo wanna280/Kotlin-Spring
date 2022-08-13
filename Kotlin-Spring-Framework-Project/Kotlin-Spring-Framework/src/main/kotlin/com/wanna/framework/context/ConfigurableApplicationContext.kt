@@ -9,6 +9,8 @@ import java.io.Closeable
 
 /**
  * 这是一个可以被配置的ApplicationContext
+ *
+ * @see ApplicationContext
  */
 interface ConfigurableApplicationContext : ApplicationContext, Closeable {
 
@@ -22,17 +24,22 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable {
     }
 
     /**
-     * 获取ApplicationStartup
+     * 获取当前ApplicationContext需要使用到的ApplicationStartup
+     *
+     * @return ApplicationStartup
      */
     fun getApplicationStartup(): ApplicationStartup
 
     /**
-     * 设置ApplicationStartup
+     * 设置当前ApplicationContext要使用的ApplicationStartup，
+     * 通过ApplicationStartup，可以提供Spring应用启动的相关的性能监测工作
+     *
+     * @param applicationStartup ApplicationStartup
      */
     fun setApplicationStartup(applicationStartup: ApplicationStartup)
 
     /**
-     * 刷新容器，完成所有Bean的实例化和初始化
+     * 刷新当前的ApplicationContext，完成所有Bean的实例化和初始化工作
      */
     fun refresh();
 
@@ -59,17 +66,23 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable {
     fun getBeanFactory(): ConfigurableListableBeanFactory
 
     /**
-     * 设置Environment
+     * 设置当前ApplicationContext的Environment
+     *
+     * @param environment 当前的ApplicationContext想要使用的Environment
      */
     fun setEnvironment(environment: ConfigurableEnvironment)
 
     /**
      * 重写子类中的getEnvironment方法，让返回值为ConfigurableEnvironment
+     *
+     * @return ConfigurableEnvironment
      */
     override fun getEnvironment(): ConfigurableEnvironment
 
     /**
-     * 添加ApplicationListener到ApplicationContext当中
+     * 添加ApplicationListener到当前的ApplicationContext当中
+     *
+     * @param listener 想要添加到ApplicationContext当中的ApplicationListener
      */
     fun addApplicationListener(listener: ApplicationListener<*>)
 
@@ -78,5 +91,10 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable {
      */
     fun setParent(parent: ApplicationContext)
 
+    /**
+     * 设置加载BeanClass的ClassLoader
+     *
+     * @param beanClassLoader 你想要使用的ClassLoader
+     */
     fun setBeanClassLoader(beanClassLoader: ClassLoader)
 }

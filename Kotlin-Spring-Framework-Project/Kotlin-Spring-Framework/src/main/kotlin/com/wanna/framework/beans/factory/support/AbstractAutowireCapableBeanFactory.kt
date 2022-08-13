@@ -615,8 +615,8 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
      * <note>如果其中一个BeanPostProcessor执行过程当中return null的话，终止后续的BeanPostProcessor的执行，直接return result；
      * 如果BeanPostProcessor返回的不为null的话，那么将result=current，去进行继续执行</note>
      */
-    protected open fun applyBeanPostProcessorsBeforeInitialization(bean: Any, beanName: String): Any {
-        var result: Any = bean
+    override fun applyBeanPostProcessorsBeforeInitialization(existingBean: Any, beanName: String): Any {
+        var result: Any = existingBean
         for (postProcessor in beanPostProcessors) {
             val current = postProcessor.postProcessBeforeInitialization(beanName, result) ?: return result
             result = current
@@ -629,8 +629,8 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
      * <note>如果其中一个BeanPostProcessor执行过程当中return null的话，终止后续的BeanPostProcessor的执行，直接return result；
      * 如果BeanPostProcessor返回的不为null的话，那么将result=current，去进行继续执行</note>
      */
-    protected open fun applyBeanPostProcessorsAfterInitialization(bean: Any, beanName: String): Any {
-        var result = bean
+    override fun applyBeanPostProcessorsAfterInitialization(existingBean: Any, beanName: String): Any {
+        var result = existingBean
         for (postProcessor in this.beanPostProcessors) {
             val current = postProcessor.postProcessAfterInitialization(beanName, result) ?: return result
             result = current

@@ -494,14 +494,18 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
      */
     protected abstract fun closeBeanFactory()
 
+    /**
+     * Spring的ApplicationContext关闭时，应该做的收尾工作，如果子类需要的话，可以去进行自定义操作
+     */
     protected open fun onClose() {
 
     }
 
     /**
-     * 创建Environment
+     * 创建Environment，默认情况下直接去创建一个StandardEnvironment，子类当中可以根据需要去进行扩展
      */
     protected open fun createEnvironment(): ConfigurableEnvironment = StandardEnvironment()
+
     override fun getBean(beanName: String): Any = getBeanFactory().getBean(beanName)
     override fun getBean(beanName: String, vararg args: Any?) = getBeanFactory().getBean(beanName, arrayOf(*args))
     override fun <T> getBean(beanName: String, type: Class<T>): T = getBeanFactory().getBean(beanName, type)
