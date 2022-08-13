@@ -1,10 +1,7 @@
 package com.wanna.framework.web.method
 
 import com.wanna.framework.web.bind.annotation.RequestMethod
-import com.wanna.framework.web.mvc.condition.HeadersRequestCondition
-import com.wanna.framework.web.mvc.condition.ParamsRequestCondition
-import com.wanna.framework.web.mvc.condition.PathPatternsRequestCondition
-import com.wanna.framework.web.mvc.condition.RequestMethodsRequestCondition
+import com.wanna.framework.web.mvc.condition.*
 import com.wanna.framework.web.server.HttpServerRequest
 
 /**
@@ -14,7 +11,8 @@ open class RequestMappingInfo(
     val methodsCondition: RequestMethodsRequestCondition = RequestMethodsRequestCondition(),
     val pathPatternsCondition: PathPatternsRequestCondition = PathPatternsRequestCondition(),
     val paramsCondition: ParamsRequestCondition = ParamsRequestCondition(),
-    val headersCondition: HeadersRequestCondition = HeadersRequestCondition()
+    val headersCondition: HeadersRequestCondition = HeadersRequestCondition(),
+    val producesCondition: ProducesRequestCondition = ProducesRequestCondition()
 ) {
     open fun getPaths(): Set<String> = HashSet(pathPatternsCondition.paths)
 
@@ -32,6 +30,8 @@ open class RequestMappingInfo(
         pathPatternsCondition.getMatchingCondition(request) ?: return null
         // 4.匹配header
         headersCondition.getMatchingCondition(request) ?: return null
+        // 5.匹配produces
+        producesCondition.getMatchingCondition(request) ?: return null
         return this
     }
 
@@ -55,13 +55,14 @@ open class RequestMappingInfo(
 
 
     /**
-     * Builder，方便更方便地去构建RequestMappingInfo
+     * Builder，对于RequestMappingInfo的构建比较复杂，这里主要是为了更方便地去构建RequestMappingInfo
      */
     class Builder {
         private var methodsCondition: RequestMethodsRequestCondition = RequestMethodsRequestCondition()
         private var pathPatternsCondition: PathPatternsRequestCondition = PathPatternsRequestCondition()
         private var paramsCondition: ParamsRequestCondition = ParamsRequestCondition()
         private var headersCondition: HeadersRequestCondition = HeadersRequestCondition()
+        private var producesCondition: ProducesRequestCondition = ProducesRequestCondition()
         fun paths(vararg paths: String): Builder {
             this.pathPatternsCondition = PathPatternsRequestCondition(*paths)
             return this
@@ -87,7 +88,7 @@ open class RequestMappingInfo(
             return this
         }
 
-        fun methods(methodsCondition: RequestMethodsRequestCondition) : Builder {
+        fun methods(methodsCondition: RequestMethodsRequestCondition): Builder {
             this.methodsCondition = methodsCondition
             return this
         }
@@ -97,12 +98,28 @@ open class RequestMappingInfo(
             return this
         }
 
-        fun headers(headersRequestCondition: HeadersRequestCondition) : Builder {
+        fun headers(headersCondition: HeadersRequestCondition): Builder {
             this.headersCondition = headersCondition
             return this
         }
 
+        fun produces(vararg produces: String): Builder {
+            this.producesCondition = ProducesRequestCondition(*produces)
+            return this
+        }
+
+        fun produces(producesCondition: ProducesRequestCondition): Builder {
+            this.producesCondition = producesCondition
+            return this
+        }
+
         fun build(): RequestMappingInfo =
-            RequestMappingInfo(methodsCondition, pathPatternsCondition, paramsCondition, headersCondition)
+            RequestMappingInfo(
+                methodsCondition,
+                pathPatternsCondition,
+                paramsCondition,
+                headersCondition,
+                producesCondition
+            )
     }
 }

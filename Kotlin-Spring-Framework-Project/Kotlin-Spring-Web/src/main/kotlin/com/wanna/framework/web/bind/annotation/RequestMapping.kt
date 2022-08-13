@@ -10,6 +10,7 @@ import org.springframework.core.annotation.AliasFor
  * @param params 要匹配的参数
  * @param method 支持的请求方式
  * @param header 要匹配的header
+ * @param produces 想要产出的MediaType
  */
 @Mapping
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
@@ -20,5 +21,6 @@ annotation class RequestMapping(
     val path: Array<String> = [],
     val method: Array<RequestMethod> = [],
     val params: Array<String> = [],
-    val header: Array<String> = []
+    val header: Array<String> = [],
+    val produces: Array<String> = []
 )

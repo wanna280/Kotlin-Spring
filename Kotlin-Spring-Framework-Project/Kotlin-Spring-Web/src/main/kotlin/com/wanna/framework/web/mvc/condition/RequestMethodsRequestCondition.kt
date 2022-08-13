@@ -1,5 +1,6 @@
 package com.wanna.framework.web.mvc.condition
 
+import com.wanna.framework.web.bind.annotation.RequestMapping
 import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.server.HttpServerRequest
 
@@ -7,11 +8,11 @@ import com.wanna.framework.web.server.HttpServerRequest
  * 基于请求方式的RequestCondition的实现
  *
  * @param methods 支持的请求方式列表
+ * @see RequestMapping.method
  */
 open class RequestMethodsRequestCondition(private val methods: Set<RequestMethod>) :
     AbstractRequestCondition<RequestMethodsRequestCondition>() {
     constructor(vararg requestMethods: RequestMethod) : this(methods = HashSet<RequestMethod>(listOf(*requestMethods)))
-
     override fun getContent() = methods
     override fun getToStringInfix() = " || "
 

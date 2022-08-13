@@ -29,7 +29,7 @@ open class HeadersRequestCondition(val headers: Set<String>) : AbstractRequestCo
 
     override fun getMatchingCondition(request: HttpServerRequest): HeadersRequestCondition? {
         headers.forEach {
-            if (!request.getHeaderNames().contains(request.getUrl())) {
+            if (!request.getHeaderNames().contains(it)) {
                 return null
             }
         }

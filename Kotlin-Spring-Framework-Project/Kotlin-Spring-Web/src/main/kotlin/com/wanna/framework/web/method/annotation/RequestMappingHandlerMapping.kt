@@ -150,7 +150,8 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
         val combinedPath = info.pathPatternsCondition.combine(newInfo.pathPatternsCondition)
         val combinedParam = info.paramsCondition.combine(newInfo.paramsCondition)
         val combinedHeader = info.headersCondition.combine(newInfo.headersCondition)
-        return RequestMappingInfo(combinedMethods, combinedPath, combinedParam, combinedHeader)
+        val combinedProduces = info.producesCondition.combine(newInfo.producesCondition)
+        return RequestMappingInfo(combinedMethods, combinedPath, combinedParam, combinedHeader, combinedProduces)
     }
 
     /**
@@ -162,7 +163,12 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
     protected open fun getRequestMappingInfo(element: AnnotatedElement): RequestMappingInfo? {
         val requestMapping =
             AnnotatedElementUtils.getMergedAnnotation(element, RequestMapping::class.java) ?: return null
-        return RequestMappingInfo.Builder().methods(*requestMapping.method).paths(*requestMapping.path)
-            .params(*requestMapping.params).headers(*requestMapping.header).build()
+        return RequestMappingInfo.Builder()
+            .methods(*requestMapping.method)
+            .paths(*requestMapping.path)
+            .params(*requestMapping.params)
+            .headers(*requestMapping.header)
+            .produces(*requestMapping.produces)
+            .build()
     }
 }

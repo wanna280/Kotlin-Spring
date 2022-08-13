@@ -1,17 +1,19 @@
 package com.wanna.framework.web.mvc.condition
 
+import com.wanna.framework.web.bind.annotation.RequestMapping
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.util.PathPattern
 
 /**
  * 基于路径的模式匹配
+ *
+ * @see RequestMapping.path
  */
 open class PathPatternsRequestCondition(private val patterns: Set<PathPattern>) :
     AbstractRequestCondition<PathPatternsRequestCondition>() {
     constructor(vararg paths: String) : this(LinkedHashSet(paths.map { PathPattern(it) }.toList()))
 
     val paths = patterns.map { it.pattern }.toList()
-
     override fun getContent() = patterns
     override fun getToStringInfix() = " && "
 

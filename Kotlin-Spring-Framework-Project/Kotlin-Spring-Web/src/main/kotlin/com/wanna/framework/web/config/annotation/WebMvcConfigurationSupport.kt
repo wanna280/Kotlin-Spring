@@ -14,7 +14,9 @@ import com.wanna.framework.web.cors.CorsConfiguration
 import com.wanna.framework.web.handler.HandlerExceptionResolver
 import com.wanna.framework.web.handler.SimpleUrlHandlerMapping
 import com.wanna.framework.web.handler.ViewResolver
+import com.wanna.framework.web.http.converter.ByteArrayHttpMessageConverter
 import com.wanna.framework.web.http.converter.HttpMessageConverter
+import com.wanna.framework.web.http.converter.StringHttpMessageConverter
 import com.wanna.framework.web.http.converter.json.MappingJackson2HttpMessageConverter
 import com.wanna.framework.web.method.DefaultRequestToViewNameTranslator
 import com.wanna.framework.web.method.RequestToViewNameTranslator
@@ -219,10 +221,16 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
 
     /**
      * 应用默认的MessageConverter列表
+     *
+     * @param converters MessageConverter列表
      */
     protected open fun applyDefaultMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
+        converters += ByteArrayHttpMessageConverter()  // support ByteArray
+        converters += StringHttpMessageConverter()  // support String
+
+
         if (jackson2Present) {
-            converters += MappingJackson2HttpMessageConverter()
+            converters += MappingJackson2HttpMessageConverter()  // support Json
         }
     }
 

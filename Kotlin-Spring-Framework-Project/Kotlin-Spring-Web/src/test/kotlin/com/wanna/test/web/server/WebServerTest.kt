@@ -138,6 +138,12 @@ class MyController {
             "wanna"
         }
     }
+
+    @ResponseBody
+    @RequestMapping(["/produces"], produces = ["text/html"])
+    fun produces(): String {
+        return "u"
+    }
 }
 
 fun main() {

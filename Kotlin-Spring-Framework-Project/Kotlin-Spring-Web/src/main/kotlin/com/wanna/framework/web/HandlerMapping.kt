@@ -10,7 +10,12 @@ interface HandlerMapping {
 
     companion object {
         // 请求当中的uri的模板变量属性的属性名
+        @JvmStatic
         val URI_TEMPLATE_VARIABLES_ATTRIBUTE = HandlerMapping::class.java.name + ".uriTemplateVariables"
+
+        // 产出的MediaType列表的属性名
+        @JvmStatic
+        val PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE = HandlerMapping::class.java.name + ".producibleMediaTypes"
     }
 
 

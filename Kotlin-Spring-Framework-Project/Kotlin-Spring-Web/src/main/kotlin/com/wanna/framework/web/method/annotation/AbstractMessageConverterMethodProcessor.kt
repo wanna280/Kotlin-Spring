@@ -1,6 +1,7 @@
 package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.web.HandlerMapping
 import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.context.request.ServerWebRequest
@@ -64,7 +65,7 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
         // 获取服务端所能产出的所有的MediaType
         val producibleMediaTypes = getProducibleMediaTypes(request, parameterType)
 
-        // 遍历客户端可以接收的所有类型的MediaType，去判断我服务端能否产出？
+        // 遍历客户端可以接收的所有类型的MediaType，去判断我服务端当前能否产出？
         val mediaTypesToUse = ArrayList<MediaType>()
         for (requestType in acceptableMediaTypes) {
             for (producibleMediaType in producibleMediaTypes) {
@@ -92,7 +93,7 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
                 if (it.canWrite(parameterType, mediaTypeToUse)) {
                     if (value != null) {
                         (it as HttpMessageConverter<T>).write(value, mediaTypeToUse, outputMessage)
-                        return@forEach
+                        return  // return all, no need to continue
                     }
                 }
             }
@@ -122,15 +123,29 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
     /**
      * 获取服务端所能产出的全部MediaType类型的列表
      *
+     * * 1.尝试从request属性当中去进行获取，因为有可能通过@RequestMapping等注解的方式去进行过配置，就会被添加到这个属性当中来
+     * * 2.如果request属性当中不存在的话，那么需要遍历所有的MessageConverter，看它们能产出什么类型的MediaType
+     *
      * @param request request
      * @return 服务端能够产生的全部MediaType
      */
-    private fun getProducibleMediaTypes(request: HttpServerRequest, valueType: Class<*>): List<MediaType> {
+    protected open fun getProducibleMediaTypes(request: HttpServerRequest, valueType: Class<*>): List<MediaType> {
+
+        // 1.尝试从request当中去进行搜索
+        @Suppress("UNCHECKED_CAST")
+        val mediaTypes = request.getAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE) as Collection<MediaType>?
+        if (mediaTypes != null && mediaTypes.isNotEmpty()) {
+            return ArrayList(mediaTypes)
+        }
+
+        // 2.遍历所有的MessageConverter去进行搜索它们所支持的MediaType
         val produceTypes = ArrayList<MediaType>()
         this.messageConverters.forEach {
             produceTypes += it.getSupportedMediaTypes(valueType)
         }
-        return produceTypes
+
+        // if empty set to all
+        return if (produceTypes.isEmpty()) listOf(MediaType.ALL) else produceTypes
     }
 
     /**

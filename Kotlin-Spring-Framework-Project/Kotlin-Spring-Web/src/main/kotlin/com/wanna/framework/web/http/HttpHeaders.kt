@@ -313,4 +313,11 @@ open class HttpHeaders : MultiValueMap<String, String> {
 
     @Nullable
     open fun getHost(): String? = getFirst(HOST)
+
+    /**
+     * 获取ContentType
+     *
+     * @return ContentType for MediaType
+     */
+    open fun getContentType(): MediaType = MediaType.parseMediaType(getFirst(CONTENT_TYPE)!!)
 }
