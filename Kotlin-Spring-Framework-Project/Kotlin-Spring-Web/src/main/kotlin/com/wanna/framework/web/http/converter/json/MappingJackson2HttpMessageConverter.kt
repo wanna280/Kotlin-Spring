@@ -17,7 +17,7 @@ open class MappingJackson2HttpMessageConverter : AbstractHttpMessageConverter<An
     private val objectMapper: ObjectMapper = ObjectMapper()
 
     init {
-        setSupportedMediaTypes(MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML)
+        setSupportedMediaTypes(MediaType.APPLICATION_JSON)
     }
 
     /**
