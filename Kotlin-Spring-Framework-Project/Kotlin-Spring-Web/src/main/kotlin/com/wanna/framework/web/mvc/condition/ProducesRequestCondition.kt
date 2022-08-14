@@ -34,8 +34,8 @@ open class ProducesRequestCondition(
         private val EMPTY_CONDITION = ProducesRequestCondition()
     }
 
+    // 提供一个变长参数的构造方法
     constructor(vararg produces: String) : this(produces.toList(), DEFAULT_CONTENT_NEGOTIATION_MANAGER)
-
 
     override fun getContent() = this.produces
 
@@ -63,38 +63,67 @@ open class ProducesRequestCondition(
      * @return 匹配的结果，如果不匹配的话，return null；否则返回的是正常的ProducesRequestCondition
      */
     override fun getMatchingCondition(request: HttpServerRequest): ProducesRequestCondition? {
-        if (CorsUtils.isCorsRequest(request)) {
+        // 1.如果它是一个Cors的预检请求("OPTIONS")，那么return EMPTY_CONDITION, 匹配
+        if (CorsUtils.isPreFlightRequest(request)) {  // fixed for PreFlightRequest
             return EMPTY_CONDITION
         }
+
+        // 2.如果当前Produces为空，没有要去进行产出的类型，那么return this, 匹配
         if (this.isEmpty()) {
             return this
         }
+
+        // 3.尝试去解析客户端想要去进行接收的MediaType列表
+        // --3.1 先尝试从request的属性当中去进行探索
+        // --3.2 再尝试根据ContentNegotiationManager当中去进行解析
         val mediaTypes: List<MediaType>?
         try {
-            mediaTypes = getAcceptedMediaTypes(request) ?: return EMPTY_CONDITION
+            mediaTypes = getAcceptedMediaTypes(request) ?: return null
         } catch (ex: Exception) {
-            return null
+            return null  // 解析错误，那么说明不匹配，return null
         }
+
+        // 4.获取匹配的结果，判断你想要去进行接收的MediaType，看下有哪个是我能产出的？
         val result = getMatchingExpressions(mediaTypes)
+
+        // 5.如果确实有我能去进行产出的，那么return ProducesRequestCondition，并包装我能去进行产出的类型
         if (result != null && result.isNotEmpty()) {
             return ProducesRequestCondition(produces = result, manager = this.manager)
         }
+
+        // 6.如果包含了ALL，那么return EMPTY_CONDITION
         if (MediaType.ALL.isPresentIn(mediaTypes)) {
             return EMPTY_CONDITION
         }
         return null
     }
 
-    // TODO
+    /**
+     * 遍历你所有想要接收的数据类型，看是否有一个是我想要去进行产出的？
+     *
+     * @param acceptedMediaTypes 你想要去进行接收的MediaType列表
+     * @return 如果有我能去进行产出的，那么return 能产出MediaType的List；如果没有我能去进行产出的，那么return null
+     */
     private fun getMatchingExpressions(acceptedMediaTypes: List<MediaType>): List<String>? {
-        return emptyList()
+        val result = ArrayList<String>()
+        produces.forEach {
+            val mediaType = MediaType.parseMediaType(it)
+            acceptedMediaTypes.forEach { accept ->
+                if (mediaType.isCompatibleWith(accept)) {
+                    // 如果匹配的话，应该使用的是用户自己的去配置的，而不是用户想要去进行接收的
+                    // 例如用户配置了"application/json"，而Accept为"*/*"，此时不应该返回"*/*"...
+                    result += it
+                }
+            }
+        }
+        return result.ifEmpty { null }  // if empty return null, else return result
     }
 
     /**
-     * 获取用户的可以接受的MediaType列表
+     * 根据ContentNegotiationManager去获取用户的可以接受的MediaType列表
      *
      * @param request request
-     * @return 用户可以接受的MediaType列表
+     * @return 从request当中去解析到的用户可以接受的MediaType列表
      */
     @Suppress("UNCHECKED_CAST")
     private fun getAcceptedMediaTypes(request: HttpServerRequest): List<MediaType>? {

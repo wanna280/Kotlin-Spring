@@ -317,7 +317,19 @@ open class HttpHeaders : MultiValueMap<String, String> {
     /**
      * 获取ContentType
      *
-     * @return ContentType for MediaType
+     * @return ContentType for MediaType; 如果header当中没有的话，return null
      */
-    open fun getContentType(): MediaType = MediaType.parseMediaType(getFirst(CONTENT_TYPE)!!)
+    @Nullable
+    open fun getContentType(): MediaType? {
+        return MediaType.parseMediaType(getFirst(CONTENT_TYPE) ?: return null)
+    }
+
+    /**
+     * 设置ContentType
+     *
+     * @param contentType 想要使用的ContentType
+     */
+    open fun setContentType(contentType: MediaType) {
+        this.set(CONTENT_TYPE, contentType.toString())
+    }
 }

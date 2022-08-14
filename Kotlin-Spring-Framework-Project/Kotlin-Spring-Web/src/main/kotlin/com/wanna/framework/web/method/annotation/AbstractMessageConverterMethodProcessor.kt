@@ -2,11 +2,15 @@ package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.web.HandlerMapping
+import com.wanna.framework.web.HandlerMapping.Companion.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE
 import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.context.request.ServerWebRequest
 import com.wanna.framework.web.http.MediaType
+import com.wanna.framework.web.http.converter.HttpMediaTypeNotAcceptableException
 import com.wanna.framework.web.http.converter.HttpMessageConverter
+import com.wanna.framework.web.http.converter.HttpMessageNotReadableException
+import com.wanna.framework.web.http.converter.HttpMessageNotWritableException
 import com.wanna.framework.web.http.server.ServerHttpRequest
 import com.wanna.framework.web.http.server.ServerHttpResponse
 import com.wanna.framework.web.method.support.HandlerMethodReturnValueHandler
@@ -59,44 +63,71 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
     ) {
         val parameterType = returnType.getParameterType()
 
+        // 获取ContentType
+        val contentType = inputMessage.getHeaders().getContentType()
+
         val request = inputMessage.getRequest()
         // 使用内容协商管理器，去获取客户端想要(愿意)接收的所有的MediaType
         val acceptableMediaTypes = getAcceptableMediaTypes(request)
         // 获取服务端所能产出的所有的MediaType
         val producibleMediaTypes = getProducibleMediaTypes(request, parameterType)
 
-        // 遍历客户端可以接收的所有类型的MediaType，去判断我服务端当前能否产出？
-        val mediaTypesToUse = ArrayList<MediaType>()
-        for (requestType in acceptableMediaTypes) {
-            for (producibleMediaType in producibleMediaTypes) {
-                if (requestType.isCompatibleWith(producibleMediaType)) {
-                    mediaTypesToUse += getMostSpecificMediaType(requestType, producibleMediaType)
+        var selectedMediaType: MediaType? = null
+
+        // 如果用户有自定义的ContentType了，那么直接沿用你给定的ContentType，不必再去进行推断
+        if (contentType != null) {
+            selectedMediaType = contentType
+
+            // 如果用户没有自定义的ContentType，那么需要根据可以接收的和可以产出的类型去进行匹配...
+        } else {
+            // 遍历客户端可以接收的所有类型的MediaType，去判断我服务端当前能否产出？
+            val mediaTypesToUse = ArrayList<MediaType>()
+            for (requestType in acceptableMediaTypes) {
+                for (producibleMediaType in producibleMediaTypes) {
+                    if (requestType.isCompatibleWith(producibleMediaType)) {
+                        mediaTypesToUse += getMostSpecificMediaType(requestType, producibleMediaType)
+                    }
+                }
+            }
+
+            // 根据MediaType的具体程度以及权重去进行MediaType的排序
+            MediaType.sortBySpecificityAndQuality(mediaTypesToUse)
+
+            for (mediaType in mediaTypesToUse) {
+                if (mediaType.isConcrete) {
+                    selectedMediaType = mediaType
+                    break
                 }
             }
         }
 
-        // 根据MediaType的具体程度以及权重去进行MediaType的排序
-        MediaType.sortBySpecificityAndQuality(mediaTypesToUse)
-
-        var mediaTypeToUse: MediaType? = null
-        for (mediaType in mediaTypesToUse) {
-            if (mediaType.isConcrete) {
-                mediaTypeToUse = mediaType
-                break
-            }
-        }
 
         // 遍历所有的MessageConverter，挨个去判断它能否完成将当前的返回值类型写出成为指定的MediaType
         // 如果它支持去进行写出的话，那么就使用该HttpMessageConverter去完成消息的写出
-        if (mediaTypeToUse != null) {
+        if (selectedMediaType != null) {
+            // remove quality value, such as "application/json;q=0.8"
+            selectedMediaType = selectedMediaType.removeQualityValue()
             this.messageConverters.forEach {
-                if (it.canWrite(parameterType, mediaTypeToUse)) {
+                if (it.canWrite(parameterType, selectedMediaType)) {
                     if (value != null) {
-                        (it as HttpMessageConverter<T>).write(value, mediaTypeToUse, outputMessage)
+                        (it as HttpMessageConverter<T>).write(value, selectedMediaType, outputMessage)
                         return  // return all, no need to continue
                     }
                 }
             }
+        }
+
+        // handle write failed
+        if (value != null) {
+            val producibleTypes =
+                inputMessage.getRequest().getAttribute(PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE) as Collection<MediaType>?
+            if (contentType != null && producibleTypes != null && producibleTypes.isNotEmpty()) {
+                throw HttpMessageNotWritableException("找不到合适的MessageConverter去进行将$parameterType 去转换为ContentType=$contentType")
+            }
+            throw HttpMediaTypeNotAcceptableException(
+                "服务端无法产出让客户端可以接受的MediaType, " +
+                        "producibleMediaTypes=$producibleMediaTypes, acceptableMediaTypes=$acceptableMediaTypes"
+            )
         }
     }
 
@@ -127,18 +158,19 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
      * * 2.如果request属性当中不存在的话，那么需要遍历所有的MessageConverter，看它们能产出什么类型的MediaType
      *
      * @param request request
-     * @return 服务端能够产生的全部MediaType
+     * @param valueType JavaBean类型，交给MessageConverter去进行匹配(如果都不支持处理这样的JavaBean，那么不需要被统计出来)
+     * @return 服务端能够产生的全部MediaType列表
      */
     protected open fun getProducibleMediaTypes(request: HttpServerRequest, valueType: Class<*>): List<MediaType> {
 
-        // 1.尝试从request当中去进行搜索
+        // 1.尝试从request当中去进行搜索，如果request属性当中已经存在了的话，那么直接沿用request
         @Suppress("UNCHECKED_CAST")
-        val mediaTypes = request.getAttribute(HandlerMapping.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE) as Collection<MediaType>?
+        val mediaTypes = request.getAttribute(PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE) as Collection<MediaType>?
         if (mediaTypes != null && mediaTypes.isNotEmpty()) {
             return ArrayList(mediaTypes)
         }
 
-        // 2.遍历所有的MessageConverter去进行搜索它们所支持的MediaType
+        // 2.遍历所有的MessageConverter去进行搜索它们所支持的MediaType，完成最终可以产出的MeidaType的统计工作
         val produceTypes = ArrayList<MediaType>()
         this.messageConverters.forEach {
             produceTypes += it.getSupportedMediaTypes(valueType)

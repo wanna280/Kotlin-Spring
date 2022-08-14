@@ -6,6 +6,8 @@ import com.wanna.framework.web.http.HttpOutputMessage
 import com.wanna.framework.web.http.MediaType
 import com.wanna.framework.web.http.converter.AbstractHttpMessageConverter
 import com.wanna.framework.web.http.converter.HttpMessageConverter
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 /**
  * 这是一个利用Jackson2的ObjectMapper去进行HTTP消息的转换的MessageConverter
@@ -13,11 +15,17 @@ import com.wanna.framework.web.http.converter.HttpMessageConverter
  * @see ObjectMapper
  */
 open class MappingJackson2HttpMessageConverter : AbstractHttpMessageConverter<Any>() {
+    companion object {
+        // 默认的字符集为UTF-8
+        @JvmStatic
+        val DEFAULT_CHARSET: Charset = StandardCharsets.UTF_8
+    }
 
     private val objectMapper: ObjectMapper = ObjectMapper()
 
     init {
         setSupportedMediaTypes(MediaType.APPLICATION_JSON)
+        setDefaultCharset(DEFAULT_CHARSET)
     }
 
     /**

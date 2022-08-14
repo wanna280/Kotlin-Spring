@@ -93,9 +93,18 @@ abstract class AbstractHttpMessageConverter<T> : HttpMessageConverter<T> {
     /**
      * 添加默认的一些HttpHeader
      */
-    protected open fun addDefaultHeaders(headers: HttpHeaders, t: T, @Nullable mediaType: MediaType?) {
-        if (mediaType != null) {
-            headers.add(HttpHeaders.CONTENT_TYPE, mediaType.toString())
+    protected open fun addDefaultHeaders(headers: HttpHeaders, t: T, @Nullable contentType: MediaType?) {
+        if (contentType != null) {
+            var contentTypeToUse = contentType
+
+            // 如果必要的话，需要添加上默认的charset
+            if (contentTypeToUse.charset == null) {
+                val defaultCharset = getDefaultCharset()
+                if (defaultCharset != null) {
+                    contentTypeToUse = MediaType(contentType, defaultCharset)
+                }
+            }
+            headers.setContentType(contentTypeToUse)  // setContentType
         }
     }
 
