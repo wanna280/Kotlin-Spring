@@ -154,7 +154,7 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
      */
     @FunctionalInterface
     interface MvcWebOperation {
-        fun handle(request: HttpServerRequest, body: Map<String, String>): Any?
+        fun handle(request: HttpServerRequest, body: Map<String, String>?): Any?
     }
 
     /**
@@ -163,7 +163,10 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
      * @param operation WebOperation
      */
     class MvcWebOperationAdapter(private val operation: WebOperation) : MvcWebOperation {
-        override fun handle(request: HttpServerRequest, body: Map<String, String>): Any? {
+        override fun handle(
+            request: HttpServerRequest,
+            @RequestBody(required = false) body: Map<String, String>?
+        ): Any? {
             val arguments = getArguments(request, body)
             val context = InvocationContext(arguments)
             return operation.invoke(context)
@@ -177,7 +180,7 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
          * @return 从请求当中解析出来的参数列表
          */
         @Suppress("UNCHECKED_CAST")
-        private fun getArguments(request: HttpServerRequest, body: Map<String, String>): Map<String, Any> {
+        private fun getArguments(request: HttpServerRequest, body: Map<String, String>?): Map<String, Any> {
             val arguments = HashMap<String, Any>()
             val urlVariables = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)
             // 1.add Url Template Variables(PathVariables)
@@ -185,7 +188,7 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
                 arguments.putAll(urlVariables as Map<String, Any>)
             }
             // 2.add Request Body
-            if (request.getMethod() == RequestMethod.POST) {
+            if (body != null && request.getMethod() == RequestMethod.POST) {
                 arguments.putAll(body)
             }
             // 3.add Request Param
@@ -203,7 +206,7 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
      */
     class OperationHandler(private val operation: MvcWebOperation) {
         @ResponseBody
-        fun handle(request: HttpServerRequest, @RequestBody body: Map<String, String>): Any? =
+        fun handle(request: HttpServerRequest, @RequestBody(required = false) body: Map<String, String>?): Any? =
             operation.handle(request, body)
     }
 
