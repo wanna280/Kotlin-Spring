@@ -1,6 +1,8 @@
 package com.wanna.framework.web.method
 
 import com.wanna.framework.web.HandlerMapping
+import com.wanna.framework.web.HandlerMapping.Companion.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE
+import com.wanna.framework.web.HandlerMapping.Companion.URI_TEMPLATE_VARIABLES_ATTRIBUTE
 import com.wanna.framework.web.handler.AbstractHandlerMethodMapping
 import com.wanna.framework.web.server.HttpServerRequest
 
@@ -36,7 +38,13 @@ abstract class RequestMappingInfoHandlerMapping : AbstractHandlerMethodMapping<R
         // 解析路径当中的模板参数(UrlTemplateVariables)
         val pattern = mapping.pathPatternsCondition.getContent().iterator().next()
         val uriTemplateVariables = pattern.extractUriTemplateVariables(url)
-        request.setAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, uriTemplateVariables)
+        request.setAttribute(URI_TEMPLATE_VARIABLES_ATTRIBUTE, uriTemplateVariables)
+
+        // 将可以产出的MediaType添加到request当中
+        if (!mapping.producesCondition.isEmpty()) {
+            val producibleMediaTypes = mapping.producesCondition.getProducibleMediaTypes()
+            request.setAttribute(PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, producibleMediaTypes)
+        }
     }
 
     /**

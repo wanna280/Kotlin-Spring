@@ -13,10 +13,8 @@ open class ServerHttpResponse(webRequest: NativeWebRequest) : HttpOutputMessage 
 
     private val response = webRequest.getNativeResponse(HttpServerResponse::class.java)
 
-    private val headers = HttpHeaders()
-
     override fun getHeaders(): HttpHeaders {
-        return this.headers
+        return this.response!!.getHeaders()
     }
 
     override fun getBody(): OutputStream {

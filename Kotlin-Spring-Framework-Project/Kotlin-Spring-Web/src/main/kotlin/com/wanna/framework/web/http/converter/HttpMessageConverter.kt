@@ -1,5 +1,6 @@
 package com.wanna.framework.web.http.converter
 
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.http.HttpInputMessage
 import com.wanna.framework.web.http.HttpOutputMessage
 import com.wanna.framework.web.http.MediaType
@@ -37,7 +38,7 @@ interface HttpMessageConverter<T> {
      * @param mediaType 媒体类型
      * @return 能否转换？
      */
-    fun canRead(clazz: Class<*>, mediaType: MediaType?): Boolean
+    fun canRead(clazz: Class<*>, @Nullable mediaType: MediaType?): Boolean
 
     /**
      * 是否支持写这样的MediaType？
@@ -46,7 +47,7 @@ interface HttpMessageConverter<T> {
      * @param mediaType 媒体类型
      * @return 能否支持转换
      */
-    fun canWrite(clazz: Class<*>, mediaType: MediaType?): Boolean
+    fun canWrite(clazz: Class<*>, @Nullable mediaType: MediaType?): Boolean
 
     /**
      * 将RequestBody从HTTP的输入流读取为clazz类型的JavaBean
@@ -63,5 +64,5 @@ interface HttpMessageConverter<T> {
      * @param mediaType 媒体类型
      * @param outputMessage 输出流
      */
-    fun write(t: T, mediaType: MediaType?, outputMessage: HttpOutputMessage)
+    fun write(t: T, @Nullable mediaType: MediaType?, outputMessage: HttpOutputMessage)
 }

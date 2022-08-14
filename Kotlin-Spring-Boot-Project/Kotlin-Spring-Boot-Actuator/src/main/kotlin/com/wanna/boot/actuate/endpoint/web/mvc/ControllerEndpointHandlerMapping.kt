@@ -60,6 +60,7 @@ open class ControllerEndpointHandlerMapping(
             .methods(mapping.methodsCondition)
             .headers(mapping.headersCondition)
             .params(mapping.paramsCondition)
+            .produces(mapping.producesCondition)
             .build()
     }
 
