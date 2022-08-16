@@ -419,6 +419,9 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         // 添加Map方法处理器，处理Map类型的参数，将ModelAndViewContainer当中的Model传递下去
         resolvers += MapMethodProcessor()
 
+        // 添加一个处理Errors类型的方法参数的解析器，处理Errors/BindingResult这样的类型的参数
+        resolvers += ErrorsMethodArgumentResolver()
+
         // 添加RequestResponseBody的方法处理器(处理@RequestBody注解)
         resolvers += RequestResponseBodyMethodProcessor(getHttpMessageConverters(), getContentNegotiationManager())
 
