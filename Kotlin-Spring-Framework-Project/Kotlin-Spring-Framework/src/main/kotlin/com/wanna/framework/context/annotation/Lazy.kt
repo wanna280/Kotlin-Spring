@@ -10,6 +10,7 @@ package com.wanna.framework.context.annotation
     AnnotationTarget.ANNOTATION_CLASS,
     AnnotationTarget.FUNCTION,
     AnnotationTarget.CLASS,
-    AnnotationTarget.FIELD
+    AnnotationTarget.FIELD,
+    AnnotationTarget.VALUE_PARAMETER
 )
 annotation class Lazy(val value: Boolean = true)
