@@ -2,7 +2,10 @@ package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.validation.BindingResult
+import com.wanna.framework.validation.BindingResult.Companion.MODEL_KEY_PREFIX
 import com.wanna.framework.web.accept.ContentNegotiationManager
+import com.wanna.framework.web.bind.MethodArgumentNotValidException
 import com.wanna.framework.web.bind.annotation.RequestBody
 import com.wanna.framework.web.bind.annotation.ResponseBody
 import com.wanna.framework.web.bind.support.WebDataBinderFactory
@@ -80,6 +83,26 @@ open class RequestResponseBodyMethodProcessor(
         mavContainer: ModelAndViewContainer?,
         binderFactory: WebDataBinderFactory?
     ): Any? {
-        return readWithMessageConverters<Any>(webRequest, parameter, parameter.getParameterType())
+
+        // 1.使用MessageConverter去对HTTP的请求体数据去进行读取，并转换成为JavaBean
+        val arg = readWithMessageConverters<Any>(webRequest, parameter, parameter.getParameterType())
+        val name = parameter.getParameterName() ?: throw IllegalStateException("无法获取该方法参数上的参数名")
+        if (binderFactory != null) {
+            // 创建一个WebDataBinder
+            val dataBinder = binderFactory.createBinder(webRequest, arg, name)
+            if (arg != null) {
+                // 检验参数是否合法？
+                validateIfApplicable(dataBinder, parameter)
+
+                // 如果DataBinder的BindingResult当中存在有Errors，并且当前参数的下一个参数并不是BindingResult的话
+                // 需要丢出MethodArgumentNotValidException去告诉用户检验方法参数时发生了异常，需要去进行自定义的处理
+                if (dataBinder.getBindingResult().hasErrors() && isBindExceptionRequired(dataBinder, parameter)) {
+                    throw MethodArgumentNotValidException(dataBinder.getBindingResult(), parameter)
+                }
+            }
+            // 将BindingResult添加到ModelAndViewContainer的属性当中
+            mavContainer?.addAttribute(MODEL_KEY_PREFIX + name, dataBinder.getBindingResult())
+        }
+        return arg
     }
 }

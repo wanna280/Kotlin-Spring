@@ -57,6 +57,13 @@ open class MethodParameter(
     }
 
     /**
+     * 获取描述的方法/构造器的参数上的注解列表
+     *
+     * @return 该方法/构造器上的注解列表
+     */
+    open fun getParameterAnnotations(): Array<Annotation> = executable.parameters[parameterIndex].annotations
+
+    /**
      * 获取描述的方法参数/构造器参数上的注解，找不到return null
      */
     open fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T? {
@@ -105,6 +112,13 @@ open class MethodParameter(
     open fun getParameter(): Parameter {
         return executable.parameters[parameterIndex]
     }
+
+    /**
+     * 直接获取Executable
+     *
+     * @return Executable(方法/构造器)
+     */
+    open fun getExecutable(): Executable = this.executable
 
     /**
      * 获取参数对应的方法所在的index
