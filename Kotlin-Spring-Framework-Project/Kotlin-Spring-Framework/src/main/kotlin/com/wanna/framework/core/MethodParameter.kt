@@ -74,13 +74,13 @@ open class MethodParameter(
     }
 
     /**
-     * 判断方法上是否有该注解？
+     * 判断方法上是否有该注解？(支持使用继承的方式去进行寻找)
      *
      * @param annotationClass 要去进行匹配的注解类型
      * @return 如果方法上标注了该注解，那么return true；否则return false
      */
     open fun hasMethodAnnotation(annotationClass: Class<out Annotation>): Boolean {
-        return AnnotatedElementUtils.isAnnotated(this.executable, annotationClass);
+        return AnnotatedElementUtils.hasAnnotation(this.executable, annotationClass);
     }
 
     /**

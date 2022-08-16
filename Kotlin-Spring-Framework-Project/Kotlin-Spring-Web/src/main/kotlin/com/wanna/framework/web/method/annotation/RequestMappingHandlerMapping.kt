@@ -30,16 +30,16 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
     private var embeddedValueResolver: StringValueResolver? = null
 
     /**
-     * 怎么判断它是否是一个Handler？只需要类上加了@Controller/@RequestMapping注解，它就是一个Handler
+     * 怎么判断它是否是一个Handler？只需要类上加了@Controller/@RequestMapping注解，它就是一个Handler；
+     * 这里使用的hasAnnotation的API，可以向目标类的父类当中去进行搜索；
+     * 对于一个Controller产生了代理的情况下，这种情况是很必要的！！！
      *
      * @param beanType beanType
      * @return 它是否是一个Handler(如果标注了@Controller/@RequestMapping注解return true)
      */
     override fun isHandler(beanType: Class<*>): Boolean {
-        return AnnotatedElementUtils.isAnnotated(beanType, Controller::class.java) || AnnotatedElementUtils.isAnnotated(
-            beanType,
-            RequestMapping::class.java
-        )
+        return AnnotatedElementUtils.hasAnnotation(beanType, Controller::class.java) ||
+                AnnotatedElementUtils.hasAnnotation(beanType, RequestMapping::class.java)
     }
 
     override fun setEmbeddedValueResolver(resolver: StringValueResolver) {

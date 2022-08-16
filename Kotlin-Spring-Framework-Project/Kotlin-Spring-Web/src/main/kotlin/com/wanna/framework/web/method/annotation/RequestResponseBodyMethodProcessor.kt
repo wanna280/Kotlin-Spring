@@ -45,7 +45,7 @@ open class RequestResponseBodyMethodProcessor(
      */
     override fun supportsReturnType(parameter: MethodParameter): Boolean {
         return parameter.hasMethodAnnotation(ResponseBody::class.java)
-                || AnnotatedElementUtils.isAnnotated(parameter.getContainingClass(), ResponseBody::class.java)
+                || AnnotatedElementUtils.hasAnnotation(parameter.getContainingClass(), ResponseBody::class.java)
     }
 
     /**

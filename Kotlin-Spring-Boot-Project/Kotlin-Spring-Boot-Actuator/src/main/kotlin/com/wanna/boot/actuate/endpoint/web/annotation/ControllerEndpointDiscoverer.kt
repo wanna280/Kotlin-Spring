@@ -22,8 +22,8 @@ open class ControllerEndpointDiscoverer(applicationContext: ApplicationContext) 
      * @return 如果标注了@ControllerEndpoint/@RestControllerEndpoint，return true；否则return false
      */
     override fun isEndpointTypeExposed(beanType: Class<*>): Boolean {
-        return AnnotatedElementUtils.getMergedAnnotation(beanType, ControllerEndpoint::class.java) != null
-                || AnnotatedElementUtils.getMergedAnnotation(beanType, RestControllerEndpoint::class.java) != null
+        return AnnotatedElementUtils.hasAnnotation(beanType, ControllerEndpoint::class.java)
+                || AnnotatedElementUtils.hasAnnotation(beanType, RestControllerEndpoint::class.java)
     }
 
     /**
