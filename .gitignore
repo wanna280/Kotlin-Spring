@@ -24,3 +24,7 @@ pnpm-debug.log*
 build
 .gradle
 *.log
+
+*.tab.*
+*.bin*
+*.lock*
