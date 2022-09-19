@@ -18,7 +18,7 @@ open class CustomizableThreadFactory() : CustomizableThreadCreator(), ThreadFact
      * @param threadNamePrefix ThreadNamePrefix
      */
     constructor(threadNamePrefix: String) : this() {
-        this.threadNamePrefix = threadNamePrefix
+        super.setThreadNamePrefix(threadNamePrefix)
     }
 
 
