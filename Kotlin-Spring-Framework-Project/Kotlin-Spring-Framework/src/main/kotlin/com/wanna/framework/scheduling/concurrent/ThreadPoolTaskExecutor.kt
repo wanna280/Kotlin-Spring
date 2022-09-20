@@ -1,9 +1,13 @@
 package com.wanna.framework.scheduling.concurrent
 
+import com.wanna.framework.core.task.AsyncListenableTaskExecutor
 import com.wanna.framework.core.task.AsyncTaskExecutor
 import com.wanna.framework.core.task.TaskDecorator
+import com.wanna.framework.core.task.TaskRejectedException
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.concurrent.ListenableFuture
 import java.util.concurrent.*
+import kotlin.jvm.Throws
 
 /**
  * Spring家的任务执行器，主要对应于juc家的ThreadPoolExecutor，通过组合一个ThreadPoolExecutor完成实现
@@ -12,8 +16,9 @@ import java.util.concurrent.*
  * @version v1.0
  * @date 2022/9/18
  * @see java.util.concurrent.ThreadPoolExecutor
+ * @see ExecutorService
  */
-open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncTaskExecutor {
+open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncListenableTaskExecutor {
 
     /**
      * 操作poolSize的锁，因为对于ThreadPoolExecutor而言，corePoolSize、maxPoolSize和keepAliveSeconds
@@ -26,12 +31,12 @@ open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncTaskExe
     private val poolSizeMonitor = Any()
 
     /**
-     * 核心线程数量
+     * 核心线程数量，默认为1个核心线程
      */
     private var corePoolSize = 1
 
     /**
-     * 最大线程数量
+     * 最大线程数量，默认为Int.MAX_VALUE
      */
     private var maxPoolSize = Int.MAX_VALUE
 
@@ -57,6 +62,8 @@ open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncTaskExe
 
     /**
      * TaskDecorator，用于对提交给线程池的任务去进行自定义的装饰
+     *
+     * @see TaskDecorator
      */
     private var taskDecorator: TaskDecorator? = null
 
@@ -72,7 +79,20 @@ open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncTaskExe
     private var decoratedTaskMap = ConcurrentHashMap<Runnable, Any>()
 
     /**
-     * 初始化Executor
+     * 获取ThreadPoolExecutor
+     *
+     * @return ThreadPoolExecutor
+     * @throws IllegalStateException 如果ThreadPoolExecutor没有被初始化的话
+     */
+    @Throws(IllegalStateException::class)
+    open fun getThreadPoolExecutor(): ThreadPoolExecutor =
+        threadPoolExecutor ?: throw IllegalStateException("ThreadPoolExecutor不能为空")
+
+    /**
+     * 初始化Executor，我们这里需要初始化的是一个ThreadPoolExecutor
+     *
+     * @param threadFactory ThreadFactory，用于线程池的Worker线程的创建的工厂方法
+     * @param rejectedExecutionHandler 线程池的拒绝策略
      */
     override fun initializeExecutor(
         threadFactory: ThreadFactory,
@@ -91,7 +111,7 @@ open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncTaskExe
                     if (decorated != command) {
                         decoratedTaskMap[command] = decorated
                     }
-                    super.execute(decorated)
+                    super.execute(decorated)  // super.execute
                 }
             }
         } else {
@@ -110,18 +130,40 @@ open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncTaskExe
         return executor
     }
 
+    @Throws(TaskRejectedException::class)
     override fun submit(task: Runnable): Future<*> {
-        return threadPoolExecutor?.submit(task) ?: throw IllegalStateException("ThreadPoolExecutor不能为空")
+        try {
+            return getThreadPoolExecutor().submit(task)
+        } catch (ex: RejectedExecutionException) {
+            throw TaskRejectedException("任务${task}被线程池[${getThreadPoolExecutor()}]所拒绝掉", ex)
+        }
     }
 
+    @Throws(TaskRejectedException::class)
     override fun <T> submit(task: Callable<T>): Future<T> {
-        return threadPoolExecutor?.submit(task) ?: throw IllegalStateException("ThreadPoolExecutor不能为空")
+        try {
+            return getThreadPoolExecutor().submit(task)
+        } catch (ex: RejectedExecutionException) {
+            throw TaskRejectedException("任务${task}被线程池[${getThreadPoolExecutor()}]所拒绝掉", ex)
+        }
     }
 
+    @Throws(TaskRejectedException::class)
     override fun execute(task: Runnable) {
-        threadPoolExecutor?.execute(task) ?: throw IllegalStateException("ThreadPoolExecutor不能为空")
+        try {
+            getThreadPoolExecutor().execute(task)
+        } catch (ex: RejectedExecutionException) {
+            throw TaskRejectedException("任务${task}被线程池[${getThreadPoolExecutor()}]所拒绝掉", ex)
+        }
     }
 
+    override fun submitListenable(task: Runnable): ListenableFuture<*> {
+        TODO("Not yet implemented")
+    }
+
+    override fun <T> submitListenable(task: Callable<T>): ListenableFuture<T> {
+        TODO("Not yet implemented")
+    }
 
     open fun setTaskDecorator(taskDecorator: TaskDecorator?) {
         this.taskDecorator = taskDecorator
@@ -192,11 +234,6 @@ open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncTaskExe
      * @param capacity 阻塞队列的最大容量
      * @return 创建好的阻塞队列
      */
-    protected open fun createQueue(capacity: Int): BlockingQueue<Runnable> {
-        return if (capacity > 0) {
-            LinkedBlockingQueue(capacity)
-        } else {
-            SynchronousQueue()
-        }
-    }
+    protected open fun createQueue(capacity: Int): BlockingQueue<Runnable> =
+        if (capacity > 0) LinkedBlockingQueue(capacity) else SynchronousQueue()
 }

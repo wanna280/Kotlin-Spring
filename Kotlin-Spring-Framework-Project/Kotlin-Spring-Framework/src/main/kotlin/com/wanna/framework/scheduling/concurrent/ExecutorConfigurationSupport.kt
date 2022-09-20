@@ -6,13 +6,11 @@ import com.wanna.framework.context.aware.BeanNameAware
 import com.wanna.framework.lang.Nullable
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.RejectedExecutionHandler
-import java.util.concurrent.ThreadFactory
-import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.*
 
 /**
- * 为juc当中的ExecutorService去提供相关的安装工作的基础类
+ * 为juc当中的ExecutorService去提供相关的安装工作的基础类，
+ * 它的子类当中是为整个Spring当中的并发相关的Executor
  *
  * @author jianchao.jia
  * @version v1.0
@@ -24,7 +22,6 @@ import java.util.concurrent.ThreadPoolExecutor
  */
 abstract class ExecutorConfigurationSupport : InitializingBean, BeanNameAware, DisposableBean,
     CustomizableThreadFactory() {
-
     companion object {
         /**
          * Logger
@@ -43,6 +40,16 @@ abstract class ExecutorConfigurationSupport : InitializingBean, BeanNameAware, D
      */
     @Nullable
     private var beanName: String? = null
+
+    /**
+     * 在线程池关闭时，我们是否需要等待任务执行完成？默认为false
+     */
+    private var waitForTasksToCompleteOnShutdown = false
+
+    /**
+     * 需要等待线程池处理结束工作的时间(单位为ms)，默认为0L
+     */
+    private var awaitTerminationMillis = 0L
 
     /**
      * ExecutorService
@@ -103,8 +110,59 @@ abstract class ExecutorConfigurationSupport : InitializingBean, BeanNameAware, D
         rejectedExecutionHandler: RejectedExecutionHandler
     ): ExecutorService
 
+    /**
+     * 在当前的Bean摧毁时，自动对线程池去进行关闭
+     *
+     * @see ExecutorService.shutdown
+     * @see ExecutorService.shutdownNow
+     */
     override fun destroy() {
+        shutdown()
+    }
 
+    open fun shutdown() {
+        if (logger.isDebugEnabled) {
+            logger.debug("正在关闭ExecutorService线程池[${this.beanName ?: ""}]")
+        }
+        val executor = this.executorService
+        if (executor != null) {
+            if (this.waitForTasksToCompleteOnShutdown) {
+                executor.shutdown()
+            } else {
+                // shutdownNow, 并取消掉线程池当中的所有的剩余的任务
+                executor.shutdownNow().forEach(this::cancelRemainingTask)
+                // 如果必要的话，等一会线程池去处理结束的收尾工作才结束...
+                awaitTerminationIfNecessary(executor)
+            }
+        }
+    }
+
+    /**
+     * 在立刻去关闭线程池时，需要去处理剩下的任务列表
+     *
+     * @param task 关闭线程池剩下的任务
+     */
+    protected open fun cancelRemainingTask(task: Runnable) {
+        if (task is Future<*>) {
+            task.cancel(true)
+        }
+    }
+
+    private fun awaitTerminationIfNecessary(executor: ExecutorService) {
+        if (this.awaitTerminationMillis > 0) {
+            try {
+                if (!executor.awaitTermination(awaitTerminationMillis, TimeUnit.MILLISECONDS)) {
+                    if (logger.isWarnEnabled) {
+                        logger.warn("在等待线程池[${beanName ?: ""}]执行terminate的过程当中, 出现了超时的情况")
+                    }
+                }
+            } catch (ex: InterruptedException) {
+                if (logger.isWarnEnabled) {
+                    logger.warn("在等待线程池[${beanName ?: ""}]执行terminate的过程当中，遇到了线程被中断的情况")
+                }
+                Thread.currentThread().interrupt()  // self interrupt
+            }
+        }
     }
 
     override fun setBeanName(beanName: String) {
