@@ -38,17 +38,20 @@ package com.wanna.framework.scheduling.annotation
  *     }
  * ```
  *
- * @param initialDelay 定时任务初始delay时间，可以配合fixedDelay/fixedRate使用，不配置，默认为0
+ * @param initialDelay 定时任务初始delay时间，可以配合fixedDelay/fixedRate使用，不配置的情况下默认为0
+ * @param initialDelayString 定时任务的初始delay时间(支持嵌入式值解析, 从配置文件当中去读取该配置信息)，
+ * 可以配合fixedDelay/fixedRate使用，不配置的情况下默认为0
  * @param fixedDelay 定时任务的固定delay
- * @param fixedDelayString 定时任务的固定delay(支持嵌入式值解析)
+ * @param fixedDelayString 定时任务的固定delay(支持嵌入式值解析, 从配置文件当中去读取该配置信息)
  * @param fixedRate 定时任务的固定速率
- * @param fixedRateString 定时任务的固定速率(支持嵌入式值解析)
+ * @param fixedRateString 定时任务的固定速率(支持嵌入式值解析, 从配置文件当中去读取该配置信息)
  *
  * @see java.util.concurrent.ScheduledExecutorService
  */
 @Target(AnnotationTarget.FUNCTION)
 annotation class Scheduled(
     val initialDelay: Long = -1,
+    val initialDelayString: String = "",
     val fixedDelay: Long = -1,
     val fixedDelayString: String = "",
     val fixedRate: Long = -1,
