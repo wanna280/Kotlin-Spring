@@ -4,6 +4,7 @@ import com.wanna.framework.beans.factory.InitializingBean
 import com.wanna.framework.core.util.ReflectionUtils
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.LinkedMultiValueMap
+import com.wanna.framework.web.HandlerMapping
 import com.wanna.framework.web.cors.CorsConfiguration
 import com.wanna.framework.web.method.HandlerMethod
 import com.wanna.framework.web.server.HttpServerRequest
@@ -170,7 +171,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
      *
      * @param lookupPath 要寻找的路径
      * @param request request
-     * @return 匹配到的HandlerMethod，如果没有找到的话，return null
+     * @return 根据给定的路径去匹配到的HandlerMethod，如果没有找到的话，return null
      */
     @Nullable
     protected open fun lookupHandlerMethod(lookupPath: String, request: HttpServerRequest): HandlerMethod? {
@@ -194,10 +195,10 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
 
             // 如果没有匹配到合适的结果的话...return null
             if (matches.isEmpty()) {
-                return null
+                return handleNoMatch(directPathMatches.toSet(), lookupPath, request)
             }
             val bestMatch = matches.iterator().next()
-            handleMatch(bestMatch.mapping, bestMatch.getHandlerMethod(), request)
+            handleMatch(bestMatch.mapping, lookupPath, request)
             // 获取处理请求的HandlerMethod
             return bestMatch.getHandlerMethod()
         } finally {
@@ -206,14 +207,27 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     }
 
     /**
-     * 在找到了合适的Handler去处理本次请求之后，有可能需要去进行扩展，因此，需要流出足够的模板方法
+     * 如果没有找到合适的HandlerMethod去处理当前请求的话，有可能需要提供别的渠道去获取HandlerMethod作为fallback；
+     * 对于想要提供fallback的情况，就可以在这里去进行编写自定义的逻辑，去进行更多的自定义工作
+     *
+     * @param mappings mappings
+     * @param lookupPath 要去进行寻找的路径
+     * @param request request
+     * @return 需要使用的fallback的HandlerMethod
+     */
+    protected open fun handleNoMatch(mappings: Set<T>, lookupPath: String, request: HttpServerRequest): HandlerMethod? {
+        return null
+    }
+
+    /**
+     * 在找到了合适的Handler去处理本次请求之后，有可能需要去进行扩展，因此，需要留出来足够的模板方法
      *
      * @param mapping mapping
-     * @param handlerMethod HandlerMethod
+     * @param lookupPath lookupPath
      * @param request request
      */
-    protected open fun handleMatch(mapping: T, handlerMethod: HandlerMethod, request: HttpServerRequest) {
-
+    protected open fun handleMatch(mapping: T, lookupPath: String, request: HttpServerRequest) {
+        request.setAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE, lookupPath)
     }
 
     /**
@@ -392,7 +406,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
          * 将name->List<HandlerMethod>注册到MappingRegistry当中
          *
          * @param name name
-         * @param handlerMethod HadlerMethod
+         * @param handlerMethod HandlerMethod
          */
         private fun addNameToLookup(name: String, handlerMethod: HandlerMethod) {
             var handlerMethods = this.nameLookup[name]
@@ -434,7 +448,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
      * @param name mappingName
      * @param corsConfig 该Registration是否有CorsConfig？
      */
-    class MappingRegistration<T>(
+    data class MappingRegistration<T>(
         val mapping: T,
         val directPaths: Set<String>,
         val handlerMethod: HandlerMethod,
@@ -454,7 +468,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     }
 
     /**
-     * 设置HandlerMethodMaping的命名生成策略
+     * 设置HandlerMethodMapping的命名生成策略
      *
      * @param namingStrategy 你想要使用的namingStrategy
      */

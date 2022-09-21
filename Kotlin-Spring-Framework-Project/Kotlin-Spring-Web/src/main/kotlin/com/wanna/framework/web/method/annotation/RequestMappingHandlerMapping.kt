@@ -5,6 +5,7 @@ import com.wanna.framework.context.EmbeddedValueResolverAware
 import com.wanna.framework.context.stereotype.Controller
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.bind.annotation.CrossOrigin
 import com.wanna.framework.web.bind.annotation.RequestMapping
 import com.wanna.framework.web.bind.annotation.RequestMethod
@@ -26,8 +27,19 @@ import java.lang.reflect.Method
  */
 open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), EmbeddedValueResolverAware {
 
+    /**
+     * 嵌入式值解析器，用于提供占位符的解析工作，
+     * 对RequestMapping当中配置的路径，支持从配置文件当中去进行获取，例如"${user.path}"
+     *
+     * @see StringValueResolver
+     */
     @Nullable
     private var embeddedValueResolver: StringValueResolver? = null
+
+    /**
+     * 内容协商管理器
+     */
+    private var contentNegotiationManager = ContentNegotiationManager()
 
     /**
      * 怎么判断它是否是一个Handler？只需要类上加了@Controller/@RequestMapping注解，它就是一个Handler；
@@ -42,6 +54,11 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
                 AnnotatedElementUtils.hasAnnotation(beanType, RequestMapping::class.java)
     }
 
+    /**
+     * 设置嵌入式的值解析器
+     *
+     * @param resolver 你想要使用的嵌入式值解析器
+     */
     override fun setEmbeddedValueResolver(resolver: StringValueResolver) {
         this.embeddedValueResolver = resolver
     }
@@ -57,10 +74,10 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
     override fun getMappingForMethod(method: Method, handlerType: Class<*>): RequestMappingInfo? {
         // 从方法上找到@RequestMapping注解
         val info = getRequestMappingInfo(method)
-        // 如果方法上找到了@RequestMapping注解，那么尝试去类上去进行寻找
+        // 如果方法上找到了@RequestMapping注解，那么需要尝试去类上去进行寻找
         if (info != null) {
             val typeInfo = getRequestMappingInfo(handlerType)
-            // 如果类上也有@RequestMapping的话，需要联合两个RequestMappingInfo
+            // 如果类上也有@RequestMapping的话，需要联合两个RequestMappingInfo去作为最终的RequestMappingInfo
             if (typeInfo != null) {
                 return combine(info, typeInfo)
             }
@@ -86,7 +103,7 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
         }
         val corsConfig = CorsConfiguration()
 
-        // 1. 如果类上有配置@CrossOrigin，需要添加到CrosConfig
+        // 1. 如果类上有配置@CrossOrigin，需要添加到CorsConfig
         updateCorsConfig(corsConfig, typeAnnotation)
         // 2. 如果方法上有@CrossOrigin，那么需要继续添加配置信息
         updateCorsConfig(corsConfig, methodAnnotation)
@@ -96,7 +113,7 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
     }
 
     /**
-     * 根据@Cross注解，去更新当前的Cors的配置信息
+     * 根据给定的@CrossOrigin注解，去更新当前的Cors的配置信息
      *
      * @param crossOrigin CrossOrigin注解(可以为null)
      * @param corsConfig CorsConfig
@@ -139,7 +156,7 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
     }
 
     /**
-     * 联合两个RequestMappingInfo
+     * 联合两个RequestMappingInfo当中的相关信息，合并成为一个最终的RequestMappingInfo
      *
      * @param info info1
      * @param newInfo info2
@@ -165,10 +182,21 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
             AnnotatedElementUtils.getMergedAnnotation(element, RequestMapping::class.java) ?: return null
         return RequestMappingInfo.Builder()
             .methods(*requestMapping.method)
-            .paths(*requestMapping.path)
+            .paths(*resolveEmbeddedValuesInPatterns(requestMapping.path))
             .params(*requestMapping.params)
             .headers(*requestMapping.header)
             .produces(*requestMapping.produces)
             .build()
+    }
+
+    /**
+     * 如果必要的话，需要去为配置的路径去进行嵌入式表达式的解析工作
+     *
+     * @param paths 原始的路径信息(可能含有占位符，需要去进行占位符的解析)
+     * @return 解析完成占位符之后的路径信息
+     */
+    protected open fun resolveEmbeddedValuesInPatterns(paths: Array<String>): Array<String> {
+        val embeddedValueResolver = this.embeddedValueResolver ?: return paths
+        return paths.map { embeddedValueResolver.resolveStringValue(it)!! }.toTypedArray()
     }
 }

@@ -7,7 +7,6 @@ import com.wanna.framework.web.server.HttpServerRequest
  * 这是一个Handler的请求映射中心，负责注册Controller路径与对应的Handler方法之间的映射关系；
  */
 interface HandlerMapping {
-
     companion object {
         // 请求当中的uri的模板变量属性的属性名
         @JvmStatic
@@ -16,6 +15,12 @@ interface HandlerMapping {
         // 产出的MediaType列表的属性名
         @JvmStatic
         val PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE = HandlerMapping::class.java.name + ".producibleMediaTypes"
+
+        /**
+         * 在HandlerMapping当中去进行匹配时，最终寻找到的处理请求的路径
+         */
+        @JvmStatic
+        val PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE = HandlerMapping::class.java.name + ".pathWithinHandlerMapping"
     }
 
 
