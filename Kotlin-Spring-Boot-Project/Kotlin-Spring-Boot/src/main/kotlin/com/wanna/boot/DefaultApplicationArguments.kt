@@ -9,8 +9,5 @@ import com.wanna.framework.core.environment.SimpleCommandLinePropertySource
  */
 open class DefaultApplicationArguments(private var args: Array<String>) : ApplicationArguments {
     val source = SimpleCommandLinePropertySource(*args)
-
-    override fun getSourceArgs(): Array<String> {
-        return this.args
-    }
+    override fun getSourceArgs(): Array<String> = this.args
 }

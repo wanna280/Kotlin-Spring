@@ -139,7 +139,7 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
             // 准备好SpringApplication环境
             val environment = prepareEnvironment(listeners, bootstrapContext, applicationArguments)
 
-            // 环境已经准备好了，可以去打印Banner了，并将创建的Banner去进行返回
+            // 环境已经准备好了，可以去打印SpringBoot的Banner了，并将创建的Banner去进行返回
             val banner = printBanner(environment)
             // 创建ApplicationContext并且设置ApplicationStartup对象到ApplicationContext当中
             applicationContext = createApplicationContext()
@@ -242,6 +242,10 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
 
     /**
      * 根据设置的BannerNode的不同，使用不同的方式去完成SpringApplication的Banner的打印
+     *
+     * * 1.如果Mode=No, 那么不输出Banner
+     * * 2.如果Mode=CONSOLE, 将会才控制台输出Banner
+     * * 3.如果Mode=LOG, 将会使用Logger的方式去输出Banner
      *
      * @param environment Environment
      * @return 如果BannerMode=NO，return null；否则return 创建好的Banner
@@ -413,6 +417,10 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
 
     /**
      * 准备环境
+     *
+     * @param listeners SpringApplication的监听器的触发器
+     * @param bootstrapContext Bootstrap的上下文信息
+     * @param applicationArguments 应用程序的启动参数列表
      */
     protected open fun prepareEnvironment(
         listeners: SpringApplicationRunListeners,
