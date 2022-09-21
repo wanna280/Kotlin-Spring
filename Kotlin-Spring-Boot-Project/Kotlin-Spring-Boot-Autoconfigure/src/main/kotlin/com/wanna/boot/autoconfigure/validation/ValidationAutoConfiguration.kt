@@ -1,5 +1,6 @@
 package com.wanna.boot.autoconfigure.validation
 
+import com.wanna.boot.autoconfigure.condition.ConditionalOnClass
 import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.annotation.Bean
@@ -15,6 +16,7 @@ import javax.validation.Validator
 /**
  * Bean Validation的自动配置类，提供对于JSR303的参数校验的支持
  */
+@ConditionalOnClass(name = ["javax.validation.Validator"])
 @Configuration(proxyBeanMethods = false)
 open class ValidationAutoConfiguration {
 
@@ -28,6 +30,7 @@ open class ValidationAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnClass(name = ["javax.validation.Validator"])
     @ConditionalOnMissingBean
     open fun methodValidationPostProcessor(@Lazy validator: Validator): MethodValidationPostProcessor {
         val methodValidationPostProcessor = MethodValidationPostProcessor()
