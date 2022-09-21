@@ -1,6 +1,7 @@
 package com.wanna.framework.core.util
 
 import org.slf4j.LoggerFactory
+import java.lang.IllegalArgumentException
 import java.lang.reflect.Method
 import kotlin.jvm.Throws
 
@@ -99,6 +100,25 @@ object ClassUtils {
                 logger.trace("无法从当前JVM的依赖当中去解析到给定的className=[$clazzName]的类")
             }
             throw ex
+        }
+    }
+
+    /**
+     * 解析className成为一个Class
+     *
+     * @param clazzName clazzName
+     * @param classLoader Class.forName使用到的ClassLoader
+     * @throws IllegalArgumentException 如果无法解析给定的类的话
+     */
+    @JvmStatic
+    @Throws(IllegalArgumentException::class)
+    fun resolveClassName(clazzName: String, classLoader: ClassLoader?): Class<*> {
+        try {
+            return forName<Any>(clazzName, classLoader)
+        } catch (ex: ClassNotFoundException) {
+            throw IllegalArgumentException("无法找到给定的类[$clazzName]")
+        } catch (ex: LinkageError) {
+            throw IllegalArgumentException("无法在运行时去链接到给定的类[$clazzName]")
         }
     }
 

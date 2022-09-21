@@ -19,6 +19,8 @@ import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.core.util.AnnotationConfigUtils
 import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.core.util.StringUtils.collectionToCommaDelimitedString
 import com.wanna.framework.util.StopWatch
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -28,6 +30,14 @@ import org.slf4j.LoggerFactory
  */
 open class SpringApplication(vararg _primarySources: Class<*>) {
     companion object {
+        /**
+         * 当中Runtime(JVM)关闭(Shutdown)时的回调钩子方法
+         *
+         * @see SpringApplicationShutdownHook
+         */
+        @JvmStatic
+        val shutdownHook = SpringApplicationShutdownHook()
+
         /**
          * 提供静态方法，去运行SpringApplication
          *
@@ -102,6 +112,11 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
 
     // 是否需要打印SpringApplication启动所花费的时间
     private var logStartupInfo = true
+
+    /**
+     * 是否需要去注册ShutdownHook？默认为true
+     */
+    private var registerShutdownHook = true
 
     /**
      * 获取SpringApplication当中的监听器列表，并完成好排序工作
@@ -216,7 +231,11 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         // SpringApplication的整个ApplicationContext已经准备好了，可以去进行打印相关的日志信息了
         // 是否需要打印SpringApplication启动过程当中的相关信息，如果需要的话，需要在这里去打印SpringApplication的相关环境信息
         if (this.logStartupInfo) {
-            logStartingInfo(context.getParent() == null)  // 只要root容器才打印
+            // 只要root容器才打印启动的相关信息
+            logStartingInfo(context.getParent() == null)
+
+            // 输出启动过程当中的Profile信息..
+            logStartupProfileInfo(context)
         }
 
         // 从SpringApplication的ApplicationContext当中获取到BeanFactory
@@ -399,8 +418,23 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
 
     /**
      * 刷新SpringApplication的ApplicationContext
+     *
+     * @param context 要去进行刷新的ApplicationContext
      */
-    protected open fun refreshContext(context: ConfigurableApplicationContext) {
+    private fun refreshContext(context: ConfigurableApplicationContext) {
+        // 如果需要注册ShutdownHook的话，那么把当前ApplicationContext去进行注册到ShutdownHook当中
+        if (registerShutdownHook) {
+            shutdownHook.registerApplicationContext(context)
+        }
+        refresh(context)
+    }
+
+    /**
+     * 刷新Spring的ApplicationContext
+     *
+     * @param context 要去进行刷新的ApplicationContext
+     */
+    protected open fun refresh(context: ConfigurableApplicationContext) {
         context.refresh()
     }
 
@@ -591,6 +625,41 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
             StartupInfoLogger(this.mainApplicationClass).logStarting(getApplicationLogger())
         }
     }
+
+    /**
+     * 日志输出Spring应用启动过程当中的profile信息
+     *
+     * @param context 正在启动的ApplicationContext
+     */
+    protected open fun logStartupProfileInfo(context: ConfigurableApplicationContext) {
+        val applicationLogger = getApplicationLogger()
+        if (applicationLogger.isInfoEnabled) {
+            val activeProfiles = quoteProfiles(context.getEnvironment().getActiveProfiles())
+            if (activeProfiles.isEmpty()) {
+                val defaultProfiles = quoteProfiles(context.getEnvironment().getDefaultProfiles())
+                val message = String.format(
+                    "%s default %s: ",
+                    defaultProfiles.size,
+                    if (defaultProfiles.size <= 1) "profile" else "profiles"
+                )
+                applicationLogger.info(
+                    "No active profile set, falling back to $message" + collectionToCommaDelimitedString(defaultProfiles)
+                )
+            } else {
+                val message =
+                    if (activeProfiles.size == 1) "1 profile is active: " else activeProfiles.size.toString() + " profiles are active: "
+                applicationLogger.info("The following $message" + collectionToCommaDelimitedString(activeProfiles))
+            }
+        }
+    }
+
+    /**
+     * 为所有的profile去添加引号
+     *
+     * @param profiles profile列表
+     * @return 转换(添加引号)之后的profile列表
+     */
+    private fun quoteProfiles(profiles: Array<String>): List<String> = profiles.map { "\"$it\"" }.toList()
 
     /**
      * 获取当前SpringApplication的Logger，如果有主启动类的话，那么使用该类作为loggerName去进行获取Logger；
