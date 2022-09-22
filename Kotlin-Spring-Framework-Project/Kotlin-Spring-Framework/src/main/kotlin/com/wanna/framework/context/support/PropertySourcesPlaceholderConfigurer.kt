@@ -31,7 +31,7 @@ open class PropertySourcesPlaceholderConfigurer : EnvironmentAware, BeanFactoryA
     override fun postProcessBeanFactory(beanFactory: ConfigurableListableBeanFactory) {
         beanFactory.addEmbeddedValueResolver(object : StringValueResolver {
             override fun resolveStringValue(strVal: String): String? {
-                return this@PropertySourcesPlaceholderConfigurer.environment!!.resolvePlaceholders(strVal)
+                return this@PropertySourcesPlaceholderConfigurer.environment.resolvePlaceholders(strVal)
             }
         })
     }
