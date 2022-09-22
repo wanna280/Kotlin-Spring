@@ -227,7 +227,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
                 if (beanDefinition !is AbstractBeanDefinition) {
                     throw IllegalStateException("给定的BeanDefinition不是AbstractBeanDefinition，不支持对该配置类去进行增强")
                 } else if (logger.isInfoEnabled && beanFactory.containsSingleton(beanName)) {
-                    logger.info("不支持对已经有单例对象的BeanDefinition上去进行增强")
+                    logger.info("不支持对已经存在有单例对象的BeanDefinition[beanName=$beanName]上去进行增强")
                 } else {
                     configBeanDefs[beanName] = beanDefinition // add full ConfigurationClass
                 }

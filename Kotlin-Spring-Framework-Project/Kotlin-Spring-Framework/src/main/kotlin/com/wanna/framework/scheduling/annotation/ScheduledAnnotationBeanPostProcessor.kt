@@ -238,49 +238,75 @@ open class ScheduledAnnotationBeanPostProcessor : ApplicationListener<ContextRef
      * * 1.处理固定速率的任务
      * * 2.处理固定延时的任务
      *
-     * @param scheduled @Scheduled注解
-     * @param bean bean
+     * @param scheduled 寻找到的@Scheduled注解
+     * @param bean bean object
      * @param method 要执行的目标方法
      */
     protected open fun processScheduled(scheduled: Scheduled, bean: Any, method: Method) {
+        // 是否从@Scheduled注解上去寻找到了定时任务的配置？因为没有找到的话，需要丢出异常
+        var processedSchedule = true
+
         val runnable = createRunnable(bean, method)
         // ScheduledTask列表
         val tasks = HashSet<ScheduledTask>()
         val embeddedValueResolver = this.embeddedValueResolver
 
-        //如果initialDelay<0，那么把它设置为0
-        val initialDelay = if (scheduled.initialDelay >= 0) scheduled.initialDelay else 0
+        // 解析initialDelay(不支持同时从initialDelay和initialDelayString两种方式去进行配置，只能配置其中一个)
+        // 如果使用String的方式去给定的话，那么可以支持使用占位符解析的方式去进行解析
+        var initialDelay = scheduled.initialDelay
+        val initialDelayString = scheduled.initialDelayString
+        if (StringUtils.hasText(initialDelayString)) {
+            if (initialDelay != -1L) throw IllegalStateException("不支持在@Scheduled注解上去同时去配置initialDelay和initialDelayString属性")
+            initialDelay = if (embeddedValueResolver != null) {
+                embeddedValueResolver.resolveStringValue(initialDelayString)?.toLong()
+                    ?: throw IllegalStateException("无法从@Scheduled注解上解析到initialDelay属性")
+            } else {
+                initialDelayString.toLong()
+            }
+        }
+
+        // 如果initialDelay为负数的话，说明它没有被初始化过，那么设置为0
+        initialDelay = if (initialDelay < 0) 0 else initialDelay
 
         // 添加固定速率的任务到ScheduledTaskRegistrar
+        // 如果同时配置了fixedRate和fixedRateString的话，那么它们将会被分别注册成为两个定时任务
         var fixedRate = scheduled.fixedRate
         val fixedRateString = scheduled.fixedRateString
         if (fixedRate >= 0) {
+            processedSchedule = true
             tasks.add(this.registrar.scheduleFixedRateTask(FixedRateTask(runnable, fixedRate, initialDelay)))
         }
         if (StringUtils.hasText(fixedRateString)) {
             fixedRate = if (embeddedValueResolver != null) {
                 embeddedValueResolver.resolveStringValue(fixedRateString)?.toLong()
-                    ?: throw IllegalStateException("无法从@Scheduled注解上解析到fixedRate")
+                    ?: throw IllegalStateException("无法从@Scheduled注解上解析到fixedRate属性")
             } else {
                 fixedRateString.toLong()
             }
+            processedSchedule = true
             tasks.add(this.registrar.scheduleFixedRateTask(FixedRateTask(runnable, fixedRate, initialDelay)))
         }
 
         // 添加固定延时的任务到ScheduledTaskRegistrar
+        // 如果同时配置了fixedDelay和fixedDelayString的话，那么它们将会被分别注册成为两个定时任务
         var fixedDelay = scheduled.fixedDelay
         val fixedDelayString = scheduled.fixedDelayString
         if (fixedDelay >= 0) {
+            processedSchedule = true
             tasks.add(this.registrar.scheduleFixedDelayTask(FixedDelayTask(runnable, fixedDelay, initialDelay)))
         }
         if (StringUtils.hasText(fixedDelayString)) {
             fixedDelay = if (embeddedValueResolver != null) {
                 embeddedValueResolver.resolveStringValue(fixedDelayString)?.toLong()
-                    ?: throw IllegalStateException("无法从@Scheduled注解上解析到fixedDelay")
+                    ?: throw IllegalStateException("无法从@Scheduled注解上解析到fixedDelay属性")
             } else {
                 fixedRateString.toLong()
             }
+            processedSchedule = true
             tasks.add(this.registrar.scheduleFixedDelayTask(FixedRateTask(runnable, fixedDelay, initialDelay)))
+        }
+        if (!processedSchedule) {
+            throw IllegalStateException("没有从@Scheduled上找到合适的定时任务的配置，支持的定时任务类型包括fixedRate/fixedDelay/cron等类型")
         }
 
         // 添加Task列表...
@@ -293,9 +319,9 @@ open class ScheduledAnnotationBeanPostProcessor : ApplicationListener<ContextRef
     /**
      * 为@Scheduled方法去创建合适的Runnable，将"run"方法设置为反射执行给定的方法
      *
-     * @param bean bean
-     * @param method method
-     * @return 创建好的Runnable
+     * @param bean bean object
+     * @param method bean method
+     * @return 创建好的ScheduledMethod的Runnable
      */
     protected open fun createRunnable(bean: Any, method: Method): Runnable = ScheduledMethodRunnable(bean, method)
 

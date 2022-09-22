@@ -8,6 +8,8 @@ import java.util.function.Function
 
 /**
  * 将线程信息去进行dump的Dump的Endpoint
+ *
+ * @see ManagementFactory.getThreadMXBean
  */
 @Endpoint("threaddump")
 open class ThreadDumpEndpoint {

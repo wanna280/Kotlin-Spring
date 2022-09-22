@@ -28,7 +28,7 @@ abstract class AbstractEnvironment(
     private var activeProfiles = HashSet<String>()
 
     // 默认的profiles
-    private var defaultProfiles = HashSet<String>()
+    private var defaultProfiles = HashSet<String>(setOf("default"))
 
     init {
         // 在初始化时，自动去执行customizePropertySources，完成PropertySources当中的PropertySource列表的初始化工作

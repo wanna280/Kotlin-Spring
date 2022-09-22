@@ -7,19 +7,7 @@ import com.wanna.framework.validation.DataBinder
  *
  * @see DataBinder
  */
-open class WebDataBinder(private val target: Any?, private val objectName: String) : DataBinder() {
+open class WebDataBinder(target: Any?, objectName: String) : DataBinder(target, objectName) {
 
-    /**
-     * 获取包装的目标对象
-     *
-     * @return 目标对象
-     */
-    open fun getTarget(): Any? = this.target
 
-    /**
-     * 获取目标对象的name
-     *
-     * @return objectName
-     */
-    open fun getObjectName() : String = this.objectName
 }

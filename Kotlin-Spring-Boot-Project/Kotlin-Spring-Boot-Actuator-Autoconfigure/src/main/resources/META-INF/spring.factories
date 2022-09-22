@@ -5,4 +5,5 @@ com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
   com.wanna.boot.actuate.autoconfigure.scheduling.ScheduledTasksEndpointAutoConfiguration,\
   com.wanna.boot.actuate.autoconfigure.env.EnvironmentEndpointAutoConfiguration,\
   com.wanna.boot.actuate.autoconfigure.management.ThreadDumpEndpointAutoConfiguration,\
+  com.wanna.boot.actuate.autoconfigure.management.HeapDumpEndpointAutoConfiguration,\
   com.wanna.boot.actuate.autoconfigure.context.ShutdownEndpointAutoConfiguration

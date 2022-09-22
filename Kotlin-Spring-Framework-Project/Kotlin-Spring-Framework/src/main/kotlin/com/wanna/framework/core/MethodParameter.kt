@@ -57,6 +57,13 @@ open class MethodParameter(
     }
 
     /**
+     * 获取描述的方法/构造器的参数上的注解列表
+     *
+     * @return 该方法/构造器上的注解列表
+     */
+    open fun getParameterAnnotations(): Array<Annotation> = executable.parameters[parameterIndex].annotations
+
+    /**
      * 获取描述的方法参数/构造器参数上的注解，找不到return null
      */
     open fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T? {
@@ -74,13 +81,13 @@ open class MethodParameter(
     }
 
     /**
-     * 判断方法上是否有该注解？
+     * 判断方法上是否有该注解？(支持使用继承的方式去进行寻找)
      *
      * @param annotationClass 要去进行匹配的注解类型
      * @return 如果方法上标注了该注解，那么return true；否则return false
      */
     open fun hasMethodAnnotation(annotationClass: Class<out Annotation>): Boolean {
-        return AnnotatedElementUtils.isAnnotated(this.executable, annotationClass);
+        return AnnotatedElementUtils.hasAnnotation(this.executable, annotationClass);
     }
 
     /**
@@ -105,6 +112,13 @@ open class MethodParameter(
     open fun getParameter(): Parameter {
         return executable.parameters[parameterIndex]
     }
+
+    /**
+     * 直接获取Executable
+     *
+     * @return Executable(方法/构造器)
+     */
+    open fun getExecutable(): Executable = this.executable
 
     /**
      * 获取参数对应的方法所在的index

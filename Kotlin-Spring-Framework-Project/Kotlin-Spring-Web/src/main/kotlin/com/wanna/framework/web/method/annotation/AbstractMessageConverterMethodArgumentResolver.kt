@@ -1,6 +1,13 @@
 package com.wanna.framework.web.method.annotation
 
+import com.wanna.framework.context.annotation.AnnotationAttributesUtils
+import com.wanna.framework.context.annotation.AnnotationAttributesUtils.asAnnotationAttributes
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.validation.DataBinder
+import com.wanna.framework.validation.Errors
+import com.wanna.framework.validation.annotation.Validated
 import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.bind.annotation.RequestBody
 import com.wanna.framework.web.context.request.NativeWebRequest
@@ -125,6 +132,48 @@ abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArg
      */
     protected open fun createInputMessage(nativeWebRequest: NativeWebRequest): ServerHttpRequest {
         return ServerHttpRequest(nativeWebRequest)
+    }
+
+    /**
+     * 对目标方法参数去进行参数检验，检查Spring的`@Validated`注解，以及JSR303当中的`Valid`注解等情况
+     *
+     * @param webDataBinder WebDataBinder
+     * @param parameter 目标方法参数
+     */
+    protected open fun validateIfApplicable(webDataBinder: DataBinder, parameter: MethodParameter) {
+        parameter.getParameterAnnotations().forEach {
+            val validated = AnnotatedElementUtils.getMergedAnnotation(it.annotationClass.java, Validated::class.java)
+            // 如果它标注了@Validated注解，或者是它是一个以Valid开头的注解，例如JSR303当中的@Valid注解
+            if (validated != null || it.annotationClass.java.simpleName.startsWith("Valid")) {
+
+                // 从@Validated注解当中找到value属性去作为validationHints(ValidationGroups)
+                val hints = asAnnotationAttributes(it)!!["value"]
+
+                @Suppress("UNCHECKED_CAST")
+                val validationHints = (if (hints is Array<*>) hints else arrayOf(hints)) as Array<Any>
+                webDataBinder.validate(validationHints)  // Validate by WebDataBinder
+                return  // return all
+            }
+        }
+    }
+
+    /**
+     * 是否需要去丢出一个绑定参数异常？
+     *
+     * * 1.如果下一个参数就是Errors(BindingResult)，那么就说明不必丢出异常
+     * * 2.如果下一个参数不是Errors(BindingResult)，那么就说明需要丢出异常
+     *
+     * @param webDataBinder WebDataBinder
+     * @param parameter 方法参数
+     */
+    protected open fun isBindExceptionRequired(webDataBinder: DataBinder, parameter: MethodParameter): Boolean {
+        val parameterIndex = parameter.getParameterIndex()
+        val parameterTypes = parameter.getExecutable().parameterTypes
+
+        // 检查下一个参数的类型是否是Errors
+        val hasBindingResult = parameterIndex + 1 <= parameterTypes.size &&
+                ClassUtils.isAssignFrom(Errors::class.java, parameterTypes[parameterIndex + 1])
+        return !hasBindingResult
     }
 
     /**

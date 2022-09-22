@@ -9,15 +9,17 @@ import java.util.stream.Stream
 /**
  * OperationParameters的默认实现，组合了OperationParameter的列表
  *
- * @param method Operation方法
+ * @param method 要维护的Operation方法
  * @param parameterNameDiscoverer 参数名发现器，提供Operation方法的参数名的列表的获取
  *
  * @see OperationParameter
  */
-class OperationMethodParameters(
+open class OperationMethodParameters(
     private val method: Method,
     private val parameterNameDiscoverer: ParameterNameDiscoverer
 ) : OperationParameters {
+
+    // 维护Operation的方法参数的列表
     private val parameters: MutableList<OperationParameter> = ArrayList()
 
     init {

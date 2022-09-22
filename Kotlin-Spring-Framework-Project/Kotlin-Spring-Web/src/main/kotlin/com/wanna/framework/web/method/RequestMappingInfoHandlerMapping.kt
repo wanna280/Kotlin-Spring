@@ -30,17 +30,20 @@ abstract class RequestMappingInfoHandlerMapping : AbstractHandlerMethodMapping<R
      * 在找到合适的Handler去处理本次请求之后，我们应该去解析PathVariables，并放入到属性当中方便后续去进行获取
      *
      * @param mapping mapping
-     * @param handlerMethod HandlerMethod
+     * @param lookupPath lookupPath
      * @param request request
      */
-    override fun handleMatch(mapping: RequestMappingInfo, handlerMethod: HandlerMethod, request: HttpServerRequest) {
+    override fun handleMatch(mapping: RequestMappingInfo, lookupPath:String, request: HttpServerRequest) {
+        // invoke super
+        super.handleMatch(mapping, lookupPath, request)
+
         val url = request.getUrl()
-        // 解析路径当中的模板参数(UrlTemplateVariables)
+        // 解析路径当中的模板参数(UrlTemplateVariables)并放入到requestAttribute当中...
         val pattern = mapping.pathPatternsCondition.getContent().iterator().next()
         val uriTemplateVariables = pattern.extractUriTemplateVariables(url)
         request.setAttribute(URI_TEMPLATE_VARIABLES_ATTRIBUTE, uriTemplateVariables)
 
-        // 将可以产出的MediaType添加到request当中
+        // 将可以产出的MediaType添加到requestAttribute当中
         if (!mapping.producesCondition.isEmpty()) {
             val producibleMediaTypes = mapping.producesCondition.getProducibleMediaTypes()
             request.setAttribute(PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE, producibleMediaTypes)

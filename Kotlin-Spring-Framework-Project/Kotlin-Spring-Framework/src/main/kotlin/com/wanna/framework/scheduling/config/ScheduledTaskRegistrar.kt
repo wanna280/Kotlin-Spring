@@ -29,16 +29,30 @@ open class ScheduledTaskRegistrar : InitializingBean, DisposableBean, ScheduledT
     // 维护定时调度的任务列表
     private val scheduledTasks = LinkedHashSet<ScheduledTask>()
 
-    open fun setScheduler(scheduler: Any) {
-        if (scheduler is TaskScheduler) {
-            this.scheduler = scheduler
-        } else if (scheduler is ScheduledExecutorService) {
-            this.scheduler = ConcurrentTaskScheduler(scheduler)
-        } else {
-            throw IllegalArgumentException("不支持使用这样的Scheduler")
+    /**
+     * 设置用于定时任务的调度的Scheduler，支持给定一个TaskScheduler，或者是ScheduledExecutorService；
+     * 当传入一个ScheduledExecutorService时，会自动将它去包装成为一个TaskScheduler
+     *
+     * @see TaskScheduler
+     * @see ScheduledExecutorService
+     * @see ConcurrentTaskScheduler
+     *
+     * @param scheduler 你要使用的TaskScheduler
+     */
+    open fun setScheduler(scheduler: Any?) {
+        when (scheduler) {
+            null -> this.scheduler = null
+            is TaskScheduler -> this.scheduler = scheduler
+            is ScheduledExecutorService -> this.scheduler = ConcurrentTaskScheduler(scheduler)
+            else -> throw IllegalArgumentException("不支持使用这样的Scheduler[$scheduler], 仅仅支持使用[TaskScheduler]和[ScheduledExecutorService]这两类Scheduler")
         }
     }
 
+    /**
+     * 获取用户去进行定时任务的调度的Scheduler
+     *
+     * @return TaskScheduler
+     */
     open fun getScheduler(): TaskScheduler? = this.scheduler
 
     override fun getScheduledTasks(): Set<ScheduledTask> = this.scheduledTasks
@@ -49,12 +63,15 @@ open class ScheduledTaskRegistrar : InitializingBean, DisposableBean, ScheduledT
     override fun afterPropertiesSet() {
         if (this.scheduler == null) {
             this.localExecutor = Executors.newSingleThreadScheduledExecutor()
-            this.scheduler = ConcurrentTaskScheduler(localExecutor!!)
+            this.scheduler = ConcurrentTaskScheduler(localExecutor ?: throw IllegalStateException("localExecutor不能为空"))
         }
         fixedDelayTasks?.forEach { scheduledTasks.add(scheduleFixedDelayTask(it)) }
         fixedRateTasks?.forEach { scheduledTasks.add(scheduleFixedRateTask(it)) }
     }
 
+    /**
+     * 在Spring容器关闭/当前Bean被摧毁时，需要去关闭所有的ScheduledTask任务列表，关闭线程池
+     */
     override fun destroy() {
         this.scheduledTasks.forEach(ScheduledTask::cancel)
         this.localExecutor?.shutdown()

@@ -27,7 +27,8 @@ open class AutoConfigurationExcludeFilter : TypeFilter {
      * @param clazz 要去匹配的目标类
      * @return 如果它标注了@Configuration，那么return true，否则return false
      */
-    open fun isConfiguration(clazz: Class<*>) = AnnotatedElementUtils.isAnnotated(clazz, Configuration::class.java)
+    open fun isConfiguration(clazz: Class<*>): Boolean =
+        AnnotatedElementUtils.isAnnotated(clazz, Configuration::class.java)
 
     /**
      * 判断给定的类是否是一个自动配置类

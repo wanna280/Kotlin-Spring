@@ -40,10 +40,21 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     companion object {
-        const val APPLICATION_EVENT_MULTICASTER_BEAN_NAME = "applicationEventMulticaster"  // EventMulticaster的beanName
-        const val LIFECYCLE_PROCESSOR_BEAN_NAME = "lifeProcessor"  // LifeCycleProcessor的beanName
 
-        // Logger
+        /**
+         * Spring的EventMulticaster的beanName
+         */
+        const val APPLICATION_EVENT_MULTICASTER_BEAN_NAME = "applicationEventMulticaster"
+
+        /**
+         * Spring的LifeCycleProcessor的beanName
+         */
+        const val LIFECYCLE_PROCESSOR_BEAN_NAME = "lifecycleProcessor"
+
+        /**
+         * Logger
+         */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(AbstractApplicationContext::class.java)
     }
 
@@ -87,6 +98,11 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     // 当前的ApplicationContext是否已经关闭了？
     private var closed = AtomicBoolean(false)
 
+    /**
+     * 为当前的ApplicationContext去生成一个id
+     *
+     * @return 当前的ApplicationContext的id
+     */
     override fun getId(): String? = javaClass.name + "@" + System.identityHashCode(this).toString(16)
 
     override fun refresh() {

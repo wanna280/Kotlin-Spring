@@ -2,12 +2,15 @@ package com.wanna.boot.web.mvc.context
 
 
 import com.wanna.boot.web.mvc.server.WebServerFactory
+import com.wanna.boot.web.server.WebServer
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContextException
 import com.wanna.framework.context.support.GenericApplicationContext
 
 /**
- * 这是一个ReactiveWebServerApplicationContext
+ * 这是一个Mvc的WebServerApplicationContext
+ *
+ * @param beanFactory ApplicationContext需要使用的BeanFactory
  */
 open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactory) :
     GenericApplicationContext(beanFactory), WebServerApplicationContext {
@@ -16,6 +19,9 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
 
     // WebServerManager
     private var webServerManager: WebServerManager? = null
+
+    // WebServer
+    private var webServer: WebServer? = null
 
     override fun refresh() {
         try {
@@ -43,10 +49,17 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
      */
     private fun createWebServer() {
         if (this.webServerManager == null) {
-            val reactiveWebServerFactory = getWebServerFactory()
-            this.webServerManager = WebServerManager(this, reactiveWebServerFactory)
+            val webServerFactory = getWebServerFactory()
+
+            val step = this.getApplicationStartup().start("spring.boot.webserver.create")
+            step.tag("factory", webServerFactory::class.java.name) // tag
+            this.webServer = webServerFactory.getWebServer()  // get WebServer
+            step.end()  // tag end
+
+            this.webServerManager = WebServerManager(this, webServerFactory)
             this.getBeanFactory()
-                .registerSingleton("webServerStartStop",
+                .registerSingleton(
+                    "webServerStartStop",
                     WebServerStartStopLifecycle(this.webServerManager!!)
                 )
         }
@@ -56,14 +69,14 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
     private fun getWebServerFactory(): WebServerFactory {
         val factories = getBeanFactory().getBeansForType(WebServerFactory::class.java).values
         if (factories.isEmpty()) {
-            throw ApplicationContextException("没有从容器当中去找到合适的ReactiveWebServer")
+            throw ApplicationContextException("没有从容器当中去找到合适的WebServerFactory")
         } else if (factories.size > 1) {
-            throw ApplicationContextException("从容器中找到ReactiveWebServer的数量不止1个")
+            throw ApplicationContextException("从容器中找到WebServerFactory的数量不止1个")
         }
         return factories.iterator().next()
     }
 
-    override fun getWebServer(): com.wanna.boot.web.server.WebServer {
-        return this.webServerManager!!.getWebServer()
+    override fun getWebServer(): WebServer {
+        return this.webServer ?: throw IllegalStateException("WebServer不能为空")
     }
 }

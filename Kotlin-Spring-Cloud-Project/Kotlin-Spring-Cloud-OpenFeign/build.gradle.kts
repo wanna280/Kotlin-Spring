@@ -15,6 +15,7 @@ dependencies {
     implementation("org.apache.httpcomponents:httpclient:$apacheHttpClientVersion")
     implementation("io.github.openfeign:feign-httpclient:$feignHttpClientVersion")
     implementation("io.github.openfeign:feign-core:$feignVersion")
+    testImplementation("io.netty:netty-codec-http:$nettyVersion")
 
     testImplementation(project(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Ribbon"))
     testImplementation(project(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Nacos:Kotlin-Spring-Cloud-Nacos-Discovery"))

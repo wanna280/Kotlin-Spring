@@ -27,9 +27,11 @@ allprojects {
         implementation("org.springframework:spring-core:$springCoreVersion") {
             exclude(group = "org.springframework", module = "spring-jcl")  // no need
         }
+
         implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
         implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
         implementation("org.slf4j:slf4j-api:$slf4jApiVersion")
+        compileOnly("javax.validation:validation-api:2.0.1.Final")  // for  validate
         compileOnly("javax.inject:javax.inject:1")
         compileOnly("com.google.code.findbugs:jsr305:3.0.2")
         implementation("javax.annotation:javax.annotation-api:$javaxAnnotationVersion")
