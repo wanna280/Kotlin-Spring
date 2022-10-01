@@ -2,7 +2,7 @@ package com.wanna.framework.web.method.support
 
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.core.MethodParameter
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.web.method.HandlerMethod
 import java.lang.reflect.Method
 

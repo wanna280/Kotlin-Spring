@@ -4,7 +4,7 @@ import com.wanna.boot.env.PropertySourceLoader
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 
 open class StandardConfigDataLocationResolver(_environment: ConfigurableEnvironment) : Ordered {
     companion object {

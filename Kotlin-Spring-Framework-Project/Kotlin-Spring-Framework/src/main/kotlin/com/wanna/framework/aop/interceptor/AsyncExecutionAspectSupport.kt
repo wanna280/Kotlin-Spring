@@ -7,8 +7,8 @@ import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
 import com.wanna.framework.core.task.AsyncTaskExecutor
 import com.wanna.framework.core.task.TaskExecutor
 import com.wanna.framework.core.task.support.TaskExecutorAdapter
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.StringUtils
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
 import java.util.concurrent.Callable

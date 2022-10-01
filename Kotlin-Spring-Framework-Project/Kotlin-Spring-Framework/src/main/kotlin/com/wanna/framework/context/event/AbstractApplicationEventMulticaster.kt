@@ -5,7 +5,7 @@ import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import java.util.Optional
 
 /**

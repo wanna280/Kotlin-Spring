@@ -6,7 +6,7 @@ import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.type.filter.AnnotationTypeFilter
 import com.wanna.framework.core.type.filter.AssignableTypeFilter
 import com.wanna.framework.core.type.filter.TypeFilter
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 
 /**
  * 这是完成ComponentScan注解的扫描的解析器，负责将@ComponentScan注解当中配置的属性去进行解析，并完成ComponentScan的组件的扫描

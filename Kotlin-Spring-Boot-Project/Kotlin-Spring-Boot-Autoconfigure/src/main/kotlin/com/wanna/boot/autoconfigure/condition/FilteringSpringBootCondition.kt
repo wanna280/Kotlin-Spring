@@ -5,7 +5,7 @@ import com.wanna.boot.autoconfigure.AutoConfigurationMetadata
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.context.aware.BeanClassLoaderAware
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 
 /**
  * 这是一个同时实现AutoConfigurationImportFilter和SpringBootCondition的一个SpringBootCondition；

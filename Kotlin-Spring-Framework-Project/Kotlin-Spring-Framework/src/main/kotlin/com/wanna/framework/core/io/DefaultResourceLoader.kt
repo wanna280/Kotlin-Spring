@@ -1,7 +1,7 @@
 package com.wanna.framework.core.io
 
 import com.wanna.framework.core.io.ResourceLoader.Companion.CLASSPATH_URL_PREFIX
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ResourceUtils
 import java.net.MalformedURLException

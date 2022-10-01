@@ -3,7 +3,7 @@ package com.wanna.framework.beans.factory.config
 import com.wanna.framework.beans.MutablePropertyValues
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.config.BeanMetadataElement
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import kotlin.jvm.Throws
 
 /**

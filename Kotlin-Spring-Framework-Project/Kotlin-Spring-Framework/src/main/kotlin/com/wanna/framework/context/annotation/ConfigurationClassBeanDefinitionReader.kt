@@ -11,9 +11,9 @@ import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.core.type.StandardMethodMetadata
-import com.wanna.framework.core.util.AnnotationConfigUtils
-import com.wanna.framework.core.util.BeanUtils
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.AnnotationConfigUtils
+import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.util.StringUtils
 import org.slf4j.LoggerFactory
 
 /**

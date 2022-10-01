@@ -21,8 +21,8 @@ import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.io.DefaultResourceLoader
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
-import com.wanna.framework.core.util.AnnotationConfigUtils
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.AnnotationConfigUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.lang.Nullable
 import org.slf4j.LoggerFactory
 

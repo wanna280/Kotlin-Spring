@@ -1,4 +1,4 @@
-package com.wanna.framework.core.util
+package com.wanna.framework.util
 
 import org.slf4j.LoggerFactory
 import java.lang.IllegalArgumentException

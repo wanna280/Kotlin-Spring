@@ -14,7 +14,7 @@ import com.wanna.framework.core.io.support.ResourcePatternResolver.Companion.CLA
 import com.wanna.framework.core.io.support.ResourcePatternUtils
 import com.wanna.framework.core.type.filter.AnnotationTypeFilter
 import com.wanna.framework.core.type.filter.TypeFilter
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.lang.Nullable
 import org.objectweb.asm.ClassReader
 import org.slf4j.Logger

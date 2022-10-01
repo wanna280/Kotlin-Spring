@@ -1,6 +1,6 @@
 package com.wanna.nacos.naming.server.core
 
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 import com.wanna.nacos.api.naming.pojo.Service
 import com.wanna.nacos.naming.server.healthcheck.ClientBeatCheckTask
 import com.wanna.nacos.naming.server.healthcheck.ClientBeatInfo

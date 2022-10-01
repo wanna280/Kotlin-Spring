@@ -5,7 +5,7 @@ import com.wanna.framework.context.processor.beans.DestructionAwareBeanPostProce
 import com.wanna.framework.context.processor.beans.MergedBeanDefinitionPostProcessor
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.PriorityOrdered
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.ReflectionUtils
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap

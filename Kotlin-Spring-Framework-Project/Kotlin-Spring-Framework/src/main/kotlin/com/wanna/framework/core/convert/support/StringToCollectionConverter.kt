@@ -5,7 +5,7 @@ import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.convert.converter.GenericConverter
 import com.wanna.framework.core.convert.converter.GenericConverter.*
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 
 /**
  * String转Collection的的Converter

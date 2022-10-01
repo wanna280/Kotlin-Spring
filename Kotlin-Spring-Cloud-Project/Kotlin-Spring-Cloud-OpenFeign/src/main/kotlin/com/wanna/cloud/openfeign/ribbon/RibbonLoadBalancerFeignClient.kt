@@ -2,7 +2,7 @@ package com.wanna.cloud.openfeign.ribbon
 
 import com.netflix.loadbalancer.ILoadBalancer
 import com.wanna.cloud.netflix.ribbon.SpringClientFactory
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 import feign.Client
 import feign.Request
 import feign.Response

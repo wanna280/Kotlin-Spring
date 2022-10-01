@@ -4,7 +4,7 @@ import com.wanna.framework.beans.SmartInitializingSingleton
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.core.convert.support.DefaultConversionService
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.ReflectionUtils
 import com.wanna.spring.shell.result.ResultHandler
 import java.lang.reflect.UndeclaredThrowableException
 

@@ -19,10 +19,10 @@ import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ParameterNameDiscoverer
 import com.wanna.framework.core.ResolvableType
-import com.wanna.framework.core.util.BeanUtils
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.ReflectionUtils
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.ReflectionUtils
+import com.wanna.framework.util.StringUtils
 import java.beans.Introspector
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method

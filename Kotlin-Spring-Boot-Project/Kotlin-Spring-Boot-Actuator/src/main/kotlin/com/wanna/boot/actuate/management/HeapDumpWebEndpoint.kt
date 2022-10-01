@@ -2,9 +2,8 @@ package com.wanna.boot.actuate.management
 
 import com.wanna.boot.actuate.endpoint.annotation.Endpoint
 import com.wanna.boot.actuate.endpoint.annotation.ReadOperation
-import com.wanna.boot.actuate.endpoint.web.WebEndpointResponse
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.lang.Nullable
 import java.io.File
 import java.io.IOException

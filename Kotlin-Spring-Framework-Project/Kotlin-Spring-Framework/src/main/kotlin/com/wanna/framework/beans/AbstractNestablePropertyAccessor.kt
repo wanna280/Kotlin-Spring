@@ -1,7 +1,7 @@
 package com.wanna.framework.beans
 
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.ReflectionUtils
 
 
 /**

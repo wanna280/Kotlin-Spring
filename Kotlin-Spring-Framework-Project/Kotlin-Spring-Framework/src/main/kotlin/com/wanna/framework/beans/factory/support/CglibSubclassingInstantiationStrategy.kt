@@ -5,7 +5,7 @@ import com.wanna.framework.beans.method.LookupOverride
 import com.wanna.framework.beans.method.ReplaceOverride
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
-import com.wanna.framework.core.util.BeanUtils
+import com.wanna.framework.util.BeanUtils
 import net.sf.cglib.proxy.CallbackFilter
 import net.sf.cglib.proxy.Enhancer
 import net.sf.cglib.proxy.Factory

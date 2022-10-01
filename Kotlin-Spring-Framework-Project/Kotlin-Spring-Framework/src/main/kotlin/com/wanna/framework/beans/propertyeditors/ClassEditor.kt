@@ -1,7 +1,7 @@
 package com.wanna.framework.beans.propertyeditors
 
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.StringUtils
 import java.beans.PropertyEditorSupport
 
 /**

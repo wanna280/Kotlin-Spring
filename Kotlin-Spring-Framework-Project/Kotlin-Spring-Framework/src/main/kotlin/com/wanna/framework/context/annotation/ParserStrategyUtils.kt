@@ -7,8 +7,8 @@ import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.EnvironmentAware
 import com.wanna.framework.core.environment.Environment
-import com.wanna.framework.core.util.BeanUtils
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.util.ClassUtils
 
 /**
  * 这是一个解析器策略的工具类，它可以完成Bean的实例化，并回调相关的Aware接口(执行Aware接口，目前支持Environment/ClassLoader/BeanFactory的注入)

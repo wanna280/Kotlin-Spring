@@ -12,7 +12,7 @@ import com.wanna.framework.aop.target.SingletonTargetSource
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.context.processor.beans.SmartInstantiationAwareBeanPostProcessor
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 

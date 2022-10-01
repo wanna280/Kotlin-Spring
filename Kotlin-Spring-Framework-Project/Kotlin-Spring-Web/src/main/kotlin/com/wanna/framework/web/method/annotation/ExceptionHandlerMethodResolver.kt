@@ -1,6 +1,6 @@
 package com.wanna.framework.web.method.annotation
 
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.web.bind.annotation.ExceptionHandler
 import java.lang.reflect.Method
 

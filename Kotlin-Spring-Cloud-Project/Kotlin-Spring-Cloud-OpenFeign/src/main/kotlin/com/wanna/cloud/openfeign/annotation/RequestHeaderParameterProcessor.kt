@@ -1,7 +1,7 @@
 package com.wanna.cloud.openfeign.annotation
 
 import com.wanna.cloud.openfeign.AnnotatedParameterProcessor
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.web.bind.annotation.RequestHeader
 import java.lang.reflect.Method
 

@@ -3,7 +3,7 @@ package com.wanna.boot.autoconfigure.condition
 import com.wanna.boot.autoconfigure.AutoConfigurationMetadata
 import com.wanna.framework.context.annotation.ConditionContext
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 
 /**
  * WebApplication的Condition匹配

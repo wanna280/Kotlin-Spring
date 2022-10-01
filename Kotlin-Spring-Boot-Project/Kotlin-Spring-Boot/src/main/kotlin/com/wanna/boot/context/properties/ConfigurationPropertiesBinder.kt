@@ -9,9 +9,9 @@ import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.environment.ConfigurableEnvironment
-import com.wanna.framework.core.util.BeanUtils
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.ReflectionUtils
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Field
 import java.lang.reflect.Method

@@ -6,7 +6,7 @@ import com.wanna.framework.context.annotation.AnnotationConfigRegistry
 import com.wanna.framework.context.annotation.BeanNameGenerator
 import com.wanna.framework.context.annotation.ClassPathBeanDefinitionScanner
 import com.wanna.framework.core.environment.ConfigurableEnvironment
-import com.wanna.framework.core.util.AnnotationConfigUtils
+import com.wanna.framework.util.AnnotationConfigUtils
 
 /**
  * 这是一个基于ReactiveWeb环境下的支持注解的ApplicationContext，它相比于AnnotationConfigApplicationContext，新增了ReactiveWebServer功能；

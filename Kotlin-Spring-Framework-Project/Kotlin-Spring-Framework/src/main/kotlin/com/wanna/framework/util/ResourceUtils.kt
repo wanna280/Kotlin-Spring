@@ -16,7 +16,7 @@ object ResourceUtils {
     /**
      * 文件夹的分隔符
      */
-    const val FOLDER_SEPARATOR = com.wanna.framework.core.util.StringUtils.FOLDER_SEPARATOR
+    const val FOLDER_SEPARATOR = StringUtils.FOLDER_SEPARATOR
 
     /**
      * 类路径(ClassPath)的前缀
@@ -43,7 +43,7 @@ object ResourceUtils {
      */
     @JvmStatic
     fun applyRelativePath(path: String, relativePath: String): String {
-        com.wanna.framework.core.util.StringUtils
+        StringUtils
         val separatorIndex = path.lastIndexOf(FOLDER_SEPARATOR)
         return if (separatorIndex != -1) {
             var newPath = path.substring(0, separatorIndex)

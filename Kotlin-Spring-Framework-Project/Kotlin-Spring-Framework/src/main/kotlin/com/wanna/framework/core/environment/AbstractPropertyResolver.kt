@@ -2,7 +2,7 @@ package com.wanna.framework.core.environment
 
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.support.DefaultConversionService
-import com.wanna.framework.core.util.PropertyPlaceholderHelper
+import com.wanna.framework.util.PropertyPlaceholderHelper
 
 /**
  * 这是一个抽象的值解析器，对于大多数的公共部分的方式，通过调用子类必须实现的模板方法去进行实现

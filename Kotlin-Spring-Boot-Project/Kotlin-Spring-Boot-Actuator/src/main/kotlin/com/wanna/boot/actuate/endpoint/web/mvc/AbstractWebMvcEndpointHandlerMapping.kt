@@ -5,7 +5,7 @@ import com.wanna.boot.actuate.endpoint.web.EndpointMapping
 import com.wanna.boot.actuate.endpoint.web.ExposableWebEndpoint
 import com.wanna.boot.actuate.endpoint.web.WebOperation
 import com.wanna.boot.actuate.endpoint.web.WebOperationRequestPredicate
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.web.HandlerMapping
 import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.method.RequestMappingInfo

@@ -16,8 +16,8 @@ import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
 import com.wanna.framework.core.ParameterNameDiscoverer
 import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.comparator.OrderComparator
-import com.wanna.framework.core.util.BeanFactoryUtils
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.BeanFactoryUtils
+import com.wanna.framework.util.ClassUtils
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Type
 import java.util.*

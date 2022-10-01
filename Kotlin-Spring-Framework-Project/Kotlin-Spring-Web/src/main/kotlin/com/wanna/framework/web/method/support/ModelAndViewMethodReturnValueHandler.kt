@@ -1,7 +1,7 @@
 package com.wanna.framework.web.method.support
 
 import com.wanna.framework.core.MethodParameter
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.handler.ModelAndView
 import com.wanna.framework.web.ui.SmartView

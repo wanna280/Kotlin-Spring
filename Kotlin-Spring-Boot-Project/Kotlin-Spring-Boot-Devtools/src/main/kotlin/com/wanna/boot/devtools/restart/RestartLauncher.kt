@@ -1,7 +1,7 @@
 package com.wanna.boot.devtools.restart
 
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.ReflectionUtils
 
 /**
  * 一个用于"SpringBoot-Devtools"去进行重启的线程

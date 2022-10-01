@@ -1,6 +1,6 @@
 package com.wanna.nacos.api.naming.pojo
 
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 import com.wanna.nacos.api.naming.ValidateBase
 
 /**

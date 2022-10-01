@@ -12,7 +12,7 @@ import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.definition.GenericBeanDefinition
 import com.wanna.framework.context.annotation.*
 import com.wanna.framework.core.type.AnnotationMetadata
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 import com.wanna.mybatis.spring.SqlSessionFactoryBean
 import com.wanna.mybatis.spring.SqlSessionTemplate
 import com.wanna.mybatis.spring.mapper.MapperFactoryBean

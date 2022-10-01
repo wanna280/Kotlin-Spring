@@ -8,9 +8,9 @@ import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.context.annotation.BeanNameGenerator
 import com.wanna.framework.context.annotation.ImportBeanDefinitionRegistrar
 import com.wanna.framework.core.type.AnnotationMetadata
-import com.wanna.framework.core.util.BeanUtils
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.StringUtils
 import com.wanna.mybatis.spring.mapper.MapperFactoryBean
 import com.wanna.mybatis.spring.mapper.MapperScannerConfigurer
 

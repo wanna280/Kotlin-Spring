@@ -4,8 +4,8 @@ import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.context.exception.BeanCreationException
 import com.wanna.framework.core.NamedThreadLocal
-import com.wanna.framework.core.util.BeanUtils
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 

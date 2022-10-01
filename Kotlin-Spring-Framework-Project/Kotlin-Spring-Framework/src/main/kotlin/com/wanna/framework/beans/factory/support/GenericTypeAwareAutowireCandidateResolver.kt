@@ -3,7 +3,7 @@ package com.wanna.framework.beans.factory.support
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.core.ResolvableType
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 
 /**
  * 它是一个支持泛型的检查的AutowireCandidateResolver

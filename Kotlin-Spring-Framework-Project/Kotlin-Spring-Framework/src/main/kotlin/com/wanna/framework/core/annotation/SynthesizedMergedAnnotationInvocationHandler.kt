@@ -1,6 +1,6 @@
 package com.wanna.framework.core.annotation
 
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.lang.Nullable
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method

@@ -10,7 +10,7 @@ import com.wanna.framework.core.environment.EnvironmentCapable
 import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 
 /**
  * 这是一个条件计算器，计算某个Bean是否应该被导入到容器当中？

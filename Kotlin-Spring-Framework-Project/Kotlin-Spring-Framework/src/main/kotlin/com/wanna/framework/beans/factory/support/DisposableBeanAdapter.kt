@@ -2,8 +2,8 @@ package com.wanna.framework.beans.factory.support
 
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.processor.beans.DestructionAwareBeanPostProcessor
-import com.wanna.framework.core.util.ReflectionUtils
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.ReflectionUtils
+import com.wanna.framework.util.StringUtils
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
 

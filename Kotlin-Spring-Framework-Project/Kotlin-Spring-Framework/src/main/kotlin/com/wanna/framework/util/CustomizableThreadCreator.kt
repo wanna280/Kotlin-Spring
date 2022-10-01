@@ -1,9 +1,7 @@
 package com.wanna.framework.util
 
-import com.wanna.framework.core.util.ClassUtils
 import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
-import javax.annotation.Priority
 
 /**
  *

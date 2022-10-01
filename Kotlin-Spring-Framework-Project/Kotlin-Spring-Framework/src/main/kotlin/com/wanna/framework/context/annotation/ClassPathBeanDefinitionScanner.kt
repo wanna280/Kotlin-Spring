@@ -8,7 +8,7 @@ import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.EnvironmentCapable
 import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.io.ResourceLoader
-import com.wanna.framework.core.util.AnnotationConfigUtils
+import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.lang.Nullable
 
 /**

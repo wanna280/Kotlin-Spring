@@ -1,7 +1,7 @@
 package com.wanna.boot.autoconfigure
 
 import com.wanna.framework.core.io.support.PropertiesLoaderUtils
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 import java.util.Properties
 
 /**

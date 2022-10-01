@@ -7,7 +7,7 @@ import com.wanna.framework.beans.factory.support.definition.GenericBeanDefinitio
 import com.wanna.framework.context.annotation.ImportBeanDefinitionRegistrar
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.core.type.AnnotationMetadata
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import java.util.function.Supplier
 
 /**

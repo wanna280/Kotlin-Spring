@@ -1,6 +1,6 @@
 package com.wanna.framework.core.io
 
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ResourceUtils
 import java.io.FileNotFoundException
