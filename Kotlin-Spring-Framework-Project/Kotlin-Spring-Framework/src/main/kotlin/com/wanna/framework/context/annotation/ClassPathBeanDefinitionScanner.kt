@@ -9,6 +9,9 @@ import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.EnvironmentCapable
 import com.wanna.framework.core.environment.StandardEnvironment
+import com.wanna.framework.core.io.ResourceLoader
+import com.wanna.framework.core.io.support.ResourcePatternResolver
+import com.wanna.framework.core.io.support.ResourcePatternUtils
 import com.wanna.framework.core.type.filter.AnnotationTypeFilter
 import com.wanna.framework.core.type.filter.TypeFilter
 import com.wanna.framework.core.util.AnnotationConfigUtils
@@ -22,18 +25,13 @@ import com.wanna.framework.core.util.ClassDiscoveryUtils
 open class ClassPathBeanDefinitionScanner(
     val registry: BeanDefinitionRegistry,
     useDefaultFilters: Boolean = true,  // 是否需要应用默认的Filter？
-) {
-    // includeFilters
-    private var includeFilters = ArrayList<TypeFilter>()
-
-    // excludeFilters
-    private var excludeFilters = ArrayList<TypeFilter>()
+    resourceLoader: ResourceLoader? = null
+) : ClassPathScanningCandidateComponentProvider(useDefaultFilters, resourceLoader) {
 
     // beanNameGenerator，可以允许外部访问，直接进行设置，默认为支持注解版的BeanNameGenerator
     private var beanNameGenerator: BeanNameGenerator = AnnotationBeanNameGenerator.INSTANCE
 
-    // environment，利用允许外部访问，直接去进行设置
-    private var environment: Environment = this.getOrDefaultEnvironment(registry)
+
 
     // 是否包含注解版的配置？如果开启了，使用它进行扫描时，就会往容器中注册注解的通用处理器
     private var includeAnnotationConfig: Boolean = true
@@ -45,20 +43,16 @@ open class ClassPathBeanDefinitionScanner(
     private var lazyInit: Boolean = false
 
     init {
-        // 是否要应用默认的Filter？默认情况下，需要去匹配@Component的Bean
-        if (useDefaultFilters) {
-            this.registerDefaultFilters()
-        }
+        this.setEnvironment(getOrDefaultEnvironment(registry))
     }
 
     /**
-     * 注册默认的Filters
-     *
-     * @see AnnotationTypeFilter
-     * @see Component
+     * 获取或者是创建一个默认的Environment，
+     * (1)如果Registry可以获取到Environment，那么直接从Registry当中去获取到Environment对象;
+     * (2)如果获取不到，那么就创建一个默认的Environment
      */
-    protected open fun registerDefaultFilters() {
-        this.includeFilters += AnnotationTypeFilter(Component::class.java)
+    private fun getOrDefaultEnvironment(registry: BeanDefinitionRegistry): Environment {
+        return if (registry is EnvironmentCapable) registry.getEnvironment() else StandardEnvironment()
     }
 
     /**
@@ -133,28 +127,6 @@ open class ClassPathBeanDefinitionScanner(
     }
 
     /**
-     * 是否是候选的要导入的组件？使用includeFilter和excludeFilter去进行挨个匹配
-     *
-     * @param clazz 候选类
-     * @return 该类是否是候选的组件？
-     */
-    protected open fun isCandidateComponent(clazz: Class<*>?): Boolean {
-        // 如果被excludeFilter匹配，直接return false
-        this.excludeFilters.forEach {
-            if (it.matches(clazz)) {
-                return false
-            }
-        }
-        // 如果被includeFilter匹配，return true
-        this.includeFilters.forEach {
-            if (it.matches(clazz)) {
-                return true
-            }
-        }
-        return false
-    }
-
-    /**
      * 使用BeanDefinition的方法，去进行判断是否合法
      *
      * @param beanDefinition 要去进行匹配的BeanDefinition
@@ -169,33 +141,12 @@ open class ClassPathBeanDefinitionScanner(
         return true
     }
 
-    /**
-     * 获取或者是创建一个默认的Environment，
-     * (1)如果Registry可以获取到Environment，那么直接从Registry当中去获取到Environment对象;
-     * (2)如果获取不到，那么就创建一个默认的Environment
-     */
-    private fun getOrDefaultEnvironment(registry: BeanDefinitionRegistry): Environment {
-        return if (registry is EnvironmentCapable) registry.getEnvironment() else StandardEnvironment()
-    }
-
-    open fun setEnvironment(environment: Environment) {
-        this.environment = environment
-    }
-
     open fun setBeanNameGenerator(beanNameGenerator: BeanNameGenerator?) {
         this.beanNameGenerator = beanNameGenerator ?: AnnotationBeanNameGenerator.INSTANCE  // if null,use default
     }
 
     open fun setIncludeAnnotationConfig(includeAnnotationConfig: Boolean) {
         this.includeAnnotationConfig = includeAnnotationConfig
-    }
-
-    open fun addIncludeFilter(typeFilter: TypeFilter) {
-        this.includeFilters += typeFilter
-    }
-
-    open fun addExcludeFilter(typeFilter: TypeFilter) {
-        this.excludeFilters += typeFilter
     }
 
     open fun setLazyInit(lazyInit: Boolean) {

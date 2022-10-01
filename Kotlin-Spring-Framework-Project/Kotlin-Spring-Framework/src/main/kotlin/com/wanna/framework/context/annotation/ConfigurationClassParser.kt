@@ -57,7 +57,7 @@ open class ConfigurationClassParser(
         ComponentScanAnnotationParser(registry, environment, classLoader, componentScanBeanNameGenerator)
 
     // 条件计算器，计算该Bean是否应该被导入到容器当中？
-    private val conditionEvaluator = ConditionEvaluator(this.registry, this.environment)
+    private val conditionEvaluator = ConditionEvaluator(this.registry, this.environment, resourceLoader)
 
     // 维护了扫描出来的ConfigurationClass的集合
     private val configClasses = LinkedHashMap<ConfigurationClass, ConfigurationClass>()

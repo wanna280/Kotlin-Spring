@@ -17,6 +17,16 @@ object ClassUtils {
     // .class文件的后缀名
     private const val CLASS_FILE_SUFFIX = ".class"
 
+    /**
+     * 包分隔符
+     */
+    const val PACKAGE_SEPARATOR = "."
+
+    /**
+     * 路径的分隔符
+     */
+    const val PATH_SEPARATOR = "/"
+
     // Logger
     private val logger = LoggerFactory.getLogger(ClassUtils::class.java)
 
@@ -260,4 +270,12 @@ object ClassUtils {
     fun getAllInterfacesForClass(clazz: Class<*>): Array<Class<*>> {
         return getAllInterfacesForClassAsSet(clazz).toList().toTypedArray()
     }
+
+    /**
+     * 将类名转换成为资源名，将包名当中的"."去替换成为"/"
+     *
+     * @param className className
+     */
+    @JvmStatic
+    fun convertClassNameToResourcePath(className: String): String = className.replace(PACKAGE_SEPARATOR, PATH_SEPARATOR)
 }

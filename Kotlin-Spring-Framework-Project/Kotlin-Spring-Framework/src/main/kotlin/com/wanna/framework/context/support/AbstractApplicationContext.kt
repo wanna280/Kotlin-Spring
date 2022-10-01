@@ -22,6 +22,7 @@ import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.io.DefaultResourceLoader
 import com.wanna.framework.core.io.Resource
+import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.PathMatchingResourcePatternResolver
 import com.wanna.framework.core.io.support.ResourcePatternResolver
 import com.wanna.framework.core.metrics.ApplicationStartup
@@ -298,6 +299,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
         beanFactory.registerResolvableDependency(BeanFactory::class.java, beanFactory)
         beanFactory.registerResolvableDependency(ApplicationContext::class.java, this)
         beanFactory.registerResolvableDependency(ApplicationEventPublisher::class.java, this)
+        beanFactory.registerResolvableDependency(ResourceLoader::class.java, this)
 
         // 添加ApplicationContext的BeanPostProcessor，完成BeanClassLoaderAware/EnvironmentAware等Aware接口的处理
         this.addBeanPostProcessor(ApplicationContextAwareProcessor(this))

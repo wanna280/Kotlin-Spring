@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory
  * @see ConfigurationClassBeanDefinitionReader
  */
 open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor, PriorityOrdered, EnvironmentAware,
-    BeanClassLoaderAware, ApplicationStartupAware,ResourceLoaderAware {
+    BeanClassLoaderAware, ApplicationStartupAware, ResourceLoaderAware {
 
     companion object {
         // ImportRegistry的beanName
@@ -63,7 +63,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
     /**
      * ResourceLoader，提供资源的加载
      */
-    private var resourceLoader: ResourceLoader? = null
+    private var resourceLoader: ResourceLoader = DefaultResourceLoader()
 
     // componentScan的beanNameGenerator，默认使用simpleName作为生成方式
     private var componentScanBeanNameGenerator: BeanNameGenerator = AnnotationBeanNameGenerator.INSTANCE
@@ -149,7 +149,6 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         // determine (ClassLoader & Environment & ConfigurationClassParser)  to use
         val classLoader = this.classLoader ?: ClassUtils.getDefaultClassLoader()
         val environment = this.environment ?: StandardEnvironment()
-        val resourceLoader = this.resourceLoader ?: DefaultResourceLoader()
         val parser = this.parser ?: ConfigurationClassParser(
             registry,
             environment,
@@ -179,7 +178,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
 
             // determine ConfigurationClassBeanDefinitionReader to use
             val reader = this.reader ?: ConfigurationClassBeanDefinitionReader(
-                registry, importBeanBeanNameGenerator, environment, parser.getImportRegistry()
+                registry, importBeanBeanNameGenerator, environment, parser.getImportRegistry(), resourceLoader
             )
 
             // 交给reader去从本次parser解析得到的ConfigClass当中去加载BeanDefinition

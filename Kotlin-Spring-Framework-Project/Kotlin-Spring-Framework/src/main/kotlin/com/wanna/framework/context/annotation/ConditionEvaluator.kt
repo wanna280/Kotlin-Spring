@@ -8,6 +8,7 @@ import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.EnvironmentCapable
 import com.wanna.framework.core.environment.StandardEnvironment
+import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
 import com.wanna.framework.core.util.ClassUtils
 
@@ -17,10 +18,14 @@ import com.wanna.framework.core.util.ClassUtils
  * @see com.wanna.framework.context.util.ConfigurationClassParser.conditionEvaluator
  * @see com.wanna.framework.context.util.ConfigurationClassParser.processConfigurationClass
  */
-open class ConditionEvaluator(private val registry: BeanDefinitionRegistry, private val environment: Environment) {
+open class ConditionEvaluator(
+    private val registry: BeanDefinitionRegistry,
+    private val environment: Environment,
+    private val resourceLoader: ResourceLoader
+) {
 
     // ConditionContext，维护beanDefinitionRegistry以及environment等
-    private val context: ConditionContext = ConditionContextImpl(registry, environment)
+    private val context: ConditionContext = ConditionContextImpl(registry, environment, resourceLoader)
 
     /**
      * 根据注解信息去判断，是否应该跳过？
@@ -89,7 +94,9 @@ open class ConditionEvaluator(private val registry: BeanDefinitionRegistry, priv
      * 这是一个ConditionContext的具体实现，主要维护beanDefinitionRegistry等环境信息
      */
     private class ConditionContextImpl(
-        private val registry: BeanDefinitionRegistry, private val environment: Environment?
+        private val registry: BeanDefinitionRegistry,
+        private val environment: Environment?,
+        private val resourceLoader: ResourceLoader
     ) : ConditionContext {
 
         private val beanFactory: ConfigurableListableBeanFactory? = deduceBeanFactory(registry)
@@ -143,5 +150,7 @@ open class ConditionEvaluator(private val registry: BeanDefinitionRegistry, priv
             }
             return null
         }
+
+        override fun getResourceLoader() = this.resourceLoader
     }
 }
