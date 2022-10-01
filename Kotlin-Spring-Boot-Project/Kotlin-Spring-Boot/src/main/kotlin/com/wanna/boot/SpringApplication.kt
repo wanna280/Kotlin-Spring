@@ -15,6 +15,8 @@ import com.wanna.framework.core.environment.CompositePropertySource
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.SimpleCommandLinePropertySource
 import com.wanna.framework.core.environment.StandardEnvironment
+import com.wanna.framework.core.io.DefaultResourceLoader
+import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.util.AnnotationConfigUtils
@@ -80,6 +82,11 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
 
     // environment
     private var environment: ConfigurableEnvironment? = null
+
+    /**
+     * ResourceLoader，提供资源的加载
+     */
+    private var resourceLoader: ResourceLoader? = null
 
     // 这种一个BootstrapWrapper注册中心，完成对BootstrapContext去进行初始化
     private var bootstrappers: MutableList<Bootstrapper> = SpringFactoriesLoader.loadFactories(Bootstrapper::class.java)
@@ -272,7 +279,9 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         if (bannerMode == Banner.Mode.NO) {
             return null
         }
-        val springBootBannerPrinter = SpringApplicationBannerPrinter(banner)
+        // 如果指定了ResourceLoader，那么使用给定的；否则使用默认的
+        val resourceLoader = this.resourceLoader ?: DefaultResourceLoader(getClassLoader())
+        val springBootBannerPrinter = SpringApplicationBannerPrinter(resourceLoader, banner)
         if (bannerMode == Banner.Mode.CONSOLE) {
             return springBootBannerPrinter.print(environment, this.mainApplicationClass, System.out)
         }
@@ -676,6 +685,17 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
     open fun getMainApplicationClass(): Class<*>? {
         return this.mainApplicationClass
     }
+
+    /**
+     * 获取ClassLoader，如果ResourceLoader当中可以获取到的话，那么就使用；否则使用默认的
+     */
+    open fun getClassLoader(): ClassLoader = this.resourceLoader?.getClassLoader() ?: ClassUtils.getDefaultClassLoader()
+
+    open fun setResourceLoader(resourceLoader: ResourceLoader?) {
+        this.resourceLoader = resourceLoader
+    }
+
+    open fun getResourceLoader() : ResourceLoader? = this.resourceLoader
 
     open fun setLogStartupInfo(logStartupInfo: Boolean) {
         this.logStartupInfo = logStartupInfo

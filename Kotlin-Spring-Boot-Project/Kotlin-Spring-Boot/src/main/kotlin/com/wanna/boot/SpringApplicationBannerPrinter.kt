@@ -2,6 +2,7 @@ package com.wanna.boot
 
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.Environment
+import com.wanna.framework.core.io.ResourceLoader
 import org.slf4j.Logger
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -14,9 +15,13 @@ import java.io.PrintStream
  *
  * @see SpringBootBanner
  *
+ * @param resourceLoader 加载资源的ResourceLoader
  * @param fallbackBanner 当没有根据路径匹配到合适的Banner时，应该使用的fallbackBanner
  */
-open class SpringApplicationBannerPrinter(private val fallbackBanner: Banner?) {
+open class SpringApplicationBannerPrinter(
+    private val resourceLoader: ResourceLoader,
+    private val fallbackBanner: Banner?
+) {
     companion object {
 
         /**
@@ -189,11 +194,12 @@ open class SpringApplicationBannerPrinter(private val fallbackBanner: Banner?) {
      * 获取Text的Banner，尝试从文件当中去获取合适的Banner文件，具体的文件路径，从Environment当中去进行获取
      *
      * @param environment Environment
+     * @return 如果解析到了TextBanner的资源文件，那么return ResourceBanner；否则return null
      */
     private fun getTextBanner(environment: Environment): Banner? {
-        val bannerLocation = environment.getProperty(BANNER_LOCATION_PROPERTY, DEFAULT_BANNER_LOCATION)
-        val stream = ClassLoader.getSystemClassLoader().getResourceAsStream(bannerLocation)
-        stream ?: return null
-        stream.use { return ResourceBanner(bannerLocation!!) }
+        // 获取BannerLocation
+        val bannerLocation = environment.getProperty(BANNER_LOCATION_PROPERTY, DEFAULT_BANNER_LOCATION) ?: return null
+        val resource = resourceLoader.getResource(bannerLocation)
+        return if (resource.exists()) ResourceBanner(resource) else null
     }
 }

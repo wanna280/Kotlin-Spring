@@ -1,19 +1,21 @@
 package com.wanna.boot
 
 import com.wanna.framework.core.environment.Environment
+import com.wanna.framework.core.io.Resource
 import java.io.PrintStream
 
 /**
- * 资源的Banner
+ * 基于资源文件的Banner
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/9/21
+ *
+ * @param resource 需要去进行输出的资源
  */
-open class ResourceBanner(val url: String) : Banner {
+open class ResourceBanner(val resource: Resource) : Banner {
     override fun printBanner(environment: Environment, sourceClass: Class<*>?, printStream: PrintStream) {
-        val stream = ClassLoader.getSystemClassLoader().getResourceAsStream(url)
-        stream ?: return
+        val stream = resource.getInputStream()
         stream.use { printStream.println(String(stream.readAllBytes())) }
     }
 }
