@@ -13,6 +13,7 @@ include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Autoconfigure")
 include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Actuator")
 include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Actuator-Autoconfigure")
 include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Devtools")
+include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Loader")
 
 // for SpringCloud subProject
 include(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Context")
