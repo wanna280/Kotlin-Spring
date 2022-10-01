@@ -8,6 +8,11 @@ object StringUtils {
     private val EMPTY_STRING_ARRAY = emptyArray<String>()
 
     /**
+     * 文件夹的分隔符
+     */
+    const val FOLDER_SEPARATOR = "/"
+
+    /**
      * 判断一个字符串是否有文本，判断长度是否为0
      */
     @JvmStatic

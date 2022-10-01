@@ -5,6 +5,7 @@ import com.wanna.framework.beans.factory.ListableBeanFactory
 import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory
 import com.wanna.framework.context.event.ApplicationEventPublisher
 import com.wanna.framework.core.environment.EnvironmentCapable
+import com.wanna.framework.core.io.support.ResourcePatternResolver
 
 /**
  * 这是一个Spring应用的上下文，它继承了BeanFactory，并拥有了BeanFactory中的所有功能；
@@ -15,7 +16,7 @@ import com.wanna.framework.core.environment.EnvironmentCapable
  * * 3.EnvironmentCapable，标识它支持去进行环境的获取(有些地方需要用到环境，可以使用这个接口去进行获取)
  */
 interface ApplicationContext : ApplicationEventPublisher, ListableBeanFactory, EnvironmentCapable,
-    HierarchicalBeanFactory {
+    HierarchicalBeanFactory,ResourcePatternResolver {
 
     /**
      * 获取当前的ApplicationContext的Id

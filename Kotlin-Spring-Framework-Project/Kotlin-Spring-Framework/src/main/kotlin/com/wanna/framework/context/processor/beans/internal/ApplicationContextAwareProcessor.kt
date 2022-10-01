@@ -15,6 +15,7 @@ import com.wanna.framework.context.processor.beans.BeanPostProcessor
  * @see ApplicationEventPublisherAware
  * @see EmbeddedValueResolverAware
  * @see ApplicationStartupAware
+ * @see ResourceLoaderAware
  */
 open class ApplicationContextAwareProcessor(private val applicationContext: ConfigurableApplicationContext) :
     BeanPostProcessor {
@@ -48,6 +49,9 @@ open class ApplicationContextAwareProcessor(private val applicationContext: Conf
         }
         if (bean is ApplicationStartupAware) {
             bean.setApplicationStartup(this.applicationContext.getApplicationStartup())
+        }
+        if (bean is ResourceLoaderAware) {
+            bean.setResourceLoader(applicationContext)
         }
     }
 }

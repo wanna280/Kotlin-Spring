@@ -1,5 +1,6 @@
 package com.wanna.framework.core.io.support
 
+import com.wanna.framework.core.io.Resource
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
@@ -27,9 +28,40 @@ object PropertiesLoaderUtils {
     }
 
     /**
+     * 将指定的资源去读取成为Properties
+     *
+     * @param resource resource
+     */
+    @JvmStatic
+    fun loadProperties(resource: Resource): Properties {
+        val properties = Properties()
+        fillProperties(properties, resource)
+        return properties
+    }
+
+    /**
+     * 填充Properties，将给定的Resource当中的内容填充到Properties当中
+     *
+     * @param properties 待填充的Properties
+     * @param resource 资源(可以是XML文件，也可以是Properties文件)
+     */
+    @JvmStatic
+    fun fillProperties(properties: Properties, resource: Resource) {
+        resource.getInputStream().use {
+            val filename = resource.getFilename()
+            if (filename != null && filename.endsWith(XML_EXTENSION)) {
+                properties.loadFromXML(it)
+            } else {
+                properties.load(it)
+            }
+        }
+    }
+
+
+    /**
      * 使用指定指定的ClassLoader去完成Properties的属性信息的加载
      *
-     * @param classpath 类路径
+     * @param classpath 需要去进行加载属性的资源类路径
      * @param classLoader classLoader(如果为空，使用默认的classLoader)
      */
     @JvmStatic
@@ -63,7 +95,7 @@ object PropertiesLoaderUtils {
     @JvmStatic
     fun loadPropertiesFromProperties(inputStream: InputStream): Properties {
         val properties = Properties()
-        inputStream.use { properties.load(inputStream) }  // use method for close io stream automatically
+        inputStream.use { properties.load(it) }  // use method for close io stream automatically
         return properties
     }
 
@@ -75,7 +107,7 @@ object PropertiesLoaderUtils {
      */
     private fun loadPropertiesFromXml(inputStream: InputStream): Properties {
         val properties = Properties()
-        inputStream.use { properties.loadFromXML(inputStream) }  // use method for close io stream automatically
+        inputStream.use { properties.loadFromXML(it) }  // use method for close io stream automatically
         return properties
     }
 }

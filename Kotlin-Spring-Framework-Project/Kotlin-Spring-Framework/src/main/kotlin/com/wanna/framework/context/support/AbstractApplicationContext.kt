@@ -20,6 +20,10 @@ import com.wanna.framework.context.weaving.LoadTimeWeaverAwareProcessor
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.StandardEnvironment
+import com.wanna.framework.core.io.DefaultResourceLoader
+import com.wanna.framework.core.io.Resource
+import com.wanna.framework.core.io.support.PathMatchingResourcePatternResolver
+import com.wanna.framework.core.io.support.ResourcePatternResolver
 import com.wanna.framework.core.metrics.ApplicationStartup
 import org.slf4j.LoggerFactory
 import java.lang.Exception
@@ -31,14 +35,16 @@ import java.util.concurrent.atomic.AtomicBoolean
  * (1)内部集成了Environment，可以提供属性值(配置文件、系统属性、系统环境等)的来源
  * (2)内部集成了BeanFactoryPostProcessor，可以对BeanFactory去进行一些处理工作
  * (3)内部集成了ApplicationEventMulticaster，可以实现对事件(ApplicationEvent)进行发布
+ * (4)内部集成了ResourceLoader，可以提供资源的加载
  *
  * @see ApplicationEventMulticaster
  * @see ApplicationContext
  * @see ConfigurableEnvironment
  * @see StandardEnvironment
  * @see BeanFactoryPostProcessor
+ * @see DefaultResourceLoader
  */
-abstract class AbstractApplicationContext : ConfigurableApplicationContext {
+abstract class AbstractApplicationContext : ConfigurableApplicationContext, DefaultResourceLoader() {
     companion object {
 
         /**
@@ -63,6 +69,19 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
 
     // 父ApplicationContext
     private var parent: ApplicationContext? = null
+
+    /**
+     * ResourcePatternResolver，本身也是一个ResourceLoader，提供资源的解析和加载；
+     * 因为ApplicationContext本身也是一个ResourcePatternResolver，而且继承了DefaultResourceLoader，
+     * 因此就拥有了getResource方法，但是getResources方法并没有，因此我们需要组合一个ResourcePatternResolver，
+     * 用于去提供getResources
+     *
+     * @see ResourcePatternResolver
+     * @see DefaultResourceLoader
+     * @see getResources
+     * @see getResource
+     */
+    private val resourcePatternResolver: ResourcePatternResolver = this.getResourcePatternResolver()
 
     // 存放BeanFactoryPostProcessor的列表，支持对beanFactory去进行后置处理工作
     private val beanFactoryPostProcessors: MutableList<BeanFactoryPostProcessor> = ArrayList()
@@ -104,6 +123,13 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
      * @return 当前的ApplicationContext的id
      */
     override fun getId(): String? = javaClass.name + "@" + System.identityHashCode(this).toString(16)
+
+    /**
+     * 获取ResolvePatternResolver，提供资源的解析，支持子类当中去进行自定义
+     *
+     * @return ResourcePatternResolver
+     */
+    protected open fun getResourcePatternResolver(): ResourcePatternResolver = PathMatchingResourcePatternResolver(this)
 
     override fun refresh() {
         synchronized(this.startupShutdownMonitor) {
@@ -567,4 +593,12 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext {
     override fun setApplicationStartup(applicationStartup: ApplicationStartup) {
         this.applicationStartup = applicationStartup
     }
+
+    /**
+     * 基于表达式的资源解析，我们直接沿用ResourcePattenResolver给定的去进行解析
+     *
+     * @param locationPattern 资源位置的表达式
+     * @return 解析得到的资源列表
+     */
+    override fun getResources(locationPattern: String): Array<Resource> = resourcePatternResolver.getResources(locationPattern)
 }

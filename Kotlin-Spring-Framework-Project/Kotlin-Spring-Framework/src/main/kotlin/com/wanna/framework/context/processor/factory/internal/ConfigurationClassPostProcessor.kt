@@ -8,6 +8,7 @@ import com.wanna.framework.beans.factory.config.SingletonBeanRegistry
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
 import com.wanna.framework.context.ApplicationStartupAware
+import com.wanna.framework.context.ResourceLoaderAware
 import com.wanna.framework.context.annotation.*
 import com.wanna.framework.context.annotation.ConfigurationClassUtils.getOrder
 import com.wanna.framework.context.aware.BeanClassLoaderAware
@@ -17,6 +18,8 @@ import com.wanna.framework.context.processor.factory.BeanDefinitionRegistryPostP
 import com.wanna.framework.core.PriorityOrdered
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.StandardEnvironment
+import com.wanna.framework.core.io.DefaultResourceLoader
+import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.core.util.AnnotationConfigUtils
 import com.wanna.framework.core.util.ClassUtils
@@ -30,7 +33,7 @@ import org.slf4j.LoggerFactory
  * @see ConfigurationClassBeanDefinitionReader
  */
 open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor, PriorityOrdered, EnvironmentAware,
-    BeanClassLoaderAware, ApplicationStartupAware {
+    BeanClassLoaderAware, ApplicationStartupAware,ResourceLoaderAware {
 
     companion object {
         // ImportRegistry的beanName
@@ -57,6 +60,11 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
     @Nullable
     private var reader: ConfigurationClassBeanDefinitionReader? = null
 
+    /**
+     * ResourceLoader，提供资源的加载
+     */
+    private var resourceLoader: ResourceLoader? = null
+
     // componentScan的beanNameGenerator，默认使用simpleName作为生成方式
     private var componentScanBeanNameGenerator: BeanNameGenerator = AnnotationBeanNameGenerator.INSTANCE
 
@@ -80,6 +88,10 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
 
     override fun setApplicationStartup(applicationStartup: ApplicationStartup) {
         this.applicationStartup = applicationStartup
+    }
+
+    override fun setResourceLoader(resourceLoader: ResourceLoader) {
+        this.resourceLoader = resourceLoader
     }
 
     override fun postProcessBeanDefinitionRegistry(registry: BeanDefinitionRegistry) {
@@ -137,8 +149,14 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         // determine (ClassLoader & Environment & ConfigurationClassParser)  to use
         val classLoader = this.classLoader ?: ClassUtils.getDefaultClassLoader()
         val environment = this.environment ?: StandardEnvironment()
-        val parser =
-            this.parser ?: ConfigurationClassParser(registry, environment, classLoader, componentScanBeanNameGenerator)
+        val resourceLoader = this.resourceLoader ?: DefaultResourceLoader()
+        val parser = this.parser ?: ConfigurationClassParser(
+            registry,
+            environment,
+            classLoader,
+            componentScanBeanNameGenerator,
+            resourceLoader
+        )
 
         // 候选的，要交给parser去进行配置类解析的BeanDefinition列表(放在循环外，供每次循环所共享)
         val candidates = LinkedHashSet(configCandidates)
