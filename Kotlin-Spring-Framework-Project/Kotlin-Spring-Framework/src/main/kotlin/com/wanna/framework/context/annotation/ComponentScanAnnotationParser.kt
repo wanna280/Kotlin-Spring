@@ -6,6 +6,7 @@ import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.type.filter.AnnotationTypeFilter
 import com.wanna.framework.core.type.filter.AssignableTypeFilter
 import com.wanna.framework.core.type.filter.TypeFilter
+import com.wanna.framework.core.util.ClassUtils
 
 /**
  * 这是完成ComponentScan注解的扫描的解析器，负责将@ComponentScan注解当中配置的属性去进行解析，并完成ComponentScan的组件的扫描
@@ -43,7 +44,7 @@ open class ComponentScanAnnotationParser(
 
         // 如果没有获取到配置的packages列表，那么使用配置类所在的packageName作为要扫描的包
         if (packages.isEmpty()) {
-            packages += className.substring(0, className.lastIndexOf("."))
+            packages += ClassUtils.getPackageName(className)
         }
 
         // 使用类路径下的BeanDefinitionScanner去进行扫描
