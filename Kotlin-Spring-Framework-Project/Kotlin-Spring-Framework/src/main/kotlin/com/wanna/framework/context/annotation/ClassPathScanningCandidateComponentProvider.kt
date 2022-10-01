@@ -1,6 +1,9 @@
 package com.wanna.framework.context.annotation
 
+import com.wanna.framework.beans.factory.annotation.Lookup
+import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
+import com.wanna.framework.beans.factory.support.definition.ScannedGenericBeanDefinition
 import com.wanna.framework.context.ResourceLoaderAware
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.core.environment.Environment
@@ -12,6 +15,9 @@ import com.wanna.framework.core.io.support.ResourcePatternUtils
 import com.wanna.framework.core.type.filter.AnnotationTypeFilter
 import com.wanna.framework.core.type.filter.TypeFilter
 import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.lang.Nullable
+import org.objectweb.asm.ClassReader
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.IOException
 
@@ -27,11 +33,11 @@ import java.io.IOException
  */
 open class ClassPathScanningCandidateComponentProvider(
     useDefaultFilters: Boolean = true,  // 是否需要应用默认的Filter？
-    resourceLoader: ResourceLoader? = null
+    @Nullable resourceLoader: ResourceLoader? = null
 ) : ResourceLoaderAware, EnvironmentCapable {
     companion object {
         /**
-         * 默认的资源的表达式的路径
+         * 默认的资源的表达式的路径，表示通配
          */
         private const val DEFAULT_RESOURCE_PATTERN = "**/*.class"
     }
@@ -39,7 +45,7 @@ open class ClassPathScanningCandidateComponentProvider(
     /**
      * Logger
      */
-    protected val logger = LoggerFactory.getLogger(this::class.java)
+    protected val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     // includeFilters
     private var includeFilters = ArrayList<TypeFilter>()
@@ -48,12 +54,12 @@ open class ClassPathScanningCandidateComponentProvider(
     private var excludeFilters = ArrayList<TypeFilter>()
 
     /**
-     * 解析资源的表达式
+     * 解析资源的表达式，默认为通配
      */
     private var resourcePattern: String = DEFAULT_RESOURCE_PATTERN
 
     /**
-     * Environment
+     * Environment，Spring容器去进行自动注入
      */
     private var environment: Environment? = null
 
@@ -76,7 +82,6 @@ open class ClassPathScanningCandidateComponentProvider(
      * @return 该包下扫描得到的所有的候选BeanDefinition
      */
     open fun scanCandidateComponents(basePackage: String): Set<BeanDefinition> {
-        // TODO
         val candidates = LinkedHashSet<BeanDefinition>()
         try {
             val packageSearchPath = CLASSPATH_ALL_URL_PREFIX + resolveBasePackage(basePackage) + '/' + resourcePattern
@@ -87,9 +92,34 @@ open class ClassPathScanningCandidateComponentProvider(
                 }
                 if (it.isReadable()) {
                     try {
-                        val classLoader = resourcePatternResolver.getClassLoader()
-                    } catch (ex: Exception) {
+                        val className =
+                            ClassUtils.convertResourcePathToClassName(ClassReader(it.getInputStream()).className)
+                        val classLoader = resourcePatternResolver.getClassLoader() ?: ClassUtils.getDefaultClassLoader()
+                        val clazz = classLoader.loadClass(className)
 
+                        // 对clazz利用IncludeFilter/ExcludeFilter去进行检查，是否符合给定条件
+                        if (isCandidateComponent(clazz)) {
+                            val beanDefinition = ScannedGenericBeanDefinition(clazz)
+                            beanDefinition.setSource(it)
+
+                            // 对BeanDefinition去进行检查，排除掉抽象类
+                            if (isCandidateComponent(beanDefinition)) {
+                                if (logger.isDebugEnabled) {
+                                    logger.debug("候选资源[$it]将会成为一个候选的BeanDefinition")
+                                }
+                                candidates += beanDefinition
+                            } else {
+                                if (logger.isDebugEnabled) {
+                                    logger.debug("非具体的类(抽象类)[$it]被排除掉")
+                                }
+                            }
+                        } else {
+                            if (logger.isTraceEnabled) {
+                                logger.trace("忽略没被Filter匹配到的类[$it]")
+                            }
+                        }
+                    } catch (ex: Throwable) {
+                        throw IllegalStateException("无法去读给定位置的资源 [$it]", ex)
                     }
                 } else {
                     if (logger.isTraceEnabled) {
@@ -98,9 +128,20 @@ open class ClassPathScanningCandidateComponentProvider(
                 }
             }
         } catch (ex: IOException) {
-
+            throw IllegalStateException("读取资源文件失败", ex)
         }
         return candidates
+    }
+
+    /**
+     * 排除掉所有的抽象的类的BeanDefinition
+     *
+     * @param definition BeanDefinition
+     */
+    protected open fun isCandidateComponent(definition: AnnotatedBeanDefinition): Boolean {
+        val metadata = definition.getMetadata()
+        return !definition.isAbstract() ||
+                definition.isAbstract() && metadata.hasAnnotatedMethods(Lookup::class.java.name)
     }
 
 

@@ -275,7 +275,17 @@ object ClassUtils {
      * 将类名转换成为资源名，将包名当中的"."去替换成为"/"
      *
      * @param className className
+     * @return 资源路径
      */
     @JvmStatic
     fun convertClassNameToResourcePath(className: String): String = className.replace(PACKAGE_SEPARATOR, PATH_SEPARATOR)
+
+    /**
+     * 将资源名转换成为类名，将资源路径当中的"/"去转换成为"."
+     *
+     * @param resourcePath 资源路径
+     * @return className
+     */
+    fun convertResourcePathToClassName(resourcePath: String): String =
+        resourcePath.replace(PATH_SEPARATOR, PACKAGE_SEPARATOR)
 }
