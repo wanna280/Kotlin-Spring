@@ -2,6 +2,7 @@ package com.wanna.mybatis.spring
 
 import com.wanna.framework.beans.factory.FactoryBean
 import com.wanna.framework.beans.factory.InitializingBean
+import com.wanna.framework.core.io.support.PathMatchingResourcePatternResolver
 import com.wanna.mybatis.spring.transaction.SpringManagedTransactionFactory
 import org.apache.ibatis.builder.xml.XMLConfigBuilder
 import org.apache.ibatis.builder.xml.XMLMapperBuilder
@@ -27,6 +28,8 @@ import javax.sql.DataSource
  * @see SqlSessionFactory
  */
 open class SqlSessionFactoryBean : FactoryBean<SqlSessionFactory>, InitializingBean {
+
+    private val patternResolver = PathMatchingResourcePatternResolver()
 
     // 事务工厂(如果不设置，默认将会采用SpringManagedTransactionFactory)
     var transactionFactory: TransactionFactory? = null
@@ -132,10 +135,7 @@ open class SqlSessionFactoryBean : FactoryBean<SqlSessionFactory>, InitializingB
      */
     private fun getInputStream(location: String): InputStream {
         try {
-            if (location.startsWith("classpath:")) {
-                return SqlSessionFactoryBean::class.java.classLoader.getResourceAsStream(location.substring("classpath:".length))!!
-            }
-            return FileInputStream(location)
+            return patternResolver.getResource(location).getInputStream()
         } catch (ex: Exception) {
             when (ex) {
                 is IOException -> throw FileNotFoundException("给定的文件路径[$location]没有找到")
