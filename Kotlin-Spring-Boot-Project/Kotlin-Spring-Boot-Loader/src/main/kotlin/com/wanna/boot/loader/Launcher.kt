@@ -103,15 +103,15 @@ abstract class Launcher {
     }
 
     /**
-     * 创建Archive归档对象
+     * 创建当前应用所在的Archive归档对象
      *
-     * @return 创建好的Archive对象
+     * @return 创建好的Archive归档文件对象
      */
     protected open fun createArchive(): Archive {
         // 获取当前类的ProtectionDomain
         val protectionDomain = javaClass.protectionDomain
 
-        // 获取代码的位置，比如"/xxx/xxx/main/"
+        // 获取代码的位置，比如"/xxx/xxx/main/"、"/xxx/xxx/xxx.jar"这样的路径
         val codeSource = protectionDomain.codeSource
 
         // 将代码的位置去转换成为URI
