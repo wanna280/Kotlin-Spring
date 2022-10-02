@@ -146,7 +146,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     private var primarySources: MutableSet<Class<*>> = LinkedHashSet(_primarySources.toList())
 
     // sources
-    private var sources = LinkedHashSet<Any>()
+    private var sources: MutableCollection<Any> = LinkedHashSet<Any>()
 
     // Application的监听器列表
     private var listeners: MutableList<ApplicationListener<*>> =
@@ -867,46 +867,102 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 获取ClassLoader，如果ResourceLoader当中可以获取到的话，那么就使用；否则使用默认的
+     * 获取ClassLoader
+     *
+     * @return 如果ResourceLoader当中可以获取到的话，那么就使用；否则使用默认的
      */
     open fun getClassLoader(): ClassLoader = this.resourceLoader?.getClassLoader() ?: ClassUtils.getDefaultClassLoader()
 
+    /**
+     * 设置SpringApplication的ResourceLoader
+     *
+     * @param resourceLoader 你想要使用的ResourceLoader
+     */
     open fun setResourceLoader(resourceLoader: ResourceLoader?) {
         this.resourceLoader = resourceLoader
     }
 
+    /**
+     * 获取SpringApplication的ResourceLoader
+     *
+     * @return ResourceLoader
+     */
     open fun getResourceLoader(): ResourceLoader? = this.resourceLoader
 
     open fun setLogStartupInfo(logStartupInfo: Boolean) {
         this.logStartupInfo = logStartupInfo
     }
 
+    /**
+     * 设置SpringApplication的mainClass，不设置的话，可以自动从StackTrace当中去进行推断
+     *
+     * @param mainApplicationClass 主启动类
+     */
     open fun setMainApplicationClass(mainApplicationClass: Class<*>?) {
         this.mainApplicationClass = mainApplicationClass
     }
 
+    /**
+     * 自定义SpringApplication的Environment，不自定义的话，支持去进行自动推断
+     *
+     * @param environment Environment
+     */
     open fun setEnvironment(environment: ConfigurableEnvironment) {
         this.environment = environment
     }
 
+    /**
+     * 添加一个Source
+     *
+     * @param sources sources
+     */
     open fun addSources(vararg sources: Any) {
         sources.forEach(this.sources::add)
     }
 
+    /**
+     * 设置Source
+     *
+     * @param sources sources
+     */
+    open fun setSources(sources: Collection<Any>) {
+        this.sources = LinkedHashSet(sources)
+    }
+
+    /**
+     * 添加一个primarySource，它将会作为Spring容器的根启动类
+     *
+     * @param clazz primarySource
+     */
     open fun addPrimarySource(clazz: Class<*>) {
         this.primarySources.add(clazz)
     }
 
+    /**
+     * 获取所有的Source列表，包含primarySources和普通的source
+     *
+     * @return primarySource & source
+     */
     open fun getAllSources(): List<Any> {
         val sources: MutableList<Any> = ArrayList(this.primarySources)
         sources.addAll(this.sources)
         return sources
     }
 
+    /**
+     * 设置是否允许BeanDefinition的覆盖？
+     *
+     * @param allowBeanDefinitionOverriding 如果为true，允许覆盖；否则不允许
+     */
     open fun setAllowBeanDefinitionOverriding(allowBeanDefinitionOverriding: Boolean) {
         this.allowBeanDefinitionOverriding = allowBeanDefinitionOverriding
     }
 
+    /**
+     * 是否允许BeanDefinition的覆盖？
+     *
+     * @return 如果允许覆盖return true；否则return false
+     */
     open fun isAllowBeanDefinitionOverriding() = this.allowBeanDefinitionOverriding
 
     /**
