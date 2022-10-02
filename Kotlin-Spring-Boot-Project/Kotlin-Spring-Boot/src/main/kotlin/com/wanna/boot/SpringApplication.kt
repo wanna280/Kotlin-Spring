@@ -1,11 +1,9 @@
 package com.wanna.boot
 
-import com.wanna.boot.web.mvc.context.AnnotationConfigMvcWebServerApplicationContext
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
-import com.wanna.framework.context.annotation.AnnotationConfigApplicationContext
 import com.wanna.framework.context.annotation.BeanNameGenerator
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.context.support.AbstractApplicationContext
@@ -20,17 +18,33 @@ import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.util.AnnotationConfigUtils
+import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
-import com.wanna.framework.util.StringUtils.collectionToCommaDelimitedString
 import com.wanna.framework.util.StopWatch
+import com.wanna.framework.util.StringUtils.collectionToCommaDelimitedString
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
  * 这是一个SpringApplication的启动类，交由它去进行引导整个SpringApplication的启动
+ *
+ * @param _primarySources 启动类列表
  */
 open class SpringApplication(vararg _primarySources: Class<*>) {
     companion object {
+
+        /**
+         * 用于创建MVC的ApplicationContext的类名
+         */
+        const val DEFAULT_MVC_WEB_CONTEXT_CLASS =
+            "com.wanna.boot.web.mvc.context.AnnotationConfigMvcWebServerApplicationContext"
+
+        /**
+         * 用于创建默认的ApplicationContext的Class
+         */
+        const val DEFAULT_CONTEXT_CLASS =
+            "com.wanna.framework.context.annotation.AnnotationConfigApplicationContext"
+
         /**
          * 当中Runtime(JVM)关闭(Shutdown)时的回调钩子方法
          *
@@ -74,11 +88,18 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
     private var listeners: MutableList<ApplicationListener<*>> =
         SpringFactoriesLoader.loadFactories(ApplicationListener::class.java)
 
-    // SpringApplicationType
+    // SpringApplicationType，自动去进行推断
     private var applicationType = ApplicationType.deduceFromClassPath()
 
     // beanNameGenerator
     private var beanNameGenerator: BeanNameGenerator? = null
+
+    /**
+     * 用来创建ApplicationContext的类，如果不指定的话，将会根据ApplicationType去进行自动推断
+     *
+     * @see applicationType
+     */
+    private var applicationContextClass: Class<out ConfigurableApplicationContext>? = null
 
     // environment
     private var environment: ConfigurableEnvironment? = null
@@ -448,13 +469,25 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
 
     /**
      * 根据ApplicationType，去创建对应类型的Spring应用的ApplicationContext
+     *
+     * @return 创建好的ApplicationContext对象
      */
     protected open fun createApplicationContext(): ConfigurableApplicationContext {
-        return when (this.applicationType) {
-            ApplicationType.NONE -> AnnotationConfigApplicationContext()
-            ApplicationType.SERVLET -> AnnotationConfigApplicationContext()
-            ApplicationType.MVC -> AnnotationConfigMvcWebServerApplicationContext()
+        // 如果指定了ApplicationContextClass，那么使用给定的ApplicationContextClass去创建对象
+        var applicationContextClass = this.applicationContextClass
+        // 如果没有指定ApplicationContextClass，那么将会根据ApplicationType去进行推断
+        if (applicationContextClass == null) {
+            try {
+                applicationContextClass = when (this.applicationType) {
+                    ApplicationType.NONE -> ClassUtils.forName(DEFAULT_CONTEXT_CLASS)
+                    ApplicationType.SERVLET -> ClassUtils.forName(DEFAULT_CONTEXT_CLASS)
+                    ApplicationType.MVC -> ClassUtils.forName(DEFAULT_MVC_WEB_CONTEXT_CLASS)
+                }
+            } catch (ex: ClassNotFoundException) {
+                throw IllegalStateException("无法根据给定的ApplicationType去推断出来合适的ApplicationContext的类名，请先指定ApplicationContextClass")
+            }
         }
+        return BeanUtils.instantiateClass(applicationContextClass)
     }
 
     /**
@@ -695,7 +728,7 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         this.resourceLoader = resourceLoader
     }
 
-    open fun getResourceLoader() : ResourceLoader? = this.resourceLoader
+    open fun getResourceLoader(): ResourceLoader? = this.resourceLoader
 
     open fun setLogStartupInfo(logStartupInfo: Boolean) {
         this.logStartupInfo = logStartupInfo
@@ -728,4 +761,20 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
     }
 
     open fun isAllowBeanDefinitionOverriding() = this.allowBeanDefinitionOverriding
+
+    /**
+     * 设置用于创建ApplicationContext的ApplicationContextClass
+     *
+     * @param applicationContextClass 你要使用的用来创建ApplicationContext的类
+     */
+    open fun setApplicationContextClass(applicationContextClass: Class<out ConfigurableApplicationContext>?) {
+        this.applicationContextClass = applicationContextClass
+    }
+
+    /**
+     * 获取用来创建ApplicationContext的类
+     *
+     * @return 用来创建ApplicationContext的类(没有设置的话，为null)
+     */
+    open fun getApplicationContextClass(): Class<out ConfigurableApplicationContext>? = this.applicationContextClass
 }
