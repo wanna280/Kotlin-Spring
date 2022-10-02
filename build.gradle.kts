@@ -25,7 +25,8 @@ allprojects {
 
     dependencies {
         implementation("org.springframework:spring-core:$springCoreVersion") {
-            exclude(group = "org.springframework", module = "spring-jcl")  // no need
+            // 不需要jcl依赖，但是因为我们用到了Spring的一些工具类，因此没有这个依赖的话，会出现链接错误
+//            exclude(group = "org.springframework", module = "spring-jcl")
         }
 
         implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")

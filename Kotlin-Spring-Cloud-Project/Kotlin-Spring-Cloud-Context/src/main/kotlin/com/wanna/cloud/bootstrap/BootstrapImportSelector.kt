@@ -5,7 +5,7 @@ import com.wanna.framework.context.aware.EnvironmentAware
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.core.type.AnnotationMetadata
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 
 /**
  * 这是一个Bootstrap的ImportSelector，负责给Spring的Bootstrap容器当中导入组件

@@ -2,7 +2,7 @@ package com.wanna.framework.transaction.interceptor
 
 import com.wanna.framework.aop.ClassFilter
 import com.wanna.framework.aop.support.StaticMethodMatcherPointcut
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.transaction.TransactionManager
 import java.lang.reflect.Method
 

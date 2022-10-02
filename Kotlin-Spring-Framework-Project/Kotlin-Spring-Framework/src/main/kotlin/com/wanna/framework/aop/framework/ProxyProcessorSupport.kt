@@ -2,7 +2,7 @@ package com.wanna.framework.aop.framework
 
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.core.Ordered
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 
 /**
  * 这是一个为ProxyProcessor提供支持的组件

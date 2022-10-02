@@ -18,8 +18,8 @@ import com.wanna.framework.context.processor.beans.SmartInstantiationAwareBeanPo
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.PriorityOrdered
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.*
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap

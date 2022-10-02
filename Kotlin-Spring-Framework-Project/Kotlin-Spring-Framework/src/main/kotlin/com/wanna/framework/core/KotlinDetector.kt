@@ -1,6 +1,6 @@
 package com.wanna.framework.core
 
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import java.lang.reflect.Method
 
 /**

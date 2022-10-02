@@ -1,4 +1,4 @@
-package com.wanna.framework.core.util
+package com.wanna.framework.util
 
 import com.wanna.framework.beans.factory.BeanFactory.Companion.FACTORY_BEAN_PREFIX
 import com.wanna.framework.beans.factory.HierarchicalBeanFactory

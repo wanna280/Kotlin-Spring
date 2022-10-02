@@ -1,4 +1,4 @@
-package com.wanna.framework.core.util
+package com.wanna.framework.util
 
 /**
  * 这是一个String的工具类
@@ -6,6 +6,11 @@ package com.wanna.framework.core.util
 object StringUtils {
     // 空的String数组
     private val EMPTY_STRING_ARRAY = emptyArray<String>()
+
+    /**
+     * 文件夹的分隔符
+     */
+    const val FOLDER_SEPARATOR = "/"
 
     /**
      * 判断一个字符串是否有文本，判断长度是否为0

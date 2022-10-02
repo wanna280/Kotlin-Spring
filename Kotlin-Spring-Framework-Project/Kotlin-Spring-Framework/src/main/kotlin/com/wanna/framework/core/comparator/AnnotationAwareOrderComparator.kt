@@ -3,7 +3,7 @@ package com.wanna.framework.core.comparator
 import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.core.Order
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 
 
 /**

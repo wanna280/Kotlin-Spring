@@ -6,6 +6,8 @@ import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
+import com.wanna.framework.core.io.Resource
+import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -23,6 +25,21 @@ abstract class GenericApplicationContext(private val beanFactory: DefaultListabl
 
     // 容器是否已经刷新过？容器不允许被重复刷新
     private val refreshed = AtomicBoolean(false)
+
+    /**
+     * 是否自定义过了ClassLoader？
+     */
+    private var customClassLoader = false
+
+    /**
+     * ResourceLoader，支持去进行自定义ResourceLoader；
+     * AbstractApplicationContext当中，本身就已经支持了ResourceLoader；
+     * 这里支持你去进行自定义，如果你自定义了，那么将会使用你给定的作为ResourceLoader；
+     * 如果你没有去进行自定义，那么将会使用AbstractApplicationContext作为ResourceLoader
+     * @see AbstractApplicationContext
+     * @see ResourceLoader
+     */
+    private var resourceLoader: ResourceLoader? = null
 
     override fun refreshBeanFactory() {
         if (!refreshed.compareAndSet(false, true)) {
@@ -80,5 +97,38 @@ abstract class GenericApplicationContext(private val beanFactory: DefaultListabl
      */
     override fun closeBeanFactory() {
 
+    }
+
+    /**
+     * 设置ResourceLoader
+     *
+     * @param resourceLoader ResourceLoader
+     */
+    open fun setResourceLoader(resourceLoader: ResourceLoader) {
+        this.resourceLoader = resourceLoader
+    }
+
+    /**
+     * 我们需要用户是否有自定义过ClassLoader，因此重写这个方法
+     */
+    override fun setClassLoader(classLoader: ClassLoader?) {
+        super.setClassLoader(classLoader)
+        this.customClassLoader = true
+    }
+
+    override fun getResource(location: String): Resource {
+        if (this.resourceLoader != null) {
+            return this.resourceLoader?.getResource(location) ?: throw IllegalStateException("ResourceLoader不能为空")
+        }
+        return super.getResource(location)
+    }
+
+    override fun getClassLoader(): ClassLoader? {
+        // 只有在没有自定义ClassLoader的情况下，才使用ResourceLoader的ClassLoader
+        // 在自定义了的情况下，应该invoke super
+        if (this.resourceLoader != null && !customClassLoader) {
+            return this.resourceLoader?.getClassLoader() ?: throw IllegalStateException("ResourceLoader不能为空")
+        }
+        return super.getClassLoader()
     }
 }

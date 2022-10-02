@@ -4,7 +4,7 @@ import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.convert.converter.GenericConverter
 import com.wanna.framework.core.convert.converter.GenericConverter.*
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 
 /**
  * 将String转为Array的Converter，支持对将String类型的转换类型转换为对应的元素类型

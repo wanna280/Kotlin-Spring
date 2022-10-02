@@ -10,7 +10,7 @@ import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.annotation.AnnotationConfigApplicationContext
 import com.wanna.framework.context.annotation.ComponentScan
 import com.wanna.framework.beans.factory.annotation.Value
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.test.test.ITF
 import com.wanna.test.test.User
 import java.util.*

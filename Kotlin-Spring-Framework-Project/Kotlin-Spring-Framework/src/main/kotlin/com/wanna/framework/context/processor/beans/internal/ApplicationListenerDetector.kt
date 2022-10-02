@@ -4,7 +4,7 @@ import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.support.AbstractApplicationContext
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.context.processor.beans.MergedBeanDefinitionPostProcessor
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import java.util.Objects
 import java.util.concurrent.ConcurrentHashMap
 

@@ -6,9 +6,11 @@ dependencies {
     implementation(project(":Kotlin-Logger:logger-slf4j-impl"))
     implementation(project(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Context"))
     implementation(project(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Common"))
-
-    testImplementation("io.netty:netty-codec-http:$nettyVersion")
     implementation("com.alibaba.nacos:nacos-client:$nacosClientVersion")
+
+    // 添加这些依赖，在test时才能正常启动
+    testImplementation("io.netty:netty-codec-http:$nettyVersion")
+    testImplementation(project(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Ribbon"))
 }
 
 tasks.getByName<Test>("test") {

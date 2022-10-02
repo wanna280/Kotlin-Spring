@@ -5,7 +5,7 @@ import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.convert.converter.Converter
 import com.wanna.framework.core.convert.converter.GenericConverter
 import com.wanna.framework.core.convert.converter.GenericConverter.ConvertiblePair
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.CopyOnWriteArraySet

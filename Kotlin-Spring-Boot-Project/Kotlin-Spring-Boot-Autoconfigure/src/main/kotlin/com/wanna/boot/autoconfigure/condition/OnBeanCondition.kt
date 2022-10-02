@@ -10,7 +10,7 @@ import com.wanna.framework.core.Order
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
 import com.wanna.framework.core.type.MethodMetadata
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 
 /**
  * 这是用于匹配Bean的SpringBootCondition，主要处理@ConditionOnBean/@ConditionOnMissingBean/@ConditionOnSingleCandidate等注解

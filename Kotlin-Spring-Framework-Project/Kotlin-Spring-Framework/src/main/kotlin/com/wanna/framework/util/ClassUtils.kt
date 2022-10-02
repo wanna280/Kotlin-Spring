@@ -1,4 +1,4 @@
-package com.wanna.framework.core.util
+package com.wanna.framework.util
 
 import org.slf4j.LoggerFactory
 import java.lang.IllegalArgumentException
@@ -16,6 +16,16 @@ object ClassUtils {
 
     // .class文件的后缀名
     private const val CLASS_FILE_SUFFIX = ".class"
+
+    /**
+     * 包分隔符
+     */
+    const val PACKAGE_SEPARATOR = "."
+
+    /**
+     * 路径的分隔符
+     */
+    const val PATH_SEPARATOR = "/"
 
     // Logger
     private val logger = LoggerFactory.getLogger(ClassUtils::class.java)
@@ -260,4 +270,22 @@ object ClassUtils {
     fun getAllInterfacesForClass(clazz: Class<*>): Array<Class<*>> {
         return getAllInterfacesForClassAsSet(clazz).toList().toTypedArray()
     }
+
+    /**
+     * 将类名转换成为资源名，将包名当中的"."去替换成为"/"
+     *
+     * @param className className
+     * @return 资源路径
+     */
+    @JvmStatic
+    fun convertClassNameToResourcePath(className: String): String = className.replace(PACKAGE_SEPARATOR, PATH_SEPARATOR)
+
+    /**
+     * 将资源名转换成为类名，将资源路径当中的"/"去转换成为"."
+     *
+     * @param resourcePath 资源路径
+     * @return className
+     */
+    fun convertResourcePathToClassName(resourcePath: String): String =
+        resourcePath.replace(PATH_SEPARATOR, PACKAGE_SEPARATOR)
 }

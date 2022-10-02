@@ -9,8 +9,8 @@ import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.task.SimpleAsyncTaskExecutor
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.bind.annotation.InitBinder
 import com.wanna.framework.web.bind.annotation.ModelAttribute

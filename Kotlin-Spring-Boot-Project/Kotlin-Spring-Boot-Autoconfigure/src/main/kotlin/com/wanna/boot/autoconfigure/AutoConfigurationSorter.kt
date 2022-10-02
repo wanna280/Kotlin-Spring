@@ -1,6 +1,6 @@
 package com.wanna.boot.autoconfigure
 
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 
 /**
  * 完成AutoConfiguration自动配置类的排序，主要处理AutoConfigureAfter/AutoConfigureBefore等注解；

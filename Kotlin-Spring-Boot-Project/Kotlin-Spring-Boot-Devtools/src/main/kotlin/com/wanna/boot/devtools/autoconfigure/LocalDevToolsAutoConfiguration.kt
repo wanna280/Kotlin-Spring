@@ -15,7 +15,7 @@ import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.event.ApplicationListener
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 import java.io.File
 
 /**

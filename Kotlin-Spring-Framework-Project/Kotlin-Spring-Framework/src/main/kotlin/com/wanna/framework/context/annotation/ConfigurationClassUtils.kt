@@ -12,7 +12,7 @@ import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.core.Order
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.type.AnnotationMetadata
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.lang.Nullable
 
 /**

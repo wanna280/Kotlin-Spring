@@ -1,6 +1,6 @@
 package com.wanna.spring.shell
 
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 
 open class ParsedLineInput(private val str: String) : Input {
 

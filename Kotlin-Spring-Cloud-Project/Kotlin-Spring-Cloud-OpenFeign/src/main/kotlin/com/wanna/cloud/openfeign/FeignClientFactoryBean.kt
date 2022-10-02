@@ -7,7 +7,7 @@ import com.wanna.framework.beans.factory.FactoryBean
 import com.wanna.framework.beans.factory.InitializingBean
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 import feign.Client
 import feign.Contract
 import feign.Feign

@@ -5,7 +5,7 @@ import com.wanna.boot.actuate.endpoint.invoke.MissingParametersException
 import com.wanna.boot.actuate.endpoint.invoke.OperationInvoker
 import com.wanna.boot.actuate.endpoint.invoke.OperationParameter
 import com.wanna.framework.core.convert.support.DefaultConversionService
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.ReflectionUtils
 import kotlin.jvm.Throws
 
 /**

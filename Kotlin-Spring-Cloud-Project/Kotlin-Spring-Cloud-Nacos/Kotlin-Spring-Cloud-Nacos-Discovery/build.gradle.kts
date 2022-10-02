@@ -12,5 +12,6 @@ dependencies {
 
     // for Test
     testImplementation(project(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Web"))
+    testImplementation(project(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Ribbon"))
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
 }

@@ -4,7 +4,7 @@ import com.wanna.boot.context.event.ApplicationEnvironmentPreparedEvent
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.core.environment.CommandLinePropertySource
 import com.wanna.framework.core.environment.MapPropertySource
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 import java.net.URI
 import java.net.URISyntaxException
 

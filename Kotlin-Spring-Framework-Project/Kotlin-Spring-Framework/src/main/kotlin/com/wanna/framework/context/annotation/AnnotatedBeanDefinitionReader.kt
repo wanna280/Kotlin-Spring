@@ -5,7 +5,7 @@ import com.wanna.framework.beans.factory.support.definition.AnnotatedGenericBean
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.EnvironmentCapable
 import com.wanna.framework.core.environment.StandardEnvironment
-import com.wanna.framework.core.util.AnnotationConfigUtils
+import com.wanna.framework.util.AnnotationConfigUtils
 
 /**
  * 这是一个注解的BeanDefinitionReader，负责给定clazz，将其封装一个AnnotatedGenericBeanDefinition并注册到容器当中

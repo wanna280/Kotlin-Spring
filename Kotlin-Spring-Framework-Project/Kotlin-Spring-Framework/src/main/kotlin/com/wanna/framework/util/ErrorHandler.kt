@@ -1,4 +1,4 @@
-package com.wanna.framework.core.util
+package com.wanna.framework.util
 
 /**
  * 这是一个处理异常的Handler

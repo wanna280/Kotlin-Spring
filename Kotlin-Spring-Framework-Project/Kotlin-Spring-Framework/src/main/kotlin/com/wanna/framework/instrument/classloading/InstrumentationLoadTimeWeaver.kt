@@ -1,6 +1,6 @@
 package com.wanna.framework.instrument.classloading
 
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.instrument.InstrumentationSavingAgent
 import java.lang.instrument.ClassFileTransformer
 import java.lang.instrument.Instrumentation

@@ -1,8 +1,8 @@
 package com.wanna.framework.aop.support
 
 import com.wanna.framework.aop.*
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 

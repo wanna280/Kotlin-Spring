@@ -14,8 +14,8 @@ import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.StandardAnnotationMetadata
 import com.wanna.framework.core.type.filter.AnnotationTypeFilter
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.StringUtils
 
 /**
  * 用来处理@EnableFeignClients以及@FeignClient的ImportBeanDefinitionRegistrar；

@@ -7,12 +7,13 @@ import com.wanna.framework.beans.factory.support.definition.*
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase.REGISTER_BEAN
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.environment.Environment
+import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.core.type.StandardMethodMetadata
-import com.wanna.framework.core.util.AnnotationConfigUtils
-import com.wanna.framework.core.util.BeanUtils
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.AnnotationConfigUtils
+import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.util.StringUtils
 import org.slf4j.LoggerFactory
 
 /**
@@ -26,14 +27,15 @@ open class ConfigurationClassBeanDefinitionReader(
     private val registry: BeanDefinitionRegistry,
     private val importBeanNameGenerator: BeanNameGenerator,
     private val environment: Environment,
-    private val importRegistry: ImportRegistry
+    private val importRegistry: ImportRegistry,
+    private val resourceLoader: ResourceLoader
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(ConfigurationClassBeanDefinitionReader::class.java)
     }
 
     // 这是一个条件计算器，去计算一个Bean是否应该被注册
-    private val conditionEvaluator = ConditionEvaluator(registry, environment)
+    private val conditionEvaluator = ConditionEvaluator(registry, environment, resourceLoader)
 
     /**
      * 从配置类当中加载BeanDefinition，例如@ImportSource/ImportBeanDefinitionRegistrar/@Bean方法

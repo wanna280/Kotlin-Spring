@@ -1,7 +1,7 @@
 package com.wanna.boot.devtools.classpath
 
 import com.wanna.boot.devtools.filewatch.ChangedFile
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 import com.wanna.framework.util.AntPathMatcher
 
 /**

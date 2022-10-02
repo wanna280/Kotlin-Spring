@@ -1,6 +1,6 @@
 package com.wanna.boot
 
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 
 /**
  * 这是一个应用类型的枚举，包括None/Servlet/Reactive三种类型

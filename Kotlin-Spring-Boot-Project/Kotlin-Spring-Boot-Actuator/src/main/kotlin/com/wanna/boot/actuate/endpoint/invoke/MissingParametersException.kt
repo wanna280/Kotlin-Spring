@@ -1,7 +1,7 @@
 package com.wanna.boot.actuate.endpoint.invoke
 
 import com.wanna.boot.actuate.endpoint.InvalidEndpointRequestException
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 
 /**
  * Endpoint的Operation方法缺少参数异常

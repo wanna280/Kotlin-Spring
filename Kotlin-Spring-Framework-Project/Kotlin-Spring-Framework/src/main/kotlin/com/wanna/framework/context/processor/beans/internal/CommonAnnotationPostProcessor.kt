@@ -7,8 +7,8 @@ import com.wanna.framework.beans.factory.InjectionMetadata
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.processor.beans.InstantiationAwareBeanPostProcessor
 import com.wanna.framework.core.Ordered
-import com.wanna.framework.core.util.ReflectionUtils
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.ReflectionUtils
+import com.wanna.framework.util.StringUtils
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Field
 import java.lang.reflect.Member

@@ -5,7 +5,7 @@ import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.annotation.BeanNameGenerator
 import com.wanna.framework.context.processor.factory.BeanDefinitionRegistryPostProcessor
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 import com.wanna.mybatis.spring.SqlSessionTemplate
 import org.apache.ibatis.session.SqlSessionFactory
 import java.util.Optional

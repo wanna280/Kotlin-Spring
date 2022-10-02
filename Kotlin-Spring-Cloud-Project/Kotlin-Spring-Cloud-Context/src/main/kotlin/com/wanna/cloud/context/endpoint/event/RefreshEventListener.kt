@@ -4,7 +4,7 @@ import com.wanna.boot.context.event.ApplicationReadyEvent
 import com.wanna.cloud.context.refresh.ContextRefresher
 import com.wanna.framework.context.event.ApplicationEvent
 import com.wanna.framework.context.event.SmartApplicationListener
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**

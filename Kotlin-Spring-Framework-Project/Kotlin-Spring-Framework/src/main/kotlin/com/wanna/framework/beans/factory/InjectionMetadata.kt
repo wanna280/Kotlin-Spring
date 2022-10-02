@@ -1,7 +1,7 @@
 package com.wanna.framework.beans.factory
 
 import com.wanna.framework.beans.PropertyValues
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.Field
 import java.lang.reflect.Member
 import java.lang.reflect.Method

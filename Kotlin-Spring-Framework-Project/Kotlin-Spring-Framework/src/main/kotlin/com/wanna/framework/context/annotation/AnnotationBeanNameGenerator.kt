@@ -4,8 +4,8 @@ import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinit
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.StringUtils
 import java.beans.Introspector
 
 /**

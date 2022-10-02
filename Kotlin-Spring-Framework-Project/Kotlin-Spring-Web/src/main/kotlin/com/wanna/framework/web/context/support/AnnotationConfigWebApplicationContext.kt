@@ -4,7 +4,7 @@ import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.annotation.*
 import com.wanna.framework.context.support.GenericApplicationContext
 import com.wanna.framework.core.environment.ConfigurableEnvironment
-import com.wanna.framework.core.util.AnnotationConfigUtils
+import com.wanna.framework.util.AnnotationConfigUtils
 
 /**
  * Web版本的AnnotationConfigApplicationContext

@@ -4,7 +4,7 @@ import com.alibaba.nacos.api.NacosFactory
 import com.alibaba.nacos.api.config.ConfigService
 import com.wanna.cloud.nacos.config.NacosConfigProperties.Companion.DEFAULT_NACOS_GROUP
 import com.wanna.cloud.nacos.config.NacosConfigProperties.Companion.DEFAULT_TIMEOUT
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 import java.io.StringReader
 import java.util.Properties
 

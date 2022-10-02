@@ -1,6 +1,6 @@
 package com.wanna.framework.web.client
 
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.http.MediaType
 import com.wanna.framework.web.http.ResponseEntity

@@ -4,7 +4,7 @@ import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import com.wanna.framework.core.util.ReflectionUtils
+import com.wanna.framework.util.ReflectionUtils
 import com.wanna.spring.shell.Command
 import com.wanna.spring.shell.ConfigurableCommandRegistry
 import com.wanna.spring.shell.MethodTarget

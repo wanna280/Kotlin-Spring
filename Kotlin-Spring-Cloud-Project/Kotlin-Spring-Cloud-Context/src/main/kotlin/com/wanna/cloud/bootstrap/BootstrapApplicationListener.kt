@@ -11,7 +11,7 @@ import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.environment.*
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 
 /**
  * 这是一个处理Bootstrap的ApplicationListener，监听SpringApplication的ApplicationEnvironmentPreparedEvent事件，并进行处理；

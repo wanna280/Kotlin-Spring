@@ -4,61 +4,60 @@ import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
-import com.wanna.framework.beans.factory.support.definition.ScannedGenericBeanDefinition
-import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.EnvironmentCapable
 import com.wanna.framework.core.environment.StandardEnvironment
-import com.wanna.framework.core.type.filter.AnnotationTypeFilter
-import com.wanna.framework.core.type.filter.TypeFilter
-import com.wanna.framework.core.util.AnnotationConfigUtils
-import com.wanna.framework.core.util.ClassDiscoveryUtils
+import com.wanna.framework.core.io.ResourceLoader
+import com.wanna.framework.util.AnnotationConfigUtils
+import com.wanna.framework.lang.Nullable
 
 /**
  * 这是ClassPath下的BeanDefinition的Scanner，负责完成指定的包下的全部配置类的扫描，并将其注册到BeanDefinitionRegistry当中；
  *
  * 在指定的包下寻找组件，可以重写findCandidateComponents方法去进行自定义扫描的逻辑...
+ *
+ * @param registry BeanDefinitionRegistry
+ * @param useDefaultFilters 是否需要去应用默认的Filter？
+ * @param resourceLoader ResourceLoader，提供资源的加载(可以为null)
  */
 open class ClassPathBeanDefinitionScanner(
     val registry: BeanDefinitionRegistry,
-    useDefaultFilters: Boolean = true,  // 是否需要应用默认的Filter？
-) {
-    // includeFilters
-    private var includeFilters = ArrayList<TypeFilter>()
+    useDefaultFilters: Boolean = true,
+    @Nullable resourceLoader: ResourceLoader? = null
+) : ClassPathScanningCandidateComponentProvider(useDefaultFilters, resourceLoader) {
 
-    // excludeFilters
-    private var excludeFilters = ArrayList<TypeFilter>()
-
-    // beanNameGenerator，可以允许外部访问，直接进行设置，默认为支持注解版的BeanNameGenerator
+    /**
+     * beanNameGenerator，默认为支持注解版的BeanNameGenerator
+     */
     private var beanNameGenerator: BeanNameGenerator = AnnotationBeanNameGenerator.INSTANCE
 
-    // environment，利用允许外部访问，直接去进行设置
-    private var environment: Environment = this.getOrDefaultEnvironment(registry)
 
-    // 是否包含注解版的配置？如果开启了，使用它进行扫描时，就会往容器中注册注解的通用处理器
+    /**
+     * 是否包含注解版的配置？如果开启了，使用它进行扫描时，就会往容器中注册注解的通用处理器
+     */
     private var includeAnnotationConfig: Boolean = true
 
-    // Scope的Metadata的Resolver
+    /**
+     * Scope的Metadata的Resolver
+     */
     private var scopeMetadataResolver: ScopeMetadataResolver = AnnotationScopeMetadataResolver()
 
-    // 扫描进来的Bean是否需要设置成为lazyInit的？
+    /**
+     * 扫描进来的Bean是否需要设置成为lazyInit的？
+     */
     private var lazyInit: Boolean = false
 
     init {
-        // 是否要应用默认的Filter？默认情况下，需要去匹配@Component的Bean
-        if (useDefaultFilters) {
-            this.registerDefaultFilters()
-        }
+        this.setEnvironment(getOrDefaultEnvironment(registry))
     }
 
     /**
-     * 注册默认的Filters
-     *
-     * @see AnnotationTypeFilter
-     * @see Component
+     * 获取或者是创建一个默认的Environment，
+     * (1)如果Registry可以获取到Environment，那么直接从Registry当中去获取到Environment对象;
+     * (2)如果获取不到，那么就创建一个默认的Environment
      */
-    protected open fun registerDefaultFilters() {
-        this.includeFilters += AnnotationTypeFilter(Component::class.java)
+    private fun getOrDefaultEnvironment(registry: BeanDefinitionRegistry): Environment {
+        return if (registry is EnvironmentCapable) registry.getEnvironment() else StandardEnvironment()
     }
 
     /**
@@ -90,32 +89,29 @@ open class ClassPathBeanDefinitionScanner(
             // 获取要进行扫描的包中的所有候选BeanDefinition，这个方法，有可能会交给子类去进行重写
             // 比如MyBatis，就重写了这个方法去自定义逻辑，去完成Mapper的扫描...
             val candidateComponents = findCandidateComponents(packageName)
-            candidateComponents
-                .filter { isCandidateComponent(it.getBeanClass()) }  // 判断是否是候选Bean
-                .filter { isCandidateComponent(it as AnnotatedBeanDefinition) }  // 判断BeanDefinition是否合法
-                .forEach { beanDefinition ->
-                    // 利用beanNameGenerator给beanDefinition生成beanName，并注册到BeanDefinitionRegistry当中
-                    val beanName = beanNameGenerator.generateBeanName(beanDefinition, registry)
+            candidateComponents.forEach { beanDefinition ->
+                // 利用beanNameGenerator给beanDefinition生成beanName，并注册到BeanDefinitionRegistry当中
+                val beanName = beanNameGenerator.generateBeanName(beanDefinition, registry)
 
-                    // 如果它是一个被注解标注的BeanDefinition，那么可以从它身上找到注解的相关的元信息
-                    // 需要处理@Role/@Lazy/@DependsOn/@Primary注解
-                    if (beanDefinition is AnnotatedBeanDefinition) {
-                        AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition)
-                    }
-
-                    // set Scope
-                    val metadata = scopeMetadataResolver.resolveScopeMetadata(beanDefinition)
-                    beanDefinition.setScope(metadata.scopeName)
-
-                    // set lazyInit if necessary
-                    if (lazyInit) {
-                        beanDefinition.setLazyInit(true)
-                    }
-                    registry.registerBeanDefinition(beanName, beanDefinition)
-
-                    // 加入到扫描到的BeanDefinition列表当中，封装成为BeanDefinitionHolder，让调用方可以获取到beanName
-                    beanDefinitions += BeanDefinitionHolder(beanDefinition, beanName)
+                // 如果它是一个被注解标注的BeanDefinition，那么可以从它身上找到注解的相关的元信息
+                // 需要处理@Role/@Lazy/@DependsOn/@Primary注解
+                if (beanDefinition is AnnotatedBeanDefinition) {
+                    AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition)
                 }
+
+                // set Scope
+                val metadata = scopeMetadataResolver.resolveScopeMetadata(beanDefinition)
+                beanDefinition.setScope(metadata.scopeName)
+
+                // set lazyInit if necessary
+                if (lazyInit) {
+                    beanDefinition.setLazyInit(true)
+                }
+                registry.registerBeanDefinition(beanName, beanDefinition)
+
+                // 加入到扫描到的BeanDefinition列表当中，封装成为BeanDefinitionHolder，让调用方可以获取到beanName
+                beanDefinitions += BeanDefinitionHolder(beanDefinition, beanName)
+            }
         }
         return beanDefinitions
     }
@@ -127,59 +123,7 @@ open class ClassPathBeanDefinitionScanner(
      * @return 指定的包下的所有的BeanDefinition的列表
      */
     open fun findCandidateComponents(packageName: String): Set<BeanDefinition> {
-        return ClassDiscoveryUtils.scan(packageName)
-            .map { ScannedGenericBeanDefinition(it) }
-            .filter { isCandidateComponent(it.getBeanClass()) }.toSet()
-    }
-
-    /**
-     * 是否是候选的要导入的组件？使用includeFilter和excludeFilter去进行挨个匹配
-     *
-     * @param clazz 候选类
-     * @return 该类是否是候选的组件？
-     */
-    protected open fun isCandidateComponent(clazz: Class<*>?): Boolean {
-        // 如果被excludeFilter匹配，直接return false
-        this.excludeFilters.forEach {
-            if (it.matches(clazz)) {
-                return false
-            }
-        }
-        // 如果被includeFilter匹配，return true
-        this.includeFilters.forEach {
-            if (it.matches(clazz)) {
-                return true
-            }
-        }
-        return false
-    }
-
-    /**
-     * 使用BeanDefinition的方法，去进行判断是否合法
-     *
-     * @param beanDefinition 要去进行匹配的BeanDefinition
-     */
-    protected open fun isCandidateComponent(beanDefinition: AnnotatedBeanDefinition): Boolean {
-        if (beanDefinition.getBeanClass() == null) {
-            return false
-        }
-        if (beanDefinition.getBeanClass()!!.name.startsWith("java.")) {
-            return false
-        }
-        return true
-    }
-
-    /**
-     * 获取或者是创建一个默认的Environment，
-     * (1)如果Registry可以获取到Environment，那么直接从Registry当中去获取到Environment对象;
-     * (2)如果获取不到，那么就创建一个默认的Environment
-     */
-    private fun getOrDefaultEnvironment(registry: BeanDefinitionRegistry): Environment {
-        return if (registry is EnvironmentCapable) registry.getEnvironment() else StandardEnvironment()
-    }
-
-    open fun setEnvironment(environment: Environment) {
-        this.environment = environment
+        return scanCandidateComponents(packageName)
     }
 
     open fun setBeanNameGenerator(beanNameGenerator: BeanNameGenerator?) {
@@ -188,14 +132,6 @@ open class ClassPathBeanDefinitionScanner(
 
     open fun setIncludeAnnotationConfig(includeAnnotationConfig: Boolean) {
         this.includeAnnotationConfig = includeAnnotationConfig
-    }
-
-    open fun addIncludeFilter(typeFilter: TypeFilter) {
-        this.includeFilters += typeFilter
-    }
-
-    open fun addExcludeFilter(typeFilter: TypeFilter) {
-        this.excludeFilters += typeFilter
     }
 
     open fun setLazyInit(lazyInit: Boolean) {

@@ -4,7 +4,7 @@ import com.wanna.boot.context.event.ApplicationContextInitializedEvent
 import com.wanna.boot.context.event.ApplicationEnvironmentPreparedEvent
 import com.wanna.framework.context.event.ApplicationEvent
 import com.wanna.framework.context.event.SmartApplicationListener
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 
 class MyApplicationListener2 : SmartApplicationListener {
     override fun onApplicationEvent(event: ApplicationEvent) {

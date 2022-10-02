@@ -3,7 +3,7 @@ package com.wanna.framework.core.convert.support
 import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.convert.converter.GenericConverter
 import com.wanna.framework.core.convert.converter.GenericConverter.*
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 
 /**
  * Collection转String的Converter

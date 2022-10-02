@@ -1,6 +1,7 @@
 package com.wanna.boot.env
 
 import com.wanna.framework.core.environment.PropertySource
+import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.io.support.PropertiesLoaderUtils
 
 /**
@@ -12,12 +13,23 @@ import com.wanna.framework.core.io.support.PropertiesLoaderUtils
  */
 open class PropertiesPropertySourceLoader : PropertySourceLoader {
 
-    override fun getFileExtensions(): Array<String> {
-        return arrayOf("properties", "xml")
-    }
+    /**
+     * 支持去处理properties和xml的文件扩展名
+     *
+     * @return "xml" and "properties"
+     */
+    override fun getFileExtensions() = arrayOf("properties", "xml")
 
     @Suppress("UNCHECKED_CAST")
     override fun load(name: String, resource: String): List<PropertySource<*>> {
+        val propertySources = ArrayList<PropertySource<*>>()
+        val properties = PropertiesLoaderUtils.loadProperties(resource)
+        propertySources += OriginTrackedMapPropertySource(name, properties as Map<String, Any>)
+        return propertySources
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun load(name: String, resource: Resource): List<PropertySource<*>> {
         val propertySources = ArrayList<PropertySource<*>>()
         val properties = PropertiesLoaderUtils.loadProperties(resource)
         propertySources += OriginTrackedMapPropertySource(name, properties as Map<String, Any>)

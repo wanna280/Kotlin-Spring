@@ -2,7 +2,7 @@ package com.wanna.boot.actuate.endpoint.invoke.reflect
 
 import com.wanna.boot.actuate.endpoint.invoke.OperationParameter
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.lang.Nullable
 import java.lang.reflect.Parameter
 import javax.annotation.Nonnull

@@ -10,13 +10,17 @@ import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.environment.CompositePropertySource
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.Environment
+import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.DefaultPropertySourceFactory
 import com.wanna.framework.core.io.support.PropertySourceFactory
 import com.wanna.framework.core.type.AnnotationMetadata
-import com.wanna.framework.core.util.BeanUtils
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.StringUtils
 import org.slf4j.LoggerFactory
+import java.io.FileNotFoundException
+import java.net.SocketException
+import java.net.UnknownHostException
 import java.util.LinkedList
 import java.util.function.Predicate
 
@@ -27,10 +31,16 @@ open class ConfigurationClassParser(
     private val registry: BeanDefinitionRegistry,
     private val environment: Environment,
     classLoader: ClassLoader,
-    componentScanBeanNameGenerator: BeanNameGenerator
+    componentScanBeanNameGenerator: BeanNameGenerator,
+    private val resourceLoader: ResourceLoader
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(ConfigurationClass::class.java)
+
+        /**
+         * 默认情况下的PropertySourceFactory，用于去创建PropertySource
+         */
+        private val DEFAULT_PROPERTY_SOURCE_FACTORY = DefaultPropertySourceFactory()
 
         // DeferredImportSelectorHolder的比较器，因为对DeferredImportSelector包装了一层，因此需要包装一层
         private val DEFERRED_IMPORT_SELECTOR_COMPARATOR = Comparator<DeferredImportSelectorHolder> { o1, o2 ->
@@ -47,7 +57,7 @@ open class ConfigurationClassParser(
         ComponentScanAnnotationParser(registry, environment, classLoader, componentScanBeanNameGenerator)
 
     // 条件计算器，计算该Bean是否应该被导入到容器当中？
-    private val conditionEvaluator = ConditionEvaluator(this.registry, this.environment)
+    private val conditionEvaluator = ConditionEvaluator(this.registry, this.environment, resourceLoader)
 
     // 维护了扫描出来的ConfigurationClass的集合
     private val configClasses = LinkedHashMap<ConfigurationClass, ConfigurationClass>()
@@ -221,22 +231,40 @@ open class ConfigurationClassParser(
     private fun processPropertySources(configClass: ConfigurationClass, sourceClass: SourceClass) {
         val propertySources =
             AnnotatedElementUtils.findAllMergedAnnotations(sourceClass.clazz, PropertySource::class.java)
+
         propertySources.forEach { propertySource ->
+            // propertySource name
             val name = if (!StringUtils.hasText(propertySource.name)) null else propertySource.name
+            // 是否需要忽略未找到的资源？
+            val ignoreResourceNotFound = propertySource.ignoreResourceNotFound
             val locations = propertySource.locations
+            if (locations.isEmpty()) {
+                throw IllegalStateException("@PropertySource(value)必须配置至少一个资源路径")
+            }
 
             // 创建PropertySourceFactory，交给它去完成配置文件(Properties)的加载工作...
-            var factoryClass = propertySource.factory.java
-            if (factoryClass == PropertySourceFactory::class.java) {
-                factoryClass = DefaultPropertySourceFactory::class.java
-            }
-            val propertySourceFactory = BeanUtils.instantiateClass(factoryClass)
+            // 如果有自定义PropertySourceFactory的话，那么需要使用用户自定义的PropertySourceFactory
+            val factoryClass = propertySource.factory.java
+            val propertySourceFactory =
+                if (factoryClass == PropertySourceFactory::class.java) DEFAULT_PROPERTY_SOURCE_FACTORY
+                else BeanUtils.instantiateClass(factoryClass)
 
             // 遍历给定的所有资源的位置(location)，使用PropertySourceFactory去进行加载
             locations.forEach {
-                // location支持使用占位符
-                val location = this.environment.resolveRequiredPlaceholders(it)
-                addPropertySource(propertySourceFactory.createPropertySource(name, location))
+                try {
+                    // location支持使用占位符，这里需要去进行解析占位符
+                    val location = this.environment.resolveRequiredPlaceholders(it)
+                    val resource = resourceLoader.getResource(location)
+                    addPropertySource(propertySourceFactory.createPropertySource(name, resource))
+                } catch (ex: Exception) {
+                    if (ex is IllegalArgumentException || ex is SocketException || ex is FileNotFoundException || ex is UnknownHostException) {
+                        if (ignoreResourceNotFound) {
+                            logger.info("给定的资源路径[$it]未找到，将会被忽略掉...")
+                            return
+                        }
+                    }
+                    throw ex
+                }
             }
         }
     }

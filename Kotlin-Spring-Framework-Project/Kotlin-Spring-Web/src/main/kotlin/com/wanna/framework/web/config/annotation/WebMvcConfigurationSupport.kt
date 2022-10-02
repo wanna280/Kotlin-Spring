@@ -7,7 +7,7 @@ import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.format.FormatterRegistry
 import com.wanna.framework.context.format.support.DefaultFormattingConversionService
 import com.wanna.framework.context.format.support.FormattingConversionService
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.web.HandlerMapping
 import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.cors.CorsConfiguration

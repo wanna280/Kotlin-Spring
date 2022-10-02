@@ -1,7 +1,7 @@
 package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
-import com.wanna.framework.core.util.ClassUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.web.HandlerMapping
 import com.wanna.framework.web.bind.annotation.PathVariable
 import com.wanna.framework.web.bind.support.WebDataBinderFactory

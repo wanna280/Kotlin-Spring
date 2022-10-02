@@ -1,8 +1,7 @@
 package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.validation.BindingResult
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.validation.BindingResult.Companion.MODEL_KEY_PREFIX
 import com.wanna.framework.validation.Errors
 import com.wanna.framework.web.bind.support.WebDataBinderFactory

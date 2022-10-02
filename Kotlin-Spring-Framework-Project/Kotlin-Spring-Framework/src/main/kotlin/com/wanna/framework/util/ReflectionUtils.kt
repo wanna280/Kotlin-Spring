@@ -1,4 +1,4 @@
-package com.wanna.framework.core.util
+package com.wanna.framework.util
 
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field

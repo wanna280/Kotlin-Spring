@@ -1,7 +1,7 @@
 package com.wanna.framework.context.event
 
 import com.wanna.framework.core.ResolvableType
-import com.wanna.framework.core.util.ErrorHandler
+import com.wanna.framework.util.ErrorHandler
 import java.util.concurrent.Executor
 
 /**

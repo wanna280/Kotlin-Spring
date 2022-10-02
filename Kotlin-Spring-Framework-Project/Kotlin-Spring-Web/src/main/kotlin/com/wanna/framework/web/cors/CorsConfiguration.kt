@@ -1,6 +1,6 @@
 package com.wanna.framework.web.cors
 
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.bind.annotation.RequestMethod
 import java.util.regex.Matcher

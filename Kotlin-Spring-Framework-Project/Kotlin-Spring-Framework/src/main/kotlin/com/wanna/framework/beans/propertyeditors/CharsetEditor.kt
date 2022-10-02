@@ -1,6 +1,6 @@
 package com.wanna.framework.beans.propertyeditors
 
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 import java.beans.PropertyEditorSupport
 import java.nio.charset.Charset
 

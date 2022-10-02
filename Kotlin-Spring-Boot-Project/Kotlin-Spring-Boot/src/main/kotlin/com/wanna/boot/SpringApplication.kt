@@ -1,35 +1,49 @@
 package com.wanna.boot
 
-import com.wanna.boot.web.mvc.context.AnnotationConfigMvcWebServerApplicationContext
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
-import com.wanna.framework.context.annotation.AnnotationConfigApplicationContext
 import com.wanna.framework.context.annotation.BeanNameGenerator
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.context.support.AbstractApplicationContext
+import com.wanna.framework.context.support.GenericApplicationContext
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.convert.support.DefaultConversionService
-import com.wanna.framework.core.environment.CompositePropertySource
-import com.wanna.framework.core.environment.ConfigurableEnvironment
-import com.wanna.framework.core.environment.SimpleCommandLinePropertySource
-import com.wanna.framework.core.environment.StandardEnvironment
+import com.wanna.framework.core.environment.*
+import com.wanna.framework.core.io.DefaultResourceLoader
+import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
-import com.wanna.framework.core.util.AnnotationConfigUtils
-import com.wanna.framework.core.util.ClassUtils
-import com.wanna.framework.core.util.StringUtils
-import com.wanna.framework.core.util.StringUtils.collectionToCommaDelimitedString
+import com.wanna.framework.util.AnnotationConfigUtils
+import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StopWatch
+import com.wanna.framework.util.StringUtils.collectionToCommaDelimitedString
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
  * 这是一个SpringApplication的启动类，交由它去进行引导整个SpringApplication的启动
+ *
+ * @param resourceLoader 资源加载器，提供资源的加载
+ * @param _primarySources 启动类列表
  */
-open class SpringApplication(vararg _primarySources: Class<*>) {
+open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg _primarySources: Class<*>) {
     companion object {
+
+        /**
+         * 用于创建MVC的ApplicationContext的类名
+         */
+        const val DEFAULT_MVC_WEB_CONTEXT_CLASS =
+            "com.wanna.boot.web.mvc.context.AnnotationConfigMvcWebServerApplicationContext"
+
+        /**
+         * 用于创建默认的ApplicationContext的Class
+         */
+        const val DEFAULT_CONTEXT_CLASS =
+            "com.wanna.framework.context.annotation.AnnotationConfigApplicationContext"
+
         /**
          * 当中Runtime(JVM)关闭(Shutdown)时的回调钩子方法
          *
@@ -61,33 +75,106 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         fun run(primarySources: Array<Class<*>>, args: Array<String>): ConfigurableApplicationContext {
             return SpringApplication(*primarySources).run(*args)
         }
+
+        /**
+         * 对外提供一个main方法，支持去直接启动SpringApplication；
+         * 直接不指定主启动类，适用于那些将启动类写到命令行参数("--spring.main.sources")当中的情况；
+         *
+         * 很多开发者可能会选择自定义一个main方法，然后自己去调用run方法去启动SpringApplication
+         *
+         * @param args 命令行参数
+         * @throws Exception 如果启动Spring应用失败的话
+         * @see run
+         */
+        @JvmStatic
+        @Throws(Exception::class)
+        fun main(vararg args: String) {
+            run(emptyArray(), arrayOf(*args))
+        }
+
+        /**
+         * 对外提供的一个static方法，用于去退出一个Spring应用，并生成ExitCode；
+         * 退出一个Spring应用时，关闭ApplicationContext，发布ExitCodeEvent事件，并获取到ExitCode
+         *
+         * @param context 要关闭的ApplicationContext
+         * @param exitCodeGenerators ExitCodeGenerator列表
+         * @return ExitCode
+         */
+        @JvmStatic
+        fun exit(context: ApplicationContext, vararg exitCodeGenerators: ExitCodeGenerator): Int {
+            var exitCode = 0
+            try {
+                try {
+                    val generators = ExitCodeGenerators()
+                    val beans = context.getBeansForType(ExitCodeGenerator::class.java).values
+                    generators.addAll(beans)
+                    generators.addAll(*exitCodeGenerators)
+                    exitCode = generators.getExitCode()
+                    if (exitCode != 0) {
+                        context.publishEvent(ExitCodeEvent(context, exitCode))
+                    }
+                } finally {
+                    close(context)
+                }
+            } catch (ex: Exception) {
+                ex.printStackTrace()
+                exitCode = if (exitCode != 0) exitCode else 1
+            }
+            return exitCode
+        }
+
+        /**
+         * 关闭一个ApplicationContext
+         *
+         * @param context 要去进行关闭的ApplicationContext
+         */
+        @JvmStatic
+        private fun close(context: ApplicationContext) {
+            if (context is ConfigurableApplicationContext) {
+                context.close()
+            }
+        }
     }
+
+    /**
+     * 提供一个不用ResourceLoader的构造器，只去指定primarySources
+     *
+     * @param _primarySources 主启动类
+     */
+    constructor(vararg _primarySources: Class<*>) : this(null as ResourceLoader?, *_primarySources)
 
     // primarySources
     private var primarySources: MutableSet<Class<*>> = LinkedHashSet(_primarySources.toList())
 
     // sources
-    private var sources = LinkedHashSet<Any>()
+    private var sources: MutableCollection<Any> = LinkedHashSet<Any>()
 
     // Application的监听器列表
     private var listeners: MutableList<ApplicationListener<*>> =
         SpringFactoriesLoader.loadFactories(ApplicationListener::class.java)
 
-    // SpringApplicationType
+    // SpringApplicationType，自动去进行推断
     private var applicationType = ApplicationType.deduceFromClassPath()
 
     // beanNameGenerator
     private var beanNameGenerator: BeanNameGenerator? = null
 
+    /**
+     * 用来创建ApplicationContext的类，如果不指定的话，将会根据ApplicationType去进行自动推断
+     *
+     * @see applicationType
+     */
+    private var applicationContextClass: Class<out ConfigurableApplicationContext>? = null
+
     // environment
     private var environment: ConfigurableEnvironment? = null
 
     // 这种一个BootstrapWrapper注册中心，完成对BootstrapContext去进行初始化
-    private var bootstrappers: MutableList<Bootstrapper> = SpringFactoriesLoader.loadFactories(Bootstrapper::class.java)
+    private var bootstrappers: MutableCollection<Bootstrapper> = getSpringFactoriesInstances(Bootstrapper::class.java)
 
     // SpringApplication的ApplicationContext的初始化器，在ApplicationContext完成创建和初始化工作时，会自动完成回调
-    private var initializers: MutableList<ApplicationContextInitializer<*>> =
-        SpringFactoriesLoader.loadFactories(ApplicationContextInitializer::class.java)
+    private var initializers: MutableCollection<ApplicationContextInitializer<*>> =
+        getSpringFactoriesInstances(ApplicationContextInitializer::class.java)
 
     // 推测SpringApplication的主启动类
     private var mainApplicationClass: Class<*>? = deduceMainApplicationClass()
@@ -143,6 +230,10 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
 
         // SpringApplication的ApplicationContext
         var applicationContext: ConfigurableApplicationContext? = null
+
+        // SpringBoot的ExceptionReporter列表
+        var exceptionReporters: Collection<SpringBootExceptionReporter> = ArrayList()
+
         // 获取SpringApplicationRunListeners
         val listeners: SpringApplicationRunListeners = getRunListeners(arrayOf(*args))
         // 通知所有的监听器，当前SpringApplication已经正在启动当中了...
@@ -160,6 +251,11 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
             applicationContext = createApplicationContext()
             applicationContext.setApplicationStartup(this.applicationStartup)
 
+            exceptionReporters = getSpringFactoriesInstances(
+                SpringBootExceptionReporter::class.java,
+                arrayOf(ConfigurableApplicationContext::class.java),
+                applicationContext
+            )
             // 准备SpringApplication的ApplicationContext
             prepareContext(bootstrapContext, applicationContext, environment, listeners, applicationArguments, banner)
 
@@ -183,14 +279,14 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
             // 拿出容器当中的所有的ApplicationRunner和CommandLineRunner，去进行回调，处理命令行参数
             callRunners(applicationContext, applicationArguments)
         } catch (ex: Throwable) {
-            handleRunException(applicationContext, ex, listeners)
+            handleRunFailure(applicationContext, ex, listeners, exceptionReporters)
             throw IllegalStateException(ex)
         }
         try {
             // 通知所有的监听器，SpringApplication已经正在运行当中了，可以去进行后置处理工作了
             listeners.running(applicationContext)
         } catch (ex: Throwable) {
-            handleRunException(applicationContext, ex, null)
+            handleRunFailure(applicationContext, ex, null, exceptionReporters)
             throw IllegalStateException(ex)
         }
         return applicationContext
@@ -273,7 +369,9 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         if (bannerMode == Banner.Mode.NO) {
             return null
         }
-        val springBootBannerPrinter = SpringApplicationBannerPrinter(banner)
+        // 如果指定了ResourceLoader，那么使用给定的；否则使用默认的
+        val resourceLoader = this.resourceLoader ?: DefaultResourceLoader(getClassLoader())
+        val springBootBannerPrinter = SpringApplicationBannerPrinter(resourceLoader, banner)
         if (bannerMode == Banner.Mode.CONSOLE) {
             return springBootBannerPrinter.print(environment, this.mainApplicationClass, System.out)
         }
@@ -282,11 +380,42 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
 
     /**
      * 处理启动SpringApplication过程当中的异常
+     *
+     * @param applicationContext ApplicationContext
+     * @param ex  Throwable(运行Spring应用过程当中的异常信息)
+     * @param listeners SpringApplicationRunListener
+     * @param reporters SpringBoot的异常报告器
      */
-    protected open fun handleRunException(
-        applicationContext: ConfigurableApplicationContext?, ex: Throwable, listeners: SpringApplicationRunListeners?
+    protected open fun handleRunFailure(
+        applicationContext: ConfigurableApplicationContext?, ex: Throwable, listeners: SpringApplicationRunListeners?,
+        reporters: Collection<SpringBootExceptionReporter>
     ) {
-        listeners?.failed(applicationContext, ex)
+        try {
+            listeners?.failed(applicationContext, ex)
+        } finally {
+            reportFailure(reporters, ex)
+        }
+    }
+
+    /**
+     * 使用SpringBoot的ExceptionReporter去报告启动过程当中的异常
+     *
+     * @param exceptionReporters SpringBootExceptionReporter列表
+     * @param failure 要去进行报告的异常
+     */
+    private fun reportFailure(exceptionReporters: Collection<SpringBootExceptionReporter>, failure: Throwable) {
+        try {
+            exceptionReporters.forEach {
+                if (it.report(failure)) {
+                    return
+                }
+            }
+        } finally {
+
+        }
+        if (logger.isErrorEnabled) {
+            logger.error("Spring应用运行失败", failure)
+        }
     }
 
     /**
@@ -310,6 +439,15 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         if (this.beanNameGenerator != null) {
             context.getBeanFactory()
                 .registerSingleton(AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR, this.beanNameGenerator!!)
+        }
+        // 如果设置了ResourceLoader，那么将它设置给ApplicationContext
+        if (this.resourceLoader != null) {
+            if (context is GenericApplicationContext) {
+                context.setResourceLoader(this.resourceLoader!!)
+            }
+            if (context is DefaultResourceLoader) {
+                context.setClassLoader(this.resourceLoader!!.getClassLoader())
+            }
         }
 
         // 如果要添加ConversionService的话，设置到BeanFactory当中
@@ -372,6 +510,42 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         val list = ArrayList(elements)
         AnnotationAwareOrderComparator.sort(list)
         return LinkedHashSet(list)
+    }
+
+    /**
+     * 根据type去获取SpringFactories当中的实例
+     *
+     * @param type 要从SpringFactories当中去进行获取的type
+     * @return 从SpringFactories当中加载到的对象列表
+     */
+    private fun <T> getSpringFactoriesInstances(
+        type: Class<T>,
+    ): MutableCollection<T> = getSpringFactoriesInstances(type, emptyArray())
+
+    /**
+     * 根据type去获取SpringFactories当中的实例
+     *
+     * @param type 要从SpringFactories当中去进行获取的type
+     * @param parameterTypes 构造器参数类型列表
+     * @param args parameterTypes对应的构造器参数对象
+     * @return 从SpringFactories当中加载到的对象列表
+     */
+    private fun <T> getSpringFactoriesInstances(
+        type: Class<T>,
+        parameterTypes: Array<Class<*>>,
+        vararg args: Any
+    ): MutableCollection<T> {
+        val classLoader = getClassLoader()
+        val names: Set<String> =
+            java.util.LinkedHashSet(
+                SpringFactoriesLoader.loadFactoryNames(type, classLoader)
+            )
+        val instances = SpringFactoriesLoader.createSpringFactoryInstances(
+            type, parameterTypes, classLoader,
+            arrayOf(*args), names
+        )
+        AnnotationAwareOrderComparator.sort(instances)
+        return instances
     }
 
     /**
@@ -440,13 +614,25 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
 
     /**
      * 根据ApplicationType，去创建对应类型的Spring应用的ApplicationContext
+     *
+     * @return 创建好的ApplicationContext对象
      */
     protected open fun createApplicationContext(): ConfigurableApplicationContext {
-        return when (this.applicationType) {
-            ApplicationType.NONE -> AnnotationConfigApplicationContext()
-            ApplicationType.SERVLET -> AnnotationConfigApplicationContext()
-            ApplicationType.MVC -> AnnotationConfigMvcWebServerApplicationContext()
+        // 如果指定了ApplicationContextClass，那么使用给定的ApplicationContextClass去创建对象
+        var applicationContextClass = this.applicationContextClass
+        // 如果没有指定ApplicationContextClass，那么将会根据ApplicationType去进行推断
+        if (applicationContextClass == null) {
+            try {
+                applicationContextClass = when (this.applicationType) {
+                    ApplicationType.NONE -> ClassUtils.forName(DEFAULT_CONTEXT_CLASS)
+                    ApplicationType.SERVLET -> ClassUtils.forName(DEFAULT_CONTEXT_CLASS)
+                    ApplicationType.MVC -> ClassUtils.forName(DEFAULT_MVC_WEB_CONTEXT_CLASS)
+                }
+            } catch (ex: ClassNotFoundException) {
+                throw IllegalStateException("无法根据给定的ApplicationType去推断出来合适的ApplicationContext的类名，请先指定ApplicationContextClass")
+            }
         }
+        return BeanUtils.instantiateClass(applicationContextClass)
     }
 
     /**
@@ -467,8 +653,18 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         configureEnvironment(environment, applicationArguments.getSourceArgs())
         // 通知所有的监听器，环境已经准备好了，可以去完成后置处理了...
         listeners.environmentPrepared(bootstrapContext, environment)
+        bindToSpringApplication(environment)
 
         return environment
+    }
+
+    /**
+     * 将配置文件当中的内容，去绑定到SpringApplication对象当中来
+     *
+     * @param environment Environment
+     */
+    protected open fun bindToSpringApplication(environment: Environment) {
+
     }
 
     /**
@@ -520,16 +716,18 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
 
     /**
      * 获取SpringApplicationRunListeners
+     *
+     * @param args 命令行参数列表
+     * @return SpringApplicationRunListeners
      */
     protected open fun getRunListeners(args: Array<String>): SpringApplicationRunListeners {
-        val factoryNames = SpringFactoriesLoader.loadFactoryNames(SpringApplicationRunListener::class.java)
-        val runListeners = SpringFactoriesLoader.createSpringFactoryInstances(
+        // 获取所有的SpringApplicationRunListener
+        val runListeners = getSpringFactoriesInstances(
             SpringApplicationRunListener::class.java,
             arrayOf(SpringApplication::class.java, Array<String>::class.java),
-            null,
-            arrayOf(this, args),
-            LinkedHashSet(factoryNames)
+            this, args
         )
+        // 构建成为SpringApplicationRunListeners对象并返回
         return SpringApplicationRunListeners(runListeners, args)
     }
 
@@ -678,35 +876,118 @@ open class SpringApplication(vararg _primarySources: Class<*>) {
         return this.mainApplicationClass
     }
 
+    /**
+     * 获取ClassLoader
+     *
+     * @return 如果ResourceLoader当中可以获取到的话，那么就使用；否则使用默认的
+     */
+    open fun getClassLoader(): ClassLoader = this.resourceLoader?.getClassLoader() ?: ClassUtils.getDefaultClassLoader()
+
+    /**
+     * 设置SpringApplication的ResourceLoader
+     *
+     * @param resourceLoader 你想要使用的ResourceLoader
+     */
+    open fun setResourceLoader(resourceLoader: ResourceLoader?) {
+        this.resourceLoader = resourceLoader
+    }
+
+    /**
+     * 获取SpringApplication的ResourceLoader
+     *
+     * @return ResourceLoader
+     */
+    open fun getResourceLoader(): ResourceLoader? = this.resourceLoader
+
     open fun setLogStartupInfo(logStartupInfo: Boolean) {
         this.logStartupInfo = logStartupInfo
     }
 
+    /**
+     * 设置SpringApplication的mainClass，不设置的话，可以自动从StackTrace当中去进行推断
+     *
+     * @param mainApplicationClass 主启动类
+     */
     open fun setMainApplicationClass(mainApplicationClass: Class<*>?) {
         this.mainApplicationClass = mainApplicationClass
     }
 
+    /**
+     * 自定义SpringApplication的Environment，不自定义的话，支持去进行自动推断
+     *
+     * @param environment Environment
+     */
     open fun setEnvironment(environment: ConfigurableEnvironment) {
         this.environment = environment
     }
 
+    /**
+     * 添加一个Source
+     *
+     * @param sources sources
+     */
     open fun addSources(vararg sources: Any) {
         sources.forEach(this.sources::add)
     }
 
+    /**
+     * 设置Source
+     *
+     * @param sources sources
+     */
+    open fun setSources(sources: Collection<Any>) {
+        this.sources = LinkedHashSet(sources)
+    }
+
+    /**
+     * 添加一个primarySource，它将会作为Spring容器的根启动类
+     *
+     * @param clazz primarySource
+     */
     open fun addPrimarySource(clazz: Class<*>) {
         this.primarySources.add(clazz)
     }
 
+    /**
+     * 获取所有的Source列表，包含primarySources和普通的source
+     *
+     * @return primarySource & source
+     */
     open fun getAllSources(): List<Any> {
         val sources: MutableList<Any> = ArrayList(this.primarySources)
         sources.addAll(this.sources)
         return sources
     }
 
+    /**
+     * 设置是否允许BeanDefinition的覆盖？
+     *
+     * @param allowBeanDefinitionOverriding 如果为true，允许覆盖；否则不允许
+     */
     open fun setAllowBeanDefinitionOverriding(allowBeanDefinitionOverriding: Boolean) {
         this.allowBeanDefinitionOverriding = allowBeanDefinitionOverriding
     }
 
+    /**
+     * 是否允许BeanDefinition的覆盖？
+     *
+     * @return 如果允许覆盖return true；否则return false
+     */
     open fun isAllowBeanDefinitionOverriding() = this.allowBeanDefinitionOverriding
+
+    /**
+     * 设置用于创建ApplicationContext的ApplicationContextClass
+     *
+     * @param applicationContextClass 你要使用的用来创建ApplicationContext的类
+     */
+    open fun setApplicationContextClass(applicationContextClass: Class<out ConfigurableApplicationContext>?) {
+        this.applicationContextClass = applicationContextClass
+    }
+
+    /**
+     * 获取用来创建ApplicationContext的类
+     *
+     * @return 用来创建ApplicationContext的类(没有设置的话，为null)
+     */
+    open fun getApplicationContextClass(): Class<out ConfigurableApplicationContext>? = this.applicationContextClass
 }

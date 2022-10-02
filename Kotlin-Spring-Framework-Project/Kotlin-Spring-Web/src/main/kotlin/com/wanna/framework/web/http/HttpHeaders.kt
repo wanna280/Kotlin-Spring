@@ -1,6 +1,6 @@
 package com.wanna.framework.web.http
 
-import com.wanna.framework.core.util.StringUtils
+import com.wanna.framework.util.StringUtils
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.LinkedMultiValueMap
 import com.wanna.framework.util.MultiValueMap
