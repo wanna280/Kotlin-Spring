@@ -1,6 +1,7 @@
 package com.wanna.boot.loader
 
 import com.wanna.boot.loader.archive.Archive
+import java.net.URL
 
 /**
  * 所有的可执行的Java归档文件的启动器的基础类
@@ -11,11 +12,18 @@ import com.wanna.boot.loader.archive.Archive
  * @see JarLauncher
  * @see WarLauncher
  */
-abstract class ExecutableArchiveLauncher(private val archive: Archive) : Launcher() {
+abstract class ExecutableArchiveLauncher() : Launcher() {
     companion object {
         const val START_CLASS_ATTRIBUTE = "Start-Class"
         const val BOOT_CLASSPATH_INDEX_ATTRIBUTE = "Spring-Boot-Classpath-Index"
         const val DEFAULT_CLASSPATH_INDEX_FILE_NAME = "classpath.idx"
+    }
+
+    private var archive: Archive
+
+
+    init {
+        this.archive = this.createArchive()
     }
 
 
@@ -24,6 +32,41 @@ abstract class ExecutableArchiveLauncher(private val archive: Archive) : Launche
      */
     private val classPathIndex =
         ClassPathIndexFile.loadIfPossible(archive.getUrl(), getClassPathIndexFileLocation(archive))
+
+
+    /**
+     * 提供一个自定义Archive的构造器，使用无参数构造器的话，可以去自动推断Archive
+     *
+     * @param archive Archive归档对象
+     */
+    constructor(archive: Archive) : this() {
+        this.archive = archive
+    }
+
+    /**
+     * 获取ClassPath的Archive的迭代器
+     *
+     * @return Archive迭代器
+     */
+    override fun getClassPathArchivesIterator(): Iterator<Archive> {
+        return java.util.ArrayList<Archive>().iterator()
+    }
+
+    /**
+     * 重写父类的创建ClassLoader的逻辑
+     *
+     * @param archives Archive归档对象的迭代器
+     * @return ClassLoader
+     */
+    override fun createClassLoader(archives: Iterator<Archive>): ClassLoader {
+        val urls = ArrayList<URL>()
+        if (classPathIndex != null) {
+            urls.addAll(classPathIndex.getUrls())
+        }
+        return createClassLoader(urls.toTypedArray())
+    }
+
+    override fun getArchive(): Archive = this.archive
 
     /**
      * 获取ClassPathIndexFile的位置，如果Manifest当中自定义了"Spring-Boot-Classpath-Index"，那么就采用给定的路径
@@ -57,7 +100,7 @@ abstract class ExecutableArchiveLauncher(private val archive: Archive) : Launche
     override fun getMainClass(): String {
         val manifest = archive.getManifest()
         return manifest.mainAttributes.getValue(START_CLASS_ATTRIBUTE)
-            ?: throw IllegalStateException("无法从Manifest当中去获取到Main-Class属性")
+            ?: throw IllegalStateException("无法从Manifest当中去获取到Start-Class属性")
     }
 
 }

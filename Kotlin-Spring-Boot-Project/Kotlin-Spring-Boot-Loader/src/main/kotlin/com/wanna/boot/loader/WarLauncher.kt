@@ -8,6 +8,5 @@ package com.wanna.boot.loader
  * @date 2022/9/26
  */
 open class WarLauncher : ExecutableArchiveLauncher() {
-
-
+    override fun getArchiveEntryPathPrefix() = "WEB-INF/"
 }

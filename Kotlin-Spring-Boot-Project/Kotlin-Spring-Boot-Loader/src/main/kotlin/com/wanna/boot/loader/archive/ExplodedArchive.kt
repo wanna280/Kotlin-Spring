@@ -1,5 +1,6 @@
 package com.wanna.boot.loader.archive
 
+import java.io.File
 import java.net.URL
 import java.util.jar.Manifest
 
@@ -10,7 +11,9 @@ import java.util.jar.Manifest
  * @version v1.0
  * @date 2022/9/26
  */
-open class ExplodedArchive : Archive {
+open class ExplodedArchive(val root: File) : Archive {
+
+
     override fun iterator(): Iterator<Archive.Entry> {
         TODO("Not yet implemented")
     }
