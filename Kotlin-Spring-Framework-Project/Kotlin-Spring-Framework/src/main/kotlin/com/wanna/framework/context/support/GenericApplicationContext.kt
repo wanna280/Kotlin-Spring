@@ -100,6 +100,15 @@ abstract class GenericApplicationContext(private val beanFactory: DefaultListabl
     }
 
     /**
+     * 设置ResourceLoader
+     *
+     * @param resourceLoader ResourceLoader
+     */
+    open fun setResourceLoader(resourceLoader: ResourceLoader) {
+        this.resourceLoader = resourceLoader
+    }
+
+    /**
      * 我们需要用户是否有自定义过ClassLoader，因此重写这个方法
      */
     override fun setClassLoader(classLoader: ClassLoader?) {

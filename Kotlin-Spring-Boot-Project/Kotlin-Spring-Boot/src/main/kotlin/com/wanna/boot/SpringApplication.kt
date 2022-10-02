@@ -7,6 +7,7 @@ import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.annotation.BeanNameGenerator
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.context.support.AbstractApplicationContext
+import com.wanna.framework.context.support.GenericApplicationContext
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.convert.support.DefaultConversionService
 import com.wanna.framework.core.environment.*
@@ -438,6 +439,15 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         if (this.beanNameGenerator != null) {
             context.getBeanFactory()
                 .registerSingleton(AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR, this.beanNameGenerator!!)
+        }
+        // 如果设置了ResourceLoader，那么将它设置给ApplicationContext
+        if (this.resourceLoader != null) {
+            if (context is GenericApplicationContext) {
+                context.setResourceLoader(this.resourceLoader!!)
+            }
+            if (context is DefaultResourceLoader) {
+                context.setClassLoader(this.resourceLoader!!.getClassLoader())
+            }
         }
 
         // 如果要添加ConversionService的话，设置到BeanFactory当中
