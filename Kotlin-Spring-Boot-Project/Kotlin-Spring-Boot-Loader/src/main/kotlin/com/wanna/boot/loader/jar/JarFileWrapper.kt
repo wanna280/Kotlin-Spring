@@ -24,7 +24,7 @@ class JarFileWrapper(private val parent: JarFile) : AbstractJarFile(parent.rootJ
     override fun getInputStream(ze: ZipEntry): InputStream = parent.getInputStream(ze)
     override fun getType() = parent.getType()
     override fun getEntry(name: String): ZipEntry = parent.getEntry(name)
-    override fun getManifest(): Manifest = parent.manifest
+    override fun getManifest(): Manifest? = parent.manifest
     override fun entries(): Enumeration<JarEntry> = parent.entries()
     override fun getName(): String = parent.name
     override fun getComment(): String? = parent.comment

@@ -69,7 +69,7 @@ class JarFile private constructor(
         }
     }
 
-    protected val rootJarFile: RandomAccessDataFile
+    val rootJarFile: RandomAccessDataFile
     val pathFromRoot: String
     var data: RandomAccessData? = null
     private val type: JarFileType

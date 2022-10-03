@@ -59,7 +59,7 @@ class JarEntry(jarFile: JarFile, val index: Int, header: CentralDirectoryFileHea
     override fun hasName(name: CharSequence, suffix: Char) = headerName!!.matches(name, suffix)
 
     @Throws(IOException::class)
-    override fun getAttributes(): Attributes = jarFile.manifest.getAttributes(name)
+    override fun getAttributes(): Attributes? = jarFile.manifest?.getAttributes(name)
 
     override fun getCertificates(): Array<Certificate> = certification!!.getCertificates()!!
 

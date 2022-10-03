@@ -32,7 +32,7 @@ interface Archive : Iterable<Archive.Entry> {
      * @throws IOException 如果找不到Manifest文件的话
      */
     @Throws(IOException::class)
-    fun getManifest(): Manifest
+    fun getManifest(): Manifest?
 
     /**
      * 当前的归档文件是否已经被解压(unpack-解压)了？默认为false

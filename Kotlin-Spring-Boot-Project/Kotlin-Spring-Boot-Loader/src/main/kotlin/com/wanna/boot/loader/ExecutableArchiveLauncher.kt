@@ -187,7 +187,7 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
      */
     private fun getClassPathIndexFileLocation(archive: Archive): String {
         val manifest = archive.getManifest()
-        return manifest.mainAttributes?.getValue(BOOT_CLASSPATH_INDEX_ATTRIBUTE)
+        return manifest?.mainAttributes?.getValue(BOOT_CLASSPATH_INDEX_ATTRIBUTE)
             ?: (getArchiveEntryPathPrefix() + DEFAULT_CLASSPATH_INDEX_FILE_NAME)
     }
 
@@ -208,7 +208,7 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
     @kotlin.jvm.Throws(IllegalStateException::class)
     override fun getMainClass(): String {
         val manifest = archive.getManifest()
-        return manifest.mainAttributes.getValue(START_CLASS_ATTRIBUTE)
+        return manifest?.mainAttributes?.getValue(START_CLASS_ATTRIBUTE)
             ?: throw IllegalStateException("无法从Manifest当中去获取到Start-Class属性")
     }
 

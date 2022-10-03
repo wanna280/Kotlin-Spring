@@ -94,7 +94,7 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
      *
      * @return Manifest
      */
-    override fun getManifest(): Manifest = jarFile.manifest
+    override fun getManifest(): Manifest? = jarFile.manifest
 
     /**
      * 获取内部的Archive

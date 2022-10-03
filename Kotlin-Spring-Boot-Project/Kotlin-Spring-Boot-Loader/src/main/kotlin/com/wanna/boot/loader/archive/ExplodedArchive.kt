@@ -22,7 +22,7 @@ open class ExplodedArchive(val root: File) : Archive {
         TODO("Not yet implemented")
     }
 
-    override fun getManifest(): Manifest {
+    override fun getManifest(): Manifest? {
         TODO("Not yet implemented")
     }
 
