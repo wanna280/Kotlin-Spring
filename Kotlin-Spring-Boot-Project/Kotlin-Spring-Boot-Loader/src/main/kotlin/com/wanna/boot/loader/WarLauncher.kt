@@ -10,11 +10,20 @@ import com.wanna.boot.loader.archive.Archive
  * @date 2022/9/26
  */
 open class WarLauncher : ExecutableArchiveLauncher() {
+
+    /**
+     * 获取用于去寻找内部的ArchiveEntry的路径前缀
+     *
+     * @return ArchiveEntry所在路径的前缀
+     */
     override fun getArchiveEntryPathPrefix() = "WEB-INF/"
 
     /**
      * 如果是文件夹，只要"WEB-INF/classes"去作为一个归档；
      * 如果不是文件夹，要的是"WEB-INF/lib/"和"WEB-INF/lib-provided/"下的(目录本身不要)
+     *
+     * @param entry 待匹配的ArchiveEntry
+     * @return 它是否是一个合格的嵌套Archive？
      */
     override fun isNestedArchive(entry: Archive.Entry) =
         if (entry.isDirectory()) entry.getName() == "WEB-INF/classes/" else

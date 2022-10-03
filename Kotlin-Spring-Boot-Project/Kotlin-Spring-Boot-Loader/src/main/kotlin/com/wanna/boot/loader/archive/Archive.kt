@@ -82,7 +82,7 @@ interface Archive : Iterable<Archive.Entry> {
         /**
          * 对ArchiveEntry去进行过滤
          *
-         * @param entry entry
+         * @param entry ArchiveEntry
          * @return 如果当前Entry匹配的话，那么return true；否则return false
          */
         fun matches(entry: Entry): Boolean

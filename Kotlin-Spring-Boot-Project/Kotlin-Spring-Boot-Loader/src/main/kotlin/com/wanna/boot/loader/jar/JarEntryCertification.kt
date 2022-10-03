@@ -29,7 +29,7 @@ import java.util.jar.JarEntry
  * @version v1.0
  * @date 2022/10/4
  */
-internal class JarEntryCertification(
+class JarEntryCertification(
     private val certificates: Array<Certificate>?,
     private val codeSigners: Array<CodeSigner>?
 ) {

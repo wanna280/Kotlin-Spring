@@ -5,7 +5,8 @@ import com.wanna.boot.loader.archive.ExplodedArchive
 import java.net.URL
 
 /**
- * 所有的可执行的Java归档文件的启动器的基础类
+ * 所有的可执行的Java归档文件的启动器的基础类，
+ * 它的子类包括[JarLauncher]和[WarLauncher]等这些实现类
  *
  * @author jianchao.jia
  * @version v1.0
@@ -15,8 +16,20 @@ import java.net.URL
  */
 abstract class ExecutableArchiveLauncher() : Launcher() {
     companion object {
+        /**
+         * 启动类的属性，对应于Manifest的"Main-Class"，但是因为我们这是用来启动SpringBoot应用的，
+         * 因此我们额外去定义一个属性"Start-Class"，去用来作为SpringBoot的主启动类
+         */
         const val START_CLASS_ATTRIBUTE = "Start-Class"
+
+        /**
+         * SpringBoot的ClassPathIndex文件的位置属性
+         */
         const val BOOT_CLASSPATH_INDEX_ATTRIBUTE = "Spring-Boot-Classpath-Index"
+
+        /**
+         * ClassPathIndex文件名，默认为"classpath.idx"
+         */
         const val DEFAULT_CLASSPATH_INDEX_FILE_NAME = "classpath.idx"
     }
 
@@ -45,16 +58,14 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
     /**
      * 获取ClassPathIndex，只有ExplodedArchive才需要去获取ClassPathIndex
      *
-     * @param archive 归档文件
+     * @param archive 需要用来去获取ClassPathIndex的归档文件
      * @return ClassPathIndexFile
      */
     protected open fun getClassPathIndex(archive: Archive): ClassPathIndexFile? {
         // 只有ExplodedArchive，才需要去加载ClassPathIndexFile
         return if (archive is ExplodedArchive) {
             ClassPathIndexFile.loadIfPossible(archive.getUrl(), getClassPathIndexFileLocation(archive))
-        } else {
-            null
-        }
+        } else null
     }
 
     /**
@@ -63,6 +74,8 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
      * @return 内部搜索到的归档文件Archive的迭代器
      */
     override fun getClassPathArchivesIterator(): Iterator<Archive> {
+
+        // 用于搜索的EntryFilter，主要是检查是否是"BOOT-INF/"或者是"WEB-INF/"开头的文件
         val searchFilter = object : Archive.EntryFilter {
             override fun matches(entry: Archive.Entry) = isSearchCandidate(entry)
         }
@@ -71,11 +84,10 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
         // 对于JarLauncher来说，!isEntryIndexed()一定为true，因此相当于这个条件直接忽略掉...
         // 对于WarLauncher来说，就需要排除掉ClassPathIndex当中的...
         val includeFilter = object : Archive.EntryFilter {
-            override fun matches(entry: Archive.Entry) =
-                isNestedArchive(entry) && !isEntryIndexed(entry)
+            override fun matches(entry: Archive.Entry) = isNestedArchive(entry) && !isEntryIndexed(entry)
         }
 
-        // 搜索得到当前归档文件内部嵌套的归档文件列表
+        // 从当前Archive归档文件的内部，去搜索得到当前归档文件内部嵌套的归档文件列表
         var archives = archive.getNestedArchives(searchFilter, includeFilter)
 
         // 如果需要去进行后置处理的话，那么去进行自定义逻辑的处理
@@ -100,9 +112,7 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
      * @param entry 待匹配的ArchiveEntry
      * @return 如果它是一个嵌套的归档文件，那么return true；否则return false
      */
-    protected open fun isNestedArchive(entry: Archive.Entry): Boolean {
-        return false
-    }
+    protected abstract fun isNestedArchive(entry: Archive.Entry): Boolean
 
     /**
      * 是否需要对ClassPath下搜索的嵌套归档文件去进行后置处理
@@ -182,9 +192,9 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
     }
 
     /**
-     * 获取归档文件的路径前缀，模板方法，交给子类去进行实现
+     * 获取用于去寻找内部的ArchiveEntry的路径前缀
      *
-     * @return 归档文件的路径前缀
+     * @return ArchiveEntry所在路径的前缀
      */
     abstract fun getArchiveEntryPathPrefix(): String
 

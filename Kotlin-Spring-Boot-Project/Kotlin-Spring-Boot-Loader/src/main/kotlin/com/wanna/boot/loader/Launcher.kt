@@ -90,10 +90,10 @@ abstract class Launcher {
     protected abstract fun getClassPathArchivesIterator(): Iterator<Archive>
 
     /**
-     * 创建ClassLoader
+     * 根据搜索得到的嵌套的归档文件列表，去创建ClassLoader
      *
-     * @param archives 归档文件对象列表
-     * @return ClassLoader
+     * @param archives 搜索得到的嵌套归档文件对象列表
+     * @return 创建好的ClassLoader(LaunchedURLClassLoader)
      */
     protected open fun createClassLoader(archives: Iterator<Archive>): ClassLoader {
         val urls = ArrayList<URL>()
@@ -144,9 +144,9 @@ abstract class Launcher {
     protected open fun isExploded(): Boolean = false
 
     /**
-     * 获取Archive
+     * 获取当前启动器的Archive归档文件对象
      *
-     * @return Archive
+     * @return Archive归档文件对象
      */
     protected abstract fun getArchive(): Archive
 
