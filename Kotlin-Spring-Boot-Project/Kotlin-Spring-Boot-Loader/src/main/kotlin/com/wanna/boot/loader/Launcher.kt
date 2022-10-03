@@ -3,6 +3,7 @@ package com.wanna.boot.loader
 import com.wanna.boot.loader.archive.Archive
 import com.wanna.boot.loader.archive.ExplodedArchive
 import com.wanna.boot.loader.archive.JarFileArchive
+import com.wanna.boot.loader.jar.JarFile
 import java.io.File
 import java.net.URL
 
@@ -28,24 +29,32 @@ abstract class Launcher {
      * @param args 启动应用时需要用到的方法参数列表(命令行参数)
      */
     protected open fun launch(args: Array<String>) {
+        // 如果当前不是一个解压的包的话，那么需要注册URLProtocolHandler
+        if (!isExploded()) {
+            JarFile.registerUrlProtocolHandler()
+        }
+
         // 创建ClassLoader
         val classLoader = createClassLoader(getClassPathArchivesIterator())
 
         // 如果是jarmode，那么使用JarModeLauncher作为启动类
-        // 如果不是jarmode，那么需要从Manifest当中去获取"Start-Class"
+        // 如果不是jarmode，那么需要从Manifest当中去获取"Start-Class"去作为主启动类
         val jarMode = System.getProperty("jarmode")
         val launchClass = if (jarMode != null && jarMode.isNotEmpty()) JAR_MODE_LAUNCHER else getMainClass()
         launch(args, launchClass, classLoader)
     }
 
     /**
-     * 使用launchClass去启动整个应用
+     * 使用launchClass去启动整个SpringBoot应用
      *
      * @param args args
      * @param launchClass 启动类
      */
     protected open fun launch(args: Array<String>, launchClass: String, classLoader: ClassLoader) {
+        // 设置Thread ContextClassLoader，后续加载main方法所在的类时，就会使用到这个ClassLoader
         Thread.currentThread().contextClassLoader = classLoader
+
+        // 创建Main方法的Runner，并执行run方法启动应用
         createMainMethodRunner(launchClass, args, classLoader).run()
     }
 
@@ -103,7 +112,7 @@ abstract class Launcher {
     }
 
     /**
-     * 创建Archive归档对象
+     * 创建Java的Archive归档对象
      *
      * @return 创建好的Archive对象
      */
@@ -117,7 +126,7 @@ abstract class Launcher {
         // 将代码的位置去转换成为URI
         val location = codeSource?.location?.toURI()
         val path = location?.schemeSpecificPart
-            ?: throw IllegalStateException("Unable to determine code source archive")
+            ?: throw IllegalStateException("无法找到CodeSource的归档文件")
 
         // 获取到URI当中的path转换成为文件
         val root = File(path)

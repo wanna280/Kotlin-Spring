@@ -48,6 +48,15 @@ interface Archive : Iterable<Archive.Entry> {
         // do something...
     }
 
+    /**
+     * 获取当前的归档文件内部嵌套的归档文件列表
+     *
+     * @param searchFilter 用于搜索的Filter
+     * @param includeFilter 需要去进行包含的Filter
+     * @return 从当前归档文件内部搜索到的Archive归档文件列表
+     */
+    fun getNestedArchives(searchFilter: EntryFilter, includeFilter: EntryFilter): Iterator<Archive>
+
     interface Entry {
 
         /**

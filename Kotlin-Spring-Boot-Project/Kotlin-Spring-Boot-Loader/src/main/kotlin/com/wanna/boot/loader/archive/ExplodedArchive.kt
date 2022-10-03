@@ -25,4 +25,11 @@ open class ExplodedArchive(val root: File) : Archive {
     override fun getManifest(): Manifest {
         TODO("Not yet implemented")
     }
+
+    override fun getNestedArchives(
+        searchFilter: Archive.EntryFilter,
+        includeFilter: Archive.EntryFilter
+    ): Iterator<Archive> {
+        TODO("Not yet implemented")
+    }
 }

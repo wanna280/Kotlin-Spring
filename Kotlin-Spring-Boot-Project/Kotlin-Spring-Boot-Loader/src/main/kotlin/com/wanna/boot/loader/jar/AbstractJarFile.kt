@@ -46,6 +46,14 @@ abstract class AbstractJarFile(file: File) : java.util.jar.JarFile(file) {
     abstract fun getJarFileType(): JarFileType
 
     /**
+     * 获取当前JarFile的类型
+     *
+     * @return 当前JarFile的类型
+     * @see getJarFileType
+     */
+    open fun getType(): JarFileType = getJarFileType()
+
+    /**
      * 获取当前JarFile的Permission
      *
      * @return 当前JarFile的Permission
@@ -54,6 +62,9 @@ abstract class AbstractJarFile(file: File) : java.util.jar.JarFile(file) {
 
     /**
      * 描述了JarFile的类型
+     * * DIRECT-直接Jar包
+     * * NESTED_DIRECTORY-嵌套的文件夹
+     * *  NESTED_JAR-嵌套的Jar包
      */
     enum class JarFileType {
         DIRECT, NESTED_DIRECTORY, NESTED_JAR
