@@ -26,7 +26,7 @@ import java.util.zip.ZipEntry
  * @date 2022/10/4
  */
 class JarFile private constructor(
-    rootFile: RandomAccessDataFile, pathFromRoot: String, data: RandomAccessData, filter: JarEntryFilter?,
+    rootFile: RandomAccessDataFile, pathFromRoot: String, data: RandomAccessData?, filter: JarEntryFilter?,
     type: JarFileType, manifestSupplier: Supplier<Manifest>?
 ) : AbstractJarFile(rootFile.file), Iterable<java.util.jar.JarEntry> {
 
@@ -187,7 +187,7 @@ class JarFile private constructor(
         try {
             // 执行真正的CentralDirectory的解析工作，解析得到真正的Archive归档数据(跳过prefixBytes)...
             // 并回调Visitor的visitStart/visitFileHeader/visitEnd回调方法完成相关数据的统计工作...
-            this.data = parser.parse(data, filter == null)
+            this.data = parser.parse(data, filter == null)!!
         } catch (ex: RuntimeException) {
             try {
                 rootJarFile.close()
@@ -229,10 +229,13 @@ class JarFile private constructor(
     private constructor(
         rootFile: RandomAccessDataFile,
         pathFromRoot: String,
-        data: RandomAccessData,
+        data: RandomAccessData?,
         type: JarFileType
     ) : this(rootFile, pathFromRoot, data, null, type, null)
 
+    /**
+     * 创建一个访问CentralDirectory的Visitor，我们需要它的回调，去保存一些信息(comment和isSigned)
+     */
     private fun centralDirectoryVisitor(): CentralDirectoryVisitor {
         return object : CentralDirectoryVisitor {
             override fun visitStart(endRecord: CentralDirectoryEndRecord, centralDirectoryData: RandomAccessData) {
@@ -301,27 +304,61 @@ class JarFile private constructor(
      *
      * @return JarFileEntry迭代器
      */
-    override fun iterator(): MutableIterator<java.util.jar.JarEntry> = entries.iterator { ensureOpen() }
+    override fun iterator(): Iterator<java.util.jar.JarEntry> = entries.iterator { ensureOpen() }
 
-    fun getJarEntry(name: CharSequence): JarEntry = entries.getEntry(name)
+    /**
+     * 根据文件名，从Jar包内部去获取到JarEntry
+     *
+     * @param name 文件名
+     * @return JarEntry
+     */
+    fun getJarEntry(name: CharSequence): JarEntry? = entries.getEntry(name)
 
-    override fun getJarEntry(name: String): JarEntry = getEntry(name) as JarEntry
+    /**
+     * 根据文件名，从Jar包内部去获取到JarEntry
+     *
+     * @param name 文件名
+     * @return JarEntry
+     */
+    override fun getJarEntry(name: String): JarEntry? = getEntry(name) as JarEntry?
 
+    /**
+     * 根据文件名，判断Jar包当中是否存在有该JarEntry？
+     *
+     * @param name 文件名
+     * @return 如果存在，return true；不存在return false
+     */
     fun containsEntry(name: String): Boolean = entries.containsEntry(name)
 
-    override fun getEntry(name: String): ZipEntry {
+    /**
+     * 根据文件名，从Jar包内部去获取到JarEntry
+     *
+     * @param name 文件名
+     * @return JarEntry
+     */
+    override fun getEntry(name: String): ZipEntry? {
         ensureOpen()
         return entries.getEntry(name)
     }
 
+    /**
+     * 获取当前JarFile的输入流
+     *
+     * @return 输入流
+     */
     @Throws(IOException::class)
     override fun getInputStream() = data.getInputStream()
 
+    /**
+     * 获取指定的ZipEntry的输入流
+     *
+     * @return 输入流
+     */
     @Synchronized
     @Throws(IOException::class)
     override fun getInputStream(entry: ZipEntry): InputStream {
         ensureOpen()
-        return if (entry is JarEntry) entries.getInputStream(entry) else getInputStream(entry.name)
+        return if (entry is JarEntry) entries.getInputStream(entry)!! else getInputStream(entry.name)!!
     }
 
     /**
@@ -331,7 +368,7 @@ class JarFile private constructor(
      * @return InputStream
      */
     @Throws(IOException::class)
-    fun getInputStream(name: String): InputStream = entries.getInputStream(name)
+    fun getInputStream(name: String): InputStream? = entries.getInputStream(name)
 
 
     /**
@@ -345,7 +382,7 @@ class JarFile private constructor(
 
 
     /**
-     * 根据给定的JarEntry去生成一个嵌套的JarFiel
+     * 根据给定的JarEntry去生成一个嵌套的JarFile
      *
      * @param entry JarEntry
      * @return JarFile
@@ -361,16 +398,15 @@ class JarFile private constructor(
     }
 
     /**
-     * 根据JarEntry去创建JarFile
+     * 根据JarEntry去创建JarFile，支持是一个文件夹(比如"BOOT-INF/classes/")，也支持是一个文件，比如"xxx.jar"
      *
      * @param entry JarEntry
      * @return JarFile
      */
     @Throws(IOException::class)
     private fun createJarFileFromEntry(entry: JarEntry): JarFile {
-        return if (entry.isDirectory) {
-            createJarFileFromDirectoryEntry(entry)
-        } else createJarFileFromFileEntry(entry)
+        return if (entry.isDirectory) createJarFileFromDirectoryEntry(entry)
+        else createJarFileFromFileEntry(entry)
     }
 
     /**
@@ -400,6 +436,7 @@ class JarFile private constructor(
      */
     @Throws(IOException::class)
     private fun createJarFileFromFileEntry(entry: JarEntry): JarFile {
+        // 如果需要对内部的文件去进行创建JarFile(Jar包)，那么内部的JarFile(Jar包)的存放方式只能是直接存放，不能被压缩过...
         check(entry.method == ZipEntry.STORED) {
             ("Unable to open nested entry '" + entry.name + "'. It has been compressed and nested "
                     + "jar files must be stored without compression. Please check the "
@@ -476,7 +513,7 @@ class JarFile private constructor(
 
     override fun getName(): String = rootJarFile.file.toString() + pathFromRoot
 
-    fun getCertification(entry: JarEntry?): JarEntryCertification {
+    fun getCertification(entry: JarEntry): JarEntryCertification {
         return try {
             entries.getCertification(entry)
         } catch (ex: IOException) {

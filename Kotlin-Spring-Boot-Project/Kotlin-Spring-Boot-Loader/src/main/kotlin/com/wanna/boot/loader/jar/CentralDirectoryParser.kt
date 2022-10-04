@@ -13,6 +13,10 @@ import java.io.IOException
  */
 internal class CentralDirectoryParser {
     companion object {
+
+        /**
+         * CentralDirectory当中的Header基础大小
+         */
         private const val CENTRAL_DIRECTORY_HEADER_BASE_SIZE = 46
     }
 
@@ -23,6 +27,12 @@ internal class CentralDirectoryParser {
      */
     private val visitors: MutableList<CentralDirectoryVisitor> = ArrayList()
 
+    /**
+     * 添加一个Visitor到当前的Parser当中，在parse方法执行时，visit方法将会被自动执行
+     *
+     * @param visitor visitor
+     * @return Visitor
+     */
     fun <T : CentralDirectoryVisitor> addVisitor(visitor: T): T {
         visitors.add(visitor)
         return visitor
@@ -38,8 +48,8 @@ internal class CentralDirectoryParser {
      * @throws IOException 发生IO错误
      */
     @Throws(IOException::class)
-    fun parse(data: RandomAccessData, skipPrefixBytes: Boolean): RandomAccessData {
-        var newData = data
+    fun parse(data: RandomAccessData?, skipPrefixBytes: Boolean): RandomAccessData? {
+        var newData = data ?: return null
 
         // 解析Zip文件的结束标识符EOCD
         val endRecord = CentralDirectoryEndRecord(newData)
@@ -52,23 +62,46 @@ internal class CentralDirectoryParser {
         // 解析得到CentralDirectory的数据
         val centralDirectoryData = endRecord.getCentralDirectory(newData)
 
+        // callback visitStart
         visitStart(endRecord, centralDirectoryData)
+
+        // parse Entries(callback visitFileHeader)
         parseEntries(endRecord, centralDirectoryData)
+
+        // callback visitEnd
         visitEnd()
         return newData
     }
 
+    /**
+     * 解析所有的JarEntry(ZipEntry)
+     *
+     * @param endRecord ZIP归档文件的结束标识符(EOCD)
+     * @param centralDirectoryData CentralDirectory数据
+     */
     @Throws(IOException::class)
     private fun parseEntries(endRecord: CentralDirectoryEndRecord, centralDirectoryData: RandomAccessData) {
+        // 将CentralDirectory当中的数据全部读取出来放到ByteArray当中
         val bytes = centralDirectoryData.read(0, centralDirectoryData.getSize())
         val fileHeader = CentralDirectoryFileHeader()
+
+        // FileHeader偏移量，初始化为0，代表只想了CentralDirectory当中的第一个FileHeader
         var dataOffset = 0
+
+        // 遍历所有的CentralDirectoryFileHeader(EOCD当中已经存起来了的CentralDirectoryFileHeader数量)，去进行处理
+        // 每个CentralDirectoryFileHeader对应了一个FileEntry(ZipEntry/JarEntry)
         for (i in 0 until endRecord.numberOfRecords) {
+
+            // 根据CentralDirectory当中的一个元素的数据(CentralDirectoryFileHeader)，去加载到FileHeader
             fileHeader.load(bytes, dataOffset, null, 0, null)
+
+            // visitFileHeader
             visitFileHeader(dataOffset.toLong(), fileHeader)
+
+            // 计算偏移量，方便下次遍历时，根据offset去找到合适的FileHeader
+            // 当前FileHeader的长度=46+fileNameSize+fileCommentSize+extraSize
             dataOffset += (CENTRAL_DIRECTORY_HEADER_BASE_SIZE + fileHeader.getName()!!
-                .length()
-                    + fileHeader.getComment().length() + fileHeader.getExtra().size)
+                .length() + fileHeader.getComment().length() + fileHeader.getExtra().size)
         }
     }
 
@@ -90,21 +123,30 @@ internal class CentralDirectoryParser {
         else data.getSubsection(offset, data.getSize() - offset)
     }
 
+    /**
+     * visitStart，需要回调所有的Visitor
+     *
+     * @param endRecord EOCD
+     * @param centralDirectoryData CentralDirectoryData
+     */
     private fun visitStart(endRecord: CentralDirectoryEndRecord, centralDirectoryData: RandomAccessData) {
-        for (visitor in visitors) {
-            visitor.visitStart(endRecord, centralDirectoryData)
-        }
+        visitors.forEach { it.visitStart(endRecord, centralDirectoryData) }
     }
 
+    /**
+     * visitFileHeader，需要回调所有的Visitor
+     *
+     * @param dataOffset 当前的FileHeader相对CentralDirectory的偏移量
+     * @param fileHeader 当前正在访问的FileHeader
+     */
     private fun visitFileHeader(dataOffset: Long, fileHeader: CentralDirectoryFileHeader) {
-        for (visitor in visitors) {
-            visitor.visitFileHeader(fileHeader, dataOffset)
-        }
+        visitors.forEach { it.visitFileHeader(fileHeader, dataOffset) }
     }
 
+    /**
+     * visitEnd，需要回调所有的Visitor
+     */
     private fun visitEnd() {
-        for (visitor in visitors) {
-            visitor.visitEnd()
-        }
+        visitors.forEach(CentralDirectoryVisitor::visitEnd)
     }
 }

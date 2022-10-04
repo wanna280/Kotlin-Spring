@@ -16,7 +16,6 @@
 package com.wanna.boot.loader.jar
 
 import java.security.CodeSigner
-import com.wanna.boot.loader.jar.JarEntryCertification
 import java.security.cert.Certificate
 import java.util.jar.JarEntry
 
@@ -38,6 +37,10 @@ class JarEntryCertification(
     fun getCodeSigners(): Array<CodeSigner>? = codeSigners?.clone()
 
     companion object {
+
+        /**
+         * 没有签名的JarEntryCertification的常量
+         */
         @JvmField
         val NONE = JarEntryCertification(null, null)
 

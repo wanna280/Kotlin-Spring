@@ -7,6 +7,7 @@ import java.util.zip.Inflater
 import java.util.zip.InflaterInputStream
 
 /**
+ * 提供压缩文件的读取的输入流
  *
  * @author jianchao.jia
  * @version v1.0

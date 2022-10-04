@@ -37,7 +37,7 @@ abstract class AbstractJarFile(file: File) : java.util.jar.JarFile(file) {
      * @throws IOException 如果找不到该Jar包文件的话
      */
     @Throws(IOException::class)
-    abstract fun getInputStream(): InputStream
+    abstract fun getInputStream(): InputStream?
 
     /**
      * 获取当前的JarFile的类型
