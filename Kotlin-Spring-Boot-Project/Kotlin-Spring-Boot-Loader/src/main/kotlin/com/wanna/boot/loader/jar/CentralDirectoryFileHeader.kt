@@ -2,9 +2,10 @@ package com.wanna.boot.loader.jar
 
 import com.wanna.boot.loader.data.RandomAccessData
 import java.io.IOException
+import java.util.zip.ZipEntry
 
 /**
- * 描述一个ZIP文件的"Central directory file header record"
+ * 描述一个ZIP文件的中央文件夹的FileHeader，也就是"Central directory file header record"
  *
  * @author jianchao.jia
  * @version v1.0
@@ -27,12 +28,17 @@ class CentralDirectoryFileHeader(
     companion object {
         private val SLASH = AsciiBytes("/")
 
+        /**
+         * Central Directory Header的最小长度为46
+         */
+        private const val CENTRAL_DIRECTORY_HEADER_MINIMUM_LENGTH = 46L
+
         private val NO_EXTRA = byteArrayOf()
 
         private val NO_COMMENT = AsciiBytes("")
 
         /**
-         * 从RandomAccessData去构建FileHeader
+         * 从RandomAccessData去构建CentralDirectoryFileHeader
          *
          * @return FileHeader
          */
@@ -43,7 +49,8 @@ class CentralDirectoryFileHeader(
             jarEntryFilter: JarEntryFilter?
         ): CentralDirectoryFileHeader {
             val fileHeader = CentralDirectoryFileHeader()
-            val bytes = randomAccessData.read(offset, 46)
+            // 从文件当中，根据偏移量offset，去读取46个字节的长度，并解析到CentralDirectoryFileHeader当中
+            val bytes = randomAccessData.read(offset, CENTRAL_DIRECTORY_HEADER_MINIMUM_LENGTH)
             fileHeader.load(bytes, 0, randomAccessData, offset, jarEntryFilter)
             return fileHeader
         }
@@ -51,16 +58,16 @@ class CentralDirectoryFileHeader(
 
     @Throws(IOException::class)
     fun load(
-        data: ByteArray?,
+        data: ByteArray,
         dataOffset: Int,
         variableData: RandomAccessData?,
         variableOffset: Long,
         filter: JarEntryFilter?
     ) {
-        // Load fixed part
+        // 加载CentralDirectoryFileHeader当中固定的部分
         var data = data
         var dataOffset = dataOffset
-        header = data!!
+        header = data
         headerOffset = dataOffset
         val compressedSize = Bytes.littleEndianValue(data, dataOffset + 20, 4)
         val uncompressedSize = Bytes.littleEndianValue(data, dataOffset + 24, 4)
@@ -68,7 +75,8 @@ class CentralDirectoryFileHeader(
         val extraLength = Bytes.littleEndianValue(data, dataOffset + 30, 2)
         val commentLength = Bytes.littleEndianValue(data, dataOffset + 32, 2)
         val localHeaderOffset = Bytes.littleEndianValue(data, dataOffset + 42, 4)
-        // Load variable part
+
+        // 加载CentralDirectoryFileHeader当中可能会有变化的部分
         dataOffset += 46
         if (variableData != null) {
             data = variableData.read(variableOffset + 46, nameLength + extraLength + commentLength)
@@ -120,6 +128,14 @@ class CentralDirectoryFileHeader(
         throw IOException("Zip64 Extended Information Extra Field not found")
     }
 
+    /**
+     * 返回ZIP归档当中，当前数据的压缩数据的方式(DEFLATED/STORED)
+     * STORED(0)代表该文件没有被压缩，DEFLATED(8)代表该文件被压缩过
+     *
+     * @see ZipEntry.DEFLATED
+     * @see ZipEntry.STORED
+     * @return 压缩数据的方式(0/8)
+     */
     override fun getMethod() = Bytes.littleEndianValue(header, headerOffset + 10, 2).toInt()
 
     /**
@@ -139,10 +155,15 @@ class CentralDirectoryFileHeader(
      */
     override fun getLocalHeaderOffset() = localHeaderOffset
 
+    /**
+     * 获取当前文件名
+     *
+     * @return 文件名
+     */
     fun getName(): AsciiBytes? = this.name
 
     /**
-     * 判断当前是否是一个文件夹？
+     * 判断当前文件是否是一个文件夹？
      */
     fun isDirectory(): Boolean = this.name?.endsWith(SLASH) ?: false
 
@@ -152,7 +173,17 @@ class CentralDirectoryFileHeader(
 
     fun getComment(): AsciiBytes = this.comment
 
+    /**
+     * 获取该Entry被压缩之后的大小
+     *
+     * @return 被压缩之后的大小
+     */
     override fun getCompressedSize() = Bytes.littleEndianValue(header, headerOffset + 20, 4)
 
+    /**
+     * 获取该Entry被压缩之前的大小
+     *
+     * @return 被压缩之前的大小
+     */
     override fun getSize() = Bytes.littleEndianValue(header, headerOffset + 24, 4)
 }

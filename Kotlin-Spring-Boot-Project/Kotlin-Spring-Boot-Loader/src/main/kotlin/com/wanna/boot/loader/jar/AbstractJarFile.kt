@@ -62,10 +62,11 @@ abstract class AbstractJarFile(file: File) : java.util.jar.JarFile(file) {
     abstract fun getPermission(): Permission
 
     /**
-     * 描述了JarFile的类型
+     * 描述了JarFile的类型的枚举值
+     *
      * * DIRECT-直接Jar包
      * * NESTED_DIRECTORY-嵌套的文件夹
-     * *  NESTED_JAR-嵌套的Jar包
+     * * NESTED_JAR-嵌套的Jar包
      */
     enum class JarFileType {
         DIRECT, NESTED_DIRECTORY, NESTED_JAR

@@ -6,7 +6,8 @@ import java.lang.IndexOutOfBoundsException
 import kotlin.jvm.Throws
 
 /**
- * 支持去通过随机访问的Data
+ * 支持去通过随机访问的Data，也就是支持去把整个数据当做数组的方式去进行读取；
+ * 只需要根据offset/length就可以去读取到一定区间的范围内的数据
  *
  * @author jianchao.jia
  * @version v1.0
