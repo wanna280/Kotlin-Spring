@@ -1,7 +1,5 @@
 package com.wanna.boot.loader
 
-import kotlin.jvm.Throws
-
 /**
  * Main方法的Runner
  *
@@ -12,7 +10,7 @@ import kotlin.jvm.Throws
  * @param mainClassName 主类名
  * @param args 方法参数(命令行参数)
  */
-class MainMethodRunner(val mainClassName: String, val args: Array<String>) {
+class MainMethodRunner(private val mainClassName: String, private val args: Array<String>) {
 
     /**
      * 执行main方法，去进行启动应用(使用的是ContextClassLoader去进行的类加载)

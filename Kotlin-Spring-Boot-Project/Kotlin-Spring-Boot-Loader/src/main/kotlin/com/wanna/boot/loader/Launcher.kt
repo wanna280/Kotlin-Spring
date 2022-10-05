@@ -28,6 +28,7 @@ abstract class Launcher {
      *
      * @param args 启动应用时需要用到的方法参数列表(命令行参数)
      */
+    @kotlin.jvm.Throws(Exception::class)
     protected open fun launch(args: Array<String>) {
         // 如果当前不是一个解压的包的话，那么需要注册URLProtocolHandler
         if (!isExploded()) {
@@ -50,6 +51,7 @@ abstract class Launcher {
      * @param args args
      * @param launchClass 启动类
      */
+    @Throws(Exception::class)
     protected open fun launch(args: Array<String>, launchClass: String, classLoader: ClassLoader) {
         // 设置Thread ContextClassLoader，后续加载main方法所在的类时，就会使用到这个ClassLoader
         Thread.currentThread().contextClassLoader = classLoader

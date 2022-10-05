@@ -36,6 +36,7 @@ open class WarLauncher : ExecutableArchiveLauncher() {
          * @param args 命令行参数列表
          */
         @JvmStatic
+        @Throws(Exception::class)
         fun main(args: Array<String>) = WarLauncher().launch(args)
     }
 }
