@@ -19,9 +19,25 @@ import kotlin.collections.set
  */
 class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : URLStreamHandler() {
     companion object {
+
+        /**
+         * Jar协议常量
+         */
         private const val JAR_PROTOCOL = "jar:"
+
+        /**
+         * 文件协议常量
+         */
         private const val FILE_PROTOCOL = "file:"
+
+        /**
+         * Tomcat的War包的协议
+         */
         private const val TOMCAT_WARFILE_PROTOCOL = "war:file:"
+
+        /**
+         * Jar包的分隔符
+         */
         private const val SEPARATOR = "!/"
         private val SEPARATOR_PATTERN = Pattern.compile(SEPARATOR, Pattern.LITERAL)
         private const val CURRENT_DIR = "/./"
@@ -30,6 +46,10 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
         private const val PROTOCOL_HANDLER = "java.protocol.handler.pkgs"
         private val FALLBACK_HANDLERS = arrayOf("sun.net.www.protocol.jar.Handler")
         private var jarContextUrl: URL? = null
+
+        /**
+         * RootFile的缓存，软引用
+         */
         private var rootFileCache: SoftReference<MutableMap<File, JarFile>> = SoftReference(null)
 
         @JvmStatic
@@ -37,11 +57,12 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
             JarURLConnection.setUseFastExceptions(useFastConnectionExceptions)
 
         /**
-         * Add the given [JarFile] to the root file cache.
+         * 添加一个给定的JarFile当中RootFileCache当中
          *
-         * @param sourceFile the source file to add
-         * @param jarFile    the jar file.
+         * @param sourceFile sourceFile(Key)
+         * @param jarFile JarFile(Value)
          */
+        @JvmStatic
         fun addToRootFileCache(sourceFile: File, jarFile: JarFile) {
             var cache = rootFileCache.get()
             if (cache == null) {
@@ -55,6 +76,7 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
          * 如果可能的话，捕捉一个可以被原来的JarHandler去进行配置的URL；以便后续我们可以使用它去作为Fallback的上下文；
          * 我们仅仅只是想要知道一下最原始是什么，很快我们就会将JarHandler给重设回去
          */
+        @JvmStatic
         fun captureJarContextUrl() {
             if (canResetCachedUrlHandlers()) {
                 val handlers = System.getProperty(PROTOCOL_HANDLER)
@@ -90,6 +112,9 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
             }
         }
 
+        /**
+         * reset已经缓存的URLStreamHandler列表
+         */
         @JvmStatic
         private fun resetCachedUrlHandlers() = URL.setURLStreamHandlerFactory(null)
     }
@@ -110,17 +135,37 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
             throw IllegalStateException("Unable to find fallback handler")
         }
 
+    /**
+     * 根据给定的的URL，去开启URLConnection
+     *
+     * @param url URL
+     * @return URLConnection
+     */
     @Throws(IOException::class)
     override fun openConnection(url: URL): URLConnection {
+
+        // 如果给定的URL，在JarFile的内部的话，那么我们直接创建一个JarURLConnection
         return if (jarFile != null && isUrlInJarFile(url, jarFile)) {
             JarURLConnection[url, jarFile]
+
+            // 如果给定的URL不在JarFile内部的话，那么我们尝试根据RootJarFile去进行创建
+            // 如果创建失败的话，那么我们尝试一下fallback的URLConnection
         } else try {
             JarURLConnection[url, getRootJarFileFromUrl(url)]
         } catch (ex: Exception) {
+
+            // 尝试使用fallback的Connection
             openFallbackConnection(url, ex)
         }
     }
 
+    /**
+     * 判断给定的url是否在JarFile当中
+     *
+     * @param url url
+     * @param jarFile JarFile
+     * @return 如果该URL在JarFile当中(根据路径的前缀去进行匹配)，return true；否则return false
+     */
     @Throws(MalformedURLException::class)
     private fun isUrlInJarFile(url: URL, jarFile: JarFile): Boolean {
         // Try the path first to save building a new url string each time
@@ -128,11 +173,24 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
                 && url.toString().startsWith(jarFile.urlString!!))
     }
 
+    /**
+     * 打开fallback的Connection
+     *
+     * @param url url
+     * @param reason 异常原因
+     * @return URLConnection
+     */
     @Throws(IOException::class)
     private fun openFallbackConnection(url: URL, reason: Exception): URLConnection {
         return try {
+
+            // 尝试打开Tomcat的War包的URLConnection
             var connection = openFallbackTomcatConnection(url)
+
+            // 如果尝试Tomcat的War包不行的话，那么我们尝试使用jarContextUrl去进行尝试
             connection = connection ?: openFallbackContextConnection(url)
+
+            // 如果还不行的话，那么我们使用fallback的Jar URLStreamHandler去进行打开
             connection ?: openFallbackHandlerConnection(url)
         } catch (ex: Exception) {
             if (reason is IOException) {
@@ -148,13 +206,8 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
     }
 
     /**
-     * Attempt to open a Tomcat formatted 'jar:war:file:...' URL. This method allows us to
-     * use our own nested JAR support to open the content rather than the logic in
-     * `sun.net.www.protocol.jar.URLJarFile` which will extract the nested jar to
-     * the temp folder to that its content can be accessed.
-     *
-     * @param url the URL to open
-     * @return a [URLConnection] or `null`
+     * 尝试使用Tomcat的"jar:war:file:..."这样的URL，这种方式允许我们使用内部的Jar的支持，
+     * 而不是使用[sun.net.www.protocol.jar.URLJarFile]的逻辑去提取内部的Jar包到一个我们可以临时的文件夹
      */
     private fun openFallbackTomcatConnection(url: URL): URLConnection? {
         var file = url.file
@@ -166,11 +219,18 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
                 connection.getInputStream().close()
                 return connection
             } catch (ex: IOException) {
+                // ignore
             }
         }
         return null
     }
 
+    /**
+     * 判断给定的文件名是否是一个Tomcat的War包的URL
+     *
+     * @param file fileName
+     * @return 如果file以"war:file:"开头的话，说明它是一个Tomcat的War包的URL，return true；否则return false
+     */
     private fun isTomcatWarUrl(file: String): Boolean {
         if (file.startsWith(TOMCAT_WARFILE_PROTOCOL) || !file.contains("*/")) {
             try {
@@ -179,19 +239,18 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
                     return true
                 }
             } catch (ex: Exception) {
+                // ignore
             }
         }
         return false
     }
 
+
     /**
-     * Attempt to open a fallback connection by using a context URL captured before the
-     * jar handler was replaced with our own version. Since this method doesn't use
-     * reflection it won't trigger "illegal reflective access operation has occurred"
-     * warnings on Java 13+.
+     * 根据之前捕捉到的jarContextUrl(在替换成为我们的Handler之前，有捕捉原始的jarContextUrl)去创建fallback URLConnection
      *
-     * @param url the URL to open
-     * @return a [URLConnection] or `null`
+     * @param url url
+     * @return URLConnection(不存在jarContextUrl，或者打开失败，return null)
      */
     private fun openFallbackContextConnection(url: URL): URLConnection? {
         try {
@@ -199,17 +258,17 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
                 return URL(jarContextUrl, url.toExternalForm()).openConnection()
             }
         } catch (ex: Exception) {
+            // ignore
         }
         return null
     }
 
+
     /**
-     * Attempt to open a fallback connection by using reflection to access Java's default
-     * jar [URLStreamHandler].
+     * 尝试使用反射去访问Java的默认的Jar包的[URLStreamHandler]去作为fallback的Connection
      *
-     * @param url the URL to open
-     * @return the [URLConnection]
-     * @throws Exception if not connection could be opened
+     * @param url url
+     * @return URLConnection
      */
     @Throws(Exception::class)
     private fun openFallbackHandlerConnection(url: URL): URLConnection {
@@ -302,13 +361,9 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
         return file
     }
 
-    private fun replaceCurrentDir(file: String): String {
-        return CURRENT_DIR_PATTERN.matcher(file).replaceAll("/")
-    }
+    private fun replaceCurrentDir(file: String): String = CURRENT_DIR_PATTERN.matcher(file).replaceAll("/")
 
-    override fun hashCode(u: URL): Int {
-        return hashCode(u.protocol, u.file)
-    }
+    override fun hashCode(u: URL): Int = hashCode(u.protocol, u.file)
 
     private fun hashCode(protocol: String?, file: String): Int {
         var result = protocol?.hashCode() ?: 0
@@ -327,6 +382,13 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
         return result
     }
 
+    /**
+     * 判断给定的两个URL是否是相同的文件？
+     *
+     * @param u1 url1
+     * @param u2 url2
+     * @return 如果是同一个文件return true，否则return false
+     */
     override fun sameFile(u1: URL, u2: URL): Boolean {
         if (u1.protocol != "jar" || u2.protocol != "jar") {
             return false
@@ -355,27 +417,39 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
         return super.sameFile(u1, u2)
     }
 
-    private fun canonicalize(path: String): String {
-        return SEPARATOR_PATTERN.matcher(path).replaceAll("/")
-    }
+    private fun canonicalize(path: String): String = SEPARATOR_PATTERN.matcher(path).replaceAll("/")
 
+    /**
+     * 根据一个给定的URL，去获取该URL的RootJarFile
+     *
+     * @param url url
+     * @return 该URL对应的RootJarFile
+     */
     @Throws(IOException::class)
     fun getRootJarFileFromUrl(url: URL): JarFile {
         val spec = url.file
+        // 找到URL当中的"!/"
         val separatorIndex = spec.indexOf(SEPARATOR)
         if (separatorIndex == -1) {
             throw MalformedURLException("Jar URL does not contain !/ separator")
         }
+        // 把URL当中的"!/"后面的部分去掉
         val name = spec.substring(0, separatorIndex)
         return getRootJarFile(name)
     }
 
+    /**
+     * 根据urlString(fileName)去获取到该URL的RootJar
+     *
+     * @param name urlString(fileName)
+     * @return RootJarFile
+     */
     @Throws(IOException::class)
     private fun getRootJarFile(name: String): JarFile {
         return try {
-            check(name.startsWith(FILE_PROTOCOL)) { "Not a file URL" }
+            check(name.startsWith(FILE_PROTOCOL)) { "给定的url不是一个文件协议(file:)的URL" }
             val file = File(URI.create(name))
-            val cache: Map<File, JarFile>? = rootFileCache!!.get()
+            val cache: Map<File, JarFile>? = rootFileCache.get()
             var result = cache?.get(file)
             if (result == null) {
                 result = JarFile(file)
