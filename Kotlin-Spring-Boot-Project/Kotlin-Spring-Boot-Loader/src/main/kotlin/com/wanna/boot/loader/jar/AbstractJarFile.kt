@@ -8,8 +8,9 @@ import java.net.URL
 import java.security.Permission
 
 /**
- * 描述了一个Jar包的相关洗洗脑
- * 这是一个抽象的JarFile的实现，直接去继承java.util.jar包下的JarFile；
+ *
+ * 这是一个抽象的JarFile的实现，它描述了一个Jar包的更多的相关细节功能；
+ * 直接去继承[java.util.jar.JarFile]为了扩展JarFile的相关功能，
  * 为SpringBootLoader当中的JarFile的实现提供基础
  *
  * @author jianchao.jia
@@ -36,7 +37,7 @@ abstract class AbstractJarFile(file: File) : java.util.jar.JarFile(file) {
      * @throws IOException 如果找不到该Jar包文件的话
      */
     @Throws(IOException::class)
-    abstract fun getInputStream(): InputStream
+    abstract fun getInputStream(): InputStream?
 
     /**
      * 获取当前的JarFile的类型
@@ -46,6 +47,14 @@ abstract class AbstractJarFile(file: File) : java.util.jar.JarFile(file) {
     abstract fun getJarFileType(): JarFileType
 
     /**
+     * 获取当前JarFile的类型
+     *
+     * @return 当前JarFile的类型
+     * @see getJarFileType
+     */
+    open fun getType(): JarFileType = getJarFileType()
+
+    /**
      * 获取当前JarFile的Permission
      *
      * @return 当前JarFile的Permission
@@ -53,7 +62,11 @@ abstract class AbstractJarFile(file: File) : java.util.jar.JarFile(file) {
     abstract fun getPermission(): Permission
 
     /**
-     * 描述了JarFile的类型
+     * 描述了JarFile的类型的枚举值
+     *
+     * * DIRECT-直接Jar包
+     * * NESTED_DIRECTORY-嵌套的文件夹
+     * * NESTED_JAR-嵌套的Jar包
      */
     enum class JarFileType {
         DIRECT, NESTED_DIRECTORY, NESTED_JAR

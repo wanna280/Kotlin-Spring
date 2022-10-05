@@ -4,7 +4,7 @@ package com.wanna.boot.loader.debug
  *
  * @author jianchao.jia
  * @version v1.0
- * @date 2022/10/3
+ * @date 2022/10/5
  */
 class DebugApp {
     companion object {

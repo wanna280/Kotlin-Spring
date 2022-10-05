@@ -32,7 +32,7 @@ interface Archive : Iterable<Archive.Entry> {
      * @throws IOException 如果找不到Manifest文件的话
      */
     @Throws(IOException::class)
-    fun getManifest(): Manifest
+    fun getManifest(): Manifest?
 
     /**
      * 当前的归档文件是否已经被解压(unpack-解压)了？默认为false
@@ -47,6 +47,15 @@ interface Archive : Iterable<Archive.Entry> {
     fun close() {
         // do something...
     }
+
+    /**
+     * 获取当前的归档文件内部嵌套的归档文件列表
+     *
+     * @param searchFilter 用于搜索的Filter
+     * @param includeFilter 需要去进行包含的Filter
+     * @return 从当前归档文件内部搜索到的Archive归档文件列表
+     */
+    fun getNestedArchives(searchFilter: EntryFilter, includeFilter: EntryFilter): Iterator<Archive>
 
     interface Entry {
 
@@ -73,7 +82,7 @@ interface Archive : Iterable<Archive.Entry> {
         /**
          * 对ArchiveEntry去进行过滤
          *
-         * @param entry entry
+         * @param entry ArchiveEntry
          * @return 如果当前Entry匹配的话，那么return true；否则return false
          */
         fun matches(entry: Entry): Boolean
