@@ -7,5 +7,11 @@ package com.wanna.boot
  * @see ConfigurableBootstrapContext
  */
 interface Bootstrapper {
+
+    /**
+     * 对BootstrapRegistry去进行初始化
+     *
+     * @param bootstrapRegistry BootstrapRegistry
+     */
     fun initialize(bootstrapRegistry: BootstrapRegistry)
 }
