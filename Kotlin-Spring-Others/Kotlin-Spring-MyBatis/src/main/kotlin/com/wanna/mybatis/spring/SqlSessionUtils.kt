@@ -1,5 +1,6 @@
 package com.wanna.mybatis.spring
 
+import com.wanna.framework.dao.support.PersistenceExceptionTranslator
 import com.wanna.framework.transaction.support.TransactionSynchronizationManager
 import org.apache.ibatis.session.ExecutorType
 import org.apache.ibatis.session.SqlSession
@@ -20,7 +21,11 @@ object SqlSessionUtils {
      * @param executorType 执行器类型
      */
     @JvmStatic
-    fun getSqlSession(sqlSessionFactory: SqlSessionFactory, executorType: ExecutorType): SqlSession {
+    fun getSqlSession(
+        sqlSessionFactory: SqlSessionFactory,
+        executorType: ExecutorType,
+        exceptionTranslator: PersistenceExceptionTranslator
+    ): SqlSession {
 
         // 1.如果存在有事务的话，那么可以从事务同步管理器当中去获取SqlSession，这样就保证每次CRUD操作，都获取到的是该SqlSession
         val sqlSessionHolder = TransactionSynchronizationManager.getResource(sqlSessionFactory) as SqlSessionHolder?
