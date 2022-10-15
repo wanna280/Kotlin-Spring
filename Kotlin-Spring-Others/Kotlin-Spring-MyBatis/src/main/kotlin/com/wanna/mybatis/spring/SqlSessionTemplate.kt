@@ -118,32 +118,25 @@ class SqlSessionTemplate(
         getSqlSessionProxy().select(statement, parameter, rowBounds, handler)
 
     override fun insert(statement: String?): Int = getSqlSessionProxy().insert(statement)
-
     override fun insert(statement: String?, parameter: Any?): Int = getSqlSessionProxy().insert(statement, parameter)
 
     override fun update(statement: String?): Int = getSqlSessionProxy().update(statement)
-
     override fun update(statement: String?, parameter: Any?): Int = getSqlSessionProxy().update(statement, parameter)
 
     override fun delete(statement: String?): Int = getSqlSessionProxy().delete(statement)
-
     override fun delete(statement: String?, parameter: Any?): Int = getSqlSessionProxy().delete(statement, parameter)
 
-    override fun commit() = throw UnsupportedOperationException("不支持这样的操作")
-
-    override fun commit(force: Boolean) = throw UnsupportedOperationException("不支持这样的操作")
-
-    override fun rollback() = throw UnsupportedOperationException("不支持这样的操作")
-
-    override fun rollback(force: Boolean) = throw UnsupportedOperationException("不支持这样的操作")
-
-    override fun close() = throw UnsupportedOperationException("不支持这样的操作")
-
     override fun flushStatements(): MutableList<BatchResult> = getSqlSessionProxy().flushStatements()
-
     override fun clearCache() = getSqlSessionProxy().clearCache()
-
     override fun getConfiguration(): Configuration = getSqlSessionProxy().configuration
-
     override fun getConnection(): Connection = getSqlSessionProxy().connection
+
+    /**
+     * 对于提交、回滚、关闭等操作，均不允许，对于这些操作都全权交给Spring去进行管理
+     */
+    override fun commit() = throw UnsupportedOperationException("不支持这样的操作")
+    override fun commit(force: Boolean) = throw UnsupportedOperationException("不支持这样的操作")
+    override fun rollback() = throw UnsupportedOperationException("不支持这样的操作")
+    override fun rollback(force: Boolean) = throw UnsupportedOperationException("不支持这样的操作")
+    override fun close() = throw UnsupportedOperationException("不支持这样的操作")
 }

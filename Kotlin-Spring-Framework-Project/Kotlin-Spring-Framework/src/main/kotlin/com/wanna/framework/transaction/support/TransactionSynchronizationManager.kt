@@ -8,10 +8,14 @@ import org.slf4j.LoggerFactory
  */
 object TransactionSynchronizationManager {
 
-    // Logger
+    /**
+     * Logger
+     */
     private val logger = LoggerFactory.getLogger(TransactionSynchronizationManager::class.java)
 
-    // 维护事务的资源信息，比如Jdbc的事务连接对象，需要通过一个Key(比如DataSource)来去进行获取
+    /**
+     * 维护事务的资源信息，比如Jdbc的事务连接对象，需要通过一个Key(比如DataSource)来去进行获取
+     */
     private val resources: ThreadLocal<MutableMap<Any, Any>> = NamedThreadLocal("Transactional resources")
 
     /**
@@ -61,18 +65,32 @@ object TransactionSynchronizationManager {
         return doUnbindResource(key) ?: throw IllegalStateException("之前没有资源，无法去进行unbind")
     }
 
+    /**
+     * 执行资源和当前线程解开绑定
+     *
+     * @param key key
+     * @return 接触绑定之前绑定的资源
+     */
     private fun doUnbindResource(key: Any): Any? {
         val map = resources.get() ?: return null
         var value = map.remove(key)
         if (map.isEmpty()) {
             resources.remove()
         }
+
+        // 如果资源已经为空了，那么需要去进行remove掉
         if (value is ResourceHolder && value.isVoid()) {
             value = null
         }
         return value
     }
 
+    /**
+     * 真正地去获取Resource(如果Resource当中已经为空了，那么需要从缓存当中去进行移出掉)
+     *
+     * @param actualKey Key
+     * @return 获取到的Resource
+     */
     private fun doGetResource(actualKey: Any): Any? {
         val map = resources.get() ?: return null
         var value = map[actualKey]
