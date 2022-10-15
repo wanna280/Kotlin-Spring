@@ -1,6 +1,6 @@
 package com.wanna.mybatis.spring.support
 
-import com.wanna.framework.beans.factory.InitializingBean
+import com.wanna.framework.dao.support.DaoSupport
 import com.wanna.mybatis.spring.SqlSessionTemplate
 import org.apache.ibatis.session.SqlSession
 import org.apache.ibatis.session.SqlSessionFactory
@@ -10,14 +10,10 @@ import org.apache.ibatis.session.SqlSessionFactory
  *
  * @see com.wanna.mybatis.spring.mapper.MapperFactoryBean
  */
-open class SqlSessionDaoSupport : InitializingBean {
+open class SqlSessionDaoSupport : DaoSupport() {
 
     // SqlSessionTemplate
     private var sqlSessionTemplate: SqlSessionTemplate? = null
-
-    override fun afterPropertiesSet() {
-        checkDaoConfig()
-    }
 
     /**
      * 设置SqlSessionFactory，如果此时SqlSessionTemplate为空，还需要去创建SqlSessionFactory；
@@ -40,7 +36,7 @@ open class SqlSessionDaoSupport : InitializingBean {
         return SqlSessionTemplate(sqlSessionFactory)
     }
 
-    protected open fun checkDaoConfig() {
+    override fun checkDaoConfig() {
         checkNotNull(sqlSessionTemplate) { "sqlSessionTemplate不能为空" }
     }
 

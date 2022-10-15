@@ -15,10 +15,16 @@ import javax.sql.DataSource
  */
 object DataSourceUtils {
 
+    /**
+     * Logger
+     */
     private val logger = LoggerFactory.getLogger(DataSourceUtils::class.java)
 
     /**
-     * 根据数据源，从事务同步管理器当中去去获取连接
+     * 根据数据源，从事务同步管理器[TransactionSynchronizationManager]当中去去获取连接
+     *
+     * @param dataSource DataSource
+     * @return 获取到的JDBC连接
      */
     @JvmStatic
     fun getConnection(dataSource: DataSource?): Connection {
@@ -30,18 +36,26 @@ object DataSourceUtils {
 
     @JvmStatic
     private fun doGetConnection(dataSource: DataSource): Connection {
+
+        // 从TransactionSynchronizationManager当中去根据DataSource去获取Connection
         val connectionHolder = TransactionSynchronizationManager.getResource(dataSource) as ConnectionHolder?
         var connection = connectionHolder?.connection
+
+        // 如果之前已经存在有该DataSource去缓存的连接，那么直接返回
         if (connection != null) {
             return connection
         }
+
+        // 如果之前没有该DataSource去缓存的连接，那么需要从DataSource当中去获取到一个Connection
         connection = dataSource.connection
+
+        // 将该Connection去绑定给当前线程(设置到ThreadLocal当中)
         TransactionSynchronizationManager.bindResource(dataSource, ConnectionHolder(connection))
         return connection
     }
 
     /**
-     * 释放一条连接
+     * 释放一条JDBC连接
      *
      * @param connection 连接
      * @param dataSource 数据源
@@ -49,7 +63,7 @@ object DataSourceUtils {
     @JvmStatic
     fun releaseConnection(connection: Connection?, dataSource: DataSource?) {
         try {
-            releaseConnection(connection, dataSource)
+            doReleaseConnection(connection, dataSource)
         } catch (ex: SQLException) {
             if (logger.isDebugEnabled) {
                 logger.debug("关闭一条连接失败", ex)
@@ -63,32 +77,36 @@ object DataSourceUtils {
 
     /**
      * 判断当前连接事务是事务连接
+     *
+     * @param connection JDBC连接
+     * @param dataSource DataSource
+     * @return 如果当前TransactionSynchronizationManager当中就是给定的Connection，那么return true；否则return false
      */
     @JvmStatic
     fun isConnectionTransactional(connection: Connection, dataSource: DataSource?): Boolean {
-        if (dataSource == null) return false
+        dataSource ?: return false
         val connectionHolder = TransactionSynchronizationManager.getResource(connection) as ConnectionHolder?
         return connectionHolder?.connection == connection
     }
 
     /**
-     * 释放一条Jdbc连接
+     * 如果必要的话，释放一条JDBC连接
      *
      * @param connection 连接
      * @param dataSource 数据源
      */
     @JvmStatic
     fun doReleaseConnection(connection: Connection?, dataSource: DataSource?) {
-        if (connection == null) {
-            return
-        }
+        connection ?: return
         if (dataSource != null) {
+            // 从事务同步管理器当中去获取到Connection，去进行释放连接？
             val connectionHolder = TransactionSynchronizationManager.getResource(dataSource) as ConnectionHolder?
             if (connectionHolder != null && connectionHolder.connection == connection) {
                 connectionHolder.released()
                 return
             }
         }
+
         // 如果该数据源允许关闭一条连接的话，那么尝试去关闭一个连接
         doCloseConnection(connection, dataSource)
     }

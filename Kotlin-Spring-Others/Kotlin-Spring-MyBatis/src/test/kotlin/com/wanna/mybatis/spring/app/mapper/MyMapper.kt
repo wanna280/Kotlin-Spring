@@ -7,6 +7,9 @@ import org.apache.ibatis.annotations.Select
 
 @Mapper
 interface MyMapper {
-    @Select("select * from test")
+    @Select("select * from t_user")
     fun select(): List<User>
+
+    @Insert("insert into t_user(id, name, age) values (#{id}, #{name}, #{age})")
+    fun insert(user: User)
 }

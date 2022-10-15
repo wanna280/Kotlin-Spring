@@ -5,10 +5,17 @@ import com.wanna.framework.aop.support.AopUtils
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
 
 /**
- * 支持将指定Spring Aop当中的Advisor去应用给某些特定Bean的BeanPostProcessor
+ * 支持将指定SpringAOP当中的Advisor去应用给某些特定Bean的BeanPostProcessor
+ *
+ * @see BeanPostProcessor
+ * @see ProxyProcessorSupport
  */
 abstract class AbstractAdvisingBeanPostProcessor : ProxyProcessorSupport(), BeanPostProcessor {
-    // 要去进行apply的Advisor
+    /**
+     * 要去进行apply的Advisor，使用protected关键字，保证子类可以去进行访问
+     *
+     * @see Advisor
+     */
     protected var advisor: Advisor? = null
 
     /**
@@ -41,9 +48,7 @@ abstract class AbstractAdvisingBeanPostProcessor : ProxyProcessorSupport(), Bean
      * @param beanName beanName
      */
     protected open fun isEligible(bean: Any, beanName: String): Boolean {
-        if (this.advisor == null) {
-            return false
-        }
+        this.advisor ?: return false
         // 使用AopUtil，去匹配这个BeanPostProcessor当中的Advisor，能否应用给当前的Bean
         return AopUtils.canApply(this.advisor!!, bean::class.java)
     }

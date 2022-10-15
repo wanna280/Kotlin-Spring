@@ -7,7 +7,10 @@ import java.sql.Connection
 import javax.sql.DataSource
 
 /**
- * 在Spring的管理下的事务
+ * 在Spring的管理下的MyBatis事务
+ *
+ * @see SpringManagedTransaction
+ * @see TransactionFactory
  */
 open class SpringManagedTransactionFactory : TransactionFactory {
 
