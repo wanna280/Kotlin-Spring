@@ -50,7 +50,7 @@ open class MyBatisExceptionTranslator
             return when (exToTranslate.cause) {
                 // 如果cause是SQLException，那么翻译
                 is SQLException -> {
-                    // 先初始化
+                    // 先初始化SQLExceptionTranslator
                     initExceptionTranslator()
                     exceptionTranslator?.translate(exToTranslate.message, null, exToTranslate.cause as SQLException)
                 }
@@ -64,7 +64,7 @@ open class MyBatisExceptionTranslator
     }
 
     /**
-     * 初始化ExceptionTranslator
+     * 初始化ExceptionTranslator，我们这里创建一个[SQLErrorCodeSQLExceptionTranslator]
      */
     @Synchronized
     private fun initExceptionTranslator() {

@@ -37,6 +37,16 @@ class SqlSessionTemplate(
     private fun getSqlSessionProxy(): SqlSession = this.sqlSessionProxy
 
     /**
+     * !!!获取Mapper，需要使用Configuration去getMapper，才能自定义SqlSession，
+     * 使用原始的SqlSession去获取SqlSession，获取到的是原始的DefaultSqlSession；
+     * 为什么我们需要自定义SqlSession？因为我们需要对执行Mapper的目标方法去进行拦截
+     *
+     * @param type MapperType
+     * @return Mapper Object
+     */
+    override fun <T : Any?> getMapper(type: Class<T>?): T = configuration.getMapper(type, this)
+
+    /**
      * SqlSession的拦截器，负责将SqlSessionProxy的方法去使用DefaultSqlSession去进行委托执行
      *
      * @see SqlSession
@@ -134,16 +144,6 @@ class SqlSessionTemplate(
     override fun clearCache() = getSqlSessionProxy().clearCache()
 
     override fun getConfiguration(): Configuration = getSqlSessionProxy().configuration
-
-    /**
-     * !!!获取Mapper，需要使用Configuration去getMapper，才能自定义SqlSession，
-     * 使用原始的SqlSession去获取SqlSession，获取到的是原始的DefaultSqlSession；
-     * 为什么我们需要自定义SqlSession？因为我们需要对执行目标方法去进行拦截
-     *
-     * @param type MapperType
-     * @return Mapper Object
-     */
-    override fun <T : Any?> getMapper(type: Class<T>?): T = configuration.getMapper(type, this)
 
     override fun getConnection(): Connection = getSqlSessionProxy().connection
 }
