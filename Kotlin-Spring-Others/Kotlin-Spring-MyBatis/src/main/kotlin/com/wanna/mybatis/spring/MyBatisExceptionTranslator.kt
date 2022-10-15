@@ -39,7 +39,7 @@ open class MyBatisExceptionTranslator
      * 将给定的RuntimeException异常翻译成为Spring统一的[DataAccessException]
      *
      * @param ex 待翻译的异常
-     * @return 翻译得到的DataAccessException
+     * @return 翻译得到的DataAccessException(支持去翻译[PersistenceException]，别的类型不支持翻译，return null)
      */
     override fun translateExceptionIfPossible(ex: RuntimeException): DataAccessException? {
         if (ex is PersistenceException) {
@@ -52,6 +52,8 @@ open class MyBatisExceptionTranslator
                 is SQLException -> {
                     // 先初始化SQLExceptionTranslator
                     initExceptionTranslator()
+
+                    // 执行异常的翻译，第二个参数是sql，MyBatis传递是一个null，Emmmm
                     exceptionTranslator?.translate(exToTranslate.message, null, exToTranslate.cause as SQLException)
                 }
                 // 如果cause是TransactionException，那么丢出去异常
