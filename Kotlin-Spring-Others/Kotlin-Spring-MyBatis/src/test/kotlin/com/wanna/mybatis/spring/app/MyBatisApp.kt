@@ -9,19 +9,21 @@ import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.jdbc.datasource.DataSourceTransactionManager
 import com.wanna.framework.transaction.PlatformTransactionManager
 import com.wanna.framework.transaction.annotation.EnableTransactionManagement
-import com.wanna.framework.transaction.annotation.Propagation
 import com.wanna.framework.transaction.annotation.Transactional
+import com.wanna.mybatis.spring.annotation.MapperScan
+import com.wanna.mybatis.spring.app.entity.User
 import com.wanna.mybatis.spring.app.mapper.MyMapper
 import com.wanna.mybatis.spring.mapper.MapperFactoryBean
 import javax.sql.DataSource
 
+@MapperScan(["com.wanna.mybatis.spring.app.mapper"])
 @EnableTransactionManagement
 @SpringBootApplication
 open class MyBatisApp {
     @Bean
     open fun dataSource(): DataSource {
         val dataSource = DruidDataSource()
-        dataSource.url = "jdbc:mysql://127.0.0.1/online_print"
+        dataSource.url = "jdbc:mysql://127.0.0.1/test_db"
         dataSource.username = "root"
         return dataSource
     }
@@ -52,9 +54,13 @@ open class Tx {
         txObject.tx2()
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     open fun tx2() {
-        mapper.select();
+        println(mapper.select())
+    }
+
+
+    open fun insert(user: User) {
+        mapper.insert(user)
     }
 }
 
@@ -62,4 +68,6 @@ fun main() {
     val applicationContext = runSpringApplication<MyBatisApp>()
     val tx = applicationContext.getBean(Tx::class.java)
     tx.tx()
+
+    tx.insert(User(1, "wanna", 18))
 }

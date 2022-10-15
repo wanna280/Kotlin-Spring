@@ -51,7 +51,7 @@ class SqlSessionTemplate(
                 // 如果必要的话，需要对MyBatis包装出来的一层PersistenceException去转换为Spring的DataAccessException
                 var unwrapped: Throwable = ExceptionUtil.unwrapThrowable(ex)
                 if (unwrapped is PersistenceException) {
-                    val translated = exceptionTranslator.translateExceptionIfPossible(ex as PersistenceException)
+                    val translated = exceptionTranslator.translateExceptionIfPossible(unwrapped)
                     SqlSessionUtils.closeSqlSession(sqlSession!!, sqlSessionFactory)
                     sqlSession = null
                     unwrapped = translated ?: unwrapped
@@ -135,7 +135,15 @@ class SqlSessionTemplate(
 
     override fun getConfiguration(): Configuration = getSqlSessionProxy().configuration
 
-    override fun <T : Any?> getMapper(type: Class<T>?): T = getSqlSessionProxy().getMapper(type)
+    /**
+     * !!!获取Mapper，需要使用Configuration去getMapper，才能自定义SqlSession，
+     * 使用原始的SqlSession去获取SqlSession，获取到的是原始的DefaultSqlSession；
+     * 为什么我们需要自定义SqlSession？因为我们需要对执行目标方法去进行拦截
+     *
+     * @param type MapperType
+     * @return Mapper Object
+     */
+    override fun <T : Any?> getMapper(type: Class<T>?): T = configuration.getMapper(type, this)
 
     override fun getConnection(): Connection = getSqlSessionProxy().connection
 }
