@@ -3,7 +3,9 @@ package com.wanna.cloud.nacos.config
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 这是一个Nacos的PropertySourceRegistry，它是一个单例对象，提供全局的访问
+ * 这是一个Nacos的PropertySource的仓库，它是一个单例对象，提供全局的访问
+ *
+ * @see NacosPropertySource
  */
 object NacosPropertySourceRepository {
 
