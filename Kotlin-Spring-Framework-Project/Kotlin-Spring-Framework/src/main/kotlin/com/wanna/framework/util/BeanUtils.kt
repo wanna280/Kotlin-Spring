@@ -64,6 +64,20 @@ object BeanUtils {
     }
 
     /**
+     * 通过有参数构造器创建对象
+     *
+     * @param clazz 想要去进行实例化的类
+     * @param parameterTypes 构造器参数类型列表
+     * @param params 参数列表
+     * @return 实例化完成的对象
+     */
+    @JvmStatic
+    fun <T> instantiateClass(clazz: Class<T>, parameterTypes: Array<Class<*>>, params: Array<Any?>): T {
+        val constructor = clazz.getConstructor(*parameterTypes)
+        return constructor.newInstance(*params)
+    }
+
+    /**
      * 获取一个构造器的参数名列表，支持使用下面的两种策略：
      * * 1.如果存在有JDK当中提供的@ConstructorProperties注解，那么从它上面去找；
      * * 2.如果没有@ConstructorProperties注解，那么使用DefaultParameterNameDiscoverer去进行寻找

@@ -48,7 +48,7 @@ class BeanDefinitionValueResolver(
             return if (targetType != null) {
                 typeConverter.convertIfNecessary(resolvedValue, targetType)
             } else {
-                targetType
+                resolvedValue  // bugfix
             }
         }
         return pvValue

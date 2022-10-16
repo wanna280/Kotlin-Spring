@@ -22,7 +22,7 @@ open class DefaultPropertySourceFactory : PropertySourceFactory {
     }
 
     override fun createPropertySource(@Nullable name: String?, resource: String): PropertySource<*> {
-        return createPropertySource(name, PropertiesLoaderUtils.loadProperties(resource))
+        return createPropertySource(name, PropertiesLoaderUtils.loadAllProperties(resource))
     }
 
     override fun createPropertySource(@Nullable name: String?, resource: Resource): PropertySource<*> {
