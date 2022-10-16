@@ -70,13 +70,13 @@ open class ContextRefresher(
      */
     open fun addConfigFilesToEnvironment() {
         // 这里会触发构建一个新的容器，并且该容器还会走BootstrapListener的逻辑...
-        val builder = SpringApplicationBuilder().bannerMode(Banner.Mode.NO).web(ApplicationType.NONE)
+        val builder = SpringApplicationBuilder().bannerMode(Banner.Mode.NO).web(ApplicationType.NONE).logStartupInfo(false)
 
         // 添加有用的ApplicationListener，没用的就不要了，setListeners会去替换掉原来的SpringFactories当中的Listener列表
         val listeners = listOf(BootstrapApplicationListener(), EnvironmentPostProcessorApplicationListener())
         builder.setApplicationListeners(listeners)
 
-        val context: ConfigurableApplicationContext = builder.run()
+        val context = builder.run()
 
         // 获取构建的Application的Environment以及MainApplicationContext的Environment当中的PropertySources
         val bootstrap = context.getEnvironment().getPropertySources()
