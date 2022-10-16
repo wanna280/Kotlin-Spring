@@ -23,6 +23,7 @@ object PropertiesLoaderUtils {
      * @param classpath 类路径
      */
     @JvmStatic
+    @Deprecated("使用loadAllProperties代替", replaceWith = ReplaceWith("loadAllProperties(classpath)"))
     fun loadProperties(classpath: String): Properties {
         return loadProperties(classpath, PropertiesLoaderUtils::class.java.classLoader)
     }
@@ -65,7 +66,30 @@ object PropertiesLoaderUtils {
      * @param classLoader classLoader(如果为空，使用默认的classLoader)
      */
     @JvmStatic
+    @Deprecated("使用loadAllProperties代替", replaceWith = ReplaceWith("loadAllProperties"))
     fun loadProperties(classpath: String, classLoader: ClassLoader?): Properties {
+        return loadAllProperties(classpath, classLoader)
+    }
+
+    /**
+     * 使用指定指定的ClassLoader去完成Properties的属性信息的加载
+     *
+     * @param classpath 需要去进行加载属性的资源类路径
+     * @return 加载到的Properties
+     */
+    @JvmStatic
+    fun loadAllProperties(classpath: String): Properties =
+        loadAllProperties(classpath, PropertiesLoaderUtils::class.java.classLoader)
+
+    /**
+     * 使用指定指定的ClassLoader去完成Properties的属性信息的加载
+     *
+     * @param classpath 需要去进行加载属性的资源类路径
+     * @param classLoader classLoader(如果为空，使用默认的classLoader)
+     * @return 加载到的Properties
+     */
+    @JvmStatic
+    fun loadAllProperties(classpath: String, classLoader: ClassLoader?): Properties {
         val properties = Properties()
         try {
             val classLoaderToUse = classLoader ?: PropertiesLoaderUtils::class.java.classLoader

@@ -1,6 +1,7 @@
 package com.wanna.boot
 
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
+import com.wanna.framework.beans.factory.xml.XmlBeanDefinitionReader
 import com.wanna.framework.context.annotation.AnnotatedBeanDefinitionReader
 import com.wanna.framework.context.annotation.BeanNameGenerator
 import com.wanna.framework.context.annotation.ClassPathBeanDefinitionScanner
@@ -48,21 +49,29 @@ open class BeanDefinitionLoader(registry: BeanDefinitionRegistry, private val so
      */
     private val reader = AnnotatedBeanDefinitionReader(registry)
 
+    /**
+     * XML的BeanDefinitionReader
+     */
+    private val xmlReader = XmlBeanDefinitionReader(registry)
+
     open fun setBeanNameGenerator(beanNameGenerator: BeanNameGenerator) {
         this.beanNameGenerator = beanNameGenerator
         this.reader.setBeanNameGenerator(beanNameGenerator)
         this.scanner.setBeanNameGenerator(beanNameGenerator)
+        this.xmlReader.setBeanNameGenerator(beanNameGenerator)
     }
 
     open fun setEnvironment(environment: ConfigurableEnvironment) {
         this.environment = environment
         this.reader.setEnvironment(environment)
         this.scanner.setEnvironment(environment)
+        this.xmlReader.setEnvironment(environment)
     }
 
     open fun setResourceLoader(resourceLoader: ResourceLoader) {
         this.resourceLoader = resourceLoader
         this.scanner.setResourceLoader(resourceLoader)
+        this.xmlReader.setResourceLoader(resourceLoader)
     }
 
 

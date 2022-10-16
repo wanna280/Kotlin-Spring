@@ -480,7 +480,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      */
     private fun <T> getDefaultStrategies(applicationContext: ApplicationContext, strategyInterface: Class<T>): List<T> {
         val result = ArrayList<T>()
-        val properties = PropertiesLoaderUtils.loadProperties(DEFAULT_STRATEGIES_PATH)
+        val properties = PropertiesLoaderUtils.loadAllProperties(DEFAULT_STRATEGIES_PATH)
         // 获取到该策略接口对应的实现类列表
         val property = (properties[strategyInterface.name] ?: "").toString()
         // 获取该策略接口所配置的全部实现类

@@ -1,5 +1,6 @@
 package com.wanna.framework.util
 
+import java.net.MalformedURLException
 import java.net.URI
 import java.net.URL
 import java.util.*
@@ -53,6 +54,28 @@ object ResourceUtils {
             newPath + relativePath
         } else {
             relativePath
+        }
+    }
+
+    /**
+     * 判断给定的资源路径是否是一个URL
+     *
+     * @param resourceLocation 资源路径
+     * @return 如果该资源路径是一个URL的话，那么return true；否则return false
+     */
+    @JvmStatic
+    fun isUrl(resourceLocation: String?): Boolean {
+        if (Objects.isNull(resourceLocation)) {
+            return false
+        }
+        if (resourceLocation!!.startsWith(CLASSPATH_URL_PREFIX)) {
+            return true
+        }
+        return try {
+            URL(resourceLocation)
+            true
+        } catch (ex: MalformedURLException) {
+            false
         }
     }
 

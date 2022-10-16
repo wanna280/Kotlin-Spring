@@ -4,6 +4,7 @@ import com.wanna.framework.beans.factory.BeanDefinitionStoreException
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.*
+import com.wanna.framework.beans.factory.xml.XmlBeanDefinitionReader
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase.REGISTER_BEAN
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.environment.Environment
@@ -225,11 +226,12 @@ open class ConfigurationClassBeanDefinitionReader(
         importSources.forEach { (resource, readerClass) ->
             // 如果使用默认的Reader
             if (readerClass == BeanDefinitionReader::class.java) {
-                XmlBeanDefinitionReader().loadBeanDefinitions(resource)
+                XmlBeanDefinitionReader(registry).loadBeanDefinitions(resource)
 
                 // 如果使用了自定义的Reader，那么使用你给定的readerClass去进行加载
             } else {
-                BeanUtils.instantiateClass(readerClass).loadBeanDefinitions(resource)
+                BeanUtils.instantiateClass(readerClass, arrayOf(BeanDefinitionRegistry::class.java), arrayOf(registry))
+                    .loadBeanDefinitions(resource)
             }
         }
     }

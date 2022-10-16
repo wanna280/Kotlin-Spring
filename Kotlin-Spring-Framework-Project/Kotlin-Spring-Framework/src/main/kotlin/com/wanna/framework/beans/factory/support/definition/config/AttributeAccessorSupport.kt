@@ -1,5 +1,7 @@
 package com.wanna.framework.beans.factory.support.definition.config
 
+import com.wanna.framework.lang.Nullable
+
 /**
  * 这个类用来提供属性访问的支持
  */
@@ -7,23 +9,16 @@ open class AttributeAccessorSupport : AttributeAccessor {
 
     private val attributes = LinkedHashMap<String, Any?>()
 
-    override fun setAttribute(name: String, value: Any?) {
+    override fun setAttribute(name: String, @Nullable value: Any?) {
         attributes[name] = value
     }
 
-    override fun getAttribute(name: String): Any? {
-        return attributes[name]
-    }
+    @Nullable
+    override fun getAttribute(name: String) = attributes[name]
 
-    override fun hasAttribute(name: String): Boolean {
-        return attributes.containsKey(name)
-    }
+    override fun hasAttribute(name: String) = attributes.containsKey(name)
 
-    override fun attributeNames(): Array<String> {
-        return attributes.keys.toTypedArray()
-    }
+    override fun attributeNames() = attributes.keys.toTypedArray()
 
-    override fun removeAttribute(name: String): Any? {
-        return attributes.remove(name)
-    }
+    override fun removeAttribute(name: String) = attributes.remove(name)
 }
