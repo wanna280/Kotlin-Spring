@@ -1,5 +1,6 @@
 package com.wanna.framework.context.support
 
+import com.wanna.framework.beans.BeansException
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.beans.util.StringValueResolver
@@ -13,7 +14,6 @@ import com.wanna.framework.context.ConfigurableApplicationContext.Companion.SYST
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.SYSTEM_PROPERTIES_BEAN_NAME
 import com.wanna.framework.context.LifecycleProcessor
 import com.wanna.framework.context.event.*
-import com.wanna.framework.beans.BeansException
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
 import com.wanna.framework.context.processor.beans.internal.ApplicationContextAwareProcessor
 import com.wanna.framework.context.processor.beans.internal.ApplicationListenerDetector
@@ -178,7 +178,11 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
                 // 完成容器的刷新
                 finishRefresh()
             } catch (ex: BeansException) {
-                throw BeansException("初始化容器出错，原因是--->${ex.message}")
+                if (logger.isDebugEnabled) {
+                    logger.debug("在ApplicationContext刷新过程当中遇到问题", ex)
+                }
+                this.destroyBeans()
+                throw ex
             } finally {
                 contextRefresh.end()  // end context refresh
             }

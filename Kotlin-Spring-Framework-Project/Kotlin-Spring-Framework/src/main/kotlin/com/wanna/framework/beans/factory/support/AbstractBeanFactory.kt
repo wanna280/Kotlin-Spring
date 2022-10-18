@@ -389,7 +389,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     override fun <T> getBean(type: Class<T>): T {
         val result = getBeanNamesForType(type).map { getBean(it, type) }
         if (result.isEmpty()) {
-            throw NoSuchBeanDefinitionException("没有这样的BeanDefinition", null, null, type)
+            throw NoSuchBeanDefinitionException("BeanFactory当中没有type=[$type]的BeanDefinition", null, null, type)
         }
         return result.iterator().next()
     }
