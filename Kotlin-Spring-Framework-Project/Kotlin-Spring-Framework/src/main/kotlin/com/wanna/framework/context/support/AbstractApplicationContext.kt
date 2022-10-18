@@ -3,15 +3,17 @@ package com.wanna.framework.context.support
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.beans.util.StringValueResolver
-import com.wanna.framework.context.*
+import com.wanna.framework.context.ApplicationContext
+import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.APPLICATION_STARTUP_BEAN_NAME
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.CONVERSION_SERVICE_BEAN_NAME
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.ENVIRONMENT_BEAN_NAME
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.LOAD_TIME_WEAVER_BEAN_NAME
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.SYSTEM_ENVIRONMENT_BEAN_NAME
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.SYSTEM_PROPERTIES_BEAN_NAME
+import com.wanna.framework.context.LifecycleProcessor
 import com.wanna.framework.context.event.*
-import com.wanna.framework.context.exception.BeansException
+import com.wanna.framework.beans.BeansException
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
 import com.wanna.framework.context.processor.beans.internal.ApplicationContextAwareProcessor
 import com.wanna.framework.context.processor.beans.internal.ApplicationListenerDetector
@@ -27,7 +29,6 @@ import com.wanna.framework.core.io.support.PathMatchingResourcePatternResolver
 import com.wanna.framework.core.io.support.ResourcePatternResolver
 import com.wanna.framework.core.metrics.ApplicationStartup
 import org.slf4j.LoggerFactory
-import java.lang.Exception
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -177,7 +178,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
                 // 完成容器的刷新
                 finishRefresh()
             } catch (ex: BeansException) {
-                throw BeansException("初始化容器出错，原因是--->${ex.message}", ex, ex.beanName)
+                throw BeansException("初始化容器出错，原因是--->${ex.message}")
             } finally {
                 contextRefresh.end()  // end context refresh
             }
@@ -602,5 +603,6 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
      * @param locationPattern 资源位置的表达式
      * @return 解析得到的资源列表
      */
-    override fun getResources(locationPattern: String): Array<Resource> = resourcePatternResolver.getResources(locationPattern)
+    override fun getResources(locationPattern: String): Array<Resource> =
+        resourcePatternResolver.getResources(locationPattern)
 }

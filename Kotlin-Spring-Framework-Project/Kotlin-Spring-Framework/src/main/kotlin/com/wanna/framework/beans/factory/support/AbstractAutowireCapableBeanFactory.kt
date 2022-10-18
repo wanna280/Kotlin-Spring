@@ -14,7 +14,7 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.BeanNameAware
 import com.wanna.framework.context.exception.BeanCreationException
-import com.wanna.framework.context.exception.BeansException
+import com.wanna.framework.beans.BeansException
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ParameterNameDiscoverer
