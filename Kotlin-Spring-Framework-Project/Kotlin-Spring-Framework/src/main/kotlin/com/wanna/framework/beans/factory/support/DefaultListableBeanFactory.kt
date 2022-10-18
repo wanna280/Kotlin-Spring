@@ -453,7 +453,10 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             // 3.1 如果根本没有找到候选的Bean，那么需要处理required=true/false并return
             if (matchingBeans.isEmpty()) {
                 if (isRequired(descriptor)) {
-                    throw NoSuchBeanDefinitionException("至少需要一个该类型的Bean-->[beanType=$type]，但是在BeanFactory当中没有找到合适的Bean")
+                    throw NoSuchBeanDefinitionException(
+                        "至少需要一个该类型的Bean, beanType=[$type]，但是在BeanFactory当中不存在",
+                        null, null, type
+                    )
                 }
                 return null
             }
@@ -478,7 +481,10 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             var result = instanceCandidate
             if (result == null) {
                 if (descriptor.isRequired()) {
-                    throw NoSuchBeanDefinitionException("至少需要一个该类型的Bean-->[beanType=$type]，但是在BeanFactory当中没有找到合适的Bean")
+                    throw NoSuchBeanDefinitionException(
+                        "至少需要一个该类型的Bean, beanType=[$type]，但是在BeanFactory当中不存在",
+                        null, null, type
+                    )
                 }
                 result = null
             }
@@ -796,7 +802,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
                 logger.trace("给定的beanName[$beanName]在[$this]当中不存在")
             }
         }
-        return beanDefinition ?: throw NoSuchBeanDefinitionException(beanName)
+        return beanDefinition ?: throw NoSuchBeanDefinitionException("BeanFactory当中没有name=[$beanName]的BeanDefinition")
     }
 
     /**
@@ -807,7 +813,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @throws NoSuchBeanDefinitionException 如果没有根据name找到该BeanDefinition的话
      */
     override fun removeBeanDefinition(name: String) {
-        beanDefinitionMap[name] ?: throw NoSuchBeanDefinitionException("没有这样的BeanDefinition[name=$name]")
+        beanDefinitionMap[name] ?: throw NoSuchBeanDefinitionException("BeanFactory当中没有name=[$name]的BeanDefinition")
         synchronized(this.beanDefinitionMap) {
             // copy一份原来的数据，不要动原来的数据，保证可以进行更加安全的迭代
             val beanDefinitionNames = ArrayList(beanDefinitionNames)
