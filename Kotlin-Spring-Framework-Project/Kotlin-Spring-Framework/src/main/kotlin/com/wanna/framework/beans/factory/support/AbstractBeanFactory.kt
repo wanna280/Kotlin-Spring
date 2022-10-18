@@ -230,12 +230,12 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
             }
         }
 
-        // 如果必要的话，应该去使用TypeConverter去完成类型转换
+        // 如果必要的话，应该去使用TypeConverter去完成类型转换，让它和返回的目标类型匹配
         return adaptBeanInstance(beanInstance, name, requiredType)
     }
 
     /**
-     * 如果必要的话，需要去进行类型的转换
+     * 如果必要的话，需要去进行类型的转换，保证返回的对象类型是目标类型(requiredType)匹配的
      *
      * @param beanInstance beanInstance
      * @param name beanName
@@ -243,7 +243,9 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      */
     @Suppress("UNCHECKED_CAST")
     protected open fun <T> adaptBeanInstance(beanInstance: Any, name: String, requiredType: Class<T>?): T {
-        if (requiredType != null && requiredType.isInstance(beanInstance)) {
+
+        // 如果requiredType和beanInstance的类型本身不匹配，那么就需要使用到TypeConverter去进行转换
+        if (requiredType != null && !requiredType.isInstance(beanInstance)) {
             return getTypeConverter().convertIfNecessary(beanInstance, requiredType)!!
         }
         return beanInstance as T
