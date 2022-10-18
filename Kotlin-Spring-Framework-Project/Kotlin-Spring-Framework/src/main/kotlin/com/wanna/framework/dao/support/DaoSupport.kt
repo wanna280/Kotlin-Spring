@@ -1,7 +1,7 @@
 package com.wanna.framework.dao.support
 
 import com.wanna.framework.beans.factory.InitializingBean
-import com.wanna.framework.context.exception.BeansException
+import com.wanna.framework.beans.BeansException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 

@@ -80,7 +80,7 @@ open class ContextAnnotationAutowireCandidateResolver : QualifierAnnotationAutow
                     } else if (type == Set::class.java || type == Collection::class.java) {
                         return emptySet<Any?>()
                     }
-                    throw NoSuchBeanDefinitionException("没有在BeanFactory当中找到合适的Bean", type)
+                    throw NoSuchBeanDefinitionException("没有在BeanFactory当中找到合适的Bean", null, beanName, type)
                 }
                 return target
             }

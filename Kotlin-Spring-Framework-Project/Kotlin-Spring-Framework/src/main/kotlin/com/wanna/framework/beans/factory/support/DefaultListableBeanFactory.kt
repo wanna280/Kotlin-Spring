@@ -10,7 +10,6 @@ import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import com.wanna.framework.context.exception.BeanNotOfRequiredTypeException
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
 import com.wanna.framework.core.ParameterNameDiscoverer
@@ -25,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import java.util.function.Predicate
 import javax.inject.Provider
-import kotlin.collections.LinkedHashMap
 
 
 /**
@@ -486,7 +484,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             }
 
             if (result != null && !type.isInstance(result)) {
-                throw BeanNotOfRequiredTypeException("给定的类型为[requiredType=$type]，找到的Bean类型为[type=${result::class.java}]不匹配")
+                throw BeanNotOfRequiredTypeException("", type, result::class.java)
             }
             // 如果类型匹配，那么返回最终的匹配的对象
             return result
@@ -1035,5 +1033,5 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         this.allowBeanDefinitionOverriding = allowBeanDefinitionOverriding
     }
 
-    open fun isAllowBeanDefinitionOverriding() : Boolean  = this.allowBeanDefinitionOverriding
+    open fun isAllowBeanDefinitionOverriding(): Boolean = this.allowBeanDefinitionOverriding
 }

@@ -2,10 +2,10 @@ package com.wanna.framework.beans.factory.support
 
 import com.wanna.framework.beans.factory.ObjectFactory
 import com.wanna.framework.beans.factory.config.SingletonBeanRegistry
-import com.wanna.framework.context.exception.BeanCurrentlyInCreationException
+import com.wanna.framework.beans.factory.BeanCurrentlyInCreationException
 import com.wanna.framework.lang.Nullable
 import org.slf4j.LoggerFactory
-import java.util.Collections
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -134,7 +134,9 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     open fun beforeSingletonCreation(beanName: String) {
         // 如果添加失败，说明之前已经添加过，那么抛出当前Bean已经正在创建中的异常...
         if (!singletonsCurrentlyInCreation.add(beanName)) {
-            throw BeanCurrentlyInCreationException("[$beanName] is current in creation，当前正在创建的Bean包括[$singletonsCurrentlyInCreation]")
+            throw BeanCurrentlyInCreationException(
+                "[$beanName]正在创建当中，当前正在创建的有[$singletonsCurrentlyInCreation]", null, beanName
+            )
         }
     }
 

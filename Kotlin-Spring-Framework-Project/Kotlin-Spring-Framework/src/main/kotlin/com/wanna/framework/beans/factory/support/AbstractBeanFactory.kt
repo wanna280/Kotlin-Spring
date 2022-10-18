@@ -1,18 +1,13 @@
 package com.wanna.framework.beans.factory.support
 
 import com.wanna.framework.beans.*
-import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.beans.factory.*
 import com.wanna.framework.beans.factory.BeanFactory.Companion.FACTORY_BEAN_PREFIX
-import com.wanna.framework.beans.factory.FactoryBean
-import com.wanna.framework.beans.factory.ListableBeanFactory
-import com.wanna.framework.beans.factory.ObjectFactory
 import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.beans.factory.config.Scope
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.beans.util.StringValueResolver
-import com.wanna.framework.context.exception.BeanCurrentlyInCreationException
-import com.wanna.framework.context.exception.BeansException
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.processor.beans.*
 import com.wanna.framework.core.NamedThreadLocal
@@ -152,7 +147,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
             // 快速地去检查当前原型Bean是否已经正在创建当中了？只要已经在创建当中了，那么我们就可以认为已经发生了循环依赖了
             // 但是对于原型Bean的循环依赖，无法解决，因此我们在这里直接抛出BeanCurrentlyInCreationException异常...
             if (isPrototypeCurrentlyInCreation(beanName)) {
-                throw BeanCurrentlyInCreationException("原型Bean[$beanName]当前正在创建当中", beanName)
+                throw BeanCurrentlyInCreationException("原型Bean[$beanName]当前正在创建当中", null, beanName)
             }
 
             val parentBeanFactory = this.parentBeanFactory
@@ -394,7 +389,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     override fun <T> getBean(type: Class<T>): T {
         val result = getBeanNamesForType(type).map { getBean(it, type) }
         if (result.isEmpty()) {
-            throw NoSuchBeanDefinitionException("没有这样的BeanDefinition", type)
+            throw NoSuchBeanDefinitionException("没有这样的BeanDefinition", null, null, type)
         }
         return result.iterator().next()
     }
