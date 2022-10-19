@@ -1,9 +1,7 @@
 package com.wanna.framework.util
 
 import org.slf4j.LoggerFactory
-import java.lang.IllegalArgumentException
 import java.lang.reflect.Method
-import kotlin.jvm.Throws
 
 /**
  * Spring当中对于Class相关的工具类
@@ -279,6 +277,35 @@ object ClassUtils {
      */
     @JvmStatic
     fun convertClassNameToResourcePath(className: String): String = className.replace(PACKAGE_SEPARATOR, PATH_SEPARATOR)
+
+    /**
+     * 给定一个类，去生成这个类的全限定名；
+     * 如果这个类是一个数组类，那么前缀是"["；
+     * 如果一个类不是一个数组类，那么就是正常返回一个类的className
+     *
+     * @param clazz clazz
+     * @return 全限定名字符串
+     */
+    @JvmStatic
+    fun getQualifiedName(clazz: Class<*>): String = if (clazz.isArray) getQualifiedNameForArray(clazz) else clazz.name
+
+    /**
+     * 从一个数组的Class当中去获取它的全限定名
+     *
+     * @param clazz 数组的Class
+     * @return 数组的全限定名
+     */
+    @JvmStatic
+    private fun getQualifiedNameForArray(clazz: Class<*>): String {
+        val builder = StringBuilder()
+        var clazzToUse = clazz
+        while (clazzToUse.isArray) {
+            clazzToUse = clazzToUse.componentType
+            builder.append("[")
+        }
+        builder.append(clazzToUse.name)
+        return builder.toString()
+    }
 
     /**
      * 将资源名转换成为类名，将资源路径当中的"/"去转换成为"."
