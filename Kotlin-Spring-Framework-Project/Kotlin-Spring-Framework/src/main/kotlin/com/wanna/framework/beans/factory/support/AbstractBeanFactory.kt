@@ -241,8 +241,19 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
 
         // 如果requiredType和beanInstance的类型本身不匹配，那么就需要使用到TypeConverter去进行转换
         if (requiredType != null && !requiredType.isInstance(beanInstance)) {
-            return getTypeConverter().convertIfNecessary(beanInstance, requiredType)!!
+            try {
+                return getTypeConverter().convertIfNecessary(beanInstance, requiredType) ?: throw IllegalStateException(
+                    "beanName=[$name]的Bean去转换成为[${ClassUtils.getQualifiedName(requiredType)}]的转换结果为空"
+                )
+            } catch (ex: TypeMismatchException) {
+                if (logger.isDebugEnabled) {
+                    logger.debug("无法去将beanName=[$name]的Bean去转换成为[${ClassUtils.getQualifiedName(requiredType)}]")
+                }
+                throw BeanNotOfRequiredTypeException(name, requiredType, beanInstance::class.java)
+            }
         }
+
+        // 类型匹配的话，直接强转返回即可
         return beanInstance as T
     }
 
@@ -389,7 +400,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     override fun <T> getBean(type: Class<T>): T {
         val result = getBeanNamesForType(type).map { getBean(it, type) }
         if (result.isEmpty()) {
-            throw NoSuchBeanDefinitionException("BeanFactory当中没有type=[$type]的BeanDefinition", null, null, type)
+            throw NoSuchBeanDefinitionException("BeanFactory当中没有type=[${ClassUtils.getQualifiedName(type)}]的BeanDefinition", null, null, type)
         }
         return result.iterator().next()
     }
