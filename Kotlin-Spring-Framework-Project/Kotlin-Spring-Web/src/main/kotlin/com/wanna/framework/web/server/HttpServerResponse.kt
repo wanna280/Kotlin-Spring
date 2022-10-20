@@ -1,5 +1,6 @@
 package com.wanna.framework.web.server
 
+import com.wanna.framework.web.http.Cookie
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpStatus
 import java.io.OutputStream
@@ -25,6 +26,13 @@ interface HttpServerResponse {
      * @return HttpHeaders of this response
      */
     fun getHeaders(): HttpHeaders
+
+    /**
+     * 往Response当中添加一个Cookie
+     *
+     * @param cookie Cookie
+     */
+    fun addCookie(cookie: Cookie)
 
     /**
      * 根据headerName，去移除一个header
