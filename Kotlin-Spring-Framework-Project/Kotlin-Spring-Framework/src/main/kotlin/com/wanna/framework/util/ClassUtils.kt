@@ -25,6 +25,11 @@ object ClassUtils {
      */
     const val PATH_SEPARATOR = "/"
 
+    /**
+     * 数组的全限定名后缀
+     */
+    const val ARRAY_SUFFIX = "[]"
+
     // Logger
     private val logger = LoggerFactory.getLogger(ClassUtils::class.java)
 
@@ -280,7 +285,7 @@ object ClassUtils {
 
     /**
      * 给定一个类，去生成这个类的全限定名；
-     * 如果这个类是一个数组类，那么前缀是"["；
+     * 如果这个类是一个数组类，那么需要加上后缀"[]"；
      * 如果一个类不是一个数组类，那么就是正常返回一个类的className
      *
      * @param clazz clazz
@@ -301,9 +306,9 @@ object ClassUtils {
         var clazzToUse = clazz
         while (clazzToUse.isArray) {
             clazzToUse = clazzToUse.componentType
-            builder.append("[")
+            builder.append(ARRAY_SUFFIX)
         }
-        builder.append(clazzToUse.name)
+        builder.insert(0, clazzToUse.name)  // insert before
         return builder.toString()
     }
 
