@@ -8,8 +8,9 @@ import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.EnvironmentCapable
 import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.io.ResourceLoader
-import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.AnnotationConfigUtils
+import com.wanna.framework.util.AnnotationConfigUtils.registerAnnotationConfigProcessors
 
 /**
  * 这是ClassPath下的BeanDefinition的Scanner，负责完成指定的包下的全部配置类的扫描，并将其注册到BeanDefinitionRegistry当中；
@@ -55,6 +56,9 @@ open class ClassPathBeanDefinitionScanner(
      * 获取或者是创建一个默认的Environment，
      * (1)如果Registry可以获取到Environment，那么直接从Registry当中去获取到Environment对象;
      * (2)如果获取不到，那么就创建一个默认的Environment
+     *
+     * @param registry BeanDefinitionRegistry
+     * @return 获取(创建)的Environment
      */
     private fun getOrDefaultEnvironment(registry: BeanDefinitionRegistry): Environment {
         return if (registry is EnvironmentCapable) registry.getEnvironment() else StandardEnvironment()
@@ -63,7 +67,8 @@ open class ClassPathBeanDefinitionScanner(
     /**
      * 扫描指定的包中的BeanDefinition，并注册到容器当中，返回值为扫描到的BeanDefinition的数量
      *
-     * @return 扫描到的BeanDefinition的数量
+     * @param packages 要去进行扫描的包的列表
+     * @return 从给定的包当中去扫描到的BeanDefinition的数量
      */
     open fun scan(vararg packages: String): Int {
         val beforeCount = registry.getBeanDefinitionCount()  // before Count
@@ -72,7 +77,7 @@ open class ClassPathBeanDefinitionScanner(
 
         // 如果需要引入注解处理的相关配置，那么完成注解版的处理器的注册工作...
         if (includeAnnotationConfig) {
-            AnnotationConfigUtils.registerAnnotationConfigProcessors(registry)
+            registerAnnotationConfigProcessors(registry)
         }
         return registry.getBeanDefinitionCount() - beforeCount  // return modifyCount=afterCount-beforeCount
     }
@@ -99,7 +104,7 @@ open class ClassPathBeanDefinitionScanner(
                     AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition)
                 }
 
-                // set Scope
+                // 解析Scope设置到BeanDefinition当中
                 val metadata = scopeMetadataResolver.resolveScopeMetadata(beanDefinition)
                 beanDefinition.setScope(metadata.scopeName)
 
@@ -126,15 +131,48 @@ open class ClassPathBeanDefinitionScanner(
         return scanCandidateComponents(packageName)
     }
 
+    /**
+     * 设置BeanNameGenerator
+     *
+     * @param beanNameGenerator 你要使用的BeanNameGenerator，可以为空，代表使用默认值
+     */
     open fun setBeanNameGenerator(beanNameGenerator: BeanNameGenerator?) {
         this.beanNameGenerator = beanNameGenerator ?: AnnotationBeanNameGenerator.INSTANCE  // if null,use default
     }
 
+    /**
+     * 是否需要将注解相关的配置去导入进来？
+     *
+     * @param includeAnnotationConfig 如果为true，将会导入Spring的一堆注解处理器
+     */
     open fun setIncludeAnnotationConfig(includeAnnotationConfig: Boolean) {
         this.includeAnnotationConfig = includeAnnotationConfig
     }
 
+    /**
+     * 扫描进来的Bean是否都需要配置成为懒加载的？
+     *
+     * @param lazyInit lazyInit
+     */
     open fun setLazyInit(lazyInit: Boolean) {
         this.lazyInit = lazyInit
+    }
+
+    /**
+     * 自定义ScopeResolver
+     *
+     * @param scopeMetadataResolver ScoprResolver
+     */
+    open fun setScopeResolver(scopeMetadataResolver: ScopeMetadataResolver) {
+        this.scopeMetadataResolver = scopeMetadataResolver
+    }
+
+    /**
+     * 自定义默认的ScopedProxyMode，对于默认配置下的所有的Bean的作用域都将会被设置成为该ScopedProxyMode
+     *
+     * @param scopedProxyMode ScopedProxyMode
+     */
+    open fun setScopedProxyMode(scopedProxyMode: ScopedProxyMode) {
+        this.scopeMetadataResolver = AnnotationScopeMetadataResolver(scopedProxyMode)
     }
 }
