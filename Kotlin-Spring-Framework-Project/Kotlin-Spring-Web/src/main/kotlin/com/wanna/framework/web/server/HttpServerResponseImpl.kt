@@ -1,11 +1,10 @@
 package com.wanna.framework.web.server
 
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.web.http.Cookie
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.http.MediaType
-import java.io.ByteArrayOutputStream
-import java.io.OutputStream
 
 open class HttpServerResponseImpl : HttpServerResponse {
     companion object {
@@ -31,11 +30,25 @@ open class HttpServerResponseImpl : HttpServerResponse {
     private val headers = HttpHeaders()
 
     /**
+     * Cookies
+     */
+    private val cookies = ArrayList<Cookie>()
+
+    /**
      * 获取当前的HttpServerResponse的HttpHeaders
      *
      * @return HttpHeaders of this response
      */
     override fun getHeaders() = this.headers
+
+    /**
+     * 往Response当中添加一个Cookie
+     *
+     * @param cookie Cookie
+     */
+    override fun addCookie(cookie: Cookie) {
+        this.cookies.add(cookie)
+    }
 
     /**
      * 根据headerName，去移除一个header

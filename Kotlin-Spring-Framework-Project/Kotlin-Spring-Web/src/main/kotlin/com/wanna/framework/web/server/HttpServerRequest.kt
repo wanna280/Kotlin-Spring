@@ -1,6 +1,7 @@
 package com.wanna.framework.web.server
 
 import com.wanna.framework.web.bind.annotation.RequestMethod
+import com.wanna.framework.web.http.Cookie
 import com.wanna.framework.web.http.HttpHeaders
 import java.io.InputStream
 
@@ -19,6 +20,13 @@ interface HttpServerRequest {
      * @return RequestBody的输入流
      */
     fun getInputStream(): InputStream
+
+    /**
+     * 获取当前request的Cookie列表
+     *
+     * @return Cookie列表
+     */
+    fun getCookies() : Array<Cookie>
 
     /**
      * 设置request的具体的参数(如果之前已经有该参数了，那么直接去进行替换)

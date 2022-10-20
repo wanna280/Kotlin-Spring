@@ -2,13 +2,12 @@ package com.wanna.framework.web.server
 
 import com.wanna.framework.util.LinkedMultiValueMap
 import com.wanna.framework.web.bind.annotation.RequestMethod
+import com.wanna.framework.web.http.Cookie
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.server.HttpServerRequest.Companion.COMMA
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.net.URL
-import kotlin.collections.HashSet
-import kotlin.collections.LinkedHashMap
 
 open class HttpServerRequestImpl : HttpServerRequest {
     companion object {
@@ -34,6 +33,11 @@ open class HttpServerRequestImpl : HttpServerRequest {
     // headers
     private val headers = HttpHeaders()
 
+    /**
+     * Cookies
+     */
+    private var cookies: Array<Cookie>? = null
+
     // params
     private val params = LinkedMultiValueMap<String, String>()
 
@@ -57,6 +61,13 @@ open class HttpServerRequestImpl : HttpServerRequest {
     override fun getInputStream(): InputStream {
         return this.inputStream ?: ByteArrayInputStream(ByteArray(0))
     }
+
+    /**
+     * 获取本次请求的Cookie列表
+     *
+     * @return Cookie列表
+     */
+    override fun getCookies() = cookies ?: emptyArray()
 
     /**
      * 设置request的具体的参数(如果之前已经有该参数了，那么直接去进行替换)
