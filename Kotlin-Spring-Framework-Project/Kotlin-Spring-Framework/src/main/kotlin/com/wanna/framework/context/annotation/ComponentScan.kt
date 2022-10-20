@@ -60,6 +60,11 @@ annotation class ComponentScan(
      * (1)当FilterType=ANNOTATION时，value指定的是注解类型
      * (2)当FilterType=ASSIGNABLE_TYPE时，value指定的是要匹配的clazz类型
      * (3)当FilterType=CUSTOM时，value指定的是自定义的TypeFilter的类型
+     *
+     * @see com.wanna.framework.core.type.filter.TypeFilter
+     * @see com.wanna.framework.core.type.filter.AnnotationTypeFilter
+     * @see com.wanna.framework.core.type.filter.AssignableTypeFilter
+     * @see com.wanna.framework.core.type.filter.RegexPatternTypeFilter
      */
     annotation class Filter(
         val filterType: FilterType = FilterType.ANNOTATION,  // 要去进行匹配的类型？匹配注解？匹配类型？
