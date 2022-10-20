@@ -4,15 +4,21 @@ import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
 
 /**
- * Spring当中对于Class相关的工具类
+ * Spring当中对于Class相关操作的工具类封装
+ *
+ * @author jianchao.jia
  */
 @Suppress("UNCHECKED_CAST")
 object ClassUtils {
 
-    // "."的常量
+    /**
+     * "."的常量
+     */
     private const val DOT = "."
 
-    // .class文件的后缀名
+    /**
+     * .class文件的后缀名
+     */
     private const val CLASS_FILE_SUFFIX = ".class"
 
     /**
@@ -30,7 +36,9 @@ object ClassUtils {
      */
     const val ARRAY_SUFFIX = "[]"
 
-    // Logger
+    /**
+     * Logger
+     */
     private val logger = LoggerFactory.getLogger(ClassUtils::class.java)
 
     /**
