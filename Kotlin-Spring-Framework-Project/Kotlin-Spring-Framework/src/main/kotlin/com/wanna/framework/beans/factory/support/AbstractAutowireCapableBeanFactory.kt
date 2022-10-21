@@ -1,20 +1,15 @@
 package com.wanna.framework.beans.factory.support
 
-import com.wanna.framework.beans.BeanWrapper
-import com.wanna.framework.beans.factory.InitializingBean
-import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
-import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import com.wanna.framework.beans.MutablePropertyValues
-import com.wanna.framework.beans.PropertyValues
-import com.wanna.framework.beans.BeanFactoryAware
-import com.wanna.framework.beans.factory.ObjectFactory
-import com.wanna.framework.beans.BeanWrapperImpl
+import com.wanna.framework.beans.*
 import com.wanna.framework.beans.factory.FactoryBean
+import com.wanna.framework.beans.factory.InitializingBean
+import com.wanna.framework.beans.factory.ObjectFactory
+import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
+import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.BeanNameAware
 import com.wanna.framework.context.exception.BeanCreationException
-import com.wanna.framework.beans.BeansException
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ParameterNameDiscoverer
@@ -416,7 +411,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
             // 通过beanWrapper去设置propertyValues
             beanWrapper.setPropertyValues(pvs)
         } catch (ex: BeansException) {
-            throw BeanCreationException("给beanName=[$beanName]的Bean去进行属性赋值的过程当中出现了异常")
+            throw BeanCreationException("给beanName=[$beanName]的Bean去进行属性赋值的过程当中出现了异常", ex)
         }
     }
 
