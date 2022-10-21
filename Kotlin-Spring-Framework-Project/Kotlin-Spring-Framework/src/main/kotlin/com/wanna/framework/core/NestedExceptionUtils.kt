@@ -24,7 +24,7 @@ object NestedExceptionUtils {
         if (message != null) {
             builder.append(message).append(";")
         }
-        builder.append("nested exception is").append(cause.message)
+        builder.append("nested exception is: ").append(cause.message)
         return builder.toString()
     }
 
