@@ -45,7 +45,9 @@ object PropertiesLoaderUtils {
      *
      * @param properties 待填充的Properties
      * @param resource 资源(可以是XML文件，也可以是Properties文件)
+     * @throws IOException 当出现IO错误的情况
      */
+    @Throws(IOException::class)
     @JvmStatic
     fun fillProperties(properties: Properties, resource: Resource) {
         resource.getInputStream().use {
