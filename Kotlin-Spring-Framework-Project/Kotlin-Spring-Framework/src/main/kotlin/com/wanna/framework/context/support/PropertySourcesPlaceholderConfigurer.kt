@@ -15,7 +15,7 @@ open class PropertySourcesPlaceholderConfigurer : EnvironmentAware, BeanFactoryA
 
     private lateinit var environment: Environment
 
-    private lateinit  var beanFactory: BeanFactory
+    private lateinit var beanFactory: BeanFactory
 
     override fun setEnvironment(environment: Environment) {
         this.environment = environment

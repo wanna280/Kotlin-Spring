@@ -29,7 +29,7 @@ object ConfigurationClassUtils {
     private val candidateIndicators = setOf(
         Import::class.java.name,
         Component::class.java.name,
-        ImportSource::class.java.name,
+        ImportResource::class.java.name,
         PropertySource::class.java.name
     )
 
@@ -45,7 +45,7 @@ object ConfigurationClassUtils {
     /**
      * 检查一个给定的BeanDefinition是否有资格成为一个配置类？
      *
-     * * 1.类上标注了@Import/@ImportSource/@PropertySource/@ComponentScan注解，return true；
+     * * 1.类上标注了@Import/@ImportResource/@PropertySource/@ComponentScan注解，return true；
      * * 2.当中包含了@Bean的方法，return true
      * * 3.Spring的基础设施Bean，包括BeanFactoryPostProcessor/BeanPostProcessor等，return false
      * * 4.别的情况，一律return false
@@ -93,7 +93,7 @@ object ConfigurationClassUtils {
             if (attributes.isNotEmpty() && proxyBeanMethods == true) {
                 beanDefinition.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL)
 
-                // 如果它有@Import/@ImportSource/@Component/@Configuration/@PropertySource，说明它是一个半配置类
+                // 如果它有@Import/@ImportResource/@Component/@Configuration/@PropertySource，说明它是一个半配置类
             } else if (attributes.isNotEmpty() || isConfigurationCandidate(metadata)) {  // fixed: 条件应该使用&，而不是||
                 beanDefinition.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE)
             } else {
@@ -121,7 +121,7 @@ object ConfigurationClassUtils {
         if (metadata.isInterface()) {
             return false
         }
-        // 2.匹配它是否是一个配置类(检查@Import/@ImportSource/@PropertySource/@ComponentScan注解)
+        // 2.匹配它是否是一个配置类(检查@Import/@ImportResource/@PropertySource/@ComponentScan注解)
         candidateIndicators.forEach {
             if (metadata.isAnnotated(it)) {
                 return true
