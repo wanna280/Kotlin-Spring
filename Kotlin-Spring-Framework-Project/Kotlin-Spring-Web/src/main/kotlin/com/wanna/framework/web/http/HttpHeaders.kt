@@ -1,9 +1,9 @@
 package com.wanna.framework.web.http
 
-import com.wanna.framework.util.StringUtils
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.LinkedMultiValueMap
 import com.wanna.framework.util.MultiValueMap
+import com.wanna.framework.util.StringUtils
 import com.wanna.framework.web.bind.annotation.RequestMethod
 
 /**
@@ -34,6 +34,31 @@ open class HttpHeaders : MultiValueMap<String, String> {
         const val UPGRADE = "Upgrade"
 
         const val VARY = "Vary"
+
+        /**
+         * Cookie字段
+         */
+        const val COOKIE = "Cookie"
+
+        /**
+         * Cookie2字段
+         */
+        const val COOKIE2 = "Cookie2"
+
+        /**
+         * Set-Cookie字段
+         */
+        const val SET_COOKIE = "Set-Cookie"
+
+        /**
+         * Set-Cookie2字段
+         */
+        const val SET_COOKIE2 = "Set-Cookie2"
+
+        /**
+         * KeepAlive字段
+         */
+        const val KEEP_ALIVE = "Keep-Alive"
 
         /**
          * Http请求源，在CORS请求的，"PreFlight"(预检)请求当中需要携带请求的"Origin"

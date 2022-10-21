@@ -7,6 +7,9 @@ import java.io.OutputStream
 
 /**
  * HttpServerResponse
+ *
+ * @author jianchao.jia
+ * @version 1.0
  */
 interface HttpServerResponse {
     companion object {
@@ -33,6 +36,13 @@ interface HttpServerResponse {
      * @param cookie Cookie
      */
     fun addCookie(cookie: Cookie)
+
+    /**
+     * 获取Cookie列表
+     *
+     * @return Cookies
+     */
+    fun getCookies(): Array<Cookie>
 
     /**
      * 根据headerName，去移除一个header

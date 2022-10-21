@@ -9,6 +9,12 @@ import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.net.URL
 
+/**
+ * HttpServerRequest的默认实现
+ *
+ * @author jianchao.jia
+ * @version 1.0
+ */
 open class HttpServerRequestImpl : HttpServerRequest {
     companion object {
         const val PARAM_SEPARATOR = "&"
@@ -68,6 +74,15 @@ open class HttpServerRequestImpl : HttpServerRequest {
      * @return Cookie列表
      */
     override fun getCookies() = cookies ?: emptyArray()
+
+    /**
+     * 设置Cookie
+     *
+     * @param cookies Cookies
+     */
+    open fun setCookies(vararg cookies: Cookie) {
+        this.cookies = arrayOf(*cookies)
+    }
 
     /**
      * 设置request的具体的参数(如果之前已经有该参数了，那么直接去进行替换)

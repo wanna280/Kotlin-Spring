@@ -7,6 +7,9 @@ import java.io.InputStream
 
 /**
  * HttpServerRequest
+ *
+ * @author jianchao.jia
+ * @version 1.0
  */
 interface HttpServerRequest {
 

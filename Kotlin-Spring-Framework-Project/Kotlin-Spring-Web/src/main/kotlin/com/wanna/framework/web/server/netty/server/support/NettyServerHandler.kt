@@ -4,6 +4,7 @@ import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.util.StringUtils
 import com.wanna.framework.web.DispatcherHandler
 import com.wanna.framework.web.bind.annotation.RequestMethod
+import com.wanna.framework.web.http.DefaultCookieCodec
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.server.ActionCode
 import com.wanna.framework.web.server.ActionHook
@@ -23,6 +24,11 @@ import java.io.IOException
 @Sharable
 open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelInboundHandlerAdapter() {
     private val dispatcherHandler = applicationContext.getBean(DispatcherHandler::class.java)
+
+    /**
+     * Cookie的编解码器
+     */
+    private val cookieCodec = DefaultCookieCodec()
 
     override fun channelRead(ctx: ChannelHandlerContext, msg: Any) {
         if (msg is FullHttpRequest) {
@@ -84,7 +90,10 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
             // addHeader，"Transfer-Encoding=chucked"，标识将数据去进行分块传输
             httpResponse.headers()[HttpHeaders.TRANSFER_ENCODING] = "chunked"
 
-            httpResponse.headers()["Keep-Alive"] = "timeout=60"
+            httpResponse.headers()[HttpHeaders.KEEP_ALIVE] = "timeout=60"
+
+            // 添加Cookie
+            httpResponse.headers()[HttpHeaders.SET_COOKIE] = cookieCodec.encodeAsHeader(response.getCookies())
 
             // write And Flush，将要Http响应报文数据写出给客户端...
             ctx.writeAndFlush(httpResponse)
@@ -119,6 +128,9 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
             while (iterator.hasNext()) {
                 val (name, value) = iterator.next()
                 addHeader(name, value)
+                if (name.equals(HttpHeaders.COOKIE, false)) {
+                    setCookies(*cookieCodec.decodeAsCookie(value))
+                }
             }
 
             // 将RequestBody当中的内容，包装成为InputStream设置到request当中

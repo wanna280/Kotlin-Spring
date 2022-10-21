@@ -6,11 +6,19 @@ import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.http.MediaType
 
+/**
+ * HttpServerResponse的默认实现
+ *
+ * @author jianchao.jia
+ * @version 1.0
+ */
 open class HttpServerResponseImpl : HttpServerResponse {
     companion object {
         private const val COMMA = "; "
 
-        // 默认的响应类型
+        /**
+         * 默认的响应类型
+         */
         private const val DEFAULT_CONTENT_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE
     }
 
@@ -49,6 +57,13 @@ open class HttpServerResponseImpl : HttpServerResponse {
     override fun addCookie(cookie: Cookie) {
         this.cookies.add(cookie)
     }
+
+    /**
+     * 获取Cookies
+     *
+     * @return Cookies
+     */
+    override fun getCookies() = this.cookies.toTypedArray()
 
     /**
      * 根据headerName，去移除一个header
