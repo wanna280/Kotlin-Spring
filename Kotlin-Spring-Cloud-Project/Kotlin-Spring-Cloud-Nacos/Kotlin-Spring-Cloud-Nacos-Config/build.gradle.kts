@@ -7,6 +7,7 @@ dependencies {
     implementation(project(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Context"))
     implementation(project(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Common"))
     implementation("com.alibaba.nacos:nacos-client:$nacosClientVersion")
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // jackson
 
     // 添加这些依赖，在test时才能正常启动
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
