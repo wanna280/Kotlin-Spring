@@ -2,7 +2,7 @@ package com.wanna.test.xml
 
 import com.wanna.framework.context.annotation.AnnotationConfigApplicationContext
 import com.wanna.framework.context.annotation.Configuration
-import com.wanna.framework.context.annotation.ImportSource
+import com.wanna.framework.context.annotation.ImportResource
 import com.wanna.test.tx.TxApp
 import com.wanna.test.xml.bean.User
 
@@ -12,7 +12,7 @@ import com.wanna.test.xml.bean.User
  * @version v1.0
  * @date 2022/10/16
  */
-@ImportSource(["classpath:context.xml"])
+@ImportResource(["classpath:context.xml"])
 @Configuration(proxyBeanMethods = false)
 class XmlTest
 
