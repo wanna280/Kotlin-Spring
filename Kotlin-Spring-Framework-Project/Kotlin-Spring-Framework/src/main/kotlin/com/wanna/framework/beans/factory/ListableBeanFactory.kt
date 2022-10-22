@@ -4,6 +4,7 @@ package com.wanna.framework.beans.factory
  * 可以支持列举的BeanFactory，可以提供批量获取Bean等方式的支持
  *
  * @see BeanFactory
+ * @see com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
  */
 interface ListableBeanFactory : BeanFactory {
     /**

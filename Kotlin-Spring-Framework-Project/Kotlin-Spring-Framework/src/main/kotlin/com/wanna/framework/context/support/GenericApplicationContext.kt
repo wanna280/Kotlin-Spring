@@ -6,6 +6,7 @@ import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
+import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
@@ -16,14 +17,20 @@ import java.util.concurrent.atomic.AtomicBoolean
  * 子类当中只要继续根据此类去扩展自己相关的功能(比如注册配置类)，即可实现出一个比较完整的的ApplicationContext
  *
  * @see AbstractApplicationContext
+ *
+ * @param beanFactory 内部需要去组合DefaultListableBeanFactory
  */
 abstract class GenericApplicationContext(private val beanFactory: DefaultListableBeanFactory) :
     AbstractApplicationContext(), BeanDefinitionRegistry {
 
-    // 提供一个无参数的副构造器，创建一个默认的BeanFactory
+    /**
+     * 提供一个无参数的副构造器，创建一个默认的BeanFactory
+     */
     constructor() : this(DefaultListableBeanFactory())
 
-    // 容器是否已经刷新过？容器不允许被重复刷新
+    /**
+     * 容器是否已经刷新过的标志位？容器不允许被重复刷新
+     */
     private val refreshed = AtomicBoolean(false)
 
     /**
@@ -36,31 +43,108 @@ abstract class GenericApplicationContext(private val beanFactory: DefaultListabl
      * AbstractApplicationContext当中，本身就已经支持了ResourceLoader；
      * 这里支持你去进行自定义，如果你自定义了，那么将会使用你给定的作为ResourceLoader；
      * 如果你没有去进行自定义，那么将会使用AbstractApplicationContext作为ResourceLoader
+     *
      * @see AbstractApplicationContext
      * @see ResourceLoader
      */
     private var resourceLoader: ResourceLoader? = null
 
+    /**
+     * 刷新BeanFactory(不允许重复刷新)
+     *
+     * @throws IllegalStateException 如果BeanFactory被重复刷新
+     */
+    @Throws(IllegalStateException::class)
     override fun refreshBeanFactory() {
         if (!refreshed.compareAndSet(false, true)) {
             throw IllegalStateException("Spring BeanFactory不能被重复进行刷新")
         }
     }
 
+    /**
+     * 设置ApplicationStartup，同时将ApplicationStartup设置到BeanFactory当中
+     *
+     * @param applicationStartup ApplicationStartup
+     */
     override fun setApplicationStartup(applicationStartup: ApplicationStartup) {
         super.setApplicationStartup(applicationStartup)
         this.beanFactory.setApplicationStartup(applicationStartup) // 给beanFactory也设置上ApplicationStartup
     }
 
+    /**
+     * 获取ApplicationContext内部组合的BeanFactory
+     *
+     * @return BeanFactory
+     */
     override fun getBeanFactory(): DefaultListableBeanFactory = beanFactory
+
+    /**
+     * 是否允许发生循环依赖？
+     *
+     * @return 如果允许循环依赖，那么return true；否则return false
+     */
     open fun isAllowCircularReferences() = beanFactory.isAllowCircularReferences()
+
+    /**
+     * 获取所有的已经注册的BeanDefinition的beanName列表
+     *
+     * @return 当前BeanFactory当中已经注册的BeanDefinition的beanName列表
+     */
     override fun getBeanDefinitionNames() = beanFactory.getBeanDefinitionNames()
+
+    /**
+     * 获取已经注册的BeanDefinition的数量
+     *
+     * @return BeanFactory当中已经注册的BeanDefinition的数量
+     */
     override fun getBeanDefinitions() = beanFactory.getBeanDefinitions()
+
+    /**
+     * 根据beanName去获取到BeanDefinition；
+     * 如果想要不抛出异常，请先使用[containsBeanDefinition]方法去进行判断该BeanDefinition是否存在
+     *
+     * @param beanName beanName
+     * @return BeanDefinition
+     * @throws NoSuchBeanDefinitionException 如果不存在这样的一个BeanName对应的BeanDefinition的话
+     */
+    @Throws(NoSuchBeanDefinitionException::class)
     override fun getBeanDefinition(beanName: String) = beanFactory.getBeanDefinition(beanName)
+
+    /**
+     * 检查BeanFactory当中是否包含了给定的beanName的BeanDefinition
+     *
+     * @param name beanName
+     * @return 如果包含了该BeanDefinition，那么return true；否则return false
+     */
     override fun containsBeanDefinition(name: String) = beanFactory.containsBeanDefinition(name)
+
+    /**
+     * ApplicationContext支持去获取AutowireCapableBeanFactory，去提供Bean的创建和初始化工作
+     *
+     * @return AutowireCapableBeanFactory
+     */
     override fun getAutowireCapableBeanFactory() = beanFactory
+
+    /**
+     * 获取当前BeanFactory当中的BeanDefinition的数量
+     *
+     * @return BeanFactory当中的BeanDefinition的数量
+     */
     override fun getBeanDefinitionCount() = beanFactory.getBeanDefinitionCount()
+
+    /**
+     * 根据beanName去移除一个指定的BeanDefinition
+     *
+     * @param name 需要移除BeanDefinition的beanName
+     */
     override fun removeBeanDefinition(name: String) = beanFactory.removeBeanDefinition(name)
+
+    /**
+     * 注册一个BeanDefinition到当前的BeanFactory当中来
+     *
+     * @param name beanName
+     * @param beanDefinition 需要去进行注册的BeanDefinition
+     */
     override fun registerBeanDefinition(name: String, beanDefinition: BeanDefinition) =
         beanFactory.registerBeanDefinition(name, beanDefinition)
 

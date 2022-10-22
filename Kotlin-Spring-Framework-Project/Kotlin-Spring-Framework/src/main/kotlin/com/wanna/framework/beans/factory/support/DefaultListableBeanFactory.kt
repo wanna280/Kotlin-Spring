@@ -814,11 +814,12 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @throws NoSuchBeanDefinitionException 如果没有找到这样的BeanDefinition异常
      * @see containsBeanDefinition
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     override fun getBeanDefinition(beanName: String): BeanDefinition {
         val beanDefinition = beanDefinitionMap[beanName]
         if (beanDefinition == null) {
             if (logger.isTraceEnabled) {
-                logger.trace("给定的beanName[$beanName]在[$this]当中不存在")
+                logger.trace("给定的beanName[$beanName]在BeanFactory[$this]当中不存在对应的BeanDefinition")
             }
         }
         return beanDefinition ?: throw NoSuchBeanDefinitionException("BeanFactory当中没有name=[$beanName]的BeanDefinition")
