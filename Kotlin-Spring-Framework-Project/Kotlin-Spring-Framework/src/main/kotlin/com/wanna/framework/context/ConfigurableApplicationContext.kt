@@ -48,7 +48,7 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable {
      *
      * @return 如果当前ApplicationContext没被关闭，return true，被关闭了则return false
      */
-    fun isActive() : Boolean
+    fun isActive(): Boolean
 
     /**
      * 关闭ApplicationContext并释放掉所有的资源
@@ -70,7 +70,7 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable {
      *
      * @param environment 当前的ApplicationContext想要使用的Environment
      */
-    fun setEnvironment(environment: ConfigurableEnvironment)
+    fun setEnvironment(environment: ConfigurableEnvironment?)
 
     /**
      * 重写子类中的getEnvironment方法，让返回值为ConfigurableEnvironment
@@ -88,8 +88,10 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable {
 
     /**
      * 设置parent ApplicationContext
+     *
+     * @param parent 你想使用的parentApplicationContext
      */
-    fun setParent(parent: ApplicationContext)
+    fun setParent(parent: ApplicationContext?)
 
     /**
      * 设置加载BeanClass的ClassLoader

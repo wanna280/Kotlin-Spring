@@ -480,6 +480,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      *
      * @throws NoSuchBeanDefinitionException 如果容器当中不存在这样的BeanDefinition
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     override fun isSingleton(beanName: String) = getBeanDefinition(beanName).isSingleton()
 
     /**
@@ -487,6 +488,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      *
      * @throws NoSuchBeanDefinitionException 如果容器当中不存在这样的BeanDefinition
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     override fun isPrototype(beanName: String) = getBeanDefinition(beanName).isPrototype()
 
 

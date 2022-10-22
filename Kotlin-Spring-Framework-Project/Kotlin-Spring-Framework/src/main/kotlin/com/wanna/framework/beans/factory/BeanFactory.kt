@@ -60,6 +60,7 @@ interface BeanFactory {
      * @param beanName beanName
      * @return 该Bean是否是单例的？
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     fun isSingleton(beanName: String): Boolean
 
     /**
@@ -68,6 +69,7 @@ interface BeanFactory {
      * @param beanName beanName
      * @return 该Bean是否是原型的？
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     fun isPrototype(beanName: String): Boolean
 
     /**

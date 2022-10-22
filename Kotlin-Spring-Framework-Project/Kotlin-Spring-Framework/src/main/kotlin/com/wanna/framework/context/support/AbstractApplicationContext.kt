@@ -14,6 +14,8 @@ import com.wanna.framework.context.ConfigurableApplicationContext.Companion.SYST
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.SYSTEM_PROPERTIES_BEAN_NAME
 import com.wanna.framework.context.LifecycleProcessor
 import com.wanna.framework.context.event.*
+import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
+import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
 import com.wanna.framework.context.processor.beans.internal.ApplicationContextAwareProcessor
 import com.wanna.framework.context.processor.beans.internal.ApplicationListenerDetector
@@ -50,7 +52,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
     companion object {
 
         /**
-         * Spring的EventMulticaster的beanName
+         * Spring的EventMulticaster事件多拨器的beanName
          */
         const val APPLICATION_EVENT_MULTICASTER_BEAN_NAME = "applicationEventMulticaster"
 
@@ -85,38 +87,60 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
      */
     private val resourcePatternResolver: ResourcePatternResolver = this.getResourcePatternResolver()
 
-    // 存放BeanFactoryPostProcessor的列表，支持对beanFactory去进行后置处理工作
-    private val beanFactoryPostProcessors: MutableList<BeanFactoryPostProcessor> = ArrayList()
+    /**
+     * 存放BeanFactoryPostProcessor的列表，支持对beanFactory去进行后置处理工作
+     */
+    private val beanFactoryPostProcessors = ArrayList<BeanFactoryPostProcessor>()
 
-    // 存放监听器列表
-    private var applicationListeners: MutableSet<ApplicationListener<*>> = LinkedHashSet()
+    /**
+     * 存放监听器列表
+     */
+    private var applicationListeners = LinkedHashSet<ApplicationListener<*>>()
 
-    // 事件多拨器，完成事件的发布，回调所有的监听器
+    /**
+     * 事件多拨器，完成事件的发布，回调所有的监听器
+     */
     private var applicationEventMulticaster: ApplicationEventMulticaster? = null
 
-    // 这是容器中的早期事件，有可能发布事件时，容器的多拨器还没完成初始化，不能完成发布，因此就需要延时去进行发布
-    // 但是发布的事件并不能直接扔掉，应该进行保存，这个列表存放的就是早期发布的事件列表
+    /**
+     * 这是容器中的早期事件，有可能发布事件时，容器的多拨器还没完成初始化，不能完成发布，因此就需要延时去进行发布
+     * 但是发布的事件并不能直接扔掉，应该进行保存，这个列表存放的就是早期发布的事件列表
+     */
     private var earlyApplicationEvents: MutableSet<ApplicationEvent>? = null
 
-    // 早期的监听器
+    /**
+     * 早期的监听器列表
+     */
     private var earlyApplicationListeners: MutableSet<ApplicationListener<*>>? = null
 
-    // ApplicationContext的应用的启动大锁，只要拿到这个锁，才能去对容器去进行启动或者关闭
+    /**
+     * ApplicationContext的应用的启动大锁，只要拿到这个锁，才能去对容器去进行启动或者关闭
+     */
     private val startupShutdownMonitor = Any()
 
-    // 生命周期处理器，负责回调所有的LifecycleBean(比如WebServer)
+    /**
+     * 生命周期处理器，负责回调所有的LifecycleBean(比如WebServer)
+     */
     private var lifecycleProcessor: LifecycleProcessor? = null
 
-    // ApplicationStartup，记录Spring应用启动过程当中的步骤信息
+    /**
+     * ApplicationStartup，记录Spring应用启动过程当中的步骤信息
+     */
     private var applicationStartup: ApplicationStartup = ApplicationStartup.DEFAULT
 
-    // Shutdown的回调钩子
+    /**
+     *  Shutdown的回调钩子
+     */
     private var shutdownHook: Thread? = null
 
-    // 当前的ApplicationContext是否还活跃？
+    /**
+     * 当前的ApplicationContext是否还活跃？
+     */
     private var active = AtomicBoolean(true)
 
-    // 当前的ApplicationContext是否已经关闭了？
+    /**
+     * 当前的ApplicationContext是否已经关闭了？
+     */
     private var closed = AtomicBoolean(false)
 
     /**
@@ -133,6 +157,9 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
      */
     protected open fun getResourcePatternResolver(): ResourcePatternResolver = PathMatchingResourcePatternResolver(this)
 
+    /**
+     * 完成对于当前ApplicationContext的刷新工作
+     */
     override fun refresh() {
         synchronized(this.startupShutdownMonitor) {
             val contextRefresh = this.applicationStartup.start("spring.context.refresh") // start context refresh
@@ -190,7 +217,8 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
     }
 
     /**
-     * 初始化PropertySources，交给子类去进行完成初始化，是一个模板方法，在容器启动时，会自动完成初始化工作
+     * 初始化PropertySources，交给子类去进行完成初始化；
+     * 是一个模板方法，在容器启动时会自动回调，去完成初始化工作
      */
     protected open fun initPropertySources() {
 
@@ -221,9 +249,10 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
     }
 
     /**
-     * 通知子类去完成BeanFactory的创建，通过这个方法，可以获取到一个新鲜的BeanFactory，去作为整个ApplicationContext的BeanFactory
+     * 通知子类去完成BeanFactory的创建，通过这个方法可以获取到一个新鲜的BeanFactory，去作为整个ApplicationContext的BeanFactory
      *
      * @see GenericApplicationContext.obtainFreshBeanFactory
+     * @return ConfigurableListableBeanFactory
      */
     protected open fun obtainFreshBeanFactory(): ConfigurableListableBeanFactory {
         refreshBeanFactory()  // refresh
@@ -242,6 +271,8 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
     /**
      * 在完成BeanFactory的刷新之后，应该为当前的ApplicationContext提供getBeanFactory方法，去获取BeanFactory；
      * SpringApplication的ApplicationContext的刷新过程当中，需要BeanFactory才能进行
+     *
+     * @return ConfigurableListableBeanFactory
      */
     abstract override fun getBeanFactory(): ConfigurableListableBeanFactory
 
@@ -282,6 +313,8 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
      * @see refresh
      * @see ApplicationEventMulticaster
      * @see SimpleApplicationEventMulticaster
+     *
+     * @param beanFactory BeanFactory
      */
     protected open fun initApplicationEventMulticaster(beanFactory: ConfigurableListableBeanFactory) {
         // 如果容器中已经注册了ApplicationEventMulticaster，那么采用自定义的
@@ -298,6 +331,8 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
 
     /**
      * 完成BeanFactory的准备工作，给BeanFactory当中添加一些相关的依赖
+     *
+     * @param beanFactory BeanFactory
      */
     protected open fun prepareBeanFactory(beanFactory: ConfigurableListableBeanFactory) {
         // 给容器中注册可以被解析的依赖，包括BeanFactory，Application，ApplicationEventPublisher等，支持去进行Autowire
@@ -337,6 +372,8 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
 
     /**
      * 对BeanFactory完成后置处理工作
+     *
+     * @param beanFactory BeanFactory，支持子类去进行更多的处理
      */
     protected open fun postProcessBeanFactory(beanFactory: ConfigurableListableBeanFactory) {
 
@@ -403,6 +440,8 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
 
     /**
      * 完成BeanFactory的初始化，对容器当中剩下的所有未进行实例化的Bean去进行该Bean的实例化和初始化工作
+     *
+     * @param beanFactory 需要去进行初始化的BeanFactory
      */
     protected open fun finishBeanFactoryInitialization(beanFactory: ConfigurableListableBeanFactory) {
         // 如果容器当中存在了ConversionService的BeanDefinition，那么提前getBean，并设置到beanFactory的ConversionService当中
@@ -429,6 +468,8 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
      * 添加BeanFactoryPostProcessor到ApplicationContext当中
      *
      * @see BeanFactoryPostProcessor
+     *
+     * @param processor 你想要添加的BeanFactoryPostProcessor
      */
     override fun addBeanFactoryPostProcessor(processor: BeanFactoryPostProcessor) {
         beanFactoryPostProcessors += processor
@@ -438,6 +479,8 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
      * 添加ApplicationListener到容器当中；
      * (1)如果ApplicationEventMulticaster还没完成初始化，那么加入到ApplicationContext当中
      * (2)如果ApplicationEventMulticaster已经完成初始化，那么直接把它加入到ApplicationEventMulticaster当中
+     *
+     * @param listener 你想要添加的ApplicationListener监听器
      */
     override fun addApplicationListener(listener: ApplicationListener<*>) {
         if (this.applicationEventMulticaster != null) {
@@ -446,10 +489,15 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
         this.applicationListeners += listener
     }
 
+    /**
+     * 利用当前ApplicationContext去发布一个事件；
+     * 任意对象都能支持去进行发布事件，对于不是ApplicationEvent的事件，我们将会去包装成为PayloadApplicationEvent
+     *
+     * @param event 要去进行发布的事件Event
+     */
     override fun publishEvent(event: Any) {
         // 如果要发布的事件对象不是ApplicationEvent，需要使用PayloadApplicationEvent去进行包装一层
-        val applicationEvent: ApplicationEvent = if (event is ApplicationEvent) event
-        else PayloadApplicationEvent(this, event)
+        val applicationEvent = if (event is ApplicationEvent) event else PayloadApplicationEvent(this, event)
 
         // 如果早期事件不为空，那么加入到早期事件列表当中(此时事件多拨器还没准备好，就需要一个容器去保存早期的事件)
         // 等到ApplicationEventMulticaster已经准备好了，那么就可以使用ApplicationEventMulticaster去完成事件的发布了
@@ -460,17 +508,29 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
         }
     }
 
-    open fun getApplicationEventMulticaster(): ApplicationEventMulticaster {
-        if (this.applicationEventMulticaster == null) {
-            throw IllegalStateException("ApplicationContext还没完成初始化，无法获取到ApplicationEventMulticaster")
-        }
-        return this.applicationEventMulticaster!!
-    }
+    /**
+     * 获取当前ApplicationContext的事件多拨器
+     *
+     * @return ApplicationEventMulticaster
+     */
+    open fun getApplicationEventMulticaster(): ApplicationEventMulticaster =
+        this.applicationEventMulticaster
+            ?: throw IllegalStateException("ApplicationContext还没完成初始化，无法获取到ApplicationEventMulticaster")
 
-    override fun setEnvironment(environment: ConfigurableEnvironment) {
+    /**
+     * 设置Environment
+     *
+     * @param environment Environment
+     */
+    override fun setEnvironment(environment: ConfigurableEnvironment?) {
         this.environment = environment
     }
 
+    /**
+     * 获取Environment，如果不存在的话，我们在这里去创建一个默认的StandardEnvironment
+     *
+     * @return Environment
+     */
     override fun getEnvironment(): ConfigurableEnvironment {
         if (this.environment == null) {
             this.environment = createEnvironment()
@@ -480,6 +540,9 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
 
     override fun isActive() = this.active.get()
 
+    /**
+     * 关闭当前ApplicationContext
+     */
     override fun close() {
         // acquire startup shutdown Lock
         synchronized(this.startupShutdownMonitor) {
@@ -552,51 +615,231 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
 
     /**
      * 创建Environment，默认情况下直接去创建一个StandardEnvironment，子类当中可以根据需要去进行扩展
+     *
+     * @return 创建出来的默认的StandardEnvironment
      */
     protected open fun createEnvironment(): ConfigurableEnvironment = StandardEnvironment()
 
+    /**
+     * 根据beanName从BeanFactory当中去获取对应的Bean
+     *
+     * @param beanName beanName
+     * @return 从BeanFactory当中获取到的Bean
+     * @throws NoSuchBeanDefinitionException 如果BeanFactory当中不存在这样的Bean的话
+     */
+    @Throws(NoSuchBeanDefinitionException::class)
     override fun getBean(beanName: String): Any = getBeanFactory().getBean(beanName)
-    override fun getBean(beanName: String, vararg args: Any?) = getBeanFactory().getBean(beanName, arrayOf(*args))
-    override fun <T> getBean(beanName: String, type: Class<T>): T = getBeanFactory().getBean(beanName, type)
-    override fun <T> getBean(type: Class<T>): T = getBeanFactory().getBean(type)
-    override fun isSingleton(beanName: String) = getBeanFactory().isSingleton(beanName)
-    override fun isPrototype(beanName: String) = getBeanFactory().isPrototype(beanName)
-    override fun addBeanPostProcessor(processor: BeanPostProcessor) = getBeanFactory().addBeanPostProcessor(processor)
-    override fun removeBeanPostProcessor(type: Class<*>) = getBeanFactory().removeBeanPostProcessor(type)
-    override fun removeBeanPostProcessor(index: Int) = getBeanFactory().removeBeanPostProcessor(index)
-    override fun isFactoryBean(name: String) = getBeanFactory().isFactoryBean(name)
-    override fun isTypeMatch(name: String, type: Class<*>) = getBeanFactory().isTypeMatch(name, type)
-    override fun getType(beanName: String) = getBeanFactory().getType(beanName)
-    override fun getBeanNamesForType(type: Class<*>) = getBeanFactory().getBeanNamesForType(type)
-    override fun <T> getBeansForType(type: Class<T>) = getBeanFactory().getBeansForType(type)
-    open fun getBeanFactoryPostProcessors(): List<BeanFactoryPostProcessor> = this.beanFactoryPostProcessors
-    open fun getLifecycleProcessor(): LifecycleProcessor = this.lifecycleProcessor!!
-    override fun getParent(): ApplicationContext? = this.parent
-    override fun getApplicationStartup() = this.applicationStartup
-    override fun getBeanNamesForTypeIncludingAncestors(type: Class<*>) =
-        getBeanFactory().getBeanNamesForTypeIncludingAncestors(type)
 
+    /**
+     * 根据beanName从BeanFactory当中去获取对应的Bean
+     *
+     * @param beanName beanName
+     * @param args 明确给定的更多参数列表(只有在新创建一个Bean时才有效)
+     * @return 从BeanFactory当中获取到的Bean
+     * @throws NoSuchBeanDefinitionException 如果BeanFactory当中不存在这样的Bean的话
+     */
+    @Throws(NoSuchBeanDefinitionException::class)
+    override fun getBean(beanName: String, vararg args: Any?) = getBeanFactory().getBean(beanName, arrayOf(*args))
+
+    /**
+     * 根据beanName和beanType从BeanFactory当中去获取对应的Bean
+     *
+     * @param beanName beanName
+     * @param type beanType
+     * @param T beanType
+     * @return 从BeanFactory当中获取到的Bean
+     * @throws NoSuchBeanDefinitionException 如果BeanFactory当中不存在这样的Bean的话
+     */
+    @Throws(NoSuchBeanDefinitionException::class)
+    override fun <T> getBean(beanName: String, type: Class<T>): T = getBeanFactory().getBean(beanName, type)
+
+    /**
+     * 根据beanType从BeanFactory当中去获取到对应的Bean
+     *
+     * @param type beanType
+     * @return 从BeanFactory当中获取到的Bean的列表
+     * @throws NoSuchBeanDefinitionException 如果BeanFactory当中不存在该类型的Bean
+     * @throws NoUniqueBeanDefinitionException 如果BeanFactory当中不止一个该类型的Bean
+     */
+    @Throws(NoSuchBeanDefinitionException::class, NoUniqueBeanDefinitionException::class)
+    override fun <T> getBean(type: Class<T>): T = getBeanFactory().getBean(type)
+
+    /**
+     * 判断给定的beanName的Bean在BeanFactory当中是否是单例的？
+     *
+     * @param beanName beanName
+     * @return 如果是单例的return true；否则return false
+     * @throws NoSuchBeanDefinitionException 如果BeanFactory当中不存在这样的BeanDefinition
+     */
+    @Throws(NoSuchBeanDefinitionException::class)
+    override fun isSingleton(beanName: String) = getBeanFactory().isSingleton(beanName)
+
+    /**
+     * 判断给定的beanName的Bean在BeanFactory当中是否是原型的？
+     *
+     * @param beanName beanName
+     * @return 如果是原型的return true；否则return false
+     * @throws NoSuchBeanDefinitionException 如果BeanFactory当中不存在这样的BeanDefinition
+     */
+    @Throws(NoSuchBeanDefinitionException::class)
+    override fun isPrototype(beanName: String) = getBeanFactory().isPrototype(beanName)
+
+    /**
+     * 往BeanFactory当中去添加一个BeanPostProcessor
+     *
+     * @param processor 你想要添加的BeanPostProcessor
+     */
+    override fun addBeanPostProcessor(processor: BeanPostProcessor) = getBeanFactory().addBeanPostProcessor(processor)
+
+    /**
+     * 根据类型去从BeanFactory当中去移除BeanPostProcessor
+     *
+     * @param type 你想要移除的BeanPostProcessor的类型
+     */
+    override fun removeBeanPostProcessor(type: Class<*>) = getBeanFactory().removeBeanPostProcessor(type)
+
+    /**
+     * 根据index从BeanFactory当中去移除掉一个BeanPostProcessor
+     *
+     * @param index index
+     */
+    override fun removeBeanPostProcessor(index: Int) = getBeanFactory().removeBeanPostProcessor(index)
+
+    /**
+     * 检查给定beanName的Bean，在BeanFactory当中对应的Bean是否是一个FactoryBean？
+     *
+     * @param name beanName
+     * @return 如果是FactoryBean，return true；否则return false
+     */
+    override fun isFactoryBean(name: String) = getBeanFactory().isFactoryBean(name)
+
+    /**
+     * 根据beanName去检查BeanFactory当中该beanName对应的Bean的类型是否和给定的type匹配？
+     *
+     * @param name beanName
+     * @param type 要去进行匹配的beanType
+     */
+    override fun isTypeMatch(name: String, type: Class<*>) = getBeanFactory().isTypeMatch(name, type)
+
+    /**
+     * 根据beanName获取BeanFactory当中该beanName对应的Bean的类型
+     *
+     * @param beanName beanName
+     */
+    override fun getType(beanName: String) = getBeanFactory().getType(beanName)
+
+
+    /**
+     * 获取当前ApplicationContext当中的BeanFactoryPostProcessor列表
+     *
+     * @return BeanFactoryPostProcessor列表
+     */
+    open fun getBeanFactoryPostProcessors(): List<BeanFactoryPostProcessor> = this.beanFactoryPostProcessors
+
+    /**
+     * 获取当前ApplicationContext的LifecycleProcessor
+     *
+     * @return LifecycleProcessor of this ApplicationContext
+     * @throws IllegalStateException 如果LifecycleProcessor还没完成初始化的话
+     */
+    @Throws(IllegalStateException::class)
+    open fun getLifecycleProcessor(): LifecycleProcessor =
+        this.lifecycleProcessor ?: throw IllegalStateException("不存在LifecycleProcessor，请先完成初始化")
+
+    /**
+     * 获取parent ApplicationContext
+     *
+     * @return parent ApplicationContext(如果不存在的话return null)
+     */
+    override fun getParent(): ApplicationContext? = this.parent
+
+    /**
+     * 获取当前ApplicationContext的ApplicationStartup
+     *
+     * @return ApplicationStartup of this ApplicationContext
+     */
+    override fun getApplicationStartup() = this.applicationStartup
+
+    /**
+     * 根据给定的类型，从BeanFactory当中去获取所有类型匹配的Bean的列表
+     *
+     * @param type beanType
+     * @return BeanFactory当中所有的类型匹配的Bean的列表
+     */
+    override fun <T> getBeansForType(type: Class<T>) = getBeanFactory().getBeansForType(type)
+
+    /**
+     * 根据给定的类型，从BeanFactory当中去获取所有类型匹配的BeanName的列表
+     *
+     * @param type beanType
+     * @return BeanFactory当中所有的类型匹配的BeanName的列表
+     */
+    override fun getBeanNamesForType(type: Class<*>) = getBeanFactory().getBeanNamesForType(type)
+
+    /**
+     * 从当前BeanFactory当中去获取所有类型匹配的BeanName列表
+     *
+     * @param type 需要寻找的beanType
+     * @param includeNonSingletons 是否需要寻找非单例的Bean？
+     * @param allowEagerInit 是否渴望对一些需要懒加载的Bean去进行初始化？(比如允许FactoryBean提前getObject)
+     */
     override fun getBeanNamesForType(
         type: Class<*>, includeNonSingletons: Boolean, allowEagerInit: Boolean
     ): List<String> = getBeanFactory().getBeanNamesForType(type, includeNonSingletons, allowEagerInit)
 
+    /**
+     * 使用包含当前BeanFactory以及所有的parentBeanFactory的方式去获取所有类型匹配的BeanName的列表
+     *
+     * @param type beanType
+     * @return 从当前BeanFactory以及它的所有的parentBeanFactory当中去获取到指定类型的所有Bean
+     */
+    override fun getBeanNamesForTypeIncludingAncestors(type: Class<*>) =
+        getBeanFactory().getBeanNamesForTypeIncludingAncestors(type)
+
+    /**
+     * 使用包含当前BeanFactory以及所有的parentBeanFactory的方式去获取所有类型匹配的BeanName列表
+     *
+     * @param type 需要寻找的beanType
+     * @param includeNonSingletons 是否需要寻找非单例的Bean？
+     * @param allowEagerInit 是否渴望对一些需要懒加载的Bean去进行初始化？(比如允许FactoryBean提前getObject)
+     */
     override fun getBeanNamesForTypeIncludingAncestors(
         type: Class<*>,
         includeNonSingletons: Boolean,
         allowEagerInit: Boolean
     ): List<String> = getBeanFactory().getBeanNamesForTypeIncludingAncestors(type, includeNonSingletons, allowEagerInit)
 
-    override fun getParentBeanFactory(): BeanFactory? {
-        return getParent()
-    }
 
+    /**
+     * 使用包含当前BeanFactory以及所有的parentBeanFactory的方式去获取所有类型匹配的Bean的列表
+     *
+     * @param type beanType
+     * @return 从当前BeanFactory以及它的所有的parentBeanFactory当中去获取到指定类型的所有Bean
+     */
     override fun <T> getBeansForTypeIncludingAncestors(type: Class<T>) =
         getBeanFactory().getBeansForTypeIncludingAncestors(type)
 
-    override fun setParent(parent: ApplicationContext) {
+    /**
+     * 设置parentApplicationContext
+     *
+     * @param parent parentApplicationContext
+     */
+    override fun setParent(parent: ApplicationContext?) {
         this.parent = parent
     }
 
+    /**
+     * 获取parent BeanFactory
+     *
+     * @return parent BeanFactory(如果不存在parent的话，那么return null)
+     */
+    override fun getParentBeanFactory(): BeanFactory? = getParent()
+
+    /**
+     * 设置ApplicationContext的ApplicationStartup
+     *
+     * @param applicationStartup ApplicationStartup
+     */
     override fun setApplicationStartup(applicationStartup: ApplicationStartup) {
         this.applicationStartup = applicationStartup
     }
