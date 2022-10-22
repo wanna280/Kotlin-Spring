@@ -28,7 +28,9 @@ import java.util.function.Supplier
  */
 abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), AutowireCapableBeanFactory {
 
-    // 是否开启了循环依赖？默认设置为true
+    /**
+     * 是否开启了循环依赖？默认设置为true
+     */
     private var allowCircularReferences: Boolean = true
 
     /**
@@ -39,7 +41,9 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
      */
     private var instantiationStrategy: InstantiationStrategy = CglibSubclassingInstantiationStrategy()
 
-    // 参数名发现器，支持去进行方法/构造器的参数名列表的获取
+    /**
+     * 参数名发现器，支持去进行方法/构造器的参数名列表的获取
+     */
     private var parameterNameDiscoverer: ParameterNameDiscoverer? = DefaultParameterNameDiscoverer()
 
     /**
