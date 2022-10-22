@@ -153,7 +153,7 @@ abstract class GenericApplicationContext(private val beanFactory: DefaultListabl
      *
      * @param parent parentApplicationContext
      */
-    override fun setParent(parent: ApplicationContext) {
+    override fun setParent(parent: ApplicationContext?) {
         super.setParent(parent)
         this.beanFactory.setParentBeanFactory(getInternalParentBeanFactory())
     }

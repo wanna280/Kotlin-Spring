@@ -70,7 +70,7 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable {
      *
      * @param environment 当前的ApplicationContext想要使用的Environment
      */
-    fun setEnvironment(environment: ConfigurableEnvironment?)
+    fun setEnvironment(environment: ConfigurableEnvironment)
 
     /**
      * 重写子类中的getEnvironment方法，让返回值为ConfigurableEnvironment

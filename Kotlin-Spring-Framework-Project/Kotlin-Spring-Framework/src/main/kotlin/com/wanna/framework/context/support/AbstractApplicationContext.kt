@@ -522,7 +522,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
      *
      * @param environment Environment
      */
-    override fun setEnvironment(environment: ConfigurableEnvironment?) {
+    override fun setEnvironment(environment: ConfigurableEnvironment) {
         this.environment = environment
     }
 
