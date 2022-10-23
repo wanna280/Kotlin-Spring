@@ -8,10 +8,14 @@ package com.wanna.framework.aop
  * @see Advisor
  * @see MethodMatcher
  * @see ClassFilter
+ *
+ * @author jianchao.jia
  */
 interface PointcutAdvisor : Advisor {
     /**
      * 获取Pointcut
+     *
+     * @return 需要使用的Pointcut
      */
     fun getPointcut(): Pointcut
 }

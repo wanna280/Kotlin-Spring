@@ -7,10 +7,14 @@ package com.wanna.framework.aop
  * @see Advice
  * @see PointcutAdvisor
  * @see Pointcut
+ *
+ * @author jianchao.jia
  */
 interface Advisor {
     /**
-     * 获取Advice
+     * 获取Advice，提供对于Bean的拦截和增强
+     *
+     * @return Advice
      */
     fun getAdvice(): Advice
 }

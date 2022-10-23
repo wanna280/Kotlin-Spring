@@ -16,14 +16,14 @@ import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
 import com.wanna.framework.context.processor.beans.DestructionAwareBeanPostProcessor
 import com.wanna.framework.context.processor.beans.MergedBeanDefinitionPostProcessor
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import com.wanna.framework.util.ReflectionUtils
-import com.wanna.framework.util.StringUtils
 import com.wanna.framework.scheduling.TaskScheduler
 import com.wanna.framework.scheduling.config.*
 import com.wanna.framework.scheduling.support.ScheduledMethodRunnable
+import com.wanna.framework.util.ReflectionUtils
+import com.wanna.framework.util.StringUtils
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
-import java.util.Collections
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ScheduledExecutorService
 
@@ -37,30 +37,63 @@ open class ScheduledAnnotationBeanPostProcessor : ApplicationListener<ContextRef
     ApplicationContextAware, BeanFactoryAware, EmbeddedValueResolverAware, MergedBeanDefinitionPostProcessor,
     DestructionAwareBeanPostProcessor, SmartInitializingSingleton, ScheduledTaskHolder, DisposableBean {
     companion object {
-        const val DEFAULT_TASK_SCHEDULER_BEAN_NAME = "taskScheduler"  // 默认的TaskScheduler的beanName
+        /**
+         * 默认的TaskScheduler的beanName
+         */
+        const val DEFAULT_TASK_SCHEDULER_BEAN_NAME = "taskScheduler"
+
+        /**
+         * Logger
+         */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(ScheduledAnnotationBeanPostProcessor::class.java)
     }
 
-    // 定时任务的调度器，负责去进行定时任务的注册与调度
+    /**
+     * 定时任务的调度器，负责去进行定时任务的注册与调度
+     */
     private var registrar = ScheduledTaskRegistrar()
 
-    // 任务调度器
+    /**
+     * 任务调度器(因为可能是[ScheduledExecutorService]也可以是[TaskScheduler]，因此我们用Object类型)
+     */
     private var scheduler: Any? = null
 
+    /**
+     * beanName
+     */
     private var beanName: String? = null
 
+    /**
+     * ApplicationContext
+     */
     private var applicationContext: ApplicationContext? = null
 
+    /**
+     * BeanFactory
+     */
     private var beanFactory: BeanFactory? = null
 
+    /**
+     * 嵌入式的值解析器，提供表达式的解析
+     */
     private var embeddedValueResolver: StringValueResolver? = null
 
-    // 没有标注@Scheduled注解的类的集合
+    /**
+     * 没有标注@Scheduled注解的类的集合
+     */
     private var nonAnnotatedClasses = Collections.newSetFromMap<Class<*>>(ConcurrentHashMap())
 
-    // 要去定时调度的任务列表...维护了全部的Bean上的全部@Scheduled的定时任务
+    /**
+     * 要去定时调度的任务列表...维护了全部的Bean上的全部@Scheduled的定时任务
+     */
     private val scheduledTasks = HashMap<Any, MutableSet<ScheduledTask>>()
 
+    /**
+     * 当所有的单例Bean都完成实例化之后，我们去统计所有的定时任务
+     *
+     * @see finishRegistration
+     */
     override fun afterSingletonsInstantiated() {
         this.nonAnnotatedClasses.clear()
         if (this.applicationContext == null) {
@@ -109,6 +142,9 @@ open class ScheduledAnnotationBeanPostProcessor : ApplicationListener<ContextRef
         finishRegistration() // 完成注册
     }
 
+    /**
+     * 完成所有定时任务的初始化工作
+     */
     private fun finishRegistration() {
         val scheduler = this.scheduler
         val beanFactory = this.beanFactory ?: throw IllegalStateException("BeanFactory不能为空")
@@ -206,6 +242,8 @@ open class ScheduledAnnotationBeanPostProcessor : ApplicationListener<ContextRef
      */
     override fun postProcessAfterInitialization(beanName: String, bean: Any): Any? {
         val clazz = bean::class.java
+
+        // 统计出来类上的所有的@Scheduled注解
         val annotatedMethods = LinkedHashMap<Method, Set<Scheduled>>()
 
         // 如果之前已经确定为没有标注@Scheduled的类，那么直接pass掉
@@ -222,6 +260,8 @@ open class ScheduledAnnotationBeanPostProcessor : ApplicationListener<ContextRef
         if (annotatedMethods.isEmpty()) {
             nonAnnotatedClasses.add(clazz)
         } else {
+
+            // 遍历所有的方法上的@Scheduled注解，去注册成为定时任务
             annotatedMethods.forEach { (method, annotations) ->
                 annotations.forEach { ann -> processScheduled(ann, bean, method) }
             }

@@ -3,6 +3,11 @@ package com.wanna.framework.aop.support
 import com.wanna.framework.aop.PointcutAdvisor
 import com.wanna.framework.core.Ordered
 
+/**
+ * 基于Pointcut的Advisor的抽象实现
+ *
+ * @author jianchao.jia
+ */
 abstract class AbstractPointcutAdvisor : PointcutAdvisor, Ordered, java.io.Serializable {
 
     private var order: Int? = null
