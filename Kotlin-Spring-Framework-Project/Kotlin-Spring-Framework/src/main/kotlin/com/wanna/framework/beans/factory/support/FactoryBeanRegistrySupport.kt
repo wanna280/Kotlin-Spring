@@ -4,10 +4,17 @@ import com.wanna.framework.beans.factory.FactoryBean
 
 /**
  * 它是一个FactoryBean的注册中心，在DefaultSingletonBeanRegistry的基础上，新增了FactoryBean的缓存的支持和管理...
+ * 为BeanFactory的实现，提供了很多相关的功能上的支持
+ *
+ * @see DefaultSingletonBeanRegistry
+ * @see AbstractBeanFactory
+ * @see DefaultListableBeanFactory
  */
 open class FactoryBeanRegistrySupport : DefaultSingletonBeanRegistry() {
 
-    // FactoryBeanObject的缓存列表
+    /**
+     * FactoryBeanObject的缓存列表
+     */
     private val factoryBeanObjectCache = LinkedHashMap<String, Any>()
 
     /**

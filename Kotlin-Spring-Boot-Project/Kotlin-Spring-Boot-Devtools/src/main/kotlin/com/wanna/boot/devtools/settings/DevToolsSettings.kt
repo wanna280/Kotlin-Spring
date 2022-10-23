@@ -4,8 +4,6 @@ import com.wanna.framework.core.io.support.PropertiesLoaderUtils
 import java.net.URL
 import java.util.*
 import java.util.regex.Pattern
-import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
 
 /**
  * 负责从本地的配置文件当中去加载"DevTools"的一些配置信息
@@ -96,7 +94,7 @@ class DevToolsSettings {
         private fun load(location: String): DevToolsSettings {
             val devToolsSettings = DevToolsSettings()
             val properties =
-                PropertiesLoaderUtils.loadProperties(location, Thread.currentThread().contextClassLoader)
+                PropertiesLoaderUtils.loadAllProperties(location, Thread.currentThread().contextClassLoader)
             devToolsSettings.add(properties)
             return devToolsSettings
         }

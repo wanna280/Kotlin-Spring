@@ -5,7 +5,7 @@ import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.event.ApplicationEvent
 import com.wanna.framework.context.event.ContextRefreshedEvent
 import com.wanna.framework.context.event.SmartApplicationListener
-import com.wanna.framework.context.exception.BeansException
+import com.wanna.framework.beans.BeansException
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.io.support.PropertiesLoaderUtils
@@ -480,7 +480,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      */
     private fun <T> getDefaultStrategies(applicationContext: ApplicationContext, strategyInterface: Class<T>): List<T> {
         val result = ArrayList<T>()
-        val properties = PropertiesLoaderUtils.loadProperties(DEFAULT_STRATEGIES_PATH)
+        val properties = PropertiesLoaderUtils.loadAllProperties(DEFAULT_STRATEGIES_PATH)
         // 获取到该策略接口对应的实现类列表
         val property = (properties[strategyInterface.name] ?: "").toString()
         // 获取该策略接口所配置的全部实现类

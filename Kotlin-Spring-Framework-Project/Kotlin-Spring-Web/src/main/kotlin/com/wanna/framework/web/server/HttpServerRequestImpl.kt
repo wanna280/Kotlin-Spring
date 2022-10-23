@@ -2,14 +2,19 @@ package com.wanna.framework.web.server
 
 import com.wanna.framework.util.LinkedMultiValueMap
 import com.wanna.framework.web.bind.annotation.RequestMethod
+import com.wanna.framework.web.http.Cookie
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.server.HttpServerRequest.Companion.COMMA
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.net.URL
-import kotlin.collections.HashSet
-import kotlin.collections.LinkedHashMap
 
+/**
+ * HttpServerRequest的默认实现
+ *
+ * @author jianchao.jia
+ * @version 1.0
+ */
 open class HttpServerRequestImpl : HttpServerRequest {
     companion object {
         const val PARAM_SEPARATOR = "&"
@@ -34,6 +39,11 @@ open class HttpServerRequestImpl : HttpServerRequest {
     // headers
     private val headers = HttpHeaders()
 
+    /**
+     * Cookies
+     */
+    private var cookies: Array<Cookie>? = null
+
     // params
     private val params = LinkedMultiValueMap<String, String>()
 
@@ -56,6 +66,22 @@ open class HttpServerRequestImpl : HttpServerRequest {
      */
     override fun getInputStream(): InputStream {
         return this.inputStream ?: ByteArrayInputStream(ByteArray(0))
+    }
+
+    /**
+     * 获取本次请求的Cookie列表
+     *
+     * @return Cookie列表
+     */
+    override fun getCookies() = cookies ?: emptyArray()
+
+    /**
+     * 设置Cookie
+     *
+     * @param cookies Cookies
+     */
+    open fun setCookies(vararg cookies: Cookie) {
+        this.cookies = arrayOf(*cookies)
     }
 
     /**

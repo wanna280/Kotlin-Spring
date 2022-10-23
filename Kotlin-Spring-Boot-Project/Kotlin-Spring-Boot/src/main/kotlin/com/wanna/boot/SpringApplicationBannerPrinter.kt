@@ -6,7 +6,6 @@ import com.wanna.framework.core.io.ResourceLoader
 import org.slf4j.Logger
 import java.io.ByteArrayOutputStream
 import java.io.IOException
-import java.io.InputStream
 import java.io.PrintStream
 
 /**
@@ -200,6 +199,13 @@ open class SpringApplicationBannerPrinter(
         // 获取BannerLocation
         val bannerLocation = environment.getProperty(BANNER_LOCATION_PROPERTY, DEFAULT_BANNER_LOCATION) ?: return null
         val resource = resourceLoader.getResource(bannerLocation)
-        return if (resource.exists()) ResourceBanner(resource) else null
+        try {
+            if (resource.exists()) {
+                return ResourceBanner(resource)
+            }
+        } catch (ex: IOException) {
+            // ignore
+        }
+        return null
     }
 }

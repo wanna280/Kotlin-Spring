@@ -1,31 +1,35 @@
 package com.wanna.framework.beans.factory.support.definition.config
 
+import com.wanna.framework.lang.Nullable
+
 /**
  * 这是一个Bean的Metadata的属性访问器，目的是为了提供BeanMetadataAttribute的访问
  */
 open class BeanMetadataAttributeAccessor : AttributeAccessorSupport() {
 
+    @Nullable
     private var source: Any? = null
 
-    fun getSource(): Any? {
+    @Nullable
+    open fun getSource(): Any? {
         return source
     }
 
-    fun setSource(source: Any?) {
+    open fun setSource(@Nullable source: Any?) {
         this.source = source
     }
 
     /**
      * 添加一个属性
      */
-    fun addAttribute(name: String, attribute: BeanMetadataAttribute) {
+    open fun addAttribute(name: String, attribute: BeanMetadataAttribute) {
         super.setAttribute(name, attribute)
     }
 
     /**
      * 获取一个Metadata的Attribute
      */
-    fun getMetadataAttribute(name: String): BeanMetadataAttribute {
+    open fun getMetadataAttribute(name: String): BeanMetadataAttribute {
         return super.getAttribute(name) as BeanMetadataAttribute
     }
 

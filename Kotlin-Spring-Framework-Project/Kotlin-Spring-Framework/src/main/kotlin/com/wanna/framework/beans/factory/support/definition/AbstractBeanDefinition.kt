@@ -8,6 +8,8 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition.Compa
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition.Companion.SCOPE_SINGLETON
 import com.wanna.framework.beans.factory.support.definition.config.BeanMetadataAttributeAccessor
 import com.wanna.framework.beans.method.MethodOverrides
+import com.wanna.framework.core.io.Resource
+import com.wanna.framework.lang.Nullable
 import java.util.function.Supplier
 
 /**
@@ -49,35 +51,52 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
             target.dependsOn = origin.getDependsOn()
             target.methodOverrides = MethodOverrides(origin.getMethodOverrides())
             target.propertyValues = MutablePropertyValues(MutablePropertyValues())
+            target.setSource(origin.getSource())
+            target.setDescription(origin.getDescription())
+            target.setResource(origin.getResource())
             target.constructorArgumentValues = ConstructorArgumentValues(origin.getConstructorArgumentValues())
             this.getPropertyValues()
                 .addPropertyValues(origin.getPropertyValues().getPropertyValues().toList())
         }
     }
 
-    private var primary: Boolean = false  // 在进行autowire时，它是否是优先注入的Bean？
+    private var primary = false  // 在进行autowire时，它是否是优先注入的Bean？
+
+    @Nullable
     private var initMethodName: String? = null  // 初始化回调方法的name
+
+    @Nullable
     private var destroyMethodName: String? = null // destroy的回调方法name
 
-    private var scope: String = DEFAULT_SCOPE  // bean的作用域，比如singleton/prototype
-    private var role: Int = ROLE_APPLICATION   // bean的角色，Application(0)、Support(1)和Infrastructure(2)
+    private var scope = DEFAULT_SCOPE  // bean的作用域，比如singleton/prototype
+    private var role = ROLE_APPLICATION   // bean的角色，Application(0)、Support(1)和Infrastructure(2)
 
-    private var abstractFlag: Boolean = false  // 它是否是抽象的？
+    private var abstractFlag = false  // 它是否是抽象的？
 
+    @Nullable
     private var instanceSupplier: Supplier<*>? = null  // 实例化Bean的Supplier
 
+    @Nullable
     private var factoryMethodName: String? = null  // @Bean的方法name
+
+    @Nullable
     private var factoryBeanName: String? = null  // @Bean的方法所在类的Bean的beanName
 
-    private var autowireMode: Int = AUTOWIRE_NO  // autowire的模式，BY_TYPE/BY_NAME/CONSTRUCTOR
-    private var autowireCandidate: Boolean = true  // 是否是一个候选去进行autowire的Bean
+    private var autowireMode = AUTOWIRE_NO  // autowire的模式，BY_TYPE/BY_NAME/CONSTRUCTOR
+    private var autowireCandidate = true  // 是否是一个候选去进行autowire的Bean
 
-    private var lazyInit: Boolean = false  // 是否懒加载，默认为false
+    private var lazyInit = false  // 是否懒加载，默认为false
     private var dependsOn: Array<String> = emptyArray()  // Bean所依赖的Bean的列表
 
-    private var methodOverrides: MethodOverrides = MethodOverrides()  // 运行时方法重写的列表
-    private var propertyValues: MutablePropertyValues = MutablePropertyValues()  // 要对Bean进行设置的属性值列表
-    private var constructorArgumentValues: ConstructorArgumentValues = ConstructorArgumentValues()  // Bean的构造器参数列表
+    private var methodOverrides = MethodOverrides()  // 运行时方法重写的列表
+    private var propertyValues = MutablePropertyValues()  // 要对Bean进行设置的属性值列表
+    private var constructorArgumentValues = ConstructorArgumentValues()  // Bean的构造器参数列表
+
+    @Nullable
+    private var resource: Resource? = null // 解析到BeanDefinition的Resource
+
+    @Nullable
+    private var description: String? = null  // BeanDefinition的描述信息
 
     /**
      * 判断当前BeanDefinition是否是单例的？
@@ -112,7 +131,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
     /**
      * 获取该BeanDefinition要去进行自动注入的模式，BY_TYPE/BY_NAME ...
      */
-    open fun getAutowireMode() = this.autowireMode
+    open fun getAutowireMode(): Int = this.autowireMode
 
     /**
      * 设置该BeanDefinition的自动注入模式
@@ -121,22 +140,24 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
         this.autowireMode = mode
     }
 
-    override fun setFactoryMethodName(factoryMethodName: String?) {
+    override fun setFactoryMethodName(@Nullable factoryMethodName: String?) {
         this.factoryMethodName = factoryMethodName
     }
 
     /**
      * 获取一个BeanDefinition的FactoryMethod的name(@Bean方法的name)
      */
+    @Nullable
     override fun getFactoryMethodName() = this.factoryMethodName
 
-    override fun setFactoryBeanName(factoryBeanName: String?) {
+    override fun setFactoryBeanName(@Nullable factoryBeanName: String?) {
         this.factoryBeanName = factoryBeanName
     }
 
     /**
      * 获取当前BeanDefinition的factoryBean的name
      */
+    @Nullable
     override fun getFactoryBeanName() = this.factoryBeanName
 
     /**
@@ -144,9 +165,10 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      *
      * @return initMethodName
      */
+    @Nullable
     override fun getInitMethodName() = initMethodName
 
-    override fun setInitMethodName(initMethodName: String?) {
+    override fun setInitMethodName(@Nullable initMethodName: String?) {
         this.initMethodName = initMethodName
     }
 
@@ -155,7 +177,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      *
      * @param destroyMethodName 你想要设置的destroyMethodName
      */
-    override fun setDestroyMethodName(destroyMethodName: String?) {
+    override fun setDestroyMethodName(@Nullable destroyMethodName: String?) {
         this.destroyMethodName = destroyMethodName
     }
 
@@ -164,6 +186,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      *
      * @return destroyMethodName
      */
+    @Nullable
     override fun getDestroyMethodName() = this.destroyMethodName
 
     /**
@@ -236,7 +259,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      *
      * @param supplier 你想使用的实例化Supplier
      */
-    override fun setInstanceSupplier(supplier: Supplier<*>?) {
+    override fun setInstanceSupplier(@Nullable supplier: Supplier<*>?) {
         this.instanceSupplier = supplier
     }
 
@@ -246,6 +269,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      *
      * @return 实例化Supplier(可能为null)
      */
+    @Nullable
     override fun getInstanceSupplier() = this.instanceSupplier
 
     /**
@@ -277,10 +301,18 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      */
     override fun hasPropertyValues() = propertyValues.getPropertyValues().isNotEmpty()
 
-    override fun getConstructorArgumentValues(): ConstructorArgumentValues {
-        return constructorArgumentValues
-    }
+    /**
+     * 获取构造器参数列表
+     *
+     * @return 构造器参数列表
+     */
+    override fun getConstructorArgumentValues() = this.constructorArgumentValues
 
+    /**
+     * 是否存在有构造器参数？
+     *
+     * @return 如果存在有，return true；否则return false
+     */
     override fun hasConstructorArgumentValues(): Boolean {
         return false
     }
@@ -312,6 +344,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      *
      * @return beanClass
      */
+    @Nullable
     override fun getBeanClass() = beanClass
 
     /**
@@ -319,6 +352,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      *
      * @return beanClassName
      */
+    @Nullable
     override fun getBeanClassName() = beanClass?.name
 
     /**
@@ -326,7 +360,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      *
      * @param beanClass beanClass
      */
-    override fun setBeanClass(beanClass: Class<*>?) {
+    override fun setBeanClass(@Nullable beanClass: Class<*>?) {
         this.beanClass = beanClass
     }
 
@@ -336,4 +370,37 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      * @return 如果当前BeanDefinition当中已经有beanClass了，return true；否则return false
      */
     open fun hasBeanClass(): Boolean = beanClass != null
+
+    /**
+     * 设置当前BeanDefinition的Resource
+     *
+     * @param resource Resource
+     */
+    open fun setResource(resource: Resource?) {
+        this.resource = resource
+    }
+
+    /**
+     * 获取当前BeanDefinition的Resource
+     *
+     * @return Resource
+     */
+    open fun getResource(): Resource? = this.resource
+
+    /**
+     * 设置BeanDefinition的description
+     *
+     * @param description description
+     */
+    open fun setDescription(@Nullable description: String?) {
+        this.description = description
+    }
+
+    /**
+     * 获取BeanDefinition的Description
+     *
+     * @return description
+     */
+    @Nullable
+    open fun getDescription(): String? = this.description
 }

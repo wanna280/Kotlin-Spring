@@ -35,6 +35,17 @@ annotation class ComponentScan(
     val nameGenerator: KClass<out BeanNameGenerator> = BeanNameGenerator::class,
 
     /**
+     * ScopeResolver，提供对于Bean的Scope的解析工作，默认实现为找到@Scope注解去进行使用；
+     * Note: 只有在ScopeProxyMode没有自定义的情况下才会生效
+     */
+    val scopeResolver: KClass<out ScopeMetadataResolver> = AnnotationScopeMetadataResolver::class,
+
+    /**
+     * 自定义ScopeProxy，对于@ComponentScan扫描进来的全部Bean(在没有特殊配置@Scope的情况下)的作用域都将会被设置成为它
+     */
+    val scopeProxy: ScopedProxyMode = ScopedProxyMode.DEFAULT,
+
+    /**
      * 需要匹配的条件才能导入进来的Filter，只要匹配其中一个条件，就支持被扫描进来
      */
     val includeFilters: Array<Filter> = [],
@@ -60,6 +71,11 @@ annotation class ComponentScan(
      * (1)当FilterType=ANNOTATION时，value指定的是注解类型
      * (2)当FilterType=ASSIGNABLE_TYPE时，value指定的是要匹配的clazz类型
      * (3)当FilterType=CUSTOM时，value指定的是自定义的TypeFilter的类型
+     *
+     * @see com.wanna.framework.core.type.filter.TypeFilter
+     * @see com.wanna.framework.core.type.filter.AnnotationTypeFilter
+     * @see com.wanna.framework.core.type.filter.AssignableTypeFilter
+     * @see com.wanna.framework.core.type.filter.RegexPatternTypeFilter
      */
     annotation class Filter(
         val filterType: FilterType = FilterType.ANNOTATION,  // 要去进行匹配的类型？匹配注解？匹配类型？

@@ -13,9 +13,9 @@ interface BeanPostProcessor {
      *
      * @param bean bean
      * @param beanName beanName
-     * @return 处理之后的bean(return null代表终止之后的BeanPostProcessor的操作)
+     * @return 经过自定义操作处理之后的bean(return null代表终止之后的BeanPostProcessor的操作)
      */
-    fun postProcessBeforeInitialization(beanName: String, bean: Any) : Any? {
+    fun postProcessBeforeInitialization(beanName: String, bean: Any): Any? {
         return bean
     }
 
@@ -24,9 +24,9 @@ interface BeanPostProcessor {
      *
      * @param bean bean
      * @param beanName beanName
-     * @return 处理之后的bean(return null代表终止之后的BeanPostProcessor的操作)
+     * @return 经过自定义操作处理之后的bean(return null代表终止之后的BeanPostProcessor的操作)
      */
-    fun postProcessAfterInitialization(beanName: String,bean: Any) : Any? {
+    fun postProcessAfterInitialization(beanName: String, bean: Any): Any? {
         return bean
     }
 }

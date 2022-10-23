@@ -139,7 +139,7 @@ open class ConfigurationClassParser(
         configClasses[configClass] = configClass
 
         // 把ConfigurationClass转为sourceClass去进行匹配...sourceClass有可能为它的父类这种情况...
-        // 这里需要递归处理它的所有父类，都当做配置类去进行处理，但是它的父类当中的所有BeanMethod、ImportSource、ImportBeanDefinitionRegistrar都保存到configClass当中
+        // 这里需要递归处理它的所有父类，都当做配置类去进行处理，但是它的父类当中的所有BeanMethod、ImportResource、ImportBeanDefinitionRegistrar都保存到configClass当中
         var sourceClass: SourceClass? = asSourceClass(configClass)  // 最开始，把configClass当做sourceClass即可
         do {
             sourceClass = doProcessConfigurationClass(configClass, sourceClass!!, filter)
@@ -149,7 +149,7 @@ open class ConfigurationClassParser(
     /**
      * 交给这个方法，去进行真正地去处理一个配置类
      *
-     * @param configClass 目标配置类(用于存放BeanMethod/ImportSource/ImportBeanDefinitionRegistrar/PropertySource等)，不会进行匹配的操作
+     * @param configClass 目标配置类(用于存放BeanMethod/ImportResource/ImportBeanDefinitionRegistrar/PropertySource等)，不会进行匹配的操作
      * @param sourceClass 源类(有可能它目标配置类的父类的情况...)，用来完成所有的匹配工作
      * @param filter 用来去进行排除的Filter，符合filter的要求(filter.test==true)的将会被排除掉
      * @return 如果有父类的话，return 父类；如果没有父类的话，return null
@@ -314,11 +314,11 @@ open class ConfigurationClassParser(
     /**
      * 处理@ImportSource注解，这个注解的作用是为别的方式导入Bean提供支持；比如在注解版的IOC容器当中，去提供对XML配置文件的处理
      *
-     * @see ImportSource
+     * @see ImportResource
      * @see BeanDefinitionReader 如何导入组件？通过自定义BeanDefinitionReader的方式去进行导入组件
      */
     private fun processImportSources(configClass: ConfigurationClass, sourceClass: SourceClass) {
-        AnnotatedElementUtils.findAllMergedAnnotations(sourceClass.clazz, ImportSource::class.java)
+        AnnotatedElementUtils.findAllMergedAnnotations(sourceClass.clazz, ImportResource::class.java)
             .forEach { importSource ->
                 importSource.locations.forEach { location ->
                     configClass.addImportSource(location, importSource.reader.java)

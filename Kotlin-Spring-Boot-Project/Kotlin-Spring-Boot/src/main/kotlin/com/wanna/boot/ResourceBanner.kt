@@ -13,7 +13,7 @@ import java.io.PrintStream
  *
  * @param resource 需要去进行输出的资源
  */
-open class ResourceBanner(val resource: Resource) : Banner {
+open class ResourceBanner(private val resource: Resource) : Banner {
     override fun printBanner(environment: Environment, sourceClass: Class<*>?, printStream: PrintStream) {
         val stream = resource.getInputStream()
         stream.use { printStream.println(String(stream.readAllBytes())) }

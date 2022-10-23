@@ -4,6 +4,7 @@ import com.wanna.framework.beans.factory.BeanDefinitionStoreException
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.*
+import com.wanna.framework.beans.factory.xml.XmlBeanDefinitionReader
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase.REGISTER_BEAN
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.environment.Environment
@@ -38,7 +39,7 @@ open class ConfigurationClassBeanDefinitionReader(
     private val conditionEvaluator = ConditionEvaluator(registry, environment, resourceLoader)
 
     /**
-     * 从配置类当中加载BeanDefinition，例如@ImportSource/ImportBeanDefinitionRegistrar/@Bean方法
+     * 从配置类当中加载BeanDefinition，例如@ImportResource/ImportBeanDefinitionRegistrar/@Bean方法
      *
      * @param configurationClasses 通过ConfigurationClassParser解析完成得到的配置类列表
      */
@@ -84,7 +85,7 @@ open class ConfigurationClassBeanDefinitionReader(
         // 将所有的BeanMethod去完成匹配，并封装成为BeanDefinition，并注册到registry当中
         configurationClass.beanMethods.forEach(::loadBeanDefinitionsForBeanMethod)
 
-        // 处理@ImportSource，为Annotation版本的IOC容器当中导入XML的Spring配置文件提供支持
+        // 处理@ImportResource，为Annotation版本的IOC容器当中导入XML的Spring配置文件提供支持
         loadBeanDefinitionsFromImportedResources(configurationClass.importedSources)
 
         // 处理ImportBeanDefinitionRegistrar，交给开发者去往容器当中去实现批量注册BeanDefinition的功能
@@ -225,11 +226,12 @@ open class ConfigurationClassBeanDefinitionReader(
         importSources.forEach { (resource, readerClass) ->
             // 如果使用默认的Reader
             if (readerClass == BeanDefinitionReader::class.java) {
-                XmlBeanDefinitionReader().loadBeanDefinitions(resource)
+                XmlBeanDefinitionReader(registry).loadBeanDefinitions(resource)
 
                 // 如果使用了自定义的Reader，那么使用你给定的readerClass去进行加载
             } else {
-                BeanUtils.instantiateClass(readerClass).loadBeanDefinitions(resource)
+                BeanUtils.instantiateClass(readerClass, arrayOf(BeanDefinitionRegistry::class.java), arrayOf(registry))
+                    .loadBeanDefinitions(resource)
             }
         }
     }

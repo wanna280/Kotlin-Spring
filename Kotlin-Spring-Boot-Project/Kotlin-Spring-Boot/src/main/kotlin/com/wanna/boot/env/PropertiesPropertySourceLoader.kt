@@ -23,7 +23,7 @@ open class PropertiesPropertySourceLoader : PropertySourceLoader {
     @Suppress("UNCHECKED_CAST")
     override fun load(name: String, resource: String): List<PropertySource<*>> {
         val propertySources = ArrayList<PropertySource<*>>()
-        val properties = PropertiesLoaderUtils.loadProperties(resource)
+        val properties = PropertiesLoaderUtils.loadAllProperties(resource)
         propertySources += OriginTrackedMapPropertySource(name, properties as Map<String, Any>)
         return propertySources
     }

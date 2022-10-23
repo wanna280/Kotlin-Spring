@@ -10,7 +10,6 @@ import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import com.wanna.framework.context.exception.BeanNotOfRequiredTypeException
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
 import com.wanna.framework.core.ParameterNameDiscoverer
@@ -25,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
 import java.util.function.Predicate
 import javax.inject.Provider
-import kotlin.collections.LinkedHashMap
 
 
 /**
@@ -38,10 +36,14 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     AbstractAutowireCapableBeanFactory() {
 
     companion object {
-        // javax.inject.Provider--->对应于Spring家的ObjectProvider
+        /**
+         * javax.inject.Provider--->对应于Spring家的ObjectProvider
+         */
         private var javaxInjectProviderClass: Class<*>? = null
 
-        // logger
+        /**
+         * Logger
+         */
         private val logger = LoggerFactory.getLogger(DefaultListableBeanFactory::class.java)
 
         init {
@@ -54,31 +56,46 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         }
     }
 
-    // 是否允许发生BeanDefinition的覆盖？后来的BeanDefinition是否有资格去替换掉之前的BeanDefinition？
+    /**
+     * 是否允许发生BeanDefinition的覆盖？后来的BeanDefinition是否有资格去替换掉之前的BeanDefinition？
+     */
     private var allowBeanDefinitionOverriding: Boolean = false
 
-    // beanDefinitionMap，使用ConcurrentHashMap去保证线程安全，也会作为操作beanDefinitionNames和manualSingletonNames的锁对象
+    /**
+     * beanDefinitionMap，使用ConcurrentHashMap去保证线程安全，也会作为操作beanDefinitionNames和manualSingletonNames的锁对象
+     */
     private val beanDefinitionMap = ConcurrentHashMap<String, BeanDefinition>()
 
-    // beanDefinitionNames，采用的是ArrayList去进行存储
-    // 实际上得加上beanDefinitionMap锁，并采用写时复制的原则去进行操作，保证使用方可以更加安全地去完成迭代
-    // 在添加元素/删除元素时，都得新复制一份数据并进行修改，接着重新设置引用，就不影响使用方进行的迭代(也就是写时复制COW)
+    /**
+     * beanDefinitionNames，采用的是ArrayList去进行存储；
+     * 实际上得加上beanDefinitionMap锁，并采用写时复制的原则去进行操作，保证使用方可以更加安全地去完成迭代；
+     * 在添加元素/删除元素时，都得新复制一份数据并进行修改，接着重新设置引用，就不影响使用方进行的迭代(也就是写时复制COW)
+     */
     private var beanDefinitionNames = ArrayList<String>()
 
-    // 这是一个依赖的比较器，可以通过beanFactory去进行获取，可以基于比较规则，对依赖去完成排序
-    // 在注解版IOC容器当中，默认情况下会被设置为AnnotationAwareOrderComparator
+
+    /**
+     * 这是一个依赖的比较器，可以通过beanFactory去进行获取，可以基于比较规则，对依赖去完成排序；
+     * 在注解版IOC容器当中，默认情况下会被设置为AnnotationAwareOrderComparator
+     */
     private var dependencyComparator: Comparator<Any?>? = null
 
-    // 这是一个可以被解析的依赖，加入到这个Map当中的依赖可以进行Autowire，一般这里会注册BeanFactory，ApplicationContext等
+    /**
+     * 这是一个可以被解析的依赖，加入到这个Map当中的依赖可以进行Autowire，一般这里会注册BeanFactory，ApplicationContext等
+     */
     private var resolvableDependencies: ConcurrentHashMap<Class<*>, Any> = ConcurrentHashMap()
 
-    // 这是用来处理Autowire的候选的依赖注入的Bean的解析器
-    // 在注解版IOC容器当中，默认会被设置为ContextAnnotationAutowireCandidateResolver
+    /**
+     * 这是用来处理Autowire的候选的依赖注入的Bean的解析器
+     * 在注解版IOC容器当中，默认会被设置为ContextAnnotationAutowireCandidateResolver
+     */
     private var autowireCandidateResolver: AutowireCandidateResolver = SimpleAutowireCandidateResolver.INSTANCE
 
-    // **手工(manual)**注册的 singletonObject的beanName列表，在这里进行维护，它内部的beanName和beanDefinitionNames列表不会冲突
-    // 不然通过registerSingleton操作对单例Bean进行注册时，后续要对它去进行匹配时，没有办法找到该对象
-    // 因此这里就需要维护一个列表，方便后期去进行类型的匹配，比如解析Autowire依赖的时候，就会对这个列表去进行匹配
+    /**
+     * **手工(manual)**注册的 singletonObject的beanName列表，在这里进行维护，它内部的beanName和beanDefinitionNames列表不会冲突；
+     * 不然通过registerSingleton操作对单例Bean进行注册时，后续要对它去进行匹配时，没有办法找到该对象；
+     * 因此这里就需要维护一个列表，方便后期去进行类型的匹配，比如解析Autowire依赖的时候，就会对这个列表去进行匹配
+     */
     private var manualSingletonNames = LinkedHashSet<String>()
 
     /**
@@ -455,7 +472,10 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             // 3.1 如果根本没有找到候选的Bean，那么需要处理required=true/false并return
             if (matchingBeans.isEmpty()) {
                 if (isRequired(descriptor)) {
-                    throw NoSuchBeanDefinitionException("至少需要一个该类型的Bean-->[beanType=$type]，但是在BeanFactory当中没有找到合适的Bean")
+                    throw NoSuchBeanDefinitionException(
+                        "至少需要一个该类型的Bean, beanType=[$type]，但是在BeanFactory当中不存在",
+                        null, null, type
+                    )
                 }
                 return null
             }
@@ -480,13 +500,16 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             var result = instanceCandidate
             if (result == null) {
                 if (descriptor.isRequired()) {
-                    throw NoSuchBeanDefinitionException("至少需要一个该类型的Bean-->[beanType=$type]，但是在BeanFactory当中没有找到合适的Bean")
+                    throw NoSuchBeanDefinitionException(
+                        "至少需要一个该类型的Bean, beanType=[$type]，但是在BeanFactory当中不存在",
+                        null, null, type
+                    )
                 }
                 result = null
             }
 
             if (result != null && !type.isInstance(result)) {
-                throw BeanNotOfRequiredTypeException("给定的类型为[requiredType=$type]，找到的Bean类型为[type=${result::class.java}]不匹配")
+                throw BeanNotOfRequiredTypeException("", type, result::class.java)
             }
             // 如果类型匹配，那么返回最终的匹配的对象
             return result
@@ -791,14 +814,15 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @throws NoSuchBeanDefinitionException 如果没有找到这样的BeanDefinition异常
      * @see containsBeanDefinition
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     override fun getBeanDefinition(beanName: String): BeanDefinition {
         val beanDefinition = beanDefinitionMap[beanName]
         if (beanDefinition == null) {
             if (logger.isTraceEnabled) {
-                logger.trace("给定的beanName[$beanName]在[$this]当中不存在")
+                logger.trace("给定的beanName[$beanName]在BeanFactory[$this]当中不存在对应的BeanDefinition")
             }
         }
-        return beanDefinition ?: throw NoSuchBeanDefinitionException(beanName)
+        return beanDefinition ?: throw NoSuchBeanDefinitionException("BeanFactory当中没有name=[$beanName]的BeanDefinition")
     }
 
     /**
@@ -809,7 +833,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @throws NoSuchBeanDefinitionException 如果没有根据name找到该BeanDefinition的话
      */
     override fun removeBeanDefinition(name: String) {
-        beanDefinitionMap[name] ?: throw NoSuchBeanDefinitionException("没有这样的BeanDefinition[name=$name]")
+        beanDefinitionMap[name] ?: throw NoSuchBeanDefinitionException("BeanFactory当中没有name=[$name]的BeanDefinition")
         synchronized(this.beanDefinitionMap) {
             // copy一份原来的数据，不要动原来的数据，保证可以进行更加安全的迭代
             val beanDefinitionNames = ArrayList(beanDefinitionNames)
@@ -1035,5 +1059,5 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         this.allowBeanDefinitionOverriding = allowBeanDefinitionOverriding
     }
 
-    open fun isAllowBeanDefinitionOverriding() : Boolean  = this.allowBeanDefinitionOverriding
+    open fun isAllowBeanDefinitionOverriding(): Boolean = this.allowBeanDefinitionOverriding
 }

@@ -1,8 +1,8 @@
 package com.wanna.framework.beans.factory
 
-import com.wanna.framework.context.processor.beans.BeanPostProcessor
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
+import com.wanna.framework.context.processor.beans.BeanPostProcessor
 
 /**
  * Spring的BeanFactory，提供SpringBean的管理
@@ -29,6 +29,7 @@ interface BeanFactory {
      * @return 根据name获取到的Bean
      * @throws NoSuchBeanDefinitionException 如果没有找到合适的Bean的话
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     fun getBean(beanName: String, vararg args: Any?): Any
 
     /**
@@ -39,6 +40,7 @@ interface BeanFactory {
      * @return 根据name获取到的Bean
      * @throws NoSuchBeanDefinitionException 如果找不到合适的Bean
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     fun <T> getBean(beanName: String, type: Class<T>): T
 
     /**
@@ -49,6 +51,7 @@ interface BeanFactory {
      * @throws NoSuchBeanDefinitionException 如果找不到合适的Bean
      * @throws NoUniqueBeanDefinitionException 如果根据type找到的Bean不唯一的话
      */
+    @Throws(NoSuchBeanDefinitionException::class, NoUniqueBeanDefinitionException::class)
     fun <T> getBean(type: Class<T>): T
 
     /**
@@ -57,6 +60,7 @@ interface BeanFactory {
      * @param beanName beanName
      * @return 该Bean是否是单例的？
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     fun isSingleton(beanName: String): Boolean
 
     /**
@@ -65,6 +69,7 @@ interface BeanFactory {
      * @param beanName beanName
      * @return 该Bean是否是原型的？
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     fun isPrototype(beanName: String): Boolean
 
     /**

@@ -1,17 +1,24 @@
 package com.wanna.framework.web.server
 
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.web.http.Cookie
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.http.MediaType
-import java.io.ByteArrayOutputStream
-import java.io.OutputStream
 
+/**
+ * HttpServerResponse的默认实现
+ *
+ * @author jianchao.jia
+ * @version 1.0
+ */
 open class HttpServerResponseImpl : HttpServerResponse {
     companion object {
         private const val COMMA = "; "
 
-        // 默认的响应类型
+        /**
+         * 默认的响应类型
+         */
         private const val DEFAULT_CONTENT_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE
     }
 
@@ -31,11 +38,32 @@ open class HttpServerResponseImpl : HttpServerResponse {
     private val headers = HttpHeaders()
 
     /**
+     * Cookies
+     */
+    private val cookies = ArrayList<Cookie>()
+
+    /**
      * 获取当前的HttpServerResponse的HttpHeaders
      *
      * @return HttpHeaders of this response
      */
     override fun getHeaders() = this.headers
+
+    /**
+     * 往Response当中添加一个Cookie
+     *
+     * @param cookie Cookie
+     */
+    override fun addCookie(cookie: Cookie) {
+        this.cookies.add(cookie)
+    }
+
+    /**
+     * 获取Cookies
+     *
+     * @return Cookies
+     */
+    override fun getCookies() = this.cookies.toTypedArray()
 
     /**
      * 根据headerName，去移除一个header

@@ -1,18 +1,13 @@
 package com.wanna.framework.beans.factory.support
 
 import com.wanna.framework.beans.*
-import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.beans.factory.*
 import com.wanna.framework.beans.factory.BeanFactory.Companion.FACTORY_BEAN_PREFIX
-import com.wanna.framework.beans.factory.FactoryBean
-import com.wanna.framework.beans.factory.ListableBeanFactory
-import com.wanna.framework.beans.factory.ObjectFactory
 import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.beans.factory.config.Scope
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.beans.util.StringValueResolver
-import com.wanna.framework.context.exception.BeanCurrentlyInCreationException
-import com.wanna.framework.context.exception.BeansException
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.processor.beans.*
 import com.wanna.framework.core.NamedThreadLocal
@@ -40,44 +35,72 @@ import java.util.concurrent.CopyOnWriteArrayList
 abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? = null) : BeanFactory,
     ConfigurableBeanFactory, ListableBeanFactory, FactoryBeanRegistrySupport() {
 
-    // beanClassLoader
+    /**
+     * beanClassLoader，提供对于BeanClass的类加载扥功能
+     */
     private var beanClassLoader: ClassLoader = ClassUtils.getDefaultClassLoader()
 
-    // 在BeanFactory当中已经完成注册的Scope列表，除了(except)singleton/prototype的所有Scope，都会被注册到这里
-    private val scopes: MutableMap<String, Scope> = LinkedHashMap()
+    /**
+     * 在BeanFactory当中已经完成注册的Scope列表，除了(except)singleton/prototype的所有Scope，都会被注册到这里
+     */
+    private val scopes = LinkedHashMap<String, Scope>()
 
-    // ConversionService，提供Spring BeanFactory的类型的转换
+    /**
+     * ConversionService，提供Spring BeanFactory的类型的转换
+     */
     private var conversionService: ConversionService? = DefaultConversionService.getSharedInstance()
 
-    // 自定义的类型转换器，可以组合ConversionService和PropertyEditor去完成类型的转换
+    /**
+     * 自定义的类型转换器，可以组合ConversionService和PropertyEditor去完成类型的转换
+     */
     private var typeConverter: TypeConverter? = null
 
-    // 自定义的PropertyEditor，会被注册到TypeConverter当中去提供类型的转换...
+    /**
+     * 自定义的PropertyEditor，会被注册到TypeConverter当中去提供类型的转换...
+     */
     private val customEditors = LinkedHashMap<Class<*>, Class<out PropertyEditor>>()
 
-    // PropertyEditor的注册器，会自动回调，去将自定义的PropertyEditor注册到TypeConverter当中去提供类型的转换...
+    /**
+     * PropertyEditor的注册器，会自动回调，去将自定义的PropertyEditor注册到TypeConverter当中去提供类型的转换...
+     *
+     * @see typeConverter
+     */
     private val propertyEditorRegistrars = LinkedHashSet<PropertyEditorRegistrar>()
 
-    // 存放BeanFactory当中的所有嵌入式的值解析器
-    private val embeddedValueResolvers: MutableList<StringValueResolver> = ArrayList()
+    /**
+     * 存放BeanFactory当中的所有嵌入式的值解析器，提供对于占位符的解析等工作
+     */
+    private val embeddedValueResolvers = ArrayList<StringValueResolver>()
 
-    // BeanFactory当中需要维护的BeanPostProcessor列表
+    /**
+     * BeanFactory当中需要维护的BeanPostProcessor列表，它们有资格去对Bean去进行自定义的干涉
+     */
     protected val beanPostProcessors = CopyOnWriteArrayList<BeanPostProcessor>()
 
-    // BeanPostProcessor Cache
+    /**
+     * BeanPostProcessor Cache
+     */
     private var beanPostProcessorCache: BeanPostProcessorCache? = null
 
-    // applicationStartup，默认情况下什么都不做
-    // 如果用户想要获取到Application启动当中的相关信息，只需要将ApplicationStartup替换为自定义的即可
+    /**
+     * applicationStartup，默认情况下什么都不做
+     * 如果用户想要获取到Application启动当中的相关信息，只需要将ApplicationStartup替换为自定义的即可
+     */
     private var applicationStartup: ApplicationStartup = ApplicationStartup.DEFAULT
 
-    // 已经完成合并的BeanDefinition的Map
-    private val mergedBeanDefinitions: ConcurrentHashMap<String, RootBeanDefinition> = ConcurrentHashMap()
+    /**
+     * 已经完成合并的BeanDefinition的缓存，对所有的BeanDefinition，最终都会被Merge成为一个RootBeanDefinition
+     */
+    private val mergedBeanDefinitions = ConcurrentHashMap<String, RootBeanDefinition>()
 
-    // Logger
+    /**
+     * Logger
+     */
     private val logger = LoggerFactory.getLogger(AbstractBeanFactory::class.java)
 
-    // 当前正在创建当中的Bean，用来排查原型Bean的注入的情况
+    /**
+     * 当前正在创建当中的Bean，用来排查原型Bean的注入的情况
+     */
     private val prototypesCurrentlyInCreation = NamedThreadLocal<Any>("Prototype Beans Current In Creation")
 
     override fun getBeanClassLoader() = this.beanClassLoader
@@ -87,9 +110,17 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     }
 
     /**
-     * 提供获取和设置parentBeanFactory的途径
+     * 获取parentBeanFactory
+     *
+     * @return parent BeanFactory(如果不存在的话，那么return null)
      */
     override fun getParentBeanFactory() = this.parentBeanFactory
+
+    /**
+     * 设置parent BeanFactory
+     *
+     * @param parent parentBeanFactory
+     */
     open fun setParentBeanFactory(parent: BeanFactory?) {
         // 如果之前设置过parentBeanFactory，现在又想设置新的parent去进行替换？那么肯定是不行...
         if (this.parentBeanFactory != null && parent != parentBeanFactory) {
@@ -104,30 +135,59 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
 
     /**
      * BeanFactory也得提供获取ApplicationStartup的监测功能
+     *
+     * @return ApplicationStartup
      */
     override fun getApplicationStartup(): ApplicationStartup = this.applicationStartup
+
+    /**
+     * 自定义ApplicationStartup
+     *
+     * @param applicationStartup 你想要使用的ApplicationStartup
+     */
     override fun setApplicationStartup(applicationStartup: ApplicationStartup) {
         this.applicationStartup = applicationStartup
     }
 
     /**
      * 按照指定的name和type去进行getBean
+     *
+     * @param beanName beanName
+     * @param type beanType
+     * @param T beanType
+     * @return 获取到的Bean对象
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     @Suppress("UNCHECKED_CAST")
     override fun <T> getBean(beanName: String, type: Class<T>) = doGetBean(beanName, type, null)
 
     /**
      * 按照指定的name去进行getBean，type直接使用Object就行
+     *
+     * @param beanName beanName
+     * @return 获取到的Bean对象
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     override fun getBean(beanName: String) = doGetBean<Any>(beanName, null, null)
 
     /**
      * 按照指定的name去进行getBean，并指定参数列表
+     *
+     * @param beanName beanName
+     * @param args 获取Bean时需要用到的更多参数列表
+     * @return 获取到的Bean对象
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     override fun getBean(beanName: String, vararg args: Any?) = doGetBean<Any>(beanName, null, arrayOf(*args))
 
     /**
      * doGetBean，对多种情况的getBean的方式提供模板方法的实现
+     *
+     * @param name beanName
+     * @param requiredType requiredType
+     * @param args 更多参数列表
+     * @param T beanType
+     * @return 获取到的Bean对象
      */
     @Suppress("UNCHECKED_CAST")
     protected open fun <T> doGetBean(name: String, requiredType: Class<T>?, args: Array<Any?>?): T {
@@ -152,7 +212,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
             // 快速地去检查当前原型Bean是否已经正在创建当中了？只要已经在创建当中了，那么我们就可以认为已经发生了循环依赖了
             // 但是对于原型Bean的循环依赖，无法解决，因此我们在这里直接抛出BeanCurrentlyInCreationException异常...
             if (isPrototypeCurrentlyInCreation(beanName)) {
-                throw BeanCurrentlyInCreationException("原型Bean[$beanName]当前正在创建当中", beanName)
+                throw BeanCurrentlyInCreationException("原型Bean[$beanName]当前正在创建当中", null, beanName)
             }
 
             val parentBeanFactory = this.parentBeanFactory
@@ -230,12 +290,12 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
             }
         }
 
-        // 如果必要的话，应该去使用TypeConverter去完成类型转换
+        // 如果必要的话，应该去使用TypeConverter去完成类型转换，让它和返回的目标类型匹配
         return adaptBeanInstance(beanInstance, name, requiredType)
     }
 
     /**
-     * 如果必要的话，需要去进行类型的转换
+     * 如果必要的话，需要去进行类型的转换，保证返回的对象类型是目标类型(requiredType)匹配的
      *
      * @param beanInstance beanInstance
      * @param name beanName
@@ -243,9 +303,22 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      */
     @Suppress("UNCHECKED_CAST")
     protected open fun <T> adaptBeanInstance(beanInstance: Any, name: String, requiredType: Class<T>?): T {
-        if (requiredType != null && requiredType.isInstance(beanInstance)) {
-            return getTypeConverter().convertIfNecessary(beanInstance, requiredType)!!
+
+        // 如果requiredType和beanInstance的类型本身不匹配，那么就需要使用到TypeConverter去进行转换
+        if (requiredType != null && !requiredType.isInstance(beanInstance)) {
+            try {
+                return getTypeConverter().convertIfNecessary(beanInstance, requiredType) ?: throw IllegalStateException(
+                    "beanName=[$name]的Bean去转换成为[${ClassUtils.getQualifiedName(requiredType)}]的转换结果为空"
+                )
+            } catch (ex: TypeMismatchException) {
+                if (logger.isDebugEnabled) {
+                    logger.debug("无法去将beanName=[$name]的Bean去转换成为[${ClassUtils.getQualifiedName(requiredType)}]")
+                }
+                throw BeanNotOfRequiredTypeException(name, requiredType, beanInstance::class.java)
+            }
         }
+
+        // 类型匹配的话，直接强转返回即可
         return beanInstance as T
     }
 
@@ -392,7 +465,12 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     override fun <T> getBean(type: Class<T>): T {
         val result = getBeanNamesForType(type).map { getBean(it, type) }
         if (result.isEmpty()) {
-            throw NoSuchBeanDefinitionException("没有这样的BeanDefinition", type)
+            throw NoSuchBeanDefinitionException(
+                "BeanFactory当中没有type=[${ClassUtils.getQualifiedName(type)}]的BeanDefinition",
+                null,
+                null,
+                type
+            )
         }
         return result.iterator().next()
     }
@@ -402,6 +480,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      *
      * @throws NoSuchBeanDefinitionException 如果容器当中不存在这样的BeanDefinition
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     override fun isSingleton(beanName: String) = getBeanDefinition(beanName).isSingleton()
 
     /**
@@ -409,6 +488,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      *
      * @throws NoSuchBeanDefinitionException 如果容器当中不存在这样的BeanDefinition
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     override fun isPrototype(beanName: String) = getBeanDefinition(beanName).isPrototype()
 
 

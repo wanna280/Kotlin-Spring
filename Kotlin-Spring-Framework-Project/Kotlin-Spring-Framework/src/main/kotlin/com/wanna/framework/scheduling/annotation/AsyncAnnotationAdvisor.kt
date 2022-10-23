@@ -20,16 +20,24 @@ import java.util.function.Supplier
  */
 open class AsyncAnnotationAdvisor() : AbstractPointcutAdvisor(), BeanFactoryAware {
 
-    // advice
+    /**
+     * advice，用于去拦截@Async注解的执行
+     */
     private var advice: Advice? = null
 
-    // pointcut
+    /**
+     * pointcut，提供对于@Async注解的匹配
+     */
     private var pointcut: Pointcut? = null
 
-    // beanFactory
+    /**
+     * beanFactory
+     */
     private var beanFactory: BeanFactory? = null
 
-    // 异步任务的ExceptionHandler
+    /**
+     * 异步任务的ExceptionHandler
+     */
     private var exceptionHandler: Supplier<AsyncUncaughtExceptionHandler>? = null
 
     constructor(executor: Supplier<Executor>?, exceptionHandler: Supplier<AsyncUncaughtExceptionHandler>?) : this() {
@@ -90,11 +98,9 @@ open class AsyncAnnotationAdvisor() : AbstractPointcutAdvisor(), BeanFactoryAwar
         }
     }
 
-    override fun getAdvice(): Advice {
-        return advice ?: throw IllegalStateException("AsyncAnnotationAdvisor的Advice不能为空")
-    }
+    override fun getAdvice(): Advice =
+        advice ?: throw IllegalStateException("AsyncAnnotationAdvisor的Advice不能为空")
 
-    override fun getPointcut(): Pointcut {
-        return pointcut ?: throw IllegalStateException("AsyncAnnotationAdvisor的Pointcut不能为空")
-    }
+    override fun getPointcut(): Pointcut =
+        pointcut ?: throw IllegalStateException("AsyncAnnotationAdvisor的Pointcut不能为空")
 }

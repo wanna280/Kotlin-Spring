@@ -33,6 +33,16 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     companion object {
 
         /**
+         * SpringBoot的Banner的属性值，可以在配置文件/命令行参数当中去通过这个属性值去配置Banner的位置
+         */
+        const val BANNER_LOCATION_PROPERTY = SpringApplicationBannerPrinter.BANNER_LOCATION_PROPERTY
+
+        /**
+         * 默认的SpringBootBanner的位置
+         */
+        const val DEFAULT_BANNER_LOCATION = SpringApplicationBannerPrinter.DEFAULT_BANNER_LOCATION
+
+        /**
          * 用于创建MVC的ApplicationContext的类名
          */
         const val DEFAULT_MVC_WEB_CONTEXT_CLASS =
@@ -210,9 +220,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      *
      * @return 排好序的ApplicationListener列表
      */
-    open fun getListeners(): Set<ApplicationListener<*>> {
-        return asOrderSet(this.listeners)
-    }
+    open fun getListeners(): Set<ApplicationListener<*>> = asOrderSet(this.listeners)
 
     /**
      * 引导整个SpringApplication的启动
@@ -237,7 +245,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         // 获取SpringApplicationRunListeners
         val listeners: SpringApplicationRunListeners = getRunListeners(arrayOf(*args))
         // 通知所有的监听器，当前SpringApplication已经正在启动当中了...
-        listeners.starting(bootstrapContext)
+        listeners.starting(bootstrapContext, this.mainApplicationClass)
 
         try {
             val applicationArguments = DefaultApplicationArguments(arrayOf(*args))
@@ -304,7 +312,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      * @param banner banner(有可能为空)
      */
     protected open fun prepareContext(
-        bootstrapContext: BootstrapContext,
+        bootstrapContext: DefaultBootstrapContext,
         context: ConfigurableApplicationContext,
         environment: ConfigurableEnvironment,
         listeners: SpringApplicationRunListeners,
@@ -323,6 +331,10 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
 
         // 通知监听器，ApplicationContext已经准备好了，可以完成后置处理了
         listeners.contextPrepared(context)
+
+        // 当ApplicationContext已经准备好了，可以去关闭BootstrapContext了
+        // 回调BootstrapContext当中所有处理BootstrapContextClosed事件的监听器
+        bootstrapContext.close(context)
 
         // SpringApplication的整个ApplicationContext已经准备好了，可以去进行打印相关的日志信息了
         // 是否需要打印SpringApplication启动过程当中的相关信息，如果需要的话，需要在这里去打印SpringApplication的相关环境信息
@@ -423,7 +435,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      *
      * @return 创建好的BootstrapContext
      */
-    protected open fun createBootstrapContext(): ConfigurableBootstrapContext {
+    protected open fun createBootstrapContext(): DefaultBootstrapContext {
         val bootstrapContext = DefaultBootstrapContext()
         this.bootstrappers.forEach { it.initialize(bootstrapContext) }
         return bootstrapContext
@@ -728,7 +740,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
             this, args
         )
         // 构建成为SpringApplicationRunListeners对象并返回
-        return SpringApplicationRunListeners(runListeners, args)
+        return SpringApplicationRunListeners(runListeners, applicationStartup, logger)
     }
 
     /**

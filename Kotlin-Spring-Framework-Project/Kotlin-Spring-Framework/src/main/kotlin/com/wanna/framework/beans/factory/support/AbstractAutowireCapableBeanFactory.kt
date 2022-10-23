@@ -1,20 +1,15 @@
 package com.wanna.framework.beans.factory.support
 
-import com.wanna.framework.beans.BeanWrapper
-import com.wanna.framework.beans.factory.InitializingBean
-import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
-import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import com.wanna.framework.beans.MutablePropertyValues
-import com.wanna.framework.beans.PropertyValues
-import com.wanna.framework.beans.BeanFactoryAware
-import com.wanna.framework.beans.factory.ObjectFactory
-import com.wanna.framework.beans.BeanWrapperImpl
+import com.wanna.framework.beans.*
 import com.wanna.framework.beans.factory.FactoryBean
+import com.wanna.framework.beans.factory.InitializingBean
+import com.wanna.framework.beans.factory.ObjectFactory
+import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
+import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.BeanNameAware
 import com.wanna.framework.context.exception.BeanCreationException
-import com.wanna.framework.context.exception.BeansException
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ParameterNameDiscoverer
@@ -33,7 +28,9 @@ import java.util.function.Supplier
  */
 abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), AutowireCapableBeanFactory {
 
-    // 是否开启了循环依赖？默认设置为true
+    /**
+     * 是否开启了循环依赖？默认设置为true
+     */
     private var allowCircularReferences: Boolean = true
 
     /**
@@ -44,7 +41,9 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
      */
     private var instantiationStrategy: InstantiationStrategy = CglibSubclassingInstantiationStrategy()
 
-    // 参数名发现器，支持去进行方法/构造器的参数名列表的获取
+    /**
+     * 参数名发现器，支持去进行方法/构造器的参数名列表的获取
+     */
     private var parameterNameDiscoverer: ParameterNameDiscoverer? = DefaultParameterNameDiscoverer()
 
     /**
@@ -416,7 +415,7 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
             // 通过beanWrapper去设置propertyValues
             beanWrapper.setPropertyValues(pvs)
         } catch (ex: BeansException) {
-            throw BeanCreationException("给beanName=[$beanName]的Bean去进行属性赋值的过程当中出现了异常")
+            throw BeanCreationException("给beanName=[$beanName]的Bean去进行属性赋值的过程当中出现了异常", ex)
         }
     }
 

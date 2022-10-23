@@ -2,7 +2,7 @@ package com.wanna.boot.autoconfigure
 
 import com.wanna.framework.core.io.support.PropertiesLoaderUtils
 import com.wanna.framework.util.StringUtils
-import java.util.Properties
+import java.util.*
 
 /**
  * 这是一个AutoConfiguration的Metadata加载器，完成"META-INF/spring-autoconfigure-metadata.properties"的加载；
@@ -24,7 +24,7 @@ object AutoConfigurationMetadataLoader {
     fun loadMetadata(classLoader: ClassLoader): AutoConfigurationMetadata {
 
         // 使用PropertiesLoaderUtils去加载META-INF/spring-autoconfigure-metadata.properties
-        val properties = PropertiesLoaderUtils.loadProperties(AUTOCONFIGURATION_METADATA_PATH, classLoader)
+        val properties = PropertiesLoaderUtils.loadAllProperties(AUTOCONFIGURATION_METADATA_PATH, classLoader)
 
         // 将Properties包装成为PropertiesAutoConfigurationMetadata
         return PropertiesAutoConfigurationMetadata(properties)

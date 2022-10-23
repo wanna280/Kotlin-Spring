@@ -68,6 +68,20 @@ object ReflectionUtils {
         }
     }
 
+    /**
+     * 根据给定的异常，重新丢出来一个RuntimeException
+     *
+     * @param ex 原始异常
+     * @throws RuntimeException 转换之后的RuntimeException
+     */
+    fun rethrowRuntimeException(ex: Throwable) {
+        when (ex) {
+            is RuntimeException -> throw ex
+            is Error -> throw ex
+            else -> throw UndeclaredThrowableException(ex)
+        }
+    }
+
 
     /**
      * 在一个类上name和type都匹配的字段，如果没找到，return null

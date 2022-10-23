@@ -36,9 +36,8 @@ open class NacosContextRefresher(private val nacosConfigManager: NacosConfigMana
         val configService = nacosConfigManager.getConfigService()
         NacosPropertySourceRepository.getAll().forEach {
             configService.addListener(it.dataId, it.group, object : AbstractSharedListener() {
-                override fun innerReceive(dataId: String?, group: String?, configInfo: String?) {
-                    this@NacosContextRefresher.applicationContext.publishEvent(RefreshEvent(this@NacosContextRefresher))
-                }
+                override fun innerReceive(dataId: String?, group: String?, configInfo: String?) =
+                    applicationContext.publishEvent(RefreshEvent(this@NacosContextRefresher))
             })
         }
     }

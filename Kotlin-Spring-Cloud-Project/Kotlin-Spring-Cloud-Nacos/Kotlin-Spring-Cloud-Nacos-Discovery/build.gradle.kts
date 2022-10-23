@@ -9,6 +9,7 @@ dependencies {
     implementation(project(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Autoconfigure"))
     implementation(project(":Kotlin-Logger:logger-slf4j-impl"))
     implementation("com.alibaba.nacos:nacos-client:$nacosClientVersion")
+    implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // jackson
 
     // for Test
     testImplementation(project(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Web"))

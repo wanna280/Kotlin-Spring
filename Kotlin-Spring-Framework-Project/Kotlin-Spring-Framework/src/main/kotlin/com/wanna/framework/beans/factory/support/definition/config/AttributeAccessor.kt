@@ -1,5 +1,7 @@
 package com.wanna.framework.beans.factory.support.definition.config
 
+import com.wanna.framework.lang.Nullable
+
 /**
  * 这是一个属性的访问器，实现这个接口的子类，可以支持属性的访问
  */
@@ -8,11 +10,12 @@ interface AttributeAccessor {
     /**
      * 根据name-value设置属性
      */
-    fun setAttribute(name: String, value: Any?)
+    fun setAttribute(name: String, @Nullable value: Any?)
 
     /**
      * 根据name获取属性
      */
+    @Nullable
     fun getAttribute(name: String): Any?
 
     /**
@@ -28,5 +31,6 @@ interface AttributeAccessor {
     /**
      * 根据name去移除一个属性
      */
+    @Nullable
     fun removeAttribute(name: String): Any?
 }
