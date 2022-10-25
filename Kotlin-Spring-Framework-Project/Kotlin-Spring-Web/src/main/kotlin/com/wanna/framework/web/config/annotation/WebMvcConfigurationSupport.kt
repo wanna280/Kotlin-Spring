@@ -7,7 +7,10 @@ import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.format.FormatterRegistry
 import com.wanna.framework.context.format.support.DefaultFormattingConversionService
 import com.wanna.framework.context.format.support.FormattingConversionService
+import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.validation.Errors
+import com.wanna.framework.validation.Validator
 import com.wanna.framework.web.HandlerMapping
 import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.cors.CorsConfiguration
@@ -176,6 +179,55 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     @Qualifier("simpleControllerHandlerAdapter")
     open fun simpleControllerHandlerAdapter(): SimpleControllerHandlerAdapter {
         return SimpleControllerHandlerAdapter()
+    }
+
+    /**
+     * 为Spring BeanFactory当中去导入一个Spring的Validator，为
+     * `@ModelAttribute`和`@RequestBody`的参数检验提供支持
+     */
+    @Bean("mvcValidator")
+    @Qualifier("mvcValidator")
+    open fun mvcValidator(): Validator {
+        // 1.首先尝试获取子类去进行自定义的Validator
+        var validator = getValidator()
+
+        // 2.如果没有自定义Validator的话，那么我们直接去进行推断...
+        if (validator == null) {
+
+            // 检查JDK的Validator是否在我们的依赖当中？
+            if (ClassUtils.isPresent(
+                    "javax.validation.Validator",
+                    WebMvcConfigurationSupport::class.java.classLoader
+                )
+            ) {
+                // 实例化出来一个OptionalValidatorFactoryBean对象，支持去探测本地的javax.validation.Validator作为delegate
+                val className = "com.wanna.framework.validation.beanvalidation.OptionalValidatorFactoryBean"
+                try {
+                    val clazz =
+                        ClassUtils.forName<Validator>(className, WebMvcConfigurationSupport::class.java.classLoader)
+                    validator = BeanUtils.instantiateClass(clazz)
+                    // 如果该类找不到的话...那么直接丢出来异常
+                } catch (ex: ClassNotFoundException) {
+                    throw RuntimeException(ex)
+                } catch (ex: LinkageError) {
+                    throw RuntimeException(ex)
+                }
+                // 如果依赖当中都没有javax.validation.Validator，那么说明没有合适的Validator可以去进行使用
+                // 我们直接尝试去使用NoOpValidator...
+            } else {
+                validator = NoOpValidator()
+            }
+        }
+        return validator
+    }
+
+    /**
+     * 交给子类去进行重写，提供自定义的Validator
+     *
+     * @return 你需要使用的Validator
+     */
+    protected open fun getValidator(): Validator? {
+        return null
     }
 
     protected open fun getArgumentResolvers(): List<HandlerMethodArgumentResolver> {
@@ -354,4 +406,13 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
      * @param registry CorsRegistry
      */
     protected open fun addCorsMapping(registry: CorsRegistry) {}
+
+    /**
+     * 啥操作也不做的Validator
+     */
+    private class NoOpValidator : Validator {
+        override fun supports(clazz: Class<*>) = false
+
+        override fun validate(target: Any, errors: Errors) {}
+    }
 }
