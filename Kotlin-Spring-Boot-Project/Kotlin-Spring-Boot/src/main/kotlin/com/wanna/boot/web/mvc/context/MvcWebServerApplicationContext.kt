@@ -93,9 +93,9 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
     private fun getWebServerFactory(): WebServerFactory {
         val factoryNames = getBeanFactory().getBeanNamesForType(WebServerFactory::class.java)
         return when (factoryNames.size) {
-            0 -> throw ApplicationContextException("没有从容器当中去找到合适的WebServerFactory")
+            0 -> throw ApplicationContextException("没有从BeanFactory当中去找到合适的[${WebServerFactory::class.java}]类型的Bean")
             1 -> getBeanFactory().getBean(factoryNames[0], WebServerFactory::class.java)
-            else -> throw ApplicationContextException("从容器中找到WebServerFactory的数量不止1个, BeanFactory当中包含有下面这样的几个:$factoryNames")
+            else -> throw ApplicationContextException("从BeanFactory中找到WebServerFactory的数量不止1个, 包含有下面这样的几个:$factoryNames")
         }
     }
 
