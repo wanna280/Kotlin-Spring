@@ -15,11 +15,20 @@ import javax.validation.Validator
 
 /**
  * Bean Validation的自动配置类，提供对于JSR303的参数校验的支持
+ *
+ * @see Validator
+ * @see MethodValidationPostProcessor
+ * @see LocalValidatorFactoryBean
  */
 @ConditionalOnClass(name = ["javax.validation.Validator"])
 @Configuration(proxyBeanMethods = false)
 open class ValidationAutoConfiguration {
 
+    /**
+     * 注册一个LocalValidatorFactoryBean，提供Spring的Validator和javax.validation的Validator的Bean的支持
+     *
+     * @return LocalValidatorFactoryBean
+     */
     @Bean
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     @ConditionalOnMissingBean([Validator::class])
@@ -29,6 +38,12 @@ open class ValidationAutoConfiguration {
         return localValidatorFactoryBean
     }
 
+    /**
+     * 提供对于`@Validated`注解的参数检验的BeanPostProcessor
+     *
+     * @param validator [Validator]
+     * @return MethodValidationPostProcessor
+     */
     @Bean
     @ConditionalOnClass(name = ["javax.validation.Validator"])
     @ConditionalOnMissingBean
