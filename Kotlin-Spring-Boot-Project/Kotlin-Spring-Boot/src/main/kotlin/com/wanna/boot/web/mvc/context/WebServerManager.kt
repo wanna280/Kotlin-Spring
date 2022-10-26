@@ -16,6 +16,7 @@ open class WebServerManager(
 ) {
 
     companion object {
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(WebServerManager::class.java)
     }
 

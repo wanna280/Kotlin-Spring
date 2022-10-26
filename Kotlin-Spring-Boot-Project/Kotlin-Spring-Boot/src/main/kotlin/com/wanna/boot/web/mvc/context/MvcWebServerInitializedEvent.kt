@@ -4,7 +4,7 @@ import com.wanna.boot.web.server.WebServer
 import com.wanna.framework.context.ApplicationContext
 
 /**
- * ReactiveWebServer已经完成初始化的事件
+ * MvcWebServer已经完成初始化的事件
  *
  * @param webServer WebServer
  * @param applicationContext applicationContext
@@ -12,7 +12,10 @@ import com.wanna.framework.context.ApplicationContext
 open class MvcWebServerInitializedEvent(webServer: WebServer, private val applicationContext: ApplicationContext) :
     WebServerInitializedEvent(webServer) {
 
-    override fun getApplicationContext(): ApplicationContext {
-        return this.applicationContext
-    }
+    /**
+     * 获取正在初始化WebServer时使用到的ApplicationContext
+     *
+     * @return ApplicationContext
+     */
+    override fun getApplicationContext(): ApplicationContext = this.applicationContext
 }

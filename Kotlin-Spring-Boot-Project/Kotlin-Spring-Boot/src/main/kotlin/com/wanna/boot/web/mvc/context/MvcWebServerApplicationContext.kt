@@ -14,15 +14,27 @@ import com.wanna.framework.context.support.GenericApplicationContext
  */
 open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactory) :
     GenericApplicationContext(beanFactory), WebServerApplicationContext {
-    // 提供一个无参数构造器
+    /**
+     * 提供一个无参数构造器
+     */
     constructor() : this(DefaultListableBeanFactory())
 
-    // WebServerManager
+    /**
+     * WebServerManager
+     */
     private var webServerManager: WebServerManager? = null
 
-    // WebServer
+    /**
+     * WebServer
+     */
     private var webServer: WebServer? = null
 
+    /**
+     * 重写父类的refresh方法，当刷新SpringBeanFactory出现异常时，我们需要去关闭WebServer
+     *
+     * @see WebServerManager.webServer
+     * @see WebServer.stop
+     */
     override fun refresh() {
         try {
             super.refresh()
@@ -33,14 +45,16 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
     }
 
     /**
-     * 创建WebServer，并发布ReactiveWebServerInitializedEvent事件...
+     * 创建WebServer，并发布MvcWebServerInitializedEvent事件...
+     *
+     * @see MvcWebServerInitializedEvent
      */
     override fun onRefresh() {
         super.onRefresh()
         try {
             createWebServer()
         } catch (ex: Throwable) {
-            throw ApplicationContextException("不能创建ReactiveWebServer，原因是-->${ex.message}", ex)
+            throw ApplicationContextException("创建MvcWebServer，原因是-->${ex.message}", ex)
         }
     }
 
@@ -56,27 +70,39 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
             this.webServer = webServerFactory.getWebServer()  // get WebServer
             step.end()  // tag end
 
+            // 创建WebServerManager
             this.webServerManager = WebServerManager(this, webServerFactory)
-            this.getBeanFactory()
-                .registerSingleton(
-                    "webServerStartStop",
-                    WebServerStartStopLifecycle(this.webServerManager!!)
-                )
+
+            // 注册一个WebServer的启动/暂停的Lifecycle的Bean到BeanFactory当中
+            this.getBeanFactory().registerSingleton(
+                "webServerStartStop",
+                WebServerStartStopLifecycle(this.webServerManager!!)
+            )
         }
+
+        // initPropertySources
         initPropertySources()
     }
 
+    /**
+     * 从Spring BeanFactory当中去探测WebServerFactory。
+     * 如果探测到一个，直接返回；如果探测到多个/没有探测到WebServerFactory，都需要抛出异常。
+     *
+     * @return 探测到的WebServerFactory
+     */
     private fun getWebServerFactory(): WebServerFactory {
-        val factories = getBeanFactory().getBeansForType(WebServerFactory::class.java).values
-        if (factories.isEmpty()) {
-            throw ApplicationContextException("没有从容器当中去找到合适的WebServerFactory")
-        } else if (factories.size > 1) {
-            throw ApplicationContextException("从容器中找到WebServerFactory的数量不止1个")
+        val factoryNames = getBeanFactory().getBeanNamesForType(WebServerFactory::class.java)
+        return when (factoryNames.size) {
+            0 -> throw ApplicationContextException("没有从容器当中去找到合适的WebServerFactory")
+            1 -> getBeanFactory().getBean(factoryNames[0], WebServerFactory::class.java)
+            else -> throw ApplicationContextException("从容器中找到WebServerFactory的数量不止1个, BeanFactory当中包含有下面这样的几个:$factoryNames")
         }
-        return factories.iterator().next()
     }
 
-    override fun getWebServer(): WebServer {
-        return this.webServer ?: throw IllegalStateException("WebServer不能为空")
-    }
+    /**
+     * 获取WebServer
+     *
+     * @return WebServer
+     */
+    override fun getWebServer(): WebServer = this.webServer ?: throw IllegalStateException("无法获取到WebServer")
 }
