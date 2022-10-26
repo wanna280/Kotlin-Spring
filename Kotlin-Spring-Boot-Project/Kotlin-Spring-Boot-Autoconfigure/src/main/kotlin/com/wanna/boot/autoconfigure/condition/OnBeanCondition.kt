@@ -6,6 +6,7 @@ import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.ConditionContext
 import com.wanna.framework.context.annotation.ConfigurationCondition
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase
+import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase.REGISTER_BEAN
 import com.wanna.framework.core.Order
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
@@ -21,11 +22,19 @@ import com.wanna.framework.util.ClassUtils
 @Order(Ordered.ORDER_LOWEST)
 @Suppress("UNCHECKED_CAST")
 open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondition {
-    // 设置它作为Condition应该作用的阶段为注册Bean的阶段
-    override fun getConfigurationPhase(): ConfigurationPhase = ConfigurationPhase.REGISTER_BEAN
+    /**
+     * 设置它作为Condition应该作用的阶段为注册Bean的阶段
+     *
+     * @return REGISTER_BEAN
+     */
+    override fun getConfigurationPhase(): ConfigurationPhase = REGISTER_BEAN
 
     /**
      * 匹配configurationClassName.OnBeanCondition/OnSingletonCandidate中配置的className列表，判断是否存在
+     *
+     * @param autoConfigurationClasses 自动配置类的列表
+     * @param autoConfigurationMetadata 自动配置类的元信息("META-INF/spring-autoconfigure-metadata.properties")
+     * @return 针对全部的自动配置类去进行匹配的匹配结果
      */
     override fun getOutcomes(
         autoConfigurationClasses: Array<String?>, autoConfigurationMetadata: AutoConfigurationMetadata

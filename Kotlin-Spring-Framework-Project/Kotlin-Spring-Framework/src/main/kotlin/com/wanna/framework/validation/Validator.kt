@@ -2,6 +2,8 @@ package com.wanna.framework.validation
 
 /**
  * Spring的Validator，用来完成参数的检验，是一个策略接口
+ *
+ * @see javax.validation.Validator
  */
 interface Validator {
 
@@ -10,7 +12,7 @@ interface Validator {
      *
      * @param clazz JavaBean的类型
      */
-    fun supports(clazz: Class<*>) : Boolean
+    fun supports(clazz: Class<*>): Boolean
 
     /**
      * 对目标对象去进行参数检验

@@ -13,7 +13,9 @@ import java.util.*
  * @see PropertiesLoaderUtils
  */
 object AutoConfigurationMetadataLoader {
-    // 自动配置的元信息配置文件的路径(path)
+    /**
+     * 自动配置的元信息配置文件的路径(path)
+     */
     private const val AUTOCONFIGURATION_METADATA_PATH: String = "META-INF/spring-autoconfigure-metadata.properties"
 
     /**

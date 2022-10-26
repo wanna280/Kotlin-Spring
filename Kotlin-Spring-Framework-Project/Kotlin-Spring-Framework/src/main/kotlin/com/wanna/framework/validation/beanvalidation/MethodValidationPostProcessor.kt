@@ -1,10 +1,8 @@
 package com.wanna.framework.validation.beanvalidation
 
 import com.wanna.framework.aop.Advice
-import com.wanna.framework.aop.TruePointcut
 import com.wanna.framework.aop.framework.AbstractBeanFactoryAwareAdvisingPostProcessor
 import com.wanna.framework.aop.support.DefaultPointcutAdvisor
-import com.wanna.framework.aop.support.annotation.AnnotationClassFilter
 import com.wanna.framework.aop.support.annotation.AnnotationMatchingPointcut
 import com.wanna.framework.beans.factory.InitializingBean
 import com.wanna.framework.lang.Nullable
@@ -27,10 +25,14 @@ import javax.validation.ValidatorFactory
  * @see javax.validation.Validator
  */
 open class MethodValidationPostProcessor : AbstractBeanFactoryAwareAdvisingPostProcessor(), InitializingBean {
-    // 要匹配的注解类型，默认只支持去匹配Spring家的@Validated注解(支持去进行自定义)
+    /**
+     * 要匹配的注解类型，默认支持去匹配Spring家的@Validated注解(支持去进行自定义)
+     */
     private var validatedAnnotationType: Class<out Annotation> = Validated::class.java
 
-    // 内部去进行真正的参数检验的Validator
+    /**
+     * 内部去进行真正的参数检验时需要使用的Validator
+     */
     @Nullable
     private var validator: javax.validation.Validator? = null
 

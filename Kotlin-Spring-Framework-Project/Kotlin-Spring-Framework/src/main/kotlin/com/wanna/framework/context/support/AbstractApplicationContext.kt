@@ -206,7 +206,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
                 finishRefresh()
             } catch (ex: BeansException) {
                 if (logger.isDebugEnabled) {
-                    logger.debug("在ApplicationContext刷新过程当中遇到问题", ex)
+                    logger.debug("在Spring ApplicationContext刷新过程当中遇到异常", ex)
                 }
                 this.destroyBeans()
                 throw ex

@@ -7,7 +7,7 @@ import kotlin.reflect.KClass
  * 只要在给定的class都满足的情况下，才会将该Bean给导入到容器当中
  */
 @Target(AnnotationTarget.TYPE, AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
-@Conditional([OnClassCondition::class])
+@Conditional(OnClassCondition::class)
 annotation class ConditionalOnClass(
     val value: Array<KClass<*>> = [],
     val name: Array<String> = []
