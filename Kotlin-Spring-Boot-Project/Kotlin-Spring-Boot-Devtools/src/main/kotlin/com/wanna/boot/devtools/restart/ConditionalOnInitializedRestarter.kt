@@ -8,5 +8,5 @@ import com.wanna.framework.context.annotation.Conditional
  * @see OnInitializedRestarterCondition
  */
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.CLASS)
-@Conditional([OnInitializedRestarterCondition::class])
+@Conditional(OnInitializedRestarterCondition::class)
 annotation class ConditionalOnInitializedRestarter

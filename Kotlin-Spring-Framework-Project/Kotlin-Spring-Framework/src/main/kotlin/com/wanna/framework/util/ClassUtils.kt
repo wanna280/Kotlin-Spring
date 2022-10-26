@@ -160,6 +160,36 @@ object ClassUtils {
     }
 
     /**
+     * 判断指定的类当中是否存在有给定名字的方法？
+     * (Note: 1.只找public方法)
+     *
+     * @param clazz clazz
+     * @param methodName 方法名
+     */
+    @JvmStatic
+    fun hasMethod(clazz: Class<*>, methodName: String): Boolean {
+        val candidates = findMethodCandidatesByName(clazz, methodName)
+        return candidates.size == 1
+    }
+
+    /**
+     * 根据方法名去某个类当中去找到所有匹配的方法列表
+     *
+     * @param clazz 要去匹配的类
+     * @param methodName 要寻找方法的方法名
+     * @return 方法名符合的Method列表(找不到的话，return empty)
+     */
+    private fun findMethodCandidatesByName(clazz: Class<*>, methodName: String): Set<Method> {
+        val candidates = LinkedHashSet<Method>()
+        clazz.methods.forEach {
+            if (it.name == methodName) {
+                candidates += it
+            }
+        }
+        return candidates
+    }
+
+    /**
      * 判断指定的类是否存在于当前JVM的运行时的依赖当中？
      *
      * @param className 要去进行判断的className

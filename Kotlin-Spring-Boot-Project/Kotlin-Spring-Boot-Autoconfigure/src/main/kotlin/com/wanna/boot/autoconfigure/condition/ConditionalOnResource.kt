@@ -10,5 +10,5 @@ import com.wanna.framework.context.annotation.Conditional
  *
  * @param resources 需要去进行匹配的资源文件
  */
-@Conditional([OnResourceCondition::class])
+@Conditional(OnResourceCondition::class)
 annotation class ConditionalOnResource(vararg val resources: String)
