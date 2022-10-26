@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.io.InputStream
 import java.net.URI
 import java.net.URISyntaxException
 import java.net.URL
@@ -34,8 +33,8 @@ abstract class AbstractResource : Resource {
             try {
                 return getFile().exists()
             } catch (ex: IOException) {
-                if (logger.isDebugEnabled) {
-                    logger.debug("无法解析到资源(File) [${getDescription()}]", ex)
+                if (logger.isTraceEnabled) {
+                    logger.trace("无法解析到资源(File) [${getDescription()}]", ex)
                 }
             }
         }
@@ -45,8 +44,8 @@ abstract class AbstractResource : Resource {
             getInputStream().close()
             return true
         } catch (ex: Throwable) {
-            if (logger.isDebugEnabled) {
-                logger.debug("无法解析到资源(InputStream) [${getDescription()}]", ex)
+            if (logger.isTraceEnabled) {
+                logger.trace("无法解析到资源(InputStream) [${getDescription()}]", ex)
             }
         }
         return false
@@ -60,9 +59,7 @@ abstract class AbstractResource : Resource {
         }
     }
 
-    override fun getURL(): URL {
-        throw FileNotFoundException("[${getDescription()}]无法被解析成为一个URL")
-    }
+    override fun getURL(): URL = throw FileNotFoundException("[${getDescription()}]无法被解析成为一个URL")
 
     override fun getFile(): File = throw FileNotFoundException("给定的资源[${getDescription()}无法被解析成为一个文件]")
 
