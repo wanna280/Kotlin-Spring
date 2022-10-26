@@ -54,7 +54,7 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
         try {
             createWebServer()
         } catch (ex: Throwable) {
-            throw ApplicationContextException("创建MvcWebServer，原因是-->${ex.message}", ex)
+            throw ApplicationContextException("创建MvcWebServer时出现异常", ex)
         }
     }
 

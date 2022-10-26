@@ -22,9 +22,9 @@ object NestedExceptionUtils {
         cause ?: return message
         val builder = StringBuilder()
         if (message != null) {
-            builder.append(message).append(";")
+            builder.append(message).append(" ;")
         }
-        builder.append("nested exception is: ").append(cause.message)
+        builder.append("内部异常(nested exception)是: ").append(cause.message)
         return builder.toString()
     }
 
