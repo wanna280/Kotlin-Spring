@@ -2,11 +2,14 @@ package com.wanna.boot.autoconfigure.validation
 
 import com.wanna.boot.autoconfigure.condition.ConditionalOnClass
 import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnResource
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.annotation.Lazy
 import com.wanna.framework.context.annotation.Role
+import com.wanna.framework.core.Order
+import com.wanna.framework.core.Ordered
 import com.wanna.framework.validation.beanvalidation.LocalValidatorFactoryBean
 import com.wanna.framework.validation.beanvalidation.MethodValidationPostProcessor
 import javax.validation.Validation
@@ -20,6 +23,8 @@ import javax.validation.Validator
  * @see MethodValidationPostProcessor
  * @see LocalValidatorFactoryBean
  */
+@Order(Ordered.ORDER_HIGHEST + 20)  // highest order
+@ConditionalOnResource("classpath:META-INF/services/javax.validation.spi.ValidationProvider")
 @ConditionalOnClass(name = ["javax.validation.Validator"])
 @Configuration(proxyBeanMethods = false)
 open class ValidationAutoConfiguration {
