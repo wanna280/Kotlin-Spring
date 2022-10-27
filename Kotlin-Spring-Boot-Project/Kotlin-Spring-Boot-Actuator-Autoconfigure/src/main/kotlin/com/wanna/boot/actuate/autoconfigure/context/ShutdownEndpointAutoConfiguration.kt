@@ -6,7 +6,9 @@ import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 
 /**
- * Shutdown的Endpoint的自动配置类
+ * Shutdown的Endpoint的自动配置类，当访问这个接口时，会自动关闭SpringBoot应用
+ *
+ * @see ShutdownEndpoint
  */
 @Configuration(proxyBeanMethods = false)
 open class ShutdownEndpointAutoConfiguration {
