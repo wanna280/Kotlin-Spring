@@ -15,7 +15,7 @@ import com.wanna.framework.util.AnnotationConfigUtils.registerAnnotationConfigPr
 /**
  * 这是ClassPath下的BeanDefinition的Scanner，负责完成指定的包下的全部配置类的扫描，并将其注册到BeanDefinitionRegistry当中；
  *
- * 在指定的包下寻找组件，可以重写findCandidateComponents方法去进行自定义扫描的逻辑...
+ * 在指定的包下寻找Spring的配置类，可以重写findCandidateComponents方法去进行自定义扫描的逻辑...
  *
  * @param registry BeanDefinitionRegistry
  * @param useDefaultFilters 是否需要去应用默认的Filter？
@@ -39,7 +39,7 @@ open class ClassPathBeanDefinitionScanner(
     private var includeAnnotationConfig: Boolean = true
 
     /**
-     * Scope的Metadata的Resolver
+     * Scope的Metadata的Resolver，提供对于`@Scope`注解的解析
      */
     private var scopeMetadataResolver: ScopeMetadataResolver = AnnotationScopeMetadataResolver()
 

@@ -1,25 +1,32 @@
 package com.wanna.framework.context.annotation
 
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
+import com.wanna.framework.context.support.AbstractApplicationContext
 import com.wanna.framework.context.support.GenericApplicationContext
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.util.AnnotationConfigUtils
 
 /**
  * 这是一个支持注解的处理的ApplicationContext，
- * (1)可以通过注解的BeanDefinitionReader去完成配置类的注册;
- * (2)可以通过ClassPathBeanDefinitionScanner去扫描指定的包下的所有配置类
+ * * (1)可以通过注解的[BeanDefinitionReader]去完成配置类的注册;
+ * * (2)可以通过[ClassPathBeanDefinitionScanner]去扫描指定的包下的所有配置类
  *
  * @see ClassPathBeanDefinitionScanner
  * @see AnnotatedBeanDefinitionReader
+ * @see GenericApplicationContext
+ * @see AbstractApplicationContext
  */
 open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFactory) :
     GenericApplicationContext(beanFactory), AnnotationConfigRegistry {
 
-    // 注解的BeanDefinition的Reader
+    /**
+     * 注解的BeanDefinition的Reader
+     */
     private var reader: AnnotatedBeanDefinitionReader = AnnotatedBeanDefinitionReader(this)
 
-    // 类路径下的BeanDefinition的Scanner
+    /**
+     * 类路径下的BeanDefinition的Scanner
+     */
     private var scanner: ClassPathBeanDefinitionScanner = ClassPathBeanDefinitionScanner(this, true)
 
     /**
@@ -29,6 +36,8 @@ open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFa
 
     /**
      * 注册配置类到容器中，创建默认的Environment和BeanFactory，并完成ApplicationContext的刷新
+     *
+     * @param componentClasses 需要去进行注册的配置类列表
      */
     constructor(vararg componentClasses: Class<*>) : this() {
         this.register(*componentClasses)
@@ -37,6 +46,8 @@ open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFa
 
     /**
      * 将指定包下的所有符合条件的全部配置类，全部封装成为BeanDefinition全部注册到容器中，并完成ApplicationContext的刷新
+     *
+     * @param basePackages 需要去进行扫描的包的列表
      */
     constructor(vararg basePackages: String) : this() {
         this.scan(*basePackages)
@@ -45,6 +56,8 @@ open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFa
 
     /**
      * 设置ApplicationContext的Environment，给Scanner和Reader中的Environment都给替换掉了
+     *
+     * @param environment Environment
      */
     override fun setEnvironment(environment: ConfigurableEnvironment) {
         super.setEnvironment(environment)
@@ -55,6 +68,8 @@ open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFa
     /**
      * 设置注册时，要使用的BeanNameGenerator，在进行ConfigurationClassPostProcessor，支持从容器当中去进行获取BeanNameGenerator，
      * 也就是说，通过ApplicationContext的setBeanNameGenerator，可以替换全局的BeanNameGenerator
+     *
+     * @param beanNameGenerator BeanNameGenerator
      */
     open fun setBeanNameGenerator(beanNameGenerator: BeanNameGenerator) {
         this.reader.setBeanNameGenerator(beanNameGenerator)
@@ -65,7 +80,7 @@ open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFa
     }
 
     /**
-     * 注册很多个配置类到容器当中
+     * 使用批量的方式去注册很多个配置类到容器当中
      *
      * @param componentClasses 要注册的配置类列表
      */

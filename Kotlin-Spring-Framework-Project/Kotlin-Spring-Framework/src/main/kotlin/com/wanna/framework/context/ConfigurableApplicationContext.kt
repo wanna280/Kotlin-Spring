@@ -8,19 +8,46 @@ import com.wanna.framework.core.metrics.ApplicationStartup
 import java.io.Closeable
 
 /**
- * 这是一个可以被配置的ApplicationContext
+ * 这是一个可以被配置的[ApplicationContext]，提供了对于[ApplicationContext]的各种自定义操作的方法；
+ * 实现了JDK当中提供的[Closeable]接口，提供了`close`方法实现对于[ApplicationContext]的关闭;
+ * 为所有的[ApplicationContext]的子类的实现提供了相关的支持
  *
  * @see ApplicationContext
+ * @see Closeable
+ * @see com.wanna.framework.context.support.AbstractApplicationContext
  */
 interface ConfigurableApplicationContext : ApplicationContext, Closeable {
 
     companion object {
-        const val CONVERSION_SERVICE_BEAN_NAME = "conversionService"  // ConversionService beanName
-        const val ENVIRONMENT_BEAN_NAME = "environment"  // Environment beanName
-        const val SYSTEM_PROPERTIES_BEAN_NAME = "systemProperties"  // SystemProperties beanName
-        const val SYSTEM_ENVIRONMENT_BEAN_NAME = "systemEnvironment"  // SystemEnvironment beanName
-        const val APPLICATION_STARTUP_BEAN_NAME = "applicationStartup"  // ApplicationStartup beanName
-        const val LOAD_TIME_WEAVER_BEAN_NAME = "loadTimeWeaver"  // LoadTimeWeaver beanName
+        /**
+         * ConversionService beanName
+         */
+        const val CONVERSION_SERVICE_BEAN_NAME = "conversionService"
+
+        /**
+         * Environment beanName
+         */
+        const val ENVIRONMENT_BEAN_NAME = "environment"
+
+        /**
+         * SystemProperties beanName
+         */
+        const val SYSTEM_PROPERTIES_BEAN_NAME = "systemProperties"
+
+        /**
+         * SystemEnvironment beanName
+         */
+        const val SYSTEM_ENVIRONMENT_BEAN_NAME = "systemEnvironment"
+
+        /**
+         * ApplicationStartup beanName
+         */
+        const val APPLICATION_STARTUP_BEAN_NAME = "applicationStartup"
+
+        /**
+         * LoadTimeWeaver beanName
+         */
+        const val LOAD_TIME_WEAVER_BEAN_NAME = "loadTimeWeaver"
     }
 
     /**
@@ -51,22 +78,26 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable {
     fun isActive(): Boolean
 
     /**
-     * 关闭ApplicationContext并释放掉所有的资源
+     * 关闭ApplicationContext并释放掉相关的所有资源
      */
     override fun close();
 
     /**
      * 往ApplicationContext中添加BeanFactoryPostProcessor
+     *
+     * @param processor 你想要添加的BeanFactoryPostProcessor
      */
     fun addBeanFactoryPostProcessor(processor: BeanFactoryPostProcessor)
 
     /**
-     * 获取ApplicationContext中的BeanFactory，这里可以获取到的类型是ConfigurableListableBeanFactory
+     * 获取Spring ApplicationContext中的BeanFactory，这里可以获取到的类型是ConfigurableListableBeanFactory
+     *
+     * @return 获取到ApplicationContext内部使用的BeanFactory，类型是ConfigurableListableBeanFactory
      */
     fun getBeanFactory(): ConfigurableListableBeanFactory
 
     /**
-     * 设置当前ApplicationContext的Environment
+     * 设置当前Spring ApplicationContext的Environment
      *
      * @param environment 当前的ApplicationContext想要使用的Environment
      */
@@ -75,7 +106,7 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable {
     /**
      * 重写子类中的getEnvironment方法，让返回值为ConfigurableEnvironment
      *
-     * @return ConfigurableEnvironment
+     * @return 当前Spring ApplicationContext对应的ConfigurableEnvironment
      */
     override fun getEnvironment(): ConfigurableEnvironment
 
@@ -89,7 +120,7 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable {
     /**
      * 设置parent ApplicationContext
      *
-     * @param parent 你想使用的parentApplicationContext
+     * @param parent 你想使用的parentApplicationContext(可以为null)
      */
     fun setParent(parent: ApplicationContext?)
 
