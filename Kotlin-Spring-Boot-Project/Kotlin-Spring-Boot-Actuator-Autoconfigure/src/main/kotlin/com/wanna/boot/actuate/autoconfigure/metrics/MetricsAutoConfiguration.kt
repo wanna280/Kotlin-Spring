@@ -43,11 +43,8 @@ open class MetricsAutoConfiguration {
      */
     @Bean
     open fun meterRegistryPostProcessor(
-        meterBinders: List<MeterBinder>,
-        meterFilters: List<MeterFilter>,
-        customizers: List<MeterRegistryCustomizer<*>>,
-        metricsProperties: MetricsProperties,
-        applicationContext: ApplicationContext,
+        meterBinders: List<MeterBinder>, meterFilters: List<MeterFilter>, customizers: List<MeterRegistryCustomizer<*>>,
+        metricsProperties: MetricsProperties, applicationContext: ApplicationContext,
     ): MeterRegistryPostProcessor {
         return MeterRegistryPostProcessor(
             meterBinders, meterFilters, customizers,
