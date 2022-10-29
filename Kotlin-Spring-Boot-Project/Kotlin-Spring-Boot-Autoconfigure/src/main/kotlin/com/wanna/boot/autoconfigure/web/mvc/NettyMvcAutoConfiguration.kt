@@ -1,21 +1,28 @@
 package com.wanna.boot.autoconfigure.web.mvc
 
 import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnProperty
 import com.wanna.boot.autoconfigure.condition.ConditionalOnWebApplication
 import com.wanna.boot.context.properties.EnableConfigurationProperties
 import com.wanna.boot.web.mvc.server.WebServerFactory
 import com.wanna.framework.beans.factory.annotation.Qualifier
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
+import com.wanna.framework.context.ResourceLoaderAware
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.annotation.Primary
 import com.wanna.framework.context.format.support.FormattingConversionService
+import com.wanna.framework.core.io.ClassPathResource
+import com.wanna.framework.core.io.Resource
+import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.web.DispatcherHandler
 import com.wanna.framework.web.DispatcherHandlerImpl
 import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.config.annotation.DelegatingWebMvcConfiguration
+import com.wanna.framework.web.handler.SimpleUrlHandlerMapping
 import com.wanna.framework.web.method.annotation.RequestMappingHandlerMapping
+import com.wanna.framework.web.resource.ResourceHttpRequestHandler
 import com.wanna.framework.web.server.netty.server.support.NettyServerHandler
 
 /**
@@ -75,6 +82,44 @@ open class NettyMvcAutoConfiguration : ApplicationContextAware {
             @Qualifier("mvcConversionService") conversionService: FormattingConversionService
         ): RequestMappingHandlerMapping {
             return super.requestMappingHandlerMapping(contentNegotiationManager, conversionService)
+        }
+    }
+
+    /**
+     * 处理"favicon.ico"请求的配置类，在SpringBoot2.2.x之前存在，2.2.x之后取消了(根据默认Logo知道网站开发框架，泄露隐私)
+     */
+    @ConditionalOnProperty(value = ["spring.mvc.favicon.enabled"], matchIfMissing = true)
+    @Configuration(proxyBeanMethods = false)
+    class FaviconConfiguration : ResourceLoaderAware {
+        private lateinit var resourceLoader: ResourceLoader
+
+        override fun setResourceLoader(resourceLoader: ResourceLoader) {
+            this.resourceLoader = resourceLoader
+        }
+
+        @Bean
+        @Qualifier("faviconHandlerMapping")
+        fun faviconHandlerMapping(@Qualifier("faviconRequestHandler") requestHandler: ResourceHttpRequestHandler): SimpleUrlHandlerMapping {
+            val handlerMapping = SimpleUrlHandlerMapping()
+            handlerMapping.setUrlMap(mapOf("/favicon.ico" to requestHandler))
+            return handlerMapping
+        }
+
+        @Bean
+        @Qualifier("faviconRequestHandler")
+        fun faviconRequestHandler(): ResourceHttpRequestHandler {
+            val handler = ResourceHttpRequestHandler()
+            handler.setLocations(resolveFaviconLocations())
+            return handler
+        }
+
+        /**
+         * 解析Favicon的位置
+         */
+        private fun resolveFaviconLocations(): List<Resource> {
+            val locations = ArrayList<Resource>()
+            locations += ClassPathResource("/")
+            return locations;
         }
     }
 }

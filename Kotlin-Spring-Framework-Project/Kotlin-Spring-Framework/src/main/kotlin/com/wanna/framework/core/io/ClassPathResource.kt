@@ -1,7 +1,7 @@
 package com.wanna.framework.core.io
 
-import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ResourceUtils
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -30,6 +30,11 @@ private constructor(_path: String, @Nullable _classLoader: ClassLoader?, @Nullab
      * 提供一个基于classLoader的构建方法
      */
     constructor(_path: String, classLoader: ClassLoader?) : this(_path, classLoader, null)
+
+    /**
+     * 提供一个只给定path的构造器
+     */
+    constructor(_path: String) : this(_path, null)
 
     /**
      * 获取
@@ -94,7 +99,7 @@ private constructor(_path: String, @Nullable _classLoader: ClassLoader?, @Nullab
         }
     }
 
-    open fun getPath() : String = this.path
+    open fun getPath(): String = this.path
 
-    override fun getOutputStream() : OutputStream = Files.newOutputStream(getFile().toPath())
+    override fun getOutputStream(): OutputStream = Files.newOutputStream(getFile().toPath())
 }
