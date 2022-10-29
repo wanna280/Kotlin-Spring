@@ -660,11 +660,39 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         candidateNames.forEach {
             // 从DependencyDescriptor当中解析到合适的依赖，判断该Bean，是否是一个Autowire候选Bean？
             // 比较类型和Qualifier(beanName)是否匹配？
-            if (isAutowireCandidate(it, descriptor)) {
+            // Note: 这里我们必须需要去排除自引用的情况
+            if (!isSelfReference(beanName, it) && isAutowireCandidate(it, descriptor)) {
                 addCandidateEntry(result, it, descriptor, requiredType)
             }
         }
+
+        // 如果还没搜索结果的话...尝试换个手段，去进行匹配
+        if (result.isEmpty()) {
+            val multiple = indicatesMultipleBeans(requiredType)
+
+            // 如果不是一个MultipleBean的话，那么我们再去检查一下是否是自身引用的情况？
+            // 对于自身引用的情况，我们是完全允许的...对于非Array/Collection/Map的情况，那么我们在这里去允许去注入自身
+            if (!multiple) {
+                candidateNames.forEach {
+                    if (isSelfReference(beanName, it) && isAutowireCandidate(it, descriptor)) {
+                        addCandidateEntry(result, it, descriptor, requiredType)
+                    }
+                }
+            }
+        }
+
         return result
+    }
+
+    /**
+     * 检查是否是自引用？有一种情况，那就是一个CompositeXxx的Bean，想要去注入所有的XXx类型的Bean；
+     * 此时就会因为出现自引用，从而导致循环依赖，但是对于这种情况来说，实际上我们是允许的，因此我们需要去排除掉。
+     *
+     * @param beanName beanName
+     * @param candidateName 候选的正在去进行匹配的注入的对象
+     */
+    private fun isSelfReference(beanName: String?, candidateName: String?): Boolean {
+        return beanName != null && candidateName != null && candidateName == beanName
     }
 
     private fun addCandidateEntry(
@@ -751,15 +779,16 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     /**
-     * 判断是否是一个MultipleBean
+     * 判断给定的beanType是否是一个MultipleBean(如果是Array/Collection/Map的话，那么就是MultipleBean)
      *
-     * @param type type
-     * @return 它是否是MultipleBean
+     * @param type 需要进行匹配的类型Class
+     * @return 它是否是MultipleBean(如果是Array/Collection/Map的话，return true；否则return false)
      */
     private fun indicatesMultipleBeans(type: Class<*>): Boolean {
-        return type.isArray || ClassUtils.isAssignFrom(
-            Collection::class.java, type
-        ) || ClassUtils.isAssignFrom(Map::class.java, type)
+        return type.isArray ||
+                (type.isInterface && (
+                        ClassUtils.isAssignFrom(Collection::class.java, type)
+                                || ClassUtils.isAssignFrom(Map::class.java, type)))
     }
 
     /**
