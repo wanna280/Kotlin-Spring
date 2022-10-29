@@ -5,8 +5,10 @@ dependencies {
     implementation(project(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Framework"))
     implementation(project(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Actuator"))
 
+
     // CompileOnly Optional
     compileOnly(project(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Web"))
+    compileOnly("io.micrometer:micrometer-core:1.9.5")  // metrics
     compileOnly("io.netty:netty-codec-http:$nettyVersion")
     compileOnly("org.aspectj:aspectjweaver:$aspectJVersion")
 
