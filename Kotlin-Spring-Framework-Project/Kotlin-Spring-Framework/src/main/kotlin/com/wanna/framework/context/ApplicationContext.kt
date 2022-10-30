@@ -23,7 +23,7 @@ interface ApplicationContext : ApplicationEventPublisher, ListableBeanFactory, E
      *
      * @return ApplicationContextId
      */
-    fun getId() : String?
+    fun getId() : String
 
     /**
      * 获取可以自动装配的BeanFactory，可以用它完成Bean的创建/销毁等工作

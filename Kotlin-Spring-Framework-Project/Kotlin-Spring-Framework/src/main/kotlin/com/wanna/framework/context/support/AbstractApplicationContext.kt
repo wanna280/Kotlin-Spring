@@ -157,7 +157,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
      *
      * @return 当前的ApplicationContext的id
      */
-    override fun getId(): String? = javaClass.name + "@" + System.identityHashCode(this).toString(16)
+    override fun getId(): String = javaClass.name + "@" + System.identityHashCode(this).toString(16)
 
     /**
      * 获取ResolvePatternResolver，提供资源的解析，支持子类当中去进行自定义
