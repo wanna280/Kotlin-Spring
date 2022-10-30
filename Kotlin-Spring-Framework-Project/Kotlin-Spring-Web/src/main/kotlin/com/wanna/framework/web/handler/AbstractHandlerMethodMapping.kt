@@ -1,9 +1,9 @@
 package com.wanna.framework.web.handler
 
 import com.wanna.framework.beans.factory.InitializingBean
-import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.LinkedMultiValueMap
+import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.web.HandlerMapping
 import com.wanna.framework.web.cors.CorsConfiguration
 import com.wanna.framework.web.method.HandlerMethod
@@ -29,17 +29,22 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
  */
 abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), InitializingBean {
 
-    // Mapping注册中心，维护了从path -> mapping, name -> mapping, mapping -> MappingRegistration的映射关系
-    // 根据path -> mapping -> MappingRegistration，可以获取到path对应的表项当中的具体信息
+    /**
+     * Mapping注册中心，维护了从path -> mapping, name -> mapping, mapping -> MappingRegistration的映射关系；
+     * 根据path -> mapping -> MappingRegistration，可以获取到path对应的表项当中的具体信息
+     */
     protected val mappingRegistry = MappingRegistry()
 
-    // HandlerMethod的映射的命名策略(默认为Controller的大写字母#方法名，比如UserController的getUser方法，会被命名为UC#getUser)
+    /**
+     * HandlerMethod的映射的命名策略(默认为Controller的大写字母#方法名，比如UserController的getUser方法，会被命名为UC#getUser)
+     */
     @Nullable
     private var namingStrategy: HandlerMethodMappingNamingStrategy<T>? = null
 
 
     /**
-     * 在初始化HandlerMapping的Bean时，应当从容器当中拿出所有的Bean，去初始化HandlerMethod列表
+     * 在初始化[HandlerMapping]对象时，需要从SpringBeanFactory当中拿出所有的Bean去进行探测，
+     * 去初始化[HandlerMethod]列表，方便后期处理请求时，可以快速找到对应的HandlerMethod去处理请求
      *
      * @see initHandlerMethods
      */
@@ -48,11 +53,27 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     }
 
     /**
+     * 获取当前[AbstractHandlerMapping]当中的[MappingRegistry]所有的已经完成注册的HandlerMethods
+     *
+     * @return HandlerMethods(Key-Mapping, Value-HandlerMethod), Key最典型的是RequestMappingInfo
+     */
+    open fun getHandlerMethods(): Map<T, HandlerMethod> {
+        this.mappingRegistry.acquireReadLock()
+        try {
+            // 从MappingRegistry当中拿出来所有的Registration注册表项，并转换成为<Mapping, HandlerMethod>的Map
+            return mappingRegistry.getRegistrations().map { it.key to it.value.handlerMethod }.toMap()
+        } finally {
+            this.mappingRegistry.releaseReadLock()
+        }
+    }
+
+    /**
      * 为提供Handler的方式，提供了模板方法；(1)寻找path、(2)根据path去MappingRegistry当中获取到HandlerMethod；
      *
      * @param request request
      * @return 如果找到了合适的HandlerMethod去处理请求，那么return HandlerMethod；如果没有找到，那么return null
      */
+    @Nullable
     override fun getHandlerInternal(request: HttpServerRequest): Any? {
         // 从request当中去获取到要进行寻找的path
         val lookupPath = initLookupPath(request)
@@ -121,7 +142,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     }
 
     /**
-     * 注册HandlerMethod到MappingRegistry当中
+     * 注册一个HandlerMethod到MappingRegistry当中
      *
      * @param handler handler
      * @param method method
@@ -134,7 +155,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     /**
      * 从Mapping(例如RequestMappingInfo)当中去获取直接路径，交给子类去进行实现
      *
-     * @param mapping
+     * @param mapping Mapping
      * @return 从Mapping当中解析到的直接路径列表
      */
     abstract fun getDirectPaths(mapping: T): Set<String>
@@ -150,7 +171,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     }
 
     /**
-     * 给定一个BeanClass，去判断它是否是一个Handler？
+     * 给定一个BeanClass，去判断它是否是一个Handler？(最典型的是@Controller注解)
      *
      * @param beanType beanType
      * @return 它是否是一个Handler？是一个Handler时return true；否则return false
@@ -158,12 +179,13 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     protected abstract fun isHandler(beanType: Class<*>): Boolean
 
     /**
-     * 根据method和handlerType，去决定Mapping；比如RequestMappingInfo
+     * 根据method和handlerType，去构建出来合适的Mapping(比如RequestMappingInfo)
      *
      * @param method handlerMethod
      * @param handlerType handlerType
      * @return 如果该方法是一个HandlerMethod，return Mapping；如果该方法不是一个HandlerMethod，return null
      */
+    @Nullable
     protected abstract fun getMappingForMethod(method: Method, handlerType: Class<*>): T?
 
     /**
@@ -251,9 +273,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
      * @return CorsConfiguration
      */
     @Nullable
-    protected open fun initCorsConfiguration(handler: Any, method: Method, mapping: T): CorsConfiguration? {
-        return null
-    }
+    protected open fun initCorsConfiguration(handler: Any, method: Method, mapping: T): CorsConfiguration? = null
 
     /**
      * 我们这是针对HandlerMethod的HandlerMapping，因此对于获取CorsConfiguration的逻辑我们应该去进行扩展，
@@ -308,48 +328,55 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
      * registry-->根据mapping去找到MappingRegistration，供pathLookup去进行使用，因为pathToLookup寻找时，有可能涉及到路径的匹配，需要用到mapping
      */
     inner class MappingRegistry {
-        // 操作MappingRegistry的读写锁
+        /**
+         * 操作MappingRegistry的读写锁
+         */
         private val readWriteLock = ReentrantReadWriteLock()
 
-        // 根据path去进行寻找，value-RequestMappingInfo(@RequestMapping注解的相关信息)
+        /**
+         * 根据path去进行寻找，value-RequestMappingInfo(@RequestMapping注解的相关信息)
+         */
         private val pathLookup = LinkedMultiValueMap<String, T>()
 
-        // 根据name去进行寻找到合适的HandlerMethod的Map(key-name,value-HandlerMethod List)
+        /**
+         * 根据name去进行寻找到合适的HandlerMethod的Map(Key-name,Value-HandlerMethod List)
+         */
         private val nameLookup = ConcurrentHashMap<String, MutableList<HandlerMethod>>()
 
-        // MappingRegistry(key-mapping,value-MappingRegistration)
+        /**
+         * MappingRegistry(Key-Mapping, Value-MappingRegistration)
+         */
         private val registry: MutableMap<T, MappingRegistration<T>> = LinkedHashMap()
 
-        // 存放CorsConfiguration的映射关系，提供根据key去寻找CorsConfiguration的方式
+        /**
+         * 存放[CorsConfiguration]的映射关系，提供根据Key([HandlerMethod])去寻找[CorsConfiguration]的方法；
+         * [CorsConfiguration]内部维护的是一个CORS跨域的配置信息(可以从@CorsOrigin注解当中去进行探测)
+         */
         private val corsLookup: MutableMap<HandlerMethod, CorsConfiguration> = LinkedHashMap()
 
         /**
          * 获取MappingRegistry的读锁
          */
-        fun acquireReadLock() {
-            this.readWriteLock.readLock().lock()
-        }
+        fun acquireReadLock() = this.readWriteLock.readLock().lock()
 
         /**
          * 释放MappingRegistry的读锁
          */
-        fun releaseReadLock() {
-            this.readWriteLock.readLock().unlock()
-        }
+        fun releaseReadLock() = this.readWriteLock.readLock().unlock()
 
         /**
-         * 获取注册中心当中全部已经注册的表项(mapping->MappingRegistration)
+         * 获取注册中心当中全部已经注册的表项(Mapping->MappingRegistration)
+         *
+         * @return 获取当前的MappingRegistry当中的所有的所有注册的MappingRegistration列表
          */
-        fun getRegistrations(): Map<T, MappingRegistration<T>> {
-            return this.registry
-        }
+        fun getRegistrations(): Map<T, MappingRegistration<T>> = this.registry
 
         /**
          * 根据直接路径去获取到注册的Mapping
+         *
+         * @return 根据directPath去获取到对应的Mapping列表
          */
-        fun getMappingsByDirectPath(lookupPath: String): List<T> {
-            return pathLookup[lookupPath] ?: emptyList()
-        }
+        fun getMappingsByDirectPath(lookupPath: String): List<T> = pathLookup[lookupPath] ?: emptyList()
 
         /**
          * 根据给定的HandlerMethod，去找到合适的CorsConfiguration；
@@ -357,6 +384,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
          * 因此，我们有可能需要获取的是原始的HandlerMethod
          *
          * @param handlerMethod HandlerMethod
+         * @return 根据HandlerMethod去找到的合适的Cors配置信息
          */
         @Nullable
         fun getCorsConfiguration(handlerMethod: HandlerMethod): CorsConfiguration? {
@@ -435,12 +463,10 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
         private fun addPathLookup(path: String, mapping: T) {
             this.pathLookup.add(path, mapping)
         }
-
-
     }
 
     /**
-     * Mapping注册的表项，封装了各种信息
+     * Mapping的一个注册表项，内部封装了各种信息
      *
      * @param mapping mapping
      * @param directPaths 路径列表
@@ -482,7 +508,5 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
      * @return namingStrategy
      */
     @Nullable
-    open fun getHandlerMethodMappingNamingStrategy(): HandlerMethodMappingNamingStrategy<T>? {
-        return this.namingStrategy
-    }
+    open fun getHandlerMethodMappingNamingStrategy(): HandlerMethodMappingNamingStrategy<T>? = this.namingStrategy
 }

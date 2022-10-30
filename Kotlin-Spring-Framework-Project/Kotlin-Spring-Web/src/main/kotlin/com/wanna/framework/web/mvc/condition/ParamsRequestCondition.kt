@@ -8,9 +8,10 @@ import com.wanna.framework.web.server.HttpServerRequest
  *
  * @see RequestMapping.params
  */
-open class ParamsRequestCondition(private val params: List<String>) :
+open class ParamsRequestCondition(val params: List<String>) :
     AbstractRequestCondition<ParamsRequestCondition>() {
     constructor(vararg params0: String) : this(listOf(*params0))
+
     override fun getContent() = params
     override fun getToStringInfix() = " && "
 

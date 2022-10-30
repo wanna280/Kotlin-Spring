@@ -35,33 +35,47 @@ import com.wanna.framework.web.server.HttpServerResponse
  * @see getHandlerInternal
  */
 abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, WebApplicationObjectSupport() {
-    // order of this HandlerMapping
+    /**
+     * order of this HandlerMapping
+     */
     private var order: Int = Ordered.ORDER_LOWEST
 
-    // beanName of this HandlerMapping
+    /**
+     * beanName of this HandlerMapping
+     */
     private var beanName: String? = null
 
-    // 在找不到处理请求的Handler时的默认使用的Handler
+    /**
+     * 在找不到处理请求的Handler时的默认使用的Handler
+     */
     @Nullable
     private var defaultHandler: Any? = null
 
-    // 拦截器列表，可以放入非HandlerInterceptor类型的类型的拦截器，在经过类型转换之后，将会合并到adaptedInterceptors当中
+    /**
+     * 拦截器列表，可以放入非HandlerInterceptor类型的类型的拦截器，在经过类型转换之后，将会合并到adaptedInterceptors当中
+     */
     private var interceptors: ArrayList<Any> = ArrayList()
 
-    // 经过了类型转换之后的拦截器列表，也是最终使用的HandlerInterceptor列表
+    /**
+     * 经过了类型转换之后的拦截器列表，也是最终使用的HandlerInterceptor列表
+     */
     private val adaptedInterceptors: ArrayList<HandlerInterceptor> = ArrayList()
 
-    // 全局的HandlerMapping层面的Cors的ConfigurationSource
+    /**
+     * 全局的HandlerMapping层面的Cors的ConfigurationSource
+     */
     @Nullable
     private var corsConfigurationSource: CorsConfigurationSource? = null
 
-    // CorsProcessor
+    /**
+     * CorsProcessor，提供处理Cors跨域请求的处理器
+     */
     private var corsProcessor: CorsProcessor = DefaultCorsProcessor()
 
     @Nullable
     open fun getDefaultHandler(): Any? = this.defaultHandler
 
-    open fun setDefaultHandler(defaultHandler: Any) {
+    open fun setDefaultHandler(@Nullable defaultHandler: Any?) {
         this.defaultHandler = defaultHandler
     }
 
@@ -69,7 +83,7 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
      * 实现HandlerMapping接口的getHandler方法，为指定的request去找到合适的处理请求的Handler
      *
      * @param request request
-     * @return HandlerExecutionChain
+     * @return 根据给定的request，去找到的处理本次请求的HandlerExecutionChain(如果没有找到合适的Handler, return null)
      */
     @Nullable
     override fun getHandler(request: HttpServerRequest): HandlerExecutionChain? {
@@ -78,7 +92,7 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
         // 如果返回的Handler是String，那么去进行getBean
         handler = if (handler is String) obtainApplicationContext().getBean(handler) else handler
 
-        // 获取HandlerExecutionChain
+        // 获取HandlerExecutionChain(HandlerInterceptors & Handler)
         var handlerExecutionChain = getHandlerExecutionChain(request, handler)
 
 
@@ -104,8 +118,9 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
      * 获取真正的内部的处理请求的Handler，对于具体的实现交给子类去进行实现
      *
      * @param request request
-     * @return handler
+     * @return 根据Request去找到的合适的处理当前请求的Handler(如果没有找到的话，return null)
      */
+    @Nullable
     protected abstract fun getHandlerInternal(request: HttpServerRequest): Any?
 
     /**
@@ -189,6 +204,13 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
         this.beanName = beanName
     }
 
+    /**
+     * 获取当前HandlerMapping的beanName
+     *
+     * @return beanName
+     */
+    open fun getBeanName(): String? = this.beanName
+
     override fun getOrder() = this.order
 
     open fun setOrder(order: Int) {
@@ -204,7 +226,7 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
     /**
      * 交给子类去进行重写，去扩展Interceptors，往给定的这个列表当中添加元素即可添加
      *
-     * @param interceptors HandlerMapping的拦截器列表
+     * @param interceptors HandlerMapping的拦截器列表(输出参数，可以往这个列表当中去添加元素)
      */
     protected open fun extendsInterceptors(interceptors: MutableList<Any>) {
 
@@ -212,6 +234,8 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
 
     /**
      * 从ApplicationContext当中去探测所有的MappedInterceptors，加入到HandlerInterceptor列表当中
+     *
+     * @param mappedInterceptors interceptors列表，对于最终的HandlerInterceptor会被添加到这个列表当中来
      */
     protected open fun detectMappedInterceptors(mappedInterceptors: MutableList<HandlerInterceptor>) {
         mappedInterceptors.addAll(obtainApplicationContext().getBeansForType(MappedInterceptor::class.java).values)
@@ -276,22 +300,35 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
     }
 
     /**
-     * 处理PreFlight预检请求的RequestHandler
+     * 处理Cors的PreFlight预检请求的RequestHandler
      *
      * @param config CorsConfig
      */
     open inner class PreFlightHandler(@Nullable private val config: CorsConfiguration?) : HttpRequestHandler,
         CorsConfigurationSource {
+
+        /**
+         * 根据给定的[CorsConfiguration]，使用[CorsProcessor]去真正地处理请求
+         *
+         * @param request request
+         * @param response response
+         */
         override fun handleRequest(request: HttpServerRequest, response: HttpServerResponse) {
             corsProcessor.processRequest(request, response, config)
         }
 
+        /**
+         * 获取Cors的配置信息
+         *
+         * @param request request
+         * @return Cors的配置信息
+         */
         @Nullable
         override fun getCorsConfiguration(request: HttpServerRequest) = this.config
     }
 
     /**
-     * 处理Cors的HandlerInterceptor，将其委托给CorsProcessor去进行处理，Interceptor是一层桥接
+     * 处理Cors的[HandlerInterceptor]，将其委托给CorsProcessor去进行处理，Interceptor是一层桥接
      *
      * @param config CorsConfig
      * @see CorsProcessor

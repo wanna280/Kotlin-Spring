@@ -1,11 +1,14 @@
 package com.wanna.framework.web.cors
 
-import com.wanna.framework.util.StringUtils
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.StringUtils
 import com.wanna.framework.web.bind.annotation.RequestMethod
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
+/**
+ * 维护CORS跨域配置的相关信息
+ */
 open class CorsConfiguration() {
     companion object {
         // 匹配所有请求的的常量

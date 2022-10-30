@@ -3,9 +3,9 @@ package com.wanna.framework.web.method
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.method.support.HandlerMethodUtil
 import java.lang.reflect.Method
+import java.util.*
 
 /**
  * 这是一个HandlerMethod，内部包装了要执行的Handler的Bean对象，Handler方法等
@@ -31,6 +31,13 @@ open class HandlerMethod {
 
     // 要去执行的目标Handler方法
     var method: Method? = null
+
+
+    /**
+     * HandlerMethod的描述信息(计算属性)
+     */
+    val description: String
+        get() = initDescription(beanType!!, method!!)
 
     /**
      * 解析bean，如果bean还是beanName的话，需要从容器当中getBean
@@ -102,6 +109,14 @@ open class HandlerMethod {
     }
 
     /**
+     * toString, 使用Description去进行返回
+     *
+     * @return toString
+     */
+    override fun toString(): String = this.description
+
+
+    /**
      * 对于一个HandlerMethod的一个方法参数的封装，因为使用的是内部类的方式，它完全可以获取到外部类当中的HandlerMethod对象
      *
      * @param index 该参数位于方法当中的位置(对于返回值类型，那么index=-1)
@@ -145,6 +160,23 @@ open class HandlerMethod {
 
 
     companion object {
+
+        /**
+         * 构建一个[HandlerMethod]的描述信息
+         *
+         * @param method method
+         * @param beanType beanType
+         * @return 对一个HandlerMethod的描述信息
+         */
+        @JvmStatic
+        private fun initDescription(beanType: Class<*>, method: Method): String {
+            val joiner = StringJoiner(", ", "(", ")")
+            for (paramType in method.parameterTypes) {
+                joiner.add(paramType.simpleName)
+            }
+            return beanType.name + "#" + method.name + joiner.toString()
+        }
+
         @JvmStatic
         fun newHandlerMethod(handlerMethod: HandlerMethod, handler: Any): HandlerMethod {
             return HandlerMethodUtil.newHandlerMethod(handlerMethod, handler, HandlerMethod::class.java)
