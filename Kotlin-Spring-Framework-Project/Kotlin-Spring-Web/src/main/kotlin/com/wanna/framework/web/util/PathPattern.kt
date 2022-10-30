@@ -25,4 +25,11 @@ class PathPattern(val pattern: String, private val antMatcher: AntPathMatcher = 
     }
 
     override fun hashCode() = pattern.hashCode()
+
+    /**
+     * 获取PathPattern字符串
+     *
+     * @return pattern
+     */
+    override fun toString(): String = this.pattern
 }

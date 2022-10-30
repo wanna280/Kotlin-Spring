@@ -1,9 +1,9 @@
 package com.wanna.framework.web.handler
 
 import com.wanna.framework.beans.factory.InitializingBean
-import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.LinkedMultiValueMap
+import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.web.HandlerMapping
 import com.wanna.framework.web.cors.CorsConfiguration
 import com.wanna.framework.web.method.HandlerMethod
@@ -45,6 +45,20 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
      */
     override fun afterPropertiesSet() {
         initHandlerMethods()
+    }
+
+    /**
+     * 获取当前[AbstractHandlerMapping]当中的[MappingRegistry]所有的已经完成注册的HandlerMethods
+     *
+     * @return HandlerMethods(Key-Mapping, Value-HandlerMethdd), Key最典型的是RequestMappingInfo
+     */
+    open fun getHandlerMethods(): Map<T, HandlerMethod> {
+        this.mappingRegistry.acquireReadLock()
+        try {
+            return mappingRegistry.getRegistrations().map { it.key to it.value.handlerMethod }.toMap()
+        } finally {
+            this.mappingRegistry.releaseReadLock()
+        }
     }
 
     /**

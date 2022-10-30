@@ -70,6 +70,13 @@ open class RequestMappingInfo(
         return result
     }
 
+    override fun toString(): String =
+        "methods=$methodsCondition, " +
+                "pathPatterns=$pathPatternsCondition, " +
+                "params=$paramsCondition, " +
+                "headers=$headersCondition, " +
+                "produces=$producesCondition"
+
 
     /**
      * RequestMappingInfo的Builder，对于RequestMappingInfo的构建比较复杂，这里主要是为了更方便地去构建RequestMappingInfo
