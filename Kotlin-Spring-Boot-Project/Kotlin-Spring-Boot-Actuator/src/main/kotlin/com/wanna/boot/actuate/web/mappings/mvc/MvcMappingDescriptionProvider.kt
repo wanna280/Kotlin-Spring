@@ -15,18 +15,20 @@ import com.wanna.framework.web.method.RequestMappingInfoHandlerMapping
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/10/30
+ *
+ * @see MappingDescriptionProvider
+ * @see DispatcherHandler
  */
 open class MvcMappingDescriptionProvider : MappingDescriptionProvider {
 
     companion object {
-
         /**
          * 所有的去对HandlerMapping去进行描述的Provider
          */
         @JvmStatic
         private var descriptionProviders: List<HandlerMappingDescriptionProvider<*>> =
             listOf(
-                RequestMappingInfoHandlerMappingDescriptionProvider()
+                RequestMappingInfoHandlerMappingDescriptionProvider()  // RequestMappingInfo
             )
 
         /**
@@ -53,6 +55,11 @@ open class MvcMappingDescriptionProvider : MappingDescriptionProvider {
     }
 
 
+    /**
+     * MappingName
+     *
+     * @return "mvc"
+     */
     override fun getMappingName(): String = "mvc"
 
     /**
@@ -63,6 +70,9 @@ open class MvcMappingDescriptionProvider : MappingDescriptionProvider {
      */
     override fun describeMappings(applicationContext: ApplicationContext): Map<String, List<DispatcherHandlerMappingDescription>> {
         val mappings = LinkedHashMap<String, List<DispatcherHandlerMappingDescription>>()
+
+        // 探测出来所有的DispatcherHandler，挨个去进行描述
+        // Key-beanName, Value-该DispatcherHandler当中的所有的HandlerMapping的描述结果
         determineDispatcherHandlers(applicationContext)
             .forEach { (name, handler) ->
                 val handlerMappings = handler.getHandlerMappings()
@@ -72,10 +82,11 @@ open class MvcMappingDescriptionProvider : MappingDescriptionProvider {
     }
 
     /**
-     * 对于给定的HandlerMapping列表，去进行一一探测，并进行merge得到所有的[DispatcherHandlerMappingDescription]对象
+     * 对于给定的HandlerMapping列表，去进行一一探测，每个[HandlerMapping]都会得到一个[DispatcherHandlerMappingDescription]列表，
+     * 我们将所有的[HandlerMapping]当中的结果去进行merge，并进行最终merge得到一个大的[DispatcherHandlerMappingDescription]列表
      *
-     * @param mappings 需要去进行探测的HandlerMappings
-     * @return DispatcherHandlerMappingDescriptions
+     * @param mappings 需要去进行探测的HandlerMappings列表
+     * @return 对于所有的HandlerMappings去描述得到的DispatcherHandlerMappingDescriptions
      */
     private fun <T : HandlerMapping> describeMappings(mappings: List<T>): List<DispatcherHandlerMappingDescription> {
         return mappings
@@ -86,7 +97,7 @@ open class MvcMappingDescriptionProvider : MappingDescriptionProvider {
 
 
     /**
-     * 从ApplicationContext当中去探测到所有的[DispatcherHandler]
+     * 从给定的ApplicationContext当中去探测到所有的[DispatcherHandler]的Bean
      *
      * @param applicationContext 待探测的ApplicationContext
      * @return 从ApplicationContext当中去探测到的DispatcherHandler列表
@@ -96,34 +107,37 @@ open class MvcMappingDescriptionProvider : MappingDescriptionProvider {
     }
 
     /**
-     * 针对一种类型的[HandlerMapping]去进行描述的Provider，我们根据目前已经有的[HandlerMapping]类型去进行枚举提供实现
+     * 针对一种类型的[HandlerMapping]去进行描述的Provider的策略接口，
+     * 我们根据目前已经提供实现的[HandlerMapping]类型去进行枚举提供实现
      *
-     * @param T 支持去进行描述的HandlerMapping的具体类型
+     * @param T 当前Provider支持去进行描述的HandlerMapping的具体类型
      */
     interface HandlerMappingDescriptionProvider<T> {
 
         /**
-         * 获取支持去进行处理的HandlerMapping的类型
+         * 获取支持去进行处理的[HandlerMapping]的类型, 对应的`supports`方法
          *
-         * @return handlerMapping Class
+         * @return 支持去进行处理的HandlerMapping类型(Class)
          */
         fun getMappingClass(): Class<T>
 
         /**
-         * 对于给定的[HandlerMapping]去执行真正的描述
+         * 对于给定的一个[HandlerMapping]去执行真正的描述
          *
-         * @param handlerMapping 待探测的HandlerMapping
-         * @return 对该HandlerMapping去得到的描述结果
+         * @param handlerMapping 待描述的HandlerMapping
+         * @return 对该HandlerMapping去得到的描述结果(每个元素代表了一个处理SpringMVC的请求的HandlerMethod)
          */
         fun describe(handlerMapping: T): List<DispatcherHandlerMappingDescription>
     }
 
     /**
-     * 对于[RequestMappingInfoHandlerMapping]去进行描述的Provider
+     * 对于[RequestMappingInfoHandlerMapping]这种类型的[HandlerMapping]去进行描述的Provider
+     *
+     * @see RequestMappingInfoHandlerMapping
+     * @see HandlerMappingDescriptionProvider
      */
     private class RequestMappingInfoHandlerMappingDescriptionProvider :
         HandlerMappingDescriptionProvider<RequestMappingInfoHandlerMapping> {
-
         /**
          * 获取需要去进行处理的HandlerMapping Class
          *
