@@ -1,17 +1,17 @@
 package com.wanna.framework.web
 
+import com.wanna.framework.beans.BeansException
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.event.ApplicationEvent
 import com.wanna.framework.context.event.ContextRefreshedEvent
 import com.wanna.framework.context.event.SmartApplicationListener
-import com.wanna.framework.beans.BeansException
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.io.support.PropertiesLoaderUtils
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
-import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.context.request.async.WebAsyncUtils
 import com.wanna.framework.web.handler.HandlerAdapter
 import com.wanna.framework.web.handler.HandlerExceptionResolver
@@ -339,8 +339,19 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      *
      * @return 当前DispatcherHandler当中的HandlerMapping列表
      */
-    protected open fun getHandlerMappings(): Collection<HandlerMapping>? {
+    @Nullable
+    override fun getHandlerMappings(): List<HandlerMapping>? {
         return if (this.handlerMappings == null) null else ArrayList(this.handlerMappings!!)
+    }
+
+    /**
+     * 获取HandlerAdapter列表
+     *
+     * @return  当前DispatcherHandler当中的HandlerAdapter列表
+     */
+    @Nullable
+    override fun getHandlerAdapters(): List<HandlerAdapter>? {
+        return if (this.handlerAdapters == null) null else ArrayList(handlerAdapters!!)
     }
 
     /**
@@ -361,9 +372,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
         initWebApplicationContext()
     }
 
-    open fun getApplicationContext(): ApplicationContext? {
-        return this.applicationContext
-    }
+    open fun getApplicationContext(): ApplicationContext? = this.applicationContext
 
     /**
      * 初始化ViewName的翻译器
