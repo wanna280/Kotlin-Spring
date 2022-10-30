@@ -18,7 +18,7 @@ open class BeanNameViewResolver : ViewResolver, WebApplicationObjectSupport(), O
         this.order = order
     }
 
-    override fun resolveView(viewName: String): View? {
+    override fun resolveViewName(viewName: String): View? {
         if (!obtainApplicationContext().containsBeanDefinition(viewName)) {
             return null
         }

@@ -1,5 +1,6 @@
 package com.wanna.framework.web.ui
 
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 
@@ -17,5 +18,5 @@ interface View {
      * @param request request
      * @param response response
      */
-    fun render(model: Map<String, *>?, request: HttpServerRequest, response: HttpServerResponse)
+    fun render(@Nullable model: Map<String, *>?, request: HttpServerRequest, response: HttpServerResponse)
 }
