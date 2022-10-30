@@ -15,17 +15,19 @@ import java.util.function.BiFunction
 import java.util.function.Consumer
 
 /**
- * 提供对于Metrics相关的Endpoint的暴露
+ * 根据micrometer提供的[MeterRegistry]对于Metrics相关的Endpoint的暴露
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/10/29
+ *
+ * @param meterRegistry 需要去进行对外提供Metrics信息的MeterRegistry
  */
 @Endpoint("metrics")
 open class MetricsEndpoint(private val meterRegistry: MeterRegistry) {
 
     /**
-     * 列举出来当前应用当中的所有的指标名的列表
+     * 列举出来当前应用的MeterRegistry当中的所有的指标名的列表
      *
      * @return merge得到所有的指标名的列表
      */

@@ -10,7 +10,11 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
 
 /**
- * 用于给SpringBeanFactory当中去导入一个[CompositeMeterRegistry]的配置类
+ * 用于给SpringBeanFactory当中去导入一个[CompositeMeterRegistry]的配置类，它会自动收集起来所有的[MeterRegistry]，
+ * 并merge到一个[CompositeMeterRegistry]当中来，最终我们要去进行使用的就是[AutoConfiguredCompositeMeterRegistry]
+ * 这个[CompositeMeterRegistry]，去提供最终的Endpoint的对外暴露；
+ *
+ * Eg:[io.micrometer.core.instrument.simple.SimpleMeterRegistry]
  *
  * Note: 只有在BeanFactory当中已经存在有[MeterRegistry]的情况下我们才需要去进行装配
  *
