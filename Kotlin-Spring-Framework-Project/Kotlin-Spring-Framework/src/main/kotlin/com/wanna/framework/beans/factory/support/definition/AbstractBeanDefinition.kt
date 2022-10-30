@@ -403,4 +403,12 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      */
     @Nullable
     open fun getDescription(): String? = this.description
+
+    /**
+     * 当前BeanDefinition的资源的描述信息
+     *
+     * @return 资源描述信息(如果不存在的话，那么return null)
+     */
+    @Nullable
+    override fun getResourceDescription(): String? = resource?.getDescription()
 }

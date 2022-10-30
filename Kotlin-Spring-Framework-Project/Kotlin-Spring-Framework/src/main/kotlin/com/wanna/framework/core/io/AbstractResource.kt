@@ -75,5 +75,5 @@ abstract class AbstractResource : Resource {
 
     override fun getFilename(): String? = null
 
-    override fun toString() = getDescription()
+    override fun toString() = getDescription() ?: ""
 }

@@ -118,7 +118,7 @@ interface Resource : InputStreamSource {
     /**
      * 获取该资源的描述信息
      *
-     * @return 资源的描述信息
+     * @return 资源的描述信息(可以为null)
      */
-    fun getDescription(): String
+    fun getDescription(): String?
 }

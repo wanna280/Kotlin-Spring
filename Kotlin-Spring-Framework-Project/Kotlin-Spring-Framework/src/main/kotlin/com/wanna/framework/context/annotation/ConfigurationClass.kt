@@ -1,6 +1,8 @@
 package com.wanna.framework.context.annotation
 
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
+import com.wanna.framework.core.io.DescriptiveResource
+import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.type.AnnotationMetadata
 
 /**
@@ -10,28 +12,53 @@ import com.wanna.framework.core.type.AnnotationMetadata
  * @param _beanName beanName(可以为null，后期去进行生成)
  */
 open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
+    /**
+     * 该配置类的注解元信息
+     */
+    val metadata: AnnotationMetadata = AnnotationMetadata.introspect(_clazz)
+
+    /**
+     * Resource
+     */
+    var resource: Resource
+
+    /**
+     * clazz
+     */
+    val configurationClass: Class<*> = _clazz
+
+    /**
+     * beanName
+     */
+    var beanName: String? = _beanName
+
+    /**
+     * beanMethods
+     */
+    val beanMethods = LinkedHashSet<BeanMethod>()
+
+    /**
+     * 被哪个组件导入进来的？
+     */
+    private val importedBy = LinkedHashSet<ConfigurationClass>()
+
+    /**
+     * importSources
+     */
+    val importedSources = LinkedHashMap<String, Class<out BeanDefinitionReader>>()
+
+    /**
+     * importBeanDefinitionRegistrars
+     */
+    private val importBeanDefinitionRegistrars = LinkedHashMap<ImportBeanDefinitionRegistrar, AnnotationMetadata>()
+
     constructor(_clazz: Class<*>) : this(_clazz, null)
     constructor(beanDefinition: BeanDefinition, beanName: String?) : this(beanDefinition.getBeanClass()!!, beanName)
 
-    // 该配置类的注解元信息
-    val metadata: AnnotationMetadata = AnnotationMetadata.introspect(_clazz)
+    init {
+        this.resource = DescriptiveResource(_clazz.name)
+    }
 
-    // clazz
-    val configurationClass: Class<*> = _clazz
-
-    var beanName: String? = _beanName
-
-    // beanMethods
-    val beanMethods = LinkedHashSet<BeanMethod>()
-
-    // 被哪个组件导入进来的？
-    private val importedBy = LinkedHashSet<ConfigurationClass>()
-
-    // importSources
-    val importedSources = LinkedHashMap<String, Class<out BeanDefinitionReader>>()
-
-    // importBeanDefinitionRegistrars
-    private val importBeanDefinitionRegistrars = LinkedHashMap<ImportBeanDefinitionRegistrar, AnnotationMetadata>()
 
     /**
      * 往配置类当中添加一个@Bean的方法
@@ -53,14 +80,24 @@ open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
 
     /**
      * 当前配置类当中是否有@Bean标注的方法？
+     *
+     * @return 如果有@Bean方法，return true；否则return false
      */
     open fun hasBeanMethod(): Boolean = beanMethods.isNotEmpty()
 
     /**
      * 当前配置类是否有导入ImportBeanDefinitionRegistrar
+     *
+     * @return 如果存在有ImportBeanDefinitionRegistrar的话，那么return true；否则return false
      */
-    open fun hasRegistrar(): Boolean = beanMethods.isNotEmpty()
+    open fun hasRegistrar(): Boolean = this.importBeanDefinitionRegistrars.isNotEmpty()
 
+    /**
+     * 添加一个ImportBeanDefinitionRegistrar到当前ConfigurationClass当中来
+     *
+     * @param registrar ImportBeanDefinitionRegistrar
+     * @param annotationMetadata 注解源信息
+     */
     open fun addRegistrar(registrar: ImportBeanDefinitionRegistrar, annotationMetadata: AnnotationMetadata) {
         importBeanDefinitionRegistrars[registrar] = annotationMetadata
     }
@@ -106,6 +143,4 @@ open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
     override fun toString(): String {
         return "ConfigurationClass($beanName, $configurationClass)"
     }
-
-
 }

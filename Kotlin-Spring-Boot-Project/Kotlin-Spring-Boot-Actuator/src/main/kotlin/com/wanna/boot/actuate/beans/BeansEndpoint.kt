@@ -89,7 +89,11 @@ open class BeansEndpoint(private val context: ConfigurableApplicationContext) {
                 definition: BeanDefinition,
                 beanFactory: ConfigurableListableBeanFactory
             ): BeanDescriptor {
-                return BeanDescriptor(definition.getScope(), beanFactory.getType(beanName)!!)
+                return BeanDescriptor(
+                    definition.getScope(),
+                    beanFactory.getType(beanName)!!,
+                    definition.getResourceDescription()
+                )
             }
 
             /**
@@ -118,6 +122,7 @@ open class BeansEndpoint(private val context: ConfigurableApplicationContext) {
      *
      * @param scope scopeName of Bean
      * @param type beanType
+     * @param resource resource
      */
-    data class BeanDescriptor(val scope: String, val type: Class<*>)
+    data class BeanDescriptor(val scope: String, val type: Class<*>, val resource: String?)
 }
