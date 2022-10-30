@@ -4,7 +4,7 @@ import com.wanna.boot.context.properties.ConfigurationProperties
 import com.wanna.framework.web.cors.CorsConfiguration
 
 /**
- * Endpoint的跨域配置信息
+ * 对于Actuator当中的Endpoint的跨域配置信息
  */
 @ConfigurationProperties("management.endpoints.web.cors")
 open class CorsEndpointProperties {

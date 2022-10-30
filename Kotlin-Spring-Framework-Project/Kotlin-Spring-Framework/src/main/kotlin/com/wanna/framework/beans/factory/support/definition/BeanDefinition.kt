@@ -1,10 +1,11 @@
 package com.wanna.framework.beans.factory.support.definition
 
+import com.wanna.framework.beans.MutablePropertyValues
+import com.wanna.framework.beans.factory.config.ConstructorArgumentValues
 import com.wanna.framework.beans.factory.support.definition.config.AttributeAccessor
 import com.wanna.framework.beans.factory.support.definition.config.BeanMetadataElement
-import com.wanna.framework.beans.factory.config.ConstructorArgumentValues
-import com.wanna.framework.beans.MutablePropertyValues
 import com.wanna.framework.beans.method.MethodOverrides
+import com.wanna.framework.lang.Nullable
 import java.util.function.Supplier
 
 /**
@@ -142,6 +143,14 @@ interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
      */
     fun isLazyInit(): Boolean
     fun setLazyInit(lazyInit: Boolean)
+
+    /**
+     * 获取BeanDefinition的资源描述信息
+     *
+     * @return BeanDefinition资源描述信息(可以为null)
+     */
+    @Nullable
+    fun getResourceDescription(): String?
 
     /**
      * 创建一个Bean时，它需要依赖的Bean的列表

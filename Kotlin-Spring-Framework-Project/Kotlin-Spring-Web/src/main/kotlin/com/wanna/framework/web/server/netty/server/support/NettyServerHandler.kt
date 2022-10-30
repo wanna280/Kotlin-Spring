@@ -93,7 +93,12 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
             httpResponse.headers()[HttpHeaders.KEEP_ALIVE] = "timeout=60"
 
             // 添加Cookie
-            httpResponse.headers()[HttpHeaders.SET_COOKIE] = cookieCodec.encodeAsHeader(response.getCookies())
+            val cookieHeader = cookieCodec.encodeAsHeader(response.getCookies())
+            // 如果存在有Cookie的话，那么我们需要设置Header
+            if (cookieHeader != null) {
+                httpResponse.headers()[HttpHeaders.SET_COOKIE] = cookieHeader
+            }
+
 
             // write And Flush，将要Http响应报文数据写出给客户端...
             ctx.writeAndFlush(httpResponse)

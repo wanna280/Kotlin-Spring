@@ -30,7 +30,9 @@ import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.PathMatchingResourcePatternResolver
 import com.wanna.framework.core.io.support.ResourcePatternResolver
 import com.wanna.framework.core.metrics.ApplicationStartup
+import com.wanna.framework.lang.Nullable
 import org.slf4j.LoggerFactory
+import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -68,10 +70,15 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
         private val logger = LoggerFactory.getLogger(AbstractApplicationContext::class.java)
     }
 
-    // ApplicationContext的环境信息，保存了配置文件、系统环境、系统属性等信息
+    /**
+     * ApplicationContext的环境信息，保存了配置文件、系统环境、系统属性等信息
+     */
     private var environment: ConfigurableEnvironment? = null
 
-    // 父ApplicationContext
+    /**
+     * 父ApplicationContext(可以为null)
+     */
+    @Nullable
     private var parent: ApplicationContext? = null
 
     /**
@@ -121,6 +128,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
     /**
      * 生命周期处理器，负责回调所有的LifecycleBean(比如WebServer)
      */
+    @Nullable
     private var lifecycleProcessor: LifecycleProcessor? = null
 
     /**
@@ -131,10 +139,11 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
     /**
      *  Shutdown的回调钩子
      */
+    @Nullable
     private var shutdownHook: Thread? = null
 
     /**
-     * 当前的ApplicationContext是否还活跃？
+     * 当前的ApplicationContext是否还活跃？(当关闭时会被设置为true)
      */
     private var active = AtomicBoolean(true)
 
@@ -148,7 +157,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
      *
      * @return 当前的ApplicationContext的id
      */
-    override fun getId(): String? = javaClass.name + "@" + System.identityHashCode(this).toString(16)
+    override fun getId(): String = javaClass.name + "@" + System.identityHashCode(this).toString(16)
 
     /**
      * 获取ResolvePatternResolver，提供资源的解析，支持子类当中去进行自定义
@@ -158,7 +167,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
     protected open fun getResourcePatternResolver(): ResourcePatternResolver = PathMatchingResourcePatternResolver(this)
 
     /**
-     * 完成对于当前ApplicationContext的刷新工作
+     * 完成当前ApplicationContext的刷新工作，引导Spring BeanFactory的启动
      */
     override fun refresh() {
         synchronized(this.startupShutdownMonitor) {
@@ -219,6 +228,9 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
     /**
      * 初始化PropertySources，交给子类去进行完成初始化；
      * 是一个模板方法，在容器启动时会自动回调，去完成初始化工作
+     *
+     * @see com.wanna.framework.core.environment.PropertySource
+     * @see com.wanna.framework.core.environment.MutablePropertySources
      */
     protected open fun initPropertySources() {
 
@@ -509,7 +521,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
     }
 
     /**
-     * 获取当前ApplicationContext的事件多拨器
+     * 获取当前ApplicationContext的事件多拨器，提供对于事件的发布功能
      *
      * @return ApplicationEventMulticaster
      */
@@ -518,7 +530,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
             ?: throw IllegalStateException("ApplicationContext还没完成初始化，无法获取到ApplicationEventMulticaster")
 
     /**
-     * 设置Environment
+     * 设置当前ApplicationContext的Environment
      *
      * @param environment Environment
      */
@@ -538,10 +550,18 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
         return this.environment!!
     }
 
+    /**
+     * 当前的ApplicationContext是否还活跃？
+     *
+     * @return 如果还没关闭，return true；否则return false
+     */
     override fun isActive() = this.active.get()
 
     /**
-     * 关闭当前ApplicationContext
+     * 关闭当前的[ApplicationContext]，提供对相关的各种资源的释放；
+     * * (1)destroy所有SpringBeanFactory当中的所有Bean；(并回调所有的[com.wanna.framework.beans.factory.support.DisposableBean]完成收尾工作)
+     * * (2)关闭BeanFactory
+     * * (3)将当前[ApplicationContext]的active标志位设置为false
      */
     override fun close() {
         // acquire startup shutdown Lock
@@ -558,7 +578,7 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
     }
 
     /**
-     * 真正地去执行close，关闭整个ApplicationContext
+     * 真正地去执行close方法，关闭整个[ApplicationContext]
      */
     protected open fun doClose() {
         // 使用CAS的方式，去保证并发多线程下，只有一个线程可以去关闭当前的这个ApplicationContext
@@ -596,18 +616,21 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
 
     /**
      * 摧毁BeanFactory当中的已经注册的所有的单实例Bean
+     *
+     * @see ConfigurableListableBeanFactory.destroySingletons
      */
     protected open fun destroyBeans() {
         getBeanFactory().destroySingletons()
     }
 
     /**
-     * 关闭beanFactory，更多额外的资源回收操作，就交给具体的子类去进行实现
+     * 关闭beanFactory，更多额外的资源回收操作，模板方法，就交给具体的子类去进行实现
      */
     protected abstract fun closeBeanFactory()
 
     /**
-     * Spring的ApplicationContext关闭时，应该做的收尾工作，如果子类需要的话，可以去进行自定义操作
+     * Spring的ApplicationContext关闭时，应该做的收尾工作；
+     * 如果子类需要的话，可以借助给定的模板方法去进行更多的自定义操作
      */
     protected open fun onClose() {
 
@@ -849,7 +872,19 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
      *
      * @param locationPattern 资源位置的表达式
      * @return 解析得到的资源列表
+     * @throws IOException 如果解析资源失败
      */
+    @Throws(IOException::class)
     override fun getResources(locationPattern: String): Array<Resource> =
         resourcePatternResolver.getResources(locationPattern)
+
+    /**
+     * 设置LifecycleProcessor，如果不指定的话，将会创建一个默认的LifecycleProcessor
+     *
+     * @param lifecycleProcessor 你想要使用的Lifecycle
+     * @see DefaultLifecycleProcessor
+     */
+    open fun setLifecycleProcessor(@Nullable lifecycleProcessor: LifecycleProcessor?) {
+        this.lifecycleProcessor = lifecycleProcessor
+    }
 }

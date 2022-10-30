@@ -20,9 +20,9 @@ open class DefaultCookieCodec : CookieCodec {
      * 将Cookie去转换成为Header字符串
      *
      * @param cookies Cookies对象
-     * @return 转换得到的CookieHeader字符串
+     * @return 转换得到的CookieHeader字符串(如果不包含有Cookie的话，那么return null)
      */
-    override fun encodeAsHeader(cookies: Array<Cookie>): String {
+    override fun encodeAsHeader(cookies: Array<Cookie>): String? {
         val cookieHeader = StringBuilder()
         cookies.forEach {
             cookieHeader.append(it.name).append(EQUALS).append(it.value).append(COMMA)
@@ -41,7 +41,9 @@ open class DefaultCookieCodec : CookieCodec {
                 cookieHeader.append(CookieCodec.COOKIE_COMMENT).append(EQUALS).append(COMMA)
             }
         }
-        return cookieHeader.substring(0, cookieHeader.length - COMMA.length)
+        return if (cookieHeader.length > COMMA.length) {
+            cookieHeader.substring(0, cookieHeader.length - COMMA.length)
+        } else null
     }
 
     /**

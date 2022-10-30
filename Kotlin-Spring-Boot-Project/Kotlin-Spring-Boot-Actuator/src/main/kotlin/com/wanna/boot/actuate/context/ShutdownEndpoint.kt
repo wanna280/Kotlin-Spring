@@ -5,7 +5,9 @@ import com.wanna.boot.actuate.endpoint.annotation.WriteOperation
 import com.wanna.framework.context.ConfigurableApplicationContext
 
 /**
- * 对外提供关闭ApplicationContext的Endpoint
+ * 对外提供关闭当前的Spring ApplicationContext的Endpoint
+ *
+ * @param applicationContext 需要去进行关闭的ApplicationContext
  */
 @Endpoint("shutdown")
 open class ShutdownEndpoint(private val applicationContext: ConfigurableApplicationContext? = null) {
@@ -19,9 +21,10 @@ open class ShutdownEndpoint(private val applicationContext: ConfigurableApplicat
      */
     @WriteOperation
     open fun shutdown(): Map<String, String> {
-        if (this.applicationContext == null) {
-            return NO_CONTEXT_MESSAGE
-        }
+        // 如果没有ApplicationContext，发送没有"No Application to Close..."的消息
+        applicationContext ?: return NO_CONTEXT_MESSAGE
+
+        // 如果有ApplicationContext，那么发送"Shut down, bye..."的消息
         try {
             return SHUTDOWN_MESSAGE
         } finally {

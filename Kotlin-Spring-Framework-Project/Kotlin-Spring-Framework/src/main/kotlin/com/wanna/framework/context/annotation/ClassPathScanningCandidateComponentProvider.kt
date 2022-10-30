@@ -14,8 +14,8 @@ import com.wanna.framework.core.io.support.ResourcePatternResolver.Companion.CLA
 import com.wanna.framework.core.io.support.ResourcePatternUtils
 import com.wanna.framework.core.type.filter.AnnotationTypeFilter
 import com.wanna.framework.core.type.filter.TypeFilter
-import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 import org.objectweb.asm.ClassReader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -101,6 +101,7 @@ open class ClassPathScanningCandidateComponentProvider(
                         if (isCandidateComponent(clazz)) {
                             val beanDefinition = ScannedGenericBeanDefinition(clazz)
                             beanDefinition.setSource(it)
+                            beanDefinition.setResource(it)  // set Resource
 
                             // 对BeanDefinition去进行检查，排除掉抽象类
                             if (isCandidateComponent(beanDefinition)) {

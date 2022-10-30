@@ -7,7 +7,9 @@ import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 
 /**
- * BeansEndpoint的自动配置类
+ * BeansEndpoint的自动配置类，对外暴露关闭Spring Bean的相关信息的监控
+ *
+ * @see BeansEndpoint
  */
 @Configuration(proxyBeanMethods = false)
 open class BeansEndpointAutoConfiguration {

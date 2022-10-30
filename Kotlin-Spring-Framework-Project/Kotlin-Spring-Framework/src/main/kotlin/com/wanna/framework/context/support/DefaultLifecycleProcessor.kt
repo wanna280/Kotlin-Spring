@@ -1,10 +1,10 @@
 package com.wanna.framework.context.support
 
+import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.context.Lifecycle
 import com.wanna.framework.context.LifecycleProcessor
-import com.wanna.framework.beans.BeanFactoryAware
 
 /**
  * 这是一个默认的Lifecycle的处理器实现，它支持拿出容器当中的所有Lifecycle类型的Bean，去完成启动(start)和停止(stop)；
@@ -15,11 +15,15 @@ import com.wanna.framework.beans.BeanFactoryAware
  */
 open class DefaultLifecycleProcessor : LifecycleProcessor, BeanFactoryAware {
 
-    // beanFactory
+    /**
+     * beanFactory
+     */
     private var beanFactory: ConfigurableListableBeanFactory? = null
 
-    // 全权交给Spring去进行管理，只有一个线程可以启动ApplicationContext，也只有一个线程可以关闭ApplicationContext
-    // 因此这里并不存在多线程访问的情况，无需使用AtomicInteger去保证线程安全
+    /**
+     * 全权交给Spring去进行管理，只有一个线程可以启动ApplicationContext，也只有一个线程可以关闭ApplicationContext；
+     * 因此这里并不存在多线程访问的情况，无需使用AtomicInteger去保证线程安全
+     */
     private var running: Boolean = false
 
     override fun start() {

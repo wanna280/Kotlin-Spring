@@ -15,9 +15,16 @@ import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.boot.context.properties.EnableConfigurationProperties
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
+import com.wanna.framework.web.HandlerMapping
 
 /**
- * WebMvc的Endpoint的自动配置类
+ * WebMvc的Endpoint的自动配置类，提供了对于Actuator当中对于@Endpoint的解析和监控的暴露
+ * 1.提供了[WebMvcEndpointHandlerMapping]这个[HandlerMapping]自动装配，对外提供HTTP接口
+ * 2.提供了[ControllerEndpointHandlerMapping]这个[HandlerMapping]的自动装配，对外提供HTTP接口
+ *
+ * @see WebEndpointAutoConfiguration
+ * @see WebEndpointsSupplier
+ * @see ControllerEndpointsSupplier
  */
 @AutoConfigureAfter([WebEndpointAutoConfiguration::class])
 @Configuration(proxyBeanMethods = false)

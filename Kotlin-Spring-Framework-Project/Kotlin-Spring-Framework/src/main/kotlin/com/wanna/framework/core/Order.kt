@@ -6,7 +6,7 @@ package com.wanna.framework.core
  * @see Ordered
  * @see PriorityOrdered
  */
-@Target(AnnotationTarget.TYPE, AnnotationTarget.CLASS, AnnotationTarget.ANNOTATION_CLASS)
+@Target(AnnotationTarget.TYPE, AnnotationTarget.CLASS, AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION)
 annotation class Order(
     val value: Int = Ordered.ORDER_LOWEST
 )

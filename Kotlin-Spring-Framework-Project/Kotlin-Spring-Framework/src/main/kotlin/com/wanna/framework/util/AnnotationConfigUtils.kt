@@ -24,13 +24,17 @@ object AnnotationConfigUtils {
     // BeanNameGenerator的beanName
     const val CONFIGURATION_BEAN_NAME_GENERATOR = "com.wanna.framework.context.annotation.internBeanNameGenerator"
 
-    const val CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME = "com.wanna.framework.context.annotation.internalConfigurationAnnotationProcessor"
+    const val CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME =
+        "com.wanna.framework.context.annotation.internalConfigurationAnnotationProcessor"
 
-    const val AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME = "com.wanna.framework.context.annotation.internalAutowiredAnnotationProcessor"
+    const val AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME =
+        "com.wanna.framework.context.annotation.internalAutowiredAnnotationProcessor"
 
-    const val COMMON_ANNOTATION_PROCESSOR_BEAN_NAME = "com.wanna.framework.context.annotation.internalCommonAnnotationProcessor"
+    const val COMMON_ANNOTATION_PROCESSOR_BEAN_NAME =
+        "com.wanna.framework.context.annotation.internalCommonAnnotationProcessor"
 
-    const val EVENT_LISTENER_PROCESSOR_BEAN_NAME = "com.wanna.framework.context.annotation.internalEventListenerProcessor"
+    const val EVENT_LISTENER_PROCESSOR_BEAN_NAME =
+        "com.wanna.framework.context.annotation.internalEventListenerProcessor"
 
     const val EVENT_LISTENER_FACTORY_BEAN_NAME = "com.wanna.framework.context.annotation.internalEventListenerFactory"
 
@@ -96,6 +100,9 @@ object AnnotationConfigUtils {
 
     /**
      * 注册AnnotationConfig相关的Processor
+     *
+     * @param registry 需要注册注解配置的BeanDefinitionRegistry
+     * @return 注册得到的BeanDefinition列表
      */
     @JvmStatic
     fun registerAnnotationConfigProcessors(registry: BeanDefinitionRegistry): MutableSet<BeanDefinitionHolder> {

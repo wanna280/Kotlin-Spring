@@ -32,10 +32,16 @@ open class ConfigurationClassBeanDefinitionReader(
     private val resourceLoader: ResourceLoader
 ) {
     companion object {
+        /**
+         * Logger
+         */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(ConfigurationClassBeanDefinitionReader::class.java)
     }
 
-    // 这是一个条件计算器，去计算一个Bean是否应该被注册
+    /**
+     * 这是一个条件计算器，去计算一个Bean是否应该被注册
+     */
     private val conditionEvaluator = ConditionEvaluator(registry, environment, resourceLoader)
 
     /**
@@ -61,7 +67,7 @@ open class ConfigurationClassBeanDefinitionReader(
      * (4)被@Import导入进来的ImportBeanDefinitionRegistrar
      *
      * @param configurationClass 目标配置类
-     * @param trackedConditionEvaluator 轨迹最终的计算器
+     * @param trackedConditionEvaluator 带轨迹追踪功能的条件计算器
      */
     protected open fun loadBeanDefinitionsForConfigurationClass(
         configurationClass: ConfigurationClass,
@@ -94,6 +100,8 @@ open class ConfigurationClassBeanDefinitionReader(
 
     /**
      * 加载BeanMethod，去将BeanMethod封装成为一个BeanDefinition，并注册BeanDefinition到容器当中
+     *
+     * @param beanMethod @Bean方法
      */
     open fun loadBeanDefinitionsForBeanMethod(beanMethod: BeanMethod) {
         val metadata = beanMethod.metadata
@@ -340,11 +348,18 @@ open class ConfigurationClassBeanDefinitionReader(
     /**
      * 因为RootBeanDefinition本身不是AnnotatedBeanDefinition，但是这里需要用到AnnotatedBeanDefinition；
      * 才能去处理@Lazy/@Primary/@Role/@DependsOn注解，因此这里需要做一层的适配
+     *
+     * @param configurationClass 配置类
+     * @param methodMetadata 方法的MethodData
      */
     class ConfigurationClassBeanDefinition(
         private val configurationClass: ConfigurationClass,
         private val methodMetadata: MethodMetadata?
     ) : RootBeanDefinition(), AnnotatedBeanDefinition {
+        init {
+            // 设置Resource
+            setResource(configurationClass.resource)
+        }
 
         override fun getMetadata(): AnnotationMetadata = configurationClass.metadata
 

@@ -4,13 +4,15 @@ import com.wanna.framework.core.CollectionFactory
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.convert.converter.GenericConverter
-import com.wanna.framework.core.convert.converter.GenericConverter.*
+import com.wanna.framework.core.convert.converter.GenericConverter.ConvertiblePair
 import com.wanna.framework.util.StringUtils
 
 /**
  * String转Collection的的Converter
+ *
+ * @param conversionService 用于Collection内部类型的元素的转换的ConversionService
  */
-open class StringToCollectionConverter(val conversionService: ConversionService) : GenericConverter {
+open class StringToCollectionConverter(private val conversionService: ConversionService) : GenericConverter {
     override fun getConvertibleTypes() = setOf(ConvertiblePair(String::class.java, Collection::class.java))
 
     @Suppress("UNCHECKED_CAST")
@@ -27,7 +29,16 @@ open class StringToCollectionConverter(val conversionService: ConversionService)
         val collection = CollectionFactory.createCollection<Any?>(targetType.type, 16)
 
         val sourceList = StringUtils.commaDelimitedListToStringArray(source as String)
-        sourceList.map { conversionService.convert(it, generic.resolve()!!) }.toCollection(collection)
+        val resolvedGeneric = generic.resolve()
+
+        // bugfix: 如果解析不到泛型，那么直接把原始的字符串数组去转为Collection返回
+        if (resolvedGeneric == null) {
+            sourceList.toCollection(collection)
+
+            // 如果可以解析到泛型的话，那么才使用ConversionService去进行转换
+        } else {
+            sourceList.map { conversionService.convert(it, resolvedGeneric) }.toCollection(collection)
+        }
         return collection
     }
 

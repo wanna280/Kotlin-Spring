@@ -8,6 +8,8 @@ import com.wanna.framework.core.environment.ConfigurableEnvironment
 
 /**
  * 暴露Spring的Environment(环境)信息的端点的自动配置类
+ *
+ * @see EnvironmentEndpoint
  */
 @Configuration(proxyBeanMethods = false)
 open class EnvironmentEndpointAutoConfiguration {

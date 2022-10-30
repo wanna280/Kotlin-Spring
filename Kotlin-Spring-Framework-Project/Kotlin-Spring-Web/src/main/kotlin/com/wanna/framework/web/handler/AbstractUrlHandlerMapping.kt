@@ -1,18 +1,15 @@
 package com.wanna.framework.web.handler
 
-import com.wanna.framework.web.resource.ResourceHttpRequestHandler
 import com.wanna.framework.web.server.HttpServerRequest
 
 /**
  * 抽象的基于Url方式的HandlerMapping
  */
 abstract class AbstractUrlHandlerMapping : AbstractHandlerMapping() {
-    // HandlerMap
+    /**
+     * HandlerMap
+     */
     private val handlerMap = LinkedHashMap<String, Any>()
-
-    init {
-        handlerMap["/"] = ResourceHttpRequestHandler()
-    }
 
     override fun getHandlerInternal(request: HttpServerRequest): Any? {
         val lookupPath = initLookupPath(request)
@@ -24,6 +21,16 @@ abstract class AbstractUrlHandlerMapping : AbstractHandlerMapping() {
 
     protected open fun initLookupPath(request: HttpServerRequest): String {
         return request.getUrl()
+    }
+
+    /**
+     * 注册一个Handler到HandlerMap当中来
+     *
+     * @param url url
+     * @param handler handler
+     */
+    protected open fun registerHandler(url: String, handler: Any) {
+        this.handlerMap[url] = handler
     }
 
     /**

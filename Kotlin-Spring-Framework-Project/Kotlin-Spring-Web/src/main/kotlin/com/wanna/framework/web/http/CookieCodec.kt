@@ -24,7 +24,7 @@ interface CookieCodec {
      * @param cookies Cookies对象
      * @return 转换得到的CookieHeader字符串
      */
-    fun encodeAsHeader(cookies: Array<Cookie>): String
+    fun encodeAsHeader(cookies: Array<Cookie>): String?
 
     /**
      * 根据Cookie的Header去转换成为Cookie对象
