@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory
 import java.io.FileNotFoundException
 import java.net.SocketException
 import java.net.UnknownHostException
-import java.util.LinkedList
+import java.util.*
 import java.util.function.Predicate
 
 /**
@@ -35,6 +35,10 @@ open class ConfigurationClassParser(
     private val resourceLoader: ResourceLoader
 ) {
     companion object {
+
+        /**
+         * Logger
+         */
         private val logger = LoggerFactory.getLogger(ConfigurationClass::class.java)
 
         /**
@@ -42,31 +46,45 @@ open class ConfigurationClassParser(
          */
         private val DEFAULT_PROPERTY_SOURCE_FACTORY = DefaultPropertySourceFactory()
 
-        // DeferredImportSelectorHolder的比较器，因为对DeferredImportSelector包装了一层，因此需要包装一层
+        /**
+         * DeferredImportSelectorHolder的比较器，因为对DeferredImportSelector包装了一层，因此需要包装一层
+         */
         private val DEFERRED_IMPORT_SELECTOR_COMPARATOR = Comparator<DeferredImportSelectorHolder> { o1, o2 ->
             AnnotationAwareOrderComparator.INSTANCE.compare(o1.deferredImportSelector, o2.deferredImportSelector)
         }
 
-        // 默认的用来去进行排除的Filter
+        /**
+         * 默认的用来去进行排除的Filter
+         */
         private val DEFAULT_EXCLUSION_FILTER =
             Predicate<String> { it.startsWith("java.") || it.startsWith("com.wanna.framework.context.stereotype.") }
     }
 
-    // ComponentScan注解的解析器
+    /**
+     * ComponentScan注解的解析器
+     */
     private val parser: ComponentScanAnnotationParser =
         ComponentScanAnnotationParser(registry, environment, classLoader, componentScanBeanNameGenerator)
 
-    // 条件计算器，计算该Bean是否应该被导入到容器当中？
+    /**
+     * 条件计算器，通过@Conditional注解去计算该Bean是否应该被导入到容器当中？
+     */
     private val conditionEvaluator = ConditionEvaluator(this.registry, this.environment, resourceLoader)
 
-    // 维护了扫描出来的ConfigurationClass的集合
+    /**
+     * 维护了扫描出来的ConfigurationClass的集合
+     */
     private val configClasses = LinkedHashMap<ConfigurationClass, ConfigurationClass>()
 
-    // 这是一个要进行延时处理的ImportSelector列表，需要完成所有的配置类的解析之后，才去进行处理
-    // **SpringBoot完成自动配置，就是通过DeferredImportSelector去完成的**
+    /**
+     * 这是一个要进行延时处理的ImportSelector列表，需要完成所有的配置类的解析之后，才去进行处理；
+     * **SpringBoot完成自动配置，就是通过DeferredImportSelector去完成的**
+     */
     private val deferredImportSelectorHandler = DeferredImportSelectorHandler()
 
-    // Import栈，一方面注册importedClass与导入它的配置类的元信息，一方面记录Import过程当中的栈轨迹(判断是否发生了循环导入)
+    /**
+     * Import栈，一方面注册importedClass与导入它的配置类的元信息，一方面记录Import过程当中的栈轨迹(判断是否发生了循环导入)
+     */
     private val importStack = ImportStack()
 
     /**
@@ -450,7 +468,7 @@ open class ConfigurationClassParser(
      *
      * @param clazz 要去进行描述的配置类
      */
-    private class SourceClass(val clazz: Class<*>) {
+    private inner class SourceClass(val clazz: Class<*>) {
         val metadata = AnnotationMetadata.introspect(clazz)
 
         /**
@@ -462,6 +480,10 @@ open class ConfigurationClassParser(
         fun asConfigClass(importedBy: ConfigurationClass): ConfigurationClass {
             val configClass = ConfigurationClass(clazz)
             configClass.setImportedBy(importedBy)
+
+            // init Resource
+            val resource = resourceLoader.getResource(ClassUtils.convertClassNameToResourcePath(clazz.name + ".class"))
+            configClass.resource = resource
             return configClass
         }
 
