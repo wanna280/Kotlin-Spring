@@ -3,6 +3,7 @@ package com.wanna.framework.web.method.annotation
 import com.wanna.framework.beans.factory.InitializingBean
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.context.request.ServerWebRequest
 import com.wanna.framework.web.handler.HandlerExceptionResolver
@@ -26,36 +27,73 @@ import java.util.concurrent.ConcurrentHashMap
  */
 open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, ApplicationContextAware, InitializingBean {
     companion object {
+
+        /**
+         * Logger
+         */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(ExceptionHandlerMethodResolver::class.java)
     }
-    // 消息转换器列表
+
+    /**
+     * 消息转换器列表
+     */
     private var messageConverters: List<HttpMessageConverter<*>>? = null
 
-    // @ExceptionHandler的自定义的参数解析器(基于默认的去进行扩展)
+    /**
+     *  处理@ExceptionHandler的自定义的参数解析器(基于默认的去进行扩展)
+     */
+    @Nullable
     private var customArgumentResolvers: List<HandlerMethodArgumentResolver>? = null
 
-    // @ExceptionHandler方法的自定义的返回值处理器(基于默认的去进行扩展)
+    /**
+     * 处理@ExceptionHandler方法的自定义的返回值处理器(基于默认的去进行扩展)
+     */
+    @Nullable
     private var customReturnValueHandlers: List<HandlerMethodReturnValueHandler>? = null
 
-    // @ExceptionHandler的参数解析器
+    /**
+     * 处理@ExceptionHandler的参数解析器
+     */
+    @Nullable
     private var argumentResolvers: List<HandlerMethodArgumentResolver>? = null
 
-    // @ExceptionHandler的返回值的处理器
+    /**
+     * 处理@ExceptionHandler的返回值的处理器
+     */
+    @Nullable
     private var returnValueHandlers: List<HandlerMethodReturnValueHandler>? = null
 
-    // 内容协商管理器
+    /**
+     *  内容协商管理器
+     */
     private var contentNegotiationManager: ContentNegotiationManager = ContentNegotiationManager()
 
-    // ApplicationContext
+    /**
+     * ApplicationContext
+     */
     private var applicationContext: ApplicationContext? = null
 
-    // ExceptionHandler的缓存，key-handlerType(Controller)，value-ExceptionHandlerMethodResolver
+    /**
+     * ExceptionHandler的缓存，key-handlerType(Controller)，value-ExceptionHandlerMethodResolver
+     */
     private val exceptionHandlerCache = ConcurrentHashMap<Class<*>, ExceptionHandlerMethodResolver>(64)
 
-    // ExceptionHandlerAdviceMap(key-ControllerAdviceBean，value-ExceptionHandlerMethodResolver)
+    /**
+     * ExceptionHandlerAdviceMap(key-ControllerAdviceBean，value-ExceptionHandlerMethodResolver)
+     */
     private val exceptionHandlerAdviceCache =
         ConcurrentHashMap<ControllerAdviceBean, ExceptionHandlerMethodResolver>(64)
 
+    /**
+     * 解析给定的异常信息，和Handler的处理方式类似，也是经过参数解析器、返回值处理器等的处理，最终返回一个ModelAndView对象
+     *
+     * @param request request
+     * @param response response
+     * @param handler handler
+     * @param ex ex
+     * @return 处理异常之后，得到的ModelAndView数据
+     */
     override fun resolveException(
         request: HttpServerRequest, response: HttpServerResponse, handler: Any?, ex: Throwable
     ): ModelAndView? {
@@ -153,10 +191,6 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
         return null
     }
 
-    override fun setApplicationContext(applicationContext: ApplicationContext) {
-        this.applicationContext = applicationContext
-    }
-
     override fun afterPropertiesSet() {
         // 初始化ExceptionHandler
         initExceptionHandlerAdviceCache()
@@ -166,7 +200,12 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
      * 从SpringBeanFactory当中找到所有的@ControllerAdvice的Bean，并找出所有的@ExceptionHandler方法
      */
     private fun initExceptionHandlerAdviceCache() {
+        this.applicationContext ?: return
+
+        // 从ApplicationContext当中，找到所有的标注了@ControllerAdvice的Bean
         val controllerAdviceBeans = ControllerAdviceBean.findAnnotatedBeans(this.applicationContext!!)
+
+        // 根据所有的ControllerAdviceBean，去注册到ExceptionHandlerAdviceCache当中
         controllerAdviceBeans.forEach {
             val handlerMethodResolver = ExceptionHandlerMethodResolver(it.getBeanType())
             if (handlerMethodResolver.hasExceptionMappings()) {
@@ -260,40 +299,97 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
         return handlers
     }
 
-    open fun getContentNegotiationManager(): ContentNegotiationManager {
-        return this.contentNegotiationManager
+    /**
+     * 设置ApplicationContext
+     *
+     * @param applicationContext ApplicationContext
+     */
+    override fun setApplicationContext(applicationContext: ApplicationContext) {
+        this.applicationContext = applicationContext
     }
 
+    /**
+     * 获取内容协商管理器
+     *
+     * @return 内容协商管理器
+     */
+    open fun getContentNegotiationManager(): ContentNegotiationManager = this.contentNegotiationManager
+
+    /**
+     * 自定义内容协商管理器(提供解析客户端想要接收什么类型的响应信息，默认是解析Header当中的"Accept"字段)
+     *
+     * @param contentNegotiationManager 你想要使用的内容协商管理器
+     */
     open fun setContentNegotiationManager(contentNegotiationManager: ContentNegotiationManager) {
         this.contentNegotiationManager = contentNegotiationManager
     }
 
+    /**
+     * 自定义MessageConverters
+     *
+     * @param converters 你想要使用的MessageConverters
+     */
     open fun setHttpMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
         this.messageConverters = converters
     }
 
-    open fun getCustomReturnValueHandlers(): List<HandlerMethodReturnValueHandler>? = this.customReturnValueHandlers
-
-    open fun setCustomReturnValueHandlers(returnValueHandlers: List<HandlerMethodReturnValueHandler>) {
-        this.customReturnValueHandlers = returnValueHandlers
-    }
-
-    open fun setHandlerMethodArgumentResolvers(resolvers: List<HandlerMethodArgumentResolver>) {
-        this.argumentResolvers = resolvers
-    }
-
-    open fun setCustomArgumentResolvers(argumentResolvers: List<HandlerMethodArgumentResolver>) {
-        this.customArgumentResolvers = argumentResolvers
-    }
-
-    open fun getCustomArgumentResolvers(): List<HandlerMethodArgumentResolver>? = this.customArgumentResolvers
-
+    /**
+     * 获取[HttpMessageConverter]列表，提供消息的转换
+     *
+     * @return [HttpMessageConverter]消息转换器列表
+     */
     open fun getHttpMessageConverters(): List<HttpMessageConverter<*>> {
         return this.messageConverters
             ?: throw IllegalStateException("请先初始化RequestMappingHandlerAdapter的MessageConverter列表")
     }
 
-    open fun setHandlerMethodReturnValueHandlers(handlers: List<HandlerMethodReturnValueHandler>) {
+    /**
+     * 设置返回值处理器(直接替换掉之前的全部)
+     *
+     * @param handlers 返回值处理器列表
+     */
+    open fun setHandlerMethodReturnValueHandlers(handlers: List<HandlerMethodReturnValueHandler>?) {
         this.returnValueHandlers = handlers
     }
+
+    /**
+     * 获取自定义的返回值处理器[HandlerMethodReturnValueHandler]列表
+     *
+     * @return 自定义的返回值处理器列表
+     */
+    open fun getCustomReturnValueHandlers(): List<HandlerMethodReturnValueHandler>? = this.customReturnValueHandlers
+
+    /**
+     * 设置自定义的返回值处理器[HandlerMethodReturnValueHandler]
+     *
+     * @param returnValueHandlers 你想要使用的自定义的返回值处理器
+     */
+    open fun setCustomReturnValueHandlers(returnValueHandlers: List<HandlerMethodReturnValueHandler>?) {
+        this.customReturnValueHandlers = returnValueHandlers
+    }
+
+    /**
+     * 设置参数解析器[HandlerMethodArgumentResolver] (直接替换掉之前的全部)
+     *
+     * @param resolvers HandlerMethodArgumentResolvers
+     */
+    open fun setHandlerMethodArgumentResolvers(resolvers: List<HandlerMethodArgumentResolver>?) {
+        this.argumentResolvers = resolvers
+    }
+
+    /**
+     * 设置自定义的参数解析器[HandlerMethodArgumentResolver]列表
+     *
+     * @param argumentResolvers 自定义的HandlerMethodArgumentResolvers
+     */
+    open fun setCustomArgumentResolvers(argumentResolvers: List<HandlerMethodArgumentResolver>?) {
+        this.customArgumentResolvers = argumentResolvers
+    }
+
+    /**
+     * 获取自定义的参数解析器[HandlerMethodArgumentResolver]列表
+     *
+     * @return 自定义的参数解析器列表
+     */
+    open fun getCustomArgumentResolvers(): List<HandlerMethodArgumentResolver>? = this.customArgumentResolvers
 }

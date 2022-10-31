@@ -3,6 +3,7 @@ package com.wanna.framework.web.method
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.bind.annotation.ControllerAdvice
 
 /**
@@ -16,8 +17,8 @@ open class ControllerAdviceBean() {
         /**
          * 从容器当中找到所有标注了@ControllerAdvice的Bean，封装成为ControllerAdviceBean
          *
-         * @param applicationContext ApplicationContext
-         * @return 寻找到的ControllerAdviceBean
+         * @param applicationContext 待寻找候选的Bean的ApplicationContext
+         * @return 从给定的ApplicationContext寻找到的ControllerAdviceBean
          */
         @JvmStatic
         fun findAnnotatedBeans(applicationContext: ApplicationContext): List<ControllerAdviceBean> {
@@ -33,10 +34,20 @@ open class ControllerAdviceBean() {
         }
     }
 
+    /**
+     * BeanObject or beanName
+     */
     private var beanOrBeanName: Any? = null
 
+    /**
+     * beanFactory
+     */
+    @Nullable
     private var beanFactory: BeanFactory? = null
 
+    /**
+     * 是否是单例的？
+     */
     private var isSingleton = true
 
     constructor(bean: Any) : this() {
@@ -50,16 +61,28 @@ open class ControllerAdviceBean() {
         this.isSingleton = beanFactory.isSingleton(beanName)
     }
 
+    /**
+     * 解析Bean(如果之前是一个字符串的话，那么我们需要把它当做beanName，从BeanFactory当中获取)
+     *
+     * @return 解析到的Bean的类型
+     */
     open fun getBeanType(): Class<*> {
         if (this.beanOrBeanName is String) {
-            return beanFactory!!.getType(this.beanOrBeanName as String)!!
+            return beanFactory?.getType(this.beanOrBeanName as String)
+                ?: throw IllegalStateException("当bean为字符串时, BeanFactory不能为null")
         }
         return this.beanOrBeanName!!::class.java
     }
 
+    /**
+     * 解析Bean(如果之前是一个字符串的话，那么我们需要把它当做beanName，从BeanFactory当中获取)
+     *
+     * @return 解析到的BeanObject
+     */
     open fun resolveBean(): Any {
         if (this.beanOrBeanName is String) {
-            return beanFactory!!.getBean(this.beanOrBeanName as String)
+            return beanFactory?.getBean(this.beanOrBeanName as String)
+                ?: throw IllegalStateException("当bean为字符串时, BeanFactory不能为null")
         }
         return this.beanOrBeanName!!
     }
