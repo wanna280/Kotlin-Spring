@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory
 import java.io.FileNotFoundException
 import java.net.SocketException
 import java.net.UnknownHostException
-import java.util.LinkedList
+import java.util.*
 import java.util.function.Predicate
 
 /**
@@ -35,6 +35,10 @@ open class ConfigurationClassParser(
     private val resourceLoader: ResourceLoader
 ) {
     companion object {
+
+        /**
+         * Logger
+         */
         private val logger = LoggerFactory.getLogger(ConfigurationClass::class.java)
 
         /**
@@ -42,31 +46,45 @@ open class ConfigurationClassParser(
          */
         private val DEFAULT_PROPERTY_SOURCE_FACTORY = DefaultPropertySourceFactory()
 
-        // DeferredImportSelectorHolder的比较器，因为对DeferredImportSelector包装了一层，因此需要包装一层
+        /**
+         * DeferredImportSelectorHolder的比较器，因为对DeferredImportSelector包装了一层，因此需要包装一层
+         */
         private val DEFERRED_IMPORT_SELECTOR_COMPARATOR = Comparator<DeferredImportSelectorHolder> { o1, o2 ->
             AnnotationAwareOrderComparator.INSTANCE.compare(o1.deferredImportSelector, o2.deferredImportSelector)
         }
 
-        // 默认的用来去进行排除的Filter
+        /**
+         * 默认的用来去进行排除的Filter
+         */
         private val DEFAULT_EXCLUSION_FILTER =
             Predicate<String> { it.startsWith("java.") || it.startsWith("com.wanna.framework.context.stereotype.") }
     }
 
-    // ComponentScan注解的解析器
+    /**
+     * ComponentScan注解的解析器
+     */
     private val parser: ComponentScanAnnotationParser =
         ComponentScanAnnotationParser(registry, environment, classLoader, componentScanBeanNameGenerator)
 
-    // 条件计算器，计算该Bean是否应该被导入到容器当中？
+    /**
+     * 条件计算器，通过@Conditional注解去计算该Bean是否应该被导入到容器当中？
+     */
     private val conditionEvaluator = ConditionEvaluator(this.registry, this.environment, resourceLoader)
 
-    // 维护了扫描出来的ConfigurationClass的集合
+    /**
+     * 维护了扫描出来的ConfigurationClass的集合
+     */
     private val configClasses = LinkedHashMap<ConfigurationClass, ConfigurationClass>()
 
-    // 这是一个要进行延时处理的ImportSelector列表，需要完成所有的配置类的解析之后，才去进行处理
-    // **SpringBoot完成自动配置，就是通过DeferredImportSelector去完成的**
+    /**
+     * 这是一个要进行延时处理的ImportSelector列表，需要完成所有的配置类的解析之后，才去进行处理；
+     * **SpringBoot完成自动配置，就是通过DeferredImportSelector去完成的**
+     */
     private val deferredImportSelectorHandler = DeferredImportSelectorHandler()
 
-    // Import栈，一方面注册importedClass与导入它的配置类的元信息，一方面记录Import过程当中的栈轨迹(判断是否发生了循环导入)
+    /**
+     * Import栈，一方面注册importedClass与导入它的配置类的元信息，一方面记录Import过程当中的栈轨迹(判断是否发生了循环导入)
+     */
     private val importStack = ImportStack()
 
     /**
@@ -187,10 +205,10 @@ open class ConfigurationClassParser(
     }
 
     /**
-     * 处理每个配置类的内部的成员类
+     * 如果一个类上标注了`@Component`注解的话，那么我们需要去处理每个配置类的内部的成员类
      *
-     * @param configClass 目标配置类
-     * @param sourceClass 源类(有可能为目标配置类的父类)
+     * @param configClass 标注了`@Component`注解的目标配置类
+     * @param sourceClass 源类(有可能为configClass/configClass的父类)
      * @param filter 排除的filter
      */
     private fun processMemberClasses(
@@ -200,6 +218,9 @@ open class ConfigurationClassParser(
         val candidates = LinkedHashSet<SourceClass>()
         // 遍历所有的内部类，去进行匹配...
         for (declaredClass in clazz.declaredClasses) {
+
+            // 如果它标注了@Import/@ImportResource/@PropertySource/@ComponentScan注解，
+            // 或者它的内部存在有@Bean方法，那么它就是一个合格的候选配置类
             if (ConfigurationClassUtils.isConfigurationCandidate(AnnotationMetadata.introspect(declaredClass))) {
                 candidates += SourceClass(declaredClass)
             }
@@ -450,7 +471,7 @@ open class ConfigurationClassParser(
      *
      * @param clazz 要去进行描述的配置类
      */
-    private class SourceClass(val clazz: Class<*>) {
+    private inner class SourceClass(val clazz: Class<*>) {
         val metadata = AnnotationMetadata.introspect(clazz)
 
         /**
@@ -462,6 +483,10 @@ open class ConfigurationClassParser(
         fun asConfigClass(importedBy: ConfigurationClass): ConfigurationClass {
             val configClass = ConfigurationClass(clazz)
             configClass.setImportedBy(importedBy)
+
+            // init Resource
+            val resource = resourceLoader.getResource(ClassUtils.convertClassNameToResourcePath(clazz.name + ".class"))
+            configClass.resource = resource
             return configClass
         }
 
@@ -511,8 +536,8 @@ open class ConfigurationClassParser(
          * @return 导入importedClass的配置类的注解元信息，如果找不到return null
          */
         override fun getImportingClassFor(importedClass: String): AnnotationMetadata? {
-            val metadatas = imports[importedClass]
-            return if (metadatas == null || metadatas.isEmpty()) return null else metadatas.last()
+            val metadata = imports[importedClass]
+            return if (metadata == null || metadata.isEmpty()) return null else metadata.last()
         }
 
         /**

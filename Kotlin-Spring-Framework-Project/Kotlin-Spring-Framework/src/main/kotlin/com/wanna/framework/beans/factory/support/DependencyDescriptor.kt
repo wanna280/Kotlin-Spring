@@ -18,6 +18,19 @@ import java.lang.reflect.Type
 open class DependencyDescriptor protected constructor(
     field: Field?, parameter: MethodParameter?, private val required: Boolean, private val eager: Boolean = false
 ) : InjectionPoint(field, parameter) {
+
+    /**
+     * 基于另外一个[DependencyDescriptor]去创建一个新的[DependencyDescriptor]对象，把相关的字段全部拷贝一份
+     *
+     * @param descriptor 另外的DependencyDescriptor
+     */
+    constructor(descriptor: DependencyDescriptor) : this(
+        descriptor.getField(),
+        descriptor.getMethodParameter(),
+        descriptor.required,
+        descriptor.eager
+    )
+
     constructor(field: Field?, required: Boolean) : this(field, null, required)
     constructor(field: Field?, required: Boolean, eager: Boolean) : this(field, null, required, eager)
     constructor(parameter: MethodParameter?, required: Boolean) : this(null, parameter, required)
@@ -58,6 +71,24 @@ open class DependencyDescriptor protected constructor(
     open fun initParameterNameDiscoverer(parameterNameDiscoverer: ParameterNameDiscoverer?) {
         if (parameterNameDiscoverer != null) {
             this.parameterNameDiscoverer = parameterNameDiscoverer
+        }
+    }
+
+    /**
+     * 是否允许Fallback的匹配？默认为不允许
+     *
+     * @return 如果允许Fallback的匹配的话，那么return true；如果不允许的话，那么return false(默认)
+     */
+    open fun fallbackMatchAllowed(): Boolean = false
+
+    /**
+     * 获得一个允许去进行fallback的匹配的[DependencyDescriptor]
+     *
+     * @return Fallback的DependencyDescriptor(重写了fallbackMatchAllowed方法，允许去进行fallback的匹配)
+     */
+    open fun forFallbackMatch(): DependencyDescriptor {
+        return object : DependencyDescriptor(this) {
+            override fun fallbackMatchAllowed(): Boolean = true
         }
     }
 
