@@ -1,7 +1,7 @@
 package com.wanna.framework.beans.factory.support
 
-import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.BeanFactoryAware
+import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.util.ClassUtils
 
@@ -60,6 +60,10 @@ open class GenericTypeAwareAutowireCandidateResolver : BeanFactoryAware, SimpleA
             }
         } else if (ClassUtils.isAssignFrom(Map::class.java, dependencyType)) {
 
+            // 如果允许fallback的话，那么我们在Map的情况下也直接返回得了
+            if (descriptor.fallbackMatchAllowed()) {
+                return true
+            }
         } else {
             return true
         }
