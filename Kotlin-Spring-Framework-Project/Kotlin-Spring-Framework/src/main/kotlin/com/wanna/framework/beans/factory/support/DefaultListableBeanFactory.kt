@@ -18,7 +18,6 @@ import com.wanna.framework.core.comparator.OrderComparator
 import com.wanna.framework.util.BeanFactoryUtils
 import com.wanna.framework.util.ClassUtils
 import org.slf4j.LoggerFactory
-import java.lang.reflect.Type
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
@@ -51,7 +50,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
                 javaxInjectProviderClass =
                     ClassUtils.forName<Any>("javax.inject.Provider", DefaultListableBeanFactory::class.java.classLoader)
             } catch (ignored: ClassNotFoundException) {
-
+                // ignored
             }
         }
     }
@@ -245,6 +244,9 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         private val descriptor: DependencyDescriptor, private val type: ResolvableType,
     ) : DependencyDescriptor(null, null, false, false) {
 
+        /**
+         * 它是否是必须的？
+         */
         private var required: Boolean? = null
 
         // 如果指定了required，那么使用自定义的，不然就使用origin的
@@ -254,69 +256,39 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             this.required = required
         }
 
-        override fun getMethodParameter(): com.wanna.framework.core.MethodParameter? {
-            return descriptor.getMethodParameter()
-        }
+        override fun getMethodParameter() = descriptor.getMethodParameter()
 
-        override fun getAnnotations(): Array<Annotation> {
-            return descriptor.getAnnotations()
-        }
+        override fun getAnnotations() = descriptor.getAnnotations()
 
-        override fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T? {
-            return descriptor.getAnnotation(annotationClass)
-        }
+        override fun <T : Annotation> getAnnotation(annotationClass: Class<T>) =
+            descriptor.getAnnotation(annotationClass)
 
-        override fun initParameterNameDiscoverer(parameterNameDiscoverer: ParameterNameDiscoverer?) {
+        override fun initParameterNameDiscoverer(parameterNameDiscoverer: ParameterNameDiscoverer?) =
             descriptor.initParameterNameDiscoverer(parameterNameDiscoverer)
-        }
 
-        override fun getGenericType(): Type {
-            return descriptor.getGenericType()
-        }
+        override fun getGenericType() = descriptor.getGenericType()
 
-        override fun getContainingClass(): Class<*>? {
-            return descriptor.getContainingClass()
-        }
+        override fun getContainingClass() = descriptor.getContainingClass()
 
-        override fun setContainingClass(containingClass: Class<*>?) {
-            descriptor.setContainingClass(containingClass)
-        }
+        override fun setContainingClass(containingClass: Class<*>?) = descriptor.setContainingClass(containingClass)
 
-        override fun getParameterIndex(): Int {
-            return descriptor.getParameterIndex()
-        }
+        override fun getParameterIndex() = descriptor.getParameterIndex()
 
-        override fun getMethodName(): String? {
-            return descriptor.getMethodName()
-        }
+        override fun getMethodName() = descriptor.getMethodName()
 
-        override fun getDeclaringClass(): Class<*> {
-            return descriptor.getDeclaringClass()
-        }
+        override fun getDeclaringClass() = descriptor.getDeclaringClass()
 
-        override fun getParameterTypes(): Array<Class<*>>? {
-            return descriptor.getParameterTypes()
-        }
+        override fun getParameterTypes() = descriptor.getParameterTypes()
 
-        override fun getFieldName(): String? {
-            return descriptor.getFieldName()
-        }
+        override fun getFieldName() = descriptor.getFieldName()
 
-        override fun isRequired(): Boolean {
-            return required ?: descriptor.isRequired()
-        }
+        override fun isRequired() = required ?: descriptor.isRequired()
 
-        override fun isEager(): Boolean {
-            return descriptor.isEager()
-        }
+        override fun isEager() = descriptor.isEager()
 
-        override fun getDependencyType(): Class<*> {
-            return type.resolve()!!
-        }
+        override fun getDependencyType(): Class<*> = type.resolve()!!
 
-        override fun getResolvableType(): ResolvableType {
-            return type
-        }
+        override fun getResolvableType() = type
     }
 
     /**
@@ -330,7 +302,9 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         private val originDescriptor: DependencyDescriptor, private val beanName: String?, asTarget: Class<*>
     ) : BeanObjectProvider<Any> {
 
-        // 获取asTarget的泛型类型...
+        /**
+         * 获取asTarget的泛型类型...
+         */
         private val type = originDescriptor.getResolvableType().`as`(asTarget).getGenerics()[0]
 
         override fun getObject(): Any {
