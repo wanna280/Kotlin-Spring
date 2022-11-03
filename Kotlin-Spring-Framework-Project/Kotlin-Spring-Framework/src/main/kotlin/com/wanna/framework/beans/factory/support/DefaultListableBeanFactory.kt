@@ -790,9 +790,15 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             val valueType = generics[0].resolve()
             // 找到所有的候选类型的Bean
             val candidates = findAutowireCandidates(requestingBeanName, valueType!!, MultiElementDescriptor(descriptor))
-            val collection = (typeConverter ?: getTypeConverter()).convertIfNecessary(candidates.values, type)
+            var result = (typeConverter ?: getTypeConverter()).convertIfNecessary(candidates.values, type)
+
+            // 如果是List的话，那么先在这里排个序
+            if (result is MutableList<*> && getDependencyComparator() != null) {
+                result = result.sortedWith(getDependencyComparator()!!)
+            }
+
             autowiredBeanName?.addAll(candidates.keys)
-            return collection
+            return result
         }
         return null  // return null to fallback match single bean
     }
