@@ -205,10 +205,10 @@ open class ConfigurationClassParser(
     }
 
     /**
-     * 处理每个配置类的内部的成员类
+     * 如果一个类上标注了`@Component`注解的话，那么我们需要去处理每个配置类的内部的成员类
      *
-     * @param configClass 目标配置类
-     * @param sourceClass 源类(有可能为目标配置类的父类)
+     * @param configClass 标注了`@Component`注解的目标配置类
+     * @param sourceClass 源类(有可能为configClass/configClass的父类)
      * @param filter 排除的filter
      */
     private fun processMemberClasses(
@@ -218,6 +218,9 @@ open class ConfigurationClassParser(
         val candidates = LinkedHashSet<SourceClass>()
         // 遍历所有的内部类，去进行匹配...
         for (declaredClass in clazz.declaredClasses) {
+
+            // 如果它标注了@Import/@ImportResource/@PropertySource/@ComponentScan注解，
+            // 或者它的内部存在有@Bean方法，那么它就是一个合格的候选配置类
             if (ConfigurationClassUtils.isConfigurationCandidate(AnnotationMetadata.introspect(declaredClass))) {
                 candidates += SourceClass(declaredClass)
             }
@@ -533,8 +536,8 @@ open class ConfigurationClassParser(
          * @return 导入importedClass的配置类的注解元信息，如果找不到return null
          */
         override fun getImportingClassFor(importedClass: String): AnnotationMetadata? {
-            val metadatas = imports[importedClass]
-            return if (metadatas == null || metadatas.isEmpty()) return null else metadatas.last()
+            val metadata = imports[importedClass]
+            return if (metadata == null || metadata.isEmpty()) return null else metadata.last()
         }
 
         /**
