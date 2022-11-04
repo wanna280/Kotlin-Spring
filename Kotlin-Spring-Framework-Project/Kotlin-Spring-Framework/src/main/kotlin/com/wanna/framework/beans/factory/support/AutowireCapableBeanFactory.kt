@@ -78,6 +78,15 @@ interface AutowireCapableBeanFactory : BeanFactory {
     fun applyBeanPostProcessorsAfterInitialization(existingBean: Any, beanName: String): Any
 
     /**
+     * 对一个Bean去应用属性自动注入(Note:供BeanFactory外部去进行使用)
+     *
+     * @param bean 需要去进行自动注入的Bean
+     * @param autowireMode autowireMode
+     * @param dependencyCheck dependencyCheck
+     */
+    fun autowireBeanProperties(bean: Any, autowireMode: Int, dependencyCheck: Boolean)
+
+    /**
      * 初始化一个Bean，供beanFactory外部去进行使用，完成一个Bean的初始化工作；
      * 在初始化Bean时，会自动执行beforeInitialization/afterInitialization方法，也会执行Aware的接口；
      *

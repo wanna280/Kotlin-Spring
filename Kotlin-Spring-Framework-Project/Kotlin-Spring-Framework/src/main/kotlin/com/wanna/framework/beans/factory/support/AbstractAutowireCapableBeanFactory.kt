@@ -679,6 +679,26 @@ abstract class AbstractAutowireCapableBeanFactory : AbstractBeanFactory(), Autow
     }
 
     /**
+     * 对一个Bean去进行属性填充(Note:供BeanFactory外部去进行使用)
+     *
+     * @param bean 需要去进行填充属性的Bean
+     * @param autowireMode autowireMode
+     * @param dependencyCheck dependencyCheck
+     */
+    override fun autowireBeanProperties(bean: Any, autowireMode: Int, dependencyCheck: Boolean) {
+        // 构建一个BeanDefinition
+        val mbd = RootBeanDefinition(bean::class.java)
+        mbd.setAutowireMode(autowireMode)
+
+        // 构建一个BeanWrapper
+        val beanWrapper = BeanWrapperImpl(bean)
+        initBeanWrapper(beanWrapper)
+
+        // 使用populateBean，执行Bean的属性自动填充
+        populateBean(beanWrapper, mbd, mbd.getBeanClass()!!.name)
+    }
+
+    /**
      * 摧毁一个Bean，回调的它的destroy方法，供beanFactory外部去进行使用
      *
      * @param existingBean 要进行摧毁的已经存在于容器当中的Bean
