@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * @param beanFactory 内部需要去组合DefaultListableBeanFactory
  */
-abstract class GenericApplicationContext(private val beanFactory: DefaultListableBeanFactory) :
+open class GenericApplicationContext(private val beanFactory: DefaultListableBeanFactory) :
     AbstractApplicationContext(), BeanDefinitionRegistry {
 
     /**
