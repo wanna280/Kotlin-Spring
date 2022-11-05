@@ -89,7 +89,8 @@ open class ConfigurationPropertiesBean(
          * @return 如果是被FactoryMethod导入进来的，那么return FactoryMethod；否则，return null
          */
         private fun getFactoryMethod(beanName: String, applicationContext: ApplicationContext): Method? {
-            if (applicationContext is ConfigurableApplicationContext) {
+            // fixed: check contains
+            if (applicationContext.containsBeanDefinition(beanName) && applicationContext is ConfigurableApplicationContext) {
                 val definition = applicationContext.getBeanFactory().getMergedBeanDefinition(beanName)
                 if (definition is RootBeanDefinition) {
                     return definition.getResolvedFactoryMethod()
