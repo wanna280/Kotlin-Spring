@@ -20,7 +20,7 @@ import com.wanna.framework.util.BeanUtils
 open class SpringBootContextLoader : SmartContextLoader {
 
     override fun processLocations(vararg locations: String): Array<String> {
-        return arrayOf(*locations)
+        throw UnsupportedOperationException("不支持使用SpringBootContextLoader的processLocations(...)方法去进行处理location")
     }
 
     override fun processContextConfiguration(configAttributes: ContextConfigurationAttributes) {

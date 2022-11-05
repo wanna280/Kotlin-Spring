@@ -36,10 +36,10 @@ open class SpringBootTestContextBootstrapper : DefaultTestContextBootstrapper() 
     }
 
     /**
-     * 对[MergedContextConfiguration]去进行更多的自定义
+     * 对[MergedContextConfiguration]去进行更多的自定义, 我们这里需要根据WebEnvironment的类型去构建出来不同类型的[MergedContextConfiguration]
      *
      * @param mergedContextConfiguration MergedContextConfiguration
-     * @return 新的MergeContextConfiguration
+     * @return 根据应用类型去得到的新的MergeContextConfiguration
      */
     override fun processMergedContextConfiguration(mergedContextConfiguration: MergedContextConfiguration): MergedContextConfiguration {
         val configurationClasses = getOrFindConfigurationClasses(mergedContextConfiguration)
@@ -85,8 +85,8 @@ open class SpringBootTestContextBootstrapper : DefaultTestContextBootstrapper() 
     /**
      * 检查给定的这些配置类当中是否有不是[TestConfiguration]的类？
      *
-     * @param classes classes
-     * @return 如果存在有没有标注[TestConfiguration]的类，那么return true；否则return false
+     * @param classes 待检查的配置类列表
+     * @return 如果存在未标注[TestConfiguration]的类，那么return true；如果给定的这些类全部都标注了[TestConfiguration]注解的话，return false
      */
     private fun containsNonTestComponent(classes: Array<Class<*>>): Boolean {
         classes.forEach {
