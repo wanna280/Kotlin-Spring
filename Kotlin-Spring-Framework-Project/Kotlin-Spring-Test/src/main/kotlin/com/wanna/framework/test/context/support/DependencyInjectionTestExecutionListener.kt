@@ -2,6 +2,7 @@ package com.wanna.framework.test.context.support
 
 import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory
 import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory.Companion.AUTOWIRE_NO
+import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory.Companion.ORIGINAL_INSTANCE_SUFFIX
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.test.context.TestContext
 import com.wanna.framework.test.context.TestExecutionListener
@@ -61,7 +62,7 @@ open class DependencyInjectionTestExecutionListener : AbstractTestExecutionListe
         // 利用BeanFactory去对bean的属性去进行填充
         beanFactory.autowireBeanProperties(bean, AUTOWIRE_NO, false)
         // 对该Bean去完成初始化
-        beanFactory.initializeBean(bean, bean::class.java.name)
+        beanFactory.initializeBean(bean, bean::class.java.name + ORIGINAL_INSTANCE_SUFFIX)
 
     }
 }

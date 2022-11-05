@@ -962,6 +962,15 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
+     * 批量添加primarySources
+     *
+     * @param clazzes primarySources
+     */
+    open fun addPrimarySources(vararg clazzes: Class<*>) {
+        clazzes.forEach(this::addPrimarySource)
+    }
+
+    /**
      * 获取所有的Source列表，包含primarySources和普通的source
      *
      * @return primarySource & source

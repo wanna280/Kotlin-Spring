@@ -3,6 +3,7 @@ package com.wanna.framework.test.context
 import com.wanna.framework.context.ApplicationContext
 
 /**
+ * 提供基于Spring的XML配置文件，去加载得到[ApplicationContext]的ContextLoader
  *
  * @author jianchao.jia
  * @version v1.0

@@ -23,6 +23,31 @@ open class MergedContextConfiguration(
     private val cacheAwareContextLoaderDelegate: CacheAwareContextLoaderDelegate
 ) : Serializable {
 
+    constructor(config: MergedContextConfiguration) : this(
+        config.testClass,
+        config.contextLoader,
+        config.locations,
+        config.classes,
+        config.initializers,
+        config.propertySourceLocations,
+        config.propertySourceProperties,
+        config.activeProfiles,
+        config.cacheAwareContextLoaderDelegate
+    )
+
+    open fun getInitializers(): Array<Class<out ApplicationContextInitializer<*>>> = this.initializers
+
+    open fun getPropertySourceLocations(): Array<String> = this.propertySourceLocations
+
+    open fun getPropertySourceProperties(): Array<String> = this.propertySourceProperties
+
+    open fun getActiveProfiles(): Array<String> = this.activeProfiles
+
+    open fun getCacheAwareContextLoaderDelegate(): CacheAwareContextLoaderDelegate =
+        this.cacheAwareContextLoaderDelegate
+
+    open fun getTestClass(): Class<*> = this.testClass
+
     open fun getContextLoader(): ContextLoader = this.contextLoader
 
     open fun getLocations(): Array<String> = this.locations

@@ -32,6 +32,16 @@ interface AutowireCapableBeanFactory : BeanFactory {
          * 自动注入模式，在创建时基于构造器去进行注入
          */
         const val AUTOWIRE_CONSTRUCTOR = 3
+
+        /**
+         * "origin instance"的后缀，在初始化一个已经存在的Bean时，会采用"{className}.ORIGIN"的方式去进行生成；
+         * 目的是为了快速返回实例对象，不去经历代理的阶段
+         *
+         * @see initializeBean
+         * @see applyBeanPostProcessorsBeforeInitialization
+         * @see applyBeanPostProcessorsAfterInitialization
+         */
+        const val ORIGINAL_INSTANCE_SUFFIX = ".ORIGIN"
     }
 
     /**

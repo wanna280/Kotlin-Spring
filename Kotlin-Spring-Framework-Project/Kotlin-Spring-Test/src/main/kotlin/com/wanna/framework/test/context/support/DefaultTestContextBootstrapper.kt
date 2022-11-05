@@ -1,5 +1,6 @@
 package com.wanna.framework.test.context.support
 
+import com.wanna.framework.test.context.ContextLoader
 import com.wanna.framework.test.context.TestContextBootstrapper
 
 /**
@@ -16,5 +17,6 @@ open class DefaultTestContextBootstrapper : AbstractTestContextBootstrapper() {
      * @param testClass testClass
      * @return DelegatingSmartContextLoader Class
      */
-    override fun getDefaultContextLoaderClass(testClass: Class<*>) = DelegatingSmartContextLoader::class.java
+    override fun getDefaultContextLoaderClass(testClass: Class<*>): Class<out ContextLoader> =
+        DelegatingSmartContextLoader::class.java
 }

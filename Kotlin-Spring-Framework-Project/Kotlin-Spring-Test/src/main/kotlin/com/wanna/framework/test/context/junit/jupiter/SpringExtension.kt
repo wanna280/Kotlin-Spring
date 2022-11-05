@@ -52,12 +52,17 @@ open class SpringExtension : BeforeAllCallback, AfterAllCallback, TestInstancePo
         @JvmStatic
         fun getTestContextManager(context: ExtensionContext): TestContextManager {
             val testClass = context.requiredTestClass
-            val store = context.root.getStore(TEST_CONTEXT_MANAGER_NAMESPACE)
+            val store = getStore(context)
             return store.getOrComputeIfAbsent(
                 testClass,
                 { TestContextManager(it) },
                 TestContextManager::class.java
             )
+        }
+
+        @JvmStatic
+        fun getStore(context: ExtensionContext): ExtensionContext.Store {
+            return context.root.getStore(TEST_CONTEXT_MANAGER_NAMESPACE)
         }
     }
 
@@ -76,7 +81,12 @@ open class SpringExtension : BeforeAllCallback, AfterAllCallback, TestInstancePo
      * @param context JUnit的ExtensionContext(维护了testInstance、testClass、testMethod的上下文信息)
      */
     override fun afterAll(context: ExtensionContext) {
-        getTestContextManager(context).afterTestClass()
+        try {
+            getTestContextManager(context).afterTestClass()
+        } finally {
+            // remove from Store
+            getStore(context).remove(context.requiredTestClass)
+        }
     }
 
     /**

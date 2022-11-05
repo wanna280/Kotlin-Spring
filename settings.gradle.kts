@@ -15,6 +15,7 @@ include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Actuator")
 include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Actuator-Autoconfigure")
 include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Devtools")
 include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Loader")
+include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Test")
 
 // for SpringCloud subProject
 include(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Context")
