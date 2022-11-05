@@ -5,6 +5,7 @@ rootProject.name = "Kotlin-Spring"
 include(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Framework")
 include(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Instrument")
 include(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Web")
+include(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Test")
 
 
 // for SpringBoot subProjects
