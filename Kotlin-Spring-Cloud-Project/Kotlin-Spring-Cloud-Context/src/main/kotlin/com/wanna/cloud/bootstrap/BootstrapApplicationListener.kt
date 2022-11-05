@@ -1,6 +1,6 @@
 package com.wanna.cloud.bootstrap
 
-import com.wanna.boot.ApplicationContextInitializer
+import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.boot.ApplicationType
 import com.wanna.boot.Banner
 import com.wanna.boot.SpringApplication

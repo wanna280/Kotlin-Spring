@@ -1,7 +1,7 @@
 package com.wanna.nacos.naming.server.util
 
-import com.wanna.boot.ApplicationContextInitializer
 import com.wanna.framework.context.ApplicationContext
+import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.framework.context.ConfigurableApplicationContext
 
 /**

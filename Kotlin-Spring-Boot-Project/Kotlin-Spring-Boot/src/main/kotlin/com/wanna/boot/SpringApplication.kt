@@ -3,6 +3,7 @@ package com.wanna.boot
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContext
+import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.annotation.BeanNameGenerator
 import com.wanna.framework.context.event.ApplicationListener
