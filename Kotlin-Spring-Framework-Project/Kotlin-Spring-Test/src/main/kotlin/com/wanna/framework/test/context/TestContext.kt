@@ -2,9 +2,11 @@ package com.wanna.framework.test.context
 
 import com.wanna.framework.beans.factory.support.definition.config.AttributeAccessor
 import com.wanna.framework.context.ApplicationContext
+import com.wanna.framework.context.event.ApplicationEvent
 import com.wanna.framework.lang.Nullable
 import java.io.Serializable
 import java.lang.reflect.Method
+import java.util.function.Function
 
 /**
  * 维护了测试相关的上下文信息
@@ -14,6 +16,14 @@ import java.lang.reflect.Method
  * @date 2022/11/4
  */
 interface TestContext : AttributeAccessor, Serializable {
+
+    /**
+     * 发布事件(直接借助[ApplicationContext]去进行发布事件)
+     *
+     * @param eventFactory 根据TestContext去转换得到ApplicationEvent的Function
+     */
+    fun publishEvent(eventFactory: Function<TestContext, out ApplicationEvent>) =
+        getApplicationContext().publishEvent(eventFactory)
 
     /**
      * 从[TestContext]当中获取到[ApplicationContext]

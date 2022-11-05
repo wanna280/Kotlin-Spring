@@ -2,10 +2,12 @@ package com.wanna.framework.test.context.support
 
 import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.test.context.*
 import com.wanna.framework.test.context.support.ContextLoaderUtils.resolveContextConfigurationAttributes
 import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.util.ClassUtils
 import org.slf4j.LoggerFactory
 
 /**
@@ -213,7 +215,87 @@ abstract class AbstractTestContextBootstrapper : TestContextBootstrapper {
         return buildMergedContextConfiguration(testClass, configurationAttributes, cacheAwareContextLoaderDelegate)
     }
 
-    override fun getTestExecutionListeners(): List<TestExecutionListener> {
-        return listOf(DependencyInjectionTestExecutionListener())
+    /**
+     * 获取监听一个Test任务的[TestExecutionListener]列表，对Test任务的各个生命周期去进行自定义
+     *
+     * @return [TestExecutionListener]列表
+     */
+    final override fun getTestExecutionListeners(): List<TestExecutionListener> {
+        val testClass = getBootstrapContext().getTestClass()
+        val listenersAnnotation =
+            AnnotatedElementUtils.getMergedAnnotation(testClass, TestExecutionListeners::class.java)
+        val listenerClasses: Collection<Class<out TestExecutionListener>>
+
+        // 如果没有@TestExecutionListeners注解的话，将会采用默认的TestExecutionListener
+        if (listenersAnnotation == null) {
+            listenerClasses = getDefaultTestExecutionListeners()
+
+            // 如果有有@TestExecutionListeners注解的话，那么将会采用给定的TestExecutionListener
+        } else {
+            listenerClasses = (listenersAnnotation.listeners + listenersAnnotation.value).map { it.java }
+        }
+
+        // 对于给定的TestExecutionListener去进行实例化
+        return instantiateListeners(listenerClasses)
+    }
+
+
+    /**
+     * 根据给定的所有的[TestExecutionListener]类，尝试去实例化所有的[TestExecutionListener]
+     *
+     * @param listenerClasses TestExecutionListener Classes
+     * @return 实例化完成的[TestExecutionListener]列表
+     * @throws Throwable 如果实例化对象过程中出现异常的话
+     */
+    @Throws(Throwable::class)
+    private fun instantiateListeners(listenerClasses: Collection<Class<out TestExecutionListener>>): List<TestExecutionListener> {
+        val listeners = ArrayList<TestExecutionListener>()
+        listenerClasses.forEach {
+            try {
+                listeners += BeanUtils.instantiateClass(it, TestExecutionListener::class.java)
+            } catch (ex: Throwable) {
+                if (ex !is NoClassDefFoundError) {
+                    throw ex
+                }
+                if (logger.isDebugEnabled) {
+                    logger.debug("无法解析到依赖[${it.name}], 将会跳过该TestExecutionListener的解析, 原因在于", ex.message)
+                }
+            }
+        }
+        return listeners
+    }
+
+    /**
+     * 获取默认的[TestExecutionListener]列表
+     *
+     * @return 默认的TestExecutionListener列表
+     */
+    private fun getDefaultTestExecutionListeners(): Set<Class<out TestExecutionListener>> {
+        val testExecutionListeners = LinkedHashSet<Class<out TestExecutionListener>>()
+        val classloader = this::class.java.classLoader
+        val listenerClassNames = getDefaultTestExecutionListenerClassNames()
+        listenerClassNames.forEach {
+            try {
+                testExecutionListeners += ClassUtils.forName(it, classloader)
+            } catch (ex: ClassNotFoundException) {
+                if (logger.isDebugEnabled) {
+                    logger.info("无法加载到TestExecutionListenr[$it]")
+                }
+            }
+        }
+        return testExecutionListeners
+    }
+
+    /**
+     * 从SpringFactories当中去加载到默认的[TestExecutionListener]列表
+     *
+     * @return SpringFactories当中加载的[TestExecutionListener]列表
+     */
+    protected open fun getDefaultTestExecutionListenerClassNames(): List<String> {
+        val factoryNames = SpringFactoriesLoader.loadFactoryNames(TestExecutionListener::class.java)
+        if (logger.isInfoEnabled) {
+            logger.info("从'META-INF/spring.factories'当中加载到的TestExecutionListener有下面这些：[$factoryNames]")
+        }
+        return ArrayList(factoryNames)
     }
 }

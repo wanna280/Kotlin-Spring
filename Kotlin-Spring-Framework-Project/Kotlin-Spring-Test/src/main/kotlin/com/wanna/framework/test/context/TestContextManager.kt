@@ -45,12 +45,18 @@ open class TestContextManager(testContextBootstrapper: TestContextBootstrapper) 
         testExecutionListeners.forEach(this.testExecutionListeners::add)
     }
 
+    /**
+     * 在`@BeforeClass`(JUnit5的`@BeforeAll`)方法执行之前，回调所有的监听器，给它们一个机会去对[TestContext]去进行自定义
+     */
     open fun beforeTestClass() {
         testExecutionListeners.forEach {
             it.beforeTestClass(testContext)
         }
     }
 
+    /**
+     * 在`@BeforeClass`(JUnit5的`@AfterAll`)方法执行之后，回调所有的监听器，给它们一个机会去对[TestContext]去进行自定义
+     */
     open fun afterTestClass() {
         testExecutionListeners.forEach {
             it.afterTestClass(testContext)
@@ -77,7 +83,7 @@ open class TestContextManager(testContextBootstrapper: TestContextBootstrapper) 
     }
 
     /**
-     * 在执行Test方法之前的后置处理工作
+     * 在`@Before`(JUnit5的`@BeforeEach`)方法执行之前，回调所有的监听器，给它们一个机会去对[TestContext]去进行自定义
      *
      * @param testInstance TestInstance
      * @param testMethod Test方法
@@ -95,7 +101,7 @@ open class TestContextManager(testContextBootstrapper: TestContextBootstrapper) 
     }
 
     /**
-     * 在执行Test方法之后的后置处理工作
+     * 在`@After`(JUnit5的`@AfterEach`)方法执行之后，回调所有的监听器，给它们一个机会去对[TestContext]去进行自定义
      *
      * @param testInstance TestInstance
      * @param testMethod Test方法
@@ -112,7 +118,15 @@ open class TestContextManager(testContextBootstrapper: TestContextBootstrapper) 
         }
     }
 
+    /**
+     * 在`@Test`方法执行之前，回调所有的监听器，给它们一个机会去对[TestContext]进行自定义
+     *
+     * @param testInstance testInstance
+     * @param testMethod testMethod
+     */
     open fun beforeTestExecution(testMethod: Method, testInstance: Any) {
+        // 更新TestContext的状态
+        testContext.updateState(testInstance, testMethod, null)
         testExecutionListeners.forEach {
             try {
                 it.beforeTestExecution(testContext)
@@ -122,7 +136,15 @@ open class TestContextManager(testContextBootstrapper: TestContextBootstrapper) 
         }
     }
 
+    /**
+     * 在`@Test`方法执行之后，回调所有的监听器，给它们一个机会去对[TestContext]进行自定义
+     *
+     * @param testInstance testInstance
+     * @param testMethod testMethod
+     */
     open fun afterTestExecution(testMethod: Method, testInstance: Any) {
+        // 更新TestContext的状态
+        testContext.updateState(testInstance, testMethod, null)
         testExecutionListeners.forEach {
             it.afterTestExecution(testContext)
         }
