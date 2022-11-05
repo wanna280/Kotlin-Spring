@@ -4,12 +4,13 @@ import com.wanna.framework.beans.factory.support.definition.config.AttributeAcce
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.test.context.CacheAwareContextLoaderDelegate
+import com.wanna.framework.test.context.ContextLoader
 import com.wanna.framework.test.context.MergedContextConfiguration
 import com.wanna.framework.test.context.TestContext
 import java.lang.reflect.Method
 
 /**
- * 对于[TestContext]的默认实现
+ * 对于[TestContext]的默认实现，维护了当前Test应用的上下文信息
  *
  * @author jianchao.jia
  * @version v1.0
@@ -25,15 +26,24 @@ open class DefaultTestContext(
     private val cacheAwareContextLoaderDelegate: CacheAwareContextLoaderDelegate
 ) : TestContext, AttributeAccessorSupport() {
 
+    /**
+     * testInstance
+     */
     private var testInstance: Any? = null
 
+    /**
+     * testMethod
+     */
     private var testMethod: Method? = null
 
+    /**
+     * testException
+     */
     private var textException: Throwable? = null
 
     /**
      * 获取到[ApplicationContext]，直接使用[CacheAwareContextLoaderDelegate]，
-     * 根据[MergedContextConfiguration]去进行构建出来一个合适的[ApplicationContext]
+     * 根据[MergedContextConfiguration]，使用[ContextLoader]去进行构建出来一个合适的[ApplicationContext]
      *
      * @return ApplicationContext
      */

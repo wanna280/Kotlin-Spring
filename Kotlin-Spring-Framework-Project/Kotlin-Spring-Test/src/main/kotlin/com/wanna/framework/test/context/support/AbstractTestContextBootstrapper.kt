@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 
 /**
  * [TestContextBootstrapper]的抽象模板实现，负责解析testClass上的相关注解，去最终构建出来[TestContext]；
- * 为所有的具体的实现类提供基础的实现
+ * 为所有的[TestContextBootstrapper]的具体实现类提供基础的实现
  *
  * @author jianchao.jia
  * @version v1.0
@@ -29,10 +29,22 @@ abstract class AbstractTestContextBootstrapper : TestContextBootstrapper {
      */
     private var bootstrapContext: BootstrapContext? = null
 
+    /**
+     * 设置[BootstrapContext]
+     *
+     * @param bootstrapContext BootstrapContext
+     */
     override fun setBootstrapContext(bootstrapContext: BootstrapContext) {
         this.bootstrapContext = bootstrapContext
     }
 
+    /**
+     * 获取BootstrapContext
+     *
+     * @return BootstrapContext
+     * @throws IllegalStateException 如果还没完成Bootstrap的初始化
+     */
+    @Throws(IllegalStateException::class)
     override fun getBootstrapContext() = bootstrapContext ?: throw IllegalStateException("BootstrapContext还未完成初始化")
 
     /**

@@ -8,6 +8,7 @@ import com.wanna.framework.test.context.SmartContextLoader
 import java.util.concurrent.ConcurrentHashMap
 
 /**
+ * 对于[CacheAwareContextLoaderDelegate]的默认实现
  *
  * @author jianchao.jia
  * @version v1.0
@@ -18,14 +19,18 @@ open class DefaultCacheAwareContextLoaderDelegate : CacheAwareContextLoaderDeleg
     private var contextCache = ConcurrentHashMap<MergedContextConfiguration, ApplicationContext>()
 
     /**
-     * 利用[ContextLoader]进行真正的[ApplicationContext]的加载
+     * 利用[MergedContextConfiguration]当中的[ContextLoader]进行真正的[ApplicationContext]的加载
      *
      * @param mergedContextConfiguration Merged ContextConfiguration
      * @return 加载得到的[ApplicationContext]
      */
     protected open fun loadContextInternal(mergedContextConfiguration: MergedContextConfiguration): ApplicationContext {
+        // 从MergedContextConfiguration当中获取到ContextLoader
         val contextLoader = mergedContextConfiguration.getContextLoader()
         val applicationContext: ApplicationContext
+
+        // 如果是SmartContextLoader，走注解的load
+        // 如果不是SmartContextLoader，走XML的load
         if (contextLoader is SmartContextLoader) {
             applicationContext = contextLoader.loadContext(mergedContextConfiguration)
         } else {
@@ -37,7 +42,8 @@ open class DefaultCacheAwareContextLoaderDelegate : CacheAwareContextLoaderDeleg
 
 
     /**
-     * 根据[MergedContextConfiguration]配置信息去加载得到[ApplicationContext]
+     * 根据[MergedContextConfiguration]配置信息从缓存当中去获得到[ApplicationContext]，
+     * 如果缓存当中还不存在的话，那么先构建出来一个[ApplicationContext]去放入到Cache当中
      *
      * @param mergedContextConfiguration Merged ContextConfiguration
      * @return 加载得到的[ApplicationContext]
@@ -56,7 +62,7 @@ open class DefaultCacheAwareContextLoaderDelegate : CacheAwareContextLoaderDeleg
     }
 
     /**
-     * 关闭[ApplicationContext]
+     * 关闭Context，从缓存当中移除对应的[ApplicationContext]
      *
      * @param mergedContextConfiguration Merged ContextConfiguration
      */

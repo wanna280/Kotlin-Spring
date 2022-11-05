@@ -1,4 +1,4 @@
-package com.wanna.framework.test.junit4
+package com.wanna.framework.test
 
 import com.wanna.framework.context.annotation.Configuration
 

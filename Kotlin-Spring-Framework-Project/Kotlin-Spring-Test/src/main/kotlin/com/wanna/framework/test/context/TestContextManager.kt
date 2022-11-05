@@ -5,7 +5,7 @@ import com.wanna.framework.test.context.BootstrapUtils.resolveTestContextBootstr
 import java.lang.reflect.Method
 
 /**
- * [TestContext]的管理器，提供对于[TestContext]的管理工作
+ * [TestContext]的管理器，提供对于[TestContext]的管理工作，对于JUnit4和JUnit5都基于TestContextManager去去进行核心的实现
  *
  * @author jianchao.jia
  * @version v1.0
@@ -46,7 +46,15 @@ open class TestContextManager(testContextBootstrapper: TestContextBootstrapper) 
     }
 
     open fun beforeTestClass() {
+        testExecutionListeners.forEach {
+            it.beforeTestClass(testContext)
+        }
+    }
 
+    open fun afterTestClass() {
+        testExecutionListeners.forEach {
+            it.afterTestClass(testContext)
+        }
     }
 
 
@@ -83,6 +91,40 @@ open class TestContextManager(testContextBootstrapper: TestContextBootstrapper) 
             } catch (ex: Exception) {
                 throw ex
             }
+        }
+    }
+
+    /**
+     * 在执行Test方法之后的后置处理工作
+     *
+     * @param testInstance TestInstance
+     * @param testMethod Test方法
+     */
+    open fun afterTestMethod(testInstance: Any, testMethod: Method) {
+        // 更新TestContext的状态
+        testContext.updateState(testInstance, testMethod, null)
+        testExecutionListeners.forEach {
+            try {
+                it.afterTestMethod(testContext)
+            } catch (ex: Exception) {
+                throw ex
+            }
+        }
+    }
+
+    open fun beforeTestExecution(testMethod: Method, testInstance: Any) {
+        testExecutionListeners.forEach {
+            try {
+                it.beforeTestExecution(testContext)
+            } catch (ex: Exception) {
+                throw ex
+            }
+        }
+    }
+
+    open fun afterTestExecution(testMethod: Method, testInstance: Any) {
+        testExecutionListeners.forEach {
+            it.afterTestExecution(testContext)
         }
     }
 }

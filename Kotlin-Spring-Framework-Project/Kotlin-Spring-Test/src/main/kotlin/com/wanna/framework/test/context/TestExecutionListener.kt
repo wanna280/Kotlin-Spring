@@ -1,7 +1,7 @@
 package com.wanna.framework.test.context
 
 /**
- * Test任务执行的监听器
+ * Test任务执行的监听器，在JUnit的测试任务的各个周期，去对TestContext去进行自定义
  *
  * @author jianchao.jia
  * @version v1.0
@@ -14,6 +14,10 @@ interface TestExecutionListener {
     fun prepareTestInstance(testContext: TestContext)
 
     fun beforeTestMethod(testContext: TestContext)
+
+    fun beforeTestExecution(testContext: TestContext)
+
+    fun afterTestExecution(testContext: TestContext)
 
     fun afterTestMethod(testContext: TestContext)
 

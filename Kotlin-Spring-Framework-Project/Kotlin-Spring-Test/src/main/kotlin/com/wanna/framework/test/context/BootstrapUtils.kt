@@ -20,6 +20,7 @@ object BootstrapUtils {
     /**
      * Logger
      */
+    @JvmStatic
     private val logger = LoggerFactory.getLogger(BootstrapUtils::class.java)
 
     /**

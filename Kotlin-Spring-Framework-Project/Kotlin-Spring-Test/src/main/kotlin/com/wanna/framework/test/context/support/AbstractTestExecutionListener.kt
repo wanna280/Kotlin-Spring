@@ -33,5 +33,13 @@ abstract class AbstractTestExecutionListener : TestExecutionListener, Ordered {
 
     }
 
+    override fun beforeTestExecution(testContext: TestContext) {
+
+    }
+
+    override fun afterTestExecution(testContext: TestContext) {
+
+    }
+
     override fun getOrder(): Int = Ordered.ORDER_LOWEST
 }
