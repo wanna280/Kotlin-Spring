@@ -7,10 +7,13 @@ import com.wanna.framework.util.ClassUtils
 import java.util.*
 
 /**
+ * 标注了某个注解的类的寻找器，支持从某个包下去找到标注了某个注解的类
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/11/6
+ *
+ * @param annotationType 要去寻找的注解类型(例如@SpringBootConfiguration注解)
  */
 class AnnotatedClassFinder(private val annotationType: Class<out Annotation>) {
 
@@ -29,7 +32,7 @@ class AnnotatedClassFinder(private val annotationType: Class<out Annotation>) {
     private val scanner = ClassPathScanningCandidateComponentProvider(false)
 
     init {
-        // 添加一个指定的注解的Filter
+        // 添加一个指定的注解的IncludeFilter
         scanner.addIncludeFilter(AnnotationTypeFilter(annotationType))
     }
 
@@ -88,7 +91,7 @@ class AnnotatedClassFinder(private val annotationType: Class<out Annotation>) {
      * 获取一个包对应的父包
      *
      * @param sourcePackage sourcePackage
-     * @return parentPackage
+     * @return parentPackage(sourcePackage去掉末尾的一个"."之后的字符串)
      */
     private fun getParentPackage(sourcePackage: String): String {
         val lastDot = sourcePackage.lastIndexOf('.')

@@ -32,7 +32,7 @@ open class SpringBootContextLoader : SmartContextLoader {
     }
 
     /**
-     * 加载SpringBoot的[ApplicationContext]
+     * 加载SpringBoot的[ApplicationContext], 构建出来[SpringApplication]并完成启动并得到[ApplicationContext]
      *
      * @param mergedContextConfiguration MergedContextConfiguration
      * @return 加载到的[SpringApplication]的[ApplicationContext]
@@ -41,6 +41,7 @@ open class SpringBootContextLoader : SmartContextLoader {
         val locations = mergedContextConfiguration.getLocations()
         val configClasses = mergedContextConfiguration.getClasses()
 
+        // 获取到SpringApplication
         val application = getSpringApplication()
 
         // 初始化mainClass、sources、primarySources
