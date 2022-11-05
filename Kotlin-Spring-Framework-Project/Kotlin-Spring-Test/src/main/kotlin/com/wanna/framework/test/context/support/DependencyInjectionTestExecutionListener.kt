@@ -2,15 +2,19 @@ package com.wanna.framework.test.context.support
 
 import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory
 import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory.Companion.AUTOWIRE_NO
+import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.test.context.TestContext
 import com.wanna.framework.test.context.TestExecutionListener
 
 /**
- * 提供依赖注入的[TestExecutionListener]
+ * 为TestInstance去提供依赖注入的[TestExecutionListener]，借助[ApplicationContext]去为TestInstance去进行属性填充
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/11/5
+ *
+ * @see injectDependencies
+ * @see AutowireCapableBeanFactory.autowireBeanProperties
  */
 open class DependencyInjectionTestExecutionListener : AbstractTestExecutionListener() {
 
@@ -25,7 +29,7 @@ open class DependencyInjectionTestExecutionListener : AbstractTestExecutionListe
 
 
     /**
-     * 准备Test实例对象，对[TestContext]当中的TestInstance去进行属性填充
+     * 准备TestInstance实例对象，对[TestContext]当中的TestInstance去进行属性填充
      *
      * @param testContext TestContext
      */
@@ -34,7 +38,7 @@ open class DependencyInjectionTestExecutionListener : AbstractTestExecutionListe
     }
 
     /**
-     * 在执行Test方法之前，如果必要的话，需要对[TestContext]当中的TestInstance去进行再次属性填充
+     * 在`@Before`(JUnit5的`@BeforeEach`)方法执行之前，如果必要的话，需要对[TestContext]当中的TestInstance去进行再次属性填充
      *
      * @param testContext TestContext
      */

@@ -9,7 +9,7 @@ import java.lang.reflect.Method
 import java.util.function.Function
 
 /**
- * 维护了测试相关的上下文信息
+ * 维护了一个Spring的测试应用的相关的上下文信息(testInstance/testMethod/testException/ApplicationContext)
  *
  * @author jianchao.jia
  * @version v1.0

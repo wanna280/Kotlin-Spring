@@ -22,7 +22,7 @@ interface CacheAwareContextLoaderDelegate {
      * 从而完成[ApplicationContext]的构建和加载，最终返回一个已经完成初始化和刷新的[ApplicationContext]
      *
      * @param mergedContextConfiguration Merged ContextConfiguration
-     * @return 加载得到的[ApplicationContext]
+     * @return 根据[MergedContextConfiguration]去加载得到的[ApplicationContext]
      */
     fun loadApplicationContext(mergedContextConfiguration: MergedContextConfiguration): ApplicationContext
 

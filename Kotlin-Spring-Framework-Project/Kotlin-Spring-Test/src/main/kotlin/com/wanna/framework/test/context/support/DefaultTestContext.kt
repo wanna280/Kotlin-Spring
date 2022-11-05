@@ -16,7 +16,7 @@ import java.lang.reflect.Method
  * @version v1.0
  * @date 2022/11/4
  *
- * @param testClass testClass
+ * @param testClass testClass测试类
  * @param mergedContextConfiguration MergedContextConfiguration
  * @param cacheAwareContextLoaderDelegate 根据[MergedContextConfiguration]去获取到[ApplicationContext]的LoaderDelegate
  */
@@ -29,16 +29,19 @@ open class DefaultTestContext(
     /**
      * testInstance
      */
+    @Nullable
     private var testInstance: Any? = null
 
     /**
      * testMethod
      */
+    @Nullable
     private var testMethod: Method? = null
 
     /**
      * testException
      */
+    @Nullable
     private var textException: Throwable? = null
 
     /**
@@ -51,19 +54,39 @@ open class DefaultTestContext(
         return cacheAwareContextLoaderDelegate.loadApplicationContext(mergedContextConfiguration)
     }
 
+    /**
+     * 获取到testClass
+     *
+     * @return testClass
+     */
     override fun getTestClass(): Class<*> = this.testClass
 
+    /**
+     * 获取到testInstance
+     *
+     * @return testInstance(如果没有初始化，那么return null)
+     */
     @Nullable
     override fun getTestInstance(): Any? = this.testInstance
 
+    /**
+     * 获取到testMethod
+     *
+     * @return testMethod(如果没有初始化，那么return null)
+     */
     @Nullable
     override fun getTestMethod(): Method? = this.testMethod
 
+    /**
+     * 获取到testException
+     *
+     * @return testException(如果没有初始化，那么return null)
+     */
     @Nullable
     override fun getTestException(): Throwable? = this.textException
 
     /**
-     * 更新testInstance、testMethod、testException的状态
+     * 更新当前的testInstance、testMethod、testException的状态
      *
      * @param testInstance testInstance
      * @param testMethod testMethod

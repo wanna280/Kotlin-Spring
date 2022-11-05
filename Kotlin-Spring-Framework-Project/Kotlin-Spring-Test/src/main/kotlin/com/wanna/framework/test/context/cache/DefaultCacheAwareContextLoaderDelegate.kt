@@ -21,8 +21,8 @@ open class DefaultCacheAwareContextLoaderDelegate : CacheAwareContextLoaderDeleg
     /**
      * 利用[MergedContextConfiguration]当中的[ContextLoader]进行真正的[ApplicationContext]的加载
      *
-     * @param mergedContextConfiguration Merged ContextConfiguration
-     * @return 加载得到的[ApplicationContext]
+     * @param mergedContextConfiguration Merged ContextConfiguration配置信息
+     * @return 根据[ContextLoader]去进行加载得到的[ApplicationContext]
      */
     protected open fun loadContextInternal(mergedContextConfiguration: MergedContextConfiguration): ApplicationContext {
         // 从MergedContextConfiguration当中获取到ContextLoader
@@ -43,10 +43,10 @@ open class DefaultCacheAwareContextLoaderDelegate : CacheAwareContextLoaderDeleg
 
     /**
      * 根据[MergedContextConfiguration]配置信息从缓存当中去获得到[ApplicationContext]，
-     * 如果缓存当中还不存在的话，那么先构建出来一个[ApplicationContext]去放入到Cache当中
+     * 如果缓存当中还不存在对应的[ApplicationContext]的话，那么先构建出来一个[ApplicationContext]去放入到Cache当中。
      *
-     * @param mergedContextConfiguration Merged ContextConfiguration
-     * @return 加载得到的[ApplicationContext]
+     * @param mergedContextConfiguration Merged ContextConfiguration配置信息
+     * @return 根据[ContextLoader]去进行加载得到的[ApplicationContext]
      */
     override fun loadApplicationContext(mergedContextConfiguration: MergedContextConfiguration): ApplicationContext {
         synchronized(contextCache) {
