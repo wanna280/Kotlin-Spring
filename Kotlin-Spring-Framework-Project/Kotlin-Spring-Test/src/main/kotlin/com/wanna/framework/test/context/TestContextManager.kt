@@ -6,13 +6,15 @@ import com.wanna.framework.test.context.BootstrapUtils.resolveTestContextBootstr
 import java.lang.reflect.Method
 
 /**
- * [TestContext]的管理器，提供对于[TestContext]的管理工作，对于JUnit4和JUnit5都基于TestContextManager去去进行核心的实现
+ * [TestContext]的管理器，提供对于[TestContext]的管理工作，对于JUnit4和JUnit5都基于TestContextManager去去进行核心的实现。
+ * 在JUnit的对应生命周期方法执行时，将事件告知所有的[TestExecutionListener]，让监听器去处理该事件，实现用户的自定义。
+ * 本质上当前的[TestContextManager]就相当于一个事件派发器，参考[com.wanna.framework.context.event.ApplicationEventMulticaster]
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/11/4
  *
- * @param testContextBootstrapper TestContextBootstrapper
+ * @param testContextBootstrapper TestContextBootstrapper，主要作用在于去构建出来[TestContext]和[TestExecutionListener]
  */
 open class TestContextManager(testContextBootstrapper: TestContextBootstrapper) {
 
@@ -29,19 +31,30 @@ open class TestContextManager(testContextBootstrapper: TestContextBootstrapper) 
     private val testContext = testContextBootstrapper.buildTestContext()
 
     /**
-     * [TestExecutionListener]列表，监听[TestContext]的整个执行流程
+     * [TestExecutionListener]列表，监听JUnit的整个执行流程[TestContext]，
+     * 当前的[TestContextManager]的主要作用就是在合适的时机去触发这些监听器的对应方法。
      */
     private val testExecutionListeners = ArrayList<TestExecutionListener>()
 
     init {
-        // 注册所有的TestExecutionListeners
+        // 注册所有的TestContextBootstrapper当中的所有的TestExecutionListeners
         this.registerTestExecutionListeners(testContextBootstrapper.getTestExecutionListeners())
     }
 
+    /**
+     * 注册[TestExecutionListener]到当前[TestContextManager]当中
+     *
+     * @param testExecutionListeners 想要去进行注册的[TestExecutionListener]列表
+     */
     open fun registerTestExecutionListeners(testExecutionListeners: List<TestExecutionListener>) {
         testExecutionListeners.forEach(this.testExecutionListeners::add)
     }
 
+    /**
+     * 注册[TestExecutionListener]到当前[TestContextManager]当中
+     *
+     * @param testExecutionListeners 想要去进行注册的[TestExecutionListener]列表
+     */
     open fun registerTestExecutionListeners(vararg testExecutionListeners: TestExecutionListener) {
         testExecutionListeners.forEach(this.testExecutionListeners::add)
     }

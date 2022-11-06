@@ -40,7 +40,10 @@ interface TestContextBootstrapper {
     fun buildMergedContextConfiguration(): MergedContextConfiguration
 
     /**
-     * 获取所有的监听[TestContext]的执行的生命周期的[TestExecutionListener]监听器列表
+     * 获取所有的监听[TestContext]的执行的生命周期的[TestExecutionListener]监听器列表；
+     * 通过解析[TestExecutionListeners]注解去进行获取用户自定义的[TestExecutionListener]，
+     * 如果无法获取到用户自定义的[TestExecutionListener]的话，将会尝试从SpringFactories当中去
+     * 进行加载到合适的[TestExecutionListener]，并利用DependencyComparator去完成排序
      *
      * @return TestExecutionListener列表
      */

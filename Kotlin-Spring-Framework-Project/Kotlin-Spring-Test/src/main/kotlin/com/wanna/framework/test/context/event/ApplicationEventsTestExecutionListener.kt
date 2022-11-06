@@ -7,6 +7,7 @@ import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.test.context.TestContext
 import com.wanna.framework.test.context.TestExecutionListener
 import com.wanna.framework.test.context.support.AbstractTestExecutionListener
+import com.wanna.framework.test.context.support.DependencyInjectionTestExecutionListener
 import java.io.Serializable
 
 /**
@@ -32,6 +33,11 @@ open class ApplicationEventsTestExecutionListener : AbstractTestExecutionListene
         private val applicationEventsMonitor = Any()
     }
 
+    /**
+     * Order
+     *
+     * @return 1800，Note: 需要比[DependencyInjectionTestExecutionListener]的优先级高，不然处理@Autowired自动注入时会出现依赖找不到的情况
+     */
     override fun getOrder(): Int = 1800
 
     /**
