@@ -7,7 +7,7 @@ import java.lang.annotation.Inherited
  *
  * 使用参考示例代码：
  * ```kotlin
- * @ExtendWith(SpringExtension::class.java)
+ * @ExtendWith(SpringExtension::class)
  * @ContextConfiguration(locations = "classpath:context.xml")
  * @RecordApplicationEvents
  * class AppTest {

@@ -16,7 +16,7 @@ import org.junit.runner.RunWith
  *
  * 使用参考示例代码：
  * ```kotlin
- * @ExtendWith(SpringExtension::class.java)
+ * @ExtendWith(SpringExtension::class)
  * @ContextConfiguration(locations = "classpath:context.xml")
  * class AppTest {
  *     @Test

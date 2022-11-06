@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory
  * 使用参考示例代码：
  *
  * ```kotlin
- * @RunWith(SpringJUnit4ClassRunner::class.java)
+ * @RunWith(SpringJUnit4ClassRunner::class)
  * @ContextConfiguration(locations = "classpath:context.xml")
  * class AppTest {
  *     @Test
