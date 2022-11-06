@@ -1,5 +1,6 @@
 package com.wanna.framework.test.context
 
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.test.context.BootstrapUtils.createBootstrapContext
 import com.wanna.framework.test.context.BootstrapUtils.resolveTestContextBootstrapper
 import java.lang.reflect.Method
@@ -106,9 +107,9 @@ open class TestContextManager(testContextBootstrapper: TestContextBootstrapper) 
      * @param testInstance TestInstance
      * @param testMethod Test方法
      */
-    open fun afterTestMethod(testInstance: Any, testMethod: Method) {
+    open fun afterTestMethod(testInstance: Any, testMethod: Method, @Nullable testException: Throwable?) {
         // 更新TestContext的状态
-        testContext.updateState(testInstance, testMethod, null)
+        testContext.updateState(testInstance, testMethod, testException)
         testExecutionListeners.forEach {
             try {
                 it.afterTestMethod(testContext)
@@ -141,10 +142,11 @@ open class TestContextManager(testContextBootstrapper: TestContextBootstrapper) 
      *
      * @param testInstance testInstance
      * @param testMethod testMethod
+     * @param testException 执行Test方法之后，出现的异常
      */
-    open fun afterTestExecution(testMethod: Method, testInstance: Any) {
+    open fun afterTestExecution(testMethod: Method, testInstance: Any, @Nullable testException: Throwable?) {
         // 更新TestContext的状态
-        testContext.updateState(testInstance, testMethod, null)
+        testContext.updateState(testInstance, testMethod, testException)
         testExecutionListeners.forEach {
             it.afterTestExecution(testContext)
         }

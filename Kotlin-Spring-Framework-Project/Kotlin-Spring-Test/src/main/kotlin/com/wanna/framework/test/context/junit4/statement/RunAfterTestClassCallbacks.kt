@@ -22,7 +22,12 @@ open class RunAfterTestClassCallbacks(
 ) : Statement() {
 
     override fun evaluate() {
-        next.evaluate()
+        var testException: Throwable? = null
+        try {
+            next.evaluate()
+        } catch (ex: Throwable) {
+            testException = ex
+        }
         this.testContextManager.afterTestClass()
     }
 }

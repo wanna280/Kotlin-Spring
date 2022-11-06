@@ -22,7 +22,14 @@ open class RunAfterTestMethodCallbacks(
 ) : Statement() {
 
     override fun evaluate() {
-        next.evaluate()
-        testContextManager.afterTestMethod(testInstance, testMethod)
+        // 记录@After方法的执行异常
+        var testException: Throwable? = null
+        try {
+            next.evaluate()
+        } catch (ex: Throwable) {
+            testException = ex
+        }
+
+        testContextManager.afterTestMethod(testInstance, testMethod, testException)
     }
 }

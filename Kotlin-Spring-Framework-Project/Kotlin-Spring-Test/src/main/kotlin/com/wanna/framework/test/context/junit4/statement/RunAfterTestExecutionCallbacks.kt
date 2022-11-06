@@ -19,7 +19,15 @@ open class RunAfterTestExecutionCallbacks(
 ) : Statement() {
 
     override fun evaluate() {
-        next.evaluate()
-        testContextManager.afterTestExecution(testMethod, testInstance)
+
+        // 记录执行过程当中的异常
+        var testException: Throwable? = null
+        try {
+            next.evaluate()
+        } catch (ex: Throwable) {
+            testException = ex
+        }
+
+        testContextManager.afterTestExecution(testMethod, testInstance, testException)
     }
 }

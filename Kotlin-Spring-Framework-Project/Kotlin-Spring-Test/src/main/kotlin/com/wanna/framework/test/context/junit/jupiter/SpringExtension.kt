@@ -104,7 +104,11 @@ open class SpringExtension : BeforeAllCallback, AfterAllCallback, TestInstancePo
      * @param context JUnit的ExtensionContext(维护了testInstance、testClass、testMethod的上下文信息)
      */
     override fun afterEach(context: ExtensionContext) {
-        getTestContextManager(context).afterTestMethod(context.testInstance, context.requiredTestMethod)
+        getTestContextManager(context).afterTestMethod(
+            context.testInstance,
+            context.requiredTestMethod,
+            context.executionException.orElse(null)
+        )
     }
 
     /**
@@ -134,7 +138,11 @@ open class SpringExtension : BeforeAllCallback, AfterAllCallback, TestInstancePo
      * @param context JUnit的ExtensionContext(维护了testInstance、testClass、testMethod的上下文信息)
      */
     override fun afterTestExecution(context: ExtensionContext) {
-        getTestContextManager(context).afterTestExecution(context.requiredTestMethod, context.testInstance)
+        getTestContextManager(context).afterTestExecution(
+            context.requiredTestMethod,
+            context.testInstance,
+            context.executionException.orElse(null)
+        )
     }
 
     override fun supportsParameter(parameterContext: ParameterContext, extensionContext: ExtensionContext): Boolean {
