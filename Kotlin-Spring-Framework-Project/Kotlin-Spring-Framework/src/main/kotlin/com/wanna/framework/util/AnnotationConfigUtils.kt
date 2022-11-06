@@ -14,7 +14,7 @@ import com.wanna.framework.context.event.DefaultEventListenerFactory
 import com.wanna.framework.context.processor.beans.internal.AutowiredAnnotationPostProcessor
 import com.wanna.framework.context.processor.beans.internal.CommonAnnotationPostProcessor
 import com.wanna.framework.context.processor.factory.internal.ConfigurationClassPostProcessor
-import com.wanna.framework.context.processor.factory.internal.EventListenerMethodProcessor
+import com.wanna.framework.context.event.EventListenerMethodProcessor
 import com.wanna.framework.context.support.GenericApplicationContext
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.type.AnnotatedTypeMetadata

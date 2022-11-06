@@ -21,9 +21,9 @@ import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.io.DefaultResourceLoader
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.util.ClassUtils
-import com.wanna.framework.lang.Nullable
 import org.slf4j.LoggerFactory
 
 /**
@@ -36,27 +36,40 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
     BeanClassLoaderAware, ApplicationStartupAware, ResourceLoaderAware {
 
     companion object {
-        // ImportRegistry的beanName
+        /**
+         * ImportRegistry的beanName
+         */
+        @JvmStatic
         private val IMPORT_REGISTRY_BEAN_NAME = ConfigurationClassPostProcessor::class.java.name + ".importRegistry"
 
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(ConfigurationClassPostProcessor::class.java)
     }
 
     // order
     private var order: Int = 0
 
-    // beanClassLoader
+    /**
+     * beanClassLoader
+     */
     @Nullable
     private var classLoader: ClassLoader? = ClassUtils.getDefaultClassLoader()
 
-    // 环境对象
+    /**
+     * Spring Environment环境对象
+     */
+    @Nullable
     private var environment: Environment? = null
 
-    // 配置类的解析器
+    /**
+     * 配置类的解析器
+     */
     @Nullable
     private var parser: ConfigurationClassParser? = null
 
-    // 配置类的reader
+    /**
+     * 配置类的reader
+     */
     @Nullable
     private var reader: ConfigurationClassBeanDefinitionReader? = null
 
