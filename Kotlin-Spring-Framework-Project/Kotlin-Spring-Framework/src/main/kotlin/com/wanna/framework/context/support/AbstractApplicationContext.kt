@@ -530,6 +530,13 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
             ?: throw IllegalStateException("ApplicationContext还没完成初始化，无法获取到ApplicationEventMulticaster")
 
     /**
+     * 获取当前[ApplicationContext]当中的所有的[ApplicationListener]
+     *
+     * @return Collection of ApplicationListener
+     */
+    open fun getApplicationListeners(): Collection<ApplicationListener<*>> = this.applicationListeners
+
+    /**
      * 设置当前ApplicationContext的Environment
      *
      * @param environment Environment
