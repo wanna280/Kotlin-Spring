@@ -39,11 +39,13 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         /**
          * javax.inject.Provider--->对应于Spring家的ObjectProvider
          */
+        @JvmStatic
         private var javaxInjectProviderClass: Class<*>? = null
 
         /**
          * Logger
          */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(DefaultListableBeanFactory::class.java)
 
         init {

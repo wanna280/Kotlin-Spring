@@ -60,6 +60,12 @@ open class SpringExtension : BeforeAllCallback, AfterAllCallback, TestInstancePo
             )
         }
 
+        /**
+         * 获取Store
+         *
+         * @param context ExtensionContext
+         * @return Store
+         */
         @JvmStatic
         fun getStore(context: ExtensionContext): ExtensionContext.Store {
             return context.root.getStore(TEST_CONTEXT_MANAGER_NAMESPACE)
