@@ -14,6 +14,7 @@ import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
 import com.wanna.framework.core.ParameterNameDiscoverer
 import com.wanna.framework.core.ResolvableType
+import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.comparator.OrderComparator
 import com.wanna.framework.util.BeanFactoryUtils
 import com.wanna.framework.util.ClassUtils
@@ -75,12 +76,18 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
     /**
      * 这是一个依赖的比较器, 可以通过beanFactory去进行获取, 可以基于比较规则, 对依赖去完成排序；
-     * 在注解版IOC容器当中, 默认情况下会被设置为AnnotationAwareOrderComparator
+     * 在注解版IOC容器当中, 默认情况下会被设置为[AnnotationAwareOrderComparator]
+     *
+     * @see AnnotationAwareOrderComparator
+     * @see OrderComparator
      */
     private var dependencyComparator: Comparator<Any?>? = null
 
     /**
-     * 这是一个可以被解析的依赖, 加入到这个Map当中的依赖可以进行Autowire, 一般这里会注册BeanFactory, ApplicationContext等
+     * 这是一个可以被解析的依赖, 加入到这个Map当中的依赖可以进行Autowire(一般这里会注册BeanFactory, ApplicationContext等)。
+     * 对于Value不仅仅可以注册一个普通的单例对象，当然特殊地也可以注册一个[ObjectFactory]，在进行依赖解析时会自动触发[ObjectFactory.getObject]
+     *
+     * @see ObjectFactory
      */
     private var resolvableDependencies: ConcurrentHashMap<Class<*>, Any> = ConcurrentHashMap()
 
