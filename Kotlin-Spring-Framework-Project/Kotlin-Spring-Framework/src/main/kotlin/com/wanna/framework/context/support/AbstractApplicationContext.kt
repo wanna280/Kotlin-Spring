@@ -361,11 +361,41 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
         if (beanFactory.containsSingleton(APPLICATION_EVENT_MULTICASTER_BEAN_NAME)) {
             this.applicationEventMulticaster =
                 beanFactory.getBean(APPLICATION_EVENT_MULTICASTER_BEAN_NAME, ApplicationEventMulticaster::class.java)
+            if (logger.isTraceEnabled) {
+                logger.trace("在SpringBeanFactory当中找到了合适的ApplicationEventMulticaster[$applicationEventMulticaster]")
+            }
 
             // 如果容器当中没有注册, 那么就使用默认的, 并把默认的注册到BeanFactory当中, 后续就可以去完成Autowire
         } else {
             this.applicationEventMulticaster = SimpleApplicationEventMulticaster()
             beanFactory.registerSingleton(APPLICATION_EVENT_MULTICASTER_BEAN_NAME, this.applicationEventMulticaster!!)
+            if (logger.isTraceEnabled) {
+                logger.trace("在SpringBeanFactory当中无法找到合适的ApplicationEventMulticaster, 将会使用默认的[${applicationEventMulticaster!!.javaClass.name}]")
+            }
+        }
+    }
+
+
+    /**
+     * 初始化生命周期的处理器, 如果容器中已经有了生命周期处理器, 不然使用默认的生命周期处理器
+     *
+     * @see LifecycleProcessor
+     * @see DefaultLifecycleProcessor
+     */
+    protected open fun initLifecycleProcessor() {
+        if (containsBeanDefinition(LIFECYCLE_PROCESSOR_BEAN_NAME)) {
+            this.lifecycleProcessor = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor::class.java)
+            if (logger.isTraceEnabled) {
+                logger.trace("SpringBeanFactory当中找到了合适的LifecycleProcessor[$lifecycleProcessor]")
+            }
+        } else {
+            val defaultLifecycleProcessor = DefaultLifecycleProcessor()
+            defaultLifecycleProcessor.setBeanFactory(this.getBeanFactory())
+            this.lifecycleProcessor = defaultLifecycleProcessor
+            getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultLifecycleProcessor)
+            if (logger.isTraceEnabled) {
+                logger.trace("SpringBeanFactory当中无法好到合适的LifecycleProcessor, 将会采用默认的[${defaultLifecycleProcessor.javaClass.name}]")
+            }
         }
     }
 
@@ -441,19 +471,6 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
         publishEvent(ContextRefreshedEvent(this))
     }
 
-    /**
-     * 初始化生命周期的处理器, 如果容器中已经有了生命周期处理器, 不然使用默认的生命周期处理器
-     */
-    protected open fun initLifecycleProcessor() {
-        if (containsBeanDefinition(LIFECYCLE_PROCESSOR_BEAN_NAME)) {
-            this.lifecycleProcessor = getBean(LIFECYCLE_PROCESSOR_BEAN_NAME, LifecycleProcessor::class.java)
-        } else {
-            val defaultLifecycleProcessor = DefaultLifecycleProcessor()
-            defaultLifecycleProcessor.setBeanFactory(this.getBeanFactory())
-            this.lifecycleProcessor = defaultLifecycleProcessor
-            getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultLifecycleProcessor)
-        }
-    }
 
     /**
      * (1)完成所有的监听器的注册, 将容器当中的ApplicationListener, 全部转移到ApplicationEventMulticaster当中
