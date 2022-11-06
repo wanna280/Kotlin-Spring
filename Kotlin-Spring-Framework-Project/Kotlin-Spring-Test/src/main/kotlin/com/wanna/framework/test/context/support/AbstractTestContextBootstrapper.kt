@@ -2,6 +2,7 @@ package com.wanna.framework.test.context.support
 
 import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.test.context.*
@@ -226,17 +227,25 @@ abstract class AbstractTestContextBootstrapper : TestContextBootstrapper {
             AnnotatedElementUtils.getMergedAnnotation(testClass, TestExecutionListeners::class.java)
         val listenerClasses: Collection<Class<out TestExecutionListener>>
 
+        // 是否需要引用默认的Listener？
+        var useDefaults = false
         // 如果没有@TestExecutionListeners注解的话，将会采用默认的TestExecutionListener
         if (listenersAnnotation == null) {
             listenerClasses = getDefaultTestExecutionListeners()
-
+            useDefaults = true
             // 如果有有@TestExecutionListeners注解的话，那么将会采用给定的TestExecutionListener
         } else {
             listenerClasses = (listenersAnnotation.listeners + listenersAnnotation.value).map { it.java }
         }
 
         // 对于给定的TestExecutionListener去进行实例化
-        return instantiateListeners(listenerClasses)
+        val listeners = ArrayList(instantiateListeners(listenerClasses))
+
+        // 如果应用默认的Listener的话，将会被自动排序
+        if (useDefaults) {
+            AnnotationAwareOrderComparator.sort(listeners)
+        }
+        return listeners
     }
 
 

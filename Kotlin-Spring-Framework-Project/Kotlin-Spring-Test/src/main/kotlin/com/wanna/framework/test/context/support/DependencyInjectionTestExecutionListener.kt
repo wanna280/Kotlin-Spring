@@ -28,6 +28,12 @@ open class DependencyInjectionTestExecutionListener : AbstractTestExecutionListe
             "com.wanna.framework.test.context.support.DependencyInjectionTestExecutionListener.reinjectDependencies"
     }
 
+    /**
+     * Order
+     *
+     * @return 2000
+     */
+    override fun getOrder(): Int = 2000
 
     /**
      * 准备TestInstance实例对象，对[TestContext]当中的TestInstance去进行属性填充

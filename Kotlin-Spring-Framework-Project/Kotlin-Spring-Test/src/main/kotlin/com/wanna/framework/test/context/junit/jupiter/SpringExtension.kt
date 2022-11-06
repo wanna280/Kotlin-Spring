@@ -67,7 +67,7 @@ open class SpringExtension : BeforeAllCallback, AfterAllCallback, TestInstancePo
     }
 
     /**
-     * 在[BeforeAll]注解的方法(对应JUnit4当中的`@BeforeClass`的方法)执行之前，需要触发的Callback
+     * 在[BeforeAll]注解的方法(对应JUnit4当中的`@BeforeTestClass`的方法)执行之前，需要触发的Callback
      *
      * @param context JUnit的ExtensionContext(维护了testInstance、testClass、testMethod的上下文信息)
      */

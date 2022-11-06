@@ -46,7 +46,7 @@ open class TestContextManager(testContextBootstrapper: TestContextBootstrapper) 
     }
 
     /**
-     * 在`@BeforeClass`(JUnit5的`@BeforeAll`)方法执行之前，回调所有的监听器，给它们一个机会去对[TestContext]去进行自定义
+     * 在`@BeforeTestClass`(JUnit5的`@BeforeAll`)方法执行之前，回调所有的监听器，给它们一个机会去对[TestContext]去进行自定义
      */
     open fun beforeTestClass() {
         testExecutionListeners.forEach {
@@ -55,7 +55,7 @@ open class TestContextManager(testContextBootstrapper: TestContextBootstrapper) 
     }
 
     /**
-     * 在`@BeforeClass`(JUnit5的`@AfterAll`)方法执行之后，回调所有的监听器，给它们一个机会去对[TestContext]去进行自定义
+     * 在`@BeforeTestClass`(JUnit5的`@AfterAll`)方法执行之后，回调所有的监听器，给它们一个机会去对[TestContext]去进行自定义
      */
     open fun afterTestClass() {
         testExecutionListeners.forEach {

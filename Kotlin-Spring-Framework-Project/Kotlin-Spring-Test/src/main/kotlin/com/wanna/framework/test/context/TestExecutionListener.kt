@@ -10,7 +10,7 @@ package com.wanna.framework.test.context
 interface TestExecutionListener {
 
     /**
-     * 在`@BeforeClass`(JUnit5的`@BeforeAll`)方法执行之前的回调
+     * 在`@BeforeTestClass`(JUnit5的`@BeforeAll`)方法执行之前的回调
      *
      * @param testContext TestContext
      */

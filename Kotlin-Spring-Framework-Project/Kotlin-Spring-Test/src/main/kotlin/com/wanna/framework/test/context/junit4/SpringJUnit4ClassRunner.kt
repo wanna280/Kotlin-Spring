@@ -187,8 +187,8 @@ open class SpringJUnit4ClassRunner(testClass: Class<*>) : BlockJUnit4ClassRunner
     }
 
     /**
-     * 在`@BeforeClass`注解标注的方法执行之前需要执行的回调Callback逻辑，这里给[TestContextManager]
-     * 一个在`@BeforeClass`注解标注的方法执行之前，去进行更多的自定义工作
+     * 在`@BeforeTestClass`注解标注的方法执行之前需要执行的回调Callback逻辑，这里给[TestContextManager]
+     * 一个在`@BeforeTestClass`注解标注的方法执行之前，去进行更多的自定义工作
      *
      * @param statement JUnit的Statement责任链的当前环节
      * @see BeforeClass

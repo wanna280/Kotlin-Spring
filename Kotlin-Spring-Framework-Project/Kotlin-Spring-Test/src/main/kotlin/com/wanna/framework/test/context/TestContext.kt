@@ -23,7 +23,7 @@ interface TestContext : AttributeAccessor, Serializable {
      * @param eventFactory 根据TestContext去转换得到ApplicationEvent的Function
      */
     fun publishEvent(eventFactory: Function<TestContext, out ApplicationEvent>) =
-        getApplicationContext().publishEvent(eventFactory)
+        getApplicationContext().publishEvent(eventFactory.apply(this))  // apply this
 
     /**
      * 从[TestContext]当中获取到[ApplicationContext]
