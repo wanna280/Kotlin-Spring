@@ -1,5 +1,7 @@
 package com.wanna.framework.context.event
 
+import com.wanna.framework.context.ApplicationContext
+
 /**
  * 由ApplicationContext发布的事件的基础类(source为ApplicationContext)
  *
@@ -8,4 +10,4 @@ package com.wanna.framework.context.event
  * @see ContextRefreshedEvent
  * @see ContextClosedEvent
  */
-abstract class ApplicationContextEvent(val applicationContext: com.wanna.framework.context.ApplicationContext) : ApplicationEvent(applicationContext)
+abstract class ApplicationContextEvent(val applicationContext: ApplicationContext) : ApplicationEvent(applicationContext)
