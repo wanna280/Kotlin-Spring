@@ -1,7 +1,7 @@
 package com.wanna.boot.builder
 
-import com.wanna.boot.ApplicationContextInitializer
 import com.wanna.framework.context.ApplicationContext
+import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.core.Ordered
 

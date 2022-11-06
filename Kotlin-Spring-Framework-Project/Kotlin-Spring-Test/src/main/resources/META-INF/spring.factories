@@ -1,0 +1,5 @@
+# Default TestExecutionListeners for the Spring TestContext Framework
+com.wanna.framework.test.context.TestExecutionListener=\
+  com.wanna.framework.test.context.support.DependencyInjectionTestExecutionListener,\
+  com.wanna.framework.test.context.event.EventPublishingTestExecutionListener,\
+  com.wanna.framework.test.context.event.ApplicationEventsTestExecutionListener

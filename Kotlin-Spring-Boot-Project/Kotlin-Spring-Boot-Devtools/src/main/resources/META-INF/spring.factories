@@ -1,4 +1,4 @@
-com.wanna.boot.ApplicationContextInitializer=\
+com.wanna.framework.context.ApplicationContextInitializer=\
   com.wanna.boot.devtools.restart.RestartScopeInitializer
 
 com.wanna.framework.context.event.ApplicationListener=\

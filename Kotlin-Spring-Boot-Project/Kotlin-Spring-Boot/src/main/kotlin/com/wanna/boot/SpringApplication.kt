@@ -3,6 +3,7 @@ package com.wanna.boot
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContext
+import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.annotation.BeanNameGenerator
 import com.wanna.framework.context.event.ApplicationListener
@@ -958,6 +959,15 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      */
     open fun addPrimarySource(clazz: Class<*>) {
         this.primarySources.add(clazz)
+    }
+
+    /**
+     * 批量添加primarySources
+     *
+     * @param clazzes primarySources
+     */
+    open fun addPrimarySources(vararg clazzes: Class<*>) {
+        clazzes.forEach(this::addPrimarySource)
     }
 
     /**

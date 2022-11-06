@@ -1,6 +1,6 @@
 package com.wanna.boot.devtools.restart
 
-import com.wanna.boot.ApplicationContextInitializer
+import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.framework.beans.factory.ObjectFactory
 import com.wanna.framework.beans.factory.config.Scope
 import com.wanna.framework.context.ConfigurableApplicationContext

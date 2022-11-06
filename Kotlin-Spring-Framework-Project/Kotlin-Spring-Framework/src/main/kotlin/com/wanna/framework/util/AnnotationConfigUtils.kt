@@ -45,7 +45,7 @@ object AnnotationConfigUtils {
     private fun unwrapDefaultListableBeanFactory(registry: BeanDefinitionRegistry): DefaultListableBeanFactory? {
         return when (registry) {
             is DefaultListableBeanFactory -> registry
-            is GenericApplicationContext -> registry.getBeanFactory()
+            is GenericApplicationContext -> registry.getDefaultListableBeanFactory()
             else -> null
         }
     }

@@ -1,6 +1,6 @@
 package com.wanna.cloud.bootstrap.config
 
-import com.wanna.boot.ApplicationContextInitializer
+import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.Configuration

@@ -1,6 +1,6 @@
 package com.wanna.boot.devtools
 
-import com.wanna.boot.ApplicationContextInitializer
+import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.boot.ApplicationType
 import com.wanna.boot.SpringApplication
 import com.wanna.boot.devtools.remote.client.RemoteClientConfiguration

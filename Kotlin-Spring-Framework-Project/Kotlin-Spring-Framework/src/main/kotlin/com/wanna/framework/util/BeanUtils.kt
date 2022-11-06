@@ -55,12 +55,34 @@ object BeanUtils {
      * 通过无参数构造器创建对象
      *
      * @param clazz 想要去进行实例化的类
+     * @param T 实例对象的类型
      * @return 实例化完成的对象
      */
     @JvmStatic
     fun <T> instantiateClass(clazz: Class<T>): T {
         val constructor = clazz.getDeclaredConstructor()
         return constructor.newInstance()
+    }
+
+    /**
+     * 通过无参数构造器创建对象
+     *
+     * @param clazz 想要去进行实例化的类
+     * @param T 实例化对象类型
+     * @param assignTo 实例化对象类型
+     * @return 实例化完成的对象
+     *
+     * @throws IllegalStateException 如果clazz实例无法转换成为T类型
+     */
+    @Throws(IllegalStateException::class)
+    @Suppress("UNCHECKED_CAST")
+    @JvmStatic
+    fun <T> instantiateClass(clazz: Class<*>, assignTo: Class<T>): T {
+        if (!ClassUtils.isAssignFrom(assignTo, clazz)) {
+            throw IllegalStateException("无法将[$clazz]去转换成为[$assignTo]类型")
+        }
+        val constructor = clazz.getDeclaredConstructor()
+        return constructor.newInstance() as T
     }
 
     /**

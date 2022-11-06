@@ -16,7 +16,6 @@ import com.wanna.framework.context.LifecycleProcessor
 import com.wanna.framework.context.event.*
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
-import com.wanna.framework.context.processor.beans.BeanPostProcessor
 import com.wanna.framework.context.processor.beans.internal.ApplicationContextAwareProcessor
 import com.wanna.framework.context.processor.beans.internal.ApplicationListenerDetector
 import com.wanna.framework.context.processor.factory.BeanFactoryPostProcessor
@@ -354,10 +353,10 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
         beanFactory.registerResolvableDependency(ResourceLoader::class.java, this)
 
         // 添加ApplicationContext的BeanPostProcessor，完成BeanClassLoaderAware/EnvironmentAware等Aware接口的处理
-        this.addBeanPostProcessor(ApplicationContextAwareProcessor(this))
+        beanFactory.addBeanPostProcessor(ApplicationContextAwareProcessor(this))
 
         // 添加ApplicationListener的Detector，完成EventListener的探测和注册
-        this.addBeanPostProcessor(ApplicationListenerDetector(this))
+        beanFactory.addBeanPostProcessor(ApplicationListenerDetector(this))
 
         // 如果容器当中包含了LoadTimeWeaver的Bean，那么需要添加LoadTimeWeaverAware的处理器
         if (containsBeanDefinition(LOAD_TIME_WEAVER_BEAN_NAME)) {
@@ -528,6 +527,13 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
     open fun getApplicationEventMulticaster(): ApplicationEventMulticaster =
         this.applicationEventMulticaster
             ?: throw IllegalStateException("ApplicationContext还没完成初始化，无法获取到ApplicationEventMulticaster")
+
+    /**
+     * 获取当前[ApplicationContext]当中的所有的[ApplicationListener]
+     *
+     * @return Collection of ApplicationListener
+     */
+    open fun getApplicationListeners(): Collection<ApplicationListener<*>> = this.applicationListeners
 
     /**
      * 设置当前ApplicationContext的Environment
@@ -706,35 +712,6 @@ abstract class AbstractApplicationContext : ConfigurableApplicationContext, Defa
      */
     @Throws(NoSuchBeanDefinitionException::class)
     override fun isPrototype(beanName: String) = getBeanFactory().isPrototype(beanName)
-
-    /**
-     * 往BeanFactory当中去添加一个BeanPostProcessor
-     *
-     * @param processor 你想要添加的BeanPostProcessor
-     */
-    override fun addBeanPostProcessor(processor: BeanPostProcessor) = getBeanFactory().addBeanPostProcessor(processor)
-
-    /**
-     * 根据类型去从BeanFactory当中去移除BeanPostProcessor
-     *
-     * @param type 你想要移除的BeanPostProcessor的类型
-     */
-    override fun removeBeanPostProcessor(type: Class<*>) = getBeanFactory().removeBeanPostProcessor(type)
-
-    /**
-     * 根据index从BeanFactory当中去移除掉一个BeanPostProcessor
-     *
-     * @param index index
-     */
-    override fun removeBeanPostProcessor(index: Int) = getBeanFactory().removeBeanPostProcessor(index)
-
-    /**
-     * 检查给定beanName的Bean，在BeanFactory当中对应的Bean是否是一个FactoryBean？
-     *
-     * @param name beanName
-     * @return 如果是FactoryBean，return true；否则return false
-     */
-    override fun isFactoryBean(name: String) = getBeanFactory().isFactoryBean(name)
 
     /**
      * 根据beanName去检查BeanFactory当中该beanName对应的Bean的类型是否和给定的type匹配？

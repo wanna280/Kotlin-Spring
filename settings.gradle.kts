@@ -5,6 +5,7 @@ rootProject.name = "Kotlin-Spring"
 include(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Framework")
 include(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Instrument")
 include(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Web")
+include(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Test")
 
 
 // for SpringBoot subProjects
@@ -14,6 +15,7 @@ include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Actuator")
 include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Actuator-Autoconfigure")
 include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Devtools")
 include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Loader")
+include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Test")
 
 // for SpringCloud subProject
 include(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Context")

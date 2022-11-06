@@ -2,6 +2,8 @@ package com.wanna.framework.context.support
 
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
+import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
+import com.wanna.framework.beans.factory.support.AutowireCapableBeanFactory
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.ApplicationContext
@@ -20,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * @param beanFactory 内部需要去组合DefaultListableBeanFactory
  */
-abstract class GenericApplicationContext(private val beanFactory: DefaultListableBeanFactory) :
+open class GenericApplicationContext(private val beanFactory: DefaultListableBeanFactory) :
     AbstractApplicationContext(), BeanDefinitionRegistry {
 
     /**
@@ -76,7 +78,22 @@ abstract class GenericApplicationContext(private val beanFactory: DefaultListabl
      *
      * @return BeanFactory
      */
-    override fun getBeanFactory(): DefaultListableBeanFactory = beanFactory
+    override fun getBeanFactory(): ConfigurableListableBeanFactory = beanFactory
+
+    /**
+     * 获取当前[GenericApplicationContext]内部的[DefaultListableBeanFactory]
+     *
+     * @return 内部的DefaultListableBeanFactory
+     */
+    fun getDefaultListableBeanFactory(): DefaultListableBeanFactory = this.beanFactory
+
+
+    /**
+     * [ApplicationContext]支持去获取[AutowireCapableBeanFactory]，去提供Bean的创建和初始化工作
+     *
+     * @return AutowireCapableBeanFactory
+     */
+    override fun getAutowireCapableBeanFactory(): AutowireCapableBeanFactory = beanFactory
 
     /**
      * 是否允许发生循环依赖？
@@ -117,13 +134,6 @@ abstract class GenericApplicationContext(private val beanFactory: DefaultListabl
      * @return 如果包含了该BeanDefinition，那么return true；否则return false
      */
     override fun containsBeanDefinition(name: String) = beanFactory.containsBeanDefinition(name)
-
-    /**
-     * ApplicationContext支持去获取AutowireCapableBeanFactory，去提供Bean的创建和初始化工作
-     *
-     * @return AutowireCapableBeanFactory
-     */
-    override fun getAutowireCapableBeanFactory() = beanFactory
 
     /**
      * 获取当前BeanFactory当中的BeanDefinition的数量

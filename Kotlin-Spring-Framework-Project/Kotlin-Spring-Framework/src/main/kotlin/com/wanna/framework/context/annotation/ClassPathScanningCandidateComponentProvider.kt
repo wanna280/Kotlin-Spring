@@ -8,6 +8,7 @@ import com.wanna.framework.context.ResourceLoaderAware
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.EnvironmentCapable
+import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.ResourcePatternResolver
 import com.wanna.framework.core.io.support.ResourcePatternResolver.Companion.CLASSPATH_ALL_URL_PREFIX
@@ -120,7 +121,10 @@ open class ClassPathScanningCandidateComponentProvider(
                             }
                         }
                     } catch (ex: Throwable) {
-                        throw IllegalStateException("无法去读给定位置的资源 [$it]", ex)
+                        // temp ignore LinkageError
+                        if (ex !is NoClassDefFoundError) {
+                            throw IllegalStateException("无法去读给定位置的资源 [$it]", ex)
+                        }
                     }
                 } else {
                     if (logger.isTraceEnabled) {
@@ -169,7 +173,7 @@ open class ClassPathScanningCandidateComponentProvider(
         this.resourcePattern = resourcePattern
     }
 
-    override fun getEnvironment() = this.environment ?: throw IllegalStateException("Environment不能为null")
+    override fun getEnvironment() = this.environment ?: StandardEnvironment()
 
 
     /**
