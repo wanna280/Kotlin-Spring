@@ -2,14 +2,21 @@ package com.wanna.framework.beans.factory
 
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
-import com.wanna.framework.context.processor.beans.BeanPostProcessor
+import com.wanna.framework.lang.Nullable
 
 /**
- * Spring的BeanFactory，提供SpringBean的管理
+ * Spring的BeanFactory，提供SpringBean的管理；
+ * 在这个接口当中，主要提供一些关于Spring Bean的获取的功能。
  */
 interface BeanFactory {
     companion object {
-        const val FACTORY_BEAN_PREFIX = "&"  // FactoryBean的前缀，static final变量
+
+        /**
+         * FactoryBean的前缀常量
+         *
+         * @see FactoryBean
+         */
+        const val FACTORY_BEAN_PREFIX = "&"
     }
 
     /**
@@ -19,6 +26,7 @@ interface BeanFactory {
      * @return 根据name获取到的Bean
      * @throws NoSuchBeanDefinitionException 如果没有找到合适的Bean的话
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     fun getBean(beanName: String): Any
 
     /**
@@ -73,47 +81,23 @@ interface BeanFactory {
     fun isPrototype(beanName: String): Boolean
 
     /**
-     * 添加BeanPostProcessor
-     *
-     * @param processor 你想要往BeanFactory当中添加的BeanPostProcessor
-     */
-    fun addBeanPostProcessor(processor: BeanPostProcessor)
-
-    /**
-     * 根据type移除BeanPostProcessor
-     *
-     * @param type 要去移除的BeanPostProcessor的类型
-     */
-    fun removeBeanPostProcessor(type: Class<*>)
-
-    /**
-     * 根据index去移除BeanPostProcessor
-     *
-     * @param index 具体的index
-     */
-    fun removeBeanPostProcessor(index: Int)
-
-    /**
-     * 根据beanName去判断该Bean是否是一个FactoryBean
-     *
-     * @param name beanName
-     * @return 该Bean是否是一个FactoryBean
-     */
-    fun isFactoryBean(name: String): Boolean
-
-    /**
      * beanName对应的Bean的类型是否匹配type？
      *
      * @param name 要匹配的beanName
      * @param type 要去进行匹配的类型
      * @return 根据name获取到的Bean是否匹配指定的类型？
+     *  @throws NoSuchBeanDefinitionException 如果beanFactory当中没有这样beanName的BeanDefinition的话¬
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     fun isTypeMatch(name: String, type: Class<*>): Boolean
 
     /**
      * 根据beanName去匹配beanType
      *
      * @param beanName beanName
+     * @throws NoSuchBeanDefinitionException 如果beanFactory当中没有这样beanName的BeanDefinition的话
      */
+    @Throws(NoSuchBeanDefinitionException::class)
+    @Nullable
     fun getType(beanName: String): Class<*>?
 }

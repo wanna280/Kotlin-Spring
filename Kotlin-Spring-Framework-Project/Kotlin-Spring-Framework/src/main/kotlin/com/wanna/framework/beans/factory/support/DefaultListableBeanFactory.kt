@@ -176,7 +176,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
         // 2.如果当前BeanFactory当中没有该BeanDefinition, 那么从parent去进行寻找
         if (!containsBeanDefinition(name) && getParentBeanFactory() is ConfigurableBeanFactory) {
-            return getParentBeanFactory()!!.isFactoryBean(name)
+            return (getParentBeanFactory() as ConfigurableBeanFactory).isFactoryBean(name)
         }
 
         // 3.从BeanDefinition当中去进行判断是否是FactoryBean...

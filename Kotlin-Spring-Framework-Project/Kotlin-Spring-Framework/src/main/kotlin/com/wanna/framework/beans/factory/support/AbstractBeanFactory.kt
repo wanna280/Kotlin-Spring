@@ -53,6 +53,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     /**
      * 自定义的类型转换器，可以组合ConversionService和PropertyEditor去完成类型的转换
      */
+    @Nullable
     private var typeConverter: TypeConverter? = null
 
     /**
@@ -119,18 +120,18 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     /**
      * 设置parent BeanFactory
      *
-     * @param parent parentBeanFactory
+     * @param parentBeanFactory parentBeanFactory
      */
-    open fun setParentBeanFactory(parent: BeanFactory?) {
+    override fun setParentBeanFactory(parentBeanFactory: BeanFactory?) {
         // 如果之前设置过parentBeanFactory，现在又想设置新的parent去进行替换？那么肯定是不行...
-        if (this.parentBeanFactory != null && parent != parentBeanFactory) {
-            throw IllegalStateException("之前已经设置过parentBeanFactory[$parentBeanFactory]，不能设置新的parent[$parent]")
+        if (this.parentBeanFactory != null && parentBeanFactory != parentBeanFactory) {
+            throw IllegalStateException("之前已经设置过parentBeanFactory[$parentBeanFactory], 不能设置新的parent[$parentBeanFactory]")
         }
         // 如果parent==this？肯定不允许发生这种情况...不然处理parent时，直接StackOverflow...
         if (this.parentBeanFactory == this) {
             throw IllegalStateException("parentBeanFactory不能为自身")
         }
-        this.parentBeanFactory = parent
+        this.parentBeanFactory = parentBeanFactory
     }
 
     /**
@@ -381,6 +382,48 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     }
 
     /**
+     * 摧毁一个在具体的[Scope]内的Bean
+     *
+     * @param beanName beanName
+     * @throws NoSuchBeanDefinitionException 如果BeanFactory当中没有这样的BeanDefinition
+     * @throws IllegalArgumentException 如果给定的Bean的Scope为Singleton/Prototype
+     * @throws IllegalStateException 如果该BeanDefinition的Scope并未注册到BeanFactory当中
+     */
+    override fun destroyScopedBean(beanName: String) {
+        val mbd = getMergedLocalBeanDefinition(beanName)
+        if (mbd.isSingleton() || mbd.isPrototype()) {
+            throw IllegalArgumentException("给定的beanName=[$beanName]并不在一个具体的Scope内, 可能是Singleton/Prototype的")
+        }
+        val scopeName = mbd.getScope()
+        val scope = scopes[scopeName] ?: throw IllegalStateException("在BeanFactory当中并未注册有[$scopeName]这样的Scope")
+        val bean = scope.remove(beanName) ?: return
+
+        // 摧毁Scope内获取到的Bean
+        destroyBean(beanName, bean, mbd)
+    }
+
+    /**
+     * 摧毁一个Bean
+     *
+     * @param beanName beanName
+     * @param bean bean
+     */
+    override fun destroyBean(beanName: String, bean: Any) {
+        destroyBean(beanName, bean, getMergedLocalBeanDefinition(beanName))
+    }
+
+    /**
+     * 摧毁一个实例Bean(通常是用于Prototype的Bean的摧毁)，回调它的destroy方法
+     *
+     * @param beanName beanName
+     * @param bean bean
+     * @param mbd MergedBeanDefinition
+     */
+    protected open fun destroyBean(beanName: String, bean: Any, mbd: RootBeanDefinition) {
+        DisposableBeanAdapter(bean, beanName, mbd, getBeanPostProcessorCache().destructionAwareCache).destroy()
+    }
+
+    /**
      * 如果必要的话，返回FactoryBean导入的FactoryBeanObject；如果是普通的Bean，直接return；
      *
      * @param beanName beanName
@@ -396,7 +439,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
                 return beanInstance
             }
             if (beanInstance !is FactoryBean<*>) {
-                throw IllegalStateException("name=[$name]以'&'作为前缀，但是它的类型并不匹配FactoryBean")
+                throw IllegalStateException("name=[$name]以'&'作为前缀, 但是它的类型并不匹配FactoryBean")
             }
             mbd?.setFactoryBean(true)  // setFactoryBean to true
             return beanInstance
@@ -900,7 +943,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         }
     }
 
-    override fun setTypeConverter(typeConverter: TypeConverter) {
+    override fun setTypeConverter(typeConverter: TypeConverter?) {
         this.typeConverter = typeConverter
     }
 
@@ -985,4 +1028,11 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         beanPostProcessors.removeAt(index)
         this.beanPostProcessorCache = null  // clear
     }
+
+    /**
+     * 获取当前BeanFactory当中的BeanPostProcessor的数量
+     *
+     * @return Count of BeanPostProcessor
+     */
+    override fun getBeanPostProcessorCount(): Int = this.beanPostProcessors.size
 }
