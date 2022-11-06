@@ -12,6 +12,7 @@ import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
+import com.wanna.framework.lang.Nullable
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -26,7 +27,9 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
     AbstractApplicationContext(), BeanDefinitionRegistry {
 
     /**
-     * 提供一个无参数的副构造器，创建一个默认的BeanFactory
+     * 提供一个无参数的副构造器，创建一个默认的[DefaultListableBeanFactory]
+     *
+     * @see DefaultListableBeanFactory
      */
     constructor() : this(DefaultListableBeanFactory())
 
@@ -49,6 +52,7 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
      * @see AbstractApplicationContext
      * @see ResourceLoader
      */
+    @Nullable
     private var resourceLoader: ResourceLoader? = null
 
     /**
@@ -163,7 +167,7 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
      *
      * @param parent parentApplicationContext
      */
-    override fun setParent(parent: ApplicationContext?) {
+    override fun setParent(@Nullable parent: ApplicationContext?) {
         super.setParent(parent)
         this.beanFactory.setParentBeanFactory(getInternalParentBeanFactory())
     }
@@ -172,18 +176,36 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
      * 获取ApplicationContext内部的BeanFactory；
      * * 1.如果ApplicationContext是ConfigurableApplicationContext，那么可以从它里面获取BeanFactory；
      * * 2.如果ApplicationContext不是ConfigurableApplicationContext，那么fallback直接就使用它作为parentBeanFactory；
+     *
+     * @return ApplicationContext内部的BeanFactory(可以为null)
      */
+    @Nullable
     protected open fun getInternalParentBeanFactory(): BeanFactory? {
         val parent = getParent()
         return if (parent is ConfigurableApplicationContext) parent.getBeanFactory() else parent
     }
 
+    /**
+     * 设置当前ApplicationContext是否是否允许循环引用的标志位
+     *
+     * @param allowCircularReferences 如果允许循环依赖, 那么设置为true; 如果不允许的话, 那么设置为false
+     */
     open fun setAllowCircularReferences(allowCircularReferences: Boolean) =
         beanFactory.setAllowCircularReferences(allowCircularReferences)
 
+    /**
+     * 设置加载BeanClass的ClassLoader
+     *
+     * @param beanClassLoader 你想要使用的ClassLoader
+     */
     override fun setBeanClassLoader(beanClassLoader: ClassLoader) =
         this.beanFactory.setBeanClassLoader(beanClassLoader)
 
+    /**
+     * 获取加载BeanClass的ClassLoader
+     *
+     * @return BeanClassLoader
+     */
     override fun getBeanClassLoader() = this.beanFactory.getBeanClassLoader()
 
     /**
@@ -203,13 +225,21 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
     }
 
     /**
-     * 我们需要用户是否有自定义过ClassLoader，因此重写这个方法
+     * 我们需要知道用户是否有自定义过ClassLoader，因此重写这个方法去进行记录一下
+     *
+     * @param classLoader classLoader
      */
-    override fun setClassLoader(classLoader: ClassLoader?) {
+    override fun setClassLoader(@Nullable classLoader: ClassLoader?) {
         super.setClassLoader(classLoader)
         this.customClassLoader = true
     }
 
+    /**
+     * 根据给定的资源的位置，去加载Resource
+     *
+     * @param location 资源所在的位置location
+     * @return 加载得到的Resource
+     */
     override fun getResource(location: String): Resource {
         if (this.resourceLoader != null) {
             return this.resourceLoader?.getResource(location) ?: throw IllegalStateException("ResourceLoader不能为空")
@@ -217,6 +247,12 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
         return super.getResource(location)
     }
 
+    /**
+     * 获取ClassLoader
+     *
+     * @return ClassLoader(获取不到return null)
+     */
+    @Nullable
     override fun getClassLoader(): ClassLoader? {
         // 只有在没有自定义ClassLoader的情况下，才使用ResourceLoader的ClassLoader
         // 在自定义了的情况下，应该invoke super

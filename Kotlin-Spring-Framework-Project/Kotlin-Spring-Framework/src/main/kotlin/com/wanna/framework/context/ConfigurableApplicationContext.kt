@@ -15,8 +15,10 @@ import java.io.Closeable
  * @see ApplicationContext
  * @see Closeable
  * @see com.wanna.framework.context.support.AbstractApplicationContext
+ * @see Lifecycle
+ * @see LifecycleProcessor
  */
-interface ConfigurableApplicationContext : ApplicationContext, Closeable {
+interface ConfigurableApplicationContext : ApplicationContext, Closeable, Lifecycle {
 
     companion object {
         /**
@@ -48,6 +50,11 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable {
          * LoadTimeWeaver beanName
          */
         const val LOAD_TIME_WEAVER_BEAN_NAME = "loadTimeWeaver"
+
+        /**
+         * ShutdownHook的线程名
+         */
+        const val SHUTDOWN_HOOK_THREAD_NAME = "SpringContextShutdownHook"
     }
 
     /**
@@ -80,7 +87,12 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable {
     /**
      * 关闭ApplicationContext并释放掉相关的所有资源
      */
-    override fun close();
+    override fun close()
+
+    /**
+     * 为当前[ApplicationContext]去注册一个ShutdownHook
+     */
+    fun registerShutdownHook()
 
     /**
      * 往ApplicationContext中添加BeanFactoryPostProcessor

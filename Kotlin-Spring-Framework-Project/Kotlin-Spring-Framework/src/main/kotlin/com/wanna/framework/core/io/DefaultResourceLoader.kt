@@ -1,8 +1,8 @@
 package com.wanna.framework.core.io
 
 import com.wanna.framework.core.io.ResourceLoader.Companion.CLASSPATH_URL_PREFIX
-import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ResourceUtils
 import java.net.MalformedURLException
 import java.net.URL
@@ -37,8 +37,8 @@ open class DefaultResourceLoader(@Nullable private var classLoader: ClassLoader?
     /**
      * 根据给定的资源的位置，去加载Resource
      *
-     * @param location location
-     * @return Resource
+     * @param location 资源所在的位置location
+     * @return 加载得到的Resource
      */
     override fun getResource(location: String): Resource {
         // 遍历所有的ProtocolResolver，尝试去进行资源的加载

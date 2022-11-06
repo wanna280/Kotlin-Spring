@@ -67,7 +67,7 @@ interface ListableBeanFactory : BeanFactory {
      * ！！！请不要提前使用这个方法，避免出现Bean的先后顺序出现严重的问题
      *
      * @param type 要去进行匹配的类型
-     * @return key-beanName,value beanObject
+     * @return key-beanName, value beanObject
      */
     fun <T> getBeansForTypeIncludingAncestors(type: Class<T>): Map<String, T>
 
