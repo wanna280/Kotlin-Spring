@@ -105,7 +105,8 @@ open class EventListenerMethodProcessor : BeanFactoryPostProcessor, SmartInitial
                             // 使用EventListenerFactory去创建出来ApplicationListener
                             val applicationListener = factory.createApplicationListener(beanName, beanType, method)
 
-                            // 如果它是一个ApplicationListenerMethodAdapter, 那么先完成初始化
+                            // 如果它是一个ApplicationListenerMethodAdapter, 那么先完成ApplicationContext初始化
+                            // 因为它是一个探测@EventListener方法的ApplicationListener, 它是真实需要用到ApplicationContext的...(比如getBean)
                             if (applicationListener is ApplicationListenerMethodAdapter) {
                                 applicationListener.init(context)
                             }

@@ -7,6 +7,11 @@ import kotlin.reflect.KClass
  *
  * @param value 需要监听的事件类型，同classes属性
  * @param classes 需要监听的事件类型，同value属性
+ * @param id EventListenerId
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION)
-annotation class EventListener(val value: Array<KClass<*>> = [], val classes: Array<KClass<*>> = [])
+annotation class EventListener(
+    val value: Array<KClass<*>> = [],
+    val classes: Array<KClass<*>> = [],
+    val id: String = ""
+)
