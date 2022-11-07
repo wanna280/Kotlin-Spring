@@ -51,7 +51,7 @@ class DefaultApplicationEvents : ApplicationEvents {
      * @return unwrap之后的结果
      */
     private fun unwrapPayloadEvent(source: Any): Any {
-        return if (source is PayloadApplicationEvent<*>) source.payload!! else source
+        return if (source is PayloadApplicationEvent<*>) source.payload else source
     }
 
     /**

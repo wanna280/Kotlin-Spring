@@ -19,11 +19,11 @@ interface EventListenerFactory {
     fun supportsMethod(method: Method): Boolean
 
     /**
-     * 如果支持处理该方法的话，那么需要根据该方法去创建一个ApplicationListener
+     * 如果支持处理该方法的话，那么需要根据该方法去创建一个[ApplicationListener]
      *
      * @param beanName beanName
      * @param type beanClass
-     * @param method
+     * @param method method
      * @return 包装之后的ApplicationListener
      */
     fun <T> createApplicationListener(beanName: String, type: Class<T>, method: Method): ApplicationListener<*>

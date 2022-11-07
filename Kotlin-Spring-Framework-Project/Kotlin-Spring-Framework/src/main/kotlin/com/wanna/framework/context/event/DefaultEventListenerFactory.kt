@@ -7,6 +7,7 @@ import java.lang.reflect.Method
  * 默认的EventListenerFactory的实现，负责处理@EventListener注解标注的方法
  *
  * @see EventListenerFactory
+ * @see EventListener
  */
 open class DefaultEventListenerFactory : EventListenerFactory {
 
@@ -17,11 +18,19 @@ open class DefaultEventListenerFactory : EventListenerFactory {
      */
     override fun supportsMethod(method: Method) = AnnotatedElementUtils.isAnnotated(method, EventListener::class.java)
 
+    /**
+     * 如果支持处理该方法的话，那么需要根据该方法去创建一个[ApplicationListener]
+     *
+     * @param beanName beanName
+     * @param type beanClass
+     * @param method method
+     * @return 包装之后的ApplicationListener
+     */
     override fun <T> createApplicationListener(
         beanName: String,
         type: Class<T>,
         method: Method
     ): ApplicationListener<*> {
-        TODO("Not yet implemented")
+        return ApplicationListenerMethodAdapter(beanName, type, method)
     }
 }

@@ -1,64 +1,121 @@
 package com.wanna.framework.context.event
 
+import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.context.aware.BeanClassLoaderAware
-import com.wanna.framework.beans.BeanFactoryAware
+import com.wanna.framework.context.event.AbstractApplicationEventMulticaster.DefaultListenerRetriever
 import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
-import java.util.Optional
+import java.util.*
 
 /**
- * 它是一个抽象的ApplicationEventMulticaster，它提供了ApplicationListener的注册工作的相关的默认实现
+ * 抽象的ApplicationEventMulticaster的实现, 它提供了[ApplicationListener]的注册和派发的工作的相关功能的默认实现
  *
  * @see ApplicationEventMulticaster
  * @see SimpleApplicationEventMulticaster
+ * @see DefaultListenerRetriever
  */
-abstract class AbstractApplicationEventMulticaster : ApplicationEventMulticaster, BeanFactoryAware,
-    BeanClassLoaderAware {
+abstract class AbstractApplicationEventMulticaster :
+    ApplicationEventMulticaster, BeanFactoryAware, BeanClassLoaderAware {
 
+    /**
+     * BeanFactory
+     */
+    @Nullable
     private var beanFactory: BeanFactory? = null
 
+    /**
+     * BeanClassLoader
+     */
+    @Nullable
     private var beanClassLoader: ClassLoader? = null
 
+    /**
+     * ApplicationListener的提取器
+     */
     private val defaultRetriever = DefaultListenerRetriever()
 
+    /**
+     * 设置BeanFactory
+     *
+     * @param beanFactory BeanFactory
+     */
     override fun setBeanFactory(beanFactory: BeanFactory) {
         this.beanFactory = beanFactory
     }
 
+    /**
+     * 获取BeanFactory
+     *
+     * @return BeanFactory(可以为null)
+     */
     private fun getBeanFactory(): BeanFactory? = this.beanFactory
 
+    /**
+     * 设置BeanClassLoader
+     *
+     * @param classLoader ClassLoader
+     */
     override fun setBeanClassLoader(classLoader: ClassLoader) {
         this.beanClassLoader = classLoader
     }
 
+    /**
+     * 获取BeanClassLoader
+     *
+     * @return BeanClassLoader(可以为null)
+     */
     open fun getBeanClassLoader(): ClassLoader? = this.beanClassLoader
 
+    /**
+     * 添加一个[ApplicationListener]的单例对象
+     *
+     * @param listener 想要添加的ApplicationListener
+     */
     override fun addApplicationListener(listener: ApplicationListener<*>) {
         synchronized(this.defaultRetriever) {
             this.defaultRetriever.applicationListeners += listener
         }
     }
 
+    /**
+     * 添加一个[ApplicationListener]的Spring Bean
+     *
+     * @param listenerBeanName listener的beanName
+     */
     override fun addApplicationListenerBean(listenerBeanName: String) {
         synchronized(this.defaultRetriever) {
             this.defaultRetriever.applicationListenerBeans += listenerBeanName
         }
     }
 
+    /**
+     * 移除一个[ApplicationListener]的单例对象
+     *
+     * @param listener 想要移除的ApplicationListener
+     */
     override fun removeApplicationListener(listener: ApplicationListener<*>) {
         synchronized(this.defaultRetriever) {
             this.defaultRetriever.applicationListeners -= listener
         }
     }
 
+    /**
+     * 根据beanName, 移除掉一个[ApplicationListener]
+     *
+     * @param listenerBeanName listener的beanName
+     */
     override fun removeApplicationListenerBean(listenerBeanName: String) {
         synchronized(this.defaultRetriever) {
             this.defaultRetriever.applicationListenerBeans -= listenerBeanName
         }
     }
 
+    /**
+     * 移除所有的[ApplicationListener]列表
+     */
     override fun removeAllApplicationListeners() {
         synchronized(this.defaultRetriever) {
             this.defaultRetriever.applicationListeners.clear()
@@ -66,6 +123,11 @@ abstract class AbstractApplicationEventMulticaster : ApplicationEventMulticaster
         }
     }
 
+    /**
+     * 获取所有的[ApplicationListener]的列表
+     *
+     * @return Collection of ApplicationListener
+     */
     protected open fun getApplicationListeners(): Collection<ApplicationListener<*>> {
         synchronized(this.defaultRetriever) {
             return this.defaultRetriever.getAllApplicationListeners()
