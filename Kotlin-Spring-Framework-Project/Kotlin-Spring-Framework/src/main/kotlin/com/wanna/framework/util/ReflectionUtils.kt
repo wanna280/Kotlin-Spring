@@ -220,7 +220,13 @@ object ReflectionUtils {
     @JvmStatic
     fun doWithLocalFields(clazz: Class<*>, action: (Field) -> Unit, filter: (Field) -> Boolean) {
         val declaredFields = getDeclaredFields(clazz, false)
-        declaredFields.filter(filter).forEach { action.invoke(it) }
+        declaredFields.filter(filter).forEach {
+            try {
+                action.invoke(it)
+            } catch (ex: IllegalAccessException) {
+                throw IllegalStateException("无法访问给定的字段[${it.name}]")
+            }
+        }
     }
 
     /**
@@ -278,6 +284,7 @@ object ReflectionUtils {
 
     /**
      * 根据name去指定类当中找到无参数的方法，有可能没找到，return null
+     *
      * @param clazz 目标类
      * @param name 方法name
      */
@@ -436,7 +443,13 @@ object ReflectionUtils {
     @JvmStatic
     fun doWithLocalMethods(clazz: Class<*>, action: (Method) -> Unit, filter: (Method) -> Boolean) {
         val declaredMethods = getDeclaredMethods(clazz, false)
-        declaredMethods.filter(filter).forEach { action.invoke(it) }
+        declaredMethods.filter(filter).forEach {
+            try {
+                action.invoke(it)
+            } catch (ex: IllegalAccessException) {
+                throw IllegalStateException("无法访问给定的方法[${it.name}]")
+            }
+        }
     }
 
     /**
@@ -460,7 +473,13 @@ object ReflectionUtils {
     @JvmStatic
     fun doWithMethods(clazz: Class<*>, action: (Method) -> Unit, filter: (Method) -> Boolean) {
         val declaredMethods = getDeclaredMethods(clazz, false)
-        declaredMethods.filter(filter).forEach { action.invoke(it) }
+        declaredMethods.filter(filter).forEach {
+            try {
+                action.invoke(it)
+            } catch (ex: IllegalAccessException) {
+                throw IllegalStateException("无法访问给定的方法[${it.name}]")
+            }
+        }
 
         // 如果它还有父类，并且父类不是Object(Any)的话，那么，让它的父类也执行这个操作
         if (clazz.superclass != null && clazz.superclass != Any::class.java) {
