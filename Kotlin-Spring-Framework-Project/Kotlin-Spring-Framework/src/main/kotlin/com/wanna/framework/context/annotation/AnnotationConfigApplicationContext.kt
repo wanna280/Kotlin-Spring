@@ -4,7 +4,7 @@ import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.support.AbstractApplicationContext
 import com.wanna.framework.context.support.GenericApplicationContext
 import com.wanna.framework.core.environment.ConfigurableEnvironment
-import com.wanna.framework.util.AnnotationConfigUtils
+import com.wanna.framework.util.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR
 
 /**
  * 这是一个支持注解的处理的ApplicationContext，
@@ -20,17 +20,19 @@ open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFa
     GenericApplicationContext(beanFactory), AnnotationConfigRegistry {
 
     /**
-     * 注解的BeanDefinition的Reader
+     * 提供注解配置支持的BeanDefinition的Reader, 提供对于一个Spring的配置类的注册
      */
-    private var reader: AnnotatedBeanDefinitionReader = AnnotatedBeanDefinitionReader(this)
+    private val reader = AnnotatedBeanDefinitionReader(this)
 
     /**
-     * 类路径下的BeanDefinition的Scanner
+     * 类路径下的BeanDefinition的Scanner, 提供ComponentScan的功能
      */
-    private var scanner: ClassPathBeanDefinitionScanner = ClassPathBeanDefinitionScanner(this, true)
+    private val scanner = ClassPathBeanDefinitionScanner(this, true)
 
     /**
-     * 无参构造器，创建默认的Environment和BeanFactory，但是并不完成刷新工作，使用者自行完成ApplicationContext的刷新
+     * 无参构造器，创建默认的Environment和BeanFactory;
+     *
+     * Note: 对于无参数构造器来说, 我们并不完成刷新工作，需要使用者去自行完成ApplicationContext的刷新
      */
     constructor() : this(DefaultListableBeanFactory())
 
@@ -76,7 +78,7 @@ open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFa
         this.scanner.setBeanNameGenerator(beanNameGenerator)
 
         // 往BeanFactory当中去注册单实例的Bean，指定beanName，后续可以通过beanName，获取到这个BeanNameGenerator
-        getBeanFactory().registerSingleton(AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR, beanNameGenerator)
+        getBeanFactory().registerSingleton(CONFIGURATION_BEAN_NAME_GENERATOR, beanNameGenerator)
     }
 
     /**
