@@ -1,6 +1,7 @@
 package com.wanna.framework.util
 
 import java.lang.reflect.*
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Java的反射工具类
@@ -8,15 +9,34 @@ import java.lang.reflect.*
 object ReflectionUtils {
 
     /**
-     * 空的方法/类/字段数组的常量标识符
+     * 空的方法数组常量
      */
+    @JvmStatic
     private val EMPTY_METHOD_ARRAY = emptyArray<Method>()
+
+    /**
+     * 空的类数组的常量
+     */
+    @JvmStatic
     private val EMPTY_CLASS_ARRAY = emptyArray<Class<*>>()
+
+    /**
+     * 空的字段的常量
+     */
+    @JvmStatic
     private val EMPTY_FIELD_ARRAY = emptyArray<Field>()
 
-    // 某给类定义的方法/字段缓存，k为要获取的类，v为该类所定义的方法列表
-    private val declaredMethodsCache = HashMap<Class<*>, Array<Method>>()
-    private val declaredFieldsCache = HashMap<Class<*>, Array<Field>>()
+    /**
+     * 某个类对应的方法缓存(ConcurrentMap)，k为要获取的类，v为该类所定义的方法列表
+     */
+    @JvmStatic
+    private val declaredMethodsCache = ConcurrentHashMap<Class<*>, Array<Method>>()
+
+    /**
+     * 某个类对应的字段缓存(ConcurrentMap), k为要去进行获取的类, v为该类定义的字段列表
+     */
+    @JvmStatic
+    private val declaredFieldsCache = ConcurrentHashMap<Class<*>, Array<Field>>()
 
     /**
      * 让一个字段变得可以访问
@@ -69,11 +89,14 @@ object ReflectionUtils {
     }
 
     /**
-     * 根据给定的异常，重新丢出来一个RuntimeException
+     * 根据给定的异常[ex]去重新丢出来一个[RuntimeException]异常;
+     * 如果原本就是一个[RuntimeException]或者是[Error], 那么直接抛出;
+     * 如果不是[RuntimeException]或者[Error]的话, 那么把该异常去包装到[UndeclaredThrowableException]当中去进行抛出;
      *
      * @param ex 原始异常
      * @throws RuntimeException 转换之后的RuntimeException
      */
+    @Throws(RuntimeException::class)
     fun rethrowRuntimeException(ex: Throwable) {
         when (ex) {
             is RuntimeException -> throw ex
@@ -82,12 +105,41 @@ object ReflectionUtils {
         }
     }
 
+    /**
+     * 根据给定的异常[ex]去重新丢出来一个[Exception]异常;
+     * 如果原本就是一个[Exception]或者是[Error], 那么直接抛出;
+     * 如果不是[Exception]或者[Error]的话, 那么把该异常去包装到[UndeclaredThrowableException]当中去进行抛出;
+     *
+     * @param ex 原始异常
+     * @throws Exception 转换之后的Exception
+     */
+    @Throws(Exception::class)
+    fun rethrowException(ex: Throwable) {
+        when (ex) {
+            is Exception -> throw ex
+            is Error -> throw ex
+            else -> throw UndeclaredThrowableException(ex)
+        }
+    }
 
     /**
-     * 在一个类上name和type都匹配的字段，如果没找到，return null
+     * 处理给定的执行目标方法异常[InvocationTargetException]
      *
-     * @param clazz 目标类
+     * @param ex 待处理的执行目标方法异常
+     * @see rethrowRuntimeException
+     */
+    @JvmStatic
+    fun handleInvocationTargetException(ex: InvocationTargetException) {
+        rethrowRuntimeException(ex.targetException)
+    }
+
+
+    /**
+     * 在给定的类上去找到一个给定字段名的字段
+     *
+     * @param clazz 需要去寻找字段的目标类
      * @param name 字段名
+     * @return 如果找到了合适的字段, 返回对应的字段; 如果没有找到的话, return null
      */
     @JvmStatic
     fun findField(clazz: Class<*>, name: String): Field? {
@@ -294,13 +346,13 @@ object ReflectionUtils {
     @JvmStatic
     fun handleReflectionException(ex: Exception) {
         if (ex is NoSuchMethodException) {
-            throw IllegalStateException("要执行的目标方法没有找到--[${ex.message}]")
+            throw IllegalStateException("要执行的目标方法没有找到:[${ex.message}]")
         }
         if (ex is InvocationTargetException) {
-            throw ex.cause!!
+            handleInvocationTargetException(ex)
         }
         if (ex is IllegalAccessException) {
-            throw IllegalStateException("不合法的访问一个方法/字段--[${ex.message}]")
+            throw IllegalStateException("不合法的访问一个方法/字段:[${ex.message}]")
         }
         if (ex is RuntimeException) {
             throw ex
@@ -343,6 +395,7 @@ object ReflectionUtils {
      * 判断这个方法是否来自于Object类，可以重写的equals/hashCode/toString方法也需要进行判断
      *
      * @param method 要进行判断的方法
+     * @return 如果它是Object的方法, 那么return true; 否则return false
      */
     @JvmStatic
     fun isObjectMethod(method: Method): Boolean {
@@ -352,10 +405,21 @@ object ReflectionUtils {
     }
 
     /**
+     * 判断给定的字段是否是"public static final"的字段？
+     *
+     * @param field 待检查的字段
+     * @return 如果是"public static final", return true; 否则return false
+     */
+    @JvmStatic
+    fun isPublicStaticFinal(field: Field): Boolean {
+        return Modifier.isPublic(field.modifiers) && Modifier.isStatic(field.modifiers) && Modifier.isFinal(field.modifiers)
+    }
+
+    /**
      * 对一个类当中定义的所有方法，执行同样的操作
      *
      * @param clazz 要执行方法的类
-     * @param action 要执行的操作
+     * @param action 要根据Method去进行执行的操作
      */
     @JvmStatic
     fun doWithLocalMethods(clazz: Class<*>, action: (Method) -> Unit) {
@@ -366,7 +430,7 @@ object ReflectionUtils {
      * 对一个类当中定义的所有方法，执行同样的操作
      *
      * @param clazz 要执行方法的类
-     * @param action 要执行的操作
+     * @param action 要根据Method去进行执行的操作
      * @param filter 该方法是否要执行的Filter？return true->执行，else->不执行
      */
     @JvmStatic
@@ -379,7 +443,7 @@ object ReflectionUtils {
      * 对一个类以及它父类当中定义的所有方法，执行同样的操作
      *
      * @param clazz 要执行方法的类
-     * @param action 要执行的操作
+     * @param action 要根据Method去进行执行的操作
      */
     @JvmStatic
     fun doWithMethods(clazz: Class<*>, action: (Method) -> Unit) {
@@ -390,7 +454,7 @@ object ReflectionUtils {
      * 对一个类以及它父类当中定义的所有方法，执行同样的操作
      *
      * @param clazz 要执行方法的类
-     * @param action 要执行的操作
+     * @param action 要根据Method去进行执行的操作
      * @param filter 该方法是否要执行的Filter？return true->执行，else->不执行
      */
     @JvmStatic
@@ -412,7 +476,7 @@ object ReflectionUtils {
      * 获取一个类当中定义的所有的方法，包括所有的父类方法
      *
      * @param clazz 要匹配的类
-     * @return 该类当中的所有定义的方法
+     * @return 该类当中的所有定义的方法列表
      */
     @JvmStatic
     fun getAllDeclaredMethods(clazz: Class<*>): Array<Method> {
@@ -423,9 +487,10 @@ object ReflectionUtils {
     }
 
     /**
-     * 获取一个类定义的所有方法，因为有可能具有侵入性，会改变缓存中的declaredMethod数组，因此clone一份出来return，
-     * 通过defensive去进行实现
+     * 获取一个类定义的所有方法, 因为有可能具有侵入性, 会改变缓存中的declaredMethod数组, 因此clone一份出来return, 通过defensive去进行实现
+     *
      * @param clazz 要获取方法的类
+     * @return 该方法当中定义的方法列表
      */
     @JvmStatic
     fun getDeclaredMethods(clazz: Class<*>): Array<Method> {
@@ -437,7 +502,7 @@ object ReflectionUtils {
      *
      * @param clazz 要获取方法的类
      * @param defensive 这个方法是否具有侵入性？也就是需不需要将数据clone一份出来返回？true代表需要，反之不需要
-     * @return 解析完成的方法数组
+     * @return 从给定的类上去解析完成的方法数组
      */
     @JvmStatic
     fun getDeclaredMethods(clazz: Class<*>, defensive: Boolean): Array<Method> {
@@ -453,13 +518,14 @@ object ReflectionUtils {
             }
             declaredMethodsCache[clazz] = if (result.isEmpty()) EMPTY_METHOD_ARRAY else result
         }
-        // 如果defensive=true，需要clone一份进行返回，如果defensive=false，那么直接返回元对象
+        // 如果defensive=true，需要clone一份进行返回，如果defensive=false，那么直接返回原始对象
         return if (defensive) result.clone() else result
     }
 
     /**
      * 在一个类的所有接口上去上寻找Concrete(具体的，已经进行实现的)方法，也就是default方法
      *
+     * @param clazz 需要去进行寻找方法的类
      * @return 如果没有找到default方法，那么只是返回一个空的list，而不是null
      */
     @JvmStatic
