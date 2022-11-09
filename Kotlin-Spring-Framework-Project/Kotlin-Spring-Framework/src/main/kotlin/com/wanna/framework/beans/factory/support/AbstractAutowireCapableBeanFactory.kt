@@ -177,7 +177,7 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
                 throw ex
             }
             // 如果只是一个普通异常, 那么需要去对ex进行再一次包装, 往上抛
-            throw BeanCreationException("初始化Bean失败", ex, beanName)
+            throw BeanCreationException("初始化Bean失败, beanName=[$beanName]", ex, beanName)
         }
 
         // 这是Spring解决循环依赖的很关键的一步, 将exposedBean设置为getSingleton获取到的earlySingletonReference

@@ -485,9 +485,9 @@ object ReflectionUtils {
         if (clazz.superclass != null && clazz.superclass != Any::class.java) {
             doWithMethods(clazz.superclass, action, filter)
 
-            // 如果它是个接口了，那么也把它当做类去执行方法
+            // 如果它是个接口了，那么处理它的所有的接口
         } else if (clazz.isInterface) {
-            doWithMethods(clazz, action, filter)
+            clazz.interfaces.forEach { doWithMethods(it, action, filter) }
         }
     }
 
