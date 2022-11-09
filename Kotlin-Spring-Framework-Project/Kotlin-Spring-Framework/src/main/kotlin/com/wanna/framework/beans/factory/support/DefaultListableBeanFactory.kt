@@ -16,6 +16,7 @@ import com.wanna.framework.core.ParameterNameDiscoverer
 import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.comparator.OrderComparator
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.BeanFactoryUtils
 import com.wanna.framework.util.ClassUtils
 import org.slf4j.LoggerFactory
@@ -39,6 +40,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         /**
          * javax.inject.Provider--->对应于Spring家的ObjectProvider
          */
+        @Nullable
         @JvmStatic
         private var javaxInjectProviderClass: Class<*>? = null
 
@@ -83,6 +85,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @see AnnotationAwareOrderComparator
      * @see OrderComparator
      */
+    @Nullable
     private var dependencyComparator: Comparator<Any?>? = null
 
     /**
@@ -113,6 +116,9 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param autowireValue 要去进行注入的值
      */
     override fun registerResolvableDependency(dependencyType: Class<*>, autowireValue: Any) {
+        if (!dependencyType.isInstance(autowireValue)) {
+            throw IllegalStateException("给定的autowireValue[$autowireValue]和dependencyType[$dependencyType]不匹配")
+        }
         resolvableDependencies[dependencyType] = autowireValue
     }
 
@@ -188,7 +194,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      *
      * @param dependencyComparator 设置你想要使用的依赖比较器
      */
-    open fun setDependencyComparator(dependencyComparator: Comparator<Any?>?) {
+    open fun setDependencyComparator(@Nullable dependencyComparator: Comparator<Any?>?) {
         this.dependencyComparator = dependencyComparator
     }
 
@@ -308,7 +314,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param asTarget 要使用哪个父类的泛型类型去进行寻找？
      */
     private open inner class DependencyObjectProvider(
-        private val originDescriptor: DependencyDescriptor, private val beanName: String?, asTarget: Class<*>
+        private val originDescriptor: DependencyDescriptor, @Nullable private val beanName: String?, asTarget: Class<*>
     ) : BeanObjectProvider<Any> {
 
         /**
@@ -341,7 +347,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      */
     private inner class Jsr330Factory : java.io.Serializable {
         fun createDependencyProvider(
-            descriptor: DependencyDescriptor, beanName: String?
+            descriptor: DependencyDescriptor, @Nullable beanName: String?
         ): Provider<*> {
             return Jsr330Provider(descriptor, beanName)
         }
@@ -350,7 +356,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     /**
      * Jsr330的Provider的实现, 通过继承DependencyObjectProvider去完成
      */
-    private inner class Jsr330Provider(descriptor: DependencyDescriptor, beanName: String?) :
+    private inner class Jsr330Provider(descriptor: DependencyDescriptor, @Nullable beanName: String?) :
         DependencyObjectProvider(descriptor, beanName, javaxInjectProviderClass!!), Provider<Any> {
         override fun get(): Any {
             return getObject()
@@ -364,7 +370,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param requestingBeanName 请求去进行注入的beanName(可以为null)
      * @return 解析到的要去进行注入的依赖
      */
-    override fun resolveDependency(descriptor: DependencyDescriptor, requestingBeanName: String?): Any? {
+    override fun resolveDependency(descriptor: DependencyDescriptor, @Nullable requestingBeanName: String?): Any? {
         return resolveDependency(descriptor, requestingBeanName, null, null)
     }
 
@@ -377,11 +383,12 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param typeConverter 解析过程当中要使用到的TypeConverter(可以为null, 从BeanFactory当中去进行自动获取)
      * @return 解析到的要去进行注入的依赖
      */
+    @Nullable
     override fun resolveDependency(
         descriptor: DependencyDescriptor,
-        requestingBeanName: String?,
-        autowiredBeanNames: MutableSet<String>?,
-        typeConverter: TypeConverter?
+        @Nullable requestingBeanName: String?,
+        @Nullable autowiredBeanNames: MutableSet<String>?,
+        @Nullable typeConverter: TypeConverter?
     ): Any? {
         // 初始化依赖描述符的"参数名发现器", 方便后续的过程当中去进行方法/构造器的参数名获取
         descriptor.initParameterNameDiscoverer(getParameterNameDiscoverer())
@@ -415,11 +422,12 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param typeConverter 解析过程当中要使用到的TypeConverter(可以为null, 从BeanFactory当中去进行自动获取)
      * @return 解析到的要去进行注入的依赖
      */
+    @Nullable
     open fun doResolveDependency(
         descriptor: DependencyDescriptor,
-        requestingBeanName: String?,
-        autowiredBeanNames: MutableSet<String>?,
-        typeConverter: TypeConverter?
+        @Nullable requestingBeanName: String?,
+        @Nullable autowiredBeanNames: MutableSet<String>?,
+        @Nullable typeConverter: TypeConverter?
     ): Any? {
         // 设置InjectionPoint
         val previousInjectionPoint = ConstructorResolver.setCurrentInjectionPoint(descriptor)
@@ -519,6 +527,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      *
      * @throws NoUniqueBeanDefinitionException 如果无法从多个Bean当中去决策出来一个合适的Bean
      */
+    @Nullable
     private fun determineAutowireCandidate(candidates: Map<String, Any>, descriptor: DependencyDescriptor): String? {
         val primaryCandidate = determinePrimaryCandidate(candidates, descriptor.getDependencyType())
         if (primaryCandidate != null) {
@@ -538,6 +547,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param requiredType 请求去进行匹配的类型
      * @throws NoUniqueBeanDefinitionException 如果无法从多个Bean当中决策出一个合适的Bean
      */
+    @Nullable
     private fun determinePrimaryCandidate(candidates: Map<String, Any>, requiredType: Class<*>): String? {
         var primaryCandidate: String? = null
         candidates.forEach { (beanName, bean) ->
@@ -562,6 +572,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @return 如果找到了合适的最高优先级的Bean, return；否则return null
      * @throws NoUniqueBeanDefinitionException 如果无法从多个Bean当中决策出一个合适的Bean
      */
+    @Nullable
     private fun determineHighestOrderCandidate(candidates: Map<String, Any>, requiredType: Class<*>): String? {
         var highOrderCandidate: String? = null
         var highOrder: Int? = null
@@ -574,7 +585,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
                 } else {
                     // 如果遇到了highOrder==priority的情况, 那么抛出Bean不唯一异常
                     if (highOrder == priority) {
-                        throw NoUniqueBeanDefinitionException("需要的Bean类型[requiredType=$requiredType]不唯一, 无法从容器中找到一个这样的合适的Bean")
+                        throw NoUniqueBeanDefinitionException("给定的beanType[${ClassUtils.getQualifiedName(requiredType)}]对应的Bean在SpringBeanFactory当中不唯一")
                     } else if (highOrder!! > priority) {
                         highOrder = priority
                         highOrderCandidate = beanName
@@ -589,10 +600,13 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * 创建一个Optional的依赖(来自于jdk1.8), 使用Optional去包装解析到的依赖, 如果没有解析到, 则包装一个null给调用方
      *
      * @param descriptor 依赖描述符
-     * @param requestingBeanName 请求去进行注入的beanName
+     * @param requestingBeanName 请求去进行注入的beanName(可以为null)
      * @return 构建好的Optional对象
      */
-    private fun createOptionalDependency(descriptor: DependencyDescriptor, requestingBeanName: String?): Optional<*> {
+    private fun createOptionalDependency(
+        descriptor: DependencyDescriptor,
+        @Nullable requestingBeanName: String?
+    ): Optional<*> {
         val available = DependencyObjectProvider(descriptor, requestingBeanName, Optional::class.java).getIfAvailable()
         return Optional.ofNullable(available)
     }
@@ -603,7 +617,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param bean 要去进行匹配优先级的bean
      * @return 如果有依赖比较器, 使用依赖比较器去进行获取；不然return null
      */
-    protected open fun getPriority(bean: Any?): Int? {
+    @Nullable
+    protected open fun getPriority(@Nullable bean: Any?): Int? {
         val comparator = getDependencyComparator()
         if (comparator is OrderComparator) {
             return comparator.getPriority(bean)
@@ -629,7 +644,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param descriptor 依赖描述符(如果正在请求注入的字段是一个Array/Map/List, 那么这里为MultiElementDescriptor, requiredType=elementType)
      */
     private fun findAutowireCandidates(
-        beanName: String?, requiredType: Class<*>, descriptor: DependencyDescriptor
+        @Nullable beanName: String?, requiredType: Class<*>, descriptor: DependencyDescriptor
     ): MutableMap<String, Any> {
         // 从BeanFactory(以及它的parentBeanFactory)当中中拿到所有的类型匹配requiredType的beanName列表
         val candidateNames =
@@ -701,7 +716,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param beanName beanName
      * @param candidateName 候选的正在去进行匹配的注入的对象
      */
-    private fun isSelfReference(beanName: String?, candidateName: String?): Boolean {
+    private fun isSelfReference(@Nullable beanName: String?, @Nullable candidateName: String?): Boolean {
         return beanName != null && candidateName != null && candidateName == beanName
     }
 
@@ -733,14 +748,15 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param descriptor 要去进行注入的依赖的依赖描述符
      * @param requestingBeanName 请求去进行注入的beanName(A请求注入B, requestingBeanName=A)
      * @param autowiredBeanName 自动注入的beanName列表, 作为输出参数(可以为null)
-     * @param typeConverter 类型转换器
+     * @param typeConverter 类型转换器(可以为null, 从BeanFactory去进行自动探测)
      */
+    @Nullable
     @Suppress("UNCHECKED_CAST")
     private fun resolveMultipleBeans(
         descriptor: DependencyDescriptor,
-        requestingBeanName: String?,
-        autowiredBeanName: MutableSet<String>?,
-        typeConverter: TypeConverter?
+        @Nullable requestingBeanName: String?,
+        @Nullable autowiredBeanName: MutableSet<String>?,
+        @Nullable typeConverter: TypeConverter?
     ): Any? {
         // 从依赖描述符当中去获取到依赖的类型
         val type = descriptor.getDependencyType()
@@ -838,8 +854,9 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     /**
      * 获取Spring BeanFactory的依赖比较器(可以为null)
      *
-     * @return Spring BeanFactory的依赖比较器
+     * @return Spring BeanFactory的依赖比较器(如果不存在的话, 可以为null)
      */
+    @Nullable
     open fun getDependencyComparator(): Comparator<Any?>? = dependencyComparator
 
     /**
