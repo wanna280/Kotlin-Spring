@@ -116,7 +116,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param autowireValue 要去进行注入的值
      */
     override fun registerResolvableDependency(dependencyType: Class<*>, autowireValue: Any) {
-        if(!dependencyType.isInstance(autowireValue)) {
+        if (!dependencyType.isInstance(autowireValue)) {
             throw IllegalStateException("给定的autowireValue[$autowireValue]和dependencyType[$dependencyType]不匹配")
         }
         resolvableDependencies[dependencyType] = autowireValue
@@ -585,7 +585,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
                 } else {
                     // 如果遇到了highOrder==priority的情况, 那么抛出Bean不唯一异常
                     if (highOrder == priority) {
-                        throw NoUniqueBeanDefinitionException("需要的Bean类型[requiredType=$requiredType]不唯一, 无法从容器中找到一个这样的合适的Bean")
+                        throw NoUniqueBeanDefinitionException("给定的beanType[${ClassUtils.getQualifiedName(requiredType)}]对应的Bean在SpringBeanFactory当中不唯一")
                     } else if (highOrder!! > priority) {
                         highOrder = priority
                         highOrderCandidate = beanName
@@ -603,7 +603,10 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param requestingBeanName 请求去进行注入的beanName(可以为null)
      * @return 构建好的Optional对象
      */
-    private fun createOptionalDependency(descriptor: DependencyDescriptor, @Nullable requestingBeanName: String?): Optional<*> {
+    private fun createOptionalDependency(
+        descriptor: DependencyDescriptor,
+        @Nullable requestingBeanName: String?
+    ): Optional<*> {
         val available = DependencyObjectProvider(descriptor, requestingBeanName, Optional::class.java).getIfAvailable()
         return Optional.ofNullable(available)
     }
@@ -713,7 +716,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param beanName beanName
      * @param candidateName 候选的正在去进行匹配的注入的对象
      */
-    private fun isSelfReference(@Nullable beanName: String?,@Nullable candidateName: String?): Boolean {
+    private fun isSelfReference(@Nullable beanName: String?, @Nullable candidateName: String?): Boolean {
         return beanName != null && candidateName != null && candidateName == beanName
     }
 
