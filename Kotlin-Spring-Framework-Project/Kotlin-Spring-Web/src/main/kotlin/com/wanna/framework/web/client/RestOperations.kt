@@ -19,7 +19,7 @@ interface RestOperations {
      * @param uriVariables 请求参数列表
      * @return Http请求返回的ResponseBody转换成为JavaBean(如果转换失败，return null)
      */
-    fun <T> getForObject(url: String, responseType: Class<T>, uriVariables: Map<String, String>): T?
+    fun <T : Any> getForObject(url: String, responseType: Class<T>, uriVariables: Map<String, String>): T?
 
     /**
      * 使用GET方式去执行一次Http请求，将ResponseBody转换为ResponseEntity(headers&status&body)
@@ -29,7 +29,11 @@ interface RestOperations {
      * @param uriVariables 请求参数列表
      * @return Http请求返回的ResponseBody转换成为包含有JavaBean的ResponseEntity(如果转换失败，return null)
      */
-    fun <T> getForEntity(url: String, responseType: Class<T>, uriVariables: Map<String, String>): ResponseEntity<T>?
+    fun <T : Any> getForEntity(
+        url: String,
+        responseType: Class<T>,
+        uriVariables: Map<String, String>
+    ): ResponseEntity<T>?
 
     /**
      * 使用POST请求的方式去执行一次Http请求，将ResponseBody转换为JavaBean
@@ -39,7 +43,7 @@ interface RestOperations {
      * @param uriVariables 请求参数列表
      * @return Http请求返回的ResponseBody转换成为JavaBean(如果转换失败，return null)
      */
-    fun <T> postForObject(url: String, responseType: Class<T>, uriVariables: Map<String, String>): T?
+    fun <T : Any> postForObject(url: String, responseType: Class<T>, uriVariables: Map<String, String>): T?
 
     /**
      * 使用POST请求的方式去执行一次Http请求，将ResponseBody转换为ResponseEntity(headers&status&body)
@@ -52,7 +56,12 @@ interface RestOperations {
      * @param requestBody requestBody(可以为null)
      * @return Http请求返回的ResponseBody转换成为JavaBean(如果转换失败，return null)
      */
-    fun <T> postForObject(url: String, requestBody: Any?, responseType: Class<T>, uriVariables: Map<String, String>): T?
+    fun <T : Any> postForObject(
+        url: String,
+        requestBody: Any?,
+        responseType: Class<T>,
+        uriVariables: Map<String, String>
+    ): T?
 
     /**
      * 使用POST请求的方式去执行一次Http请求，将ResponseBody转换为JavaBean
@@ -62,7 +71,11 @@ interface RestOperations {
      * @param uriVariables 请求参数列表
      * @return Http请求返回的ResponseBody转换成为包含有JavaBean的ResponseEntity(如果转换失败，return null)
      */
-    fun <T> postForEntity(url: String, responseType: Class<T>, uriVariables: Map<String, String>): ResponseEntity<T>?
+    fun <T : Any> postForEntity(
+        url: String,
+        responseType: Class<T>,
+        uriVariables: Map<String, String>
+    ): ResponseEntity<T>?
 
     /**
      * 使用POST请求的方式去执行一次Http请求，将ResponseBody转换为ResponseEntity(headers&status&body)
@@ -75,7 +88,7 @@ interface RestOperations {
      * @param requestBody requestBody(可以为null)
      * @return Http请求返回的ResponseBody转换成为包含有JavaBean的ResponseEntity(如果转换失败，return null)
      */
-    fun <T> postForEntity(
+    fun <T : Any> postForEntity(
         url: String,
         requestBody: Any?,
         responseType: Class<T>,
@@ -92,7 +105,7 @@ interface RestOperations {
      * @param responseExtractor 对响应去进行转成JavaBean的提取器(如果不指定的话，返回值为null)
      * @return 转换成为的JavaBean(如果没有给定responseExtractor，return null; 如果responseExtractor解析结果为null，return null)
      */
-    fun <T> execute(
+    fun <T : Any> execute(
         url: URI, method: RequestMethod, requestCallback: RequestCallback?, responseExtractor: ResponseExtractor<T>?
     ): T?
 }
