@@ -1,6 +1,7 @@
 package com.wanna.test.listener
 
 import com.wanna.framework.context.annotation.AnnotationConfigApplicationContext
+import com.wanna.framework.context.event.ApplicationEvent
 import com.wanna.framework.context.event.EventListener
 import com.wanna.framework.context.event.PayloadApplicationEvent
 import com.wanna.framework.context.stereotype.Component
@@ -15,16 +16,32 @@ import com.wanna.framework.context.stereotype.Component
 class ListenerTest {
 
     @EventListener
+    fun onMyEvent(event: MyEvent) {
+        println("On MyEvent---$event")
+    }
+
+    @EventListener
     fun onEvent(event: Event) {
-        println(event)
+        println("On Event---$event")
+    }
+
+    @EventListener
+    fun onApplicationEvent(event: ApplicationEvent) {
+        println("On ApplicationEvent---$event")
     }
 }
 
-class Event
+open class Event
+
+open class MyEvent : Event()
 
 fun main() {
     val applicationContext = AnnotationConfigApplicationContext(ListenerTest::class.java)
     applicationContext.publishEvent(PayloadApplicationEvent<Any>(applicationContext, Event()))
 
     applicationContext.publishEvent(Event())
+
+    applicationContext.publishEvent(PayloadApplicationEvent<Any>(applicationContext, MyEvent()))
+
+    applicationContext.publishEvent(MyEvent())
 }

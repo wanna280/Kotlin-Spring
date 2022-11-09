@@ -11,7 +11,7 @@ import com.wanna.framework.util.AnnotationConfigUtils
  * 这是一个注解的BeanDefinitionReader，负责给定clazz作为一个Spring的配置类，
  * 将其封装一个[AnnotatedGenericBeanDefinition]并注册到给定的[BeanDefinitionRegistry]当中
  *
- * @param registry BeanDefinitionRegistry(需要将Bean去注册的地方)
+ * @param registry BeanDefinitionRegistry(需要将BeanDefinition去注册的地方)
  * @see BeanDefinitionRegistry.registerBeanDefinition
  */
 open class AnnotatedBeanDefinitionReader(private val registry: BeanDefinitionRegistry) {

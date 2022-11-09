@@ -6,9 +6,10 @@ import com.wanna.framework.beans.propertyeditors.ClassEditor
 import com.wanna.framework.beans.propertyeditors.UUIDEditor
 import com.wanna.framework.constants.CLASS_ARRAY_TYPE
 import com.wanna.framework.core.convert.ConversionService
+import com.wanna.framework.lang.Nullable
 import java.beans.PropertyEditor
 import java.nio.charset.Charset
-import java.util.UUID
+import java.util.*
 
 /**
  * 提供PropertyEditorRegistry的模板方法实现，通过组合PropertyEditor和ConversionService，去提供类型的转换工作
@@ -56,11 +57,20 @@ open class PropertyEditorRegistrySupport : PropertyEditorRegistry {
     }
 
 
-    open fun getConversionService() : ConversionService? {
-        return this.conversionService
-    }
+    /**
+     * 获取ConversionService
+     *
+     * @return ConversionService, if any
+     */
+    @Nullable
+    open fun getConversionService(): ConversionService? = this.conversionService
 
-    open fun setConversionService(conversionService: ConversionService?) {
+    /**
+     * 设置ConversionService
+     *
+     * @param conversionService ConversionService
+     */
+    open fun setConversionService(@Nullable conversionService: ConversionService?) {
         this.conversionService = conversionService
     }
 }

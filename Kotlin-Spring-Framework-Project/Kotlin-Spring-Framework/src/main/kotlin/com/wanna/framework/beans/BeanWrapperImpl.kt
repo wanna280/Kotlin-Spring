@@ -1,5 +1,7 @@
 package com.wanna.framework.beans
 
+import com.wanna.framework.core.convert.support.DefaultConversionService
+
 /**
  * BeanWrapper的具体实现，提供了属性的访问器，并组合了BeanFactory的TypeConverter，去完成Bean属性的类型的转换工作；
  *
@@ -13,5 +15,6 @@ open class BeanWrapperImpl(beanInstance: Any? = null) : BeanWrapper, AbstractNes
         if (beanInstance != null) {
             super.setWrappedInstance(beanInstance)
         }
+        super.setConversionService(DefaultConversionService.getSharedInstance())
     }
 }

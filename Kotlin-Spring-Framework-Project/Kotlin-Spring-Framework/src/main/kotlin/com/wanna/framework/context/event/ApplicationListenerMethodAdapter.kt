@@ -127,7 +127,8 @@ open class ApplicationListenerMethodAdapter(
      */
     open fun processEvent(event: ApplicationEvent) {
         // 解析得到执行目标@EventListener方法需要用到的参数
-        val arguments = resolveArguments(event)
+        // 如果无法解析到合适的方法参数的话, 直接return null
+        val arguments = resolveArguments(event) ?: return
 
         // 执行目标@EventListener方法
         doInvoke(arguments)
@@ -162,15 +163,23 @@ open class ApplicationListenerMethodAdapter(
     /**
      * 根据[event]解析得到合适的方法参数列表
      *
-     * @param event event
-     * @return 解析得到的执行目标方法需要用到的参数
+     * @param event 当前正在发布的事件event
+     * @return 解析得到的执行目标方法需要用到的参数(如果return null, 代表当前Listener不支持去处理这样的事件类型, 需要跳过)
      */
-    protected open fun resolveArguments(event: ApplicationEvent): Array<Any?> {
-        val declaredEventType = getResolvableType(event) ?: return arrayOf(null)
+    protected open fun resolveArguments(event: ApplicationEvent): Array<Any?>? {
+        // 如果event和所有的定义的事件进行匹配, 最终类型都不匹配的话, 直接return null; 代表了当前事件其实不应该当前Listener触发
+        // 其实很多判断其实应该在supports方法当中去进行判断的, 但是payload的泛型无法解析到, 只能被迫放在这
+        val declaredEventType = getResolvableType(event) ?: return null
+
+        // 如果要去进行执行的该目标方法没有参数的话, 那么直接return emptyArray
         if (targetMethod.parameterCount == 0) {
             return emptyArray()
         }
+
+        // 如果event匹配到了一个declaredEventType的话, 那么我们计算一下是否匹配?
         val declaredEventClass = declaredEventType.resolve()!!
+
+        // 如果定义的事件类型不是ApplicationEvent的话, 那么我们还需要匹配一下payload和declaredEventType的类型
         if (!ClassUtils.isAssignFrom(
                 ApplicationEvent::class.java,
                 declaredEventClass
@@ -181,36 +190,45 @@ open class ApplicationListenerMethodAdapter(
                 return arrayOf(payload)
             }
         }
+
+        // 如果定义的事件就是ApplicationEvent的话, 那么直接返回ApplicationEvent
         return arrayOf(event)
     }
 
     /**
-     * 根据给定的event去匹配出来在当前的[ApplicationListener]当中已经被定义的类型
+     * 根据给定的event去匹配, 解析出来在当前的[ApplicationListener]当中已经被定义的类型;
+     * 和所有的已经定义的事件类型去进行匹配, 如果存在有其中一个匹配的, 那么直接返回该eventType(返回定义的).
      *
      * @param event event
-     * @return 解析出来合适的eventType事件类型, 如果无法解析到return null
+     * @return 解析出来对应的定义的eventType事件类型, 如果无法解析到return null
      */
     @Nullable
     private fun getResolvableType(event: ApplicationEvent): ResolvableType? {
-        // 如果是PayloadApplicationEvent的话, 那么我们直接获取到对应的事件类型
         var payloadType: ResolvableType? = null
+        // 如果需要去进行发布的是PayloadApplicationEvent事件的话, 那么我们需要去获取到对应的payload类型
         if (event is PayloadApplicationEvent<*>) {
+
+            // 这里我们从event当中去获取到ResolvableType(因为只有它自己才能解析到自己的真正泛型)
             val type = event.getResolvableType()
             payloadType = type.`as`(PayloadApplicationEvent::class.java).getGenerics()[0]
         }
 
-        // 如果不是PayloadApplicationEvent的话, 那么我们需要去进行匹配所有的定义的eventType
+        // 根据当前@EventListener方法当中已经定义的事件类型, 和payloadType去进行匹配
         this.declaredEventTypes.forEach {
-            val eventClass = it.resolve()!!
-            // 如果定义的不是ApplicationEvent, 那么需要和payload类型去进行匹配
-            if (!ClassUtils.isAssignFrom(ApplicationEvent::class.java, eventClass)
-                && payloadType != null && ClassUtils.isAssignFrom(eventClass, payloadType.resolve()!!)
+
+            // 看看@EventListener当中定义的事件类型是什么?
+            val declaredEventClass = it.resolve()!!
+
+
+            // 如果定义的事件类型不是ApplicationEvent, 那么就是一个很普通的Java对象, 那么直接和payload类型去进行匹配即可
+            if (!ClassUtils.isAssignFrom(ApplicationEvent::class.java, declaredEventClass)
+                && payloadType != null && ClassUtils.isAssignFrom(declaredEventClass, payloadType.resolve()!!)
             ) {
                 return it
             }
-            // 如果定义的就是ApplicationEvent, 那么直接去进行类型匹配
-            // 检查给的event是否是定义的eventClass的子类?
-            if (ClassUtils.isAssignFrom(eventClass, event::class.java)) {
+
+            // 如果定义的就是ApplicationEvent, 那么检查给的event是否是定义的declaredEventClass的子类?
+            if (ClassUtils.isAssignFrom(declaredEventClass, event::class.java)) {
                 return it
             }
         }

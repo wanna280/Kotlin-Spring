@@ -50,9 +50,8 @@ abstract class AbstractNestablePropertyAccessor : AbstractPropertyAccessor() {
                 if (value is Collection<*> && !ClassUtils.isAssignFrom(Collection::class.java, parameterTypes[0])) {
                     targetToInject = if (value.isNotEmpty()) value.iterator().next() else null
                 }
-                ReflectionUtils.invokeMethod(
-                    it, getWrappedInstance(), convertIfNecessary(targetToInject, parameterTypes[0])
-                )
+                val converted = convertIfNecessary(targetToInject, parameterTypes[0])
+                ReflectionUtils.invokeMethod(it, getWrappedInstance(), converted)
                 isFound = true
             }
         }

@@ -17,7 +17,7 @@ import com.wanna.framework.util.AnnotationConfigUtils.registerAnnotationConfigPr
  *
  * 在指定的包下寻找Spring的配置类，可以重写findCandidateComponents方法去进行自定义扫描的逻辑...
  *
- * @param registry BeanDefinitionRegistry
+ * @param registry BeanDefinitionRegistry(需要去注册BeanDefinition的地方)
  * @param useDefaultFilters 是否需要去应用默认的Filter？
  * @param resourceLoader ResourceLoader，提供资源的加载(可以为null)
  */
@@ -34,7 +34,7 @@ open class ClassPathBeanDefinitionScanner(
 
 
     /**
-     * 是否包含注解版的配置？如果开启了，使用它进行扫描时，就会往容器中注册注解的通用处理器
+     * 是否包含注解版的配置？如果开启了，使用它进行扫描时，就会往容器中注册注解的通用处理器(默认为true)
      */
     private var includeAnnotationConfig: Boolean = true
 
@@ -104,7 +104,7 @@ open class ClassPathBeanDefinitionScanner(
                     AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition)
                 }
 
-                // 解析Scope设置到BeanDefinition当中
+                // 解析到BeanDefinition的Scope并且设置到BeanDefinition当中
                 val metadata = scopeMetadataResolver.resolveScopeMetadata(beanDefinition)
                 beanDefinition.setScope(metadata.scopeName)
 
@@ -124,8 +124,8 @@ open class ClassPathBeanDefinitionScanner(
     /**
      * 从指定的包下，扫描出来所有的BeanDefinitions列表，默认实现是创建ScannedGenericBeanDefinition
      *
-     * @param packageName 指定的包名
-     * @return 指定的包下的所有的BeanDefinition的列表
+     * @param packageName 指定需要去进行扫描BeanDefinition的包名
+     * @return 指定的包下扫描得到的所有的BeanDefinition的列表
      */
     open fun findCandidateComponents(packageName: String): Set<BeanDefinition> {
         return scanCandidateComponents(packageName)
@@ -159,6 +159,13 @@ open class ClassPathBeanDefinitionScanner(
     }
 
     /**
+     * 是否需要去进行懒加载?
+     *
+     * @return lazyInit or not
+     */
+    open fun isLazyInit(): Boolean = this.lazyInit
+
+    /**
      * 自定义ScopeResolver
      *
      * @param scopeMetadataResolver ScoprResolver
@@ -166,6 +173,13 @@ open class ClassPathBeanDefinitionScanner(
     open fun setScopeResolver(scopeMetadataResolver: ScopeMetadataResolver) {
         this.scopeMetadataResolver = scopeMetadataResolver
     }
+
+    /**
+     * 获取ScopeResolver
+     *
+     * @return ScopeResolver
+     */
+    open fun getScopeResolver(): ScopeMetadataResolver = this.scopeMetadataResolver
 
     /**
      * 自定义默认的ScopedProxyMode，对于默认配置下的所有的Bean的作用域都将会被设置成为该ScopedProxyMode

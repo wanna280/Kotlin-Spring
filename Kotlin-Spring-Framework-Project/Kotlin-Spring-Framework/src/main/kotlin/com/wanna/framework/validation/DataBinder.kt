@@ -3,12 +3,11 @@ package com.wanna.framework.validation
 import com.wanna.framework.beans.*
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.support.DefaultConversionService
+import com.wanna.framework.lang.Nullable
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.beans.PropertyEditor
-import java.lang.AssertionError
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * 数据绑定器，组合了TypeConverter，支持去进行类型的转换工作，并支持参数的检验工作
@@ -27,16 +26,26 @@ open class DataBinder(private val target: Any?, private val objectName: String =
         private val DEFAULT_OBJECT_NAME = "target"
     }
 
-    // Logger
+    /**
+     * Logger
+     */
     protected val logger: Logger = LoggerFactory.getLogger(DataBinder::class.java)
 
-    // TypeConverter
+    /**
+     * TypeConverter
+     */
     private val typeConverter = SimpleTypeConverter()
 
-    // ConversionService
-    private var conversionService: ConversionService? = null
+    /**
+     * ConversionService
+     */
+    @Nullable
+    private var conversionService: ConversionService? = DefaultConversionService.getSharedInstance()
 
-    // BindingResult
+    /**
+     * BindingResult
+     */
+    @Nullable
     private var bindingResult: AbstractPropertyBindingResult? = null
 
     // Validator列表，用来提供参数的检验
