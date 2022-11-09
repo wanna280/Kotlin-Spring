@@ -1,12 +1,7 @@
 package com.wanna.framework.core
 
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import java.lang.reflect.Constructor
-import java.lang.reflect.Executable
-import java.lang.reflect.Member
-import java.lang.reflect.Method
-import java.lang.reflect.Parameter
-import java.lang.reflect.Type
+import java.lang.reflect.*
 
 /**
  * 这是对于一个方法的参数去进行的描述，通过参数索引(parameterIndex)，即可获取到方法/构造器的参数对象Parameter(来自java的reflect包)；
@@ -209,6 +204,11 @@ open class MethodParameter(
         }
         return null
     }
+
+    override fun toString(): String {
+        return "MethodParameter(executable=$executable, parameterIndex=$parameterIndex, containingClass=$containingClass, nestingLevel=$nestingLevel)"
+    }
+
 
     companion object {
         /**
