@@ -8,7 +8,9 @@ import com.wanna.framework.web.http.client.ClientHttpRequest
 import com.wanna.framework.web.http.client.ClientHttpResponse
 import com.wanna.framework.web.http.client.InterceptingClientHttpRequestFactory
 import com.wanna.framework.web.http.client.support.InterceptingHttpAccessor
+import com.wanna.framework.web.http.converter.ByteArrayHttpMessageConverter
 import com.wanna.framework.web.http.converter.HttpMessageConverter
+import com.wanna.framework.web.http.converter.StringHttpMessageConverter
 import com.wanna.framework.web.http.converter.json.MappingJackson2HttpMessageConverter
 import java.net.URI
 
@@ -31,6 +33,10 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
     private val messageConverters = ArrayList<HttpMessageConverter<*>>()
 
     init {
+        // add StringHttpMessageConverter
+        this.messageConverters.add(StringHttpMessageConverter())
+        // add ByteArrayHttpMessageConverter
+        this.messageConverters.add(ByteArrayHttpMessageConverter())
         if (jackson2Present) {
             messageConverters.add(MappingJackson2HttpMessageConverter())
         }
