@@ -3,6 +3,7 @@ package com.wanna.framework.web.method.support
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ParameterNameDiscoverer
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
@@ -57,16 +58,19 @@ open class InvocableHandlerMethod : HandlerMethod() {
     /**
      * 参数解析器列表
      */
+    @Nullable
     var argumentResolvers: HandlerMethodArgumentResolverComposite? = HandlerMethodArgumentResolverComposite()
 
     /**
      * 返回值解析器列表
      */
+    @Nullable
     var returnValueHandlers: HandlerMethodReturnValueHandlerComposite? = HandlerMethodReturnValueHandlerComposite()
 
     /**
      * BinderFactory(提供了参数类型的转换等功能)
      */
+    @Nullable
     var binderFactory: WebDataBinderFactory? = null
 
     /**
@@ -158,6 +162,7 @@ open class InvocableHandlerMethod : HandlerMethod() {
      * @param provideArgs 外部提供的参数列表，在进行参数解析时，优先从给定的参数列表当中获取
      * @return 如果从候选的参数列表当中找到了合适的参数，那么return该参数；如果没有匹配的，return null
      */
+    @Nullable
     protected open fun findProvidedArgument(parameter: MethodParameter, vararg provideArgs: Any): Any? {
         provideArgs.forEach {
             if (parameter.getParameterType().isInstance(it)) {
@@ -175,12 +180,13 @@ open class InvocableHandlerMethod : HandlerMethod() {
      * @param provideArgs 外部提供的参数列表，在进行参数解析时，优先从给定的参数列表当中获取
      * @return 执行目标Handler方法的返回值
      */
+    @Nullable
     open fun invokeForRequest(
-        webRequest: NativeWebRequest, mavContainer: ModelAndViewContainer?, vararg provideArgs: Any
+        webRequest: NativeWebRequest, @Nullable mavContainer: ModelAndViewContainer?, vararg provideArgs: Any
     ): Any? {
         val args = getMethodArgumentValues(webRequest, mavContainer, *provideArgs)
         if (logger.isTraceEnabled) {
-            logger.trace("方法参数列表为--->[${args.contentToString()}]")
+            logger.trace("执行HandlerMethod的方法参数列表为[${args.contentToString()}]")
         }
         return doInvoke(*args)
     }
@@ -191,6 +197,7 @@ open class InvocableHandlerMethod : HandlerMethod() {
      * @param args 目标handlerMethod的参数列表
      * @return handlerMethod的执行结果的返回值
      */
+    @Nullable
     protected open fun doInvoke(vararg args: Any?): Any? {
         val method = method ?: throw IllegalStateException("HandlerMethod当中方法为null")
         ReflectionUtils.makeAccessible(method)
@@ -213,7 +220,7 @@ open class InvocableHandlerMethod : HandlerMethod() {
      * @param result 异步任务处理的最终结果
      * @return InvocableHandlerMethod
      */
-    open fun wrapConcurrentResult(result: Any?): InvocableHandlerMethod {
+    open fun wrapConcurrentResult(@Nullable result: Any?): InvocableHandlerMethod {
         val concurrentResultHandlerMethod = ConcurrentResultHandlerMethod(result, ReturnValueMethodParameter(result))
         // copy returnValueHandlers
         if (this.returnValueHandlers != null) {
@@ -258,6 +265,6 @@ open class InvocableHandlerMethod : HandlerMethod() {
         override fun hasMethodAnnotation(annotationClass: Class<out Annotation>) =
             this@InvocableHandlerMethod.hasMethodAnnotation(annotationClass)
 
-        override fun getReturnValueType(returnValue: Any?) = this.returnType
+        override fun getReturnValueType(@Nullable returnValue: Any?) = this.returnType
     }
 }
