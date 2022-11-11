@@ -1,13 +1,13 @@
 
 dependencies {
-    implementation(project(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot"))
-    implementation(project(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Autoconfigure"))
-    implementation(project(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Framework"))
-    implementation(project(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Actuator"))
+    implementation(project(":kotlin-spring-boot-project:kotlin-spring-boot"))
+    implementation(project(":kotlin-spring-boot-project:kotlin-spring-boot-autoconfigure"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-framework"))
+    implementation(project(":kotlin-spring-boot-project:kotlin-spring-boot-actuator"))
 
 
     // CompileOnly Optional
-    compileOnly(project(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Web"))
+    compileOnly(project(":kotlin-spring-framework-project:kotlin-spring-web"))
     compileOnly("io.micrometer:micrometer-core:1.9.5")  // metrics
     compileOnly("io.netty:netty-codec-http:$nettyVersion")
     compileOnly("org.aspectj:aspectjweaver:$aspectJVersion")
@@ -19,7 +19,7 @@ dependencies {
     implementation("javax.annotation:javax.annotation-api:$javaxAnnotationVersion")
 
 
-    testImplementation(project(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Web"))
+    testImplementation(project(":kotlin-spring-framework-project:kotlin-spring-web"))
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
     testImplementation("org.aspectj:aspectjweaver:$aspectJVersion")
 }
