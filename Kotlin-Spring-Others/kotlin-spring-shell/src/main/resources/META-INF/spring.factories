@@ -1,3 +1,0 @@
-com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
-  com.wanna.spring.shell.SpringShellAutoConfiguration,\
-  com.wanna.spring.shell.command.ShellCommandAutoConfiguration
