@@ -20,13 +20,22 @@ import java.util.concurrent.Callable
  */
 open class InvocableHandlerMethod : HandlerMethod() {
     companion object {
-        // Logger
+        /**
+         * Logger
+         */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(InvocableHandlerMethod::class.java)
 
-        // 寻找到Callable的call方法
+        /**
+         * 寻找到Callable的call方法
+         */
+        @JvmStatic
         private val CALLABLE_METHOD = ReflectionUtils.findMethod(Callable::class.java, "call")!!
 
-        // 空参数的常量
+        /**
+         * 空参数的常量
+         */
+        @JvmStatic
         private val EMPTY_ARGS = emptyArray<Any?>()
 
         @JvmStatic
@@ -40,16 +49,24 @@ open class InvocableHandlerMethod : HandlerMethod() {
         }
     }
 
-    // 参数名发现器
+    /**
+     * 参数名发现器, 提供参数名的解析功能
+     */
     var parameterNameDiscoverer: ParameterNameDiscoverer = DefaultParameterNameDiscoverer()
 
-    // 参数解析器列表
+    /**
+     * 参数解析器列表
+     */
     var argumentResolvers: HandlerMethodArgumentResolverComposite? = HandlerMethodArgumentResolverComposite()
 
-    // 返回值解析器列表
+    /**
+     * 返回值解析器列表
+     */
     var returnValueHandlers: HandlerMethodReturnValueHandlerComposite? = HandlerMethodReturnValueHandlerComposite()
 
-    // BinderFactory(提供了参数类型的转换等功能)
+    /**
+     * BinderFactory(提供了参数类型的转换等功能)
+     */
     var binderFactory: WebDataBinderFactory? = null
 
     /**
