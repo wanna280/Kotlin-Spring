@@ -1,0 +1,3 @@
+com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
+  com.wanna.cloud.openfeign.FeignAutoConfiguration,\
+  com.wanna.cloud.openfeign.ribbon.FeignRibbonClientAutoConfiguration

@@ -1,0 +1,4 @@
+com.wanna.boot.SpringApplicationRunListener=com.wanna.boot.context.event.EventPublishingRunListener
+com.wanna.framework.context.event.ApplicationListener=\
+  com.wanna.boot.listener.MyApplicationListener,\
+  com.wanna.boot.listener.MyApplicationListener2

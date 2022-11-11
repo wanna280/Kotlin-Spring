@@ -1,0 +1,2 @@
+com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
+  com.wanna.cloud.netflix.ribbon.RibbonAutoConfiguration

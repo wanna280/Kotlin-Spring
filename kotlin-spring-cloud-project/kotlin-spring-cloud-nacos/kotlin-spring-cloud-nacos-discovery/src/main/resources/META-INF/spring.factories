@@ -1,0 +1,6 @@
+com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
+  com.wanna.cloud.nacos.registry.NacosServiceRegistryAutoConfiguration,\
+  com.wanna.cloud.nacos.NacosServiceAutoConfiguration,\
+  com.wanna.cloud.nacos.discovery.NacosDiscoveryClientConfiguration,\
+  com.wanna.cloud.nacos.discovery.NacosDiscoveryAutoConfiguration,\
+  com.wanna.cloud.nacos.ribbon.RibbonNacosAutoConfiguration

@@ -1,0 +1,2 @@
+com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
+  com.wanna.mybatis.spring.autoconfigure.MybatisAutoConfiguration

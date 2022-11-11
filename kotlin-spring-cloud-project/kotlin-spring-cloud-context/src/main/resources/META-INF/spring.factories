@@ -1,0 +1,9 @@
+com.wanna.framework.context.event.ApplicationListener=\
+  com.wanna.cloud.bootstrap.BootstrapApplicationListener
+
+com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
+  com.wanna.cloud.autoconfigure.RefreshAutoConfiguration,\
+  com.wanna.cloud.autoconfigure.ConfigurationPropertiesRebinderAutoConfiguration
+
+com.wanna.cloud.bootstrap.BootstrapConfiguration=\
+  com.wanna.cloud.bootstrap.config.PropertySourceBootstrapConfiguration
