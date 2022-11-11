@@ -1,49 +1,45 @@
-rootProject.name = "Kotlin-Spring"
+rootProject.name = "kotlin-spring"
 
 
-// for SpringFramework Project
-include(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Framework")
-include(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Instrument")
-include(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Web")
-include(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Test")
+// for springframework project
+include(":kotlin-spring-framework-project:kotlin-spring-framework")
+include(":kotlin-spring-framework-project:kotlin-spring-instrument")
+include(":kotlin-spring-framework-project:kotlin-spring-web")
+include(":kotlin-spring-framework-project:kotlin-spring-test")
 
 
-// for SpringBoot subProjects
-include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot")
-include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Autoconfigure")
-include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Actuator")
-include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Actuator-Autoconfigure")
-include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Devtools")
-include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Loader")
-include(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Test")
-
-// for SpringCloud subProject
-include(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Context")
-include(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Common")
-include(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Ribbon")
-include(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Nacos:Kotlin-Spring-Cloud-Nacos-Config")
-include(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Nacos:Kotlin-Spring-Cloud-Nacos-Discovery")
-include(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-OpenFeign")
-
-// for Spring Others
-include(":Kotlin-Spring-Others:Kotlin-Spring-MyBatis")
-include(":Kotlin-Spring-Others:Kotlin-Spring-SpringShell")
-include(":Kotlin-Spring-Others:Kotlin-Nacos:Kotlin-Nacos-Config-Server")
-include(":Kotlin-Spring-Others:Kotlin-Nacos:Kotlin-Nacos-Naming-Server")
-include(":Kotlin-Spring-Others:Kotlin-Nacos:Kotlin-Nacos-Api")
+// for spring boot subprojects
+include(":kotlin-spring-boot-project:kotlin-spring-boot")
+include(":kotlin-spring-boot-project:kotlin-spring-boot-autoconfigure")
+include(":kotlin-spring-boot-project:kotlin-spring-boot-actuator")
+include(":kotlin-spring-boot-project:kotlin-spring-boot-actuator-autoconfigure")
+include(":kotlin-spring-boot-project:kotlin-spring-boot-devtools")
+include(":kotlin-spring-boot-project:kotlin-spring-boot-loader")
+include(":kotlin-spring-boot-project:kotlin-spring-boot-test")
 
 
 
+// for spring cloud subproject
+include(":kotlin-spring-cloud-project:kotlin-spring-cloud-context")
+include(":kotlin-spring-cloud-project:kotlin-spring-cloud-common")
+include(":kotlin-spring-cloud-project:kotlin-spring-cloud-ribbon")
+include(":kotlin-spring-cloud-project:kotlin-spring-cloud-nacos:kotlin-spring-cloud-nacos-config")
+include(":kotlin-spring-cloud-project:kotlin-spring-cloud-nacos:kotlin-spring-cloud-nacos-discovery")
+include(":kotlin-spring-cloud-project:kotlin-spring-cloud-openfeign")
 
 
 
+// for spring others
+include(":kotlin-spring-others:kotlin-spring-mybatis")
+include(":kotlin-spring-others:kotlin-spring-shell")
+include(":kotlin-spring-others:kotlin-nacos:kotlin-nacos-config-server")
+include(":kotlin-spring-others:kotlin-nacos:kotlin-nacos-naming-server")
+include(":kotlin-spring-others:kotlin-nacos:kotlin-nacos-api")
 
 
-
-
-// for Logger
-include(":Kotlin-Logger:logger-api")
-include(":Kotlin-Logger:logger-impl")
-include(":Kotlin-Logger:logger-temp")
-include(":Kotlin-Logger:logger-test")
-include(":Kotlin-Logger:logger-slf4j-impl")
+// for logger impl
+include(":kotlin-logger:logger-api")
+include(":kotlin-logger:logger-impl")
+include(":kotlin-logger:logger-temp")
+include(":kotlin-logger:logger-test")
+include(":kotlin-logger:logger-slf4j-impl")

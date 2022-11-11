@@ -4,12 +4,12 @@ dependencies {
     implementation("cglib:cglib:$cglibVersion")
 
     // for Compile
-    compileOnly(project(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Instrument"))  // compileOnly
+    compileOnly(project(":kotlin-spring-framework-project:kotlin-spring-instrument"))  // compileOnly
     compileOnly("org.aspectj:aspectjweaver:$aspectJVersion")
 
 
     // for Test
-    testImplementation(project(":Kotlin-Logger:logger-slf4j-impl"))
+    testImplementation(project(":kotlin-logger:logger-slf4j-impl"))
     testImplementation("com.alibaba:druid:1.2.10")
     testImplementation("mysql:mysql-connector-java:8.0.29")
 }

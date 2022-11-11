@@ -1,13 +1,13 @@
 dependencies {
 
-    compileOnly(project(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Ribbon"))
+    compileOnly(project(":kotlin-spring-cloud-project:kotlin-spring-cloud-ribbon"))
 
-    implementation(project(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Framework"))
-    implementation(project(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot"))
-    implementation(project(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Web"))
-    implementation(project(":Kotlin-Spring-Boot-Project:Kotlin-Spring-Boot-Autoconfigure"))
-    implementation(project(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Common"))
-    implementation(project(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Context"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-framework"))
+    implementation(project(":kotlin-spring-boot-project:kotlin-spring-boot"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-web"))
+    implementation(project(":kotlin-spring-boot-project:kotlin-spring-boot-autoconfigure"))
+    implementation(project(":kotlin-spring-cloud-project:kotlin-spring-cloud-common"))
+    implementation(project(":kotlin-spring-cloud-project:kotlin-spring-cloud-context"))
 
 
     implementation("com.netflix.ribbon:ribbon-loadbalancer:$ribbonVersion")
@@ -18,6 +18,6 @@ dependencies {
     implementation("io.github.openfeign:feign-core:$feignVersion")
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
 
-    testImplementation(project(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Ribbon"))
-    testImplementation(project(":Kotlin-Spring-Cloud-Project:Kotlin-Spring-Cloud-Nacos:Kotlin-Spring-Cloud-Nacos-Discovery"))
+    testImplementation(project(":kotlin-spring-cloud-project:kotlin-spring-cloud-ribbon"))
+    testImplementation(project(":kotlin-spring-cloud-project:kotlin-spring-cloud-nacos:kotlin-spring-cloud-nacos-discovery"))
 }

@@ -1,5 +1,5 @@
 dependencies {
-    implementation(project(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Framework"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-framework"))
 
     // compileOnly
     compileOnly("org.apache.httpcomponents:httpclient:$apacheHttpClientVersion")
@@ -8,6 +8,6 @@ dependencies {
 
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
     testImplementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // for test
-    testImplementation(project(":Kotlin-Logger:logger-slf4j-impl"))
+    testImplementation(project(":kotlin-logger:logger-slf4j-impl"))
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
 }

@@ -1,6 +1,6 @@
 dependencies {
-    implementation(project(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Framework"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-framework"))
 
     // compileOnly
-    compileOnly(project(":Kotlin-Spring-Framework-Project:Kotlin-Spring-Web"))
+    compileOnly(project(":kotlin-spring-framework-project:kotlin-spring-web"))
 }
