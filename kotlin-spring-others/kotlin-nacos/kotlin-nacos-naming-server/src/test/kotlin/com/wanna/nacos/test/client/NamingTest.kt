@@ -1,4 +1,4 @@
-package com.wanna.nacos.test.server.client
+package com.wanna.nacos.test.client
 
 import com.wanna.framework.web.client.RestTemplate
 import java.util.concurrent.ScheduledThreadPoolExecutor

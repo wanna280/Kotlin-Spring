@@ -10,7 +10,7 @@ open class NacosControllerAdvice {
 
     @ResponseBody
     @ExceptionHandler(IllegalStateException::class, IllegalArgumentException::class, NullPointerException::class)
-    open fun handleError(handlerMethod: InvocableHandlerMethod, ex: IllegalStateException): String {
-        return "IllegalStateException-->${ex.message}"
+    open fun handleError(handlerMethod: InvocableHandlerMethod, ex: Throwable): String {
+        return "Error-${ex.message}"
     }
 }

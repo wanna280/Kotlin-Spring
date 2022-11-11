@@ -3,6 +3,7 @@ package com.wanna.framework.web.method.support
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ParameterNameDiscoverer
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
@@ -17,40 +18,80 @@ import java.util.concurrent.Callable
  * 这是一个可以被执行的HandlerMethod，提供了invokeAndHandle方法，外部可以直接调用，去完成方法的调用
  *
  * @see invokeAndHandle
+ * @see HandlerMethod
  */
-open class InvocableHandlerMethod : HandlerMethod() {
+open class InvocableHandlerMethod() : HandlerMethod() {
     companion object {
-        // Logger
+        /**
+         * Logger
+         */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(InvocableHandlerMethod::class.java)
 
-        // 寻找到Callable的call方法
+        /**
+         * 使用反射去寻找到Callable的call方法
+         */
+        @JvmStatic
         private val CALLABLE_METHOD = ReflectionUtils.findMethod(Callable::class.java, "call")!!
 
-        // 空参数的常量
+        /**
+         * 空参数的常量
+         */
+        @JvmStatic
         private val EMPTY_ARGS = emptyArray<Any?>()
-
-        @JvmStatic
-        fun newInvocableHandlerMethod(handlerMethod: HandlerMethod): InvocableHandlerMethod {
-            return HandlerMethodUtil.newHandlerMethod(handlerMethod, InvocableHandlerMethod::class.java)
-        }
-
-        @JvmStatic
-        fun newInvocableHandlerMethod(bean: Any, method: Method): InvocableHandlerMethod {
-            return HandlerMethodUtil.newHandlerMethod(bean, method, InvocableHandlerMethod::class.java)
-        }
     }
 
-    // 参数名发现器
+    /**
+     * 参数名发现器, 提供参数名的解析功能
+     */
     var parameterNameDiscoverer: ParameterNameDiscoverer = DefaultParameterNameDiscoverer()
 
-    // 参数解析器列表
+    /**
+     * 参数解析器列表
+     */
+    @Nullable
     var argumentResolvers: HandlerMethodArgumentResolverComposite? = HandlerMethodArgumentResolverComposite()
 
-    // 返回值解析器列表
+    /**
+     * 返回值解析器列表
+     */
+    @Nullable
     var returnValueHandlers: HandlerMethodReturnValueHandlerComposite? = HandlerMethodReturnValueHandlerComposite()
 
-    // BinderFactory(提供了参数类型的转换等功能)
+    /**
+     * BinderFactory(提供了参数类型的转换等功能)
+     */
+    @Nullable
     var binderFactory: WebDataBinderFactory? = null
+
+    /**
+     * 基于一个已经有的[HandlerMethod]去进行构建[InvocableHandlerMethod]
+     *
+     * @param handlerMethod 已经有的HandlerMethod
+     */
+    constructor(handlerMethod: HandlerMethod) : this() {
+        this.method = handlerMethod.method
+        this.parameters = handlerMethod.parameters
+        this.beanType = handlerMethod.beanType
+        this.beanFactory = handlerMethod.beanFactory
+        this.handlerMethod = handlerMethod
+        this.bean = handlerMethod.bean
+    }
+
+    /**
+     * 提供一个基于bean和method去构建一个[InvocableHandlerMethod]的构造方法
+     *
+     * @param bean bean
+     * @param method method
+     */
+    constructor(bean: Any, method: Method) : this() {
+        this.bean = bean
+        this.method = method
+
+        // 初始化parameters和beanType
+        this.parameters = Array(method.parameterCount) { MethodParameter(method, it) }
+        this.beanType = bean::class.java
+    }
 
     /**
      * 执行目标HandlerMethod，并处理目标方法的返回值
@@ -141,6 +182,7 @@ open class InvocableHandlerMethod : HandlerMethod() {
      * @param provideArgs 外部提供的参数列表，在进行参数解析时，优先从给定的参数列表当中获取
      * @return 如果从候选的参数列表当中找到了合适的参数，那么return该参数；如果没有匹配的，return null
      */
+    @Nullable
     protected open fun findProvidedArgument(parameter: MethodParameter, vararg provideArgs: Any): Any? {
         provideArgs.forEach {
             if (parameter.getParameterType().isInstance(it)) {
@@ -158,12 +200,13 @@ open class InvocableHandlerMethod : HandlerMethod() {
      * @param provideArgs 外部提供的参数列表，在进行参数解析时，优先从给定的参数列表当中获取
      * @return 执行目标Handler方法的返回值
      */
+    @Nullable
     open fun invokeForRequest(
-        webRequest: NativeWebRequest, mavContainer: ModelAndViewContainer?, vararg provideArgs: Any
+        webRequest: NativeWebRequest, @Nullable mavContainer: ModelAndViewContainer?, vararg provideArgs: Any
     ): Any? {
         val args = getMethodArgumentValues(webRequest, mavContainer, *provideArgs)
         if (logger.isTraceEnabled) {
-            logger.trace("方法参数列表为--->[${args.contentToString()}]")
+            logger.trace("执行HandlerMethod的方法参数列表为[${args.contentToString()}]")
         }
         return doInvoke(*args)
     }
@@ -174,6 +217,7 @@ open class InvocableHandlerMethod : HandlerMethod() {
      * @param args 目标handlerMethod的参数列表
      * @return handlerMethod的执行结果的返回值
      */
+    @Nullable
     protected open fun doInvoke(vararg args: Any?): Any? {
         val method = method ?: throw IllegalStateException("HandlerMethod当中方法为null")
         ReflectionUtils.makeAccessible(method)
@@ -196,7 +240,7 @@ open class InvocableHandlerMethod : HandlerMethod() {
      * @param result 异步任务处理的最终结果
      * @return InvocableHandlerMethod
      */
-    open fun wrapConcurrentResult(result: Any?): InvocableHandlerMethod {
+    open fun wrapConcurrentResult(@Nullable result: Any?): InvocableHandlerMethod {
         val concurrentResultHandlerMethod = ConcurrentResultHandlerMethod(result, ReturnValueMethodParameter(result))
         // copy returnValueHandlers
         if (this.returnValueHandlers != null) {
@@ -241,6 +285,6 @@ open class InvocableHandlerMethod : HandlerMethod() {
         override fun hasMethodAnnotation(annotationClass: Class<out Annotation>) =
             this@InvocableHandlerMethod.hasMethodAnnotation(annotationClass)
 
-        override fun getReturnValueType(returnValue: Any?) = this.returnType
+        override fun getReturnValueType(@Nullable returnValue: Any?) = this.returnType
     }
 }

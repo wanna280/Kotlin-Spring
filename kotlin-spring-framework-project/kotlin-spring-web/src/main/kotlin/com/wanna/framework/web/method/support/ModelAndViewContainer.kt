@@ -1,5 +1,6 @@
 package com.wanna.framework.web.method.support
 
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.handler.ModelAndView
 import com.wanna.framework.web.ui.ModelMap
 
@@ -10,22 +11,36 @@ import com.wanna.framework.web.ui.ModelMap
  * @see ModelAndView
  */
 open class ModelAndViewContainer {
-    // 视图/视图名
+    /**
+     * 视图/视图名
+     */
+    @Nullable
     var view: Any? = null
 
-    // 是否是重定向视图？
+    /**
+     * 是否是重定向视图？
+     */
     var redirectModelScenario = false
 
-    // model
+    /**
+     * model
+     */
     var defaultModel = ModelMap()
 
-    // 当前请求是否已经被处理过了(比如@ResponseBody的数据已经直接写出了，就不需要使用ModelAndView了)
+    /**
+     * 当前请求是否已经被处理过了(比如@ResponseBody的数据已经直接写出了，就不需要使用ModelAndView了)
+     */
     var requestHandled = false
 
-    // ResponseStatus
+    /**
+     * ResponseStatus
+     */
+    @Nullable
     var responseStatus: Any? = null
 
-    // 获取当前ModelAndViewContainer当中的Model数据
+    /**
+     * 获取当前ModelAndViewContainer当中的Model数据
+     */
     open fun getModel(): ModelMap = if (useDefaultModel()) defaultModel else ModelMap()
 
     /**
@@ -34,7 +49,7 @@ open class ModelAndViewContainer {
      * @param name 属性名
      * @param value 属性值
      */
-    open fun addAttribute(name: String, value: Any?): ModelAndViewContainer {
+    open fun addAttribute(name: String, @Nullable value: Any?): ModelAndViewContainer {
         getModel()[name] = value
         return this
     }

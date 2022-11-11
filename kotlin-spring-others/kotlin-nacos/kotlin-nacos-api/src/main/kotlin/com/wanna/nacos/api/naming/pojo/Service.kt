@@ -4,12 +4,24 @@ import com.wanna.framework.util.StringUtils
 import com.wanna.nacos.api.naming.ValidateBase
 
 /**
- * 这是Nacos的一个服务
+ * 用于描述需要去暴露到Nacos注册中心当中的一个服务
  */
 open class Service : java.io.Serializable, ValidateBase {
-    var groupName: String = ""  // groupName
-    var serviceName: String = ""  // serviceName
-    var metadata = HashMap<String, String>()  // metadata
+
+    /**
+     * groupName
+     */
+    var groupName: String = ""
+
+    /**
+     * serviceName(实际上应该为groupName::serviceName)
+     */
+    var serviceName: String = ""
+
+    /**
+     * metadata
+     */
+    var metadata = HashMap<String, String>()
 
     open fun set(groupName: String, serviceName: String) {
         this.groupName = groupName

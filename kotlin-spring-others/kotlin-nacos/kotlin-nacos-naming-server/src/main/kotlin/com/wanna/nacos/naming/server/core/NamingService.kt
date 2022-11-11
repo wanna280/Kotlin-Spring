@@ -11,19 +11,27 @@ import com.wanna.nacos.naming.server.healthcheck.HealthCheckReactor
  * Nacos的NamingService
  */
 open class NamingService : Service() {
-    // Client的心跳检测任务(Runnable)
-    // 可以去定时对NamingService当中的所有的NamingInstance去进行心跳的检测
-    // 当到达心跳超时还未收到客户端的心跳时，自动地将实例的healthy设置为false；
-    // 当到达删除实例的时间还未收到来自客户端的心跳时，自动将该实例从注册中心当中删除掉；
+    /**
+     * Client的心跳检测任务(Runnable)
+     * 可以去定时对NamingService当中的所有的NamingInstance去进行心跳的检测
+     * 当到达心跳超时还未收到客户端的心跳时，自动地将实例的healthy设置为false;
+     * 当到达删除实例的时间还未收到来自客户端的心跳时，自动将该实例从注册中心当中删除掉;
+     */
     private val clientBeatCheckTask = ClientBeatCheckTask(this)
 
-    // namespaceId
+    /**
+     * namespaceId
+     */
     var namespaceId: String = ""
 
-    // 是否启用该NamingService？
+    /**
+     * 是否启用该NamingService？
+     */
     var enabled = true
 
-    // 一个Service下的多个Cluster列表
+    /**
+     * 一个Service下的多个Cluster列表
+     */
     var clusterMap = HashMap<String, NamingCluster>()
 
     open fun set(namespaceId: String, groupName: String, serviceName: String) {
