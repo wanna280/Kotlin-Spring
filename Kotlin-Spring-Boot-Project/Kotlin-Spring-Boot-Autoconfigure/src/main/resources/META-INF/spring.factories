@@ -1,8 +1,0 @@
-com.wanna.boot.autoconfigure.AutoConfigurationImportFilter=\
-  com.wanna.boot.autoconfigure.condition.OnBeanCondition,\
-  com.wanna.boot.autoconfigure.condition.OnClassCondition
-com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
-  com.wanna.boot.autoconfigure.web.mvc.NettyMvcAutoConfiguration,\
-  com.wanna.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration,\
-  com.wanna.boot.autoconfigure.validation.ValidationAutoConfiguration
-
