@@ -3,14 +3,13 @@ package com.wanna.framework.web.method
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import com.wanna.framework.web.method.support.HandlerMethodUtil
 import java.lang.reflect.Method
 import java.util.*
 
 /**
  * 这是一个HandlerMethod，内部包装了要执行的Handler的Bean对象，Handler方法等
  */
-open class HandlerMethod {
+open class HandlerMethod() {
 
     // bean or beanName
     var bean: Any? = null
@@ -32,6 +31,26 @@ open class HandlerMethod {
     // 要去执行的目标Handler方法
     var method: Method? = null
 
+    constructor(handlerMethod: HandlerMethod) : this() {
+        this.method = handlerMethod.method
+        this.parameters = handlerMethod.parameters
+        this.beanType = handlerMethod.beanType
+        this.beanFactory = handlerMethod.beanFactory
+        this.handlerMethod = handlerMethod
+        this.bean = handlerMethod.bean
+    }
+
+    constructor(beanFactory: BeanFactory, handler: String, method: Method) : this() {
+        this.beanFactory = beanFactory
+        this.bean = handler
+        this.method = method
+    }
+
+    constructor(bean: Any, method: Method) : this() {
+        this.bean = bean
+        this.method = method
+    }
+
 
     /**
      * HandlerMethod的描述信息(计算属性)
@@ -49,7 +68,8 @@ open class HandlerMethod {
         if (handler is String) {
             handler = this.beanFactory!!.getBean(handler)
         }
-        val newHandlerMethod = newHandlerMethod(this, handler!!)
+        val newHandlerMethod = HandlerMethod(this)
+        newHandlerMethod.bean = handler
         newHandlerMethod.resolvedFromHandlerMethod = this  // set ResolvedFromHandlerMethod
         return newHandlerMethod
     }
@@ -175,26 +195,6 @@ open class HandlerMethod {
                 joiner.add(paramType.simpleName)
             }
             return beanType.name + "#" + method.name + joiner.toString()
-        }
-
-        @JvmStatic
-        fun newHandlerMethod(handlerMethod: HandlerMethod, handler: Any): HandlerMethod {
-            return HandlerMethodUtil.newHandlerMethod(handlerMethod, handler, HandlerMethod::class.java)
-        }
-
-        @JvmStatic
-        fun newHandlerMethod(handlerMethod: HandlerMethod): HandlerMethod {
-            return HandlerMethodUtil.newHandlerMethod(handlerMethod, HandlerMethod::class.java)
-        }
-
-        @JvmStatic
-        fun newHandlerMethod(beanFactory: BeanFactory, beanName: String, method: Method): HandlerMethod {
-            return HandlerMethodUtil.newHandlerMethod(beanFactory, beanName, method, HandlerMethod::class.java)
-        }
-
-        @JvmStatic
-        fun newHandlerMethod(bean: Any, method: Method): HandlerMethod {
-            return HandlerMethodUtil.newHandlerMethod(bean, method, HandlerMethod::class.java)
         }
     }
 }

@@ -19,7 +19,7 @@ import java.util.concurrent.Callable
  *
  * @see invokeAndHandle
  */
-open class InvocableHandlerMethod : HandlerMethod() {
+open class InvocableHandlerMethod() : HandlerMethod() {
     companion object {
         /**
          * Logger
@@ -38,16 +38,6 @@ open class InvocableHandlerMethod : HandlerMethod() {
          */
         @JvmStatic
         private val EMPTY_ARGS = emptyArray<Any?>()
-
-        @JvmStatic
-        fun newInvocableHandlerMethod(handlerMethod: HandlerMethod): InvocableHandlerMethod {
-            return HandlerMethodUtil.newHandlerMethod(handlerMethod, InvocableHandlerMethod::class.java)
-        }
-
-        @JvmStatic
-        fun newInvocableHandlerMethod(bean: Any, method: Method): InvocableHandlerMethod {
-            return HandlerMethodUtil.newHandlerMethod(bean, method, InvocableHandlerMethod::class.java)
-        }
     }
 
     /**
@@ -72,6 +62,25 @@ open class InvocableHandlerMethod : HandlerMethod() {
      */
     @Nullable
     var binderFactory: WebDataBinderFactory? = null
+
+    /**
+     * 基于一个已经有的[HandlerMethod]去进行构建[InvocableHandlerMethod]
+     *
+     * @param handlerMethod 已经有的HandlerMethod
+     */
+    constructor(handlerMethod: HandlerMethod) : this() {
+        this.method = handlerMethod.method
+        this.parameters = handlerMethod.parameters
+        this.beanType = handlerMethod.beanType
+        this.beanFactory = handlerMethod.beanFactory
+        this.handlerMethod = handlerMethod
+        this.bean = handlerMethod.bean
+    }
+
+    constructor(bean: Any, method: Method) : this() {
+        this.bean = bean
+        this.method = method
+    }
 
     /**
      * 执行目标HandlerMethod，并处理目标方法的返回值

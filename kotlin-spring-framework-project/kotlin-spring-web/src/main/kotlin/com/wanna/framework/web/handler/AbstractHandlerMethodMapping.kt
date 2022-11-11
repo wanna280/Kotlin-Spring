@@ -133,12 +133,12 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
      */
     protected open fun createHandlerMethod(handler: Any, method: Method): HandlerMethod {
         if (handler !is String) {
-            return HandlerMethod.newHandlerMethod(handler, method)
+            return HandlerMethod(handler, method)
         }
 
         // 基于beanName、beanFactory、method去进行构建HandlerMethod
         val beanFactory = obtainApplicationContext().getAutowireCapableBeanFactory()
-        return HandlerMethod.newHandlerMethod(beanFactory, handler, method)
+        return HandlerMethod(beanFactory, handler, method)
     }
 
     /**

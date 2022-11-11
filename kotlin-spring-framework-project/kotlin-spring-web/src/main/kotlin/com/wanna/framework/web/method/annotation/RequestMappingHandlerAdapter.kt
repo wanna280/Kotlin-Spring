@@ -172,7 +172,7 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
         val modelFactory = getModelFactory(handler, binderFactory)
 
         // 构建InvocableHandlerMethod，并去完成参数名发现器、DataBinderFactory、参数解析器以及返回值处理器的初始化
-        var invocableHandlerMethod = InvocableHandlerMethod.newInvocableHandlerMethod(handler)
+        var invocableHandlerMethod = InvocableHandlerMethod(handler)
         invocableHandlerMethod.binderFactory = binderFactory
         invocableHandlerMethod.parameterNameDiscoverer = parameterNameDiscoverer
         if (this.argumentResolvers != null) {
@@ -355,7 +355,7 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
      * @return 针对InitBinder方法去创建好的HandlerMethod
      */
     private fun createInitBinderMethod(bean: Any, method: Method): InvocableHandlerMethod {
-        val handlerMethod = InvocableHandlerMethod.newInvocableHandlerMethod(bean, method)
+        val handlerMethod = InvocableHandlerMethod(bean, method)
         // 初始化InitBinder的参数解析器
         if (this.initBinderArgumentResolvers != null) {
             handlerMethod.argumentResolvers = initBinderArgumentResolvers
@@ -375,7 +375,7 @@ open class RequestMappingHandlerAdapter : AbstractHandlerMethodAdapter(), BeanFa
     private fun createModelAttributeMethod(
         binderFactory: WebDataBinderFactory, bean: Any, method: Method
     ): InvocableHandlerMethod {
-        val invocableHandlerMethod = InvocableHandlerMethod.newInvocableHandlerMethod(bean, method)
+        val invocableHandlerMethod = InvocableHandlerMethod(bean, method)
         invocableHandlerMethod.parameterNameDiscoverer = this.parameterNameDiscoverer
         if (this.argumentResolvers != null) {
             invocableHandlerMethod.argumentResolvers = this.argumentResolvers

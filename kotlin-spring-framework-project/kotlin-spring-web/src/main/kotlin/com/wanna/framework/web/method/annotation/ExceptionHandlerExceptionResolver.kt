@@ -177,14 +177,14 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
             }
             val resolveMethod = methodResolver.resolveMethod(ex)
             if (resolveMethod != null) {
-                return InvocableHandlerMethod.newInvocableHandlerMethod(bean, resolveMethod)
+                return InvocableHandlerMethod(bean, resolveMethod)
             }
         }
 
         // 接着，尝试从ControllerAdvice的ExceptionHandler缓存当中去进行寻找
         exceptionHandlerAdviceCache.forEach { (bean, resolver) ->
             val resolveMethod = resolver.resolveMethod(ex) ?: return@forEach
-            return InvocableHandlerMethod.newInvocableHandlerMethod(bean.resolveBean(), resolveMethod)
+            return InvocableHandlerMethod(bean.resolveBean(), resolveMethod)
         }
 
         // 如果还是找不到，那么return null
