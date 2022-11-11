@@ -27,7 +27,7 @@ open class InstanceController {
     private lateinit var pushService: PushService
 
     /**
-     * 注册一个NamingInstance到注册中心
+     * 注册一个NamingInstance到注册中心当中来
      *
      * @param namespaceId namespaceId
      * @param instance 要去进行注册的实例信息(自动从请求参数当中去进行获取和封装)
