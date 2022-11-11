@@ -18,6 +18,7 @@ import java.util.concurrent.Callable
  * 这是一个可以被执行的HandlerMethod，提供了invokeAndHandle方法，外部可以直接调用，去完成方法的调用
  *
  * @see invokeAndHandle
+ * @see HandlerMethod
  */
 open class InvocableHandlerMethod() : HandlerMethod() {
     companion object {
@@ -28,7 +29,7 @@ open class InvocableHandlerMethod() : HandlerMethod() {
         private val logger = LoggerFactory.getLogger(InvocableHandlerMethod::class.java)
 
         /**
-         * 寻找到Callable的call方法
+         * 使用反射去寻找到Callable的call方法
          */
         @JvmStatic
         private val CALLABLE_METHOD = ReflectionUtils.findMethod(Callable::class.java, "call")!!
@@ -77,9 +78,19 @@ open class InvocableHandlerMethod() : HandlerMethod() {
         this.bean = handlerMethod.bean
     }
 
+    /**
+     * 提供一个基于bean和method去构建一个[InvocableHandlerMethod]的构造方法
+     *
+     * @param bean bean
+     * @param method method
+     */
     constructor(bean: Any, method: Method) : this() {
         this.bean = bean
         this.method = method
+
+        // 初始化parameters和beanType
+        this.parameters = Array(method.parameterCount) { MethodParameter(method, it) }
+        this.beanType = bean::class.java
     }
 
     /**
