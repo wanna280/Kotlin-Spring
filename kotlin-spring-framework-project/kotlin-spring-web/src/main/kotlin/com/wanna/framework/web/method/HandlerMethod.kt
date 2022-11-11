@@ -3,6 +3,7 @@ package com.wanna.framework.web.method
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.lang.Nullable
 import java.lang.reflect.Method
 import java.util.*
 
@@ -21,6 +22,7 @@ open class HandlerMethod() {
     /**
      * beanFactory
      */
+    @Nullable
     var beanFactory: BeanFactory? = null
 
     /**
@@ -33,6 +35,7 @@ open class HandlerMethod() {
     /**
      * 获取当前的HandlerMethod的解析之前的HandlerMethod(有可能现在变成了BeanObject，而之前是beanName)
      */
+    @Nullable
     var resolvedFromHandlerMethod: HandlerMethod? = null
 
     /**
