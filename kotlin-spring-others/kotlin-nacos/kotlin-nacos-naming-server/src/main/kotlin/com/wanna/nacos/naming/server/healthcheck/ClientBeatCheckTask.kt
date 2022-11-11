@@ -35,8 +35,8 @@ open class ClientBeatCheckTask(private val service: NamingService) : Runnable {
         // 如果到达删除NamingInstance的时间了，该节点都没有心跳包的反馈，那么直接删除ip...
         allIps.forEach {
             if (System.currentTimeMillis() - it.lastBeat > it.ipDeleteTimeout) {
-                deleteIp(it)
                 logger.info("NamingInstance[namespaceId=${service.namespaceId},groupName=${service.groupName}, serviceName=${it.serviceName}]被删除")
+                deleteIp(it)
             }
         }
     }
