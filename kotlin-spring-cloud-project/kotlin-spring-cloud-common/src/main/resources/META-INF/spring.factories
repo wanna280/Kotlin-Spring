@@ -1,0 +1,3 @@
+com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
+  com.wanna.cloud.client.serviceregistry.AutoServiceRegistrationConfiguration,\
+  com.wanna.cloud.client.loadbalancer.LoadBalancerAutoConfiguration

@@ -1,0 +1,7 @@
+# Bootstrap Configuration
+com.wanna.cloud.bootstrap.BootstrapConfiguration=\
+  com.wanna.cloud.nacos.config.NacosBootstrapConfiguration
+
+# EnableAutoConfiguration
+com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
+  com.wanna.cloud.nacos.config.NacosConfigAutoConfiguration
