@@ -9,6 +9,9 @@ enum class RequestMethod {
     companion object {
         /**
          * 根据method的字符串，转为对应的RequestMethod枚举对象
+         *
+         * @param method method methodStr
+         * @return 解析得到的RequestMethod枚举值对象
          */
         @JvmStatic
         fun forName(method: String): RequestMethod {

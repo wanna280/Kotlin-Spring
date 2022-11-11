@@ -1,5 +1,6 @@
 package com.wanna.framework.web.bind.annotation
 
+import com.wanna.framework.web.method.annotation.RequestParamMethodArgumentResolver
 import org.springframework.core.annotation.AliasFor
 
 /**
@@ -7,28 +8,17 @@ import org.springframework.core.annotation.AliasFor
  * 可以通过name/value属性去配置，要获取的headerName；如果没有配置name/value，将会采用方法的参数名作为headerName去进行寻找
  *
  * @see RequestParamMethodArgumentResolver
+ * @param name header名，同value属性
+ * @param value header名，同name属性
+ * @param required 该请求参数是否是必须的?
+ * @param defaultValue 如果请求当中不存在该header的参数, 将要使用什么作为默认值
  */
 @Target(AnnotationTarget.TYPE_PARAMETER, AnnotationTarget.VALUE_PARAMETER)
 annotation class RequestParam(
-    /**
-     * 参数名，同value
-     */
     @get:AliasFor("value")
     val name: String = "",
-
-    /**
-     * 参数名，同name
-     */
     @get:AliasFor("name")
     val value: String = "",
-
-    /**
-     * 是否是必须的？
-     */
     val required: Boolean = true,
-
-    /**
-     * 默认值？
-     */
     val defaultValue: String = ""
 )
