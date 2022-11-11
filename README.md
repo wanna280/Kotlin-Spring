@@ -23,7 +23,7 @@ Kotlin去进行开发的。
 * 1.kotlin-spring-framework-project，主要实现spring-framework的部分，主要包括下面的几个部分组成：
   * 1.1 kotlin-spring-framework，这个模块当中主要是提供spring的IOC、AOP等相关的实现(在spring当中，这里是很多个模块，这里仅采用一个模块)。
   * 1.2 kotlin-spring-instrument，这个模块当中主要包含spring当中对于运行时编织的JavaAgent实现(比如AspectJ的LoadTimeWeave)。
-  * 1.3 kotlin-spring-Web，这个模块当中主要提供了基于Netty去仿照DispatcherServlet的实现，实现SpringMVC相关的功能；以及一些关于Web客户端的相关支持。
+  * 1.3 kotlin-spring-web，这个模块当中主要提供了基于Netty去仿照DispatcherServlet的实现，实现SpringMVC相关的功能；以及一些关于Web客户端的相关支持。
   * 1.4 kotlin-spring-test，这个模块当中主要用于spring整合JUnit4和JUnit5去为单元测试提供支持。
   
 * 2.kotlin-spring-boot-project，主要实现spring-boot当中相关的模块，比如自动装配、actuator监控、devtools热部署等。
@@ -45,14 +45,14 @@ Kotlin去进行开发的。
     * 3.5.1 kotlin-spring-cloud-nacos-config，提供nacos作为配置中心的实现，支持nacos远程配置文件的自动刷新。
     * 3.5.2 kotlin-spring-cloud-nacos-discovery，提供nacos作为注册中心的实现，支持服务的自动注册，应用启动时会将服务暴露到nacos当中。
 
-* 4.kotlin-spring-Others，主要提供spring整合别的第三方的实现。
+* 4.kotlin-spring-others，主要提供spring整合别的第三方的实现。
   * 4.1 kotlin-spring-shell，基于spring去实现Shell命令行工具，去处理相关命令。
   * 4.2 kotlin-spring-mybatis，将mybatis整合到当前的spring工程当中，提供数据访问。
   * 4.3 kotlin-nacos，基于spring-boot去实现mini的nacos(待完成)。
     * 4.3.1 kotlin-nacos-naming-server，实现nacos的服务的注册与发现。
     * 4.3.2 kotlin-nacos-config-server，实现nacos的配置中心的相关功能。
 
-* 5.kotlin-Logger，主要实现自定义的日志组件，整体设计参考Slf4j和Logback，很多地方待完善，目前并未完善。
+* 5.kotlin-logger，主要实现自定义的日志组件，整体设计参考Slf4j和Logback，很多地方待完善，目前并未完善。
   * 5.1 logger-api，类似Slf4j的方式去定义规范。
   * 5.2 logger-impl，类似Logback的方式去实现日志组件(待完善)。
   * 5.3 logger-slf4j-impl，将自己的logger组件整合给Slf4j，可以使用Slf4j的方式去使用到我们自定义的组件。
