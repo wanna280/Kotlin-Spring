@@ -23,6 +23,10 @@ import java.io.IOException
 
 @Sharable
 open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelInboundHandlerAdapter() {
+
+    /**
+     * DispatcherHandler
+     */
     private val dispatcherHandler = applicationContext.getBean(DispatcherHandler::class.java)
 
     /**
@@ -49,7 +53,7 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
 
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         if (cause is IOException) {  // ignore IOException
-
+            cause.printStackTrace()
         } else {
             ctx.fireExceptionCaught(cause)
         }

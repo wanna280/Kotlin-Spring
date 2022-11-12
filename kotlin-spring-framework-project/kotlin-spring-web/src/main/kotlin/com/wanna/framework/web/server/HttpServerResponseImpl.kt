@@ -22,19 +22,29 @@ open class HttpServerResponseImpl : HttpServerResponse {
         private const val DEFAULT_CONTENT_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE
     }
 
-    // flush Callback
+    /**
+     * flush Callback
+     */
     private var flushCallback: ((HttpServerResponseImpl) -> Unit)? = null
 
-    // 响应状态码，默认为200
+    /**
+     * 响应状态码，默认为200
+     */
     private var statusCode: Int = HttpStatus.SUCCESS.value
 
-    // message
+    /**
+     * message
+     */
     private var message: String = HttpStatus.SUCCESS.reasonPhase
 
-    // ResponseBody的输出流
+    /**
+     * ResponseBody的输出流
+     */
     private val outputStream = ResponseOutputStream(this, 1024)
 
-    // headers
+    /**
+     * Http Headers
+     */
     private val headers = HttpHeaders()
 
     /**
@@ -175,7 +185,7 @@ open class HttpServerResponseImpl : HttpServerResponse {
     /**
      * 设置flush的回调callback
      *
-     * @param callback 你先要去进行刷新的操作的callback
+     * @param callback 用于去进行flush操作的callback
      */
     open fun initFlushCallback(callback: HttpServerResponseImpl.() -> Unit) {
         this.flushCallback = callback

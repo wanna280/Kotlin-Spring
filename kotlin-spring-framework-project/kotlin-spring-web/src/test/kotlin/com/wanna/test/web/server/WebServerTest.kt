@@ -156,6 +156,17 @@ class MyController {
             "wanna"
         }
     }
+
+    @ResponseBody
+    @RequestMapping(["/asyncContext"])
+    fun asyncContext(request: HttpServerRequest, response: HttpServerResponse) {
+        val asyncContext = request.startAsync(request, response)
+        CompletableFuture.runAsync {
+            TimeUnit.MILLISECONDS.sleep(5000)
+            asyncContext.getResponse()?.getOutputStream()?.write("wanna".toByteArray())
+            asyncContext.getResponse()?.flush()
+        }
+    }
 }
 
 fun main() {
