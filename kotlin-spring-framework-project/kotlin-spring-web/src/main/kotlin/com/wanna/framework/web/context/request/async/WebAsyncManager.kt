@@ -11,30 +11,49 @@ import java.util.concurrent.Callable
  */
 class WebAsyncManager {
     companion object {
-        // 异步任务的默认TaskExecutor
+        /**
+         * 异步任务的默认TaskExecutor
+         */
+        @JvmStatic
         private val DEFAULT_TASK_EXECUTOR: AsyncTaskExecutor = SimpleAsyncTaskExecutor(WebAsyncManager::class.java.name)
 
-        // Logger
+        /**
+         *  Logger
+         */
+        @JvmStatic
         private val logger: Logger = LoggerFactory.getLogger(WebAsyncManager::class.java)
 
-        // 标识异步任务的结果还没产生
+        /**
+         * 标识异步任务的结果还没产生
+         */
+        @JvmStatic
         private val RESULT_NONE = Any()
     }
 
-    // 异步任务的TaskExecutor
+    /**
+     * 异步任务的TaskExecutor
+     */
     private var taskExecutor: AsyncTaskExecutor = DEFAULT_TASK_EXECUTOR
 
-    // 延时任务的结果
+    /**
+     * 延时任务的结果
+     */
     private var deferredResult: DeferredResult<Any?>? = null
 
-    // 异步任务的结果
+    /**
+     * 异步任务的结果
+     */
     @Volatile
     private var concurrentResult: Any? = RESULT_NONE
 
-    // 异步的WebRequest
+    /**
+     * 异步的WebRequest
+     */
     private var asyncWebRequest: AsyncWebRequest? = null
 
-    // 并发任务的ResultContext，保存上下文当中需要传递的参数列表
+    /**
+     * 并发任务的ResultContext，保存上下文当中需要传递的参数列表
+     */
     @Volatile
     private var concurrentResultContext: Array<Any?>? = null
 
@@ -84,8 +103,9 @@ class WebAsyncManager {
      * @param processingContext 处理Callable当中需要使用的上下文信息，方便后续去进行获取
      */
     @Suppress("UNCHECKED_CAST")
-    fun startCallableProcessing(callable: Callable<*>, vararg processingContext: Any) {
+    fun startCallableProcessing(callable: Callable<*>, vararg processingContext: Any?) {
         this.concurrentResultContext = processingContext as Array<Any?>
+        this.startAsyncProcessing(arrayOf((processingContext)))
         this.taskExecutor.submit(Callable {
             // 异步方法去执行Callable，并将结果去设置到result当中
             // 方便后面去进行处理异步任务的结果，并完成dispatch
@@ -111,6 +131,7 @@ class WebAsyncManager {
         this.concurrentResultContext = processingContext as Array<Any?>
 
         this.deferredResult = deferredResult
+        this.startAsyncProcessing(arrayOf(*processingContext))
 
         // 设置DeferredResult的结果处理器，当结果到来时，需要去完成异步任务的设置，并完成dispatch
         deferredResult.setResultHandler(object : DeferredResult.DeferredResultHandler {
@@ -133,8 +154,17 @@ class WebAsyncManager {
             this.concurrentResult = result
         }
 
-        // 处理结果的Dispatch
+        // 处理结果的Dispatch, 触发AsyncWebRequest的AsyncContext的Action
         this.asyncWebRequest?.dispatch() ?: throw IllegalStateException("AsyncWebRequest不能为空")
+    }
+
+    /**
+     * 开启异步处理, 这里需要开启AsyncWebRequest的startAsync
+     *
+     * @param processingContext processingContext
+     */
+    private fun startAsyncProcessing(processingContext: Array<out Any?>) {
+        this.asyncWebRequest?.startAsync()
     }
 
     /**

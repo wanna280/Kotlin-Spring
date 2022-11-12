@@ -53,6 +53,11 @@ open class HttpServerRequestImpl : HttpServerRequest {
     // ActionHook，当给予对应的状态码时，应该产生的动作
     private var actionHook: ActionHook? = null
 
+    /**
+     * AsyncContext
+     */
+    private var asyncContext: AsyncContextImpl? = null
+
     private var inputStream: InputStream? = null
 
     open fun setInputStream(inputStream: InputStream) {
@@ -271,6 +276,26 @@ open class HttpServerRequestImpl : HttpServerRequest {
     override fun action(code: ActionCode, param: Any?) {
         this.actionHook?.action(code, param)
     }
+
+    override fun startAsync(): AsyncContext {
+        return startAsyncInternal(this, null)
+    }
+
+    override fun startAsync(request: HttpServerRequest, response: HttpServerResponse): AsyncContext {
+        return startAsyncInternal(request, response)
+    }
+
+    private fun startAsyncInternal(request: HttpServerRequest?, response: HttpServerResponse?): AsyncContext {
+        var asyncContext = this.asyncContext
+        if (asyncContext == null) {
+            asyncContext = AsyncContextImpl()
+            this.asyncContext = asyncContext
+        }
+        asyncContext.setStarted(request, response)
+        return this.asyncContext!!
+    }
+
+    override fun getAsyncContext(): AsyncContext? = this.asyncContext
 
     /**
      * 设置ActionHook

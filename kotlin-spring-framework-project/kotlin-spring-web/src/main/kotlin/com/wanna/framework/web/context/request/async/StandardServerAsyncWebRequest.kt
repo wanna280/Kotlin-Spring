@@ -2,6 +2,7 @@ package com.wanna.framework.web.context.request.async
 
 import com.wanna.framework.web.context.request.ServerWebRequest
 import com.wanna.framework.web.server.ActionCode
+import com.wanna.framework.web.server.AsyncContext
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 
@@ -14,16 +15,24 @@ import com.wanna.framework.web.server.HttpServerResponse
 open class StandardServerAsyncWebRequest(request: HttpServerRequest, response: HttpServerResponse) :
     ServerWebRequest(request, response), AsyncWebRequest {
 
-    // TODO
+    /**
+     * AsyncContext
+     */
+    private var asyncContext: AsyncContext? = null
+
     override fun isAsyncStarted(): Boolean {
-        return true
+        return asyncContext != null
+    }
+
+    override fun startAsync() {
+        if (!this.isAsyncStarted()) {
+            val request = getNativeRequest(HttpServerRequest::class.java)
+            val response = getNativeResponse(HttpServerResponse::class.java)!!
+            this.asyncContext = request.startAsync(request, response)
+        }
     }
 
     override fun dispatch() {
-        val request = getNativeRequest(HttpServerRequest::class.java)
-        val response = getNativeResponse(HttpServerResponse::class.java)
-
-        // Action
-        request.action(ActionCode.ASYNC_DISPATCH, this)
+        asyncContext?.dispatch()
     }
 }
