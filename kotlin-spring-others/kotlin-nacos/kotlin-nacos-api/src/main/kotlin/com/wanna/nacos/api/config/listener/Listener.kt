@@ -12,11 +12,11 @@ import java.util.concurrent.Executor
 interface Listener {
 
     /**
-     * 获取用于执行当前Listener任务的Executor线程池
+     * 获取用于执行当前Listener的receiveConfigInfo方法的任务的Executor线程池
      *
-     * @return Executor
+     * @return Executor(可以为null, 代表不适应线程池同步处理)
      */
-    fun getExecutor(): Executor
+    fun getExecutor(): Executor?
 
     /**
      * 接收配置信息并进行处理
