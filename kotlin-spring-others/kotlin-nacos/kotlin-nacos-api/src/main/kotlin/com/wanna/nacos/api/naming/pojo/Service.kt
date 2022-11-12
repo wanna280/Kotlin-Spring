@@ -6,7 +6,7 @@ import com.wanna.nacos.api.naming.ValidateBase
 /**
  * 用于描述需要去暴露到Nacos注册中心当中的一个服务
  */
-open class Service : java.io.Serializable, ValidateBase {
+open class Service : java.io.Serializable, ValidateBase, Record {
 
     /**
      * groupName

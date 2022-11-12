@@ -13,5 +13,6 @@ class NamingServerTest {
 }
 
 fun main() {
-    runSpringApplication<NacosNamingServer>()
+    val applicationContext = runSpringApplication<NacosNamingServer>()
+    println(applicationContext)
 }

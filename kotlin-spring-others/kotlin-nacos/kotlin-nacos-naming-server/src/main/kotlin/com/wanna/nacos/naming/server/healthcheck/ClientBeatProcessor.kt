@@ -12,12 +12,27 @@ import org.slf4j.LoggerFactory
  */
 open class ClientBeatProcessor : Runnable {
     companion object {
+
+        /**
+         * Logger
+         */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(ClientBeatProcessor::class.java)
     }
 
+    /**
+     * 需要处理的NamingService
+     */
     lateinit var service: NamingService
+
+    /**
+     * 收到的客户端心跳信息
+     */
     lateinit var clientBeatInfo: ClientBeatInfo
 
+    /**
+     * 对于相关的参数去进行检查是否完成初始化?
+     */
     open fun validate() {
         if (!this::service.isInitialized) {
             throw IllegalStateException("ClientBeatProcessor的Service未完成初始化")
@@ -37,7 +52,7 @@ open class ClientBeatProcessor : Runnable {
             if (it.ip == clientBeatInfo.ip && it.port == clientBeatInfo.port) {
                 it.lastBeat = System.currentTimeMillis()
                 if (logger.isDebugEnabled) {
-                    logger.debug("[ip=${clientBeatInfo.ip}, port=${clientBeatInfo.port}]发来了心跳，最后一次心跳时间为[lastBeat=${it.lastBeat}]")
+                    logger.debug("[ip=${clientBeatInfo.ip}, port=${clientBeatInfo.port}]发来了心跳包，最后一次心跳时间为[lastBeat=${it.lastBeat}]")
                 }
             }
         }
