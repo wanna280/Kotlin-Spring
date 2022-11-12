@@ -12,6 +12,9 @@ import java.util.Properties
  */
 open class NacosServiceManager {
 
+    /**
+     * Nacos原生API的NamingService
+     */
     private var namingService: NamingService? = null
 
     /**

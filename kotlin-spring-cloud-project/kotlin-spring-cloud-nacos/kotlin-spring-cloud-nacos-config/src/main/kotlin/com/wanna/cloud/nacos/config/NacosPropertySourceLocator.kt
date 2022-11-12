@@ -13,12 +13,24 @@ import com.wanna.framework.core.environment.PropertySource
 open class NacosPropertySourceLocator(private val nacosConfigManager: NacosConfigManager) : PropertySourceLocator {
 
     companion object {
+        /**
+         * Nacos的PropertySource的名字
+         */
         const val NACOS_CONFIG_PROPERTY_SOURCE_NAME = "nacosProperties"
     }
 
-    // NacosConfigProperties
+    /**
+     * NacosConfigProperties
+     */
     private val nacosConfigProperties = nacosConfigManager.nacosConfigProperties
 
+
+    /**
+     * 加载得到[PropertySource]
+     *
+     * @param environment Environment
+     * @return 加载得到的PropertySource
+     */
     override fun locate(environment: Environment): PropertySource<*>? {
         // 给NacosConfigProperties去设置Environment
         nacosConfigProperties.environment = environment
@@ -55,6 +67,8 @@ open class NacosPropertySourceLocator(private val nacosConfigManager: NacosConfi
         val properties = nacosConfigManager.getConfig(dataId, group, timeout)
         val nacosPropertySource = NacosPropertySource(dataId, group, properties)
         composite.addFirstPropertySource(nacosPropertySource)
+
+        // 将NacosPropertySource添加到仓库当中, 方便别的地方去进行使用
         NacosPropertySourceRepository.registerNacosPropertySource(nacosPropertySource)
     }
 }
