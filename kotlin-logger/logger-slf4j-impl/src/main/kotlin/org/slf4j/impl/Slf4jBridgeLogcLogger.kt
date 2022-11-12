@@ -31,7 +31,7 @@ open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.L
     }
 
     override fun trace(format: String, arg: Any?) {
-        return super.trace(format)
+        return super.trace(format(format, arg))
     }
 
     override fun trace(format: String, arg1: Any?, arg2: Any?) {
@@ -77,7 +77,7 @@ open class Slf4jBridgeLogcLogger(name: String) : Logger, com.wanna.logger.impl.L
     }
 
     override fun debug(format: String, vararg arguments: Any?) {
-        super.debug(format(format))
+        super.debug(format(format, *arguments))
     }
 
     override fun debug(msg: String, t: Throwable) {
