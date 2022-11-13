@@ -5,8 +5,8 @@ import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.web.bind.annotation.RestController
 import com.wanna.framework.web.bind.annotation.RequestMapping
 import com.wanna.framework.web.bind.annotation.RequestParam
-import com.wanna.nacos.api.common.NamingConstants.DEFAULT_CLUSTER_NAME
-import com.wanna.nacos.api.common.NamingConstants.DEFAULT_NAMESPACE_ID
+import com.wanna.nacos.api.common.Constants.DEFAULT_CLUSTER_NAME
+import com.wanna.nacos.api.common.Constants.DEFAULT_NAMESPACE_ID
 import com.wanna.nacos.naming.server.core.NamingInstance
 import com.wanna.nacos.naming.server.core.NamingServiceManager
 import com.wanna.nacos.naming.server.healthcheck.ClientBeatInfo

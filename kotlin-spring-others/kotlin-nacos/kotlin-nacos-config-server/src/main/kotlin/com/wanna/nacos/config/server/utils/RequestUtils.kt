@@ -60,6 +60,6 @@ object RequestUtils {
         val nginxHeader = request.getHeader(X_REAL_IP)
 
         // 3.如果还是无法解析的话, 直接获取request的remoteIp
-        return if (nginxHeader != null && nginxHeader.isNotBlank()) nginxHeader else request.getRemoteHost()
+        return if (nginxHeader != null && nginxHeader.isNotBlank()) nginxHeader else request.getRemoteIp()
     }
 }

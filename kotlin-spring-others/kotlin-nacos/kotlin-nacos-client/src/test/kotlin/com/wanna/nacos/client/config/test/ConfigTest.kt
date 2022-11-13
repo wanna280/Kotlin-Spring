@@ -1,7 +1,8 @@
 package com.wanna.nacos.client.config.test
 
+import com.wanna.nacos.api.NacosFactory
 import com.wanna.nacos.api.config.listener.Listener
-import com.wanna.nacos.client.config.NacosConfigService
+import java.util.*
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
@@ -15,7 +16,7 @@ class ConfigTest {
 }
 
 fun main() {
-    val configService = NacosConfigService()
+    val configService = NacosFactory.createConfigService(Properties())
     configService.addListener("test", "wanna", object : Listener {
         override fun getExecutor(): Executor {
             return Executors.newSingleThreadExecutor()

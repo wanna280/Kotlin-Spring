@@ -1,4 +1,4 @@
-package com.wanna.nacos.client.config.impl
+package com.wanna.nacos.config.server.utils
 
 /**
  * Key的生成器
@@ -7,7 +7,7 @@ package com.wanna.nacos.client.config.impl
  * @version v1.0
  * @date 2022/11/13
  */
-object GroupKey {
+object GroupKey2 {
 
     @JvmStatic
     fun getKeyTenant(dataId: String, group: String, tenant: String): String {

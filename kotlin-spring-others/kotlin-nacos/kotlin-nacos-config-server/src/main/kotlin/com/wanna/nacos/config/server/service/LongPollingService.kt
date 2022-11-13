@@ -1,10 +1,13 @@
 package com.wanna.nacos.config.server.service
 
 import com.wanna.framework.context.stereotype.Service
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.http.HttpStatus
+import com.wanna.framework.web.server.AsyncContext
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 import com.wanna.nacos.config.server.utils.ConfigExecutor
+import com.wanna.nacos.config.server.utils.MD5Utils
 import com.wanna.nacos.config.server.utils.RequestUtils
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -73,22 +76,42 @@ open class LongPollingService {
         // 解析超时时间(单位为ms)
         val timeout = max(pollingTimeout.toLong(), 10000)
 
+        // 开启异步支持, 获取到AsyncContext
+        val asyncContext = request.startAsync(request, response)
+
         // 往线程池当中去添加一个长轮询的任务
         ConfigExecutor
             .executeLongPolling(
                 ClientLongPolling(
-                    request, response, clientMd5Map, remoteIp,
+                    asyncContext, clientMd5Map, remoteIp,
                     probeRequestSize, timeout, clientAppName, ""
                 )
             )
     }
 
     /**
+     * ConfigFile Data发生改变的任务
+     *
+     * @param groupKey groupKey
+     */
+    inner class DataChangeTask(private val groupKey: String) : Runnable {
+        override fun run() {
+            val iterator = allSubscribers.iterator()
+            while (iterator.hasNext()) {
+                val clientSubscriber = iterator.next()
+                if (clientSubscriber.clientMd5Map.containsKey(groupKey)) {
+                    iterator.remove()
+                    clientSubscriber.sendResponse(listOf(groupKey))
+                }
+            }
+        }
+    }
+
+    /**
      * 客户端的轮询任务Runnable
      */
     inner class ClientLongPolling(
-        val request: HttpServerRequest,
-        val response: HttpServerResponse,
+        val asyncContext: AsyncContext,
         val clientMd5Map: Map<String, String>,
         val ip: String,
         val probeRequestSize: Int,
@@ -98,7 +121,7 @@ open class LongPollingService {
     ) : Runnable {
 
         /**
-         * 异步超时的Future
+         * 用于去处理异步超时的Future
          */
         private var asyncTimeoutFuture: Future<*>? = null
 
@@ -109,10 +132,17 @@ open class LongPollingService {
             // 将当前ClientLongPolling添加到Subscribers当中
             allSubscribers.add(this)
 
-            // 添加一个LongPolling任务
+            // 添加一个LongPolling任务, 到线程池当中
             this.asyncTimeoutFuture = ConfigExecutor.scheduleLongPolling({
+                val request = asyncContext.getRequest()
+                val response = asyncContext.getResponse()
                 if (allSubscribers.remove(this@ClientLongPolling)) {
-                    sendResponse(null)
+                    val changedGroups = MD5Utils.compareMd5(request!!, response, clientMd5Map)
+                    if (changedGroups.isNotEmpty()) {
+                        sendResponse(changedGroups)
+                    } else {
+                        sendResponse(null)
+                    }
                 }
             }, timeout, TimeUnit.MILLISECONDS)
         }
@@ -120,14 +150,41 @@ open class LongPollingService {
         /**
          * 发送Response
          *
-         * @param changedGroups 发生变化的group
+         * @param changedGroups 发生变化的groupKey列表
          */
-        private fun sendResponse(changedGroups: List<String>?) {
+        fun sendResponse(@Nullable changedGroups: List<String>?) {
             // 取消超时任务
-            asyncTimeoutFuture?.cancel(true)
+            if (asyncTimeoutFuture != null) {
+                asyncTimeoutFuture?.cancel(false)
+                return
+            }
+
+
+            // 生成Response并利用AsyncContext去进行消息的发送
+            generateResponse(changedGroups)
+        }
+
+        /**
+         * 生成ConfigResponse并返回给客户端数据
+         *
+         * @param changedGroups configFile已经发生变化那些的GroupKey
+         */
+        private fun generateResponse(@Nullable changedGroups: List<String>?) {
+            if (changedGroups == null) {
+                // send response
+                asyncContext.complete()
+                return
+            }
+            val response = asyncContext.getResponse()!!
+
+            // 为changedGroups去转换成为"dataId"/"group"/"tenant"三个部分的参数, 并使用URLEncoder去进行编码
+            val resultString = MD5Utils.compareMd5ResultString(changedGroups)
 
             response.setStatus(HttpStatus.SUCCESS)
-            response.getOutputStream().write(changedGroups.toString().toByteArray())
+            response.getOutputStream().write(resultString.toByteArray())
+
+            // complete
+            asyncContext.complete()
         }
     }
 }

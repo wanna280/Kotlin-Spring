@@ -3,6 +3,7 @@ package com.wanna.nacos.config.server.controller
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.web.bind.annotation.PostMapping
 import com.wanna.framework.web.bind.annotation.RequestMapping
+import com.wanna.framework.web.bind.annotation.ResponseBody
 import com.wanna.framework.web.bind.annotation.RestController
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse

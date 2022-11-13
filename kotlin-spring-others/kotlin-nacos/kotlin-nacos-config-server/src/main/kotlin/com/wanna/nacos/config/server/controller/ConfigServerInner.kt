@@ -36,6 +36,8 @@ open class ConfigServerInner {
         clientMd5Map: Map<String, String>,
         probeRequestSize: Int
     ): String {
+
+        // 如果支持长轮询的话, 添加一个LongPollingClient到LongPollingService当中
         if (LongPollingService.isSupportLongPolling(request)) {
             longPollingService.addLongPollingClient(request, response, clientMd5Map, probeRequestSize)
             return "200"
