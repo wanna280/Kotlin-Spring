@@ -23,6 +23,11 @@ open class PathPatternsRequestCondition(private val patterns: Set<PathPattern>) 
         }
         val paths = HashSet<String>()
         other.paths.forEach { o -> this.paths.forEach { paths += "$o$it" } }
+
+        // bugfix: 如果方法上的@RequestMapping上没有配置路径的话, 那么我们需要沿用类上的@RequestMapping的路径
+        if (other.paths.isEmpty()) {
+            paths += this.paths
+        }
         return PathPatternsRequestCondition(*paths.toTypedArray())
     }
 
