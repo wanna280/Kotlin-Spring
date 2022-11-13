@@ -178,7 +178,7 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
                         }
 
                         // 异步完成
-                        ActionCode.ASYNC_COMPLETE -> context.channel().flush()
+                        ActionCode.ASYNC_COMPLETE -> response.flush()
                     }
                 }
             })
