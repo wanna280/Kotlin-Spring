@@ -26,5 +26,6 @@ fun main() {
             println(configInfo)
         }
     })
-    println(configService)
+    val config = configService.getConfig("wanna", "wanna", 1000L)
+    println(config)
 }

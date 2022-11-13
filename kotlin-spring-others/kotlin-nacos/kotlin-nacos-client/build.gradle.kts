@@ -15,6 +15,7 @@ dependencies {
 
     implementation(project(":kotlin-logger:logger-slf4j-impl"))
 
+    testImplementation("org.apache.httpcomponents:httpclient:$apacheHttpClientVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }

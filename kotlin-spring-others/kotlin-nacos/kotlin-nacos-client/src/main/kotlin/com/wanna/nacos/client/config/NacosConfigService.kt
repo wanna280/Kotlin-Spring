@@ -100,7 +100,7 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
     }
 
     /**
-     * 从ConfigServer当中拉取配置
+     * 从ConfigServer当中拉取配置文件
      *
      * @param namespace namespace
      * @param dataId dataId

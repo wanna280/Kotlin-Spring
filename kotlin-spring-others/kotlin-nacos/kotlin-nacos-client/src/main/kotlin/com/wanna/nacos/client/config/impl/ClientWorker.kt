@@ -1,11 +1,18 @@
 package com.wanna.nacos.client.config.impl
 
+import com.wanna.framework.web.bind.annotation.RequestMethod
+import com.wanna.framework.web.client.RequestCallback
+import com.wanna.framework.web.client.ResponseExtractor
 import com.wanna.framework.web.client.RestTemplate
+import com.wanna.framework.web.http.ResponseEntity
+import com.wanna.framework.web.http.client.ClientHttpRequest
+import com.wanna.framework.web.http.client.ClientHttpResponse
 import com.wanna.nacos.api.common.Constants
 import com.wanna.nacos.api.config.listener.Listener
 import com.wanna.nacos.client.config.filter.impl.ConfigResponse
 import org.slf4j.LoggerFactory
 import java.io.Closeable
+import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -28,6 +35,11 @@ open class ClientWorker : Closeable {
      * RestTemplate
      */
     private val restTemplate = RestTemplate()
+
+    /**
+     * timeout
+     */
+    private var timeout: Long = 1000L
 
     /**
      * 维护所有的缓存数据
@@ -143,7 +155,21 @@ open class ClientWorker : Closeable {
     }
 
     open fun checkUpdateConfigStr(probeUpdateString: String, isInitializingCacheList: Boolean): List<String> {
-        val ret = restTemplate.getForObject("/v1/cs/configs/listener", String::class.java, emptyMap())
+        val entity = restTemplate.execute(URI("/v1/cs/configs/listener"), RequestMethod.GET, object : RequestCallback {
+            override fun doWithRequest(request: ClientHttpRequest) {
+                request.getHeaders().add("Long-Polling-Timeout", timeout.toString())
+            }
+        }, object : ResponseExtractor<ResponseEntity<String>> {
+            override fun extractData(response: ClientHttpResponse): ResponseEntity<String>? {
+                return ResponseEntity(
+                    response.getStatusCode(),
+                    response.getHeaders(),
+                    String(response.getBody().readAllBytes())
+                )
+            }
+        })!!
+        val body = entity.body
+
         return emptyList()
     }
 
@@ -163,7 +189,30 @@ open class ClientWorker : Closeable {
         if (tenant.isNotBlank()) {
             params["tenant"] = tenant
         }
-        val entity = restTemplate.getForEntity("/v1/cs/configs", String::class.java, params)!!
+
+        val url = StringBuilder("http://localhost:9966/v1/cs/configs")
+        if (params.isNotEmpty()) {
+            url.append("?")
+            params.forEach { url.append(it.key).append("=").append(it.value).append("&") }
+            url.setLength(url.length - 1)  // remote last &
+        }
+        val entity = restTemplate.execute(
+            URI(url.toString()),
+            RequestMethod.GET,
+            object : RequestCallback {
+                override fun doWithRequest(request: ClientHttpRequest) {
+
+                }
+            },
+            object : ResponseExtractor<ResponseEntity<String>> {
+                override fun extractData(response: ClientHttpResponse): ResponseEntity<String> {
+                    return ResponseEntity(
+                        response.getStatusCode(),
+                        response.getHeaders(),
+                        String(response.getBody().readAllBytes())
+                    )
+                }
+            })!!
         val headers = entity.headers
         val content = entity.body ?: ""
 
