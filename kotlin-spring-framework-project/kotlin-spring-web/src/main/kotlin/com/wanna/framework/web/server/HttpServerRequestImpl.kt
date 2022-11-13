@@ -33,8 +33,20 @@ open class HttpServerRequestImpl : HttpServerRequest {
     // 请求路径，不包含query部分
     private var url = "/"
 
-    // remoteHost
+    /**
+     * remoteHost
+     */
     private var remoteHost: String = ""
+
+    /**
+     * remoteIp
+     */
+    private var remoteIp: String = ""
+
+    /**
+     * remote Port
+     */
+    private var remotePort: Int = -1
 
     // headers
     private val headers = HttpHeaders()
@@ -253,7 +265,53 @@ open class HttpServerRequestImpl : HttpServerRequest {
 
     override fun getLocalHost() = headers.getHost() ?: ""
 
+    /**
+     * 设置remoteHost
+     *
+     * @param remoteHost remoteHost
+     */
+    open fun setRemoteHost(remoteHost: String) {
+        this.remoteHost = remoteHost
+    }
+
+    /**
+     * 设置remoteIP
+     *
+     * @param remoteIp remoteIp
+     */
+    open fun setRemoteIp(remoteIp: String) {
+        this.remoteIp = remoteIp
+    }
+
+    /**
+     * 设置remotePort
+     *
+     * @param remotePort remotePort
+     */
+    open fun setRemotePort(remotePort: Int) {
+        this.remotePort = remotePort
+    }
+
+    /**
+     * 获取remote Port
+     *
+     * @return remote Port
+     */
+    override fun getRemotePort(): Int = this.remotePort
+
+    /**
+     * 获取remote Host
+     *
+     * @return remote Host
+     */
     override fun getRemoteHost() = this.remoteHost
+
+    /**
+     * 获取远程的IP
+     *
+     * @return remoteIp
+     */
+    override fun getRemoteIp(): String = this.remoteIp
 
     override fun getServerPort() = URL(getSchema() + "://" + getLocalHost()).port
 

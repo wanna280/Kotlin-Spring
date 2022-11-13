@@ -197,11 +197,25 @@ interface HttpServerRequest {
     fun getRemoteHost(): String
 
     /**
+     * 获取远程的IP
+     *
+     * @return remoteIp
+     */
+    fun getRemoteIp(): String
+
+    /**
      * 获取ServerPost
      *
      * @return serverPost
      */
     fun getServerPort(): Int
+
+    /**
+     * 获取remotePort
+     *
+     * @return remotePort
+     */
+    fun getRemotePort(): Int
 
     /**
      * 获取schema

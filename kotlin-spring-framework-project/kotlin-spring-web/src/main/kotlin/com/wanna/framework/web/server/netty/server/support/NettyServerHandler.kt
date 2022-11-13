@@ -20,7 +20,15 @@ import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 import java.io.ByteArrayInputStream
 import java.io.IOException
+import java.net.InetAddress
+import java.net.InetSocketAddress
 
+/**
+ * NettyServerHandler, 将Netty的Message去转换成为[HttpServerRequestImpl]和[HttpServerResponseImpl]对象,
+ * 交给[DispatcherHandler]去进行请求的处理
+ *
+ * @param applicationContext ApplicationContext
+ */
 @Sharable
 open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelInboundHandlerAdapter() {
 
@@ -140,6 +148,17 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
                 if (name.equals(HttpHeaders.COOKIE, false)) {
                     setCookies(*cookieCodec.decodeAsCookie(value))
                 }
+            }
+            val remoteAddress = context.channel().remoteAddress() as InetSocketAddress
+            val localAddress = context.channel().localAddress() as InetSocketAddress
+
+            // remote host and remote port
+            setRemoteIp(remoteAddress.hostName)
+            setRemotePort(remoteAddress.port)
+            setRemoteHost(remoteAddress.hostName + ":" + remoteAddress.port)
+
+            if (getHeaders().getHost() == null) {
+                getHeaders().add(HttpHeaders.HOST, localAddress.hostName + ":" + localAddress.port)
             }
 
             // 将RequestBody当中的内容，包装成为InputStream设置到request当中
