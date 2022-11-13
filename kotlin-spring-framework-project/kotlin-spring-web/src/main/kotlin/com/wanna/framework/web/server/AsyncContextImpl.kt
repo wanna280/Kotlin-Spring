@@ -38,11 +38,11 @@ open class AsyncContextImpl : AsyncContext {
     }
 
     override fun dispatch(path: String) {
-        request?.action(ActionCode.ASYNC_DISPATCH, this)
+        request?.action(ActionCode.ASYNC_DISPATCH, path)
     }
 
     override fun complete() {
-
+        request?.action(ActionCode.ASYNC_COMPLETE, this)
     }
 
     override fun setTimeout(timeout: Long) {

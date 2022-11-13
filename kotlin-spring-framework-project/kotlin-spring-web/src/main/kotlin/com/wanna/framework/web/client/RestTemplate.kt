@@ -163,7 +163,7 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
     /**
      * 将响应转换为Entity的Response提取器
      */
-    private inner class ResponseEntityResponseExtractor<T>(responseType: Class<T>) :
+    private inner class ResponseEntityResponseExtractor<T : Any>(responseType: Class<T>) :
         ResponseExtractor<ResponseEntity<T>> {
         private val delegate = HttpMessageConverterExtractor(messageConverters, responseType)
 

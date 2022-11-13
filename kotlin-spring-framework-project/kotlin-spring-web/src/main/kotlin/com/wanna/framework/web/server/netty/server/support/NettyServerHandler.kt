@@ -152,9 +152,14 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
             setActionHook(object : ActionHook {
                 override fun action(code: ActionCode, param: Any?) {
                     when (code) {
+
+                        // 异步派发
                         ActionCode.ASYNC_DISPATCH -> context.channel().eventLoop().execute {
                             dispatcherHandler.doDispatch(request, response)
                         }
+
+                        // 异步完成
+                        ActionCode.ASYNC_COMPLETE -> context.channel().flush()
                     }
                 }
             })
