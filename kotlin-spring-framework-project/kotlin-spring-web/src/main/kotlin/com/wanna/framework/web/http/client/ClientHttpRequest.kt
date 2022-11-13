@@ -6,7 +6,7 @@ import com.wanna.framework.web.http.HttpRequest
 /**
  * 对一个客户端Http请求的描述，它可以获取去获取要进行发送的RequestBody(OutputStream)
  */
-interface ClientHttpRequest : HttpOutputMessage,HttpRequest {
+interface ClientHttpRequest : HttpOutputMessage, HttpRequest {
 
     /**
      * 执行目标HTTP请求，获取到ClientHttpResponse
