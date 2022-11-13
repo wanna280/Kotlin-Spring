@@ -14,6 +14,7 @@ import com.wanna.framework.web.http.converter.HttpMessageConverter
 import com.wanna.framework.web.http.converter.StringHttpMessageConverter
 import com.wanna.framework.web.http.converter.json.MappingJackson2HttpMessageConverter
 import java.net.URI
+import java.net.URLEncoder
 
 /**
  * RestTemplate, 它是Spring-Web当中提供的一个Http请求的客户端;
@@ -122,7 +123,10 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
             builder.append("?")
         }
         uriVariables.forEach { (name, value) -> builder.append(name).append("=").append(value).append("&") }
-        return URI(if (uriVariables.isNotEmpty()) builder.substring(0, builder.length - 1) else builder.toString())
+        return URI(
+            if (uriVariables.isNotEmpty()) builder.substring(0, builder.length - 1)
+            else URLEncoder.encode(builder.toString(), "UTF-8")
+        )
     }
 
 
