@@ -16,11 +16,17 @@ open class WebServerManager(
 ) {
 
     companion object {
+
+        /**
+         * Logger
+         */
         @JvmStatic
         private val logger = LoggerFactory.getLogger(WebServerManager::class.java)
     }
 
-    // 从WebServerFactory当中去获取WebServer
+    /**
+     * 从WebServerFactory当中去获取WebServer
+     */
     private var webServer: WebServer = factory.getWebServer()
 
     /**
