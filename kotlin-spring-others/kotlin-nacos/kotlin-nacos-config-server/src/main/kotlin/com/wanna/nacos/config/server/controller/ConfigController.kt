@@ -4,6 +4,7 @@ import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.web.bind.annotation.*
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
+import com.wanna.nacos.config.server.model.ConfigInfo
 import com.wanna.nacos.config.server.utils.NamespaceUtils
 import com.wanna.nacos.config.server.utils.NamespaceUtils.processNamespaceParameter
 import com.wanna.nacos.config.server.utils.RequestUtils
@@ -17,8 +18,38 @@ import com.wanna.nacos.config.server.utils.RequestUtils
 @RequestMapping(["/v1/cs/configs"])
 @RestController
 open class ConfigController {
+
+    /**
+     * 真正地去执行配置的发布/获取、轮询任务的添加的组件
+     */
     @Autowired
     private lateinit var configServerInner: ConfigServerInner
+
+    /**
+     * 发布一个配置文件
+     *
+     * @param request request
+     * @param response response
+     * @param dataId dataId
+     * @param group group
+     * @param tenant namespace
+     * @param content fileContent
+     * @param type fileType
+     * @param srcUser srcUser
+     */
+    @PostMapping
+    fun publishConfig(
+        request: HttpServerRequest, response: HttpServerResponse,
+        @RequestParam dataId: String, @RequestParam group: String,
+        @RequestParam(required = false, defaultValue = "") tenant: String, @RequestParam content: String,
+        @RequestParam(required = false, defaultValue = "TEXT") type: String,
+        @RequestParam(required = false, defaultValue = "") srcUser: String
+    ) {
+        val configInfo = ConfigInfo(dataId, group, content)
+        configInfo.type = type //  fileType
+        configInfo.tenant = processNamespaceParameter(tenant)  // namespace
+        configServerInner.doPublishConfig(request, response, configInfo, srcUser, RequestUtils.getRemoteIp(request))
+    }
 
     /**
      * 根据dataId&group&tenant去获取到对应的配置文件信息

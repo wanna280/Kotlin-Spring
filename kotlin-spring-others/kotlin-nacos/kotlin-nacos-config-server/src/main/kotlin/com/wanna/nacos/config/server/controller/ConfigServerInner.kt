@@ -7,6 +7,7 @@ import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 import com.wanna.nacos.config.server.enums.FileTypeEnum
+import com.wanna.nacos.config.server.model.ConfigInfo
 import com.wanna.nacos.config.server.service.ConfigCacheService
 import com.wanna.nacos.config.server.service.LongPollingService
 import com.wanna.nacos.config.server.service.repository.PersistService
@@ -80,6 +81,23 @@ open class ConfigServerInner {
     }
 
     /**
+     * 执行一个配置文件的发布
+     *
+     * @param request request
+     * @param response response
+     */
+    open fun doPublishConfig(
+        request: HttpServerRequest,
+        response: HttpServerResponse,
+        configInfo: ConfigInfo,
+        srcUser: String,
+        srcIp: String
+    ): String {
+        persistService.insertOrUpdate(srcIp, srcUser, configInfo, System.currentTimeMillis(), emptyMap(), true)
+        return "200"
+    }
+
+    /**
      * 根据dataId&group&tag&clientIp获取ConfigServer当中的配置文件
      *
      * @param request request
@@ -100,10 +118,13 @@ open class ConfigServerInner {
         clientIp: String
     ): String {
 
+        // 从ConfigCache当中去获取到对应的缓存的ConfigItem信息
         val cacheItem = ConfigCacheService.getContentCache(GroupKey2.getKeyTenant(dataId, group, tenant))
-        if (cacheItem != null) {
 
-            // 从Disk/PersistentService去读取到配置文件
+        // TODO 从Disk/PersistentService去读取到配置文件
+        val configInfo = persistService.findConfigInfo(dataId, group, tenant)
+
+        if (cacheItem != null) {
 
             // 如果为空的话, 那么默认为"TEXT"
             val fileType = cacheItem.type.ifBlank { FileTypeEnum.TEXT.fileType }
@@ -114,9 +135,15 @@ open class ConfigServerInner {
             // 获取到Config-Type对应的Content-Type, 也就是响应给客户端的数据格式(TEXT/JSON...)
             val fileTypeEnum = FileTypeEnum.getFileTypeEnumByFileExtensionOrFileType(fileType)
             response.setHeader(HttpHeaders.CONTENT_TYPE, fileTypeEnum.contentType)
+
+
         }
 
-
+        val content = configInfo?.content
+        if (content != null) {
+            response.getOutputStream().write(content.toByteArray())
+            response.flush()
+        }
 
         return "200"
     }
