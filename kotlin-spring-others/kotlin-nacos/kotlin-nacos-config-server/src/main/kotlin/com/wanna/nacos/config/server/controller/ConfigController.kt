@@ -58,7 +58,7 @@ open class ConfigController {
      * @param response response
      * @param dataId dataId
      * @param group group
-     * @param tenant
+     * @param tenant tenant(namespace)
      * @param tag tag
      */
     @GetMapping

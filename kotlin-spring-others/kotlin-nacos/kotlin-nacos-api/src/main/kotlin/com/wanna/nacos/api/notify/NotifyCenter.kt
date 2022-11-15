@@ -1,5 +1,8 @@
 package com.wanna.nacos.api.notify
 
+import com.wanna.nacos.api.notify.listener.Subscriber
+import java.util.concurrent.ConcurrentHashMap
+
 /**
  * NotifyCenter, 用于去进行事件的发布
  *
@@ -8,6 +11,12 @@ package com.wanna.nacos.api.notify
  * @date 2022/11/15
  */
 class NotifyCenter {
+
+    /**
+     * 维护所有事件对应的[EventPublisher], Key-EventClassName, Value-该Event类型对应的EventPublisher
+     */
+    private val publisherMap = ConcurrentHashMap<String, EventPublisher>()
+
     companion object {
 
         /**
@@ -22,13 +31,42 @@ class NotifyCenter {
          * @param event event
          */
         @JvmStatic
-        fun publishEvent(event: Event) {
-            publishEvent(event::class.java, event)
+        fun publishEvent(event: Event): Boolean {
+            return publishEvent(event::class.java, event)
+        }
+
+        /**
+         * 发布事件
+         *
+         * @param eventClass eventClass
+         * @param event event
+         * @return 发布事件是否成功?
+         */
+        @JvmStatic
+        fun publishEvent(eventClass: Class<*>, event: Event): Boolean {
+            val eventPublisher = INSTANCE.publisherMap[eventClass.name]
+            return eventPublisher?.publish(event) ?: false
         }
 
         @JvmStatic
-        fun publishEvent(eventClass: Class<*>, event: Event) {
+        fun registerSubscriber(subscriber: Subscriber<*>) {
+            addSubscriber(subscriber, subscriber.subscribeType())
+        }
 
+        /**
+         * 添加给定的[Subscriber]到具体的Publisher当中
+         *
+         * @param subscriber subscriber
+         * @param subscribeType subscribeType
+         */
+        @JvmStatic
+        private fun addSubscriber(subscriber: Subscriber<*>, subscribeType: Class<out Event>) {
+            val topic = subscribeType.name
+            synchronized(NotifyCenter::class.java) {
+                // TODO 这里Publisher需要支持SPI
+                INSTANCE.publisherMap.putIfAbsent(topic, DefaultPublisher())
+            }
+            INSTANCE.publisherMap[topic]!!.addSubscriber(subscriber)
         }
     }
 }

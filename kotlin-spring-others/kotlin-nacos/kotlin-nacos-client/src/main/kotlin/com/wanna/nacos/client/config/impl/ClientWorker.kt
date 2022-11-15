@@ -70,7 +70,8 @@ open class ClientWorker : Closeable {
     }
 
     init {
-        // 在初始化时, 就添加一个定时任务去执行checkConfigInfo
+        // 在初始化时, 就添加一个10s的定时任务去执行checkConfigInfo
+        // 主要是将本地的这些CacheData(Listener)去触发LongPolling长轮询, 定时任务的作用在于去监听Listener的变化...不然添加了Listener之后不能及时刷新
         checkConfigInfoExecutor.scheduleWithFixedDelay({ checkConfigInfo() }, 1L, 10L, TimeUnit.MILLISECONDS)
     }
 
@@ -117,7 +118,7 @@ open class ClientWorker : Closeable {
      * 启动长轮询任务, 检查ConfigInfo是否发生了变更?
      */
     open fun checkConfigInfo() {
-        longPollingExecutor.execute(LongPollingRunnable(""))
+        longPollingExecutor.execute(LongPollingRunnable(0))
     }
 
     /**
@@ -233,7 +234,7 @@ open class ClientWorker : Closeable {
      *
      * @param taskId 需要去进行处理的CacheData的taskId
      */
-    inner class LongPollingRunnable(private val taskId: String) : Runnable {
+    inner class LongPollingRunnable(val taskId: Int) : Runnable {
         override fun run() {
             val cacheDataList = ArrayList<CacheData>()
 

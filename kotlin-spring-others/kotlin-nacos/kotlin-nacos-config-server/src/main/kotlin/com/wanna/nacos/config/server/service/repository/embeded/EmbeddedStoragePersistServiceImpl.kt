@@ -3,7 +3,7 @@ package com.wanna.nacos.config.server.service.repository.embeded
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.nacos.config.server.model.ConfigInfo
 import com.wanna.nacos.config.server.service.repository.PersistService
-import com.wanna.nacos.config.server.utils.GroupKey2
+import com.wanna.nacos.config.server.utils.GroupKey2.getKeyTenant
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -12,6 +12,8 @@ import java.util.concurrent.ConcurrentHashMap
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/11/14
+ *
+ * @see PersistService
  */
 @Component
 open class EmbeddedStoragePersistServiceImpl : PersistService {
@@ -24,7 +26,7 @@ open class EmbeddedStoragePersistServiceImpl : PersistService {
 
     override fun findConfigInfo(dataId: String, group: String, tenant: String): ConfigInfo? {
         // TODO, 暂时先这么玩, 后面再说
-        val key = GroupKey2.getKeyTenant(dataId, group, tenant)
+        val key = getKeyTenant(dataId, group, tenant)
         return configInfoCache[key]
     }
 
@@ -37,7 +39,7 @@ open class EmbeddedStoragePersistServiceImpl : PersistService {
         notify: Boolean
     ) {
         // TODO, 暂时先这么玩
-        val key = GroupKey2.getKeyTenant(configInfo.dataId ?: "", configInfo.group ?: "", configInfo.tenant ?: "")
+        val key = getKeyTenant(configInfo.dataId ?: "", configInfo.group ?: "", configInfo.tenant ?: "")
         configInfoCache[key] = configInfo
     }
 }

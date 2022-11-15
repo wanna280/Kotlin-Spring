@@ -1,15 +1,21 @@
 package com.wanna.nacos.config.server.service
 
+import com.wanna.nacos.api.notify.NotifyCenter
 import com.wanna.nacos.config.server.model.CacheItem
+import com.wanna.nacos.config.server.model.event.LocalDataChangeEvent
 import com.wanna.nacos.config.server.utils.GroupKey2
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * ConfigCacheService
+ * ConfigCacheService, 维护ConfigServer当中的配置文件的状态信息;
+ *
+ * 当ConfigServer当中的配置文件发生变更时, 就需要通过发布[LocalDataChangeEvent]去通知所有的监听器去处理这个事件
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/11/13
+ *
+ * @see LocalDataChangeEvent
  */
 object ConfigCacheService {
 
@@ -64,6 +70,9 @@ object ConfigCacheService {
         if (cacheItem.md5 != md5) {
             cacheItem.md5 = md5
             cacheItem.lastModifiedTs = lastModifiedTs
+
+            // 发布配置文件已经发生变更的事件, 需要通知所有的客户端...
+            NotifyCenter.publishEvent(LocalDataChangeEvent(groupKey))
         }
     }
 
@@ -78,8 +87,11 @@ object ConfigCacheService {
     @JvmStatic
     fun remove(dataId: String, group: String, tenant: String): Boolean {
         // TODO 这里似乎得加上锁的逻辑?
-        val key = GroupKey2.getKeyTenant(dataId, group, tenant)
-        CACHE.remove(key)
+        val groupKey = GroupKey2.getKeyTenant(dataId, group, tenant)
+        CACHE.remove(groupKey)
+
+        // 当配置文件被移除时, 我们也得通知所有的客户端...
+        NotifyCenter.publishEvent(LocalDataChangeEvent(groupKey))
         return true
     }
 

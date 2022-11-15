@@ -1,10 +1,9 @@
 package com.wanna.nacos.config.server.service.repository
 
 import com.wanna.nacos.config.server.model.ConfigInfo
-import java.sql.Timestamp
 
 /**
- * 持久操作的Service
+ * 真正地去执行持久操作的Service, 比如支持去使用SQL去将配置文件去保存到DB当中
  *
  * @author jianchao.jia
  * @version v1.0
@@ -17,7 +16,7 @@ interface PersistService {
      *
      * @param dataId dataId
      * @param group group
-     * @param tenant tenant
+     * @param tenant tenant(namespace)
      * @return 加载到的配置文件的ConfigInfo
      */
     fun findConfigInfo(dataId: String, group: String, tenant: String): ConfigInfo?

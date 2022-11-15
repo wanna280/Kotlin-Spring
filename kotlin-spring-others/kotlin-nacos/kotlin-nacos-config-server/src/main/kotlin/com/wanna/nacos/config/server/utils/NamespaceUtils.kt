@@ -10,12 +10,12 @@ package com.wanna.nacos.config.server.utils
 object NamespaceUtils {
 
     /**
-     * public namespace常量
+     * "public" namespace常量
      */
     private const val NAMESPACE_PUBLIC_KEY = "public"
 
     /**
-     * null namespace常量
+     * "null" namespace常量
      */
     private const val NAMESPACE_NULL_KEY = "null"
 
@@ -30,7 +30,7 @@ object NamespaceUtils {
     @JvmStatic
     fun processNamespaceParameter(namespace: String?): String {
         if (namespace == null || namespace.isBlank()
-            || NAMESPACE_PUBLIC_KEY.equals(namespace)
+            || NAMESPACE_PUBLIC_KEY == namespace
             || NAMESPACE_NULL_KEY.equals(namespace, false)
         ) {
             return ""

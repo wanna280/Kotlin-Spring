@@ -12,6 +12,7 @@ import com.wanna.nacos.config.server.service.ConfigCacheService
 import com.wanna.nacos.config.server.service.LongPollingService
 import com.wanna.nacos.config.server.service.repository.PersistService
 import com.wanna.nacos.config.server.utils.GroupKey2
+import com.wanna.nacos.config.server.utils.GroupKey2.getKeyTenant
 import com.wanna.nacos.config.server.utils.MD5Utils
 
 /**
@@ -81,10 +82,13 @@ open class ConfigServerInner {
     }
 
     /**
-     * 执行一个配置文件的发布
+     * 真正地去执行一个配置文件(ConfigInfo)的发布, 如果已经存在的话, 那么是更新; 如果不存在的话, 那么是新增
      *
      * @param request request
      * @param response response
+     * @param configInfo ConfigInfo, 维护的是一个配置文件的相关信息(content/md5/dataId/group/tenant)
+     * @param srcUser srcUser
+     * @param srcIp srcIp
      */
     open fun doPublishConfig(
         request: HttpServerRequest,
@@ -98,7 +102,7 @@ open class ConfigServerInner {
     }
 
     /**
-     * 根据dataId&group&tag&clientIp获取ConfigServer当中的配置文件
+     * 真正地去执行根据dataId&group&tag&clientIp获取ConfigServer当中的配置文件
      *
      * @param request request
      * @param response response
@@ -119,7 +123,7 @@ open class ConfigServerInner {
     ): String {
 
         // 从ConfigCache当中去获取到对应的缓存的ConfigItem信息
-        val cacheItem = ConfigCacheService.getContentCache(GroupKey2.getKeyTenant(dataId, group, tenant))
+        val cacheItem = ConfigCacheService.getContentCache(getKeyTenant(dataId, group, tenant))
 
         // TODO 从Disk/PersistentService去读取到配置文件
         val configInfo = persistService.findConfigInfo(dataId, group, tenant)

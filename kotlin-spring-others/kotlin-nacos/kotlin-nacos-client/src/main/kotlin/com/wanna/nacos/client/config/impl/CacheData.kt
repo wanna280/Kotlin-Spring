@@ -41,7 +41,7 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
     /**
      * taskId
      */
-    var taskId: String = ""
+    var taskId: Int = 0
 
 
     /**
@@ -110,7 +110,7 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
         val executor = listener.getExecutor()
 
         val job = Runnable {
-            // callbackListener
+            // callbackListener, 去接收配置文件的变更去进行处理...
             listener.receiveConfigInfo(content)
 
             // 变更Md5和content

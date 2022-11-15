@@ -6,6 +6,10 @@ import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.server.AsyncContext
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
+import com.wanna.nacos.api.notify.Event
+import com.wanna.nacos.api.notify.NotifyCenter
+import com.wanna.nacos.api.notify.listener.Subscriber
+import com.wanna.nacos.config.server.model.event.LocalDataChangeEvent
 import com.wanna.nacos.config.server.utils.ConfigExecutor
 import com.wanna.nacos.config.server.utils.MD5Utils
 import com.wanna.nacos.config.server.utils.RequestUtils
@@ -50,9 +54,22 @@ open class LongPollingService {
     private val retainIps = ConcurrentHashMap<String, Long>()
 
     /**
-     * 维护所有的Subscriber
+     * 维护所有的客户端Subscriber
      */
     private val allSubscribers: Queue<ClientLongPolling> = ConcurrentLinkedQueue()
+
+    init {
+
+        // 注册一个监听配置文件变化的Subscriber, 去监听LocalDataChangeEvent事件,
+        // 当这个事件触发时,代表ConfigServer配置文件发生了变更, 就需要执行一个DataChangeTask任务去进行通知客户端
+        NotifyCenter.registerSubscriber(object : Subscriber<LocalDataChangeEvent>() {
+            override fun onEvent(event: LocalDataChangeEvent) {
+                ConfigExecutor.executeLongPolling(DataChangeTask(event.groupKey))
+            }
+
+            override fun subscribeType(): Class<out Event> = LocalDataChangeEvent::class.java
+        })
+    }
 
 
     /**

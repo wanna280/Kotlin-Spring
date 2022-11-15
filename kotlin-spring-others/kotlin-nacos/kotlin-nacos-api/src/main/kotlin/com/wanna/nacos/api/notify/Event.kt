@@ -4,7 +4,7 @@ import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * 用于[NotifyCenter]去进行发布的事件
+ * 用于[NotifyCenter]和[EventPublisher]去进行发布的事件
  *
  * @author jianchao.jia
  * @version v1.0
@@ -24,4 +24,9 @@ abstract class Event : Serializable {
      * 当前事件的序号
      */
     val sequence = SEQUENCE.getAndIncrement()
+
+    /**
+     * 事件的作用域
+     */
+    var scope: String? = null
 }
