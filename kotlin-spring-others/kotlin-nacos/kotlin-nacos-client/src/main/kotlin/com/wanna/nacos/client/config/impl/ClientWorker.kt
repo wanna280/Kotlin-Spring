@@ -71,7 +71,6 @@ open class ClientWorker : Closeable {
 
     init {
         // 在初始化时, 就添加一个10s的定时任务去执行checkConfigInfo
-        // 主要是将本地的这些CacheData(Listener)去触发LongPolling长轮询, 定时任务的作用在于去监听Listener的变化...不然添加了Listener之后不能及时刷新
         checkConfigInfoExecutor.scheduleWithFixedDelay({ checkConfigInfo() }, 1L, 10L, TimeUnit.MILLISECONDS)
     }
 
