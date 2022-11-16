@@ -47,7 +47,7 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
     /**
      * Worker, 提供LongPolling去拉取ConfigServer的配置文件
      */
-    private var worker: ClientWorker = ClientWorker()
+    private var worker: ClientWorker = ClientWorker(properties)
 
     init {
         // 初始化namespace

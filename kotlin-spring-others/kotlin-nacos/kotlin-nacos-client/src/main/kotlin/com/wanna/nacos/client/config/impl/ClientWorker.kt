@@ -7,15 +7,19 @@ import com.wanna.framework.web.client.RestTemplate
 import com.wanna.framework.web.http.ResponseEntity
 import com.wanna.framework.web.http.client.ClientHttpRequest
 import com.wanna.framework.web.http.client.ClientHttpResponse
+import com.wanna.nacos.api.PropertyKeyConst
 import com.wanna.nacos.api.common.Constants
 import com.wanna.nacos.api.config.listener.Listener
 import com.wanna.nacos.client.config.filter.impl.ConfigResponse
 import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.net.URI
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 /**
  * NacosConfigClient的长轮询任务的Worker
@@ -23,8 +27,10 @@ import java.util.concurrent.TimeUnit
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/11/12
+ *
+ * @param properties 对于ConfigClient的一些配置信息(比如长轮询的时间)
  */
-open class ClientWorker : Closeable {
+open class ClientWorker(private val properties: Properties) : Closeable {
 
     /**
      * Logger
@@ -37,9 +43,9 @@ open class ClientWorker : Closeable {
     private val restTemplate = RestTemplate()
 
     /**
-     * timeout
+     * ConfigClient的客户端长轮询的timeout
      */
-    private var timeout: Long = 1000L
+    private var timeout: Long = 0L
 
     /**
      * 维护所有的缓存数据
@@ -70,8 +76,20 @@ open class ClientWorker : Closeable {
     }
 
     init {
+
+        // 利用Properties去完成初始化...
+        init(properties)
+
         // 在初始化时, 就添加一个10s的定时任务去执行checkConfigInfo
         checkConfigInfoExecutor.scheduleWithFixedDelay({ checkConfigInfo() }, 1L, 10L, TimeUnit.MILLISECONDS)
+    }
+
+    private fun init(properties: Properties) {
+        // 初始化长轮询的超时时间, 如果配置了一个低于30s的, 那么将会采用30s; 可以配置比30s更高
+        this.timeout = maxOf(
+            properties[PropertyKeyConst.CONFIG_LONG_POLL_TIMEOUT]?.toString()?.toLongOrNull()
+                ?: Constants.CONFIG_LONG_POLL_TIMEOUT, Constants.MIN_CONFIG_LONG_POLL_TIMEOUT
+        )
     }
 
     /**
@@ -133,6 +151,7 @@ open class ClientWorker : Closeable {
      * 检查ConfigServer当中的文件是否发生了变更?
      *
      * @param cacheDataList 要去进行检查的ConfigClient当中的CacheData列表
+     * @return ConfigServer当中相比本地ConfigClient的配置文件, 发生变更的那些GroupKey信息
      */
     private fun checkUpdateDataIds(cacheDataList: List<CacheData>): List<String> {
         val builder = StringBuilder()
@@ -154,6 +173,11 @@ open class ClientWorker : Closeable {
         return checkUpdateConfigStr(builder.toString(), false)
     }
 
+    /**
+     * 检查ConfigServer当中配置文件，和本地的配置文件的MD5值去进行对比, 检查配置文件是否有发生变化?
+     *
+     * @param probeUpdateString 要去进行探查的配置文件的dataId&group&md5&tenant
+     */
     open fun checkUpdateConfigStr(probeUpdateString: String, isInitializingCacheList: Boolean): List<String> {
         val entity = restTemplate.execute(URI("/v1/cs/configs/listener"), RequestMethod.GET, object : RequestCallback {
             override fun doWithRequest(request: ClientHttpRequest) {
@@ -168,6 +192,11 @@ open class ClientWorker : Closeable {
                 )
             }
         })!!
+
+
+        // readTimeout = 1.5*timeout, 为了避免Server处理任务的延时, 因此多加一段时间去等一会...
+        val readTimout = timeout + timeout shr 1
+
         val body = entity.body
 
         return emptyList()
@@ -229,14 +258,15 @@ open class ClientWorker : Closeable {
     }
 
     /**
-     * 长轮询任务的Runnable, 检查配置文件是否发生了变更?
+     * 长轮询任务的Runnable, 检查本地的这些配置文件，相比ConfigServer是否发生了变更?
      *
      * @param taskId 需要去进行处理的CacheData的taskId
      */
-    inner class LongPollingRunnable(val taskId: Int) : Runnable {
+    inner class LongPollingRunnable(private val taskId: Int) : Runnable {
         override fun run() {
             val cacheDataList = ArrayList<CacheData>()
 
+            // 统计出来所有的当前长轮询任务要去进行处理的CacheData
             cacheMap.values.forEach {
                 if (taskId == it.taskId) {
                     // 统计出来当前长轮询需要去进行处理的CacheData
@@ -254,25 +284,29 @@ open class ClientWorker : Closeable {
             val changedGroupKeyList = checkUpdateDataIds(cacheDataList)
 
 
+            // 统计出来所有的发生变更的Config配置文件的group&dataId&tenant
             // 重新从ConfigServer当中去加载配置文件...去刷新本地CacheData的内容和Md5
             changedGroupKeyList.forEach {
                 val key = GroupKey.parseKey(it)
                 val group = key[0]
                 val dataId = key[1]
                 val tenant = key[2]
-                val serverConfig = getServerConfig(dataId, group, tenant, 5000L)
 
-                // 生成组合的Key, 从cacheMap当中获取到对应的CacheData
+                // 根据dataId&group&tenant从ConfigSever当中去拉取该配置文件的相关信息
+                val serverConfig = getServerConfig(dataId, group, tenant, 3000L)
+
+                // 根据dataId&group&tenant生成组合的GroupKey, 从cacheMap当中获取到对应的CacheData
                 val groupKey = GroupKey.getKeyTenant(dataId, group, tenant)
                 val cacheData = cacheMap[groupKey]!!
 
-                // 将CacheData的文件内容去修改为新的ConfigServer当中的content
+                // 将CacheData的文件内容去修改为新的ConfigServer当中的content, 同步修改MD5
                 cacheData.content = serverConfig.getContent() ?: ""
                 // 设置fileType
                 cacheData.fileType = serverConfig.getConfigType() ?: "text"
             }
 
             // 在加载完成ConfigServer的配置文件之后, 继续检查一下Md5, 触发Listener
+            // 因为在加载到ConfigServer的配置文件时, 会将CacheData当中的MD5去进行修改...
             cacheDataList.forEach {
                 it.checkListenerMd5()
             }

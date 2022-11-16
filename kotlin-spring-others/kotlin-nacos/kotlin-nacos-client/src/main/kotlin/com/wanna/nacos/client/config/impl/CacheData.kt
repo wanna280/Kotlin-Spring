@@ -4,7 +4,7 @@ import com.wanna.nacos.api.config.listener.Listener
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
- * CacheData, 描述的是NacosConfig的一个配置文件, 负责维护相关的监听器
+ * CacheData, 描述的是NacosConfig的一个配置文件, 负责维护一个ConfigClient的配置文件相关的监听器
  *
  * @author jianchao.jia
  * @version v1.0
@@ -20,7 +20,6 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
      */
     @Volatile
     var md5: String = ""
-        get() = field
         private set
 
     /**
@@ -29,6 +28,7 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
     @Volatile
     var content: String = ""
         set(value) {
+            // 当更新content内容时, 同步更新MD5
             field = value
             md5 = value
         }

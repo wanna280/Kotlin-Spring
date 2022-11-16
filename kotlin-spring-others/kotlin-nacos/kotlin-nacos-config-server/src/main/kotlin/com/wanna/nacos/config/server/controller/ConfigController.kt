@@ -42,7 +42,7 @@ open class ConfigController {
         request: HttpServerRequest, response: HttpServerResponse,
         @RequestParam dataId: String, @RequestParam group: String,
         @RequestParam(required = false, defaultValue = "") tenant: String, @RequestParam content: String,
-        @RequestParam(required = false, defaultValue = "TEXT") type: String,
+        @RequestParam(required = false, defaultValue = "text") type: String,
         @RequestParam(required = false, defaultValue = "") srcUser: String
     ) {
         val configInfo = ConfigInfo(dataId, group, content)
