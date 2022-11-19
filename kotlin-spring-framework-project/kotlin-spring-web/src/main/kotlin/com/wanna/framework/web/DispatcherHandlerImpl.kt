@@ -316,7 +316,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      */
     protected open fun notHandlerFound(request: HttpServerRequest, response: HttpServerResponse) {
         if (logger.isWarnEnabled) {
-            logger.warn("[NOT-FOUND]--没有找到合适的Handler去处理本次请求[path=${request.getUri()}]")
+            logger.warn("[NOT-FOUND]--没有找到合适的Handler去处理本次请求[path=${request.getUrl()}, method=${request.getMethod()}, headers=[${request.getHeaders()}]]")
         }
         // sendError(404)
         response.sendError(HttpServerResponse.SC_NOT_FOUND)

@@ -357,4 +357,9 @@ open class HttpHeaders : MultiValueMap<String, String> {
     open fun setContentType(contentType: MediaType) {
         this.set(CONTENT_TYPE, contentType.toString())
     }
+
+    /**
+     * toString
+     */
+    override fun toString(): String = this.httpHeaders.toString()
 }
