@@ -1,28 +1,30 @@
 package com.wanna.nacos.client.config.impl
 
-import com.wanna.framework.web.bind.annotation.RequestMethod
-import com.wanna.framework.web.client.RequestCallback
-import com.wanna.framework.web.client.ResponseExtractor
 import com.wanna.framework.web.client.RestTemplate
-import com.wanna.framework.web.http.ResponseEntity
-import com.wanna.framework.web.http.client.ClientHttpRequest
-import com.wanna.framework.web.http.client.ClientHttpResponse
 import com.wanna.nacos.api.PropertyKeyConst
 import com.wanna.nacos.api.common.Constants
 import com.wanna.nacos.api.config.listener.Listener
+import com.wanna.nacos.client.config.common.ConfigConstants
 import com.wanna.nacos.client.config.filter.impl.ConfigResponse
+import com.wanna.nacos.client.config.http.HttpAgent
+import com.wanna.nacos.client.config.http.ServerHttpAgent
+import com.wanna.nacos.client.utils.ParamUtils
 import org.slf4j.LoggerFactory
 import java.io.Closeable
-import java.net.URI
+import java.net.URLDecoder
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
+import kotlin.collections.LinkedHashMap
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 /**
- * NacosConfigClient的长轮询任务的Worker
+ * NacosConfigClient的长轮询任务的Worker, 负责将添加进来的所有的[CacheData]
+ * 去进行不断地轮询请求ConfigServer, 如果ConfigServer的配置文件发生变更的话,
+ * 那么需要回调该[CacheData]内部维护的所有的Listener
  *
  * @author jianchao.jia
  * @version v1.0
@@ -38,9 +40,9 @@ open class ClientWorker(private val properties: Properties) : Closeable {
     private val logger = LoggerFactory.getLogger(ClientWorker::class.java)
 
     /**
-     * RestTemplate
+     * 初始化HttpAgent
      */
-    private val restTemplate = RestTemplate()
+    private val agent: HttpAgent = ServerHttpAgent(properties)
 
     /**
      * ConfigClient的客户端长轮询的timeout(默认为30s, 最低也为30s, 可以通过Properties当中去配置"configLongPollTimeout"使用高于30s的超时时间)
@@ -51,6 +53,11 @@ open class ClientWorker(private val properties: Properties) : Closeable {
      * 维护所有的配置文件数据以及监听该配置文件的所有的Listener列表
      */
     private var cacheMap = ConcurrentHashMap<String, CacheData>()
+
+    /**
+     * 当前的LongPolling任务的数量
+     */
+    private var currentLongingTaskCount = 0
 
     /**
      * LongPolling ScheduledExecutorService, 提供对于长轮询任务的执行
@@ -66,7 +73,8 @@ open class ClientWorker(private val properties: Properties) : Closeable {
         }
 
     /**
-     * 检查配置信息的定时任务线程池, 每隔10ms去检查一下配置是否有发生变更?
+     * 检查LongPollingTask数量是否足够的线程池, 每个10s去检查一下是否需要去对LongPollingTask去进行扩容;
+     * 默认情况下, 当CacheData的数量超过3000时就需要去进行扩容
      */
     private val checkConfigInfoExecutor = Executors.newScheduledThreadPool(1) {
         val thread = Thread(it)
@@ -80,7 +88,7 @@ open class ClientWorker(private val properties: Properties) : Closeable {
         // 利用Properties去完成初始化...
         init(properties)
 
-        // 在初始化时, 就添加一个10s的定时任务去执行checkConfigInfo
+        // 在初始化时, 就添加一个10s的定时任务去执行checkConfigInfo, 检查是否需要扩容LongPollingTask
         checkConfigInfoExecutor.scheduleWithFixedDelay({ checkConfigInfo() }, 1L, 10L, TimeUnit.MILLISECONDS)
     }
 
@@ -93,15 +101,38 @@ open class ClientWorker(private val properties: Properties) : Closeable {
     }
 
     /**
-     * 添加Listener
+     * 为某个namespace的ClientWorker去添加Listener
      *
      * @param dataId dataId
      * @param group group
      * @param listeners 需要添加的监听器列表
      */
     open fun addTenantListeners(dataId: String, group: String, listeners: List<Listener>) {
-        val cacheData = addCacheDataIfAbsent(dataId, group, "")
+        val cacheData = addCacheDataIfAbsent(dataId, group, agent.getTenant())
         listeners.forEach(cacheData::addListener)
+    }
+
+    /**
+     * 从某个namespace的ClientWorker当中移除一个监听dataId和group对应的配置文件的Listener
+     *
+     * @param dataId dataId
+     * @param group group
+     * @param listener 要去进行移除的Listener
+     */
+    open fun removeTenantListener(dataId: String, group: String, listener: Listener) {
+        getCacheData(dataId, group, "")?.removeListener(listener)
+    }
+
+    /**
+     * 根据dataId&group&tenant去获取到对应的CacheData
+     *
+     * @param dataId dataId
+     * @param group group
+     * @param tenant tenant
+     * @return 获取到的CacheData
+     */
+    open fun getCacheData(dataId: String, group: String, tenant: String): CacheData? {
+        return cacheMap[GroupKey.getKeyTenant(dataId, group, tenant)]
     }
 
     /**
@@ -132,10 +163,27 @@ open class ClientWorker(private val properties: Properties) : Closeable {
     }
 
     /**
-     * 启动长轮询任务, 检查ConfigInfo是否发生了变更?
+     * 启动长轮询任务, 检查是否需要扩容LongPollingRunnable任务?
+     * 默认情况下, 一个LongPollingRunnable需要去处理3000个CacheData的配置文件;
+     * 如果超过了3000个CacheData, 那么就需要扩容LongPollingRunnable;
      */
     open fun checkConfigInfo() {
-        longPollingExecutor.execute(LongPollingRunnable(0))
+        val size = cacheMap.size
+
+        // 计算需要的LongPollingTask的数量, 使用CacheData的size/perTaskConfigSize, 去进行向上取整得到
+        val longPollingTaskCount = ceil(size.toDouble() / ParamUtils.getPerTaskConfigSize().toDouble()).roundToInt()
+
+        // 如果需要的LongPollingTask的数量比当前的LongPollingTask的数量多, 那么说明需要去进行扩容
+        if (longPollingTaskCount > currentLongingTaskCount) {
+
+            // 扩容LongPollingTask到预期LongPollingTask的数量
+            for (index in currentLongingTaskCount until longPollingTaskCount) {
+                longPollingExecutor.execute(LongPollingRunnable(index))
+            }
+
+            // 修改当前的LongPollingTask的数量...
+            currentLongingTaskCount = longPollingTaskCount
+        }
     }
 
     /**
@@ -154,19 +202,25 @@ open class ClientWorker(private val properties: Properties) : Closeable {
      * @return ConfigServer当中相比本地ConfigClient的配置文件, 发生变更的那些GroupKey信息
      */
     private fun checkUpdateDataIds(cacheDataList: List<CacheData>): List<String> {
+        if (cacheDataList.isEmpty()) {
+            return emptyList()
+        }
         val builder = StringBuilder()
 
         // 把本地的这些CacheData的dataId、group、tenant、Md5传输给ConfigServer,
         // 让ConfigServer去检查已经发生变更的那些配置文件, 并给我们返回
+        // 如果长度为3, 那么分别是dataId/group/md5;
+        // 如果长度为4, 那么分别为dataId/group/md5/tenant
         cacheDataList.forEach {
-            builder.append(it.group).append(Char(2))
-            builder.append(it.dataId).append(Char(2))
+            builder.append(it.group).append(Constants.WORD_SEPARATOR)
+            builder.append(it.dataId).append(Constants.WORD_SEPARATOR)
             if (it.tenant.isNotBlank()) {
-                builder.append(it.md5).append(Char(2))
-                builder.append(it.tenant).append("\n")
+                builder.append(it.md5).append(Constants.WORD_SEPARATOR)
+                builder.append(it.tenant)
             } else {
-                builder.append(it.md5).append("\n")
+                builder.append(it.md5)
             }
+            builder.append(Constants.LINE_SEPARATOR)
         }
 
         // ConfigServer当中的文件是否发生了变更?
@@ -179,23 +233,30 @@ open class ClientWorker(private val properties: Properties) : Closeable {
      * @param probeUpdateString 要去进行探查的配置文件的dataId&group&md5&tenant
      */
     open fun checkUpdateConfigStr(probeUpdateString: String, isInitializingCacheList: Boolean): List<String> {
-        val entity = restTemplate.execute(URI("/v1/cs/configs/listener"), RequestMethod.GET,
-            { request -> request.getHeaders().add("Long-Polling-Timeout", timeout.toString()) }
-        ) { response ->
-            ResponseEntity(
-                response.getStatusCode(),
-                response.getHeaders(),
-                String(response.getBody().readAllBytes())
-            )
-        }!!
+        val headers = LinkedHashMap<String, String>()
+        headers[ConfigConstants.LONG_POLLING_TIMEOUT_HEADER] = timeout.toString()
+        val params = LinkedHashMap<String, String>()
 
+        // 需要探测的可能更新的配置文件的groupKey列表
+        params[Constants.LISTENING_CONFIGS] = probeUpdateString
 
         // readTimeout = 1.5*timeout, 为了避免Server处理任务的延时, 因此多加一段时间去等一会...
         val readTimout = timeout + timeout shr 1
-
-        val body = entity.body
-
-        return emptyList()
+        val result = agent.httpPost("/v1/cs/configs/listener", headers, params, Constants.ENCODE, readTimout)
+        if (result.data == null) {
+            return emptyList()
+        }
+        val updatedGroupKeys = ArrayList<String>()
+        val data = URLDecoder.decode(result.data!!, Constants.ENCODE)
+        data.split(Constants.LINE_SEPARATOR).forEach {
+            val list = it.split(Constants.WORD_SEPARATOR)
+            if (list.size == 2) {
+                updatedGroupKeys += GroupKey.getKey(list[0], list[1])
+            } else if (list.size == 3) {
+                updatedGroupKeys += GroupKey.getKeyTenant(list[0], list[1], list[2])
+            }
+        }
+        return updatedGroupKeys
     }
 
     /**
@@ -209,38 +270,18 @@ open class ClientWorker(private val properties: Properties) : Closeable {
      */
     open fun getServerConfig(dataId: String, group: String, tenant: String, timeout: Long): ConfigResponse {
         val params = HashMap<String, String>()
-        params["dataId"] = dataId
-        params["group"] = group
+        params[ConfigConstants.DATA_ID] = dataId
+        params[ConfigConstants.GROUP] = group
         if (tenant.isNotBlank()) {
-            params["tenant"] = tenant
+            params[ConfigConstants.TENANT] = tenant
         }
+        val result = agent.httpGet("/v1/cs/configs", emptyMap(), params, Constants.ENCODE, timeout)
+        val header = result.header
 
-        val url = StringBuilder("http://localhost:9966/v1/cs/configs")
-        if (params.isNotEmpty()) {
-            url.append("?")
-            params.forEach { url.append(it.key).append("=").append(it.value).append("&") }
-            url.setLength(url.length - 1)  // remote last &
-        }
-        val entity = restTemplate.execute(
-            URI(url.toString()),
-            RequestMethod.GET,
-            {
-
-            }
-        ) { response ->
-            ResponseEntity(
-                response.getStatusCode(),
-                response.getHeaders(),
-                String(response.getBody().readAllBytes())
-            )
-        }!!
-        val headers = entity.headers
-        val content = entity.body ?: ""
-
-        val configType = headers.getFirst(Constants.CONFIG_TYPE) ?: ""
-        val encryptedDataKey = headers.getFirst(Constants.ENCRYPTED_DATA_KEY) ?: ""
+        val configType = header.getValue(Constants.CONFIG_TYPE) ?: ""
+        val encryptedDataKey = header.getValue(Constants.ENCRYPTED_DATA_KEY) ?: ""
         val configResponse = ConfigResponse()
-        configResponse.setContent(content)
+        configResponse.setContent(result.data)
         configResponse.setGroup(group)
         configResponse.setTenant(tenant)
         configResponse.setDataId(dataId)
@@ -251,6 +292,7 @@ open class ClientWorker(private val properties: Properties) : Closeable {
 
     /**
      * 长轮询任务的Runnable, 检查本地的这些配置文件，相比ConfigServer是否发生了变更?
+     * 如果发生变更的话, 就需要去通知该CacheData去进行触发它的所有的Listener
      *
      * @param taskId 需要去进行处理的CacheData的taskId
      */

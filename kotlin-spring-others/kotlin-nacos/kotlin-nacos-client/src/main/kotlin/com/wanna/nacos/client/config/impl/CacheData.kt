@@ -1,6 +1,8 @@
 package com.wanna.nacos.client.config.impl
 
+import com.wanna.nacos.api.common.Constants
 import com.wanna.nacos.api.config.listener.Listener
+import com.wanna.nacos.api.utils.Md5Utils
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
@@ -30,7 +32,7 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
         set(value) {
             // 当更新content内容时, 同步更新MD5
             field = value
-            md5 = value
+            md5 = Md5Utils.md5Hex(value, Constants.ENCODE)
         }
 
     /**
@@ -68,7 +70,7 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
     }
 
     /**
-     * 获取当前CacheData当中的所有Listener列表
+     * 获取当前CacheData当中的监听所有当前配置文件的所有Listener列表
      *
      * @return List of Listener
      */
@@ -90,12 +92,12 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
 
 
     /**
-     * 通知所有的Listener
+     * 通知所有监听当前配置文件的所有的Listener, 当前配置文件已经发生了变更...
      *
      * @param dataId dataId
      * @param group group
      * @param tenant tenant(namespace)
-     * @param md5 md5
+     * @param md5 配置文件变更之后的md5
      * @param listenerWrap Listener
      */
     private fun safeNotifyListener(
@@ -113,7 +115,7 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
             // callbackListener, 去接收配置文件的变更去进行处理...
             listener.receiveConfigInfo(content)
 
-            // 变更Md5和content
+            // 更新WrapListener的Md5和content
             listenerWrap.lastCallMd5 = md5
             listenerWrap.lastContent = content
         }
@@ -126,7 +128,7 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
 
 
     /**
-     * 对于一个Listener的包装
+     * 对于一个Listener的包装(TODO HashCode&Equals待生成)
      *
      * @param listener listener
      * @param lastContent 上一次的文件内容(如果文件内容发生变化, 会很及时发生变更)
@@ -134,7 +136,7 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
      */
     private class ManagerListenerWrap(
         val listener: Listener,
-        var lastCallMd5: String? = null,
-        var lastContent: String? = null
+        var lastCallMd5: String = "",
+        var lastContent: String = ""
     )
 }

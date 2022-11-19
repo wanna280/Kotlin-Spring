@@ -43,6 +43,17 @@ object RequestUtils {
     }
 
     /**
+     * 从request当中获取到userName
+     *
+     * @param request request
+     * @return userName
+     */
+    @JvmStatic
+    fun getSrcUserName(request: HttpServerRequest): String {
+        return request.getHeader("username") ?: ""
+    }
+
+    /**
      * 从request当中去解析出来远程的Ip
      *
      * @param request request

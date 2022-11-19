@@ -17,8 +17,58 @@ object ConfigExecutor {
     /**
      * 用于执行长轮询任务的线程池
      */
+    @JvmStatic
     private val LONG_POLLING_EXECUTOR =
         ScheduledThreadPoolExecutor(1, NameThreadFactory("com.wanna.nacos.config.LongPolling"))
+
+    /**
+     * 用于去进行异步通知的线程池
+     */
+    @JvmStatic
+    private val ASYNC_NOTIFY_EXECUTOR =
+        ScheduledThreadPoolExecutor(100, NameThreadFactory("com.wanna.nacos.config.AsyncNotifyService"))
+
+    /**
+     * TimerExecutpr
+     */
+    @JvmStatic
+    private val TIMER_EXECUTOR =
+        ScheduledThreadPoolExecutor(10, NameThreadFactory("com.wanna.nacos.config.server.timer"))
+
+    /**
+     * 执行一个ConfigTask
+     *
+     * @param command command
+     * @param initialDelay 初始delay
+     * @param delay delay
+     * @param unit 时间单位
+     */
+    @JvmStatic
+    fun scheduleConfigTask(command: Runnable, initialDelay: Long, delay: Long, unit: TimeUnit) {
+        TIMER_EXECUTOR.scheduleWithFixedDelay(command, initialDelay, delay, unit)
+    }
+
+    /**
+     * 执行一次异步的Notify任务
+     *
+     * @param runnable 异步Notify任务
+     */
+    @JvmStatic
+    fun executeAsyncNotify(runnable: Runnable) {
+        ASYNC_NOTIFY_EXECUTOR.execute(runnable)
+    }
+
+    /**
+     * schedule一次异步的Notify任务
+     *
+     * @param runnable 异步Notify任务
+     * @param period 延时时间
+     * @param unit 时间单位
+     */
+    @JvmStatic
+    fun scheduleAsyncNotify(runnable: Runnable, period: Long, unit: TimeUnit) {
+        ASYNC_NOTIFY_EXECUTOR.schedule(runnable, period, unit)
+    }
 
     /**
      * schedule一个长轮询任务, 并返回一个Future

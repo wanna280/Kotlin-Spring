@@ -1,16 +1,21 @@
 package com.wanna.nacos.client.config
 
-import com.wanna.framework.web.client.RestTemplate
 import com.wanna.nacos.api.PropertyKeyConst
+import com.wanna.nacos.api.common.Constants
 import com.wanna.nacos.api.config.ConfigService
 import com.wanna.nacos.api.config.listener.Listener
 import com.wanna.nacos.api.exception.NacosException
-import com.wanna.nacos.client.config.filter.impl.ConfigResponse
+import com.wanna.nacos.api.model.HttpRestResult
+import com.wanna.nacos.client.config.common.ConfigConstants
 import com.wanna.nacos.client.config.filter.impl.ConfigFilterChainManager
 import com.wanna.nacos.client.config.filter.impl.ConfigRequest
+import com.wanna.nacos.client.config.filter.impl.ConfigResponse
+import com.wanna.nacos.client.config.http.HttpAgent
+import com.wanna.nacos.client.config.http.ServerHttpAgent
 import com.wanna.nacos.client.config.impl.ClientWorker
 import org.slf4j.LoggerFactory
 import java.util.*
+import kotlin.collections.LinkedHashMap
 
 /**
  * Nacos的[ConfigService]的实现, 每个[NacosConfigService]负责去处理一个Namespace下的配置文件
@@ -22,22 +27,32 @@ import java.util.*
  * @param properties ConfigService的配置信息
  */
 open class NacosConfigService(private val properties: Properties) : ConfigService {
+    companion object {
+        /**
+         * Logger
+         */
+        private val logger = LoggerFactory.getLogger(NacosConfigService::class.java)
+
+        /**
+         * Post请求的超时时间
+         */
+        private const val POST_TIMEOUT = 3000L
+    }
 
     /**
-     * Logger
+     * 根据Properties去初始化HttpAgent
      */
-    private val logger = LoggerFactory.getLogger(NacosConfigService::class.java)
+    private val agent: HttpAgent = ServerHttpAgent(properties)
 
     /**
-     * RestTemplate
-     */
-    private val restTemplate = RestTemplate()
-
-
-    /**
-     * 当前的NacosConfigService需要去进行处理的namespace
+     * 当前的NacosConfigService需要去进行处理的namespace, 从Properties当中的"namespace"属性当中去进行获取
      */
     private var namespace = ""
+
+    /**
+     * 编码方式为UTF-8
+     */
+    private var encode = Constants.ENCODE
 
     /**
      * ConfigFilterChain的管理器
@@ -45,9 +60,9 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
     private val configFilterChainManager = ConfigFilterChainManager(properties)
 
     /**
-     * Worker, 提供LongPolling去拉取ConfigServer的配置文件
+     * ClientWorker, 提供LongPolling长轮询任务去拉取ConfigServer的配置文件
      */
-    private var worker: ClientWorker = ClientWorker(properties)
+    private var worker = ClientWorker(properties)
 
     init {
         // 初始化namespace
@@ -55,7 +70,7 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
     }
 
     /**
-     * 初始化namespace
+     * 根据Properties配置信息去初始化namespace
      *
      * @param properties Properties配置信息
      */
@@ -72,12 +87,43 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
         worker.addTenantListeners(dataId, group, listOf(listener))
     }
 
-    override fun publishConfig(dataId: String, group: String, content: String) {
-        publishConfig(dataId, group, content, "txt")
+    override fun removeListener(dataId: String, group: String, listener: Listener) {
+        worker.removeTenantListener(dataId, group, listener)
     }
 
-    override fun publishConfig(dataId: String, group: String, content: String, fileType: String) {
-        publishConfigInner(namespace, dataId, group, content, fileType)
+    override fun publishConfig(dataId: String, group: String, content: String): Boolean {
+        return publishConfig(dataId, group, content, "txt")
+    }
+
+    override fun publishConfig(dataId: String, group: String, content: String, fileType: String): Boolean {
+        return publishConfigInner(namespace, dataId, group, content, fileType)
+    }
+
+    override fun removeConfig(dataId: String, group: String): Boolean {
+        return removeConfigInner(namespace, dataId, group)
+    }
+
+    /**
+     * 根据tenant/dataId/group去移除一个配置文件ConfigFile
+     *
+     * @param tenant namespace(tenant)
+     * @param dataId dataId
+     * @param group group
+     * @return 移除配置文件是否成功?
+     */
+    private fun removeConfigInner(tenant: String, dataId: String, group: String): Boolean {
+        val result: HttpRestResult<String>
+        try {
+            result = agent.httpDelete("/v1/cs/configs", emptyMap(), emptyMap(), encode, POST_TIMEOUT)
+        } catch (ex: Exception) {
+            logger.error("移除配置文件失败[dataId=$dataId, group=$group, tenant=$tenant]", ex)
+            return false
+        }
+        if (result.ok()) {
+            logger.info("移除配置文件成功[dataId=$dataId, group=$group, tenant=$tenant], msg=${result.message}")
+            return true
+        }
+        return false
     }
 
     /**
@@ -95,8 +141,15 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
         group: String,
         content: String,
         fileType: String
-    ) {
-        restTemplate.postForEntity("/v1/cs/configs", String::class.java, emptyMap())
+    ): Boolean {
+        val params = LinkedHashMap<String, String>()
+        params[ConfigConstants.DATA_ID] = dataId
+        params[ConfigConstants.GROUP] = group
+        params[ConfigConstants.TENANT] = this.agent.getTenant()
+        params[ConfigConstants.FILE_TYPE] = fileType
+        params[ConfigConstants.CONTENT] = content
+        agent.httpPost("/v1/cs/configs", emptyMap(), params, encode, POST_TIMEOUT)
+        return true
     }
 
     /**
@@ -125,5 +178,13 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
             logger.error("get ServerConfig Error", ex)
             throw ex
         }
+    }
+
+    /**
+     * 关闭当前的ConfigService, 需要去关闭Worker的长轮询线程池以及HttpAgent
+     */
+    override fun shutdown() {
+        this.worker.close()
+        this.agent.close()
     }
 }

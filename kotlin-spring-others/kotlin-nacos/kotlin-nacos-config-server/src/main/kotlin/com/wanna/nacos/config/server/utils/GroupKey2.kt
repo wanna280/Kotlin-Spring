@@ -10,6 +10,11 @@ package com.wanna.nacos.config.server.utils
 object GroupKey2 {
 
     @JvmStatic
+    fun getKey(dataId: String, group: String): String {
+        return getKeyTenant(dataId, group, "")
+    }
+
+    @JvmStatic
     fun getKeyTenant(dataId: String, group: String, tenant: String): String {
         return tenant + "_" + group + "_" + dataId
     }
@@ -22,6 +27,7 @@ object GroupKey2 {
      */
     @JvmStatic
     fun parseKey(groupKey: String): Array<String> {
-        return arrayOf("", "", "")
+        val list = groupKey.split("_")
+        return list.toTypedArray()
     }
 }

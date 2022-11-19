@@ -8,7 +8,9 @@ import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 import com.wanna.nacos.config.server.enums.FileTypeEnum
 import com.wanna.nacos.config.server.model.ConfigInfo
+import com.wanna.nacos.config.server.model.event.ConfigDataChangeEvent
 import com.wanna.nacos.config.server.service.ConfigCacheService
+import com.wanna.nacos.config.server.service.ConfigChangePublisher
 import com.wanna.nacos.config.server.service.LongPollingService
 import com.wanna.nacos.config.server.service.repository.PersistService
 import com.wanna.nacos.config.server.utils.GroupKey2
@@ -98,6 +100,17 @@ open class ConfigServerInner {
         srcIp: String
     ): String {
         persistService.insertOrUpdate(srcIp, srcUser, configInfo, System.currentTimeMillis(), emptyMap(), true)
+
+        // 通知ConfigServer本地的Listener, 配置文件已经发生变更了...
+        ConfigChangePublisher.notifyConfigChange(
+            ConfigDataChangeEvent(
+                configInfo.dataId ?: "",
+                configInfo.group ?: "",
+                configInfo.tenant ?: "",
+                System.currentTimeMillis()
+            )
+        )
+        response.flush()  // flush
         return "200"
     }
 
@@ -150,5 +163,18 @@ open class ConfigServerInner {
         }
 
         return "200"
+    }
+
+    open fun doRemoveConfig(
+        request: HttpServerRequest,
+        response: HttpServerResponse,
+        dataId: String,
+        group: String,
+        tenant: String,
+        tag: String,
+        srcIp: String,
+        srcUser: String
+    ) {
+        persistService.removeConfigInfo(dataId, group, tenant, srcIp, srcUser)
     }
 }

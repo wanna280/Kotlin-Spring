@@ -1,6 +1,8 @@
 package com.wanna.nacos.config.server.service
 
+import com.wanna.nacos.api.common.Constants
 import com.wanna.nacos.api.notify.NotifyCenter
+import com.wanna.nacos.api.utils.Md5Utils
 import com.wanna.nacos.config.server.model.CacheItem
 import com.wanna.nacos.config.server.model.event.LocalDataChangeEvent
 import com.wanna.nacos.config.server.utils.GroupKey2
@@ -44,6 +46,29 @@ object ConfigCacheService {
         // 如果放入失败了...那么使用已经存在的CacheItem
         cacheItem = CACHE.putIfAbsent(groupKey, item)
         return cacheItem ?: item
+    }
+
+    /**
+     * 转存变更情况
+     *
+     * @param dataId dataId
+     * @param group group
+     * @param tenant tenant(namespace)
+     * @param lastModifiedTs 上次修改的时间
+     */
+    @JvmStatic
+    fun dumpChange(dataId: String, group: String, tenant: String, content: String, lastModifiedTs: Long): Boolean {
+        val groupKey = GroupKey2.getKeyTenant(dataId, group, tenant)
+        // 确保groupKey对应的CacheItem已经存在...
+        makeSure(groupKey)
+        // TODO 这里应该加锁...
+        try {
+            val md5 = Md5Utils.md5Hex(content, Constants.ENCODE)
+            updateMd5(groupKey, md5, lastModifiedTs)
+        } catch (ex: Exception) {
+            return false
+        }
+        return true
     }
 
     /**
@@ -106,7 +131,7 @@ object ConfigCacheService {
      */
     @JvmStatic
     fun isUptodate(groupKey: String, clientMd5: String, ip: String, tag: String): Boolean {
-        return getContentCache(groupKey)?.md5 == clientMd5
+        return (getContentCache(groupKey)?.md5 ?: "") == clientMd5
     }
 
     /**
@@ -118,7 +143,7 @@ object ConfigCacheService {
      */
     @JvmStatic
     fun isUptodate(groupKey: String, clientMd5: String): Boolean {
-        return getContentCache(groupKey)?.md5 == clientMd5
+        return (getContentCache(groupKey)?.md5 ?: "") == clientMd5
     }
 
     /**

@@ -6,6 +6,7 @@ import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.server.AsyncContext
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
+import com.wanna.nacos.api.common.Constants
 import com.wanna.nacos.api.notify.Event
 import com.wanna.nacos.api.notify.NotifyCenter
 import com.wanna.nacos.api.notify.listener.Subscriber
@@ -13,6 +14,7 @@ import com.wanna.nacos.config.server.model.event.LocalDataChangeEvent
 import com.wanna.nacos.config.server.utils.ConfigExecutor
 import com.wanna.nacos.config.server.utils.MD5Utils
 import com.wanna.nacos.config.server.utils.RequestUtils
+import java.nio.charset.Charset
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -34,7 +36,7 @@ open class LongPollingService {
         /**
          * 长轮询的Header
          */
-        private const val LONG_POLLING_HEADER = "Long-Polling-Timeout"
+        private const val LONG_POLLING_TIMEOUT_HEADER = "Long-Polling-Timeout"
 
         /**
          * 从request当中去判断是否支持长轮询?
@@ -44,7 +46,7 @@ open class LongPollingService {
          */
         @JvmStatic
         fun isSupportLongPolling(request: HttpServerRequest): Boolean {
-            return request.getHeader(LONG_POLLING_HEADER) != null
+            return request.getHeader(LONG_POLLING_TIMEOUT_HEADER) != null
         }
     }
 
@@ -87,9 +89,18 @@ open class LongPollingService {
         probeRequestSize: Int
     ) {
         // 获取长轮询的超时时间, 默认为30s(30000)
-        val pollingTimeout = request.getHeader(LONG_POLLING_HEADER)!!
+        val pollingTimeout = request.getHeader(LONG_POLLING_TIMEOUT_HEADER)
+            ?: throw IllegalArgumentException("Header当中'Long-Polling-Timeout'不存在, 不支持LongPolling")
         val clientAppName = RequestUtils.getClientAppName(request) ?: ""
         val remoteIp = RequestUtils.getRemoteIp(request)
+
+        val changedGroups = MD5Utils.compareMd5(request, response, clientMd5Map)
+        // 如果添加Listener的这一时刻已经发生变化了的话...那么立刻推送给客户端...
+        // 无需去添加LongPolling任务...
+        if (changedGroups.isNotEmpty()) {
+            generateResponse(request, response, changedGroups)
+            return
+        }
 
         // 解析长轮询的超时时间(单位为ms), 并且减去500的delay时间, 默认为30s, 这里设计为29.5s
         val timeout = max(pollingTimeout.toLong() - 500, 10000)
@@ -97,7 +108,7 @@ open class LongPollingService {
         // 开启异步支持, 获取到AsyncContext, 翻遍用于去进行异步的Response的设置...
         val asyncContext = request.startAsync(request, response)
 
-        // 往线程池当中去添加一个长轮询的任务
+        // 往线程池当中去添加一个立刻就去执行的长轮询的任务
         ConfigExecutor
             .executeLongPolling(
                 ClientLongPolling(
@@ -105,6 +116,25 @@ open class LongPollingService {
                     probeRequestSize, timeout, clientAppName, ""
                 )
             )
+    }
+
+    /**
+     * 生成response并返回给客户端
+     *
+     * @param request request
+     * @param response response
+     * @param changedGroups changedGroups
+     */
+    private fun generateResponse(
+        request: HttpServerRequest,
+        response: HttpServerResponse,
+        changedGroups: List<String>?
+    ) {
+        changedGroups ?: return
+        val resultString = MD5Utils.compareMd5ResultString(changedGroups)
+        response.setStatus(HttpStatus.SUCCESS)
+        response.getOutputStream().write(resultString.toByteArray(Charset.forName(Constants.ENCODE)))
+        response.getOutputStream().flush()
     }
 
     /**
@@ -120,6 +150,9 @@ open class LongPollingService {
             while (iterator.hasNext()) {
                 val clientSubscriber = iterator.next()
                 if (clientSubscriber.clientMd5Map.containsKey(groupKey)) {
+                    retainIps[clientSubscriber.ip] = System.currentTimeMillis()
+
+                    // remove Subscriber
                     iterator.remove()
 
                     // 当该groupKey对应的配置文件发生变化时, 需要sendResponse, 去告诉客户端该配置文件已经发生了变更...
@@ -140,7 +173,7 @@ open class LongPollingService {
     inner class ClientLongPolling(
         private val asyncContext: AsyncContext,
         val clientMd5Map: Map<String, String>,
-        private val ip: String,
+        val ip: String,
         private val probeRequestSize: Int,
         private val timeout: Long,
         private val appName: String,
@@ -159,7 +192,8 @@ open class LongPollingService {
             // 将当前ClientLongPolling添加到Subscribers当中
             allSubscribers.add(this)
 
-            // 添加一个LongPolling任务, 到线程池当中
+            // 添加一个LongPolling超时的任务到LongPolling线程池当中
+            // 设置定时任务的执行时间为timeout(默认为29.5s), 当timeout时间到来时才去执行这个任务...
             this.asyncTimeoutFuture = ConfigExecutor.scheduleLongPolling({
                 val request = asyncContext.getRequest()
                 val response = asyncContext.getResponse()

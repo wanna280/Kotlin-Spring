@@ -11,6 +11,8 @@ object ConfigConstants {
 
     const val CONTENT = "content"
 
+    const val FILE_TYPE = "type"
+
     const val TENANT = "tenant"
 
     const val DATA_ID = "dataId"
@@ -20,4 +22,7 @@ object ConfigConstants {
     const val CONFIG_TYPE = "configType"
 
     const val ENCRYPTED_DATA_KEY = "encryptedDataKey"
+
+    const val LONG_POLLING_TIMEOUT_HEADER = "Long-Polling-Timeout"
+
 }
