@@ -43,17 +43,17 @@ open class ClientWorker(private val properties: Properties) : Closeable {
     private val restTemplate = RestTemplate()
 
     /**
-     * ConfigClient的客户端长轮询的timeout
+     * ConfigClient的客户端长轮询的timeout(默认为30s, 最低也为30s, 可以通过Properties当中去配置"configLongPollTimeout"使用高于30s的超时时间)
      */
     private var timeout: Long = 0L
 
     /**
-     * 维护所有的缓存数据
+     * 维护所有的配置文件数据以及监听该配置文件的所有的Listener列表
      */
     private var cacheMap = ConcurrentHashMap<String, CacheData>()
 
     /**
-     * LongPolling ScheduledExecutorService
+     * LongPolling ScheduledExecutorService, 提供对于长轮询任务的执行
      */
     private val longPollingExecutor =
         Executors.newScheduledThreadPool(
@@ -179,19 +179,15 @@ open class ClientWorker(private val properties: Properties) : Closeable {
      * @param probeUpdateString 要去进行探查的配置文件的dataId&group&md5&tenant
      */
     open fun checkUpdateConfigStr(probeUpdateString: String, isInitializingCacheList: Boolean): List<String> {
-        val entity = restTemplate.execute(URI("/v1/cs/configs/listener"), RequestMethod.GET, object : RequestCallback {
-            override fun doWithRequest(request: ClientHttpRequest) {
-                request.getHeaders().add("Long-Polling-Timeout", timeout.toString())
-            }
-        }, object : ResponseExtractor<ResponseEntity<String>> {
-            override fun extractData(response: ClientHttpResponse): ResponseEntity<String>? {
-                return ResponseEntity(
-                    response.getStatusCode(),
-                    response.getHeaders(),
-                    String(response.getBody().readAllBytes())
-                )
-            }
-        })!!
+        val entity = restTemplate.execute(URI("/v1/cs/configs/listener"), RequestMethod.GET,
+            { request -> request.getHeaders().add("Long-Polling-Timeout", timeout.toString()) }
+        ) { response ->
+            ResponseEntity(
+                response.getStatusCode(),
+                response.getHeaders(),
+                String(response.getBody().readAllBytes())
+            )
+        }!!
 
 
         // readTimeout = 1.5*timeout, 为了避免Server处理任务的延时, 因此多加一段时间去等一会...
@@ -228,20 +224,16 @@ open class ClientWorker(private val properties: Properties) : Closeable {
         val entity = restTemplate.execute(
             URI(url.toString()),
             RequestMethod.GET,
-            object : RequestCallback {
-                override fun doWithRequest(request: ClientHttpRequest) {
+            {
 
-                }
-            },
-            object : ResponseExtractor<ResponseEntity<String>> {
-                override fun extractData(response: ClientHttpResponse): ResponseEntity<String> {
-                    return ResponseEntity(
-                        response.getStatusCode(),
-                        response.getHeaders(),
-                        String(response.getBody().readAllBytes())
-                    )
-                }
-            })!!
+            }
+        ) { response ->
+            ResponseEntity(
+                response.getStatusCode(),
+                response.getHeaders(),
+                String(response.getBody().readAllBytes())
+            )
+        }!!
         val headers = entity.headers
         val content = entity.body ?: ""
 

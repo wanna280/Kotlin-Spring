@@ -80,7 +80,7 @@ open class ConfigController {
     }
 
     /**
-     * 添加一个Listener监听配置信息的变化
+     * 添加一个Listener监听配置信息的变化, 如果配置文件已经发生了变化的话, 那么就需要通知发送这个请求的客户端
      *
      * @param request request
      * @param response response

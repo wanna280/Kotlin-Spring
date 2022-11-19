@@ -73,7 +73,7 @@ open class LongPollingService {
 
 
     /**
-     * 添加一个长轮询的客户端
+     * 添加一个长轮询的客户端, 当客户端使用addListener时会触发, 如果该配置文件发生了更新, 那么会使用response将数据写出给客户端
      *
      * @param request request
      * @param response response
@@ -86,14 +86,15 @@ open class LongPollingService {
         clientMd5Map: Map<String, String>,
         probeRequestSize: Int
     ) {
+        // 获取长轮询的超时时间, 默认为30s(30000)
         val pollingTimeout = request.getHeader(LONG_POLLING_HEADER)!!
         val clientAppName = RequestUtils.getClientAppName(request) ?: ""
         val remoteIp = RequestUtils.getRemoteIp(request)
 
-        // 解析超时时间(单位为ms)
-        val timeout = max(pollingTimeout.toLong(), 10000)
+        // 解析长轮询的超时时间(单位为ms), 并且减去500的delay时间, 默认为30s, 这里设计为29.5s
+        val timeout = max(pollingTimeout.toLong() - 500, 10000)
 
-        // 开启异步支持, 获取到AsyncContext
+        // 开启异步支持, 获取到AsyncContext, 翻遍用于去进行异步的Response的设置...
         val asyncContext = request.startAsync(request, response)
 
         // 往线程池当中去添加一个长轮询的任务
@@ -107,17 +108,21 @@ open class LongPollingService {
     }
 
     /**
-     * ConfigFile Data发生改变的任务
+     * 监听一个ConfigServer的配置文件发生改变的任务
      *
-     * @param groupKey groupKey
+     * @param groupKey 配置文件发生变更的groupKey(dataId&group&tenant)
      */
     inner class DataChangeTask(private val groupKey: String) : Runnable {
         override fun run() {
+
+            // 检查所有的ClientSubscriber, 看它的clientMd5Map的Key是否和当前发生变化的groupKey一致?
             val iterator = allSubscribers.iterator()
             while (iterator.hasNext()) {
                 val clientSubscriber = iterator.next()
                 if (clientSubscriber.clientMd5Map.containsKey(groupKey)) {
                     iterator.remove()
+
+                    // 当该groupKey对应的配置文件发生变化时, 需要sendResponse, 去告诉客户端该配置文件已经发生了变更...
                     clientSubscriber.sendResponse(listOf(groupKey))
                 }
             }
@@ -125,16 +130,21 @@ open class LongPollingService {
     }
 
     /**
-     * 客户端的轮询任务Runnable
+     * 客户端的轮询任务Runnable, 负责去检查客户端的clientMd5Map, 与当前ConfigServer当中的配置文件去进行对比;
+     * 如果该客户端的配置文件和ConfigServer的配置文件的MD5不一致的话, 那么就需要将该配置文件发生变化的信息告诉给客户端;
+     *
+     * @param asyncContext AsyncContext, 提供异步的支持, 可以去异步地往客户端去发送response
+     * @param clientMd5Map clientMd5Map, Key-groupKey(dataId&group&tenant), Value-clientMd5
+     * @param ip remoteClientIp
      */
     inner class ClientLongPolling(
-        val asyncContext: AsyncContext,
+        private val asyncContext: AsyncContext,
         val clientMd5Map: Map<String, String>,
-        val ip: String,
-        val probeRequestSize: Int,
-        val timeout: Long,
-        val appName: String,
-        val tag: String
+        private val ip: String,
+        private val probeRequestSize: Int,
+        private val timeout: Long,
+        private val appName: String,
+        private val tag: String
     ) : Runnable {
 
         /**
@@ -154,6 +164,9 @@ open class LongPollingService {
                 val request = asyncContext.getRequest()
                 val response = asyncContext.getResponse()
                 if (allSubscribers.remove(this@ClientLongPolling)) {
+
+                    // 根据clientMd5去进行比较, 检查该groupKey是否发生了变更?
+                    // 如果发生了变更的话, 那么需要将发生变更的groupKey去告知该客户端...
                     val changedGroups = MD5Utils.compareMd5(request!!, response, clientMd5Map)
                     if (changedGroups.isNotEmpty()) {
                         sendResponse(changedGroups)
@@ -170,11 +183,8 @@ open class LongPollingService {
          * @param changedGroups 发生变化的groupKey列表
          */
         fun sendResponse(@Nullable changedGroups: List<String>?) {
-            // 取消超时任务
-            if (asyncTimeoutFuture != null) {
-                asyncTimeoutFuture?.cancel(false)
-                return
-            }
+            // 如果是因为配置文件发生变更而触发的sendResponse, 那么我们直接去取消Future任务
+            asyncTimeoutFuture?.cancel(false)
 
 
             // 生成Response并利用AsyncContext去进行消息的发送

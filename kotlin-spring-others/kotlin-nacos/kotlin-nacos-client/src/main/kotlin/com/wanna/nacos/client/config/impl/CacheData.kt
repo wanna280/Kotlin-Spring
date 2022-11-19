@@ -45,7 +45,7 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
 
 
     /**
-     * 维护所有的Listener
+     * 维护监听该配置文件的变化的所有的Listener
      */
     private val listeners = CopyOnWriteArrayList<ManagerListenerWrap>()
 

@@ -18,4 +18,16 @@ class DefaultPublisher : EventPublisher {
     override fun close() {
 
     }
+
+    override fun removeSubscriber(subscriber: Subscriber<*>) {
+
+    }
+
+    override fun publish(event: Event): Boolean {
+        return true
+    }
+
+    override fun notifySubscriber(subscriber: Subscriber<*>, event: Event) {
+
+    }
 }
