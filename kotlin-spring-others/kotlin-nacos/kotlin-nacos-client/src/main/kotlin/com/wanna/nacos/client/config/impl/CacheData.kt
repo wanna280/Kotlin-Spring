@@ -1,6 +1,7 @@
 package com.wanna.nacos.client.config.impl
 
 import com.wanna.nacos.api.common.Constants
+import com.wanna.nacos.api.config.ConfigChangeEvent
 import com.wanna.nacos.api.config.listener.Listener
 import com.wanna.nacos.api.utils.Md5Utils
 import java.util.concurrent.CopyOnWriteArrayList
@@ -36,7 +37,7 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
         }
 
     /**
-     * fileType
+     * 配置文件的文件类型fileType
      */
     var fileType: String = ""
 
@@ -85,7 +86,7 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
         listeners.forEach { listenerWrap ->
             // 如果这一时刻, 该文件的MD5发生变化了的话, 需要Callback所有的Listener
             if (listenerWrap.lastCallMd5 != md5) {
-                safeNotifyListener(dataId, group, tenant, md5, listenerWrap)
+                safeNotifyListener(dataId, group, tenant, md5, fileType, listenerWrap)
             }
         }
     }
@@ -98,6 +99,7 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
      * @param group group
      * @param tenant tenant(namespace)
      * @param md5 配置文件变更之后的md5
+     * @param type fileType
      * @param listenerWrap Listener
      */
     private fun safeNotifyListener(
@@ -105,6 +107,7 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
         group: String,
         tenant: String,
         md5: String,
+        type: String,
         listenerWrap: ManagerListenerWrap
     ) {
 
@@ -114,6 +117,14 @@ class CacheData(val dataId: String = "", val group: String = "", val tenant: Str
         val job = Runnable {
             // callbackListener, 去接收配置文件的变更去进行处理...
             listener.receiveConfigInfo(content)
+
+            // 如果该Listener是支持去解析配置文件的变更情况的Listener的话...
+            if (listener is AbstractConfigChangeListener) {
+                val changedItems = ConfigChangeHandler.parseChangeData(listenerWrap.lastContent, content, type)
+
+                // 通知该Listener, 配置文件发生变更...并告知它哪些元素发生了变化?
+                listener.receiveConfigChange(ConfigChangeEvent(changedItems))
+            }
 
             // 更新WrapListener的Md5和content
             listenerWrap.lastCallMd5 = md5
