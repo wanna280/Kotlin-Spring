@@ -134,7 +134,7 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
         url: URI,
         method: RequestMethod,
         @Nullable requestCallback: RequestCallback?,
-        responseExtractor: ResponseExtractor<T>?
+        @Nullable responseExtractor: ResponseExtractor<T>?
     ): T? {
         // 使用ClientHttpRequestFactory创建ClientHttpRequest
         // 如果当前RestTemplate当中存在有拦截器的话, 那么创建的将会是InterceptingClientHttpRequest；

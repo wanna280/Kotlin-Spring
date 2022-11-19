@@ -17,6 +17,6 @@ import com.wanna.framework.web.http.client.ClientHttpRequest
  * @see RestTemplate
  */
 @FunctionalInterface
-interface RequestCallback {
+fun interface RequestCallback {
     fun doWithRequest(request: ClientHttpRequest)
 }
