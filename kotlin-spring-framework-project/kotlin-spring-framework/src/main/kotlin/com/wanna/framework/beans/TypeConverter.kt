@@ -13,5 +13,5 @@ interface TypeConverter {
      * @param requiredType 要将value转换成为什么类型？
      */
     @Nullable
-    fun <T> convertIfNecessary(value: Any?, requiredType: Class<T>?): T?
+    fun <T : Any> convertIfNecessary(value: Any?, requiredType: Class<T>?): T?
 }

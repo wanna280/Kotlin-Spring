@@ -6,6 +6,6 @@ package com.wanna.framework.core.convert.converter
  * @param S 源类型
  * @param T 目标类型
  */
-interface Converter<S, T> {
+fun interface Converter<S:Any, T:Any> {
     fun convert(source: S?): T?
 }

@@ -9,7 +9,7 @@ import com.wanna.framework.lang.Nullable
  * @version v1.0
  * @date 2022/10/16
  */
-interface NamespaceHandlerResolver {
+fun interface NamespaceHandlerResolver {
 
     /**
      * 根据NamespaceUri去解析到处理该Namespace的Handler

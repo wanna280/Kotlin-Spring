@@ -6,6 +6,6 @@ package com.wanna.framework.beans.factory
  *
  * 它和JSR当中的@PostConstruct标注的方法等效、和@Bean当中设置initMethod也等效
  */
-interface InitializingBean {
+fun interface InitializingBean {
     fun afterPropertiesSet()
 }

@@ -5,7 +5,7 @@ import java.lang.reflect.Method
 /**
  * 这是一个运行时的方法替代
  */
-interface MethodReplacer {
+fun interface MethodReplacer {
 
     /**
      * 对目标方法去进行重新实现

@@ -9,7 +9,7 @@ open class TypeConverterSupport : PropertyEditorRegistrySupport(), TypeConverter
     protected var delegate: TypeConverterDelegate? = null
 
     @Throws(TypeMismatchException::class)
-    override fun <T> convertIfNecessary(value: Any?, requiredType: Class<T>?): T? {
+    override fun <T : Any> convertIfNecessary(value: Any?, requiredType: Class<T>?): T? {
         value ?: return null
         requiredType ?: return null
 

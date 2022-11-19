@@ -16,7 +16,7 @@ open class StringToCollectionConverter(private val conversionService: Conversion
     override fun getConvertibleTypes() = setOf(ConvertiblePair(String::class.java, Collection::class.java))
 
     @Suppress("UNCHECKED_CAST")
-    override fun <S, T> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
+    override fun <S : Any, T : Any> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
         val collection = CollectionFactory.createCollection<Any?>(targetType, 16)
         return StringUtils.commaDelimitedListToStringArray(source as String).toCollection(collection) as T
     }

@@ -6,6 +6,6 @@ package com.wanna.framework.core.type.filter
  * @see AssignableTypeFilter
  * @see AnnotationTypeFilter
  */
-interface TypeFilter {
+fun interface TypeFilter {
     fun matches(clazz: Class<*>?) : Boolean
 }

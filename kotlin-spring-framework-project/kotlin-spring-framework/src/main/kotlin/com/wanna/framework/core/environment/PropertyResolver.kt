@@ -26,12 +26,12 @@ interface PropertyResolver {
     /**
      * 按照指定的类型去获取属性，如果获取不到，return null
      */
-    fun <T> getProperty(key: String, requiredType: Class<T>): T?
+    fun <T : Any> getProperty(key: String, requiredType: Class<T>): T?
 
     /**
      * 按照指定的类型去获取属性，如果获取不到，return默认值(defaultValue)
      */
-    fun <T> getProperty(key: String, requiredType: Class<T>, defaultValue: T): T
+    fun <T : Any> getProperty(key: String, requiredType: Class<T>, defaultValue: T): T
 
     /**
      * 根据key去获取属性，如果获取不到，抛出IllegalStateException
@@ -41,7 +41,7 @@ interface PropertyResolver {
     /**
      * 根据key去按照指定的类型去获取属性，如果获取不到，抛出IllegalStateException
      */
-    fun <T> getRequiredProperty(key: String, requiredType: Class<T>): T
+    fun <T : Any> getRequiredProperty(key: String, requiredType: Class<T>): T
 
     /**
      * 解析占位符，如果解析不到，return null

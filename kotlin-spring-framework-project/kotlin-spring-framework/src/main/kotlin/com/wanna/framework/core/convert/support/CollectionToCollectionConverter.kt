@@ -15,7 +15,7 @@ class CollectionToCollectionConverter(private val conversionService: ConversionS
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <S, T> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
+    override fun <S : Any, T : Any> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
         if (source == null || source !is Collection<*>) {
             return null
         }

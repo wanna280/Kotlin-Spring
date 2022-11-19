@@ -5,7 +5,7 @@ package com.wanna.framework.beans.factory
  *
  * @see ObjectFactory
  */
-interface ObjectProvider<T> : ObjectFactory<T> {
+interface ObjectProvider<T : Any> : ObjectFactory<T> {
     /**
      * 如果存在有Bean的话，才进行获取；如果获取不到的话，return null
      *

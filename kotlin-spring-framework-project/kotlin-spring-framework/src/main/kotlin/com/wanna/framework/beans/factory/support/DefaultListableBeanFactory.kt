@@ -250,7 +250,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      *
      * @see ObjectProvider
      */
-    private interface BeanObjectProvider<T> : ObjectProvider<T>, java.io.Serializable
+    private interface BeanObjectProvider<T : Any> : ObjectProvider<T>, java.io.Serializable
 
     /**
      * 方便去进行内部的依赖的解析, 因此, 这里需要将ObjectFactory的泛型类型去进行作为真正的依赖类型, 这里我们进行包装一下
@@ -1015,7 +1015,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param T beanType类型
      */
     @Suppress("UNCHECKED_CAST")
-    override fun <T> getBeansForType(type: Class<T>): Map<String, T> {
+    override fun <T:Any> getBeansForType(type: Class<T>): Map<String, T> {
         val beans = HashMap<String, T>()
         getBeanNamesForType(type).forEach { beans[it] = getBean(it, type) }
         return beans

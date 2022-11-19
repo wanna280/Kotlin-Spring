@@ -6,7 +6,7 @@ import java.lang.reflect.Method
  * 异步任务当中没有去进行捕获的异常的处理器
  */
 @FunctionalInterface
-interface AsyncUncaughtExceptionHandler {
+fun interface AsyncUncaughtExceptionHandler {
 
     /**
      * 处理异步方法的异常

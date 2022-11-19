@@ -19,7 +19,7 @@ class TypeConverterDelegate(private val registry: PropertyEditorRegistrySupport)
      */
     @Throws(IllegalArgumentException::class)
     @Suppress("UNCHECKED_CAST")
-    fun <T> convertIfNecessary(propertyName: String?, oldValue: Any?, newValue: Any, requiredType: Class<T>): T? {
+    fun <T : Any> convertIfNecessary(propertyName: String?, oldValue: Any?, newValue: Any, requiredType: Class<T>): T? {
         val conversionService = registry.getConversionService()
         // 寻找自定义的PropertyEditor去进行转换...
         // 使用ConversionService去进行转换...

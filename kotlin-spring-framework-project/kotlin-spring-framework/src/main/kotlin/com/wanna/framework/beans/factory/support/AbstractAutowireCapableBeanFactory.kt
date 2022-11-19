@@ -147,9 +147,7 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
         if (earlySingletonExposure) {
             // 添加到SingletonFactory当中, ObjectFactory当中包装的是一getEarlyReference, 当从SingletonFactory中获取对象时
             // 会自动回调getEarlyReference方法完成对象的创建
-            addSingletonFactory(beanName, object : ObjectFactory<Any> {
-                override fun getObject() = getEarlyReference(beanInstance, beanName)
-            })
+            addSingletonFactory(beanName) { getEarlyReference(beanInstance, beanName) }
         }
 
         synchronized(mbd.postProcessLock) {

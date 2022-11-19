@@ -7,7 +7,7 @@ import com.wanna.framework.lang.Nullable
  *
  * @see com.wanna.framework.beans.factory.config.EmbeddedValueResolver
  */
-interface StringValueResolver {
+fun interface StringValueResolver {
 
     /**
      * 去对给定的字符串去进行字符串的解析，比如对"${}"去进行占位符的替换的解析

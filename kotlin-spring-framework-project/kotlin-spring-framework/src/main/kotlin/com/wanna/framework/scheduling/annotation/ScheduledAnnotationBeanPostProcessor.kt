@@ -224,7 +224,7 @@ open class ScheduledAnnotationBeanPostProcessor : ApplicationListener<ContextRef
      * @param schedulerType SchedulerType
      * @param byName 是要按照name去进行解析吗？
      */
-    private fun <T> resolveSchedulerBean(
+    private fun <T : Any> resolveSchedulerBean(
         beanFactory: BeanFactory, schedulerType: Class<T>, byName: Boolean
     ): T {
         return if (byName) {

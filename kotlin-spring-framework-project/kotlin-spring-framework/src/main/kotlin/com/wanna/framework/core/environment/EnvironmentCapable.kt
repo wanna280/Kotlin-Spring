@@ -5,7 +5,7 @@ package com.wanna.framework.core.environment
  *
  * @see com.wanna.framework.context.aware.EnvironmentAware
  */
-interface EnvironmentCapable {
+fun interface EnvironmentCapable {
 
     /**
      * 获取Environment

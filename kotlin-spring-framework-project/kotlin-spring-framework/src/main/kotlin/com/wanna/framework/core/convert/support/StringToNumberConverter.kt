@@ -38,7 +38,7 @@ open class StringToNumberConverter : GenericConverter {
 
     override fun getConvertibleTypes() = this.convertiblePairs
 
-    override fun <S, T> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
+    override fun <S : Any, T : Any> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
         val sourceStr = source?.toString() ?: return null
 
         if (targetType == Int::class.java || targetType == Int::class.javaObjectType) {

@@ -101,11 +101,9 @@ open class PropertySourcesPlaceholderConfigurer : EnvironmentAware, PlaceholderC
         propertyResolver.setPlaceholderPrefix(placeholderPrefix)
         propertyResolver.setPlaceholderSuffix(placeholderSuffix)
         propertyResolver.setValueSeparator(valueSeparator)
-        val valueResolver = object : StringValueResolver {
-            override fun resolveStringValue(strVal: String): String? {
-                val resolved = propertyResolver.resolvePlaceholders(strVal)
-                return if (resolved == nullValue) null else resolved
-            }
+        val valueResolver = StringValueResolver { strVal ->
+            val resolved = propertyResolver.resolvePlaceholders(strVal)
+            if (resolved == nullValue) null else resolved
         }
         this.doProcessProperties(beanFactory, valueResolver)
     }

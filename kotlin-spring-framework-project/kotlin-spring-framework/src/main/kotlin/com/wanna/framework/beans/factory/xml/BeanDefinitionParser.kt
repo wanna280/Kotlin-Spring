@@ -11,7 +11,7 @@ import org.w3c.dom.Element
  * @version v1.0
  * @date 2022/10/16
  */
-interface BeanDefinitionParser {
+fun interface BeanDefinitionParser {
 
     /**
      * 将给定元素去解析成为BeanDefinition

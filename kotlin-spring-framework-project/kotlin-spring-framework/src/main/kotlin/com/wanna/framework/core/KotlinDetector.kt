@@ -9,13 +9,15 @@ import java.lang.reflect.Method
  */
 object KotlinDetector {
 
-    private var kotlinMetata: Class<out Annotation>? = null  // Kotlin Metadata
+    @JvmStatic
+    private var kotlinMetadata: Class<out Annotation>? = null  // Kotlin Metadata
 
+    @JvmStatic
     private var kotlinReflectPresent: Boolean = false // Kotlin反射是否存在？
 
     init {
         val classLoader = KotlinDetector::class.java.classLoader
-        kotlinMetata = try {
+        kotlinMetadata = try {
             ClassUtils.forName("kotlin.Metadata", classLoader)
         } catch (ex: ClassNotFoundException) {
             null
@@ -26,12 +28,12 @@ object KotlinDetector {
     /**
      * Kotlin是否存在？
      */
-    fun isKotlinPresent(): Boolean = kotlinMetata != null
+    fun isKotlinPresent(): Boolean = kotlinMetadata != null
 
     /**
      * 它是否是一个Kotlin类型？判断Kotlin的Metadata标识类是否存在即可
      */
-    fun isKotlinType(clazz: Class<*>): Boolean = kotlinMetata != null && clazz.isAnnotationPresent(kotlinMetata!!)
+    fun isKotlinType(clazz: Class<*>): Boolean = kotlinMetadata != null && clazz.isAnnotationPresent(kotlinMetadata!!)
 
     /**
      * 是否Kotlin反射的相关依赖存在？

@@ -64,13 +64,13 @@ abstract class AbstractPropertyResolver : ConfigurablePropertyResolver {
 
     override fun getProperty(key: String, defaultValue: String?): String? = getProperty(key) ?: defaultValue
 
-    override fun <T> getProperty(key: String, requiredType: Class<T>, defaultValue: T): T =
+    override fun <T : Any> getProperty(key: String, requiredType: Class<T>, defaultValue: T): T =
         getProperty(key, requiredType) ?: defaultValue
 
     override fun getRequiredProperty(key: String): String =
         getProperty(key) ?: throw IllegalStateException("无法找到属性值[key=$key]，最终解析到的结果为null")
 
-    override fun <T> getRequiredProperty(key: String, requiredType: Class<T>): T =
+    override fun <T : Any> getRequiredProperty(key: String, requiredType: Class<T>): T =
         getProperty(key, requiredType) ?: throw IllegalStateException("无法找到属性值[key=$key]，最终解析到的结果为null")
 
     override fun resolveRequiredPlaceholders(text: String): String =

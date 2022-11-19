@@ -160,7 +160,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      */
     @Throws(NoSuchBeanDefinitionException::class)
     @Suppress("UNCHECKED_CAST")
-    override fun <T> getBean(beanName: String, type: Class<T>) = doGetBean(beanName, type, null)
+    override fun <T : Any> getBean(beanName: String, type: Class<T>) = doGetBean(beanName, type, null)
 
     /**
      * 按照指定的name去进行getBean，type直接使用Object就行
@@ -191,7 +191,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      * @return 获取到的Bean对象
      */
     @Suppress("UNCHECKED_CAST")
-    protected open fun <T> doGetBean(name: String, requiredType: Class<T>?, args: Array<Any?>?): T {
+    protected open fun <T : Any> doGetBean(name: String, requiredType: Class<T>?, args: Array<Any?>?): T {
         // 转换name成为真正的beanName，去掉FactoryBean的前缀"&"去进行解引用
         val beanName = transformedBeanName(name)
 
@@ -303,7 +303,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      * @param requiredType 需要进行转换的类型(可以为null)
      */
     @Suppress("UNCHECKED_CAST")
-    protected open fun <T> adaptBeanInstance(beanInstance: Any, name: String, requiredType: Class<T>?): T {
+    protected open fun <T : Any> adaptBeanInstance(beanInstance: Any, name: String, requiredType: Class<T>?): T {
 
         // 如果requiredType和beanInstance的类型本身不匹配，那么就需要使用到TypeConverter去进行转换
         if (requiredType != null && !requiredType.isInstance(beanInstance)) {
@@ -505,7 +505,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     /**
      * 按照type去进行getBean
      */
-    override fun <T> getBean(type: Class<T>): T {
+    override fun <T : Any> getBean(type: Class<T>): T {
         val result = getBeanNamesForType(type).map { getBean(it, type) }
         if (result.isEmpty()) {
             throw NoSuchBeanDefinitionException(
@@ -706,7 +706,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         getBeanNamesForTypeIncludingAncestors(type, true, true)
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T> getBeansForTypeIncludingAncestors(type: Class<T>): Map<String, T> {
+    override fun <T : Any> getBeansForTypeIncludingAncestors(type: Class<T>): Map<String, T> {
         val beans = HashMap<String, T>()
         val beanNamesForTypeIncludingAncestors = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(this, type)
         beanNamesForTypeIncludingAncestors.forEach { beans[it] = getBean(it) as T }

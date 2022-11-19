@@ -13,7 +13,10 @@ import java.util.concurrent.ConcurrentHashMap
 object SpringFactoriesLoader {
     private const val FACTORIES_RESOURCE_LOCATION = "META-INF/spring.factories"  // spring.factories文件的资源路径
 
-    // 这是一个SpringFactories缓存，key-classLoader，hKey-factory，hValues-factoryNames
+    /**
+     * 这是一个SpringFactories缓存，key-classLoader，hKey-factory，hValues-factoryNames
+     */
+    @JvmStatic
     private val cache = ConcurrentHashMap<ClassLoader, MutableMap<String, MutableList<String>>>()
 
     @JvmStatic

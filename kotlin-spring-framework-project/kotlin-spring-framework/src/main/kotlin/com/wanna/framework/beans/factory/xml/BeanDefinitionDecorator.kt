@@ -10,7 +10,7 @@ import org.w3c.dom.Node
  * @version v1.0
  * @date 2022/10/16
  */
-interface BeanDefinitionDecorator {
+fun interface BeanDefinitionDecorator {
 
     /**
      * 对给定的原始BeanDefinition去进行包装

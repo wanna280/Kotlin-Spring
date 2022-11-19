@@ -10,7 +10,7 @@ import org.w3c.dom.Document
  * @date 2022/10/16
  * @see XmlBeanDefinitionReader
  */
-interface BeanDefinitionDocumentReader {
+fun interface BeanDefinitionDocumentReader {
 
     /**
      * 将W3C的Document解析成为BeanDefinition，并完成注册功能

@@ -13,7 +13,7 @@ open class ArrayToStringConverter : GenericConverter {
     override fun getConvertibleTypes() = setOf(ConvertiblePair(Array::class.java, String::class.java))
 
     @Suppress("UNCHECKED_CAST")
-    override fun <S, T> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
+    override fun <S:Any, T:Any> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
         source ?: return null
         return StringUtils.collectionToCommaDelimitedString(setOf(*(source as Array<Any>)).map { it.toString() }
             .toList()) as T?

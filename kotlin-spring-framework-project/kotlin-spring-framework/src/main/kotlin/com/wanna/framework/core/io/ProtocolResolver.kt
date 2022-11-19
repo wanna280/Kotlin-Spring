@@ -9,7 +9,7 @@ import com.wanna.framework.lang.Nullable
  * @version v1.0
  * @date 2022/10/1
  */
-interface ProtocolResolver {
+fun interface ProtocolResolver {
 
     /**
      * 将给定的location去解析成为Resource
