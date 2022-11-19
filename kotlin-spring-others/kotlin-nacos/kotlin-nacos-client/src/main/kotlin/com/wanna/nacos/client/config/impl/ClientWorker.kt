@@ -242,7 +242,13 @@ open class ClientWorker(private val properties: Properties) : Closeable {
 
         // readTimeout = 1.5*timeout, 为了避免Server处理任务的延时, 因此多加一段时间去等一会...
         val readTimout = timeout + timeout shr 1
-        val result = agent.httpPost("/v1/cs/configs/listener", headers, params, Constants.ENCODE, readTimout)
+        val result = agent.httpPost(
+            Constants.CONFIG_CONTROLLER_PATH + "/listener",
+            headers,
+            params,
+            Constants.ENCODE,
+            readTimout
+        )
         if (result.data == null) {
             return emptyList()
         }
@@ -275,7 +281,7 @@ open class ClientWorker(private val properties: Properties) : Closeable {
         if (tenant.isNotBlank()) {
             params[ConfigConstants.TENANT] = tenant
         }
-        val result = agent.httpGet("/v1/cs/configs", emptyMap(), params, Constants.ENCODE, timeout)
+        val result = agent.httpGet(Constants.CONFIG_CONTROLLER_PATH, emptyMap(), params, Constants.ENCODE, timeout)
         val header = result.header
 
         val configType = header.getValue(Constants.CONFIG_TYPE) ?: ""

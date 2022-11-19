@@ -113,8 +113,12 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
      */
     private fun removeConfigInner(tenant: String, dataId: String, group: String): Boolean {
         val result: HttpRestResult<String>
+        val params = LinkedHashMap<String, String>()
+        params[ConfigConstants.DATA_ID] = dataId
+        params[ConfigConstants.GROUP] = dataId
+        params[ConfigConstants.TENANT] = tenant
         try {
-            result = agent.httpDelete("/v1/cs/configs", emptyMap(), emptyMap(), encode, POST_TIMEOUT)
+            result = agent.httpDelete(Constants.CONFIG_CONTROLLER_PATH, emptyMap(), params, encode, POST_TIMEOUT)
         } catch (ex: Exception) {
             logger.error("移除配置文件失败[dataId=$dataId, group=$group, tenant=$tenant]", ex)
             return false
@@ -145,10 +149,10 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
         val params = LinkedHashMap<String, String>()
         params[ConfigConstants.DATA_ID] = dataId
         params[ConfigConstants.GROUP] = group
-        params[ConfigConstants.TENANT] = this.agent.getTenant()
+        params[ConfigConstants.TENANT] = namespace
         params[ConfigConstants.FILE_TYPE] = fileType
         params[ConfigConstants.CONTENT] = content
-        agent.httpPost("/v1/cs/configs", emptyMap(), params, encode, POST_TIMEOUT)
+        agent.httpPost(Constants.CONFIG_CONTROLLER_PATH, emptyMap(), params, encode, POST_TIMEOUT)
         return true
     }
 

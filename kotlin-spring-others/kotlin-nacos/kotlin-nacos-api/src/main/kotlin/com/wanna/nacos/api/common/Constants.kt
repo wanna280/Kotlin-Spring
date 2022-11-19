@@ -28,6 +28,16 @@ object Constants {
     const val ENCRYPTED_DATA_KEY = "Encrypted-Data-Key"
 
     /**
+     * basePath
+     */
+    const val BASE_PATH = "/v1/cs"
+
+    /**
+     * Config Controller基础路径
+     */
+    const val CONFIG_CONTROLLER_PATH = "$BASE_PATH/configs"
+
+    /**
      * ConfigService的长轮询的默认超时时间为30s
      */
     const val CONFIG_LONG_POLL_TIMEOUT = 30000L
