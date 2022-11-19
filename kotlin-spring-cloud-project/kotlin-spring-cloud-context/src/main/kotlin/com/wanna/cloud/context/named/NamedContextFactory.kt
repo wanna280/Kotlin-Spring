@@ -125,7 +125,7 @@ abstract class NamedContextFactory<C : NamedContextFactory.Specification>(
      * @param type beanType
      * @return 从childContext(以及parentContext)当中获取到的Bean(如果没有找到的话，return null)
      */
-    open fun <T> getInstance(name: String, type: Class<T>): T? {
+    open fun <T : Any> getInstance(name: String, type: Class<T>): T? {
         val context = getContext(name)
         try {
             return context.getBean(type)
@@ -148,7 +148,7 @@ abstract class NamedContextFactory<C : NamedContextFactory.Specification>(
      * @param type beanType
      * @return 根据type去childContext(以及parentContext)当中找到的Bean的列表(Map<String,T>)
      */
-    open fun <T> getInstances(name: String, type: Class<T>): Map<String, T> {
+    open fun <T : Any> getInstances(name: String, type: Class<T>): Map<String, T> {
         val context = getContext(name)
         val beans = HashMap(context.getBeansForType(type))
         if (this.parent != null) {  // merge parent

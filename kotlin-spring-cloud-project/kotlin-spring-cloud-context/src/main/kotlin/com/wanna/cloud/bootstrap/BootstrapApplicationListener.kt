@@ -171,7 +171,7 @@ open class BootstrapApplicationListener : ApplicationListener<ApplicationEnviron
      * @param context beanFactory
      * @param type 要获取的Bean的类型
      */
-    private fun <T> getOrderedBeansForType(context: ListableBeanFactory, type: Class<T>): Collection<T> {
+    private fun <T : Any> getOrderedBeansForType(context: ListableBeanFactory, type: Class<T>): Collection<T> {
         val list = context.getBeansForType(type).values.toMutableList()
         list.sortWith(AnnotationAwareOrderComparator.INSTANCE)
         return list
