@@ -12,6 +12,15 @@ import java.util.*
  * @date 2022/11/20
  */
 class PropertiesChangeParser : AbstractConfigChangeParser("properties") {
+
+    /**
+     * 真正地去解析一个配置文件的变更
+     *
+     * @param oldContent 该配置文件当中的原始的内容
+     * @param newContent 该配置文件当中的新的内容
+     * @param type fileType
+     * @return 解析得到的新旧配置文件发生变更的情况
+     */
     @Suppress("UNCHECKED_CAST")
     override fun doParse(oldContent: String?, newContent: String?, type: String): Map<String, ConfigChangeItem> {
         val oldProperties = Properties()

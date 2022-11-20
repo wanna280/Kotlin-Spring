@@ -142,7 +142,6 @@ open class ConfigServerInner {
         val configInfo = persistService.findConfigInfo(dataId, group, tenant)
 
         if (cacheItem != null) {
-
             // 如果为空的话, 那么默认为"TEXT"
             val fileType = cacheItem.type.ifBlank { FileTypeEnum.TEXT.fileType }
 
@@ -152,8 +151,6 @@ open class ConfigServerInner {
             // 获取到Config-Type对应的Content-Type, 也就是响应给客户端的数据格式(TEXT/JSON...)
             val fileTypeEnum = FileTypeEnum.getFileTypeEnumByFileExtensionOrFileType(fileType)
             response.setHeader(HttpHeaders.CONTENT_TYPE, fileTypeEnum.contentType)
-
-
         }
 
         val content = configInfo?.content

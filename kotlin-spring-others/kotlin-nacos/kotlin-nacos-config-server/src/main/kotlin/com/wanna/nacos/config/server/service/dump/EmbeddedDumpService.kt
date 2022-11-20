@@ -20,10 +20,10 @@ class EmbeddedDumpService : DumpService() {
     /**
      * DumpAll的Processor
      */
-    private val dumpAllProcessor = DumpAllProcessor(this)
+    private lateinit var dumpAllProcessor: DumpAllProcessor
 
     /**
-     * 注入PersistService
+     * 自动注入PersistService
      *
      * @param persistService PersistService
      */
@@ -44,5 +44,6 @@ class EmbeddedDumpService : DumpService() {
                 dumpOperate(dumpAllProcessor)
             }
         }
+        this.dumpAllProcessor = DumpAllProcessor(this)
     }
 }

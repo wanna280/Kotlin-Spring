@@ -42,7 +42,6 @@ open class ConfigController {
      * @param tenant namespace
      * @param content fileContent
      * @param type fileType
-     * @param srcUser srcUser
      */
     @PostMapping
     fun publishConfig(

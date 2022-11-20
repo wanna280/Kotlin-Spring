@@ -49,6 +49,41 @@ object ConfigCacheService {
     }
 
     /**
+     * 转存一个文件
+     *
+     * @param dataId dataId
+     * @param group group
+     * @param tenant tenant
+     * @param content content
+     * @param lastModifiedTs 最后一次修改时间
+     * @param type configType
+     * @return 是否转存成功?
+     */
+    @JvmStatic
+    fun dump(
+        dataId: String,
+        group: String,
+        tenant: String,
+        content: String,
+        lastModifiedTs: Long,
+        type: String
+    ): Boolean {
+        val groupKey = GroupKey2.getKeyTenant(dataId, group, tenant)
+        // 确保groupKey对应的CacheItem已经存在...
+        val cacheItem = makeSure(groupKey)
+        // 更新fileType...
+        cacheItem.type = type
+        // TODO 这里应该加锁...
+        try {
+            val md5 = Md5Utils.md5Hex(content, Constants.ENCODE)
+            updateMd5(groupKey, md5, lastModifiedTs)
+        } catch (ex: Exception) {
+            return false
+        }
+        return true
+    }
+
+    /**
      * 转存变更情况
      *
      * @param dataId dataId

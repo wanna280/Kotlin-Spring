@@ -6,9 +6,14 @@ package com.wanna.nacos.api.http.param
  * @version v1.0
  * @date 2022/11/19
  */
-class Header {
+class Header(_headers: Map<String, String>) {
+    constructor() : this(emptyMap())
 
-    private val headers = LinkedHashMap<String, String>()
+    private val headers: MutableMap<String, String> = LinkedHashMap()
+
+    init {
+        this.headers.putAll(_headers)
+    }
 
     fun addParam(key: String, value: String) {
         headers[key] = value

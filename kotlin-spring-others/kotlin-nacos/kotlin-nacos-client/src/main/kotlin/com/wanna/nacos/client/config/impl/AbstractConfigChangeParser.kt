@@ -5,7 +5,7 @@ import com.wanna.nacos.api.config.PropertyChangeType
 import com.wanna.nacos.api.config.listener.ConfigChangeParser
 
 /**
- * 抽象的配置文件变更的解析器
+ * 抽象的配置文件变更的解析器, 为所有的子类的实现去提供Diff功能的模板实现
  *
  * @author jianchao.jia
  * @version v1.0
@@ -18,7 +18,7 @@ abstract class AbstractConfigChangeParser(private val configType: String) : Conf
     /**
      * 如果给定的type和configType匹配的话, 那么就支持去进行处理
      *
-     * @param type 发生变更的文件的fileType
+     * @param type 发生变更的正在去进行处理的配置文件的fileType("properties"/"json"/"text"等)
      * @return 如果和configType和type匹配的话, return true; 否则return false
      */
     override fun isResponsibleFor(type: String): Boolean = configType.equals(type, false)

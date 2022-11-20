@@ -3,6 +3,7 @@ package com.wanna.nacos.config.server.service.dump
 import com.wanna.nacos.config.server.manager.TaskManager
 import com.wanna.nacos.config.server.service.dump.processor.DumpAllProcessor
 import com.wanna.nacos.config.server.service.dump.processor.DumpChangeProcessor
+import com.wanna.nacos.config.server.service.dump.task.DumpAllTask
 import com.wanna.nacos.config.server.service.dump.task.DumpChangeTask
 import com.wanna.nacos.config.server.service.dump.task.DumpTask
 import com.wanna.nacos.config.server.service.repository.PersistService
@@ -47,6 +48,11 @@ abstract class DumpService {
         taskManager.addTask(taskKey, DumpTask(groupKey, lastModified, handleIp, tag))
     }
 
+    /**
+     * 执行dump操作
+     *
+     * @param dumpAllProcessor DumpAllProcessor
+     */
     protected open fun dumpOperate(dumpAllProcessor: DumpAllProcessor) {
         dumpConfigInfo(dumpAllProcessor)
     }
@@ -57,11 +63,17 @@ abstract class DumpService {
      * @param dumpAllProcessor DumpAllProcessor
      */
     private fun dumpConfigInfo(dumpAllProcessor: DumpAllProcessor) {
+        var dumpAll = true
 
-        // 构建出来一个DumpChangeProcessor
-        // 它会从PersistService当中拉取到所有的配置文件, 并更新到ConfigCacheService当中
-        val dumpChangeProcessor = DumpChangeProcessor(this)
-        dumpChangeProcessor.process(DumpChangeTask(this))
+        // 根据是否dumpAll, 走不同的逻辑
+        if (dumpAll) {
+            dumpAllProcessor.process(DumpAllTask())
+        } else {
+            // 构建出来一个DumpChangeProcessor
+            // 它会从PersistService当中拉取到所有的配置文件, 并更新到ConfigCacheService当中
+            val dumpChangeProcessor = DumpChangeProcessor(this)
+            dumpChangeProcessor.process(DumpChangeTask())
+        }
 
         val checkMd5Task = Runnable {
 

@@ -3,6 +3,7 @@ package com.wanna.nacos.client.config.http
 import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.client.RestTemplate
 import com.wanna.nacos.api.PropertyKeyConst
+import com.wanna.nacos.api.common.Constants
 import com.wanna.nacos.api.http.param.Header
 import com.wanna.nacos.api.model.HttpRestResult
 import com.wanna.nacos.client.config.impl.ServerListManager
@@ -56,7 +57,7 @@ class ServerHttpAgent(properties: Properties) : HttpAgent {
         do {
             val uri = StringBuilder(getUrl(serverAddr, path)).append("?")
             paramValues.forEach {
-                uri.append(it.key).append("=").append(URLEncoder.encode(it.value, "UTF-8")).append("&")
+                uri.append(it.key).append("=").append(URLEncoder.encode(it.value, Constants.ENCODE)).append("&")
             }
             uri.setLength(uri.length - 1)
             val url = URI(uri.toString())
@@ -65,7 +66,7 @@ class ServerHttpAgent(properties: Properties) : HttpAgent {
                     headers.forEach(request.getHeaders()::add)
                 }) {
                     HttpRestResult(
-                        Header(),
+                        Header(it.getHeaders().toSingleValueMap()),
                         it.getStatusCode(),
                         String(it.getBody().readAllBytes(), Charset.forName(encoding)),
                         ""
@@ -92,7 +93,7 @@ class ServerHttpAgent(properties: Properties) : HttpAgent {
         do {
             val uri = StringBuilder(getUrl(serverAddr, path)).append("?")
             paramValues.forEach {
-                uri.append(it.key).append("=").append(URLEncoder.encode(it.value, "UTF-8")).append("&")
+                uri.append(it.key).append("=").append(URLEncoder.encode(it.value, Constants.ENCODE)).append("&")
             }
             uri.setLength(uri.length - 1)
             val url = URI(uri.toString())
@@ -101,7 +102,7 @@ class ServerHttpAgent(properties: Properties) : HttpAgent {
                     headers.forEach(request.getHeaders()::add)
                 }) {
                     HttpRestResult(
-                        Header(),
+                        Header(it.getHeaders().toSingleValueMap()),
                         it.getStatusCode(),
                         String(it.getBody().readAllBytes(), Charset.forName(encoding)),
                         ""
@@ -128,7 +129,7 @@ class ServerHttpAgent(properties: Properties) : HttpAgent {
         do {
             val uri = StringBuilder(getUrl(serverAddr, path)).append("?")
             paramValues.forEach {
-                uri.append(it.key).append("=").append(URLEncoder.encode(it.value, "UTF-8")).append("&")
+                uri.append(it.key).append("=").append(URLEncoder.encode(it.value, Constants.ENCODE)).append("&")
             }
             uri.setLength(uri.length - 1)
             val url = URI(uri.toString())
@@ -137,7 +138,7 @@ class ServerHttpAgent(properties: Properties) : HttpAgent {
                     headers.forEach(request.getHeaders()::add)
                 }) {
                     HttpRestResult(
-                        Header(),
+                        Header(it.getHeaders().toSingleValueMap()),
                         it.getStatusCode(),
                         String(it.getBody().readAllBytes(), Charset.forName(encoding)),
                         ""

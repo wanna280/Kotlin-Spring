@@ -4,7 +4,8 @@ import com.wanna.nacos.api.config.ConfigChangeEvent
 import com.wanna.nacos.api.config.listener.AbstractListener
 
 /**
- * 处理属性值发生变化的Listener
+ * 处理属性值发生变化的Listener, 比如配置文件当中的"a=1"变成"a=2"的这种情况
+ * 我们就需要去进行Diff, 并得到配置文件的两个版本之间的区别
  *
  * @author jianchao.jia
  * @version v1.0
