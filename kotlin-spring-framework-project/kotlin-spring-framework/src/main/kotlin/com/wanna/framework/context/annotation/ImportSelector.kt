@@ -14,7 +14,7 @@ import java.util.function.Predicate
  * @see Import
  * @see ImportBeanDefinitionRegistrar
  */
-interface ImportSelector {
+fun interface ImportSelector {
     /**
      * 设置排除的Filter，符合Filter规范的组件，将会被排除掉
      *

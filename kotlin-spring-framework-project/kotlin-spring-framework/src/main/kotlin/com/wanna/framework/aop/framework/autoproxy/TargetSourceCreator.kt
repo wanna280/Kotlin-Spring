@@ -11,7 +11,11 @@ import com.wanna.framework.aop.TargetSource
 fun interface TargetSourceCreator {
 
     /**
-     * 如果对当前的Bean感兴趣的话，为该Bean，去利用TargetSource去提供Bean的来源
+     * 如果对当前的Bean感兴趣的话，为该Bean，去利用TargetSource去提供自定义Bean的来源(比如ThreadLocal)
+     *
+     * @param beanClass beanClass
+     * @param beanName beanName
+     * @return 针对该Bean需要使用的Bean的来源
      */
-    fun getTargetSource(beanClass: Class<*>, beanNameString: String): TargetSource?
+    fun getTargetSource(beanClass: Class<*>, beanName: String): TargetSource?
 }

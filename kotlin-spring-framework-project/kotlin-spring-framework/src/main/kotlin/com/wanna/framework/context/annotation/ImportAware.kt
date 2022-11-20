@@ -7,7 +7,7 @@ import com.wanna.framework.core.type.AnnotationMetadata
  * 这是一个ImportAware，可以注入通过@Import的配置类的相关信息
  * 例如：如果A通过@Import注解导入了B，那么B就可以通过ImportAware获取到A的相关元信息
  */
-interface ImportAware : Aware {
+fun interface ImportAware : Aware {
     /**
      * 注入通过@Import导入当前配置类的配置类的注解信息
      *

@@ -18,6 +18,7 @@ object ParserStrategyUtils {
     /**
      * 实例化BeanInstance，并完成Aware接口的回调
      */
+    @JvmStatic
     fun <T> instanceClass(
         clazz: Class<*>, environment: Environment, registry: BeanDefinitionRegistry
     ): T {
@@ -34,6 +35,7 @@ object ParserStrategyUtils {
     /**
      * 创建BeanInstance
      */
+    @JvmStatic
     private fun createInstance(
         clazz: Class<*>, environment: Environment, registry: BeanDefinitionRegistry, classLoader: ClassLoader?
     ): Any {
@@ -43,6 +45,7 @@ object ParserStrategyUtils {
     /**
      * 执行Aware接口，目前支持Environment/ClassLoader/BeanFactory的注入
      */
+    @JvmStatic
     private fun invokeAwareMethods(
         bean: Any, environment: Environment, registry: BeanDefinitionRegistry, classLoader: ClassLoader
     ) {

@@ -1,8 +1,14 @@
 package com.wanna.framework.context.aware
 
 /**
- * 完成BeanClassLoader的注册的Aware
+ * 完成BeanClassLoader的自动注入的Aware
  */
-interface BeanClassLoaderAware : Aware {
+fun interface BeanClassLoaderAware : Aware {
+
+    /**
+     * 自动注入BeanClassLoader
+     *
+     * @param classLoader beanClassLoader
+     */
     fun setBeanClassLoader(classLoader: ClassLoader)
 }

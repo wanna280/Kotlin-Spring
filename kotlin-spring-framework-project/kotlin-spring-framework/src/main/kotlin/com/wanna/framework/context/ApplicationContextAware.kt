@@ -3,8 +3,17 @@ package com.wanna.framework.context
 import com.wanna.framework.context.aware.Aware
 
 /**
- * 设置ApplicationContext的Aware
+ * 用于提供ApplicationContext的自动注入的Aware接口
+ *
+ * @see ApplicationContext
+ * @see Aware
  */
-interface ApplicationContextAware : Aware {
+fun interface ApplicationContextAware : Aware {
+
+    /**
+     * 自动注入[ApplicationContext]
+     *
+     * @param applicationContext ApplicationContext
+     */
     fun setApplicationContext(applicationContext: ApplicationContext)
 }

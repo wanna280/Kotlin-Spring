@@ -8,7 +8,7 @@ import com.wanna.framework.core.environment.Environment
  *
  * @see com.wanna.framework.core.environment.EnvironmentCapable
  */
-interface EnvironmentAware : Aware {
+fun interface EnvironmentAware : Aware {
 
     /**
      * 注入Environment

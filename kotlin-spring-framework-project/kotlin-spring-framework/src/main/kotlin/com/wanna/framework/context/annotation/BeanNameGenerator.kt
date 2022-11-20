@@ -10,6 +10,14 @@ import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
  * @see AnnotationBeanNameGenerator
  * @see FullyQualifiedAnnotationBeanNameGenerator
  */
-interface BeanNameGenerator {
+fun interface BeanNameGenerator {
+
+    /**
+     * 为指定的BeanDefinition去生成beanName
+     *
+     * @param beanDefinition BeanDefinition
+     * @param registry BeanDefinitionRegistry
+     * @return 生成得到的beanName
+     */
     fun generateBeanName(beanDefinition: BeanDefinition, registry: BeanDefinitionRegistry): String
 }

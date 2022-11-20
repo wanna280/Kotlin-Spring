@@ -24,7 +24,9 @@ open class ConditionEvaluator(
     private val resourceLoader: ResourceLoader
 ) {
 
-    // ConditionContext，维护beanDefinitionRegistry以及environment等
+    /**
+     * ConditionContext，维护BeanDefinitionRegistry以及Environment等
+     */
     private val context: ConditionContext = ConditionContextImpl(registry, environment, resourceLoader)
 
     /**

@@ -8,7 +8,9 @@ package com.wanna.framework.beans.factory
 interface SmartFactoryBean<T> : FactoryBean<T> {
 
     /**
-     * 是否是渴望被加载的？如果是，初始化容器时，就完成FactoryBeanObject的导入
+     * 该FactoryBean是否是渴望被加载的？
+     *
+     * @return eagerInit? return true则在SpringBeanFactory启动时就完成初始化; return false则是懒加载的
      */
     fun isEagerInit(): Boolean
 }
