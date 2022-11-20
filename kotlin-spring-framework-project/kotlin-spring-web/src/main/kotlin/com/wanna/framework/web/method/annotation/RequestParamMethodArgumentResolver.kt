@@ -1,6 +1,7 @@
 package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.web.bind.ServerRequestBindingException
 import com.wanna.framework.web.bind.annotation.RequestParam
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.server.HttpServerRequest
@@ -47,6 +48,10 @@ open class RequestParamMethodArgumentResolver : AbstractNamedValueMethodArgument
     override fun createNamedValueInfo(parameter: MethodParameter): NamedValueInfo {
         val requestParam = parameter.getAnnotation(RequestParam::class.java)!!
         return RequestParamNamedValueInfo(requestParam.name, requestParam.required, requestParam.defaultValue)
+    }
+
+    override fun handleMissingValue(name: String, parameter: MethodParameter) {
+        throw ServerRequestBindingException("在绑定[$parameter]时遇到了, 缺失[$name]对应的HttpParam")
     }
 
     /**

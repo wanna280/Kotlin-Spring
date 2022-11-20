@@ -33,6 +33,8 @@ import com.wanna.framework.web.method.view.BeanNameViewResolver
 import com.wanna.framework.web.method.view.TemplateViewResolver
 import com.wanna.framework.web.mvc.HttpRequestHandlerAdapter
 import com.wanna.framework.web.mvc.SimpleControllerHandlerAdapter
+import com.wanna.framework.web.mvc.annotation.ResponseStatusExceptionResolver
+import com.wanna.framework.web.mvc.support.DefaultHandlerExceptionResolver
 
 /**
  * 为WebMvc提供支持的配置类，它为WebMvc的正常运行提供的一些默认的相关组件，并配置到容器当中...
@@ -326,7 +328,10 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
 
 
     /**
-     * 应用默认的异常解析器，添加一个处理@ExceptionHandler的ExceptionResolver
+     * 应用默认的异常解析器
+     * * 1.添加一个处理`@ExceptionHandler`注解的[ExceptionHandlerExceptionResolver]
+     * * 2.添加一个处理`@ResponseStatus`注解的[ResponseStatusExceptionResolver]
+     * * 3.添加一个处理SpringMVC的异常的[DefaultHandlerExceptionResolver]成为HTTP的错误状态码
      *
      * @param contentNegotiationManager 内容协商管理器
      * @param resolvers 支持去进行扩展的HandlerExceptionResolver
@@ -341,14 +346,19 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         exceptionHandlerExceptionResolver.setHandlerMethodArgumentResolvers(getArgumentResolvers())
         exceptionHandlerExceptionResolver.setHttpMessageConverters(getMessageConverters())
         exceptionHandlerExceptionResolver.setHandlerMethodReturnValueHandlers(getReturnValueResolvers())
-
-
         // 手动设置ApplicationContext，并完成初始化工作...
         // 因为它不是一个SpringBean，无法自动初始化...我们尝试去进行手动初始化
         exceptionHandlerExceptionResolver.setApplicationContext(this.applicationContext)
         exceptionHandlerExceptionResolver.afterPropertiesSet()
 
+        // 添加一个处理@ExceptionHandler注解的HandlerExceptionResolver
         resolvers += exceptionHandlerExceptionResolver
+
+        // 添加一个处理@ResponseStatus的HandleExceptionResolver
+        resolvers += ResponseStatusExceptionResolver()
+
+        // 添加一个默认的HandlerExceptionResolver处理SpringMVC当中抛出来的异常信息去成为HTTP的错误状态码
+        resolvers += DefaultHandlerExceptionResolver()
     }
 
     /**

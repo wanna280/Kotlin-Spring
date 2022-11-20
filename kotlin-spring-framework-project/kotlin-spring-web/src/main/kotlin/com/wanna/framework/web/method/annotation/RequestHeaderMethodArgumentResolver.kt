@@ -1,6 +1,7 @@
 package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.web.bind.ServerRequestBindingException
 import com.wanna.framework.web.bind.annotation.RequestHeader
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.server.HttpServerRequest
@@ -41,12 +42,16 @@ open class RequestHeaderMethodArgumentResolver : AbstractNamedValueMethodArgumen
     /**
      * 创建@RequestHeader的NamedValueInfo
      *
-     * @param 方法参数
+     * @param parameter 方法参数
      * @return 根据@RequestHeader注解，解析出来的NamedValueInfo对象
      */
     override fun createNamedValueInfo(parameter: MethodParameter): NamedValueInfo {
         val requestHeader = parameter.getAnnotation(RequestHeader::class.java)!!
         return RequestHeaderNamedValueInfo(requestHeader.name, requestHeader.required, requestHeader.defaultValue)
+    }
+
+    override fun handleMissingValue(name: String, parameter: MethodParameter) {
+        throw ServerRequestBindingException("在绑定[$parameter]时遇到了, 缺失[$name]对应的HttpHeader")
     }
 
     /**

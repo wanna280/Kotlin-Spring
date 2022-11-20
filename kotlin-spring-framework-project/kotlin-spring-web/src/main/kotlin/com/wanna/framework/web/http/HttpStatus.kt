@@ -9,8 +9,9 @@ package com.wanna.framework.web.http
  */
 enum class HttpStatus(val value: Int, val series: Series, val reasonPhase: String) {
     SUCCESS(200, Series.SUCCESSFUL, "OK"),
+    BAD_REQUEST(400, Series.CLIENT_EROR, "Bad Request"),
     FORBIDDEN(403, Series.CLIENT_EROR, "Forbidden"),
-    NOT_FOUNT(404, Series.CLIENT_EROR, "Not Found"),
+    NOT_FOUND(404, Series.CLIENT_EROR, "Not Found"),
     INTERNAL_SERVER_ERROR(500, Series.SERVER_ERROR, "Internal Server Error")
     ;
 
