@@ -10,7 +10,7 @@ package com.wanna.framework.aop
  *
  * @author jianchao.jia
  */
-interface Advisor {
+fun interface Advisor {
     /**
      * 获取Advice，提供对于Bean的拦截和增强
      *

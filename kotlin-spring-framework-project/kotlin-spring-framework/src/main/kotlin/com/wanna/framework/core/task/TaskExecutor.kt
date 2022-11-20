@@ -8,7 +8,7 @@ import java.util.concurrent.Executor
  * @see Executor
  */
 @FunctionalInterface
-interface TaskExecutor : Executor {
+fun interface TaskExecutor : Executor {
 
     /**
      * 提交一个Runnable任务给线程池去进行执行

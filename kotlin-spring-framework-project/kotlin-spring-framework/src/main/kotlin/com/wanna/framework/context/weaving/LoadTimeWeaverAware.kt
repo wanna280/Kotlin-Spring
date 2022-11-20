@@ -8,6 +8,12 @@ import com.wanna.framework.instrument.classloading.LoadTimeWeaver
  *
  * @see LoadTimeWeaver
  */
-interface LoadTimeWeaverAware : Aware {
+fun interface LoadTimeWeaverAware : Aware {
+
+    /**
+     * 注入LoadTimeWeaver
+     *
+     * @param loadTimeWeaver LoadTimeWeaver
+     */
     fun setLoadTimeWeaver(loadTimeWeaver: LoadTimeWeaver)
 }

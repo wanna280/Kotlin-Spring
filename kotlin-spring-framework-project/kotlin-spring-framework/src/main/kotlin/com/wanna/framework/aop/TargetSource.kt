@@ -18,6 +18,8 @@ interface TargetSource {
 
     /**
      * 获取target对象的类型
+     *
+     * @return targetClass
      */
     fun getTargetClass(): Class<*>?
 
@@ -25,8 +27,15 @@ interface TargetSource {
 
     /**
      * 获取target对象
+     *
+     * @return target
      */
     fun getTarget(): Any?
 
+    /**
+     * 释放目标对象
+     *
+     * @param target target
+     */
     fun releaseTarget(target: Any?)
 }

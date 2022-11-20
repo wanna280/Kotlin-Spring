@@ -9,7 +9,7 @@ import com.wanna.framework.core.io.ResourceLoader
  * @version v1.0
  * @date 2022/10/2
  */
-interface ResourceLoaderAware {
+fun interface ResourceLoaderAware {
 
     /**
      * 自动注入ResourceLoader

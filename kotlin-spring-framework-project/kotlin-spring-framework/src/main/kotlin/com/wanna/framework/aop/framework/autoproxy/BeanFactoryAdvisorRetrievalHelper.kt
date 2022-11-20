@@ -12,6 +12,10 @@ import org.slf4j.LoggerFactory
 open class BeanFactoryAdvisorRetrievalHelper(private val beanFactory: ConfigurableListableBeanFactory) {
 
     companion object {
+        /**
+         * Logger
+         */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(BeanFactoryAdvisorRetrievalHelper::class.java)
     }
 

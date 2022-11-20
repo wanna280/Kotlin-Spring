@@ -10,9 +10,5 @@ annotation class ImportResource(
     val value: Array<String> = [],
     @get:AliasFor("value")
     val locations: Array<String> = [],
-
-    /**
-     * out XXX  <==>  ? extends XXX
-     */
     val reader: KClass<out BeanDefinitionReader> = BeanDefinitionReader::class
 )

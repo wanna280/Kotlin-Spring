@@ -46,11 +46,7 @@ class MyAdvisor : PointcutAdvisor {
     override fun getPointcut(): Pointcut {
         return object : Pointcut {
             override fun getClassFilter(): ClassFilter {
-                return object : ClassFilter {
-                    override fun matches(clazz: Class<*>): Boolean {
-                        return ClassUtils.isAssignFrom(ITF::class.java, clazz)
-                    }
-                }
+                return ClassFilter { clazz -> ClassUtils.isAssignFrom(ITF::class.java, clazz) }
             }
 
             override fun getMethodMatcher(): MethodMatcher {
