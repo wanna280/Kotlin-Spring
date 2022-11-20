@@ -73,4 +73,9 @@ open class MultiValueMapAdapter<K, V>(private val targetMap: MutableMap<K, Mutab
         }
         return singletonValueMap
     }
+
+    /**
+     * toString
+     */
+    override fun toString(): String = this.targetMap.toString()
 }

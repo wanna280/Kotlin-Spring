@@ -8,7 +8,7 @@ import com.wanna.framework.web.http.client.ClientHttpResponse
  * @see RestTemplate
  */
 @FunctionalInterface
-interface ResponseExtractor<T> {
+fun interface ResponseExtractor<T> {
 
     /**
      * 从ClientHttpResponse提取到ResponseBody的数据

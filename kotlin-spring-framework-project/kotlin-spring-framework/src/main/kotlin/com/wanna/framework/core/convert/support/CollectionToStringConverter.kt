@@ -12,7 +12,7 @@ open class CollectionToStringConverter : GenericConverter {
     override fun getConvertibleTypes() = setOf(ConvertiblePair(Collection::class.java, String::class.java))
 
     @Suppress("UNCHECKED_CAST")
-    override fun <S, T> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
+    override fun <S : Any, T : Any> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
         source ?: return null
         return StringUtils.collectionToCommaDelimitedString((source as Collection<Any>).map { it.toString() }
             .toList()) as T?

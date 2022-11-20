@@ -12,10 +12,29 @@ import io.netty.channel.ChannelHandler
  * @see NettyWebServer
  */
 open class NettyWebServerFactory : WebServerFactory {
+
+    /**
+     * NettyWebServer
+     */
     private val webServer = NettyWebServer()
 
+    /**
+     * 获取NettyWebServer
+     *
+     * @return NettyWebServer
+     */
     override fun getWebServer() = this.webServer
+
+    /**
+     * 设置NettyServerHandler
+     *
+     * @param handler handler
+     */
     open fun setHandler(handler: ChannelHandler) = webServer.setHandler(handler)
+
+    /**
+     * 设置NettyServer的启动端口号
+     */
     open fun setPort(port: Int) = webServer.nettyServer.setPort(port)
 
     /**

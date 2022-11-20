@@ -9,14 +9,22 @@ import com.wanna.framework.context.Lifecycle
  */
 open class WebServerStartStopLifecycle(private val webServerManager: WebServerManager) : Lifecycle {
 
-    // 该WebServer是否正在运行当中？
+    /**
+     * 该WebServer是否正在运行当中？
+     */
     private var running = false
 
+    /**
+     * 当Lifecycle启动时, 启动WebServer
+     */
     override fun start() {
         webServerManager.start()
         this.running = true
     }
 
+    /**
+     * 当Lifecycle关闭时, 关闭WebServer
+     */
     override fun stop() {
         webServerManager.stop()
         this.running = false

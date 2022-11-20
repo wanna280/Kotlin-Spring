@@ -102,11 +102,11 @@ abstract class AbstractEnvironment(
         return propertyResolver.getProperty(key, defaultValue)
     }
 
-    override fun <T> getProperty(key: String, requiredType: Class<T>): T? {
+    override fun <T : Any> getProperty(key: String, requiredType: Class<T>): T? {
         return propertyResolver.getProperty(key, requiredType)
     }
 
-    override fun <T> getProperty(key: String, requiredType: Class<T>, defaultValue: T): T {
+    override fun <T : Any> getProperty(key: String, requiredType: Class<T>, defaultValue: T): T {
         return propertyResolver.getProperty(key, requiredType, defaultValue)
     }
 
@@ -114,7 +114,7 @@ abstract class AbstractEnvironment(
         return propertyResolver.getRequiredProperty(key)
     }
 
-    override fun <T> getRequiredProperty(key: String, requiredType: Class<T>): T {
+    override fun <T : Any> getRequiredProperty(key: String, requiredType: Class<T>): T {
         return propertyResolver.getRequiredProperty(key, requiredType)
     }
 

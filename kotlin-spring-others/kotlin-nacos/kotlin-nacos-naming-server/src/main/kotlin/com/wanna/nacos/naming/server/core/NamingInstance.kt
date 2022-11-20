@@ -2,7 +2,7 @@ package com.wanna.nacos.naming.server.core
 
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.wanna.framework.web.server.HttpServerRequest
-import com.wanna.nacos.api.common.NamingConstants
+import com.wanna.nacos.api.common.Constants
 import com.wanna.nacos.api.naming.CommonParams
 import com.wanna.nacos.api.naming.pojo.Instance
 import com.wanna.nacos.naming.server.util.JacksonUtils
@@ -28,7 +28,7 @@ open class NamingInstance : Instance() {
             namingInstance.ip = request.getParam("ip") ?: throw IllegalStateException("ip不能为空")
             namingInstance.port = request.getParam("port")?.toInt() ?: throw NullPointerException("port不能为空")
             namingInstance.clusterName =
-                request.getParam(CommonParams.CLUSTER_NAME) ?: NamingConstants.DEFAULT_CLUSTER_NAME
+                request.getParam(CommonParams.CLUSTER_NAME) ?: Constants.DEFAULT_CLUSTER_NAME
             namingInstance.serviceName =
                 request.getParam(CommonParams.SERVICE_NAME) ?: throw NullPointerException("serviceName不能为null")
             if (updateLastBeat) {

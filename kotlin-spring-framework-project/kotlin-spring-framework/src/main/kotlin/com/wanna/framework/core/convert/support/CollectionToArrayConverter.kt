@@ -12,7 +12,7 @@ open class CollectionToArrayConverter(private val conversionService: ConversionS
     override fun getConvertibleTypes() = setOf(ConvertiblePair(Collection::class.java, Array::class.java))
 
     @Suppress("UNCHECKED_CAST")
-    override fun <S, T> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
+    override fun <S : Any, T : Any> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
         if (source is Collection<Any?> && targetType.isArray) {
             val array = java.lang.reflect.Array.newInstance(targetType.componentType, source.size)
             val iterator = source.iterator()

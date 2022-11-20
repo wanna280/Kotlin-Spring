@@ -6,7 +6,7 @@ package com.wanna.framework.beans.factory
  * @param T 要获取的Bean的类型
  */
 @FunctionalInterface
-interface ObjectFactory<T> {
+fun interface ObjectFactory<T : Any> {
     /**
      * 提供去获取BeanObject的方式
      *

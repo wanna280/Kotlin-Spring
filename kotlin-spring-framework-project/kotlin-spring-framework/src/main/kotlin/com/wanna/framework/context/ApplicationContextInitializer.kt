@@ -6,7 +6,7 @@ package com.wanna.framework.context
  * @param T ApplicationContext的类型, 只有[ConfigurableApplicationContext]才支持去进行自定义
  */
 @FunctionalInterface
-interface ApplicationContextInitializer<T : ConfigurableApplicationContext> {
+fun interface ApplicationContextInitializer<T : ConfigurableApplicationContext> {
 
     /**
      * 将[ApplicationContext]传递给你，去对[ApplicationContext]去进行更多的自定义

@@ -7,7 +7,7 @@ import com.wanna.framework.transaction.TransactionManager
  *
  * @see TransactionManager
  */
-interface TransactionManagementConfigurer {
+fun interface TransactionManagementConfigurer {
 
     /**
      * 配置自定义的TransactionManager

@@ -35,6 +35,7 @@ include(":kotlin-spring-others:kotlin-spring-shell")
 include(":kotlin-spring-others:kotlin-nacos:kotlin-nacos-config-server")
 include(":kotlin-spring-others:kotlin-nacos:kotlin-nacos-naming-server")
 include(":kotlin-spring-others:kotlin-nacos:kotlin-nacos-api")
+include(":kotlin-spring-others:kotlin-nacos:kotlin-nacos-client")
 
 
 // for logger impl

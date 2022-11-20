@@ -5,6 +5,6 @@ package com.wanna.framework.web.http
  *
  * @param T RequestBody/ResponseBody的类型
  */
-open class HttpEntity<T>(val headers: HttpHeaders, val body: T?) {
+open class HttpEntity<T : Any>(val headers: HttpHeaders, val body: T?) {
 
 }

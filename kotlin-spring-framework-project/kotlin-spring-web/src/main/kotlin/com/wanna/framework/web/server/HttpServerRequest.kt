@@ -29,7 +29,7 @@ interface HttpServerRequest {
      *
      * @return Cookie列表
      */
-    fun getCookies() : Array<Cookie>
+    fun getCookies(): Array<Cookie>
 
     /**
      * 设置request的具体的参数(如果之前已经有该参数了，那么直接去进行替换)
@@ -197,11 +197,25 @@ interface HttpServerRequest {
     fun getRemoteHost(): String
 
     /**
+     * 获取远程的IP
+     *
+     * @return remoteIp
+     */
+    fun getRemoteIp(): String
+
+    /**
      * 获取ServerPost
      *
      * @return serverPost
      */
     fun getServerPort(): Int
+
+    /**
+     * 获取remotePort
+     *
+     * @return remotePort
+     */
+    fun getRemotePort(): Int
 
     /**
      * 获取schema
@@ -223,6 +237,29 @@ interface HttpServerRequest {
      * @return request method of request
      */
     fun getMethod(): RequestMethod
+
+    /**
+     * 开启异步的支持
+     *
+     * @return AsyncContext
+     */
+    fun startAsync(): AsyncContext
+
+    /**
+     * 开启异步的支持
+     *
+     * @param request request
+     * @param response response
+     * @return AsyncContext
+     */
+    fun startAsync(request: HttpServerRequest, response: HttpServerResponse): AsyncContext
+
+    /**
+     * 获取AsyncContext
+     *
+     * @return AsyncContext
+     */
+    fun getAsyncContext(): AsyncContext?
 
     /**
      * 针对对应的ActionCode去执行对应的回调

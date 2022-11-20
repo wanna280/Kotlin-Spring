@@ -3,7 +3,6 @@ package com.wanna.framework.context.support
 import com.wanna.framework.beans.BeansException
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
-import com.wanna.framework.beans.util.StringValueResolver
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.APPLICATION_STARTUP_BEAN_NAME
@@ -512,9 +511,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
 
         // 如果容器当中没有嵌入式的值解析器, 那么需要往容器当中加入一个默认的
         if (!getBeanFactory().hasEmbeddedValueResolver()) {
-            getBeanFactory().addEmbeddedValueResolver(object : StringValueResolver {
-                override fun resolveStringValue(strVal: String) = getEnvironment().resolveRequiredPlaceholders(strVal)
-            })
+            getBeanFactory().addEmbeddedValueResolver { strVal -> getEnvironment().resolveRequiredPlaceholders(strVal) }
         }
 
         // 完成剩下的所有单实例Bean的实例化和初始化工作
@@ -749,7 +746,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
      * @throws NoSuchBeanDefinitionException 如果BeanFactory当中不存在这样的Bean的话
      */
     @Throws(NoSuchBeanDefinitionException::class)
-    override fun <T> getBean(beanName: String, type: Class<T>): T {
+    override fun <T : Any> getBean(beanName: String, type: Class<T>): T {
         assertBeanFactoryActive()
         return getBeanFactory().getBean(beanName, type)
     }
@@ -763,7 +760,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
      * @throws NoUniqueBeanDefinitionException 如果BeanFactory当中不止一个该类型的Bean
      */
     @Throws(NoSuchBeanDefinitionException::class, NoUniqueBeanDefinitionException::class)
-    override fun <T> getBean(type: Class<T>): T {
+    override fun <T : Any> getBean(type: Class<T>): T {
         assertBeanFactoryActive()
         return getBeanFactory().getBean(type)
     }
@@ -868,7 +865,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
      * @param type beanType
      * @return BeanFactory当中所有的类型匹配的Bean的列表
      */
-    override fun <T> getBeansForType(type: Class<T>): Map<String, T> {
+    override fun <T : Any> getBeansForType(type: Class<T>): Map<String, T> {
         assertBeanFactoryActive()
         return getBeanFactory().getBeansForType(type)
     }
@@ -932,7 +929,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
      * @param type beanType
      * @return 从当前BeanFactory以及它的所有的parentBeanFactory当中去获取到指定类型的所有Bean
      */
-    override fun <T> getBeansForTypeIncludingAncestors(type: Class<T>): Map<String, T> {
+    override fun <T : Any> getBeansForTypeIncludingAncestors(type: Class<T>): Map<String, T> {
         assertBeanFactoryActive()
         return getBeanFactory().getBeansForTypeIncludingAncestors(type)
     }

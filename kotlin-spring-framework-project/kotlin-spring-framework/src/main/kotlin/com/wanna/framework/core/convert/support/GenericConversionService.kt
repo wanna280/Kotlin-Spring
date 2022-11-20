@@ -51,7 +51,7 @@ open class GenericConversionService : ConfigurableConversionService {
      * @return 转换完成的对象(如果无法完成转换，那么return null)
      */
     @Suppress("UNCHECKED_CAST")
-    override fun <T> convert(source: Any?, targetType: Class<T>) =
+    override fun <T : Any> convert(source: Any?, targetType: Class<T>) =
         convert(source, TypeDescriptor.forClass(targetType)) as T?
 
     /**
@@ -92,7 +92,11 @@ open class GenericConversionService : ConfigurableConversionService {
      * @param targetType targetType
      * @param converter 你想要添加的Converter
      */
-    override fun <S, T> addConverter(sourceType: Class<S>, targetType: Class<T>, converter: Converter<S, T>) {
+    override fun <S : Any, T : Any> addConverter(
+        sourceType: Class<S>,
+        targetType: Class<T>,
+        converter: Converter<S, T>
+    ) {
         addConverter(ConverterAdapter(converter).addConvertibleType(sourceType, targetType))
     }
 
@@ -257,7 +261,7 @@ open class GenericConversionService : ConfigurableConversionService {
          * @param targetType targetType
          * @return 经过Converter转换之后的对象
          */
-        override fun <S, T> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? =
+        override fun <S : Any, T : Any> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? =
             (converter as Converter<Any, Any>).convert(source) as T?
 
         /**

@@ -34,7 +34,7 @@ interface ConversionService {
      * @param source 源对象(可以为空)
      * @param targetType 要转换的目标类型
      */
-    fun <T> convert(source: Any?, targetType: Class<T>): T?
+    fun <T : Any> convert(source: Any?, targetType: Class<T>): T?
 
     /**
      * 将source，转换为目标类型(targetType)，支持去解析targetType的泛型信息

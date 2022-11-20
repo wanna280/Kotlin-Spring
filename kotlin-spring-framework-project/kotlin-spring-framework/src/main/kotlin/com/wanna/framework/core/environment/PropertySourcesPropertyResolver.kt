@@ -12,7 +12,7 @@ package com.wanna.framework.core.environment
 open class PropertySourcesPropertyResolver(private val propertySources: PropertySources) : AbstractPropertyResolver() {
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T> getProperty(key: String, requiredType: Class<T>): T? {
+    override fun <T : Any> getProperty(key: String, requiredType: Class<T>): T? {
         propertySources.forEach {
             if (it.containsProperty(key)) {
                 val value = it.getProperty(key)

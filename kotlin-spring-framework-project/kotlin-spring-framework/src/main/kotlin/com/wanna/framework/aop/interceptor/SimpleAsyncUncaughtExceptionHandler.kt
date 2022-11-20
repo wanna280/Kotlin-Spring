@@ -10,6 +10,7 @@ import java.lang.reflect.Method
  */
 class SimpleAsyncUncaughtExceptionHandler : AsyncUncaughtExceptionHandler {
     companion object {
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(SimpleAsyncUncaughtExceptionHandler::class.java)
     }
 

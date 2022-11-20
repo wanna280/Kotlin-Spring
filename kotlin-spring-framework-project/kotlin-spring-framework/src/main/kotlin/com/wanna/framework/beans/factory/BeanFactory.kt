@@ -49,7 +49,7 @@ interface BeanFactory {
      * @throws NoSuchBeanDefinitionException 如果找不到合适的Bean
      */
     @Throws(NoSuchBeanDefinitionException::class)
-    fun <T> getBean(beanName: String, type: Class<T>): T
+    fun <T : Any> getBean(beanName: String, type: Class<T>): T
 
     /**
      * 通过type去进行获取Bean
@@ -60,7 +60,7 @@ interface BeanFactory {
      * @throws NoUniqueBeanDefinitionException 如果根据type找到的Bean不唯一的话
      */
     @Throws(NoSuchBeanDefinitionException::class, NoUniqueBeanDefinitionException::class)
-    fun <T> getBean(type: Class<T>): T
+    fun <T : Any> getBean(type: Class<T>): T
 
     /**
      * 根据beanName去判断该Bean是否是单例Bean？

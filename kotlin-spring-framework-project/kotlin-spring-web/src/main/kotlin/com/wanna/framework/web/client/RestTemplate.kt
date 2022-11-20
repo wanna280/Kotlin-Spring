@@ -14,6 +14,7 @@ import com.wanna.framework.web.http.converter.HttpMessageConverter
 import com.wanna.framework.web.http.converter.StringHttpMessageConverter
 import com.wanna.framework.web.http.converter.json.MappingJackson2HttpMessageConverter
 import java.net.URI
+import java.net.URLEncoder
 
 /**
  * RestTemplate, 它是Spring-Web当中提供的一个Http请求的客户端;
@@ -122,7 +123,10 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
             builder.append("?")
         }
         uriVariables.forEach { (name, value) -> builder.append(name).append("=").append(value).append("&") }
-        return URI(if (uriVariables.isNotEmpty()) builder.substring(0, builder.length - 1) else builder.toString())
+        return URI(
+            if (uriVariables.isNotEmpty()) builder.substring(0, builder.length - 1)
+            else URLEncoder.encode(builder.toString(), "UTF-8")
+        )
     }
 
 
@@ -130,7 +134,7 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
         url: URI,
         method: RequestMethod,
         @Nullable requestCallback: RequestCallback?,
-        responseExtractor: ResponseExtractor<T>?
+        @Nullable responseExtractor: ResponseExtractor<T>?
     ): T? {
         // 使用ClientHttpRequestFactory创建ClientHttpRequest
         // 如果当前RestTemplate当中存在有拦截器的话, 那么创建的将会是InterceptingClientHttpRequest；
@@ -163,7 +167,7 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
     /**
      * 将响应转换为Entity的Response提取器
      */
-    private inner class ResponseEntityResponseExtractor<T>(responseType: Class<T>) :
+    private inner class ResponseEntityResponseExtractor<T : Any>(responseType: Class<T>) :
         ResponseExtractor<ResponseEntity<T>> {
         private val delegate = HttpMessageConverterExtractor(messageConverters, responseType)
 

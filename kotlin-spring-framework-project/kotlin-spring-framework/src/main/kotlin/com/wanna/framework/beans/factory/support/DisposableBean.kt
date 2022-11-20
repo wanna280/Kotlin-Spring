@@ -6,6 +6,6 @@ package com.wanna.framework.beans.factory.support
  *
  * @see AutoCloseable
  */
-interface DisposableBean {
+fun interface DisposableBean {
     fun destroy()
 }

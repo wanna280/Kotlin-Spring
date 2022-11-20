@@ -1,6 +1,78 @@
 package com.wanna.nacos.api.common
 
-object NamingConstants {
-    const val DEFAULT_CLUSTER_NAME = "DEFAULT" // 默认的ClusterName
-    const val DEFAULT_NAMESPACE_ID = "public"  // 默认的namespaceId
+object Constants {
+
+    /**
+     * 默认的ClusterName
+     */
+    const val DEFAULT_CLUSTER_NAME = "DEFAULT"
+
+    /**
+     * 默认的namespaceId
+     */
+    const val DEFAULT_NAMESPACE_ID = "public"
+
+    /**
+     * ConfigType
+     */
+    const val CONFIG_TYPE = "Config-Type"
+
+    /**
+     * 编码方式为UTF-8
+     */
+    const val ENCODE = "UTF-8"
+
+    /**
+     * Encrypted-Data-Key
+     */
+    const val ENCRYPTED_DATA_KEY = "Encrypted-Data-Key"
+
+    /**
+     * 默认的ConfigType(配置文件类型)
+     */
+    const val DEFAULT_CONFIG_TYPE = "text"
+
+    /**
+     * basePath
+     */
+    const val BASE_PATH = "/v1/cs"
+
+    const val COMMUNICATION_CONTROLLER_PATH = "$BASE_PATH/communication"
+
+    /**
+     * Config Controller基础路径
+     */
+    const val CONFIG_CONTROLLER_PATH = "$BASE_PATH/configs"
+
+    /**
+     * ConfigService的长轮询的默认超时时间为30s
+     */
+    const val CONFIG_LONG_POLL_TIMEOUT = 30000L
+
+    /**
+     * ConfigService的长轮询的最短时间为10s
+     */
+    const val MIN_CONFIG_LONG_POLL_TIMEOUT = 10000L
+
+    /**
+     * Word的分隔符(用于分割dataId&group&tenant)
+     */
+    @JvmField
+    val WORD_SEPARATOR = Char(2).toString()
+
+    /**
+     * 行分隔符
+     */
+    @JvmField
+    val LINE_SEPARATOR = Char(1).toString()
+
+    /**
+     * UserName常量
+     */
+    const val USERNAME = "username"
+
+    /**
+     * 需要监听变化的配置文件
+     */
+    const val LISTENING_CONFIGS = "Listening-Configs"
 }

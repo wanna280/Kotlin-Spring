@@ -15,7 +15,7 @@ open class StringToArrayConverter(val conversionService: ConversionService) : Ge
     override fun getConvertibleTypes() = setOf(ConvertiblePair(String::class.java, Array::class.java))
 
     @Suppress("UNCHECKED_CAST")
-    override fun <S, T> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
+    override fun <S : Any, T : Any> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
         if (source is String && targetType.isArray) {
             val elementType = targetType.componentType
 

@@ -7,14 +7,20 @@ import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 /**
- * 健康检测的Reactor
+ * 用于去进行健康检测的Reactor
  */
 object HealthCheckReactor {
 
-    // Logger
+    /**
+     * Logger
+     */
+    @JvmStatic
     private val logger = LoggerFactory.getLogger(HealthCheckReactor::class.java)
 
-    // 维护的FutureMap
+    /**
+     * 维护的Future的缓存
+     */
+    @JvmStatic
     private val futureMap = ConcurrentHashMap<String, ScheduledFuture<*>>()
 
     @JvmStatic
@@ -22,6 +28,11 @@ object HealthCheckReactor {
         return GlobalExecutor.scheduleNamingHealth(healthCheckTask, 5000L, TimeUnit.MILLISECONDS)
     }
 
+    /**
+     * 添加一个实例的健康状态检测的任务给线程池
+     *
+     * @param task 监控状态检查任务
+     */
     @JvmStatic
     fun scheduleCheck(task: ClientBeatCheckTask) {
         futureMap.putIfAbsent(
@@ -49,7 +60,7 @@ object HealthCheckReactor {
     /**
      * 立刻去进行指定一个任务
      *
-     * @param task 要去执行的任我用
+     * @param task 要去执行的任务Runnable
      */
     @JvmStatic
     fun scheduleNow(task: Runnable) {

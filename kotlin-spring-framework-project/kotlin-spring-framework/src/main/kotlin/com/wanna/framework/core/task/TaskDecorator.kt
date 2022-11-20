@@ -7,6 +7,6 @@ package com.wanna.framework.core.task
  * @version v1.0
  * @date 2022/9/19
  */
-interface TaskDecorator {
+fun interface TaskDecorator {
     fun decorate(runnable: Runnable): Runnable
 }

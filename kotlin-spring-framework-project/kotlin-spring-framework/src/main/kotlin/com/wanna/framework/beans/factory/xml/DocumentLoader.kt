@@ -12,7 +12,7 @@ import org.xml.sax.InputSource
  * @version v1.0
  * @date 2022/10/16
  */
-interface DocumentLoader {
+fun interface DocumentLoader {
     fun loadDocument(
         inputSource: InputSource,
         entityResolver: EntityResolver?,

@@ -84,9 +84,7 @@ open class ClassPathMapperScanner(registry: BeanDefinitionRegistry) : ClassPathB
 
         // 如果接收所有的接口的话(不匹配父接口，也不匹配注解，就是接收所有接口)...在这里去注册一个匹配所有的接口的Filter
         if (acceptAllInterfaces) {
-            addIncludeFilter(object : TypeFilter {
-                override fun matches(clazz: Class<*>?) = true
-            })
+            addIncludeFilter { true }
         }
     }
 

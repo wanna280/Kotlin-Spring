@@ -20,9 +20,21 @@ import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
 import java.io.ByteArrayInputStream
 import java.io.IOException
+import java.net.InetAddress
+import java.net.InetSocketAddress
 
+/**
+ * NettyServerHandler, 将Netty的Message去转换成为[HttpServerRequestImpl]和[HttpServerResponseImpl]对象,
+ * 交给[DispatcherHandler]去进行请求的处理
+ *
+ * @param applicationContext ApplicationContext
+ */
 @Sharable
 open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelInboundHandlerAdapter() {
+
+    /**
+     * DispatcherHandler
+     */
     private val dispatcherHandler = applicationContext.getBean(DispatcherHandler::class.java)
 
     /**
@@ -49,7 +61,7 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
 
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         if (cause is IOException) {  // ignore IOException
-
+            cause.printStackTrace()
         } else {
             ctx.fireExceptionCaught(cause)
         }
@@ -137,6 +149,17 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
                     setCookies(*cookieCodec.decodeAsCookie(value))
                 }
             }
+            val remoteAddress = context.channel().remoteAddress() as InetSocketAddress
+            val localAddress = context.channel().localAddress() as InetSocketAddress
+
+            // remote host and remote port
+            setRemoteIp(remoteAddress.hostName)
+            setRemotePort(remoteAddress.port)
+            setRemoteHost(remoteAddress.hostName + ":" + remoteAddress.port)
+
+            if (getHeaders().getHost() == null) {
+                getHeaders().add(HttpHeaders.HOST, localAddress.hostName + ":" + localAddress.port)
+            }
 
             // 将RequestBody当中的内容，包装成为InputStream设置到request当中
             val content = msg.content()
@@ -148,9 +171,14 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
             setActionHook(object : ActionHook {
                 override fun action(code: ActionCode, param: Any?) {
                     when (code) {
+
+                        // 异步派发
                         ActionCode.ASYNC_DISPATCH -> context.channel().eventLoop().execute {
                             dispatcherHandler.doDispatch(request, response)
                         }
+
+                        // 异步完成
+                        ActionCode.ASYNC_COMPLETE -> response.flush()
                     }
                 }
             })

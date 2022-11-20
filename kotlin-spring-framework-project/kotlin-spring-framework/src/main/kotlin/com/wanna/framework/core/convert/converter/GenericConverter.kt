@@ -26,7 +26,7 @@ interface GenericConverter {
      * @param targetType 目标类型
      * @return 类型转换完成之后的对象
      */
-    fun <S, T> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T?
+    fun <S : Any, T : Any> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T?
 
     /**
      * 将source对象从sourceType转换到targetType；

@@ -22,6 +22,8 @@ import com.wanna.framework.web.server.netty.server.support.NettyServerHandler
 import com.wanna.framework.web.ui.View
 import org.slf4j.LoggerFactory
 import java.util.concurrent.Callable
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 @ComponentScan(["com.wanna.test.web.server"])
 @Configuration(proxyBeanMethods = false)
@@ -144,6 +146,26 @@ class MyController {
     fun produces(request: HttpServerRequest, response: HttpServerResponse): String {
         response.addCookie(Cookie("user", "wanna"))
         return "u"
+    }
+
+    @ResponseBody
+    @RequestMapping(["/future"])
+    fun async(): CompletableFuture<String> {
+        return CompletableFuture.supplyAsync {
+            TimeUnit.MILLISECONDS.sleep(5000L)
+            "wanna"
+        }
+    }
+
+    @ResponseBody
+    @RequestMapping(["/asyncContext"])
+    fun asyncContext(request: HttpServerRequest, response: HttpServerResponse) {
+        val asyncContext = request.startAsync(request, response)
+        CompletableFuture.runAsync {
+            TimeUnit.MILLISECONDS.sleep(5000)
+            asyncContext.getResponse()?.getOutputStream()?.write("wanna".toByteArray())
+            asyncContext.getResponse()?.flush()
+        }
     }
 }
 

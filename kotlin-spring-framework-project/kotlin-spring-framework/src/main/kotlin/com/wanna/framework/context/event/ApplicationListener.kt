@@ -6,7 +6,7 @@ package com.wanna.framework.context.event
  * @param E 支持去进行处理的事件类型
  * @see ApplicationEvent
  */
-interface ApplicationListener<E : ApplicationEvent> {
+fun interface ApplicationListener<E : ApplicationEvent> {
 
     /**
      * 当事件触发时，会自动回调的方法，交给子类去进行实现

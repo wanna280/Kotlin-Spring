@@ -14,6 +14,10 @@ open class ClientBeatCheckTask(private val service: NamingService) : Runnable {
     private val restTemplate = RestTemplate()
 
     companion object {
+        /**
+         * Logger
+         */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(ClientBeatCheckTask::class.java)
     }
 

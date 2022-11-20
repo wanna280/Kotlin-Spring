@@ -8,7 +8,7 @@ import com.wanna.framework.aop.TargetSource
  *
  * @see TargetSource
  */
-interface TargetSourceCreator {
+fun interface TargetSourceCreator {
 
     /**
      * 如果对当前的Bean感兴趣的话，为该Bean，去利用TargetSource去提供Bean的来源

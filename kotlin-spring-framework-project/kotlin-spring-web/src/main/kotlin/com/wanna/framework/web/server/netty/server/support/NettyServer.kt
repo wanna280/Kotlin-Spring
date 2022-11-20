@@ -20,16 +20,26 @@ import org.slf4j.LoggerFactory
  */
 open class NettyServer : WebServer {
     companion object {
-        // Logger
+        /**
+         * Logger
+         */
+        @JvmStatic
         private val logger: Logger = LoggerFactory.getLogger(NettyServer::class.java)
 
-        // 默认端口
+        /**
+         * 默认端口
+         */
         const val DEFAULT_SERVER_PORT = 9966
 
-        // 默认的Boss数量
+        /**
+         * 默认的Boss数量
+         */
         const val DEFAULT_BOSS_GROUP_THREADS = 1
 
-        // 默认的Worker的数量
+        /**
+         * 默认的Worker的数量
+         */
+        @JvmStatic
         val DEFAULT_WORKER_GROUP_THREADS = Runtime.getRuntime().availableProcessors() * 2
     }
 
@@ -47,10 +57,20 @@ open class NettyServer : WebServer {
         serverBootstrap.childHandler(initializer)
     }
 
+    /**
+     * 设置BossGroup的线程数量(默认为1)
+     *
+     * @param nThreads Boss线程数量
+     */
     open fun setBossGroupThreads(nThreads: Int) {
         this.bossGroup = NioEventLoopGroup(nThreads)
     }
 
+    /**
+     * 设置Worker线程的数量(默认为可用CPU核数的两倍)
+     *
+     * @param nThreads Worker线程数量
+     */
     open fun setWorkerGroupThreads(nThreads: Int) {
         this.workerGroup = NioEventLoopGroup(nThreads)
     }

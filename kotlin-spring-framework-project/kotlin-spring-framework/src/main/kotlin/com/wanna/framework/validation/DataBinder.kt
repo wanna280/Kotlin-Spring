@@ -22,8 +22,7 @@ open class DataBinder(private val target: Any?, private val objectName: String =
     PropertyEditorRegistry, TypeConverter {
 
     companion object {
-        @JvmStatic
-        private val DEFAULT_OBJECT_NAME = "target"
+        private const val DEFAULT_OBJECT_NAME = "target"
     }
 
     /**
@@ -187,7 +186,7 @@ open class DataBinder(private val target: Any?, private val objectName: String =
         return getTypeConverter().findCustomEditor(requiredType)
     }
 
-    override fun <T> convertIfNecessary(value: Any?, requiredType: Class<T>?): T? {
+    override fun <T : Any> convertIfNecessary(value: Any?, requiredType: Class<T>?): T? {
         return getTypeConverter().convertIfNecessary(value, requiredType)
     }
 

@@ -16,6 +16,10 @@ import javax.validation.ConstraintValidatorFactory
  * @see AutowireCapableBeanFactory.createBean
  */
 open class SpringConstraintValidatorFactory(val beanFactory: AutowireCapableBeanFactory) : ConstraintValidatorFactory {
-    override fun <T : ConstraintValidator<*, *>?> getInstance(key: Class<T>): T = beanFactory.getBean(key)
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ConstraintValidator<*, *>?> getInstance(key: Class<T>): T =
+        beanFactory.getBean(key as Class<*>) as T
+
     override fun releaseInstance(instance: ConstraintValidator<*, *>) = beanFactory.destroy(instance)
 }
