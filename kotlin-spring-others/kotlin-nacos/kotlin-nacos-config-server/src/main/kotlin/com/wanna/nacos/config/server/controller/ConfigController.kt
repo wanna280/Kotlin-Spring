@@ -22,7 +22,7 @@ import java.net.URLDecoder
  * @version v1.0
  * @date 2022/11/12
  */
-@RequestMapping(["/v1/cs/configs"])
+@RequestMapping([Constants.CONFIG_CONTROLLER_PATH])
 @RestController
 open class ConfigController {
 
@@ -48,7 +48,7 @@ open class ConfigController {
         request: HttpServerRequest, response: HttpServerResponse,
         @RequestParam dataId: String, @RequestParam group: String,
         @RequestParam(required = false, defaultValue = "") tenant: String, @RequestParam content: String,
-        @RequestParam(required = false, defaultValue = "text") type: String,
+        @RequestParam(required = false, defaultValue = Constants.DEFAULT_CONFIG_TYPE) type: String,
     ) {
         val srcUser = getSrcUserName(request)
         val configInfo = ConfigInfo(dataId, group, content)
@@ -76,10 +76,11 @@ open class ConfigController {
         @RequestParam(required = false, defaultValue = "") tenant: String,
         @RequestParam(required = false, defaultValue = "") tag: String
     ) {
+        // Note:对于namespace="null"/namespace="public"的情况我们都将namespace去转为""
         val tenant = processNamespaceParameter(tenant)
         val remoteIp = getRemoteIp(request)
+
         // 使用ConfigServerInner去进行真正的处理请求
-        // Note:对于namespace="null"/namespace="public"的情况我们都将namespace去转为""
         configServerInner.doGetConfig(
             request, response, dataId, group,
             tenant, tag, remoteIp
@@ -105,6 +106,7 @@ open class ConfigController {
         @RequestParam("tenant", required = false, defaultValue = "") tenant: String,
         @RequestParam("tag", required = false, defaultValue = "") tag: String
     ): Boolean {
+        // Note:对于namespace="null"/namespace="public"的情况我们都将namespace去转为""
         val tenant = processNamespaceParameter(tenant)
         val remoteIp = getRemoteIp(request)
         val srcUserName = getSrcUserName(request)

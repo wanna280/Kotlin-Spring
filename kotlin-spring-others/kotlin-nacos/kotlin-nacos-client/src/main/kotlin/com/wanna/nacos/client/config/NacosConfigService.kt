@@ -24,13 +24,15 @@ import kotlin.collections.LinkedHashMap
  * @version v1.0
  * @date 2022/11/12
  *
- * @param properties ConfigService的配置信息
+ * @param properties 针对于ConfigService的配置信息
+ * @see PropertyKeyConst
  */
 open class NacosConfigService(private val properties: Properties) : ConfigService {
     companion object {
         /**
          * Logger
          */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(NacosConfigService::class.java)
 
         /**
@@ -65,7 +67,7 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
     private var worker = ClientWorker(properties)
 
     init {
-        // 初始化namespace
+        // 根据Properties配置信息去初始化namespace
         initNamespace(properties)
     }
 
@@ -92,7 +94,7 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
     }
 
     override fun publishConfig(dataId: String, group: String, content: String): Boolean {
-        return publishConfig(dataId, group, content, "txt")
+        return publishConfig(dataId, group, content, Constants.DEFAULT_CONFIG_TYPE)
     }
 
     override fun publishConfig(dataId: String, group: String, content: String, fileType: String): Boolean {
@@ -109,7 +111,7 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
      * @param tenant namespace(tenant)
      * @param dataId dataId
      * @param group group
-     * @return 移除配置文件是否成功?
+     * @return 移除配置文件是否成功? 移除成功return true; 移除失败return false
      */
     private fun removeConfigInner(tenant: String, dataId: String, group: String): Boolean {
         val result: HttpRestResult<String>
@@ -131,13 +133,14 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
     }
 
     /**
-     * 发布配置文件ConfigFile
+     * 发布配置文件ConfigFile到ConfigServer
      *
      * @param namespace namespace
      * @param dataId dataId
      * @param group group
      * @param content content
      * @param fileType fileType
+     * @return 如果发布配置文件成功, 那么return true; 否则return false
      */
     private fun publishConfigInner(
         namespace: String,
@@ -157,7 +160,7 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
     }
 
     /**
-     * 从ConfigServer当中拉取配置文件
+     * 从ConfigServer当中根据dataId&group&tenant去拉取到配置文件
      *
      * @param namespace namespace
      * @param dataId dataId

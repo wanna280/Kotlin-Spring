@@ -28,9 +28,16 @@ object Constants {
     const val ENCRYPTED_DATA_KEY = "Encrypted-Data-Key"
 
     /**
+     * 默认的ConfigType(配置文件类型)
+     */
+    const val DEFAULT_CONFIG_TYPE = "text"
+
+    /**
      * basePath
      */
     const val BASE_PATH = "/v1/cs"
+
+    const val COMMUNICATION_CONTROLLER_PATH = "$BASE_PATH/communication"
 
     /**
      * Config Controller基础路径

@@ -117,10 +117,10 @@ open class ClientWorker(private val properties: Properties) : Closeable {
      *
      * @param dataId dataId
      * @param group group
-     * @param listener 要去进行移除的Listener
+     * @param listener 要从dataId&group的对应的CacheData当中去进行移除的Listener
      */
     open fun removeTenantListener(dataId: String, group: String, listener: Listener) {
-        getCacheData(dataId, group, "")?.removeListener(listener)
+        getCacheData(dataId, group, agent.getTenant())?.removeListener(listener)
     }
 
     /**
@@ -129,7 +129,7 @@ open class ClientWorker(private val properties: Properties) : Closeable {
      * @param dataId dataId
      * @param group group
      * @param tenant tenant
-     * @return 获取到的CacheData
+     * @return 根据dataId&group从CacheMap当中去获取到的CacheData(如果之前不存在的话, return null)
      */
     open fun getCacheData(dataId: String, group: String, tenant: String): CacheData? {
         return cacheMap[GroupKey.getKeyTenant(dataId, group, tenant)]
@@ -141,6 +141,7 @@ open class ClientWorker(private val properties: Properties) : Closeable {
      * @param dataId dataId
      * @param group group
      * @param tenant tenant(namespace)
+     * @return CacheData(如果之前已经存在的话, 返回之前的CacheData; 如果之前不存在的话, 那么新创建一个CacheData并加入到Cache当中)
      */
     open fun addCacheDataIfAbsent(dataId: String, group: String, tenant: String): CacheData {
         // 根据dataId&group&tenant去生成Key
@@ -272,7 +273,7 @@ open class ClientWorker(private val properties: Properties) : Closeable {
      * @param group group
      * @param tenant tenant
      * @param timeout timeout
-     * @return 拉取到的配置文件的内容
+     * @return 从ConfigServer当中去拉取到的配置文件的内容
      */
     open fun getServerConfig(dataId: String, group: String, tenant: String, timeout: Long): ConfigResponse {
         val params = HashMap<String, String>()
@@ -342,7 +343,7 @@ open class ClientWorker(private val properties: Properties) : Closeable {
                 // 将CacheData的文件内容去修改为新的ConfigServer当中的content, 同步修改MD5
                 cacheData.content = serverConfig.getContent() ?: ""
                 // 设置fileType
-                cacheData.fileType = serverConfig.getConfigType() ?: "text"
+                cacheData.fileType = serverConfig.getConfigType() ?: Constants.DEFAULT_CONFIG_TYPE
             }
 
             // 在加载完成ConfigServer的配置文件之后, 继续检查一下Md5, 触发Listener

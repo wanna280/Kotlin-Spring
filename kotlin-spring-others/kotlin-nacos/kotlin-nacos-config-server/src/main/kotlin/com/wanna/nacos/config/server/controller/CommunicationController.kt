@@ -5,6 +5,7 @@ import com.wanna.framework.web.bind.annotation.RequestMapping
 import com.wanna.framework.web.bind.annotation.RequestParam
 import com.wanna.framework.web.bind.annotation.RestController
 import com.wanna.framework.web.server.HttpServerRequest
+import com.wanna.nacos.api.common.Constants
 import com.wanna.nacos.config.server.service.dump.DumpService
 import com.wanna.nacos.config.server.service.notify.NotifyService
 
@@ -14,7 +15,7 @@ import com.wanna.nacos.config.server.service.notify.NotifyService
  * @version v1.0
  * @date 2022/11/20
  */
-@RequestMapping(["/v1/cs/communication"])
+@RequestMapping([Constants.COMMUNICATION_CONTROLLER_PATH])
 @RestController
 class CommunicationController {
 
