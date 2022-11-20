@@ -313,9 +313,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      *
      * @return 如果存在有，return true；否则return false
      */
-    override fun hasConstructorArgumentValues(): Boolean {
-        return false
-    }
+    override fun hasConstructorArgumentValues(): Boolean = !constructorArgumentValues.isEmpty()
 
     /**
      * 是否是懒加载的？如果是非懒加载的，那么在SpringBeanFactory启动时，就会完成实例化和初始化工作；

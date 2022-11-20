@@ -32,116 +32,241 @@ interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
     }
 
     /**
-     * beanClass
+     * 获取当前BeanDefinition的beanClass
+     *
+     * @return beanClass(如果不存在return null)
      */
+    @Nullable
     fun getBeanClass(): Class<*>?
-    fun getBeanClassName(): String?
-    fun setBeanClass(beanClass: Class<*>?);
 
     /**
-     * 是否单例
+     * 获取beanClassName
+     *
+     * @return beanClassName
+     */
+    @Nullable
+    fun getBeanClassName(): String?
+
+    /**
+     * 设置beanClass
+     *
+     * @param beanClass beanClass
+     */
+    fun setBeanClass(@Nullable beanClass: Class<*>?);
+
+    /**
+     * 当前BeanDefinition对应的Bean是否是一个单例对象
+     *
+     * @return 如果BeanDefinition的scope为"singleton", 那么return true; 否则return false
      */
     fun isSingleton(): Boolean
 
     /**
-     * 是否原型？
+     * 当前BeanDefinition对应的Bean是否是一个原型对象
+     *
+     * @return 如果BeanDefinition的scope为"prototype", 那么return true; 否则return false
      */
     fun isPrototype(): Boolean
 
     /**
      * 是否是Autowire时需要进行优先注入的Bean
+     *
+     * @return 如果是需要去进行优先注入的Bean, return true; 否则return false
      */
     fun isPrimary(): Boolean
+
+    /**
+     * 设置当前BeanDefinition是否是一个需要去进行优先注入的Bean的标志
+     *
+     * @param primary 如果需要设置为primary, 设置为true; 否则设置为false
+     */
     fun setPrimary(primary: Boolean)
 
     /**
      * 是否是一个Autowire的候选Bean
+     *
+     * @return 如果它是一个Autowire的候选Bean, return true; 否则return false
      */
     fun isAutowireCandidate(): Boolean
+
+    /**
+     * 设置当前BeanDefinition是否是一个候选的去进行Autowire的Bean
+     *
+     * @param candidate 是否是一个优先去进行
+     */
     fun setAutowireCandidate(candidate: Boolean)
 
     /**
      * 设置创建Bean的工厂方法，也就是@Bean的方法
+     *
+     * @param factoryMethodName factoryMethodName
      */
-    fun setFactoryMethodName(factoryMethodName: String?)
+    fun setFactoryMethodName(@Nullable factoryMethodName: String?)
+
+    /**
+     * 获取创建Bean的工厂方法名, 也就是@Bean方法的方法名
+     *
+     * @return factoryMethodName
+     */
+    @Nullable
     fun getFactoryMethodName(): String?
 
     /**
      * 设置创建Bean的工厂方法对应的类的BeanName
+     *
+     * @param factoryBeanName factoryBeanName
      */
-    fun setFactoryBeanName(factoryBeanName: String?)
+    fun setFactoryBeanName(@Nullable factoryBeanName: String?)
+
+    /**
+     * 获取到创建Bean的工厂方法对应的类的BeanName
+     *
+     * @return factoryBeanName
+     */
+    @Nullable
     fun getFactoryBeanName(): String?
 
     /**
-     * Bean的初始化回调方法
+     * 设置Bean的初始化回调方法
+     *
+     * @param initMethodName 需要使用的初始化方法
      */
-    fun getInitMethodName(): String?
-    fun setInitMethodName(initMethodName: String?)
+    fun setInitMethodName(@Nullable initMethodName: String?)
 
     /**
-     * Bean的摧毁的预先回调方法
+     * 获取到当前Bean的初始化方法
+     *
+     * @return initMethodName
      */
-    fun setDestroyMethodName(destroyMethodName: String?)
+    @Nullable
+    fun getInitMethodName(): String?
+
+    /**
+     * 设置Bean的摧毁的预先回调方法
+     *
+     * @param destroyMethodName destroyMethodName
+     */
+    fun setDestroyMethodName(@Nullable destroyMethodName: String?)
+
+    /**
+     * 获取到当前Bean的摧毁的预先回调方法
+     *
+     * @return destroyMethodName
+     */
+    @Nullable
     fun getDestroyMethodName(): String?
 
     /**
-     * Bean的作用域，包括单例/原型等
+     * Bean的作用域，包括单例(singleton)/原型(prototype)等
+     *
+     * @param scopeName scopeName
      */
     fun setScope(scopeName: String)
+
+    /**
+     * 获取BeanDefinition的Scope对应的scopeName
+     *
+     * @return scopeName
+     */
     fun getScope(): String
 
     /**
      * 设置Bean的Role
+     *
+     * @param role role
      */
     fun setRole(role: Int)
+
+    /**
+     * 获取当前BeanDefinition的Role
+     *
+     * @return role
+     */
     fun getRole(): Int
 
     /**
-     * 是否是抽象的？
+     * 当前BeanDefinition是否是抽象的？
+     *
+     * @param abstractFlag 如果抽象, 设置为true; 否则为false
      */
     fun setAbstract(abstractFlag: Boolean)
+
+    /**
+     * 当前BeanDefinition是否抽象的
+     *
+     * @return 如果抽象, return true; 否则return false
+     */
     fun isAbstract(): Boolean
 
     /**
      * 设置实例化的Supplier
+     *
+     * @param supplier 用于去进行实例化的Supplier
      */
-    fun setInstanceSupplier(supplier: Supplier<*>?)
+    fun setInstanceSupplier(@Nullable supplier: Supplier<*>?)
+
+    /**
+     * 获取用来进行实例化的Supplier
+     *
+     * @return 实例化的Supplier(不存在return null)
+     */
+    @Nullable
     fun getInstanceSupplier(): Supplier<*>?
 
     /**
      * 获取运行时方法重写的列表
+     *
+     * @return 当前BeanDefinition当中需要去进行运行时方法重写的方法列表
      */
     fun getMethodOverrides(): MethodOverrides
 
     /**
-     * 是否有需要进行运行时方法重写的？
+     * 当前BeanDefinition当中是否有需要进行运行时方法重写的？
+     *
+     * @return 如果当前BeanDefinition存在有要进行运行时方法重写的话, return true; 否则return false
      */
     fun hasMethodOverrides(): Boolean
 
     /**
-     * 获取要进行设置的属性值
+     * 获取要进行设置的属性值列表
+     *
+     * @return 当前BeanDefinition当中的PropertyValue列表
      */
     fun getPropertyValues(): MutablePropertyValues
 
     /**
      * 是否有PropertyValue？
+     *
+     * @return 如果存在有PropertyValue的话, return true; 否则return false
      */
     fun hasPropertyValues(): Boolean
 
     /**
-     * 获取构造器参数
+     * 获取当前BeanDefinition的构造器参数
+     *
+     * @return 当前BeanDefinition的构造器参数列表
      */
     fun getConstructorArgumentValues(): ConstructorArgumentValues
 
     /**
-     * 是否有构造器参数？
+     * 当前BeanDefinition是否有指定构造器参数?
+     *
+     * @return 如果有指定构造器参数的话, return true; 否则return false
      */
     fun hasConstructorArgumentValues(): Boolean
 
     /**
      * 该Bean是否应该被懒加载
+     *
+     * @return 如果应该去进行懒加载, return true; 否则return false
      */
     fun isLazyInit(): Boolean
+
+    /**
+     * 设置该Bean是否应该去进行懒加载?
+     *
+     * @param lazyInit lazyInit
+     */
     fun setLazyInit(lazyInit: Boolean)
 
     /**
@@ -154,8 +279,16 @@ interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
 
     /**
      * 创建一个Bean时，它需要依赖的Bean的列表
+     *
+     * @param dependsOn 需要依赖的Bean的列表
      */
     fun setDependsOn(dependsOn: Array<String>)
+
+    /**
+     * 获取创建一个Bean时需要依赖的BeanDefinition的列表
+     *
+     * @return 需要依赖的BeanDefinition的beanName列表
+     */
     fun getDependsOn(): Array<String>
 
 }
