@@ -17,6 +17,7 @@ import com.wanna.framework.web.handler.HandlerAdapter
 import com.wanna.framework.web.handler.HandlerExceptionResolver
 import com.wanna.framework.web.handler.ModelAndView
 import com.wanna.framework.web.handler.ViewResolver
+import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.method.RequestToViewNameTranslator
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse

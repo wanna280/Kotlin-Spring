@@ -20,5 +20,5 @@ annotation class RequestParam(
     @get:AliasFor("name")
     val value: String = "",
     val required: Boolean = true,
-    val defaultValue: String = ""
+    val defaultValue: String = ValueConstants.DEFAULT_NONE
 )

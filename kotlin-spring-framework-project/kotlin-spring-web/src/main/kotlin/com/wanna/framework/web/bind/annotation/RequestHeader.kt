@@ -21,5 +21,5 @@ annotation class RequestHeader(
     @get:AliasFor("value")
     val name: String = "",
     val required: Boolean = true,
-    val defaultValue: String = ""
+    val defaultValue: String = ValueConstants.DEFAULT_NONE
 )

@@ -2,6 +2,8 @@ package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.lang.Nullable
+import com.wanna.framework.web.bind.annotation.ValueConstants
 import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.method.support.HandlerMethodArgumentResolver
@@ -22,20 +24,30 @@ import java.util.concurrent.ConcurrentHashMap
  */
 abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentResolver {
 
-    // beanFactory
+    /**
+     * beanFactory
+     */
     private var beanFactory: ConfigurableBeanFactory? = null
 
-    // NamedValueInfo缓存，key-方法参数，value-要处理的NamedValueInfo
+    /**
+     * NamedValueInfo缓存，key-方法参数，value-要处理的NamedValueInfo
+     */
     private val namedValueInfoCache = ConcurrentHashMap<MethodParameter, NamedValueInfo>()
 
     /**
      * 解析一个方法参数的值
+     *
+     * @param parameter 需要去进行解析的方法参数
+     * @param webRequest NativeWebRequest
+     * @param mavContainer ModelAndViewContainer
+     * @param binderFactory BinderFactory
      */
+    @Nullable
     override fun resolveArgument(
         parameter: MethodParameter,
         webRequest: NativeWebRequest,
-        mavContainer: ModelAndViewContainer?,
-        binderFactory: WebDataBinderFactory?
+        @Nullable mavContainer: ModelAndViewContainer?,
+        @Nullable binderFactory: WebDataBinderFactory?
     ): Any? {
         // 获取NamedValueInfo，交给子类去进行注解的解析并构建NamedValueInfo
         val namedValueInfo = getNamedValueInfo(parameter)
@@ -47,9 +59,11 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
         // 交给子类去解析该参数名的值
         var arg = resolveName(resolvedName.toString(), webRequest)
         if (arg == null) {
-            // 提供了value的占位符解析工作
+            // 如果有默认值得话, 去进行value的占位符解析工作(在之前已经将defaultValue从"DEFAULT_NONE"转换成为null)
             if (namedValueInfo.defaultValue != null) {
                 arg = resolveEmbeddedValuesAndExpressions(namedValueInfo.defaultValue)
+            } else {
+                handleMissingValue(resolvedName.toString(), parameter, webRequest)
             }
         }
         if (binderFactory != null) {
@@ -58,6 +72,27 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
             return binder.convertIfNecessary(arg, parameter.getParameterType())
         }
         return arg
+    }
+
+    /**
+     * 处理值缺失的情况
+     *
+     * @param name name
+     * @param parameter parameter
+     * @param webRequest NativeWebRequest
+     */
+    protected open fun handleMissingValue(name: String, parameter: MethodParameter, webRequest: NativeWebRequest) {
+        handleMissingValue(name, parameter)
+    }
+
+    /**
+     * 处理值缺失的情况
+     *
+     * @param name name
+     * @param parameter parameter
+     */
+    protected open fun handleMissingValue(name: String, parameter: MethodParameter) {
+
     }
 
     /**
@@ -70,13 +105,13 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
 
     /**
      * 解析嵌入式的值以及表达式
+     *
+     * @param expression 待进行解析的表达式
+     * @return 解析表达式得到的结果
      */
-    private fun resolveEmbeddedValuesAndExpressions(name: String): Any? {
-        val beanFactory = this.beanFactory
-        if (beanFactory != null) {
-            return beanFactory.resolveEmbeddedValue(name)
-        }
-        return name
+    @Nullable
+    private fun resolveEmbeddedValuesAndExpressions(expression: String): Any? {
+        return this.beanFactory?.resolveEmbeddedValue(expression) ?: expression
     }
 
     /**
@@ -98,10 +133,10 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
     /**
      * 更新NamedValue，如果没有解析到NamedValueInfo的name的话，需要从方法参数当中去获取name
      *
-     * <note>MethodParameter，需要提前初始化参数名解析器，才能去去获取到参数名</note>
+     * Note: MethodParameter，需要提前初始化参数名解析器，才能去去获取到参数名
      * @param parameter 方法参数
      * @param namedValueInfo 子类构建的NamedValueInfo
-     * @return 重新构建的NamedValueInfo
+     * @return 重新构建的NamedValueInfo(将defaultValue从"DEFAULT_NONE"转换成为null)
      */
     private fun updateNamedValueInfo(parameter: MethodParameter, namedValueInfo: NamedValueInfo): NamedValueInfo {
         var name: String? = namedValueInfo.name
@@ -112,11 +147,15 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
                 throw IllegalArgumentException("解析参数名失败")
             }
         }
-        return NamedValueInfo(name, namedValueInfo.required, namedValueInfo.defaultValue)
+
+        // 将defaultValue从"DEFAULT_NONE"转换成为null
+        val defaultValue =
+            if (namedValueInfo.defaultValue == ValueConstants.DEFAULT_NONE) null else namedValueInfo.defaultValue
+        return NamedValueInfo(name, namedValueInfo.required, defaultValue)
     }
 
     /**
-     * 如何去创建NamedValueInfo？交给子类去实现，用来去获取注解当中的相关信息
+     * 如何去创建NamedValueInfo? 交给子类去实现，用来去获取注解当中的相关信息
      *
      * @param parameter 方法参数
      * @return 构建好的NamedValueInfo

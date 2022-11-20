@@ -166,7 +166,7 @@ open class InvocableHandlerMethod() : HandlerMethod() {
                     params[it] = resolvers.resolveArgument(parameter, webRequest, mavContainer, binderFactory)
                 } catch (ex: Exception) {
                     if (logger.isDebugEnabled) {
-                        logger.debug("使用参数解析器去解析参数[$parameter]失败，原因是[${ex.message}]")
+                        logger.debug("使用参数解析器去解析参数[$parameter]失败，原因是[${ex.message}]", ex)
                     }
                     throw ex
                 }
