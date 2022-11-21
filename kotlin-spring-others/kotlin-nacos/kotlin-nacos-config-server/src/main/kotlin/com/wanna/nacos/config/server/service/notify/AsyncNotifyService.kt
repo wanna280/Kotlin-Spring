@@ -22,6 +22,9 @@ import javax.annotation.PostConstruct
 @Service
 class AsyncNotifyService {
 
+    /**
+     * 自动注入DumpService
+     */
     @Autowired
     private lateinit var dumpService: DumpService
 

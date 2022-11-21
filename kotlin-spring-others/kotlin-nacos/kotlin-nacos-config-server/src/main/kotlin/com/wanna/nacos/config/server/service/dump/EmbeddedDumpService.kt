@@ -16,7 +16,7 @@ import javax.annotation.PostConstruct
  * @date 2022/11/20
  */
 @Service
-class EmbeddedDumpService : DumpService() {
+open class EmbeddedDumpService : DumpService() {
     /**
      * DumpAll的Processor
      */
@@ -42,6 +42,9 @@ class EmbeddedDumpService : DumpService() {
         GlobalExecutor.executeByCommon {
             while (true) {
                 dumpOperate(dumpAllProcessor)
+
+                // 睡眠500ms
+                Thread.sleep(500L)
             }
         }
         this.dumpAllProcessor = DumpAllProcessor(this)
