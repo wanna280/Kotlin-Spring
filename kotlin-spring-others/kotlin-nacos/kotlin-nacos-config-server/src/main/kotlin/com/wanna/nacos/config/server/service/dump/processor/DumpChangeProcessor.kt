@@ -20,7 +20,7 @@ open class DumpChangeProcessor(private val dumpService: DumpService) : NacosTask
     /**
      * 从DumpService当中去获取到PersistService
      */
-    private val persistService = dumpService.getPersistService()
+    private val persistService = dumpService.persistService
 
     /**
      * 处理一个Nacos任务, 此时需要获取出来所有的GroupKey去检查MD5值是否发生变化?

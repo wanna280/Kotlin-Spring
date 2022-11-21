@@ -56,6 +56,9 @@ class AsyncNotifyService {
     inner class AsyncTask(private val queue: Queue<NotifySingleTask>) : Runnable {
         override fun run() {
             queue.forEach {
+
+                // 使用DumpService去触发一次Dump, 添加一个DumpTask任务, 从而触发DumpTaskProcessor去对ConfigCacheService去进行dump
+                // @see com.wanna.nacos.config.server.service.dump.processor.DumpProcessor
                 dumpService.dump(it.dataId, it.group, it.tenant, "", it.lastModified, "")
             }
         }

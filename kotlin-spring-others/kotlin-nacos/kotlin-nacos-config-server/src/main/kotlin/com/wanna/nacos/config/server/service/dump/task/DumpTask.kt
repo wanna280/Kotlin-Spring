@@ -8,8 +8,13 @@ import com.wanna.nacos.api.common.task.AbstractDelayTask
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/11/20
+ *
+ * @param groupKey "dataId"/"group"/"tenant"
+ * @param lastModified 上次修改时间
+ * @param handleIp handleIp
+ * @param tag tag
  */
-class DumpTask(val groupKey: String, val lastModified: Long, val handleIp: String, val tag: String = "") :
+open class DumpTask(val groupKey: String, val lastModified: Long, val handleIp: String, val tag: String = "") :
     AbstractDelayTask() {
     init {
         // 设置任务的执行时间间隔为1s
