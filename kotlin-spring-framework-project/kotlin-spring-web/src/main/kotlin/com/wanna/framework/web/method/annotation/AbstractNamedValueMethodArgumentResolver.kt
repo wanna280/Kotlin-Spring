@@ -3,6 +3,9 @@ package com.wanna.framework.web.method.annotation
 import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.web.bind.annotation.CookieValue
+import com.wanna.framework.web.bind.annotation.RequestHeader
+import com.wanna.framework.web.bind.annotation.RequestParam
 import com.wanna.framework.web.bind.annotation.ValueConstants
 import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
@@ -57,7 +60,7 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
             ?: throw IllegalArgumentException("无法解析到方法的参数名[${namedValueInfo.name}]")
 
         // 交给子类去解析该参数名的值
-        var arg = resolveName(resolvedName.toString(), webRequest)
+        var arg = resolveName(resolvedName.toString(), parameter, webRequest)
         if (arg == null) {
             // 如果有默认值得话, 去进行value的占位符解析工作(在之前已经将defaultValue从"DEFAULT_NONE"转换成为null)
             if (namedValueInfo.defaultValue != null) {
@@ -75,7 +78,7 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
     }
 
     /**
-     * 处理值缺失的情况
+     * 处理"required=true", 但是实际上在request当中不存在有这样的参数值, 从而导致值缺失的情况
      *
      * @param name name
      * @param parameter parameter
@@ -86,10 +89,10 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
     }
 
     /**
-     * 处理值缺失的情况
+     * 处理"required=true", 但是实际上在request当中不存在有这样的参数值, 从而导致值缺失的情况
      *
-     * @param name name
-     * @param parameter parameter
+     * @param name name(参数名)
+     * @param parameter parameter(正在去进行处理的方法参数)
      */
     protected open fun handleMissingValue(name: String, parameter: MethodParameter) {
 
@@ -99,9 +102,10 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
      * 给定了参数名(name)，需要去解析该参数名对应的值(value)，解析该参数的具体逻辑交给子类去进行实现
      *
      * @param name paramName
+     * @param parameter 方法参数信息
      * @param webRequest NativeWebRequest(request and response)
      */
-    protected abstract fun resolveName(name: String, webRequest: NativeWebRequest): Any?
+    protected abstract fun resolveName(name: String, parameter: MethodParameter, webRequest: NativeWebRequest): Any?
 
     /**
      * 解析嵌入式的值以及表达式
@@ -167,6 +171,7 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
      *
      * @see RequestParam
      * @see RequestHeader
+     * @see CookieValue
      *
      * @param name paramName
      * @param required 是否是必须的？
