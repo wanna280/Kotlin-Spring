@@ -31,10 +31,11 @@ open class RequestParamMethodArgumentResolver : AbstractNamedValueMethodArgument
      * 给定paramName，需要去计算该paramName在请求参数当中的具体的值
      *
      * @param name paramName
+     * @param parameter 方法参数
      * @param webRequest NativeWebRequest(request and response)
      * @return 从header当中获取到的参数的值
      */
-    override fun resolveName(name: String, webRequest: NativeWebRequest): Any? {
+    override fun resolveName(name: String, parameter: MethodParameter, webRequest: NativeWebRequest): Any? {
         val request = webRequest.getNativeRequest(HttpServerRequest::class.java)
         return request.getParam(name)
     }
@@ -51,7 +52,7 @@ open class RequestParamMethodArgumentResolver : AbstractNamedValueMethodArgument
     }
 
     override fun handleMissingValue(name: String, parameter: MethodParameter) {
-        throw ServerRequestBindingException("在绑定[$parameter]时遇到了, 缺失[$name]对应的HttpParam")
+        throw ServerRequestBindingException("在绑定[${parameter.getExecutable()}]的[${parameter.getParameter()}]时遇到了, 缺失[$name]对应的HttpParam")
     }
 
     /**

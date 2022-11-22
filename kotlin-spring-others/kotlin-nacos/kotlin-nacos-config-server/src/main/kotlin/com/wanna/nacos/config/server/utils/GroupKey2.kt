@@ -23,7 +23,7 @@ object GroupKey2 {
      * 将一个GroupKey去拆分转换成为"dataId"、"group"、"tenant"三个部分
      *
      * @param groupKey groupKey
-     * @return "dataId"/"group"/"tenant"
+     * @return "tenant"/"group"/"dataId"
      */
     @JvmStatic
     fun parseKey(groupKey: String): Array<String> {

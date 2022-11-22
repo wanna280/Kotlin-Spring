@@ -10,9 +10,10 @@ package com.wanna.nacos.api.common.task
 fun interface NacosTaskProcessor {
 
     /**
-     * 处理一个Nacos任务
+     * 交给[NacosTask]的任务处理器去处理一个NacosTask任务
      *
      * @param task NacosTask
+     * @return 处理当前NacosTask是否成功? 处理成功return true; 否则return false
      */
     fun process(task: NacosTask): Boolean
 }

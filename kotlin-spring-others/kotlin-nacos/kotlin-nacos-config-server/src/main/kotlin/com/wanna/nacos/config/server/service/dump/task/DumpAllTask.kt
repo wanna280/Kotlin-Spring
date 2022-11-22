@@ -9,4 +9,11 @@ import com.wanna.nacos.api.common.task.AbstractDelayTask
  * @date 2022/11/20
  */
 class DumpAllTask : AbstractDelayTask() {
+
+    companion object {
+        /**
+         * DumpAll任务的TaskId
+         */
+        const val TASK_ID = "dumpAllConfigTask"
+    }
 }

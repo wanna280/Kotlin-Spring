@@ -3,7 +3,7 @@ package com.wanna.nacos.config.server.manager
 import com.wanna.nacos.api.common.task.engine.NacosDelayTaskExecuteEngine
 
 /**
- * TaskManager
+ * TaskManager, 负责异步执行任务, 具体使用时, 需要先初始化[com.wanna.nacos.api.common.task.NacosTaskProcessor]才能使用
  *
  * @author jianchao.jia
  * @version v1.0

@@ -26,7 +26,7 @@ class NotifyCenter {
         private val INSTANCE = NotifyCenter()
 
         /**
-         * 发布事件
+         * 利用[NotifyCenter]去发布事件
          *
          * @param event event
          */
@@ -36,7 +36,7 @@ class NotifyCenter {
         }
 
         /**
-         * 发布事件
+         * 利用[NotifyCenter]去进行发布事件, 会根据事件名称去找到对应的[EventPublisher]去进行发布
          *
          * @param eventClass eventClass
          * @param event event
@@ -48,6 +48,11 @@ class NotifyCenter {
             return eventPublisher?.publish(event) ?: false
         }
 
+        /**
+         * 注册一个[Subscriber]当[NotifyCenter]当中, 事件类型使用[Subscriber.subscribeType]去进行获取
+         *
+         * @param subscriber 要去进行注册的Subscriber
+         */
         @JvmStatic
         fun registerSubscriber(subscriber: Subscriber<*>) {
             addSubscriber(subscriber, subscriber.subscribeType())

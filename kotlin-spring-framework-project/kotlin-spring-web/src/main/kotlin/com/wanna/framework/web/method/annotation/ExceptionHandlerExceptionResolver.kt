@@ -225,9 +225,10 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
     private fun getDefaultArgumentResolvers(): List<HandlerMethodArgumentResolver> {
         val resolvers = ArrayList<HandlerMethodArgumentResolver>()
 
-        // 添加@RequestParam、@RequestHeader的参数解析器
+        // 添加@RequestParam、@RequestHeader、@CookieValue的参数解析器
         resolvers += RequestHeaderMethodArgumentResolver()
         resolvers += RequestParamMethodArgumentResolver()
+        resolvers += ServerCookieValueMethodArgumentResolver()
 
         // 添加处理路径变量的参数解析器
         resolvers += PathVariableHandlerMethodArgumentResolver()

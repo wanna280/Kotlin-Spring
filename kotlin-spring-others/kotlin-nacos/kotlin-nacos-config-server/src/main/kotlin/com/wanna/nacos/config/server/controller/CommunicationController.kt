@@ -23,7 +23,7 @@ class CommunicationController {
     private lateinit var dumpService: DumpService
 
     /**
-     * 通知配置文件已经发生变化...
+     * 通知配置文件已经发生变化...需要使用DumpService去执行一次dump
      *
      * @param request request
      */

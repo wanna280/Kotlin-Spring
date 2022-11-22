@@ -37,7 +37,12 @@ object BeanUtils {
      */
     @JvmStatic
     fun <T> instantiateClass(ctor: Constructor<T>, vararg args: Any?): T {
-        return ctor.newInstance(*args)
+        try {
+            return ctor.newInstance(*args)
+        } catch (ex: Exception) {
+            ReflectionUtils.handleReflectionException(ex)
+        }
+        throw AssertionError("Cannot Reach Here!")
     }
 
     /**
@@ -48,7 +53,12 @@ object BeanUtils {
      */
     @JvmStatic
     fun <T> instantiateClass(ctor: Constructor<T>): T {
-        return ctor.newInstance()
+        try {
+            return ctor.newInstance()
+        } catch (ex: Exception) {
+            ReflectionUtils.handleReflectionException(ex)
+        }
+        throw AssertionError("Cannot Reach Here!")
     }
 
     /**
@@ -60,8 +70,13 @@ object BeanUtils {
      */
     @JvmStatic
     fun <T> instantiateClass(clazz: Class<T>): T {
-        val constructor = clazz.getDeclaredConstructor()
-        return constructor.newInstance()
+        try {
+            val constructor = clazz.getDeclaredConstructor()
+            return constructor.newInstance()
+        } catch (ex: Exception) {
+            ReflectionUtils.handleReflectionException(ex)
+        }
+        throw AssertionError("Cannot Reach Here!")
     }
 
     /**
@@ -81,8 +96,13 @@ object BeanUtils {
         if (!ClassUtils.isAssignFrom(assignTo, clazz)) {
             throw IllegalStateException("无法将[$clazz]去转换成为[$assignTo]类型")
         }
-        val constructor = clazz.getDeclaredConstructor()
-        return constructor.newInstance() as T
+        try {
+            val constructor = clazz.getDeclaredConstructor()
+            return constructor.newInstance() as T
+        } catch (ex: Exception) {
+            ReflectionUtils.handleReflectionException(ex)
+        }
+        throw AssertionError("Cannot Reach Here!")
     }
 
     /**
@@ -95,8 +115,13 @@ object BeanUtils {
      */
     @JvmStatic
     fun <T> instantiateClass(clazz: Class<T>, parameterTypes: Array<Class<*>>, params: Array<Any?>): T {
-        val constructor = clazz.getConstructor(*parameterTypes)
-        return constructor.newInstance(*params)
+        try {
+            val constructor = clazz.getConstructor(*parameterTypes)
+            return constructor.newInstance(*params)
+        } catch (ex: Exception) {
+            ReflectionUtils.handleReflectionException(ex)
+        }
+        throw AssertionError("Cannot Reach Here!")
     }
 
     /**

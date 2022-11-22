@@ -109,7 +109,9 @@ open class SimpleInstantiationStrategy : InstantiationStrategy {
                 instantiateWithMethodInjection(bd, beanName, owner, ctor, args)
             }
         } catch (throwable: Throwable) {
-            throw BeanCreationException("创建Bean[beanName=$beanName, constructor=$ctor]失败，原因是[throwable=$throwable]")
+            throw BeanCreationException(
+                "创建Bean[beanName=$beanName, constructor=$ctor]失败", throwable
+            )
         }
     }
 

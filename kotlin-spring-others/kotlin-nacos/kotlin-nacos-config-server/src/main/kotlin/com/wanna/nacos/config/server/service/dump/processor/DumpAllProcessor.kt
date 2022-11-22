@@ -18,7 +18,7 @@ class DumpAllProcessor(private val dumpService: DumpService) : NacosTaskProcesso
     /**
      * PersistService
      */
-    private val persistService: PersistService = dumpService.getPersistService()
+    private val persistService: PersistService = dumpService.persistService
 
     override fun process(task: NacosTask): Boolean {
         val listAllGroupKeyMd5 = persistService.listAllGroupKeyMd5()

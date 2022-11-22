@@ -33,22 +33,23 @@ open class NacosDelayTaskExecuteEngine(name: String, processInterval: Long) {
     protected val lock = ReentrantLock()
 
     /**
-     * 维护要去进行执行的延时任务Task列表
+     * 维护要去进行执行的延时任务Task列表, Key-TaskId, Value-Task,
+     * 对于具体的执行任务的[NacosTaskProcessor], 将会根据TaskId去进行决定
      */
     protected val tasks = ConcurrentHashMap<Any, AbstractDelayTask>()
 
     /**
-     * Nacos的TaskProcessor列表
+     * Nacos的TaskProcessor列表, Key-TaskId, Value-TaskProcessor
      */
     protected val taskProcessors = ConcurrentHashMap<Any, NacosTaskProcessor>()
 
     /**
-     * 默认的TaskProcessor
+     * 默认的TaskProcessor, 可以为null
      */
     var defaultTaskProcessor: NacosTaskProcessor? = null
 
     /**
-     * 执行任务的线程池
+     * 异步执行定时任务的线程池
      */
     private var processingExecutor: ScheduledExecutorService
 
@@ -85,8 +86,24 @@ open class NacosDelayTaskExecuteEngine(name: String, processInterval: Long) {
         addTask(key, task)
     }
 
+    /**
+     * 根据Key去获取到[NacosTaskProcessor]
+     *
+     * @param key key
+     * @return 根据Key获取到的NacosTaskProcessor; 如果获取不到, 那么返回默认的NacosTaskProcessor
+     */
     open fun getProcessor(key: Any): NacosTaskProcessor? {
-        return taskProcessors[key]
+        return taskProcessors[key] ?: defaultTaskProcessor
+    }
+
+    /**
+     * 添加一个[NacosTaskProcessor]
+     *
+     * @param key key
+     * @param taskProcessor NacosTaskProcessor
+     */
+    open fun addProcessor(key: Any, taskProcessor: NacosTaskProcessor) {
+        this.taskProcessors[key] = taskProcessor
     }
 
     open fun removeTask(taskKey: Any): AbstractDelayTask? {
@@ -128,6 +145,9 @@ open class NacosDelayTaskExecuteEngine(name: String, processInterval: Long) {
         }
     }
 
+    /**
+     * 处理所有的任务的Runnable线程
+     */
     private inner class ProcessRunnable : Runnable {
         override fun run() {
             try {

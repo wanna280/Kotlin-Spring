@@ -162,6 +162,18 @@ open class ConfigServerInner {
         return "200"
     }
 
+    /**
+     * 执行移除一个配置文件
+     *
+     * @param request request
+     * @param response response
+     * @param dataId dataId
+     * @param group group
+     * @param tenant tenant(namespace)
+     * @param tag tag
+     * @param srcIp srcIp
+     * @param srcUser srcUser
+     */
     open fun doRemoveConfig(
         request: HttpServerRequest,
         response: HttpServerResponse,
@@ -172,6 +184,11 @@ open class ConfigServerInner {
         srcIp: String,
         srcUser: String
     ) {
+        // 使用PersistService去进行删除一条配置信息...
         persistService.removeConfigInfo(dataId, group, tenant, srcIp, srcUser)
+
+        // send ConfigDataChangeEvent
+        ConfigChangePublisher
+            .notifyConfigChange(ConfigDataChangeEvent(dataId, group, tenant, System.currentTimeMillis(), tag))
     }
 }
