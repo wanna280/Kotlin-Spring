@@ -176,6 +176,16 @@ open class ResolvableType() {
     }
 
     /**
+     * 获取到解析得到的真实的类型, 如果获取不到, 那么返回给定的fallback类型
+     *
+     * @param fallback fallback类型
+     * @return 解析得到的类型Class
+     */
+    open fun resolve(fallback: Class<*>): Class<*> {
+        return this.resolved ?: fallback
+    }
+
+    /**
      * 判断当前类型是否是一个数组？有三种情况是匹配的
      * (1)type is Class，并且type.isArray
      * (2)type is GenericArrayType
@@ -329,6 +339,11 @@ open class ResolvableType() {
         return DefaultVariableResolver(this)
     }
 
+    override fun toString(): String {
+        return "$resolved"
+    }
+
+
     companion object {
         // 空的ResolvableType
         val NONE = ResolvableType()
@@ -408,6 +423,17 @@ open class ResolvableType() {
         }
 
         /**
+         * 根据给定的方法的返回值去构建出来[ResolvableType]
+         *
+         * @param method method
+         * @return 根据方法返回值, 去构建出来的ResolvableType
+         */
+        @JvmStatic
+        fun forMethodReturnType(method: Method): ResolvableType {
+            return forMethodParameter(MethodParameter(method, -1))
+        }
+
+        /**
          * 将一个方法参数类型去转换为ResolvableType
          *
          * @param methodParameter 方法参数(包装了jdk的Parameter)
@@ -417,7 +443,7 @@ open class ResolvableType() {
         fun forMethodParameter(methodParameter: MethodParameter): ResolvableType {
             // 先构建出来一个type=ParameterizedType的ResolvableType去作为VariableResolver, 去提供泛型的解析
             val owner = forType(type = methodParameter.getGenericParameterType(), variableResolver = null)
-            return forType(methodParameter.getParameter().parameterizedType, owner.asVariableResolver())
+            return forType(methodParameter.getGenericParameterType(), owner.asVariableResolver())
         }
 
         /**

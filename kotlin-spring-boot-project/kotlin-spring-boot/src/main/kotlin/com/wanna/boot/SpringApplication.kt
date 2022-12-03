@@ -154,20 +154,35 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      */
     constructor(vararg _primarySources: Class<*>) : this(null as ResourceLoader?, *_primarySources)
 
-    // primarySources
+    /**
+     * 提供一个无参数构造器
+     */
+    constructor() : this(_primarySources = emptyArray())
+
+    /**
+     * primarySources
+     */
     private var primarySources: MutableSet<Class<*>> = LinkedHashSet(_primarySources.toList())
 
-    // sources
-    private var sources: MutableCollection<Any> = LinkedHashSet<Any>()
+    /**
+     * sources
+     */
+    private var sources: MutableCollection<Any> = LinkedHashSet()
 
-    // Application的监听器列表
+    /**
+     * Application的监听器列表
+     */
     private var listeners: MutableList<ApplicationListener<*>> =
         SpringFactoriesLoader.loadFactories(ApplicationListener::class.java)
 
-    // SpringApplicationType，自动去进行推断
+    /**
+     * Spring的ApplicationType，自动从类路径当中的依赖去进行推断
+     */
     private var applicationType = ApplicationType.deduceFromClassPath()
 
-    // beanNameGenerator
+    /**
+     * beanNameGenerator
+     */
     private var beanNameGenerator: BeanNameGenerator? = null
 
     /**
@@ -177,38 +192,60 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      */
     private var applicationContextClass: Class<out ConfigurableApplicationContext>? = null
 
-    // environment
+    /**
+     * Environment
+     */
     private var environment: ConfigurableEnvironment? = null
 
-    // 这种一个BootstrapWrapper注册中心，完成对BootstrapContext去进行初始化
+    /**
+     * 这种一个Bootstrapper注册中心，用来完成对BootstrapContext去进行初始化
+     */
     private var bootstrappers: MutableCollection<Bootstrapper> = getSpringFactoriesInstances(Bootstrapper::class.java)
 
-    // SpringApplication的ApplicationContext的初始化器，在ApplicationContext完成创建和初始化工作时，会自动完成回调
+    /**
+     * SpringApplication的ApplicationContext的初始化器，在ApplicationContext完成创建和初始化工作时，会自动完成回调
+     */
     private var initializers: MutableCollection<ApplicationContextInitializer<*>> =
         getSpringFactoriesInstances(ApplicationContextInitializer::class.java)
 
-    // 推测SpringApplication的主启动类
+    /**
+     * 推测SpringApplication的主启动类
+     */
     private var mainApplicationClass: Class<*>? = deduceMainApplicationClass()
 
-    // 是否允许BeanDefinition去发生覆盖？
+    /**
+     * 是否允许BeanDefinition去发生覆盖？
+     */
     private var allowBeanDefinitionOverriding: Boolean = true
 
-    // 是否需要添加ConversionService到容器当中？
+    /**
+     * 是否需要添加ConversionService到容器当中？
+     */
     private var addConversionService = true
 
-    // ApplicationStartup，支持对SpringApplication启动过程中的各个阶段去进行记录，支持去进行自定义，从而完成自定义的功能
+    /**
+     * ApplicationStartup，支持对SpringApplication启动过程中的各个阶段去进行记录，支持去进行自定义，从而完成自定义的功能
+     */
     private var applicationStartup = ApplicationStartup.DEFAULT
 
-    // 打印Banner的模式，NO/CONSOLE/LOG
+    /**
+     * 打印Banner的模式，NO/CONSOLE/LOG
+     */
     private var bannerMode: Banner.Mode = Banner.Mode.CONSOLE
 
-    // logger
+    /**
+     * logger
+     */
     private var logger = LoggerFactory.getLogger(SpringApplication::class.java)
 
-    // banner
+    /**
+     * banner
+     */
     private var banner: Banner? = null
 
-    // 是否需要打印SpringApplication启动所花费的时间
+    /**
+     * 是否需要打印SpringApplication启动的相关信息? 比如profile信息
+     */
     private var logStartupInfo = true
 
     /**
@@ -800,29 +837,51 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
 
     /**
      * 添加Bootstrapper列表到SpringApplication当中
+     *
+     * @param bootstrappers Bootstrapper列表
      */
     open fun addBootstrappers(bootstrappers: Collection<Bootstrapper>) {
         this.bootstrappers += bootstrappers
     }
 
     /**
-     * 提供SpringApplication的ApplicationStartup的设置，在SpringApplication启动过程当中，会自动将
-     * ApplicationStartup对象设置到SpringApplication的ApplicationContext当中，可以替换自定义的ApplicationStartup，
-     * 去实现更多相关的自定义功能，比如可以替换一个进行日志的输出工作的ApplicationStartup
+     * 提供SpringApplication的[ApplicationStartup]的设置，在SpringApplication启动过程当中，会自动将
+     * [ApplicationStartup]对象设置到SpringApplication的[ApplicationContext]当中，可以替换自定义的[ApplicationStartup]，
+     * 去实现更多相关的自定义功能，比如可以替换一个进行日志的输出的[ApplicationStartup], 这样就可以去记录整个Spring应用的启动信息
+     *
+     * @param applicationStartup ApplicationStartup
      */
     open fun setApplicationStartup(applicationStartup: ApplicationStartup) {
         this.applicationStartup = applicationStartup
     }
 
     /**
+     * 获取[ApplicationStartup]
+     *
+     * @return ApplicationStartup
+     */
+    open fun getApplicationStartup(): ApplicationStartup = this.applicationStartup
+
+    /**
      * 设置Banner打印模式，Console/Log/No
+     *
+     * @param mode bannerMode
      */
     open fun setBannerMode(mode: Banner.Mode) {
         this.bannerMode = mode
     }
 
     /**
+     * 获取Banner打印的模式
+     *
+     * @return bannerMode
+     */
+    open fun getBannerMode(): Banner.Mode = this.bannerMode
+
+    /**
      * 自定义去进行设置ApplicationType
+     *
+     * @param applicationType ApplicationType
      */
     open fun setApplicationType(applicationType: ApplicationType) {
         this.applicationType = applicationType
@@ -830,6 +889,8 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
 
     /**
      * 打印SpringApplication启动过程当中的相关环境信息，只要当前容器是root容器时才需要去进行打印
+     *
+     * @param isRoot 当前是否是root容器? 只有root容器才会输出
      */
     protected open fun logStartingInfo(isRoot: Boolean) {
         if (isRoot) {
@@ -964,10 +1025,10 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     /**
      * 批量添加primarySources
      *
-     * @param clazzes primarySources
+     * @param sources primarySources
      */
-    open fun addPrimarySources(vararg clazzes: Class<*>) {
-        clazzes.forEach(this::addPrimarySource)
+    open fun addPrimarySources(vararg sources: Class<*>) {
+        sources.forEach(this::addPrimarySource)
     }
 
     /**
@@ -1012,4 +1073,36 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      * @return 用来创建ApplicationContext的类(没有设置的话，为null)
      */
     open fun getApplicationContextClass(): Class<out ConfigurableApplicationContext>? = this.applicationContextClass
+
+    /**
+     * 是否需要添加ConversionService?(默认为true)
+     *
+     * @return 如果需要添加ConversionService, 那么return true; 否则return false
+     */
+    open fun isAddConversionService(): Boolean = this.addConversionService
+
+    /**
+     * 设置是否需要添加ConversionService(默认为true)
+     *
+     * @param addConversionService 如果设置为false, 将不会添加ConversionService; 否则将会添加
+     */
+    open fun setAddConversionService(addConversionService: Boolean) {
+        this.addConversionService = addConversionService
+    }
+
+    /**
+     * 设置自定义的[BeanNameGenerator]
+     *
+     * @param beanNameGenerator BeanNameGenerator
+     */
+    fun setBeanNameGenerator(beanNameGenerator: BeanNameGenerator?) {
+        this.beanNameGenerator = beanNameGenerator
+    }
+
+    /**
+     * 获取[BeanNameGenerator]
+     *
+     * @return BeanNameGenerator(如果不存在的话, return null)
+     */
+    fun getBeanNameGenerator(): BeanNameGenerator? = this.beanNameGenerator
 }

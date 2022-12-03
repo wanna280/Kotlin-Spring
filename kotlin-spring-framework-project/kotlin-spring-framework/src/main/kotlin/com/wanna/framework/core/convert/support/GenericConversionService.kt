@@ -5,6 +5,7 @@ import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.convert.converter.Converter
 import com.wanna.framework.core.convert.converter.GenericConverter
 import com.wanna.framework.core.convert.converter.GenericConverter.ConvertiblePair
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -20,8 +21,19 @@ import java.util.concurrent.CopyOnWriteArraySet
  */
 open class GenericConversionService : ConfigurableConversionService {
 
-    // Converter的注册中心，内部维护了全部的Converter的列表
+    /**
+     * Converter的注册中心，内部维护了全部的Converter的列表
+     */
     private val converters = Converters()
+
+    companion object {
+
+        /**
+         * 不进行任何操作的Converter
+         */
+        @JvmStatic
+        private val NO_OP_CONVERTER = NoOpConverter("NO_OP")
+    }
 
     /**
      * 判断Converter注册中心当中，是否存在有这样的Converter，能去完成从sourceType->targetType的类型转换？
@@ -95,7 +107,7 @@ open class GenericConversionService : ConfigurableConversionService {
     override fun <S : Any, T : Any> addConverter(
         sourceType: Class<S>,
         targetType: Class<T>,
-        converter: Converter<S, T>
+        converter: Converter<in S, out T>
     ) {
         addConverter(ConverterAdapter(converter).addConvertibleType(sourceType, targetType))
     }
@@ -158,6 +170,19 @@ open class GenericConversionService : ConfigurableConversionService {
         }
 
         /**
+         * 获取默认的Converter
+         *
+         * @param sourceType sourceType
+         * @param targetType targetType
+         * @return 默认的Converter
+         */
+        @Nullable
+        fun getDefaultConverter(sourceType: Class<*>, targetType: Class<*>): GenericConverter? {
+            // 如果source和target类型相同的话, 就可以返回一个默认的
+            return if (ClassUtils.isAssignFrom(sourceType, targetType)) NO_OP_CONVERTER else null
+        }
+
+        /**
          * 根据(sourceType->targetType)的Pair，去获取到支持处理该种映射方式的Converter；
          * 如果此时注册中心当中还没有这种类型的映射，那么需要新创建一个
          *
@@ -170,6 +195,12 @@ open class GenericConversionService : ConfigurableConversionService {
             }
             // 遍历所有的Converter，根据继承关系去进行寻找...
             convertersForPair = find(type)
+
+            // 如果还找不到的话, 那么尝试一下使用默认的Converter(啥都不做的Converter)
+            val defaultConverter = getDefaultConverter(type.sourceType, type.targetType)
+            if (convertersForPair == null && defaultConverter != null) {
+                convertersForPair = ConvertersForPair().addConverter(defaultConverter)
+            }
             return convertersForPair ?: EMPTY_CONVERTERS
         }
 
@@ -276,5 +307,23 @@ open class GenericConversionService : ConfigurableConversionService {
             (converter as Converter<Any, Any>).convert(source)
 
         override fun toString() = getConvertibleTypes().toString()
+    }
+
+    /**
+     * 不进行任何操作的Converter
+     */
+    private class NoOpConverter(val name: String) : GenericConverter {
+        override fun getConvertibleTypes(): Set<ConvertiblePair>? = null
+
+        @Suppress("UNCHECKED_CAST")
+        override fun <S : Any, T : Any> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
+            return source as T?
+        }
+
+        override fun convert(source: Any?, sourceType: TypeDescriptor, targetType: TypeDescriptor): Any? {
+            return source
+        }
+
+        override fun toString(): String = name
     }
 }

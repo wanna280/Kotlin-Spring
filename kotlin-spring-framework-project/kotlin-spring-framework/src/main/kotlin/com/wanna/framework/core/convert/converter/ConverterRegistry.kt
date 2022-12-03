@@ -24,7 +24,7 @@ interface ConverterRegistry {
      * @param targetType targetType
      * @param converter 想要添加的Converter
      */
-    fun <S : Any, T : Any> addConverter(sourceType: Class<S>, targetType: Class<T>, converter: Converter<S, T>)
+    fun <S : Any, T : Any> addConverter(sourceType: Class<S>, targetType: Class<T>, converter: Converter<in S, out T>)
 
     /**
      * 添加一个GenericConverter(在GenericConverter当中需要给出支持的类型，就不必指出泛型类型了)

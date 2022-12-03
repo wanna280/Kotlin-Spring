@@ -15,6 +15,16 @@ object PropertyKeyConst {
     const val SERVER_ADDR = "serverAddr"
 
     /**
+     * Endpoint地址
+     */
+    const val ENDPOINT = "endpoint"
+
+    /**
+     * Endpoint的端口号
+     */
+    const val ENDPOINT_PORT = "endpointPort";
+
+    /**
      * Namespace
      */
     const val NAMESPACE = "namespace"

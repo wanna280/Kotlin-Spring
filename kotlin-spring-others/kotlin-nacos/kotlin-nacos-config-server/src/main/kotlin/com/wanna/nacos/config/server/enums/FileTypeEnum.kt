@@ -1,7 +1,7 @@
 package com.wanna.nacos.config.server.enums
 
 /**
- * Nacos的配置文件类型枚举
+ * NacosConfig的配置文件类型枚举
  *
  * @author jianchao.jia
  * @version v1.0
@@ -24,7 +24,7 @@ enum class FileTypeEnum(val fileType: String, val contentType: String) {
          * 根据"fileType"去获取到对应的[FileTypeEnum]枚举值
          *
          * @param fileType fileType
-         * @return 对应的[FileTypeEnum]枚举值
+         * @return 对应的[FileTypeEnum]枚举值, 如果没有找到任何一个匹配的, 那么return "TEXT"
          */
         @JvmStatic
         fun getFileTypeEnumByFileExtensionOrFileType(fileType: String): FileTypeEnum {

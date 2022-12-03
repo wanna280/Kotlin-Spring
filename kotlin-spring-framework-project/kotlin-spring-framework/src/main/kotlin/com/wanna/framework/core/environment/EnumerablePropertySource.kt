@@ -7,6 +7,7 @@ package com.wanna.framework.core.environment
  */
 @Suppress("UNCHECKED_CAST")
 abstract class EnumerablePropertySource<T>(name: String, source: T) : PropertySource<T>(name, source) {
-    constructor(name: String) : this(name,Any() as T)
+    constructor(name: String) : this(name, Any() as T)
+
     abstract fun getPropertyNames(): Array<String>
 }

@@ -33,7 +33,7 @@ class ConfigurationPropertiesValueObjectBeanDefinition(
         val propertiesBean = ConfigurationPropertiesBean.forValueObject(getBeanClass()!!, this.beanName)
         val binder = ConfigurationPropertiesBinder.get(beanFactory)
         try {
-            return binder.bindOrCreate(propertiesBean)
+            return binder.bindOrCreate(propertiesBean)!!
         } catch (ex: Exception) {
             throw ConfigurationPropertiesBindException(bean = propertiesBean, cause = ex)
         }

@@ -4,6 +4,9 @@ import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.convert.converter.GenericConverter
 import com.wanna.framework.core.convert.converter.GenericConverter.ConvertiblePair
 
+/**
+ * String->String的Converter
+ */
 @Suppress("UNCHECKED_CAST")
 open class StringToStringConverter : GenericConverter {
     override fun getConvertibleTypes() = setOf(ConvertiblePair(String::class.java, String::class.java))

@@ -42,7 +42,8 @@ open class NacosConfigService(private val properties: Properties) : ConfigServic
     }
 
     /**
-     * 根据Properties去初始化HttpAgent
+     * 根据Properties去初始化HttpAgent,
+     * HttpAgent用于代理, 向ConfigServer当中去发送HTTP请求, 从而对ConfigServer当中的配置文件去进行增删改等操作
      */
     private val agent: HttpAgent = ServerHttpAgent(properties)
 

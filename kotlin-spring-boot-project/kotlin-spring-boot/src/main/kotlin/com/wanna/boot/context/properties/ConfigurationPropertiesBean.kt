@@ -1,8 +1,11 @@
 package com.wanna.boot.context.properties
 
+import com.wanna.boot.context.properties.bind.Bindable
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
+import com.wanna.framework.core.ResolvableType
+import com.wanna.framework.validation.annotation.Validated
 import java.lang.reflect.Method
 
 /**
@@ -13,17 +16,27 @@ import java.lang.reflect.Method
 open class ConfigurationPropertiesBean(
     private val name: String,
     private val instance: Any?,
+    private val bindTarget: Bindable<Any>,
     private val annotation: ConfigurationProperties,
     private val beanType: Class<*>
 ) {
 
-    // 绑定方式，是采用Setter的方式去进行注入还是使用构造器的方式去进行注入
+    /**
+     * 绑定方式，是采用Setter的方式去进行注入还是使用构造器的方式去进行注入
+     */
     private val bindMethod = BindMethod.forType(beanType)
 
     /**
      * 获取ConfigurationPropertiesBean的BeanName
      */
     open fun getName() = name
+
+    /**
+     * 获取到[Bindable], 用于去进行绑定的目标对象的信息
+     *
+     * @return Bindable
+     */
+    fun asTarget(): Bindable<Any> = this.bindTarget
 
     /**
      * 获取包装的Bean，可以为null；表示运行时在去进行实例化(构造器绑定方式)
@@ -103,15 +116,37 @@ open class ConfigurationPropertiesBean(
         /**
          * 寻找@ConfigurationProperties注解，如果必要的话创建ConfigurationPropertiesBean
          *
-         * @return 如果找到了该注解，那么return ConfigurationPropertiesBean；否则return null
+         * @param bean bean
+         * @param beanName beanName
+         * @param factory factoryMethod(@Bean方法注解标注的方法)
+         * @return 如果找到了@ConfigurationProperties注解，那么return ConfigurationPropertiesBean；否则return null
          */
+        @Suppress("UNCHECKED_CAST")
         private fun create(
             beanName: String, bean: Any?, beanClass: Class<*>, factory: Method?
         ): ConfigurationPropertiesBean? {
             // 从FactoryMethod/beanClass当中去检查@ConfigurationProperties注解
             val annotation = findAnnotation(ConfigurationProperties::class.java, bean, beanClass, factory)
-            return if (annotation == null) null
-            else ConfigurationPropertiesBean(beanName, bean, annotation, beanClass)
+                ?: return null
+
+            // 从FactoryMethod/beanClass当中去找一下@Validated注解
+            val validated = findAnnotation(Validated::class.java, bean, beanClass, factory)
+
+            // 构建绑定时, 需要用到的注解信息的列表
+            val annotations = if (validated == null) arrayOf(annotation) else arrayOf(annotation, validated)
+
+            // 要去进行绑定的类型, 如果是FactoryMethod的话, 那么使用方法的返回值去进行构建; 如果是类的话, 那么使用beanClass去进行构建
+            val bindType =
+                if (factory != null) ResolvableType.forMethodReturnType(factory) else ResolvableType.forClass(beanClass)
+
+            // 构建出来Bindable, 去描述要去进行绑定的目标对象的相关信息
+            var bindable = Bindable.of<Any>(bindType).withAnnotations(*annotations)
+
+            // 如果已经存在有实例对象了的话, 那么把实例对象, 也去设置到Bindable当中去...
+            if (bean != null) {
+                bindable = bindable.withExistingValue(bean)
+            }
+            return ConfigurationPropertiesBean(beanName, bean, bindable, annotation, beanClass)
         }
 
         /**
