@@ -167,8 +167,8 @@ class Binder(
         // 根据属性名, 从PropertySource列表当中去找到合适的ConfigurationProperty
         val property = findProperty(name, target, context)
 
-        // 如果找不到对应的属性值, 并且深度不为0的话, 那么pass掉... return null
-        if (property == null && context.getDepth() != 0) {
+        // 如果找不到对应的属性值, 并且深度不为0的话, 并且了确实一定是不存在有这样的name作为前缀对应的子属性的话, 那么pass掉...return null
+        if (property == null && context.getDepth() != 0 && containsNoDescendantOf(context.getSources(), name)) {
             return null
         }
 
@@ -212,6 +212,26 @@ class Binder(
             }
         }
         return null
+    }
+
+    /**
+     * 检查给定的[ConfigurationPropertySource]列表当中, 是否不存在有给定的[name]对应的子属性?
+     *
+     * @param sources sources列表
+     * @param name 属性Key前缀
+     */
+    private fun containsNoDescendantOf(
+        sources: Iterable<ConfigurationPropertySource>,
+        name: ConfigurationPropertyName
+    ): Boolean {
+        sources.forEach {
+            // 只要不是ABSENT, 那么都认为该PropertySource当中存在有name作为前缀的配置信息
+            if (it.containsDescendantOf(name) != ConfigurationPropertyState.ABSENT) {
+                return false
+            }
+        }
+        // 如果全部都是ABSENT, 那么return true
+        return true
     }
 
     /**
@@ -260,7 +280,7 @@ class Binder(
         context: Context,
         ex: Exception
     ): T? {
-        return null
+        throw ex
     }
 
     private fun create(target: Bindable<Any>, context: Context): Any? {
@@ -385,6 +405,7 @@ class Binder(
      * @param aggregateBinder 聚合绑定的Binder
      * @return 执行聚合绑定的绑定结果
      */
+    @Suppress("UNCHECKED_CAST")
     @Nullable
     private fun <T : Any> bindAggregate(
         name: ConfigurationPropertyName,
@@ -392,8 +413,20 @@ class Binder(
         handler: BindHandler,
         context: Context,
         aggregateBinder: AggregateBinder<T>
-    ): T? {
-        return null
+    ): Any? {
+        // 构建一个聚合元素的Binder, 去提供聚合元素的属性值绑定, 聚合时需要使用的属性前缀为具体的propertyName, bindTarget为propertyTarget
+        val aggregateElementBinder = AggregateElementBinder { propertyName, propertyTarget, source ->
+            val allowRecursiveBinding = aggregateBinder.isAllowRecursiveBinding(source)
+            val supplier = Supplier {
+                // 这里也是执行Binder的bind方法, 执行递归绑定...
+                bind(propertyName, propertyTarget, handler, context, allowRecursiveBinding, false)
+            }
+            context.withSource(source, supplier)
+        }
+        // 在增加depth的情况下, 去执行Supplier, 利用AggregateElementBinder去进行绑定
+        return context.withIncreasedDepth {
+            aggregateBinder.bind(name, target as Bindable<Any>, aggregateElementBinder)
+        }
     }
 
     /**
@@ -403,11 +436,12 @@ class Binder(
      * @param context 绑定的上下文信息
      * @return 用于对Map/Collection/Array去进行绑定的聚合Binder(如果不是Map/Collection/Array类型的话, return null)
      */
+    @Suppress("UNCHECKED_CAST")
     @Nullable
     private fun getAggregateBinder(target: Bindable<Any>, context: Context): AggregateBinder<Any>? {
         val type = target.type.resolve(Any::class.java)
         if (ClassUtils.isAssignFrom(Map::class.java, type)) {
-            return MapBinder(context)
+            return MapBinder(context) as AggregateBinder<Any>
         } else if (ClassUtils.isAssignFrom(Collection::class.java, type)) {
             return CollectionBinder(context)
         } else if (ClassUtils.isAssignFrom(Array::class.java, type)) {
@@ -436,6 +470,16 @@ class Binder(
         private val dataObjectBindings = ArrayDeque<Class<*>>()
 
         /**
+         * Source的栈的深度
+         */
+        private var sourcePushCount: Int = 0
+
+        /**
+         * Source栈
+         */
+        private val source = ArrayList<ConfigurationPropertySource>(listOf())
+
+        /**
          * 使用DataObject的方式去进行绑定
          *
          * @param type type, 使用栈的方式去记录一下当前正在进行绑定的对象类型
@@ -447,6 +491,39 @@ class Binder(
                 return withIncreasedDepth(supplier)
             } finally {
                 dataObjectBindings.removeLastOrNull()
+            }
+        }
+
+        /**
+         * 在增加调用的深度的情况下, 去进行Supplier的执行
+         *
+         * @param supplier Supplier
+         * @return Supplier当中维护的对象
+         */
+        fun <T : Any?> withIncreasedDepth(supplier: Supplier<T>): T {
+            increaseDepth()
+            try {
+                return supplier.get()
+            } finally {
+                decreaseDepth()
+            }
+        }
+
+        /**
+         * 在记录Source的情况下, 去进行Supplier的执行
+         *
+         * @param source source
+         * @param supplier Supplier
+         * @return Supplier当中维护的对象
+         */
+        fun <T : Any?> withSource(source: ConfigurationPropertySource?, supplier: Supplier<T>): T {
+            source ?: return supplier.get()
+            sourcePushCount++
+            this.source.add(0, source)
+            try {
+                return supplier.get()
+            } finally {
+                sourcePushCount--
             }
         }
 
@@ -466,20 +543,6 @@ class Binder(
             this.depth--
         }
 
-        /**
-         * 在增加调用的深度的情况下, 去进行Supplier的执行
-         *
-         * @param supplier Supplier
-         * @return Supplier当中维护的对象
-         */
-        private fun <T : Any?> withIncreasedDepth(supplier: Supplier<T>): T {
-            increaseDepth()
-            try {
-                return supplier.get()
-            } finally {
-                decreaseDepth()
-            }
-        }
 
         override fun getBinder(): Binder = this@Binder
 
@@ -497,6 +560,18 @@ class Binder(
 
         override fun getConfigurationProperty(): ConfigurationProperty? = this.property
 
+        /**
+         * 获取占位符的解析器
+         *
+         * @return 占位符解析器
+         */
+        fun getPlaceholderResolver(): PlaceholdersResolver = this@Binder.placeholdersResolver
+
+        /**
+         * 获取用于提供类型转换的的BindConverter, 内部通过ConversionService去实现绑定
+         *
+         * @return BindConverter
+         */
         fun getConverter(): BindConverter = BindConverter()
     }
 

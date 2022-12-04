@@ -1,6 +1,7 @@
 package com.wanna.boot.context.properties.source
 
 import com.wanna.framework.lang.Nullable
+import java.util.function.Predicate
 
 /**
  * 针对Configuration属性配置情况下的PropertySource, 提供根据name去获取具体的属性值的API
@@ -23,10 +24,20 @@ interface ConfigurationPropertySource {
     fun getConfigurationProperty(name: ConfigurationPropertyName): ConfigurationProperty?
 
     /**
-     * 检查是否存在有给定的属性名的配置信息
+     * 使用filter去过滤出来合适的属性值
      *
-     * @param name 属性名
-     * @return 如果存在return PRESENT, 如果不存在, return ABSENT
+     * @param filter 需要去过滤属性值的filter
+     * @return 新的[ConfigurationPropertySource]
+     */
+    fun filter(filter: Predicate<ConfigurationPropertyName>): ConfigurationPropertySource {
+        return FilteredConfigurationPropertiesSource(this, filter)
+    }
+
+    /**
+     * 检查当前的[ConfigurationPropertySource]当中是否存在有给定的属性Key作为前缀的配置信息
+     *
+     * @param name 属性前缀Key
+     * @return 如果存在return PRESENT, 如果不存在, return ABSENT; 默认实现为UNKNOWN
      */
     fun containsDescendantOf(name: ConfigurationPropertyName): ConfigurationPropertyState =
         ConfigurationPropertyState.UNKNOWN

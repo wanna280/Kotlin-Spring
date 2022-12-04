@@ -33,7 +33,7 @@ open class ConfigurationPropertiesBean(
     /**
      * 绑定方式，是采用Setter的方式去进行注入还是使用构造器的方式去进行注入
      */
-    private val bindMethod = BindMethod.forType(beanType)
+    private val bindMethod = BindMethod.forType(bindTarget.type.resolve(Any::class.java))
 
     /**
      * 获取ConfigurationPropertiesBean的BeanName

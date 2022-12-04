@@ -1,6 +1,7 @@
 package com.wanna.framework.core
 
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 import java.lang.reflect.*
 
 /**
@@ -340,7 +341,7 @@ open class ResolvableType() {
     }
 
     override fun toString(): String {
-        return "$resolved"
+        return ClassUtils.getQualifiedName(resolved ?: Any::class.java)
     }
 
 

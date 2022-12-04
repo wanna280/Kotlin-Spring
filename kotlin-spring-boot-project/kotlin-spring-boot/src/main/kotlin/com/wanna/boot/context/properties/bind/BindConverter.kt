@@ -30,8 +30,30 @@ class BindConverter {
     }
 
     @Nullable
-    private fun <T : Any> convert(source: Any, targetType: ResolvableType, annotations: Array<Annotation>): T? {
+    fun <T : Any> convert(source: Any, targetType: ResolvableType): T? {
+        return convert<T>(source, TypeDescriptor.forObject(source), ResolvableTypeDescriptor(targetType, emptyArray()))
+    }
+
+    @Nullable
+    fun <T : Any> convert(source: Any, targetType: ResolvableType, annotations: Array<Annotation>): T? {
         return convert(source, TypeDescriptor.forObject(source), ResolvableTypeDescriptor(targetType, annotations))
+    }
+
+    /**
+     * 检查给定的对象, 是否能转换成为目标对象
+     *
+     * @param source 待检查的对象实例
+     * @param targetType 需要去进行转换的目标类型
+     * @return 能否去进行转换?
+     */
+    fun canConvert(source: Any?, targetType: ResolvableType): Boolean {
+        source ?: return false
+        delegates.forEach {
+            if (it.canConvert(TypeDescriptor.forClass(source::class.java), TypeDescriptor(targetType))) {
+                return true
+            }
+        }
+        return false
     }
 
     @Nullable

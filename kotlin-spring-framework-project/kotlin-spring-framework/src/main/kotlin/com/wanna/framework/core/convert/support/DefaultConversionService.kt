@@ -61,12 +61,17 @@ open class DefaultConversionService : GenericConversionService() {
                 registry.addConverter(CollectionToArrayConverter(registry))
                 // 添加Collection->Collection的Converter
                 registry.addConverter(CollectionToCollectionConverter(registry))
+                // 添加Array->Collection的Converter
+                registry.addConverter(ArrayToCollectionConverter(registry))
 
                 // 添加String->Collection的Converter
                 registry.addConverter(StringToCollectionConverter(registry))
 
                 // 添加String->Array的Converter
                 registry.addConverter(StringToArrayConverter(registry))
+
+                // 添加Map->Map的Converter
+                registry.addConverter(MapToMapConverter(registry))
             }
         }
 

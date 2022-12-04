@@ -31,7 +31,24 @@ class C {
 }
 
 class D {
-    var name: Boolean? = null
+    var flag: List<Boolean>? = null
+}
+
+class E {
+    var name: Map<String, F>? = null
+
+    var values: Map<String, List<String>>? = null
+
+    var values2: Map<String, Map<String, String>>? = null
+
+    /**
+     * 这种情况? 怎么办? TODO
+     */
+    var values3: Map<String, Any>? = null
+}
+
+class F {
+    var list: List<String>? = null
 }
 
 fun main() {
@@ -40,7 +57,23 @@ fun main() {
         .addLast(
             PropertiesPropertySource(
                 "propertySource",
-                mapOf("a.b.c.d.name" to "false")
+                mapOf(
+                    "a.b.c.d.flag" to "false,false,true",
+                    "a.b.c.d.flag1[0]" to "false",
+                    "a.b.c.d.flag1[1]" to "true",
+                    "a.b.c.d.flag1[2]" to "false",
+                    "e.name.list.list[0]" to "wanna",
+                    "e.name.list.list[1]" to "wanna2",
+                    "e.values.wanna[0]" to "wanna",
+                    "e.values.wanna[1]" to "wanna2",
+                    "e.values.wanna[2]" to "wanna3",
+                    "e.values2.wanna.wanna" to "wanna",
+                    "e.values2.wanna.wanna" to "wanna2",
+                    "e.values2.wanna.wanna" to "wanna3",
+                    "e.values3.wanna.wanna.wanna2" to "wanna",
+                    "e.values3.wanna.wanna.wanna2" to "wanna2",
+                    "e.values3.wanna.wanna.wanna2" to "wanna3"
+                )
             )
         )
 
@@ -49,4 +82,10 @@ fun main() {
         .bind("a", Bindable.ofInstance(a))
 
     println(bindResult)
+
+    val e = E()
+
+    val result = Binder.get(environment).bind("e", Bindable.ofInstance(e))
+
+    println(result)
 }

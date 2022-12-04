@@ -40,7 +40,7 @@ object DataObjectPropertyName {
                     ch = if (ch == '_') '-' else ch
 
                     // 如果当前字母是大写字母, 但是之前不存在有'-'的话, 那么得先补充个'-'
-                    if (ch.isUpperCase() && builder[index - 1] != '-') {
+                    if (ch.isUpperCase() && index > 0 && builder.isNotEmpty() && builder[index - 1] != '-') {
                         builder.append('-')
                     }
 

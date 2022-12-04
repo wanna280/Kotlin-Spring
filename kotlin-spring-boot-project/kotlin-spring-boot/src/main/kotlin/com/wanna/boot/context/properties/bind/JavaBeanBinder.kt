@@ -92,8 +92,8 @@ class JavaBeanBinder : DataObjectBinder {
         // 遍历当前JavaBean当中的所有的BeanProperty, 去进行逐一绑定
         for (beanProperty in bean.properties.values) {
 
-            // 对当前的BeanProperty去进行绑定
-            bound = bound || bind(beanSupplier, propertyBinder, beanProperty)
+            // 对当前的BeanProperty去进行绑定(Note: 这里的或运算, 如果把bound放在前面的话, 会直接阻断后面的运行)
+            bound = bind(beanSupplier, propertyBinder, beanProperty) || bound
 
             // clear ConfigurationProperty
             context.clearConfigurationProperty()
@@ -197,7 +197,7 @@ class JavaBeanBinder : DataObjectBinder {
                 // 如果支持调用get方法的话, 那么获取到真实的对象类型, 去解析得到Class
                 if (canCallGetValue && value != null) {
                     instance = value.get()
-                    resolvedType = if (instance != null) instance.javaClass else resolvedType
+                    resolvedType = instance?.javaClass ?: resolvedType
                 }
                 // 如果该类型无法去完成实例化, 那么return null
                 if (instance == null && !isInstantiable(resolvedType)) {
@@ -465,7 +465,7 @@ class JavaBeanBinder : DataObjectBinder {
          * @param setter setter
          */
         fun addSetter(setter: Method) {
-            if (this.setter == null || isBetterGetter(setter)) {
+            if (this.setter == null || isBetterSetter(setter)) {
                 this.setter = setter
             }
         }
@@ -547,5 +547,7 @@ class JavaBeanBinder : DataObjectBinder {
                 throw IllegalStateException("无法使用Setter去为[$name]这个属性去设置值", ex)
             }
         }
+
+        override fun toString(): String = "$declaringClassType.$name"
     }
 }

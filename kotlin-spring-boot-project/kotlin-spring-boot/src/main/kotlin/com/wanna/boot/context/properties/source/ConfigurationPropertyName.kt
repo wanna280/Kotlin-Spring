@@ -83,6 +83,54 @@ class ConfigurationPropertyName(private val elements: Elements) {
     fun isIndexed(index: Int): Boolean = this.elements.getType(index).indexed
 
     /**
+     * 检查给定的index对应的这一段Element的类型是否是在'[]'和']'之间, 并且值还是数字的? 比如"use.name[0]"当中"0"就是符合情况的
+     *
+     * @param index element index
+     * @return 如果该段确实是以数字作为index, 那么return true; 否则return false
+     */
+    fun isNumbericIndex(index: Int): Boolean = this.elements.getType(index) == ElementType.NUMERICALLY_INDEXED
+
+    /**
+     * 根据size去切取指定长度的Element, 去构建出来一个新的[ConfigurationPropertyName], 相当于字符串的"substring(0,index)"操作
+     *
+     * @param size 要切取的Element的长度
+     * @return 切片得到的新的[ConfigurationPropertyName]
+     */
+    fun chop(size: Int): ConfigurationPropertyName {
+        if (size > getNumberOfElements()) {
+            return this
+        }
+        return ConfigurationPropertyName(this.elements.chop(size))
+    }
+
+    /**
+     * 根据index, 去获取到该位置的Element的字符串
+     *
+     * @param index element index
+     * @return element index获取到的字符串
+     */
+    fun getElement(index: Int): String {
+        return this.elements.get(index)
+    }
+
+    /**
+     * 检查给定的Name, 是否是当前这个[ConfigurationPropertyName]的直接父属性?
+     * 例如this="com.wanna.xxx.yyy".
+     * * (1)name="com.wanna", return false;
+     * * (2)name="com.wanna.xxx", return true
+     *
+     * @param name 需要去进行检查的元素
+     * @return 如果是直接父属性的话, return true; 否则return false
+     */
+    fun isParentOf(name: ConfigurationPropertyName): Boolean {
+        // 如果size的数量不匹配, 那么直接return false
+        if (getNumberOfElements() != name.getNumberOfElements() - 1) {
+            return false
+        }
+        return true
+    }
+
+    /**
      * 检查当前的[ConfigurationPropertyName]当中是否存在有属性名? 是否为空?
      *
      * @return 如果elements.size=0, 那么return true; 否则return false
@@ -128,6 +176,19 @@ class ConfigurationPropertyName(private val elements: Elements) {
          * @return elementType
          */
         fun getType(index: Int): ElementType = type[index]
+
+        /**
+         * 根据size去进行切片, 相当于字符串的"substring(0, size)"
+         *
+         * @param size 要去进行切去的Element长度
+         * @return 切取得到的Elements
+         */
+        fun chop(size: Int): Elements {
+            // 根据size去计算得到新的resolved数组, 因为有可能需要取值的元素是在这里
+            val newResolved = newResolved(size)
+            // 把size去进行缩短成为给定的size...
+            return Elements(this.source, size, this.start, this.end, this.type, newResolved)
+        }
 
         /**
          * 获取解析完成的一段的属性值的name(先从resolved当中去进行寻找, 再根据startIndex&endIndex去进行寻找)
@@ -209,6 +270,12 @@ class ConfigurationPropertyName(private val elements: Elements) {
     }
 
     companion object {
+
+        /**
+         * 空属性Key的常量
+         */
+        @JvmField
+        val EMPTY = ConfigurationPropertyName(Elements.EMPTY)
 
         /**
          * 根据name去创建[ConfigurationPropertyName]
