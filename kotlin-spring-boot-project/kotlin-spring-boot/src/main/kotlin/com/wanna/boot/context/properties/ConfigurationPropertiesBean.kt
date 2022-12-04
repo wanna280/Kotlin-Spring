@@ -5,17 +5,26 @@ import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.core.ResolvableType
+import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.validation.annotation.Validated
 import java.lang.reflect.Method
 
 /**
- * 这是对标注了ConfigurationProperties的Bean去进行的封装
+ * 这是对标注了`！ConfigurationProperties`注解的一个Bean的相关信息去进行的封装
+ *
+ * @param name beanName
+ * @param instance 单例Bean对象(有可能现在为null)
+ * @param bindTarget 要去进行绑定的Bean的相关信息
+ * @param annotation 正在描述的这个@ConfigurationProperties的Bean上的注解信息
+ * @param beanType beanType
  *
  * @see ConfigurationProperties
+ * @see ConfigurationPropertiesBinder
  */
 open class ConfigurationPropertiesBean(
     private val name: String,
-    private val instance: Any?,
+    @Nullable private val instance: Any?,
     private val bindTarget: Bindable<Any>,
     private val annotation: ConfigurationProperties,
     private val beanType: Class<*>
@@ -36,7 +45,7 @@ open class ConfigurationPropertiesBean(
      *
      * @return Bindable
      */
-    fun asTarget(): Bindable<Any> = this.bindTarget
+    open fun asTarget(): Bindable<Any> = this.bindTarget
 
     /**
      * 获取包装的Bean，可以为null；表示运行时在去进行实例化(构造器绑定方式)
@@ -46,7 +55,7 @@ open class ConfigurationPropertiesBean(
     /**
      * 获取@ConfigurationProperties注解信息
      *
-     * @return @ConfigurationProperties注解
+     * @return `@ConfigurationProperties`注解
      */
     open fun getAnnotation() = annotation
 
@@ -69,13 +78,14 @@ open class ConfigurationPropertiesBean(
      */
     companion object {
         /**
-         * 根据该Bean的相关信息，从FactoryMethod或者是类上去寻找@ConfigurationProperties注解
+         * 根据该Bean的相关信息，从FactoryMethod或者是beanClass上去寻找@ConfigurationProperties注解
          *
-         * @param applicationContext applicationContext
-         * @param bean bean
+         * @param applicationContext ApplicationContext
+         * @param bean bean实例对象
          * @param beanName beanName
-         * @return 如果找到了@ConfigurationProperties返回Bean；没有找到，那么return null
+         * @return 如果从FactoryMethod/beanClass上去找到了@ConfigurationProperties注解的话, 那么返回[ConfigurationPropertiesBean]；如果没有找到的话，那么return null
          */
+        @Nullable
         @JvmStatic
         fun get(applicationContext: ApplicationContext, bean: Any, beanName: String): ConfigurationPropertiesBean? {
             val factoryMethod = getFactoryMethod(beanName, applicationContext)
@@ -83,24 +93,29 @@ open class ConfigurationPropertiesBean(
         }
 
         /**
-         * 为给定的ValueObject去创建ConfigurationPropertiesBean，主要只去解析beanClass当中的@ConfigurationProperties注解；
-         * 对于ValueObject，不可能从@Bean的FactoryMethod当中创建，因此FactoryMethod=null；因为运行时才创建对象，因此bean=null；
+         * 为给定的ValueObject去创建[ConfigurationPropertiesBean]，主要是去解析给定的beanClass当中的@ConfigurationProperties注解；
+         * 对于ValueObject，不可能从@Bean的FactoryMethod当中创建，因此FactoryMethod=null; 对于ValueObject因为运行时才创建对象，因此bean=null;
          *
          * @param beanClass beanClass
          * @param beanName beanName
+         * @return 根据beanName和beanClass去构建出来的[ConfigurationPropertiesBean]
          * @throws IllegalStateException 如果没有在beanClass上找到@ConfigurationProperties注解的话
          */
         @JvmStatic
         fun forValueObject(beanClass: Class<*>, beanName: String): ConfigurationPropertiesBean {
             return create(beanName, null, beanClass, null)
-                ?: throw IllegalStateException("无法在类型上找到合适的@ConfigurationProperties注解去完成ConfigurationPropertiesBean的创建")
+                ?: throw IllegalStateException("无法在给定的类[${ClassUtils.getQualifiedName(beanClass)}]上找到合适的@ConfigurationProperties注解去完成ConfigurationPropertiesBean的创建")
         }
 
         /**
          * 判断该Bean是否是通过FactoryMethod(@Bean方法)被导入进来的？
          *
-         * @return 如果是被FactoryMethod导入进来的，那么return FactoryMethod；否则，return null
+         * @param beanName beanName
+         * @param applicationContext ApplicationContext
+         * @return 如果是被FactoryMethod(@Bean方法)导入进来的，那么return FactoryMethod；否则，return null
          */
+        @Nullable
+        @JvmStatic
         private fun getFactoryMethod(beanName: String, applicationContext: ApplicationContext): Method? {
             // fixed: check contains
             if (applicationContext.containsBeanDefinition(beanName) && applicationContext is ConfigurableApplicationContext) {
@@ -121,9 +136,11 @@ open class ConfigurationPropertiesBean(
          * @param factory factoryMethod(@Bean方法注解标注的方法)
          * @return 如果找到了@ConfigurationProperties注解，那么return ConfigurationPropertiesBean；否则return null
          */
+        @Nullable
+        @JvmStatic
         @Suppress("UNCHECKED_CAST")
         private fun create(
-            beanName: String, bean: Any?, beanClass: Class<*>, factory: Method?
+            beanName: String, @Nullable bean: Any?, beanClass: Class<*>, @Nullable factory: Method?
         ): ConfigurationPropertiesBean? {
             // 从FactoryMethod/beanClass当中去检查@ConfigurationProperties注解
             val annotation = findAnnotation(ConfigurationProperties::class.java, bean, beanClass, factory)
@@ -150,16 +167,22 @@ open class ConfigurationPropertiesBean(
         }
 
         /**
-         * 从method/type上去找到指定类型的注解
+         * 从给定的工程方法(FactoryMethod, @Bean方法)/type的类上上去找到指定类型的注解
          *
-         * @param A 要去寻找的目标泛型
-         * @return 找到了return 注解对象；没有找到return null
+         * @param A 要去寻找的目标注解的类型的泛型
+         * @param annotationType 要去进行寻找的目标注解的类型
+         * @param instance 实例对象
+         * @param type 要去进行寻找注解的类
+         * @param factory 要去进行寻找注解的工厂方法
+         * @return 从factory/method上去找到了给定的注解的话, 就返回注解对象；没有找到return null
          */
+        @Nullable
+        @JvmStatic
         private fun <A : Annotation> findAnnotation(
-            annotationType: Class<A>, instance: Any?, type: Class<*>, factory: Method?
+            annotationType: Class<A>, @Nullable instance: Any?, type: Class<*>, @Nullable factory: Method?
         ): A? {
             var annotation: A? = null
-            // 1.从FactoryMethod当中去寻找该注解
+            // 1.从FactoryMethod(@Bean方法)当中去寻找该注解
             if (factory != null) {
                 annotation = factory.getAnnotation(annotationType)
             }
@@ -184,6 +207,7 @@ open class ConfigurationPropertiesBean(
              *
              * @return BindMethod for match
              */
+            @JvmStatic
             fun forType(type: Class<*>): BindMethod {
                 return if (ConfigurationPropertiesBindConstructorProvider.INSTANCE.getBindConstructor(type) == null) JAVA_BEAN
                 else VALUE_OBJECT

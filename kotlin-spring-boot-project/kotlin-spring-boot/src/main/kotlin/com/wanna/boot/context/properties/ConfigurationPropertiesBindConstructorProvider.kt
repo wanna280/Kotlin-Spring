@@ -1,6 +1,8 @@
 package com.wanna.boot.context.properties
 
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 import java.lang.reflect.Constructor
 
 /**
@@ -12,15 +14,21 @@ import java.lang.reflect.Constructor
 open class ConfigurationPropertiesBindConstructorProvider {
 
     companion object {
+        /**
+         * 对外暴露一个单例对象
+         */
         @JvmField
         val INSTANCE = ConfigurationPropertiesBindConstructorProvider()  // singleton object for visit
     }
 
 
     /**
+     * 从给定的类上去寻找标注有[ConstructorBinding]注解的构造器
+     *
      * @return 获取@ConstructorBinding标注的的构造器；找不到的话，return null
      */
-    fun getBindConstructor(type: Class<*>): Constructor<*>? {
+    @Nullable
+    open fun getBindConstructor(type: Class<*>): Constructor<*>? {
 
         // 1.首先去寻找标注了@ConstructorBinding的构造器
         val constructor = findConstructorBindingAnnotatedConstructor(type)
@@ -34,6 +42,9 @@ open class ConfigurationPropertiesBindConstructorProvider {
 
     /**
      * 找到@ConstructorBinding注解的构造器
+     *
+     * @param type type
+     * @return 寻找到的构造器
      */
     private fun findConstructorBindingAnnotatedConstructor(type: Class<*>): Constructor<*>? {
         // TODO Kotlin的主构造器的推断
@@ -53,10 +64,10 @@ open class ConfigurationPropertiesBindConstructorProvider {
         candidates.forEach {
             if (AnnotatedElementUtils.isAnnotated(it, ConstructorBinding::class.java)) {
                 if (it.parameterCount == 0) {
-                    throw IllegalStateException("@ConstructorBinding注解不能标注在[type=$type]的无参数构造器上")
+                    throw IllegalStateException("@ConstructorBinding注解不能标注在[type=${ClassUtils.getQualifiedName(type)}]的无参数构造器上")
                 }
                 if (constructor != null) {
-                    throw IllegalStateException("@ConstructorBinding注解只能标注在[type=$type]其中一个有参数构造器上")
+                    throw IllegalStateException("@ConstructorBinding注解只能标注在[type=${ClassUtils.getQualifiedName(type)}]其中一个有参数构造器上")
                 }
                 constructor = it
             }

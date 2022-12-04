@@ -20,12 +20,18 @@ import com.wanna.framework.core.PriorityOrdered
 open class ConfigurationPropertiesBindingPostProcessor : BeanPostProcessor, ApplicationContextAware, PriorityOrdered,
     InitializingBean {
     companion object {
+
+        /**
+         * [ConfigurationPropertiesBindingPostProcessor]的beanName
+         */
         @JvmField
         val BEAN_NAME: String = ConfigurationPropertiesBindingPostProcessor::class.java.name
 
         /**
-         * (1)将ConfigurationPropertiesBinderPostProcessor注册到容器当中；
-         * (2)将ConfigurationPropertiesBinder注册到容器当中
+         * (1)将[ConfigurationPropertiesBindingPostProcessor]注册到SpringBeanFactory当中；
+         * (2)将[ConfigurationPropertiesBinder]注册到SpringBeanFactory当中
+         *
+         * @param registry BeanDefinitionRegistry
          */
         @JvmStatic
         fun register(registry: BeanDefinitionRegistry) {
@@ -42,13 +48,28 @@ open class ConfigurationPropertiesBindingPostProcessor : BeanPostProcessor, Appl
         }
     }
 
+    /**
+     * ApplicationContext
+     */
     private lateinit var applicationContext: ApplicationContext
+
+    /**
+     * BeanDefinitionRegistry
+     */
     private lateinit var registry: BeanDefinitionRegistry
+
+    /**
+     * ConfigurationPropertiesBinder
+     */
     private var binder: ConfigurationPropertiesBinder? = null
 
 
     /**
      * 在初始化Bean之前，去拦截下来Bean的创建，去判断Bean是否标注了@ConfigurationProperties注解？
+     *
+     * @param bean bean
+     * @param beanName beanName
+     * @return bean
      */
     override fun postProcessBeforeInitialization(beanName: String, bean: Any): Any? {
         // 处理@ConfigurationProperties注册，把它注册到ConfigurationPropertiesBinder当中
@@ -57,7 +78,9 @@ open class ConfigurationPropertiesBindingPostProcessor : BeanPostProcessor, Appl
     }
 
     /**
-     * 如果必要的话，将处理好的ConfigurationPropertiesBean注册到Binder当中
+     * 如果必要的话，将解析完成的[ConfigurationPropertiesBean]的实例对象, 使用[ConfigurationPropertiesBinder]去进行完成属性绑定工作
+     *
+     * @param bean ConfigurationPropertiesBean
      */
     private fun bind(bean: ConfigurationPropertiesBean?) {
         // 如果该Bean没有标注@ConfigurationProperties注解，那么pass
@@ -78,6 +101,11 @@ open class ConfigurationPropertiesBindingPostProcessor : BeanPostProcessor, Appl
         this.binder = ConfigurationPropertiesBinder.get(this.applicationContext)
     }
 
+    /**
+     * 设置[ApplicationContext]
+     *
+     * @param applicationContext ApplicationContext
+     */
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext
     }

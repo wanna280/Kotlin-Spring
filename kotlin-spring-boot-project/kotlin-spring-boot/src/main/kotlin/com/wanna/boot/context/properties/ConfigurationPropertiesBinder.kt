@@ -21,15 +21,25 @@ import java.lang.reflect.Method
 
 /**
  * 这是一个ConfigurationProperties的Binder，负责完成@ConfigurationProperties的绑定工作
+ *
+ * @see ConfigurationProperties
+ * @see ConfigurationPropertiesBean
+ * @see ConfigurationPropertiesBindingPostProcessor
  */
 open class ConfigurationPropertiesBinder : ApplicationContextAware {
 
+    /**
+     * ApplicationContext
+     */
     private var applicationContext: ApplicationContext? = null
 
+    /**
+     * Environment
+     */
     private var environment: ConfigurableEnvironment? = null
 
     /**
-     * Binder
+     * 内部组合一个真正用于去完成对于一个Bean的属性绑定工作的Binder
      */
     @Volatile
     private var binder: Binder? = null
@@ -80,23 +90,25 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
     companion object {
 
         /**
+         * Logger
+         */
+        @JvmStatic
+        private val logger = LoggerFactory.getLogger(ConfigurationProperties::class.java)
+
+        /**
          * ConfigurationPropertiesBinder的beanName
          */
         @JvmField
         val BEAN_NAME: String = ConfigurationPropertiesBinder::class.java.name
 
         /**
-         * Logger
-         */
-        private val logger = LoggerFactory.getLogger(ConfigurationProperties::class.java)
-
-        /**
-         * 给容器中注册ConfigurationPropertiesBinder的相关基础设施Bean
+         * 给容器中注册一个[ConfigurationPropertiesBinder]的相关基础设施Bean
          *
          * @param registry BeanDefinitionRegistry
          */
         @JvmStatic
         fun register(registry: BeanDefinitionRegistry) {
+            // 如果之前Registry当中不存在这样的一个beanName, 那么往Registry当中去注册一个ConfigurationPropertiesBinder的BeanDefinition
             if (!registry.containsBeanDefinition(BEAN_NAME)) {
                 val beanDefinition = GenericBeanDefinition()
                 beanDefinition.setBeanClass(ConfigurationPropertiesBinder::class.java)
@@ -106,10 +118,10 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
         }
 
         /**
-         * 从beanFactory当中去获取ConfigurationPropertiesBinder
+         * 从给定的beanFactory当中去获取[ConfigurationPropertiesBinder]
          *
          * @param beanFactory beanFactory
-         * @return 获取到的ConfigurationPropertiesBinder
+         * @return 获取到的[ConfigurationPropertiesBinder]
          */
         @JvmStatic
         fun get(beanFactory: BeanFactory): ConfigurationPropertiesBinder {

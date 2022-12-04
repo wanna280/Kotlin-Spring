@@ -1,12 +1,15 @@
 package com.wanna.cloud.context.properties
 
 import com.wanna.boot.context.properties.ConfigurationPropertiesBean
+import com.wanna.framework.beans.BeanFactoryAware
+import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.processor.beans.BeanPostProcessor
 import com.wanna.framework.context.stereotype.Component
+import com.wanna.framework.lang.Nullable
 
 /**
  * 它维护了所有的RefreshScope内的ConfigurationPropertiesBean，将其维护起来，方便后期在环境信息发生改变时，可以去对RefreshScope内的Bean去进行刷新
@@ -14,21 +17,39 @@ import com.wanna.framework.context.stereotype.Component
  * @see ConfigurationPropertiesRebinder
  */
 @Component
-open class ConfigurationPropertiesBeans : ApplicationContextAware, BeanPostProcessor {
+open class ConfigurationPropertiesBeans : ApplicationContextAware, BeanFactoryAware, BeanPostProcessor {
 
-    private lateinit var applicationContext: ApplicationContext
+    /**
+     * ApplicationContext
+     */
+    private var applicationContext: ApplicationContext? = null
 
+    /**
+     * BeanFactory
+     */
+    @Nullable
     private var beanFactory: ConfigurableListableBeanFactory? = null
 
-    // Refresh是否已经初始化过了？第一次执行判断时，会完成RefreshScope的初始化工作...
+    /**
+     * Refresh是否已经初始化过了？第一次执行判断时，会完成RefreshScope的初始化工作...
+     */
     private var refreshScopeInitialized = false
 
-    // RefreshScope的scopeName
+    /**
+     * RefreshScope的scopeName
+     */
     private var refreshScope: String? = null
 
-    // 维护所有的ConfigurationPropertiesBean列表(key-beanName,value-ConfigurationPropertiesBean)
-    private val beans = HashMap<String, ConfigurationPropertiesBean>()
+    /**
+     * 维护所有的ConfigurationPropertiesBean列表(key-beanName,value-ConfigurationPropertiesBean)
+     */
+    private val beans = LinkedHashMap<String, ConfigurationPropertiesBean>()
 
+    /**
+     * 设置ApplicationContext
+     *
+     * @param applicationContext ApplicationContext
+     */
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext
         if (applicationContext is ConfigurableApplicationContext) {
@@ -37,11 +58,30 @@ open class ConfigurationPropertiesBeans : ApplicationContextAware, BeanPostProce
     }
 
     /**
+     * 设置BeanFactory
+     *
+     * @param beanFactory beanFactory
+     */
+    override fun setBeanFactory(beanFactory: BeanFactory) {
+        if (beanFactory is ConfigurableListableBeanFactory) {
+            this.beanFactory = beanFactory
+        }
+    }
+
+    /**
+     * 获取ApplicationContext
+     *
+     * @return ApplicationContext
+     */
+    open fun getApplicationContext(): ApplicationContext =
+        this.applicationContext ?: throw IllegalStateException("ApplicationContext还未完成初始化, 不能去进行获取")
+
+    /**
      * 在Bean初始化之前，对Bean检查，是否是一个ConfigurationPropertiesBean，如果是的话，那么需要去进行保存
      */
     override fun postProcessBeforeInitialization(beanName: String, bean: Any): Any? {
         if (isRefreshScoped(beanName)) {
-            val propertiesBean = ConfigurationPropertiesBean.get(this.applicationContext!!, bean, beanName)
+            val propertiesBean = ConfigurationPropertiesBean.get(getApplicationContext(), bean, beanName)
             if (propertiesBean != null) {
                 this.beans[beanName] = propertiesBean
             }
@@ -74,7 +114,5 @@ open class ConfigurationPropertiesBeans : ApplicationContextAware, BeanPostProce
      *
      * @return beanName列表
      */
-    open fun getBeanNames(): Set<String> {
-        return LinkedHashSet(this.beans.keys)
-    }
+    open fun getBeanNames(): Set<String> = LinkedHashSet(this.beans.keys)
 }
