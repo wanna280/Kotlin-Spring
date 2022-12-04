@@ -44,7 +44,7 @@ class E {
     /**
      * 这种情况? 怎么办? TODO
      */
-    var values3: Map<String, Any>? = null
+    var values3: Map<String, *>? = null
 }
 
 class F {
@@ -64,15 +64,16 @@ fun main() {
                     "a.b.c.d.flag1[2]" to "false",
                     "e.name.list.list[0]" to "wanna",
                     "e.name.list.list[1]" to "wanna2",
-                    "e.values.wanna[0]" to "wanna",
-                    "e.values.wanna[1]" to "wanna2",
-                    "e.values.wanna[2]" to "wanna3",
-                    "e.values2.wanna.wanna" to "wanna",
-                    "e.values2.wanna.wanna" to "wanna2",
-                    "e.values2.wanna.wanna" to "wanna3",
-                    "e.values3.wanna.wanna.wanna2" to "wanna",
-                    "e.values3.wanna.wanna.wanna2" to "wanna2",
-                    "e.values3.wanna.wanna.wanna2" to "wanna3"
+                    "e.values.wanna.wanna[0]" to "wanna",
+                    "e.values.wanna.wanna[1]" to "wanna2",
+                    "e.values.wanna.wanna[2]" to "wanna3",
+                    "e.values2.wanna.wanna111" to "wanna",
+                    "e.values2.wanna.wanna222" to "wanna2",
+                    "e.values2.wanna.wanna333" to "wanna3",
+                    "e.values3.wanna666.wanna777" to "wanna",
+                    "e.values3.wanna6666.wanna7777" to "wanna2",
+                    "e.values3.wanna.wanna.xxx" to "wanna3",
+                    "e.values3.wanna.wanna.yyy" to "wanna3"
                 )
             )
         )

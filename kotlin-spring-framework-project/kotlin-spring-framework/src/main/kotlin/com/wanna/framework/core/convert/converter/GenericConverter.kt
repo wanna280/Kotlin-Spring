@@ -1,6 +1,8 @@
 package com.wanna.framework.core.convert.converter
 
 import com.wanna.framework.core.convert.TypeDescriptor
+import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 
 /**
  * 这是一个支持泛型的解析的Converter
@@ -15,6 +17,7 @@ interface GenericConverter {
      *
      * @return 类型转换的映射列表(可以为null)
      */
+    @Nullable
     fun getConvertibleTypes(): Set<ConvertiblePair>?
 
     /**
@@ -26,7 +29,8 @@ interface GenericConverter {
      * @param targetType 目标类型
      * @return 类型转换完成之后的对象
      */
-    fun <S : Any, T : Any> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T?
+    @Nullable
+    fun <S : Any, T : Any> convert(@Nullable source: Any?, sourceType: Class<S>, targetType: Class<T>): T?
 
     /**
      * 将source对象从sourceType转换到targetType；
@@ -38,7 +42,8 @@ interface GenericConverter {
      * @param targetType 目标类型
      * @return 类型转换完成之后的对象
      */
-    fun convert(source: Any?, sourceType: TypeDescriptor, targetType: TypeDescriptor): Any?
+    @Nullable
+    fun convert(@Nullable source: Any?, sourceType: TypeDescriptor, targetType: TypeDescriptor): Any?
 
     /**
      * 这是一个可以转换的类型的Pair对，维护了sourceType和targetType；
@@ -52,7 +57,8 @@ interface GenericConverter {
      */
     class ConvertiblePair(val sourceType: Class<*>, val targetType: Class<*>) {
         override fun hashCode() = 31 * sourceType.hashCode() + targetType.hashCode()
-        override fun toString() = "${sourceType.name} --> ${targetType.name}"
+        override fun toString() =
+            "${ClassUtils.getQualifiedName(sourceType)} --> ${ClassUtils.getQualifiedName(targetType)}"
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

@@ -9,7 +9,7 @@ import java.util.function.Predicate
  * @version v1.0
  * @date 2022/12/5
  */
-class FilteredConfigurationPropertiesSource(
+open class FilteredConfigurationPropertiesSource(
     val source: ConfigurationPropertySource,
     val filter: Predicate<ConfigurationPropertyName>
 ) : ConfigurationPropertySource {

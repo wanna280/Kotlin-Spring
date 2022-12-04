@@ -55,7 +55,7 @@ class MapBinder(context: Binder.Context) : AggregateBinder<Map<Any?, Any?>>(cont
                     return context.getConverter().convert(property.value, target)
                 }
                 // 只需要前缀匹配的那些属性值...
-                // source = source.filter { it1 -> it1.toString().startsWith(name.toString()) }
+                source = source.filter { name.isAncestorOf(it) }
             }
 
             // 使用MapEntry的Binder, 去将给定的ConfigurationPropertySource去完成绑定...
@@ -102,19 +102,14 @@ class MapBinder(context: Binder.Context) : AggregateBinder<Map<Any?, Any?>>(cont
             // 因为我们需要遍历所有的propertyName, 尝试去进行找到合适的...
             if (source is IterableConfigurationPropertySource) {
                 source.forEach { name ->
-                    // pass掉不合法的属性值
-                    if (!name.toString().startsWith(root.toString())) {
-                        return@forEach
-                    }
                     // 获取Value的相关信息Bindable
-                    val valueBindable = getValueBindable(root)
+                    val valueBindable = getValueBindable(name)
 
-                    // 获取EntryName, 也就是Map的KeyName对应的ConfigurationPropertyName
+                    // 获取EntryName, 也就是绑定时应该使用到属性Key前缀...
                     val entryName = getEntryName(source, name)
 
-                    // 把entryName去转换成为正常的字符串的情况得到keyName, 再利用Converter去对keyName去进行转换(正常情况不会改变)
-                    val keyName = getKeyName(entryName)
-                    val key = context.getConverter().convert<Any>(keyName, keyType)
+                    // 把entryName去切割掉root前缀得到keyName, 再利用Converter去对keyName去进行转换(正常情况不会改变)
+                    val key = context.getConverter().convert<Any>(getKeyName(entryName), keyType)
 
                     // 对于Value的绑定结果去放入到map当中去, Key也就是keyName经过转换之后的结果(一般keyName只能为String)
                     // 对于Value的话, 使用AggregateElementBinder去对ValueBindable去进行绑定, 此时要去使用的propertyName=entryName
@@ -126,20 +121,19 @@ class MapBinder(context: Binder.Context) : AggregateBinder<Map<Any?, Any?>>(cont
         /**
          * 将给定的[ConfigurationPropertyName]去转换成为字符串的Key的形式, 方便从Map当中去取值
          *
-         * @param name 属性Key
-         * @return string of name
+         * @param name 属性Key前缀
+         * @return 去掉root之后得到的keyName
          */
         private fun getKeyName(name: ConfigurationPropertyName): String {
-            val numberOfElements = name.getNumberOfElements()
             val result = StringBuilder()
-            for (index in 0 until numberOfElements) {
+            for (index in root.getNumberOfElements() until name.getNumberOfElements()) {
                 if (result.isNotEmpty()) {
                     result.append(".")
-                } else {
-                    result.append(name.getElement(index))
                 }
+                // fixed: 不管result是否为空, 都得添加name
+                result.append(name.getElement(index))
             }
-            return name.toString()
+            return result.toString()
         }
 
         /**
@@ -150,7 +144,7 @@ class MapBinder(context: Binder.Context) : AggregateBinder<Map<Any?, Any?>>(cont
          *
          * @param source source
          * @param name 带获取EntryName的元素
-         * @return entryName(其实也就是要去进行绑定的Map元素的KeyName)
+         * @return entryName(其实也就是要去进行绑定的属性Key前缀)
          */
         private fun getEntryName(
             source: ConfigurationPropertySource,

@@ -19,7 +19,11 @@ open class DefaultConversionService : GenericConversionService() {
     }
 
     companion object {
-        // 共享的实例
+        /**
+         * 共享的[DefaultConversionService]实例
+         */
+        @Volatile
+        @JvmStatic
         private var sharedInstance: DefaultConversionService? = null
 
         /**
@@ -29,10 +33,10 @@ open class DefaultConversionService : GenericConversionService() {
          */
         @JvmStatic
         fun getSharedInstance(): DefaultConversionService {
-            var sharedInstance = DefaultConversionService.sharedInstance
+            var sharedInstance = this.sharedInstance
             if (sharedInstance == null) {
                 synchronized(DefaultConversionService::class.java) {
-                    sharedInstance = DefaultConversionService.sharedInstance
+                    sharedInstance = this.sharedInstance
                     if (sharedInstance == null) {
                         sharedInstance = DefaultConversionService()
                     }

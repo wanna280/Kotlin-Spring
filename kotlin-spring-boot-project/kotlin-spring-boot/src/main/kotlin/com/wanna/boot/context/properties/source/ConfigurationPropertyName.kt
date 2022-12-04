@@ -127,6 +127,36 @@ class ConfigurationPropertyName(private val elements: Elements) {
         if (getNumberOfElements() != name.getNumberOfElements() - 1) {
             return false
         }
+        // 检查this的属性是否是name的祖先?
+        return isAncestorOf(name)
+    }
+
+    /**
+     * 检查this是否是给定的name的祖先属性Key?
+     *
+     * @param name name
+     * @return 如果是祖先的话, return true; 否则return false
+     */
+    fun isAncestorOf(name: ConfigurationPropertyName): Boolean {
+        if (this.elements.size >= name.elements.size) {
+            return false
+        }
+        // 如果前K个元素都是完全一致的, 那么就是this就是name的祖先
+        return elementsEqual(name)
+    }
+
+    /**
+     * 检查给定的name和当前的name的Elements的前K(this.element.size)个元素, 其内容是否完全一致?
+     *
+     * @param name name
+     * @return 如果一致的话, return true; 否则return false
+     */
+    private fun elementsEqual(name: ConfigurationPropertyName): Boolean {
+        for (index in 0 until this.elements.size) {
+            if (this.elements.get(index) != name.elements.get(index)) {
+                return false
+            }
+        }
         return true
     }
 

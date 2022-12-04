@@ -174,12 +174,13 @@ open class GenericConversionService : ConfigurableConversionService {
          *
          * @param sourceType sourceType
          * @param targetType targetType
-         * @return 默认的Converter
+         * @return 默认的Converter(如果获取不到的话, return null)
          */
         @Nullable
         fun getDefaultConverter(sourceType: Class<*>, targetType: Class<*>): GenericConverter? {
-            // 如果source和target类型相同的话, 就可以返回一个默认的
-            return if (ClassUtils.isAssignFrom(sourceType, targetType)) NO_OP_CONVERTER else null
+            // 如果sourceType->targetType可以转换成功的话, 那么return NO_OP_CONVERTER
+            // 比如sourceType=String, targetType=Object, 这种很明显是可以去进行转换的...
+            return if (ClassUtils.isAssignFrom(targetType, sourceType)) NO_OP_CONVERTER else null
         }
 
         /**
@@ -211,6 +212,7 @@ open class GenericConversionService : ConfigurableConversionService {
          * @param type 要去进行匹配的sourceType和targetType
          * @return 寻找到的Converters(如果没有找到return null)
          */
+        @Nullable
         fun find(type: ConvertiblePair): ConvertersForPair? {
             this.converters.forEach { (k, v) ->
                 val sourceTypeMatch = ClassUtils.isAssignFrom(k.sourceType, type.sourceType)
@@ -240,17 +242,47 @@ open class GenericConversionService : ConfigurableConversionService {
      * @see ConvertiblePair
      */
     class ConvertersForPair {
+
+        /**
+         * Converters
+         */
         val converters = ConcurrentLinkedDeque<GenericConverter>()
 
+        /**
+         * 添加一个Converter
+         *
+         * @param converter 需要添加的Converter
+         */
         fun addConverter(converter: GenericConverter): ConvertersForPair {
             converters += converter
             return this
         }
 
+        /**
+         * 是否存在有Converter?
+         *
+         * @return 如果存在有Converter, return true; 否则return false
+         */
         fun hasConverter() = converters.isNotEmpty()
 
+        /**
+         * 将source对象去转换成为目标类型
+         *
+         * @param source source
+         * @param targetType targetType
+         * @return 转换得到的目标对象
+         */
+        @Nullable
         fun convert(source: Any, targetType: Class<*>): Any? = convert(source, TypeDescriptor.forClass(targetType))
 
+        /**
+         * 将source对象去转换成为目标对象
+         *
+         * @param source source
+         * @param targetType targetType
+         * @return 转换得到的目标对象
+         */
+        @Nullable
         fun convert(source: Any, targetType: TypeDescriptor): Any? =
             converters.first.convert(source, TypeDescriptor.forClass(source::class.java), targetType)
     }
@@ -262,13 +294,15 @@ open class GenericConversionService : ConfigurableConversionService {
      */
     @Suppress("UNCHECKED_CAST")
     private class ConverterAdapter(private val converter: Converter<*, *>) : GenericConverter {
-        // 包装的普通的Converter，可以支持的转换的类型映射
+        /**
+         * 包装的普通的Converter，可以支持的转换的类型映射
+         */
         private val convertibleTypes = HashSet<ConvertiblePair>()
 
         /**
          * 添加可以转换的类型到列表当中("sourceType->targetType"的映射关系)
          *
-         * @param sourceType souceType
+         * @param sourceType sourceType
          * @param targetType targetType
          * @return this
          */

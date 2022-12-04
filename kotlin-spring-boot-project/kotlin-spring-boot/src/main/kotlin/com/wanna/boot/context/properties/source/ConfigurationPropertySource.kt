@@ -30,7 +30,7 @@ interface ConfigurationPropertySource {
      * @return 新的[ConfigurationPropertySource]
      */
     fun filter(filter: Predicate<ConfigurationPropertyName>): ConfigurationPropertySource {
-        return FilteredConfigurationPropertiesSource(this, filter)
+        return FilteredIterableConfigurationPropertiesSource(this, filter)
     }
 
     /**

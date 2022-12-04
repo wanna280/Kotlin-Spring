@@ -1,8 +1,10 @@
 package com.wanna.boot.context.properties.bind
 
+import com.wanna.boot.convert.ApplicationConversionService
 import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.convert.TypeDescriptor
-import com.wanna.framework.core.convert.support.DefaultConversionService
+import com.wanna.framework.core.convert.converter.GenericConverter
+import com.wanna.framework.core.convert.support.GenericConversionService
 import com.wanna.framework.lang.Nullable
 
 /**
@@ -14,7 +16,10 @@ import com.wanna.framework.lang.Nullable
  */
 class BindConverter {
 
-    private val delegates = arrayOf(DefaultConversionService.getSharedInstance())
+    /**
+     * ConversionService列表
+     */
+    private val delegates = arrayOf(ApplicationConversionService.getSharedInstance())
 
     /**
      * 将给定对象去转换成为目标类型
@@ -61,14 +66,36 @@ class BindConverter {
     private fun <T : Any> convert(source: Any, sourceType: TypeDescriptor, targetType: TypeDescriptor): T? {
         delegates.forEach {
             if (it.canConvert(sourceType, targetType)) {
-                return it.convert(source, targetType) as T
+                return it.convert(source, targetType) as T?
             }
         }
         return null
     }
 
     private class ResolvableTypeDescriptor(type: ResolvableType, val annotations: Array<Annotation>) :
-        TypeDescriptor(type) {
+        TypeDescriptor(type)
 
+    /**
+     * TypeConverter ConversionService
+     */
+    private class TypeConverterConversionService : GenericConversionService() {
+        init {
+            addConverter(TypeConverterConverter())
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private class TypeConverterConverter : GenericConverter {
+        override fun getConvertibleTypes(): Set<GenericConverter.ConvertiblePair> = setOf(
+            GenericConverter.ConvertiblePair(String::class.java, Any::class.java)
+        )
+
+        override fun <S : Any, T : Any> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
+            return source as T?
+        }
+
+        override fun convert(source: Any?, sourceType: TypeDescriptor, targetType: TypeDescriptor): Any? {
+            return source
+        }
     }
 }
