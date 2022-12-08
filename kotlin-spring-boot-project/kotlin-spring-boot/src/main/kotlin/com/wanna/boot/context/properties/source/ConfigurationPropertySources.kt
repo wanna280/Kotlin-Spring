@@ -28,7 +28,7 @@ object ConfigurationPropertySources {
     }
 
     /**
-     * 根据给定的[PropertySource]列表, 去构建出来合适的[ConfigurationPropertySource]列表
+     * 根据给定的Spring原生的[PropertySource]列表, 去构建出来合适的[ConfigurationPropertySource]列表
      *
      * @param sources 原始的PropertySource列表
      * @return ConfigurationPropertySource列表

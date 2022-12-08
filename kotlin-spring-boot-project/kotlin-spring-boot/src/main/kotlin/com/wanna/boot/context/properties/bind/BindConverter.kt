@@ -2,6 +2,7 @@ package com.wanna.boot.context.properties.bind
 
 import com.wanna.boot.convert.ApplicationConversionService
 import com.wanna.framework.core.ResolvableType
+import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.convert.converter.GenericConverter
 import com.wanna.framework.core.convert.support.GenericConversionService
@@ -15,6 +16,21 @@ import com.wanna.framework.lang.Nullable
  * @date 2022/12/3
  */
 class BindConverter {
+
+    companion object {
+
+        /**
+         * 基于给定的[ConversionService], 快速去构建出来[BindConverter]的工厂方法
+         *
+         * @param conversionServices ConversionService列表
+         * @return BindConverter
+         */
+        @JvmStatic
+        fun get(conversionServices: List<ConversionService>): BindConverter {
+            return BindConverter()
+        }
+    }
+
 
     /**
      * ConversionService列表

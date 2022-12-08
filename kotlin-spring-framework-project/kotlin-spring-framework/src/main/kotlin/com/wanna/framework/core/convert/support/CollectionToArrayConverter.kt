@@ -33,7 +33,7 @@ open class CollectionToArrayConverter(private val conversionService: ConversionS
             // fixed: 针对集合当中的单个元素去进行类型的转换...
 
             // sourceType is Collection, 我们去进行注解的泛型解析sourceElementType
-            val sourceElementType = sourceType.resolvableType.getGenerics()[0].resolve(Any::class.java)
+            val sourceElementType = sourceType.resolvableType.asCollection().getGenerics()[0].resolve(Any::class.java)
 
             // targetType is Array, 我们使用componentType去作为targetElementType
             val targetElementType = targetType.type.componentType

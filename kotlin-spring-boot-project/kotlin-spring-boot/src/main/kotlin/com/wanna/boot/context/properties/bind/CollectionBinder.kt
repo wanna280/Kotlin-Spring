@@ -38,11 +38,11 @@ open class CollectionBinder<T : Any>(context: Binder.Context) : IndexedElementsB
         // 集合类型
         val aggregateType = ResolvableType.forClassWithGenerics(
             List::class.java,
-            target.type.getGenerics()[0].resolve(Any::class.java)
+            target.type.asCollection().getGenerics()[0].resolve(Any::class.java)
         )
 
         // 集合的元素类型
-        val elementType = target.type.getGenerics()[0]
+        val elementType = target.type.asCollection().getGenerics()[0]
 
         // 提供单例的Collection的Supplier
         val resultSupplier = IndexedCollectionSupplier {

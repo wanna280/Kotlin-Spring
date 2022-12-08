@@ -1,5 +1,7 @@
 package com.wanna.boot.context.properties
 
+import com.wanna.boot.context.properties.bind.BindConstructorProvider
+import com.wanna.boot.context.properties.bind.Bindable
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
@@ -11,7 +13,7 @@ import java.lang.reflect.Constructor
  *
  * @see ConfigurationPropertiesBean
  */
-open class ConfigurationPropertiesBindConstructorProvider {
+open class ConfigurationPropertiesBindConstructorProvider : BindConstructorProvider {
 
     companion object {
         /**
@@ -21,6 +23,15 @@ open class ConfigurationPropertiesBindConstructorProvider {
         val INSTANCE = ConfigurationPropertiesBindConstructorProvider()  // singleton object for visit
     }
 
+    /**
+     * 获取到需要用于去进行绑定的构造器
+     *
+     * @param bindable Bindable
+     * @return 获取到的需要去进行绑定的构造器(无法找到的话return null)
+     */
+    override fun getBindConstructor(bindable: Bindable<*>, isNestedConstructorBinding: Boolean): Constructor<*>? {
+        return getBindConstructor(bindable.type.resolve(Any::class.java))
+    }
 
     /**
      * 从给定的类上去寻找标注有[ConstructorBinding]注解的构造器

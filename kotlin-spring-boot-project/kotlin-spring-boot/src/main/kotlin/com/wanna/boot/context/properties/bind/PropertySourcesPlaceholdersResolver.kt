@@ -1,6 +1,8 @@
 package com.wanna.boot.context.properties.bind
 
-import com.wanna.framework.beans.factory.config.PlaceholderConfigurerSupport
+import com.wanna.framework.beans.factory.config.PlaceholderConfigurerSupport.Companion.DEFAULT_PLACEHOLDER_PREFIX
+import com.wanna.framework.beans.factory.config.PlaceholderConfigurerSupport.Companion.DEFAULT_PLACEHOLDER_SUFFIX
+import com.wanna.framework.beans.factory.config.PlaceholderConfigurerSupport.Companion.DEFAULT_VALUE_SEPARATOR
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.PropertySource
@@ -8,29 +10,46 @@ import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.PropertyPlaceholderHelper
 
 /**
- * 基于[Environment]当中的[PropertySource]列表去提供占位符解析的工具类
+ * 基于[PropertySource]的方式去提供占位符解析的[PropertyPlaceholderHelper]工具类
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/12/3
+ *
+ * @param _sources PropertySources
+ * @param _helper 提供占位符的解析的Helper工具类
  */
-open class PropertySourcesPlaceholdersResolver(environment: Environment, _helper: PropertyPlaceholderHelper? = null) :
-    PlaceholdersResolver {
+open class PropertySourcesPlaceholdersResolver(
+    _sources: Iterable<PropertySource<*>>,
+    _helper: PropertyPlaceholderHelper? = null
+) : PlaceholdersResolver {
 
     /**
-     * Environment内部的[PropertySource]列表
+     * 提供一个直接给定[PropertySource]列表的方式去构建[PropertySourcesPlaceholdersResolver]
+     *
+     * @param propertySources PropertySource列表
      */
-    private val sources: Iterable<PropertySource<*>> =
-        if (environment is ConfigurableEnvironment) environment.getPropertySources()
-        else throw IllegalStateException("只有ConfigurableEnvironment才支持去获取PropertySources")
+    constructor(propertySources: Iterable<PropertySource<*>>) : this(propertySources, null)
+
+    /**
+     * 提供一个基于[Environment]去构建的[PropertySourcesPlaceholdersResolver]的方式
+     *
+     * @param environment Environment
+     */
+    constructor(environment: Environment) : this(getSources(environment))
+
+    /**
+     * 提供占位符解析时需要用到的属性信息的[PropertySource]列表
+     */
+    private val sources: Iterable<PropertySource<*>> = _sources
 
     /**
      * 提供占位符解析的Helper工具类
      */
     private val helper = _helper ?: PropertyPlaceholderHelper(
-        PlaceholderConfigurerSupport.DEFAULT_PLACEHOLDER_PREFIX,
-        PlaceholderConfigurerSupport.DEFAULT_PLACEHOLDER_SUFFIX,
-        PlaceholderConfigurerSupport.DEFAULT_VALUE_SEPARATOR
+        DEFAULT_PLACEHOLDER_PREFIX,
+        DEFAULT_PLACEHOLDER_SUFFIX,
+        DEFAULT_VALUE_SEPARATOR
     )
 
     /**
@@ -62,5 +81,20 @@ open class PropertySourcesPlaceholdersResolver(environment: Environment, _helper
             }
         }
         return null
+    }
+
+    companion object {
+
+        /**
+         * 从[Environment]当中去获取到合适的[PropertySource]列表
+         *
+         * @param environment Environment
+         * @return PropertySource列表
+         */
+        @JvmStatic
+        private fun getSources(environment: Environment): Iterable<PropertySource<*>> {
+            return if (environment is ConfigurableEnvironment) environment.getPropertySources()
+            else throw IllegalStateException("只有ConfigurableEnvironment才支持去获取PropertySources, 提供Placeholder的解析")
+        }
     }
 }

@@ -1,23 +1,21 @@
 package com.wanna.boot.context.properties
 
 import com.wanna.boot.context.properties.bind.BindResult
-import com.wanna.boot.context.properties.bind.Bindable
 import com.wanna.boot.context.properties.bind.Binder
+import com.wanna.boot.context.properties.bind.PropertySourcesPlaceholdersResolver
+import com.wanna.boot.context.properties.source.ConfigurationPropertySource
+import com.wanna.boot.context.properties.source.ConfigurationPropertySources
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.GenericBeanDefinition
 import com.wanna.framework.context.ApplicationContext
-import com.wanna.framework.context.ApplicationContextAware
-import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import com.wanna.framework.core.convert.TypeDescriptor
+import com.wanna.framework.context.annotation.Autowired
+import com.wanna.framework.context.support.PropertySourcesPlaceholderConfigurer
+import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.environment.ConfigurableEnvironment
-import com.wanna.framework.util.BeanUtils
-import com.wanna.framework.util.ClassUtils
-import com.wanna.framework.util.ReflectionUtils
+import com.wanna.framework.core.environment.PropertySources
 import org.slf4j.LoggerFactory
-import java.lang.reflect.Field
-import java.lang.reflect.Method
 
 /**
  * 这是一个ConfigurationProperties的Binder，负责完成@ConfigurationProperties的绑定工作
@@ -25,19 +23,10 @@ import java.lang.reflect.Method
  * @see ConfigurationProperties
  * @see ConfigurationPropertiesBean
  * @see ConfigurationPropertiesBindingPostProcessor
+ *
+ * @param applicationContext ApplicationContext
  */
-open class ConfigurationPropertiesBinder : ApplicationContextAware {
-
-    /**
-     * ApplicationContext
-     */
-    private var applicationContext: ApplicationContext? = null
-
-    /**
-     * Environment
-     */
-    private var environment: ConfigurableEnvironment? = null
-
+open class ConfigurationPropertiesBinder @Autowired private constructor(private val applicationContext: ApplicationContext) {
     /**
      * 内部组合一个真正用于去完成对于一个Bean的属性绑定工作的Binder
      */
@@ -45,16 +34,11 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
     private var binder: Binder? = null
 
     /**
-     * 设置[ApplicationContext]
-     *
-     * @param applicationContext ApplicationContext
+     * 从[ApplicationContext]当中去推断出来合适的[PropertySources],
+     * * 1.优先选[PropertySourcesPlaceholderConfigurer]内部的[PropertySources];
+     * * 2.如果获取不到, 那么尝试从[ConfigurableEnvironment]当中去进行获取[PropertySources].
      */
-    override fun setApplicationContext(applicationContext: ApplicationContext) {
-        this.applicationContext = applicationContext
-
-        // 同步设置一下Environment
-        this.environment = applicationContext.getEnvironment() as ConfigurableEnvironment
-    }
+    private var propertySources: PropertySources = PropertySourcesDeducer(applicationContext).getPropertySources()
 
     /**
      * 对于没有完成实例化的Bean，那么使用构造器去进行实例化并完成属性的设置
@@ -81,10 +65,44 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
      * @return Binder
      */
     open fun getBinder(): Binder {
+        ConfigurationPropertiesBindConstructorProvider.INSTANCE
         if (this.binder == null) {
-            this.binder = Binder.get(environment!!)
+            this.binder = Binder(
+                getConfigurationPropertySources(),
+                getPropertySourcesPlaceholdersResolver(),
+                getConversionServices(),
+                null,
+                ConfigurationPropertiesBindConstructorProvider.INSTANCE
+            )
         }
         return binder!!
+    }
+
+    /**
+     * 根据[PropertySources]去获取到[ConfigurationPropertySource]列表
+     *
+     * @return ConfigurationPropertySource列表
+     */
+    private fun getConfigurationPropertySources(): Iterable<ConfigurationPropertySource> {
+        return ConfigurationPropertySources.from(this.propertySources)
+    }
+
+    /**
+     * 根据[PropertySources]去获取到[PropertySourcesPlaceholdersResolver]
+     *
+     * @return PropertySourcesPlaceholdersResolver
+     */
+    private fun getPropertySourcesPlaceholdersResolver(): PropertySourcesPlaceholdersResolver {
+        return PropertySourcesPlaceholdersResolver(this.propertySources)
+    }
+
+    /**
+     * 从[ApplicationContext]当中去去获取到[ConversionService]列表
+     *
+     * @return ConversionServices
+     */
+    private fun getConversionServices(): List<ConversionService> {
+        return ConversionServiceDeducer(this.applicationContext).getConversionServices()
     }
 
     companion object {
@@ -93,7 +111,7 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
          * Logger
          */
         @JvmStatic
-        private val logger = LoggerFactory.getLogger(ConfigurationProperties::class.java)
+        private val logger = LoggerFactory.getLogger(ConfigurationPropertiesBinder::class.java)
 
         /**
          * ConfigurationPropertiesBinder的beanName

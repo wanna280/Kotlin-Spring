@@ -1,6 +1,7 @@
 package com.wanna.boot.context.properties.bind
 
 import com.wanna.boot.context.properties.source.*
+import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
@@ -14,14 +15,23 @@ import java.util.function.Supplier
  * @version v1.0
  * @date 2022/12/3
  *
- * @param sources PropertySources, 提供数据绑定的属性来源
- * @param placeholdersResolver 占位符的解析器
- * @param _defaultBindHandler 默认的BindHandler
+ * @param sources PropertySources, 提供数据绑定的属性来源, 以[ConfigurationPropertySource]的方式给出
+ * @param _placeholdersResolver 提供占位符的解析的解析器(可以为null, 使用默认值, 不提供占位符的解析功能)
+ * @param conversionServices ConversionService列表, 提供属性的绑定时的类型转换功能的相关支持
+ * @param _defaultBindHandler 默认的BindHandler(可以为null, 使用默认值)
+ * @param _constructorProvider 提供需要去进行绑定的构造器的Provider(可以为null, 使用默认值), 主要是提供ValueObject的绑定
+ *
+ * @see ConfigurationPropertySource
+ * @see ConfigurationPropertySources.from
+ * @see BindHandler
+ * @see BindConstructorProvider
  */
 class Binder(
     private val sources: Iterable<ConfigurationPropertySource>,
-    private val placeholdersResolver: PlaceholdersResolver,
-    @Nullable _defaultBindHandler: BindHandler?
+    @Nullable _placeholdersResolver: PlaceholdersResolver?,
+    conversionServices: List<ConversionService>,
+    @Nullable _defaultBindHandler: BindHandler?,
+    @Nullable _constructorProvider: BindConstructorProvider?
 ) {
     /**
      * 默认的BindHandler
@@ -29,9 +39,26 @@ class Binder(
     private val defaultBindHandler: BindHandler = _defaultBindHandler ?: BindHandler.DEFAULT
 
     /**
-     * DataObject的绑定器
+     * 占位符的解析
      */
-    private val dataObjectBinders = listOf(JavaBeanBinder.INSTANCE)
+    private val placeholdersResolver: PlaceholdersResolver = _placeholdersResolver ?: PlaceholdersResolver.NONE
+
+    /**
+     * 提供要去进行绑定的构造器的Provider
+     */
+    private val constructorProvider: BindConstructorProvider = _constructorProvider ?: BindConstructorProvider.DEFAULT
+
+    /**
+     * DataObject的绑定器, 提供对于一个Java对象的绑定, 主要包含两个DataObjectBinder:
+     * * 1.ValueObject的Binder, 针对的那些不可变的元素的绑定, 采用构造器的方式去进行注入, 最终完成绑定, 和Kotlin当中的ValueObject的定义相同
+     * * 2.JavaBean的Binder, 主要是针对那些可变元素的绑定 ,基于JavaBean的Getter/Setter的方式去进行实现并完成绑定
+     */
+    private val dataObjectBinders = listOf(ValueObjectBinder(constructorProvider), JavaBeanBinder.INSTANCE)
+
+    /**
+     * 提供绑定属性的[BindConverter], 内部组合了一些[ConversionService]去协助完成绑定
+     */
+    private val bindConverter: BindConverter = BindConverter.get(conversionServices)
 
     /**
      * 将给定的属性值的前缀的所有属性值去绑定到目标对象上(如果之前还没有实例对象的话, 那么绑定失败)
@@ -568,11 +595,11 @@ class Binder(
         fun getPlaceholderResolver(): PlaceholdersResolver = this@Binder.placeholdersResolver
 
         /**
-         * 获取用于提供类型转换的的BindConverter, 内部通过ConversionService去实现绑定
+         * 获取用于提供类型转换的的BindConverter, 内部通过ConversionService去协助从而实现绑定
          *
          * @return BindConverter
          */
-        fun getConverter(): BindConverter = BindConverter()
+        fun getConverter(): BindConverter = this@Binder.bindConverter
     }
 
     companion object {
@@ -608,7 +635,7 @@ class Binder(
             val placeholdersResolver = PropertySourcesPlaceholdersResolver(environment)
 
             // 构建出来Binder
-            return Binder(sources, placeholdersResolver, bindHandler)
+            return Binder(sources, placeholdersResolver, emptyList(), bindHandler, null)
         }
     }
 }

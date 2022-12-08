@@ -44,7 +44,7 @@ class ArrayToCollectionConverter(private val conversionService: ConversionServic
             // sourceType为Array的ComponentType
             val sourceElementType = sourceType.type.componentType
             // targetType为Collection的elementType
-            val targetElementType = targetType.resolvableType.getGenerics()[0].resolve(Any::class.java)
+            val targetElementType = targetType.resolvableType.asCollection().getGenerics()[0].resolve(Any::class.java)
 
             // 对元素去进行类型转换, 添加到collection当中去
             if (conversionService.canConvert(sourceElementType, targetElementType)) {
