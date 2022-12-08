@@ -3,12 +3,16 @@ package com.wanna.boot.context.properties.source
 import com.wanna.framework.lang.Nullable
 
 /**
+ * 描述一个Configuration的属性值
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/12/3
+ *
+ * @param name 属性名
+ * @param value 属性值
  */
-class ConfigurationProperty(val name: ConfigurationPropertyName, @Nullable val value: Any?) {
+open class ConfigurationProperty(val name: ConfigurationPropertyName, @Nullable val value: Any?) {
 
     companion object {
 

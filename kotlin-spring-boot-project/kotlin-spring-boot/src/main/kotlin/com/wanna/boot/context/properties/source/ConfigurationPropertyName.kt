@@ -7,13 +7,18 @@ import kotlin.jvm.Throws
 import kotlin.math.min
 
 /**
- * 对一个配置的属性名去进行描述, 拆分成为一段一段的, 方便去进行描述,  比如"spring.config.name", 将会被拆分成为三段, ["spring", "config", "name"]
+ * 对一个配置的属性名去进行描述, 将属性名按照"."去拆分成为一段一段的这样的结果, 方便去进行描述,
+ * 比如"spring.config.name", 将会被拆分成为三段, ["spring", "config", "name"];
+ * 再比如"spring.config.names[0]", 将会拆分成为4段, ["spring", "config", "names", "0"];
+ * 这样的话, 怎么去进行区分呢? 因此存在有[ElementType]这个枚举值, 标识当前是否是一个数组的index、Map的index.
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/12/3
+ *
+ * @param elements 用于描述当前的配属性名的元素, 按照"."去进行一段段的拆分, 并完成解析, 并提供相关的工具方法
  */
-class ConfigurationPropertyName(private val elements: Elements) {
+open class ConfigurationPropertyName(private val elements: Elements) {
 
     /**
      * 完成转换之后的每一级别的字符串, 比如"spring.config.name", 将会被拆分成为三段, ["spring", "config", "name"]
@@ -33,12 +38,13 @@ class ConfigurationPropertyName(private val elements: Elements) {
      * @param suffix 添加的后缀
      * @return 带有后缀的新的[ConfigurationPropertyName]
      */
-    fun append(suffix: String): ConfigurationPropertyName {
+    open fun append(suffix: String): ConfigurationPropertyName {
         // 如果给定的suffix没有字符, 那么return this即可, 不必merge
         if (!StringUtils.hasText(suffix)) {
             return this
         }
-        // 新添加的suffix很可能只有一段元素(比如原始是"spring.main", 现在很可能就只是"type"/"name"之类的, 很少会遇到"xxx.yyy"这种情况)
+        // 新添加的suffix很可能只有一段元素, 因此我们创建一个elementSize=1的Elements对象...
+        // (比如原始是"spring.main", 现在很可能就只是"type"/"name"之类的, 很少会遇到"xxx.yyy"这种多段的情况)
         val additional = probablySingleElementOf(suffix)
         return ConfigurationPropertyName(this.elements.append(additional))
     }
@@ -72,7 +78,7 @@ class ConfigurationPropertyName(private val elements: Elements) {
      *
      * @return element size
      */
-    fun getNumberOfElements(): Int = this.elements.size
+    open fun getNumberOfElements(): Int = this.elements.size
 
     /**
      * 检查当前[ConfigurationPropertyName]的指定的段的类型是否是indexed? 也就是该段是否在'['和']'之间解析出来的
@@ -80,7 +86,7 @@ class ConfigurationPropertyName(private val elements: Elements) {
      * @param index element index
      * @return 如果该段元素类型为INDEXED/NUMERICALLY_INDEXED, 那么return true; 否则return false
      */
-    fun isIndexed(index: Int): Boolean = this.elements.getType(index).indexed
+    open fun isIndexed(index: Int): Boolean = this.elements.getType(index).indexed
 
     /**
      * 检查给定的index对应的这一段Element的类型是否是在'[]'和']'之间, 并且值还是数字的? 比如"use.name[0]"当中"0"就是符合情况的
@@ -88,7 +94,7 @@ class ConfigurationPropertyName(private val elements: Elements) {
      * @param index element index
      * @return 如果该段确实是以数字作为index, 那么return true; 否则return false
      */
-    fun isNumbericIndex(index: Int): Boolean = this.elements.getType(index) == ElementType.NUMERICALLY_INDEXED
+    open fun isNumbericIndex(index: Int): Boolean = this.elements.getType(index) == ElementType.NUMERICALLY_INDEXED
 
     /**
      * 根据size去切取指定长度的Element, 去构建出来一个新的[ConfigurationPropertyName], 相当于字符串的"substring(0,index)"操作
@@ -96,7 +102,7 @@ class ConfigurationPropertyName(private val elements: Elements) {
      * @param size 要切取的Element的长度
      * @return 切片得到的新的[ConfigurationPropertyName]
      */
-    fun chop(size: Int): ConfigurationPropertyName {
+    open fun chop(size: Int): ConfigurationPropertyName {
         if (size > getNumberOfElements()) {
             return this
         }
@@ -109,35 +115,37 @@ class ConfigurationPropertyName(private val elements: Elements) {
      * @param index element index
      * @return element index获取到的字符串
      */
-    fun getElement(index: Int): String {
+    open fun getElement(index: Int): String {
         return this.elements.get(index)
     }
 
     /**
      * 检查给定的Name, 是否是当前这个[ConfigurationPropertyName]的直接父属性?
      * 例如this="com.wanna.xxx.yyy".
-     * * (1)name="com.wanna", return false;
+     * * (1)name="com.wanna", return false; 这种情况属于是ancestor, 但是不是parent;
      * * (2)name="com.wanna.xxx", return true
      *
-     * @param name 需要去进行检查的元素
+     * @param name 需要去进行检查的元素name
      * @return 如果是直接父属性的话, return true; 否则return false
      */
-    fun isParentOf(name: ConfigurationPropertyName): Boolean {
+    open fun isParentOf(name: ConfigurationPropertyName): Boolean {
         // 如果size的数量不匹配, 那么直接return false
         if (getNumberOfElements() != name.getNumberOfElements() - 1) {
             return false
         }
-        // 检查this的属性是否是name的祖先?
+        // 检查this.elements属性是否是name.elements的祖先?
         return isAncestorOf(name)
     }
 
     /**
-     * 检查this是否是给定的name的祖先属性Key?
+     * 检查this是否是给定的name的祖先属性Key? 其实就是相当于判断this是否是name的前缀?
+     * 比如this="com.wanna", 那么name="com.wanna.xxx"/"com.wanna.xxx.yyy"都算是祖先节点, 那么return true
      *
-     * @param name name
-     * @return 如果是祖先的话, return true; 否则return false
+     * @param name 需要去进行检查的元素name
+     * @return 如果this是给定的name的祖先Key的话, return true; 否则return false
      */
-    fun isAncestorOf(name: ConfigurationPropertyName): Boolean {
+    open fun isAncestorOf(name: ConfigurationPropertyName): Boolean {
+        // 如果当前的elements的长度比给定的name的elements的长度还多, 那么this必然不是name的祖先
         if (this.elements.size >= name.elements.size) {
             return false
         }
@@ -165,7 +173,7 @@ class ConfigurationPropertyName(private val elements: Elements) {
      *
      * @return 如果elements.size=0, 那么return true; 否则return false
      */
-    fun isEmpty(): Boolean = this.elements.size == 0
+    open fun isEmpty(): Boolean = this.elements.size == 0
 
 
     /**
@@ -302,7 +310,7 @@ class ConfigurationPropertyName(private val elements: Elements) {
     companion object {
 
         /**
-         * 空属性Key的常量
+         * 空属性Key的[ConfigurationPropertyName]的常量
          */
         @JvmField
         val EMPTY = ConfigurationPropertyName(Elements.EMPTY)

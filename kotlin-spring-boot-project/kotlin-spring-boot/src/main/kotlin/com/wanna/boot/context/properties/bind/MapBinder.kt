@@ -54,7 +54,9 @@ class MapBinder(context: Binder.Context) : AggregateBinder<Map<Any?, Any?>>(cont
                 if (property != null) {
                     return context.getConverter().convert(property.value, target)
                 }
-                // 只需要前缀匹配的那些属性值...
+                // 使用filter去过滤出来那些, 前缀匹配的那些属性值...
+                // 对于前缀就和name已经不匹配了, 那么该属性值就不要了...
+                // 因为这个filter影响的是Iterable的iterator方法的返回, 所以后续迭代的时候, 不符合的属性名已经被过滤掉了...
                 source = source.filter { name.isAncestorOf(it) }
             }
 
@@ -99,8 +101,12 @@ class MapBinder(context: Binder.Context) : AggregateBinder<Map<Any?, Any?>>(cont
          */
         fun bindEntries(source: ConfigurationPropertySource, map: MutableMap<Any?, Any?>) {
             // 只有IterableConfigurationPropertySource才支持去进行Map的绑定
-            // 因为我们需要遍历所有的propertyName, 尝试去进行找到合适的...
+            // 因为一个ConfigurationPropertySource当中存在有多个的ConfigurationPropertyName,
+            // 因此就我们需要遍历该ConfigurationPropertySource当中的所有的propertyName, 去尝试去完成属性绑定
             if (source is IterableConfigurationPropertySource) {
+
+                // 遍历source当中的所有的PropertyName, 但是因为该source使用了filter, 因此只有PropertyName和root的前缀匹配的情况下,
+                // 该PropertyName才会去进行真正地迭代, 不然都会被filter所直接拦掉...
                 source.forEach { name ->
                     // 获取Value的相关信息Bindable
                     val valueBindable = getValueBindable(name)
@@ -108,11 +114,11 @@ class MapBinder(context: Binder.Context) : AggregateBinder<Map<Any?, Any?>>(cont
                     // 获取EntryName, 也就是绑定时应该使用到属性Key前缀...
                     val entryName = getEntryName(source, name)
 
-                    // 把entryName去切割掉root前缀得到keyName, 再利用Converter去对keyName去进行转换(正常情况不会改变)
+                    // 把entryName去切割掉root这部分前缀去得到keyName, 再利用Converter去对keyName去进行类型的转换(正常情况不会改变)
                     val key = context.getConverter().convert<Any>(getKeyName(entryName), keyType)
 
                     // 对于Value的绑定结果去放入到map当中去, Key也就是keyName经过转换之后的结果(一般keyName只能为String)
-                    // 对于Value的话, 使用AggregateElementBinder去对ValueBindable去进行绑定, 此时要去使用的propertyName=entryName
+                    // 对于Value的话, 使用AggregateElementBinder去对ValueBindable去进行递归绑定, 此时要去使用的属性Key前缀prefix=entryName
                     map.computeIfAbsent(key) { this.aggregateElementBinder.bind(entryName, valueBindable) }
                 }
             }
@@ -227,10 +233,14 @@ class MapBinder(context: Binder.Context) : AggregateBinder<Map<Any?, Any?>>(cont
          */
         private fun getValueBindable(name: ConfigurationPropertyName): Bindable<Any> {
             // 如果Value是Object/Map类型, 并且root不是name的直接parent的话, 那么直接返回mapType
+            // 比如对于Map<String, Object>/ Map<String, ?>这种情况, 那么它的Value将会一直返回Map...
+            // 对每一层的Key去生成一层的Map, 比如"com.wanna.xxx.yyy.zzz", 但是root是"com.wanna"
+            // 此时Map<String, Object>, 就应该会进行递归的绑定, 最终变成Map<String, Map<String, Map<String, Object>>>
             if (!this.root.isParentOf(name) && isValueTreatedAsNestedMap()) {
                 return Bindable.of(mapType)
             }
-            // 如果Value不是Object/Map类型, 那么有可能是一个简单的类型String, 或者是一个复杂的Java对象类型, 这种情况需要去进行绑定的是valueType
+            // 1.如果root就是name的直接父级元素的话, 那么我们应该返回valueType了, 不应该去进行递归返回mapType了...
+            // 2.如果Value不是Object/Map类型, 那么有可能是一个简单的类型String, 或者是一个复杂的Java对象类型, 这种情况需要去进行绑定的是valueType
             return Bindable.of(valueType)
         }
 

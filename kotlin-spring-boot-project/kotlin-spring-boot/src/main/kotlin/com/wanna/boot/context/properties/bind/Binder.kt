@@ -369,12 +369,12 @@ class Binder(
         // 获取到目标对象的类型
         val type = target.type.resolve(Any::class.java)
 
-        // 获取对单个的属性值去进行绑定的PropertyBinder
+        // 获取对单个的属性值去进行绑定的DataObjectPropertyBinder
         // 对于PropertyBinder的target, 是属性值的target, 也就是基于一个对象的具体字段去进行的描述信息
         // 一个字段来说, 应该也需要使用bind方法去进行绑定, 其实也就是递归绑定, 对于一个对象内部的定义的对象, 都支持进行递归的绑定
         val propertyBinder = DataObjectPropertyBinder { propertyName, propertyTarget ->
             // Note:
-            // (1)对于某一个字段来说, 它需要绑定的配置文件的前缀为"{name}.{propertyName}", 这里需要构建出来子属性名...
+            // (1)对于某一个字段来说, 它需要绑定的配置文件的前缀为"{name}.{propertyName}", 因此这里需要生成出来子属性名...
             // (2)这里需要去进行绑定的是某个属性的Bindable(propertyTarget), 而不是原始的target...
             bind(name.append(propertyName), propertyTarget, handler, false)
         }
