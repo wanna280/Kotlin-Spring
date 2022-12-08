@@ -14,11 +14,11 @@ import com.wanna.framework.lang.Nullable
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/12/3
+ *
+ * @param conversionServices 提供类型转换的ConversionService列表
  */
-class BindConverter {
-
+class BindConverter(conversionServices: List<ConversionService>) {
     companion object {
-
         /**
          * 基于给定的[ConversionService], 快速去构建出来[BindConverter]的工厂方法
          *
@@ -27,15 +27,32 @@ class BindConverter {
          */
         @JvmStatic
         fun get(conversionServices: List<ConversionService>): BindConverter {
-            return BindConverter()
+            return BindConverter(conversionServices)
         }
     }
-
 
     /**
      * ConversionService列表
      */
-    private val delegates = arrayOf(ApplicationConversionService.getSharedInstance())
+    private val delegates: MutableList<ConversionService> = ArrayList()
+
+    init {
+        // 检查一下给定的ConversionServices当中是否有ApplicationConversionService
+        var hasApplication = false
+
+        // 将全部的ConversionService全部去进行merge, 并统计一下hasApplication标志
+        if (conversionServices.isNotEmpty()) {
+            conversionServices.forEach {
+                delegates += it
+                hasApplication = hasApplication || it is ApplicationConversionService
+            }
+        }
+
+        // 如果不存在有ApplicationConversionService的话, 那么再加入一个ApplicationConversionService...
+        if (conversionServices.isEmpty()) {
+            this.delegates += ApplicationConversionService.getSharedInstance()
+        }
+    }
 
     /**
      * 将给定对象去转换成为目标类型
