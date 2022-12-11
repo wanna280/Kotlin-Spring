@@ -38,7 +38,7 @@ open class PathPatternsRequestCondition(private val patterns: Set<PathPattern>) 
      * @return 如果给定的request的路径合法的话，return this；不合法的话，return null
      */
     override fun getMatchingCondition(request: HttpServerRequest): PathPatternsRequestCondition? {
-        val url = request.getUrl()
+        val url = request.getUri()
         patterns.forEach {
             if (it.match(url)) {
                 val paths = LinkedHashSet<PathPattern>()

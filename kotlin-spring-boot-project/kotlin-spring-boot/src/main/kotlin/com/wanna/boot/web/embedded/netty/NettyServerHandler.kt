@@ -1,4 +1,4 @@
-package com.wanna.framework.web.server.netty.server.support
+package com.wanna.boot.web.embedded.netty
 
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.util.StringUtils
@@ -18,9 +18,9 @@ import io.netty.handler.codec.http.DefaultFullHttpResponse
 import io.netty.handler.codec.http.FullHttpRequest
 import io.netty.handler.codec.http.HttpResponseStatus
 import io.netty.handler.codec.http.HttpVersion
+import org.slf4j.LoggerFactory
 import java.io.ByteArrayInputStream
 import java.io.IOException
-import java.net.InetAddress
 import java.net.InetSocketAddress
 
 /**
@@ -31,6 +31,23 @@ import java.net.InetSocketAddress
  */
 @Sharable
 open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelInboundHandlerAdapter() {
+    companion object {
+        /**
+         * Logger
+         */
+        @JvmStatic
+        private val logger = LoggerFactory.getLogger(NettyServerHandler::class.java)
+
+        /**
+         * path当中的多个参数的分隔符
+         */
+        const val PARAM_SEPARATOR = "&"
+
+        /**
+         * path当中的参数的K-V分隔符
+         */
+        const val EQUAL = "="
+    }
 
     /**
      * DispatcherHandler
@@ -59,9 +76,16 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
         }
     }
 
+    /**
+     * 当处理请求的过程当中, 发生了异常的情况
+     *
+     * @param ctx ChannelHandlerContext
+     * @param cause 发生的异常
+     */
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
-        if (cause is IOException) {  // ignore IOException
-            cause.printStackTrace()
+        if (cause is IOException) {
+            // ignore IOException
+            logger.error("Netty WebServer handle Request Error", cause)
         } else {
             ctx.fireExceptionCaught(cause)
         }
@@ -134,8 +158,6 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
     ) {
         // 初始化request的相关信息
         request.init {
-            // 解析uri和url
-            parseUriUrlAndParams(msg.uri())
 
             // 设置RequestMethod
             setMethod(RequestMethod.forName(msg.method().name()))
@@ -161,6 +183,9 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
                 getHeaders().add(HttpHeaders.HOST, localAddress.hostName + ":" + localAddress.port)
             }
 
+            // 解析uri和url
+            parseUriUrlAndParams(this, msg.uri())
+
             // 将RequestBody当中的内容，包装成为InputStream设置到request当中
             val content = msg.content()
             val byteArray = ByteArray(content.readableBytes())
@@ -182,6 +207,49 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
                     }
                 }
             })
+        }
+    }
+
+    /**
+     * 解析uri/url和params并存入到request当中去
+     *
+     * @param request request
+     * @param originPath 原始的路径
+     */
+    private fun parseUriUrlAndParams(request: HttpServerRequestImpl, originPath: String) {
+        val host = request.getHeaders().getHost() ?: ""
+        // path格式参考"localhost:8080/servlet?id=1"
+        val path = host + originPath
+
+        val indexOf = path.indexOf("?")
+
+        // 如果没有"?"的话, 那么没有query, 只有url这部分组成
+        if (indexOf == -1) {
+            // uri格式参考"/servlet"
+            request.setUri(originPath)
+
+            // url格式参考"localhost:8080/servlet"
+            request.setUrl(path)
+            return
+        }
+        // 如果有"?"的话, 那么我们就需要去进行解析了...
+
+        // 把path当中的query部分去掉, 得到了url
+        request.setUrl(path.substring(0, indexOf))
+        // 把url当中的host去掉, 得到了uri
+        request.setUri(path.substring(host.length, indexOf))
+
+        // 把"?"之后的元素, 使用"&"去进行拆分成为一个个的params
+        val params = path.substring(indexOf + 1).split(PARAM_SEPARATOR)
+
+        // 对每个param, 按照"="去进行拆分
+        params.forEach {
+            val eqIndex = it.indexOf(EQUAL)
+            if (eqIndex == -1) {
+                throw IllegalStateException("无法从给定的param当中找到K-V的分隔符'=', param=$it")
+            }
+            // 拼接param
+            request.addParam(it.substring(0, eqIndex), it.substring(eqIndex + 1))
         }
     }
 }

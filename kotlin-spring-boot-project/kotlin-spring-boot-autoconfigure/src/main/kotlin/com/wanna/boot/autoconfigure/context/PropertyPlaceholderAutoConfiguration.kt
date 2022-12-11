@@ -11,7 +11,7 @@ import com.wanna.framework.context.support.PropertySourcesPlaceholderConfigurer
 open class PropertyPlaceholderAutoConfiguration {
 
     @Bean
-    open fun propertySourcesPlaceholderConfigurer() : PropertySourcesPlaceholderConfigurer {
+    open fun propertySourcesPlaceholderConfigurer(): PropertySourcesPlaceholderConfigurer {
         return PropertySourcesPlaceholderConfigurer()
     }
 }

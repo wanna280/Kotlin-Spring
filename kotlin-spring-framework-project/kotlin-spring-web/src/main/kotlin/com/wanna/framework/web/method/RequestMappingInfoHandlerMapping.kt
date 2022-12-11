@@ -37,7 +37,7 @@ abstract class RequestMappingInfoHandlerMapping : AbstractHandlerMethodMapping<R
         // invoke super
         super.handleMatch(mapping, lookupPath, request)
 
-        val url = request.getUrl()
+        val url = request.getUri()
         // 解析路径当中的模板参数(UrlTemplateVariables)并放入到requestAttribute当中...
         val pattern = mapping.pathPatternsCondition.getContent().iterator().next()
         val uriTemplateVariables = pattern.extractUriTemplateVariables(url)

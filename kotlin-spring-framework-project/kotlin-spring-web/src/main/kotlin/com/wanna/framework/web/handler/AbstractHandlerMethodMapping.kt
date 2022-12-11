@@ -167,7 +167,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
      * @return url
      */
     protected open fun initLookupPath(request: HttpServerRequest): String {
-        return request.getUrl()
+        return request.getUri()
     }
 
     /**

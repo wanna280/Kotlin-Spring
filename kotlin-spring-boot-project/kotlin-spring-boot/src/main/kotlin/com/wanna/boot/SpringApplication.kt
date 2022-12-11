@@ -44,10 +44,16 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         const val DEFAULT_BANNER_LOCATION = SpringApplicationBannerPrinter.DEFAULT_BANNER_LOCATION
 
         /**
-         * 用于创建MVC的ApplicationContext的类名
+         * 用于创建MVC的ApplicationContext的Class
          */
         const val DEFAULT_MVC_WEB_CONTEXT_CLASS =
             "com.wanna.boot.web.mvc.context.AnnotationConfigMvcWebServerApplicationContext"
+
+        /**
+         * 用于创建Servlet的ApplicationContext的Class
+         */
+        const val DEFAULT_SERVLET_WEB_CONTEXT_CLASS =
+            "com.wanna.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext"
 
         /**
          * 用于创建默认的ApplicationContext的Class
@@ -675,7 +681,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
             try {
                 applicationContextClass = when (this.applicationType) {
                     ApplicationType.NONE -> ClassUtils.forName(DEFAULT_CONTEXT_CLASS)
-                    ApplicationType.SERVLET -> ClassUtils.forName(DEFAULT_CONTEXT_CLASS)
+                    ApplicationType.SERVLET -> ClassUtils.forName(DEFAULT_SERVLET_WEB_CONTEXT_CLASS)
                     ApplicationType.MVC -> ClassUtils.forName(DEFAULT_MVC_WEB_CONTEXT_CLASS)
                 }
             } catch (ex: ClassNotFoundException) {

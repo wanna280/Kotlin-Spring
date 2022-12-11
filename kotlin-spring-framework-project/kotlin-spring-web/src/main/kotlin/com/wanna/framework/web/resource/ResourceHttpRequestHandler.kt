@@ -32,7 +32,7 @@ open class ResourceHttpRequestHandler : HttpRequestHandler {
     override fun handleRequest(request: HttpServerRequest, response: HttpServerResponse) {
         locations?.forEach {
             try {
-                val resource = it.createRelative(request.getUrl())
+                val resource = it.createRelative(request.getUri())
                 val inputStream = resource.getInputStream()
                 inputStream.use { ips ->
                     response.getOutputStream().write(ips.readAllBytes())

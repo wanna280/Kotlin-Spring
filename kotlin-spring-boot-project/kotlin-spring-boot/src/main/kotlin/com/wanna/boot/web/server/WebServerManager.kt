@@ -1,19 +1,16 @@
-package com.wanna.boot.web.mvc.context
+package com.wanna.boot.web.server
 
-import com.wanna.boot.web.mvc.server.WebServerFactory
-import com.wanna.boot.web.server.WebServer
+import com.wanna.boot.web.mvc.context.MvcWebServerInitializedEvent
+import com.wanna.framework.context.ApplicationContext
 import org.slf4j.LoggerFactory
 
 /**
  * 这是一个WebServerManager，负责去启动和关闭WebServer
  *
  * @param applicationContext ApplicationContext
- * @param factory WebServerFactory
+ * @param webServer WebServer
  */
-open class WebServerManager(
-    private val applicationContext: MvcWebServerApplicationContext,
-    private val factory: WebServerFactory
-) {
+open class WebServerManager(private val applicationContext: ApplicationContext, private val webServer: WebServer) {
 
     companion object {
 
@@ -23,11 +20,6 @@ open class WebServerManager(
         @JvmStatic
         private val logger = LoggerFactory.getLogger(WebServerManager::class.java)
     }
-
-    /**
-     * 从WebServerFactory当中去获取WebServer
-     */
-    private var webServer: WebServer = factory.getWebServer()
 
     /**
      * 启动WebServer，并发布WebServer已经初始化完成的事件

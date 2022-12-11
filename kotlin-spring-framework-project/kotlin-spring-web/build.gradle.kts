@@ -4,10 +4,9 @@ dependencies {
     // compileOnly
     compileOnly("org.apache.httpcomponents:httpclient:$apacheHttpClientVersion")
     compileOnly("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // jackson
-    compileOnly("io.netty:netty-codec-http:$nettyVersion")
+    compileOnly("javax.servlet:javax.servlet-api:$servletApiVersion") // servlet-api
 
-    testImplementation("io.netty:netty-codec-http:$nettyVersion")
+
     testImplementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // for test
     testImplementation(project(":kotlin-logger:logger-slf4j-impl"))
-    testImplementation("io.netty:netty-codec-http:$nettyVersion")
 }

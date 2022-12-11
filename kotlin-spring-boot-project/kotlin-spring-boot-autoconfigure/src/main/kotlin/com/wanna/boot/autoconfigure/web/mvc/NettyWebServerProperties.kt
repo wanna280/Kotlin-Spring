@@ -7,11 +7,19 @@ import com.wanna.boot.context.properties.ConfigurationProperties
  */
 @ConfigurationProperties("server")
 open class NettyWebServerProperties {
+
+    /**
+     * serverPort
+     */
     var port: Int = 9966
 
-    // bossGroupCount
+    /**
+     * bossGroupCount
+     */
     var bossCount = 1
 
-    // workerCount
+    /**
+     * workerCount
+     */
     var workerCount = Runtime.getRuntime().availableProcessors() * 2
 }

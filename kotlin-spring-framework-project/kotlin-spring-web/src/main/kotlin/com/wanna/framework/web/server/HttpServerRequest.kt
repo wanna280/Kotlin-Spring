@@ -169,14 +169,14 @@ interface HttpServerRequest {
     fun getAttributeNames(): Set<String>
 
     /**
-     * 获取当前请求的uri(包含url和query参数)
+     * 获取当前请求的uri, 例如"uri"
      *
      * @return uri of request
      */
     fun getUri(): String
 
     /**
-     * 获取当前请求的url(不包含query参数)
+     * 获取当前请求的url, 例如"http://localhost:9966/servlet", 但是不含有query的部分
      *
      * @return url of request
      */

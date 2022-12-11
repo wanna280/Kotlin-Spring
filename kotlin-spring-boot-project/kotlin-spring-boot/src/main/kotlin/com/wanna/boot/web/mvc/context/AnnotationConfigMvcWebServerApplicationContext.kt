@@ -9,7 +9,7 @@ import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.util.AnnotationConfigUtils
 
 /**
- * 这是一个基于ReactiveWeb环境下的支持注解的ApplicationContext，它相比于AnnotationConfigApplicationContext，新增了ReactiveWebServer功能；
+ * 这是一个基于MVC的Web环境下的支持注解的ApplicationContext，它相比于AnnotationConfigApplicationContext，新增了WebServer功能；
  * 在启动过程当中，会自动从容器当中获取WebServerFactory，并往ApplicationContext当中去注册一个Lifecycle，从而去实现WebServer的启动
  *
  * @see com.wanna.framework.context.support.AbstractApplicationContext
@@ -19,10 +19,14 @@ import com.wanna.framework.util.AnnotationConfigUtils
 open class AnnotationConfigMvcWebServerApplicationContext(_beanFactory: DefaultListableBeanFactory) :
     MvcWebServerApplicationContext(_beanFactory), AnnotationConfigRegistry {
 
-    // 注解的BeanDefinition的Reader
+    /**
+     * 注解的BeanDefinition的Reader
+     */
     private var reader: AnnotatedBeanDefinitionReader = AnnotatedBeanDefinitionReader(this)
 
-    // 类路径下的BeanDefinition的Scanner
+    /**
+     * 类路径下的BeanDefinition的Scanner
+     */
     private var scanner: ClassPathBeanDefinitionScanner = ClassPathBeanDefinitionScanner(this, true)
 
     /**

@@ -1,14 +1,18 @@
 package com.wanna.framework.web
 
+import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.handler.HandlerAdapter
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 
 /**
- * 处理请求的Handler
+ * 真正地去处理请求的[DispatcherHandler]
+ *
+ * @see HandlerMapping
+ * @see HandlerAdapter
  */
-interface DispatcherHandler {
+interface DispatcherHandler : ApplicationContextAware {
 
     /**
      * 获取所有处理请求映射的[HandlerMapping]，负责将一个Http请求去找到对应的Handler去进行处理

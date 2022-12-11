@@ -1,11 +1,16 @@
 package com.wanna.boot.web.mvc.context
 
 
-import com.wanna.boot.web.mvc.server.WebServerFactory
+import com.wanna.boot.web.mvc.server.NettyWebServerFactory
 import com.wanna.boot.web.server.WebServer
+import com.wanna.boot.web.server.WebServerApplicationContext
+import com.wanna.boot.web.server.WebServerManager
+import com.wanna.boot.web.server.WebServerStartStopLifecycle
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContextException
 import com.wanna.framework.context.support.GenericApplicationContext
+import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils.getQualifiedName
 
 /**
  * 这是一个Mvc的WebServerApplicationContext
@@ -22,11 +27,13 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
     /**
      * WebServerManager
      */
+    @Nullable
     private var webServerManager: WebServerManager? = null
 
     /**
      * WebServer
      */
+    @Nullable
     private var webServer: WebServer? = null
 
     /**
@@ -47,7 +54,7 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
     /**
      * 创建WebServer，并发布MvcWebServerInitializedEvent事件...
      *
-     * @see MvcWebServerInitializedEvent
+     * @see com.wanna.boot.web.server.WebServerInitializedEvent
      */
     override fun onRefresh() {
         super.onRefresh()
@@ -63,15 +70,14 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
      */
     private fun createWebServer() {
         if (this.webServerManager == null) {
-            val webServerFactory = getWebServerFactory()
-
             val step = this.getApplicationStartup().start("spring.boot.webserver.create")
+            val webServerFactory = getWebServerFactory()
             step.tag("factory", webServerFactory::class.java.name) // tag
             this.webServer = webServerFactory.getWebServer()  // get WebServer
             step.end()  // tag end
 
             // 创建WebServerManager
-            this.webServerManager = WebServerManager(this, webServerFactory)
+            this.webServerManager = WebServerManager(this, getWebServer())
 
             // 注册一个WebServer的启动/暂停的Lifecycle的Bean到BeanFactory当中
             this.getBeanFactory().registerSingleton(
@@ -90,12 +96,12 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
      *
      * @return 探测到的WebServerFactory
      */
-    private fun getWebServerFactory(): WebServerFactory {
-        val factoryNames = getBeanFactory().getBeanNamesForType(WebServerFactory::class.java)
+    private fun getWebServerFactory(): NettyWebServerFactory {
+        val factoryNames = getBeanFactory().getBeanNamesForType(NettyWebServerFactory::class.java)
         return when (factoryNames.size) {
-            0 -> throw ApplicationContextException("没有从BeanFactory当中去找到合适的[${WebServerFactory::class.java}]类型的Bean")
-            1 -> getBeanFactory().getBean(factoryNames[0], WebServerFactory::class.java)
-            else -> throw ApplicationContextException("从BeanFactory中找到WebServerFactory的数量不止1个, 包含有下面这样的几个:$factoryNames")
+            0 -> throw ApplicationContextException("没有从BeanFactory当中去找到合适的[${getQualifiedName(NettyWebServerFactory::class.java)}]的Bean")
+            1 -> getBeanFactory().getBean(factoryNames[0], NettyWebServerFactory::class.java)
+            else -> throw ApplicationContextException("从BeanFactory中找到WebServerFactory的数量不止1个, founded:$factoryNames")
         }
     }
 

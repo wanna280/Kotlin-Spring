@@ -1,7 +1,7 @@
-package com.wanna.framework.web.server.netty.server.support
+package com.wanna.boot.web.embedded.netty
 
 
-import com.wanna.framework.web.server.netty.server.WebServer
+import com.wanna.boot.web.server.WebServer
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.ChannelHandler
 import io.netty.channel.ChannelInitializer
@@ -18,13 +18,13 @@ import org.slf4j.LoggerFactory
  *
  * @see WebServer
  */
-open class NettyServer : WebServer {
+open class NettyWebServer : WebServer {
     companion object {
         /**
          * Logger
          */
         @JvmStatic
-        private val logger: Logger = LoggerFactory.getLogger(NettyServer::class.java)
+        private val logger: Logger = LoggerFactory.getLogger(NettyWebServer::class.java)
 
         /**
          * 默认端口

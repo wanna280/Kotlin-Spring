@@ -4,7 +4,7 @@ import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.boot.autoconfigure.condition.ConditionalOnProperty
 import com.wanna.boot.autoconfigure.condition.ConditionalOnWebApplication
 import com.wanna.boot.context.properties.EnableConfigurationProperties
-import com.wanna.boot.web.mvc.server.WebServerFactory
+import com.wanna.boot.web.mvc.server.NettyWebServerFactory
 import com.wanna.framework.beans.factory.annotation.Qualifier
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
@@ -23,7 +23,8 @@ import com.wanna.framework.web.config.annotation.DelegatingWebMvcConfiguration
 import com.wanna.framework.web.handler.SimpleUrlHandlerMapping
 import com.wanna.framework.web.method.annotation.RequestMappingHandlerMapping
 import com.wanna.framework.web.resource.ResourceHttpRequestHandler
-import com.wanna.framework.web.server.netty.server.support.NettyServerHandler
+import com.wanna.boot.web.embedded.netty.NettyServerHandler
+import com.wanna.boot.web.embedded.netty.NettyWebServerFactoryImpl
 
 /**
  * 只有在WebMvc下才生效的自动配置类，给SpringBeanFactory当中导入MVC相关的配置类
@@ -45,9 +46,7 @@ open class NettyMvcAutoConfiguration : ApplicationContextAware {
     @Bean
     @ConditionalOnMissingBean
     open fun dispatcherHandler(): DispatcherHandler {
-        val dispatcherHandler = DispatcherHandlerImpl()
-        dispatcherHandler.setApplicationContext(this.applicationContext)
-        return dispatcherHandler
+        return DispatcherHandlerImpl()
     }
 
     /**
@@ -59,8 +58,8 @@ open class NettyMvcAutoConfiguration : ApplicationContextAware {
      */
     @Bean
     @ConditionalOnMissingBean
-    open fun nettyWebServerFactory(properties: NettyWebServerProperties): WebServerFactory {
-        val nettyWebServerFactory = NettyWebServerFactory()
+    open fun nettyWebServerFactory(properties: NettyWebServerProperties): NettyWebServerFactory {
+        val nettyWebServerFactory = NettyWebServerFactoryImpl()
         nettyWebServerFactory.setHandler(NettyServerHandler(this.applicationContext))
         nettyWebServerFactory.setPort(properties.port)
         nettyWebServerFactory.setBossGroupThreads(properties.bossCount)
