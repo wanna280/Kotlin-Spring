@@ -1,16 +1,23 @@
 package com.wanna.boot.web.servlet
 
+import com.wanna.framework.lang.Nullable
 import org.slf4j.LoggerFactory
 import java.beans.Introspector
 import javax.servlet.Registration
 import javax.servlet.ServletContext
 
 /**
- * Servlet3.0+的RegistrationBean的基础实现
+ * Servlet3.0+的Dynamic Registration Bean的基础实现, 提供Servlet/Filter去注册到ServletContext当中
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/12/11
+ *
+ * @param D Filter/Servlet的Registration
+ *
+ * @see ServletRegistrationBean
+ * @see FilterRegistrationBean
+ * @see Registration.Dynamic
  */
 abstract class DynamicRegistrationBean<D : Registration.Dynamic> : RegistrationBean() {
 
@@ -37,12 +44,13 @@ abstract class DynamicRegistrationBean<D : Registration.Dynamic> : RegistrationB
      */
     private var initParameters = LinkedHashMap<String, String>()
 
+    /**
+     * RegistrationName
+     *
+     * @param name name
+     */
     open fun setName(name: String) {
         this.name = name
-    }
-
-    override fun getDescription(): String {
-        return ""
     }
 
     override fun register(description: String, servletContext: ServletContext) {
@@ -57,8 +65,14 @@ abstract class DynamicRegistrationBean<D : Registration.Dynamic> : RegistrationB
         configure(registration)
     }
 
+    @Nullable
     protected abstract fun addRegistration(description: String, servletContext: ServletContext): D?
 
+    /**
+     * 对给定的Registration去执行自定义, 设置asyncSupported/initParameters
+     *
+     * @param registration Registration.Dynamic
+     */
     protected open fun configure(registration: D) {
         registration.setAsyncSupported(asyncSupported)
         if (this.initParameters.isNotEmpty()) {
@@ -66,9 +80,18 @@ abstract class DynamicRegistrationBean<D : Registration.Dynamic> : RegistrationB
         }
     }
 
-
+    /**
+     * 当前的Registration是否支持去进行异步处理?
+     *
+     * @return 当前的Registration是否支持去进行异步处理?
+     */
     open fun isAsyncSupported(): Boolean = this.asyncSupported
 
+    /**
+     * 设置当前的Registration是否支持去进行异步处理?
+     *
+     * @param asyncSupported asyncSupported
+     */
     open fun setAsyncSupported(asyncSupported: Boolean) {
         this.asyncSupported = asyncSupported
     }
