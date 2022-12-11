@@ -104,7 +104,7 @@ abstract class AbstractLoggerContext<T : LogcLogger> : ILoggerFactory {
 
     /**
      * 按照loggerName去获取Logger，比如给定的loggerName为com.wanna.test.App；
-     * 那么它会依次去检测com、com.wanna、com.wanna.test、以及com.wanna.test.App的Logger；
+     * 那么它会依次去检测com、com.wanna、com.wanna.framework.simple.test、以及com.wanna.test.App的Logger；
      * 如果对应的name的Logger不存在的话，那么会先创建对应的Logger，并加入到LoggerCache当中，下次就能直接从LoggerCache当中去获取到Logger了
      *
      * @param name LoggerName(一般为全类名)
@@ -124,7 +124,7 @@ abstract class AbstractLoggerContext<T : LogcLogger> : ILoggerFactory {
         var index = 0
 
         // childName记录的是子包名，比如com.wanna.test.TestMain，第一次获取的childName=com，第二次获取的childName=com.wanna
-        // 第三次获取的childName=com.wanna.test，以此类推...
+        // 第三次获取的childName=com.wanna.framework.simple.test，以此类推...
         // 如果childName并未在Logger的children当中的话，为childName创建Logger并加入到缓存当中
         // 如果childName已经在Logger的children当中的话，很可能就是之前已经完成过Logger的注册的情况了
         while (true) {

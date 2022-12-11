@@ -16,7 +16,7 @@ import java.lang.reflect.Field
 open class TypeDescriptor(val resolvableType: ResolvableType) :
     Serializable {
 
-    val type: Class<*> = resolvableType.resolve()!!
+    val type: Class<*> = resolvableType.resolve(Any::class.java)
 
     companion object {
         @JvmStatic
@@ -32,6 +32,11 @@ open class TypeDescriptor(val resolvableType: ResolvableType) :
         @JvmStatic
         fun forClass(type: Class<*>): TypeDescriptor {
             return TypeDescriptor(ResolvableType.forClass(type))
+        }
+
+        @JvmStatic
+        fun forObject(source: Any): TypeDescriptor {
+            return forClass(source.javaClass)
         }
 
         @JvmStatic

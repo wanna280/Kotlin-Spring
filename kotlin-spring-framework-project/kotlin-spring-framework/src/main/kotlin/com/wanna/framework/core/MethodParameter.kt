@@ -9,6 +9,9 @@ import java.lang.reflect.*
  *
  * 例如，对于一个方法"int foo(String str, Integer i, User u)"来说，通过Method(Executable)，以及索引index=2，即可获取到参数"u"对应的具体的描述信息；
  * 能获取到来自java的reflect包，自然也能获取到该方法参数的泛型信息、注解信息等诸多信息
+ *
+ * @param executable 方法/字段/构造器
+ * @param parameterIndex 参数的index, 必须介于[-1, parameterCount-1]之间, 并且index=-1代表描述的是方法的返回值
  */
 open class MethodParameter(
     private var executable: Executable,
@@ -32,6 +35,13 @@ open class MethodParameter(
         1
     )
 
+    init {
+        val parameterCount = executable.parameterCount
+        if (parameterIndex < -1 || parameterIndex > parameterCount) {
+            throw IllegalStateException("parameterIndex必须介于[-1, ${parameterCount - 1}]之间, 并且parameterIndex=-1代表描述方法的返回值")
+        }
+    }
+
     // 参数名发现器，提供该方法/构造器当中的方法的参数名列表的获取
     private var parameterNameDiscoverer: ParameterNameDiscoverer? = null
 
@@ -46,6 +56,8 @@ open class MethodParameter(
 
     /**
      * 获取描述的方法/构造器的参数上的全部注解列表
+     *
+     * @return 方法上的注解列表
      */
     open fun getAnnotations(): Array<Annotation> {
         return executable.parameters[parameterIndex].annotations
@@ -95,9 +107,16 @@ open class MethodParameter(
     }
 
     /**
-     * 获取包装的参数的类型
+     * 获取包装的参数的类型(如果parameterIndex<0, 那么代表方法的返回值; 如果parameterIndex>0, 那么代表方法参数)
+     *
+     * @return 方法参数/方法返回值的类型
      */
     open fun getParameterType(): Class<*> {
+        // 如果parameterIndex<0, 那么代表的是使用方法的返回值
+        if (parameterIndex < 0) {
+            val method = this.getMethod() ?: return Void.TYPE
+            return method.returnType
+        }
         return executable.parameterTypes[parameterIndex]
     }
 
@@ -105,6 +124,9 @@ open class MethodParameter(
      * 获取方法参数(来自jdk的Parameter)对象，将其暴露给使用者
      */
     open fun getParameter(): Parameter {
+        if (parameterIndex < 0) {
+            throw IllegalStateException("无法根据为方法的返回值, 去获取到Parameter")
+        }
         return executable.parameters[parameterIndex]
     }
 
@@ -146,11 +168,16 @@ open class MethodParameter(
     }
 
     /**
-     * 返回方法参数的泛型类型
+     * 返回方法参数的泛型类型(如果parameterIndex<0, 那么代表方法的返回值; 如果parameterIndex>0, 那么代表方法参数)
      *
      * @return 获取方法参数的泛型类型(如果必要的话)
      */
     open fun getGenericParameterType(): Type {
+        if (parameterIndex < 0) {
+            val method = getMethod() ?: return Void.TYPE
+            // 返回带有泛型的方法参数
+            return method.genericReturnType
+        }
         return executable.parameters[parameterIndex].parameterizedType
     }
 

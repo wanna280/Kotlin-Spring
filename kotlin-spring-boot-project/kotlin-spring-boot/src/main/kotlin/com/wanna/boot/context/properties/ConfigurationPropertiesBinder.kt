@@ -1,176 +1,132 @@
 package com.wanna.boot.context.properties
 
+import com.wanna.boot.context.properties.bind.BindResult
+import com.wanna.boot.context.properties.bind.Binder
+import com.wanna.boot.context.properties.bind.PropertySourcesPlaceholdersResolver
+import com.wanna.boot.context.properties.source.ConfigurationPropertySource
+import com.wanna.boot.context.properties.source.ConfigurationPropertySources
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.GenericBeanDefinition
 import com.wanna.framework.context.ApplicationContext
-import com.wanna.framework.context.ApplicationContextAware
-import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import com.wanna.framework.core.convert.TypeDescriptor
+import com.wanna.framework.context.annotation.Autowired
+import com.wanna.framework.context.support.PropertySourcesPlaceholderConfigurer
+import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.environment.ConfigurableEnvironment
-import com.wanna.framework.util.BeanUtils
-import com.wanna.framework.util.ClassUtils
-import com.wanna.framework.util.ReflectionUtils
+import com.wanna.framework.core.environment.PropertySources
 import org.slf4j.LoggerFactory
-import java.lang.reflect.Field
-import java.lang.reflect.Method
 
 /**
  * 这是一个ConfigurationProperties的Binder，负责完成@ConfigurationProperties的绑定工作
+ *
+ * @see ConfigurationProperties
+ * @see ConfigurationPropertiesBean
+ * @see ConfigurationPropertiesBindingPostProcessor
+ *
+ * @param applicationContext ApplicationContext
  */
-open class ConfigurationPropertiesBinder : ApplicationContextAware {
+open class ConfigurationPropertiesBinder @Autowired private constructor(private val applicationContext: ApplicationContext) {
+    /**
+     * 内部组合一个真正用于去完成对于一个Bean的属性绑定工作的Binder
+     */
+    @Volatile
+    private var binder: Binder? = null
 
-    private var applicationContext: ApplicationContext? = null
-
-    private var environment: ConfigurableEnvironment? = null
-
-    override fun setApplicationContext(applicationContext: ApplicationContext) {
-        this.applicationContext = applicationContext
-        this.environment = applicationContext.getEnvironment() as ConfigurableEnvironment
-    }
+    /**
+     * 从[ApplicationContext]当中去推断出来合适的[PropertySources],
+     * * 1.优先选[PropertySourcesPlaceholderConfigurer]内部的[PropertySources];
+     * * 2.如果获取不到, 那么尝试从[ConfigurableEnvironment]当中去进行获取[PropertySources].
+     */
+    private var propertySources: PropertySources = PropertySourcesDeducer(applicationContext).getPropertySources()
 
     /**
      * 对于没有完成实例化的Bean，那么使用构造器去进行实例化并完成属性的设置
+     *
+     * @param bean 要去进行绑定的ConfigurationPropertiesBean
      */
-    open fun bindOrCreate(bean: ConfigurationPropertiesBean): Any {
-        val bindMethod = bean.getBindMethod()
-        val beanType = bean.getBeanType()
-        // 获取@ConstructorBinding注解匹配的构造器
-        val bindConstructor = ConfigurationPropertiesBindConstructorProvider.INSTANCE.getBindConstructor(beanType)!!
-        val parameters = bindConstructor.parameters
-        return Any()
+    open fun bindOrCreate(bean: ConfigurationPropertiesBean): Any? {
+        return getBinder().bindOrCreate(bean.getAnnotation().prefix, bean.asTarget())
     }
 
     /**
      * 对已经完成实例化的Bean，去完成ConfigurationProperties的绑定工作
      *
      * @param bean 要去进行绑定的ConfigurationPropertiesBean
+     * @return 绑定结果BindResult
      */
-    open fun bind(bean: ConfigurationPropertiesBean) {
-        val annotation = bean.getAnnotation()
-        val instance = bean.getInstance() ?: return
-        val clazz = instance::class.java
-        ReflectionUtils.doWithFields(clazz) {
-            bindInternal(it, instance, clazz, annotation.prefix, bean)
-        }
+    open fun bind(bean: ConfigurationPropertiesBean): BindResult<Any> {
+        return getBinder().bind(bean.getAnnotation().prefix, bean.asTarget())
     }
 
     /**
-     * 完成真正的绑定工作
+     * 获取Binder, 去提供Java对象的属性的绑定功能
      *
-     * @param field 要去进行绑定的字段
-     * @param instance 要去绑定的字段的实例对象
-     * @param clazz clazz
-     * @param prefix 字段要采用什么prefix去进行绑定
+     * @return Binder
      */
-    private fun bindInternal(
-        field: Field,
-        instance: Any,
-        clazz: Class<*>,
-        prefix: String,
-        bean: ConfigurationPropertiesBean
-    ) {
-        val name = field.name  // 获取到字段名
-        val fieldType = field.type
-
-        // 支持原始的name，和"-"转换驼峰之后的propertyName两类propertyKey去进行尝试
-        val propertyKeys = setOf("$prefix.$name", getFallbackPropertyName(prefix, name))
-        propertyKeys.forEach { propertyKey ->
-            // 1.判断是否有@NestedConfigurationProperty注解，如果有的话，需要去对该字段去进行递归处理
-            if (AnnotatedElementUtils.isAnnotated(field, NestedConfigurationProperty::class.java)) {
-                val getterMethod = getterMethod(clazz, name) ?: return@forEach
-                ReflectionUtils.makeAccessible(getterMethod)
-
-                // 如果该字段为空的话，需要使用无参数构造器去去创建一个空的对象
-                val nestedFieldValue =
-                    ReflectionUtils.invokeMethod(getterMethod, instance) ?: ClassUtils.newInstance(fieldType)
-                // 递归处理该字段的所有内部字段
-                ReflectionUtils.doWithFields(fieldType) {
-                    bindInternal(it, nestedFieldValue, fieldType, propertyKey, bean)
-                }
-
-                // 将绑定好的字段的对象，使用setter去设置到外层对象的字段当中
-                val setterMethod = setterMethod(clazz, name, fieldType) ?: return@forEach
-                ReflectionUtils.makeAccessible(setterMethod)
-                ReflectionUtils.invokeMethod(setterMethod, instance, nestedFieldValue)
-
-                // 2.如果fieldType是简单类型/集合类型(List/Set/Collection)的话，那么尝试去进行类型的转换
-            } else {
-                val stringTypeDescriptor = TypeDescriptor.forClass(String::class.java)
-                val fieldTypeDescriptor = TypeDescriptor.forField(field)
-                if (BeanUtils.isSimpleProperty(fieldType)
-                    || fieldType == Collection::class.java
-                    || fieldType == List::class.java
-                    || fieldType == Set::class.java
-                ) {
-                    val property = environment?.getProperty(propertyKey) ?: return@forEach
-                    try {
-                        // 获取setter的方法
-                        val setterMethod = setterMethod(clazz, name, fieldType) ?: return@forEach
-                        val conversionService = environment?.getConversionService() ?: return
-
-                        if (conversionService.canConvert(stringTypeDescriptor, fieldTypeDescriptor)
-                        ) {
-                            val convertedValue = conversionService.convert(property, fieldTypeDescriptor)
-                            // 反射执行目标方法
-                            ReflectionUtils.makeAccessible(setterMethod)
-                            ReflectionUtils.invokeMethod(setterMethod, instance, convertedValue)
-                        } else {
-                            throw ConfigurationPropertiesBindException("无法完成[$fieldType]的绑定", bean)
-                        }
-                    } catch (_: java.lang.reflect.InvocationTargetException) {
-
-                    } catch (_: java.lang.IllegalArgumentException) {
-
-                    } catch (_: NoSuchMethodException) {
-
-                    }
-                } else {
-
-                }
-            }
+    open fun getBinder(): Binder {
+        ConfigurationPropertiesBindConstructorProvider.INSTANCE
+        if (this.binder == null) {
+            this.binder = Binder(
+                getConfigurationPropertySources(),
+                getPropertySourcesPlaceholdersResolver(),
+                getConversionServices(),
+                null,
+                ConfigurationPropertiesBindConstructorProvider.INSTANCE
+            )
         }
+        return binder!!
     }
 
-    private fun getFallbackPropertyName(prefix: String, fieldName: String): String {
-        val builder = StringBuilder(prefix).append(".")
-        fieldName.forEach {
-            if (it.isUpperCase()) {
-                builder.append("-").append(it.lowercase())
-            } else {
-                builder.append(it)
-            }
-        }
-        return builder.toString()
+    /**
+     * 根据[PropertySources]去获取到[ConfigurationPropertySource]列表
+     *
+     * @return ConfigurationPropertySource列表
+     */
+    private fun getConfigurationPropertySources(): Iterable<ConfigurationPropertySource> {
+        return ConfigurationPropertySources.from(this.propertySources)
     }
 
-    private fun getterMethod(clazz: Class<*>, fieldName: String): Method? {
-        // 获取getter的方法
-        val getterMethodName = "get" + fieldName[0].uppercaseChar() + fieldName.substring(1)
-        return ReflectionUtils.findMethod(clazz, getterMethodName)
+    /**
+     * 根据[PropertySources]去获取到[PropertySourcesPlaceholdersResolver]
+     *
+     * @return PropertySourcesPlaceholdersResolver
+     */
+    private fun getPropertySourcesPlaceholdersResolver(): PropertySourcesPlaceholdersResolver {
+        return PropertySourcesPlaceholdersResolver(this.propertySources)
     }
 
-    private fun setterMethod(clazz: Class<*>, fieldName: String, fieldType: Class<*>): Method? {
-        // 获取setter的方法
-        val setMethodName = "set" + fieldName[0].uppercaseChar() + fieldName.substring(1)
-        return ReflectionUtils.findMethod(clazz, setMethodName, fieldType)
+    /**
+     * 从[ApplicationContext]当中去去获取到[ConversionService]列表
+     *
+     * @return ConversionServices
+     */
+    private fun getConversionServices(): List<ConversionService> {
+        return ConversionServiceDeducer(this.applicationContext).getConversionServices()
     }
 
     companion object {
+
+        /**
+         * Logger
+         */
+        @JvmStatic
+        private val logger = LoggerFactory.getLogger(ConfigurationPropertiesBinder::class.java)
+
+        /**
+         * ConfigurationPropertiesBinder的beanName
+         */
         @JvmField
         val BEAN_NAME: String = ConfigurationPropertiesBinder::class.java.name
 
-        // logger
-        private val logger = LoggerFactory.getLogger(ConfigurationProperties::class.java)
-
         /**
-         * 给容器中注册ConfigurationPropertiesBinder的相关基础设施Bean
+         * 给容器中注册一个[ConfigurationPropertiesBinder]的相关基础设施Bean
          *
          * @param registry BeanDefinitionRegistry
          */
         @JvmStatic
         fun register(registry: BeanDefinitionRegistry) {
+            // 如果之前Registry当中不存在这样的一个beanName, 那么往Registry当中去注册一个ConfigurationPropertiesBinder的BeanDefinition
             if (!registry.containsBeanDefinition(BEAN_NAME)) {
                 val beanDefinition = GenericBeanDefinition()
                 beanDefinition.setBeanClass(ConfigurationPropertiesBinder::class.java)
@@ -180,10 +136,10 @@ open class ConfigurationPropertiesBinder : ApplicationContextAware {
         }
 
         /**
-         * 从beanFactory当中去获取ConfigurationPropertiesBinder
+         * 从给定的beanFactory当中去获取[ConfigurationPropertiesBinder]
          *
          * @param beanFactory beanFactory
-         * @return 获取到的ConfigurationPropertiesBinder
+         * @return 获取到的[ConfigurationPropertiesBinder]
          */
         @JvmStatic
         fun get(beanFactory: BeanFactory): ConfigurationPropertiesBinder {

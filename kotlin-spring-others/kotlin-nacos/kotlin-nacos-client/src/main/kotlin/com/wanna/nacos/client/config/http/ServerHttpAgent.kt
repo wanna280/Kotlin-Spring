@@ -52,7 +52,7 @@ class ServerHttpAgent(properties: Properties) : HttpAgent {
     ): HttpRestResult<String> {
         val endTime = System.currentTimeMillis() + readTimeout
 
-        val serverAddr = serverListManager.currentServerAddr
+        val serverAddr = serverListManager.getCurrentServerAddr()
         // 只要没超时, 那么就一直尝试...
         do {
             val uri = StringBuilder(getUrl(serverAddr, path)).append("?")
@@ -88,7 +88,7 @@ class ServerHttpAgent(properties: Properties) : HttpAgent {
     ): HttpRestResult<String> {
         val endTime = System.currentTimeMillis() + readTimeout
 
-        val serverAddr = serverListManager.currentServerAddr
+        val serverAddr = serverListManager.getNextServerAddr()
         // 只要没超时, 那么就一直尝试...
         do {
             val uri = StringBuilder(getUrl(serverAddr, path)).append("?")
@@ -124,7 +124,7 @@ class ServerHttpAgent(properties: Properties) : HttpAgent {
     ): HttpRestResult<String> {
         val endTime = System.currentTimeMillis() + readTimeout
 
-        val serverAddr = serverListManager.currentServerAddr
+        val serverAddr = serverListManager.getCurrentServerAddr()
         // 只要没超时, 那么就一直尝试...
         do {
             val uri = StringBuilder(getUrl(serverAddr, path)).append("?")

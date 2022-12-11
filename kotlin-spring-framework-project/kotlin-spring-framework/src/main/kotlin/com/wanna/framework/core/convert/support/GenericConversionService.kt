@@ -5,6 +5,7 @@ import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.convert.converter.Converter
 import com.wanna.framework.core.convert.converter.GenericConverter
 import com.wanna.framework.core.convert.converter.GenericConverter.ConvertiblePair
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -20,8 +21,19 @@ import java.util.concurrent.CopyOnWriteArraySet
  */
 open class GenericConversionService : ConfigurableConversionService {
 
-    // Converter的注册中心，内部维护了全部的Converter的列表
+    /**
+     * Converter的注册中心，内部维护了全部的Converter的列表
+     */
     private val converters = Converters()
+
+    companion object {
+
+        /**
+         * 不进行任何操作的Converter
+         */
+        @JvmStatic
+        private val NO_OP_CONVERTER = NoOpConverter("NO_OP")
+    }
 
     /**
      * 判断Converter注册中心当中，是否存在有这样的Converter，能去完成从sourceType->targetType的类型转换？
@@ -95,7 +107,7 @@ open class GenericConversionService : ConfigurableConversionService {
     override fun <S : Any, T : Any> addConverter(
         sourceType: Class<S>,
         targetType: Class<T>,
-        converter: Converter<S, T>
+        converter: Converter<in S, out T>
     ) {
         addConverter(ConverterAdapter(converter).addConvertibleType(sourceType, targetType))
     }
@@ -158,6 +170,20 @@ open class GenericConversionService : ConfigurableConversionService {
         }
 
         /**
+         * 获取默认的Converter
+         *
+         * @param sourceType sourceType
+         * @param targetType targetType
+         * @return 默认的Converter(如果获取不到的话, return null)
+         */
+        @Nullable
+        fun getDefaultConverter(sourceType: Class<*>, targetType: Class<*>): GenericConverter? {
+            // 如果sourceType->targetType可以转换成功的话, 那么return NO_OP_CONVERTER
+            // 比如sourceType=String, targetType=Object, 这种很明显是可以去进行转换的...
+            return if (ClassUtils.isAssignFrom(targetType, sourceType)) NO_OP_CONVERTER else null
+        }
+
+        /**
          * 根据(sourceType->targetType)的Pair，去获取到支持处理该种映射方式的Converter；
          * 如果此时注册中心当中还没有这种类型的映射，那么需要新创建一个
          *
@@ -170,6 +196,12 @@ open class GenericConversionService : ConfigurableConversionService {
             }
             // 遍历所有的Converter，根据继承关系去进行寻找...
             convertersForPair = find(type)
+
+            // 如果还找不到的话, 那么尝试一下使用默认的Converter(啥都不做的Converter)
+            val defaultConverter = getDefaultConverter(type.sourceType, type.targetType)
+            if (convertersForPair == null && defaultConverter != null) {
+                convertersForPair = ConvertersForPair().addConverter(defaultConverter)
+            }
             return convertersForPair ?: EMPTY_CONVERTERS
         }
 
@@ -180,6 +212,7 @@ open class GenericConversionService : ConfigurableConversionService {
          * @param type 要去进行匹配的sourceType和targetType
          * @return 寻找到的Converters(如果没有找到return null)
          */
+        @Nullable
         fun find(type: ConvertiblePair): ConvertersForPair? {
             this.converters.forEach { (k, v) ->
                 val sourceTypeMatch = ClassUtils.isAssignFrom(k.sourceType, type.sourceType)
@@ -209,17 +242,47 @@ open class GenericConversionService : ConfigurableConversionService {
      * @see ConvertiblePair
      */
     class ConvertersForPair {
+
+        /**
+         * Converters
+         */
         val converters = ConcurrentLinkedDeque<GenericConverter>()
 
+        /**
+         * 添加一个Converter
+         *
+         * @param converter 需要添加的Converter
+         */
         fun addConverter(converter: GenericConverter): ConvertersForPair {
             converters += converter
             return this
         }
 
+        /**
+         * 是否存在有Converter?
+         *
+         * @return 如果存在有Converter, return true; 否则return false
+         */
         fun hasConverter() = converters.isNotEmpty()
 
+        /**
+         * 将source对象去转换成为目标类型
+         *
+         * @param source source
+         * @param targetType targetType
+         * @return 转换得到的目标对象
+         */
+        @Nullable
         fun convert(source: Any, targetType: Class<*>): Any? = convert(source, TypeDescriptor.forClass(targetType))
 
+        /**
+         * 将source对象去转换成为目标对象
+         *
+         * @param source source
+         * @param targetType targetType
+         * @return 转换得到的目标对象
+         */
+        @Nullable
         fun convert(source: Any, targetType: TypeDescriptor): Any? =
             converters.first.convert(source, TypeDescriptor.forClass(source::class.java), targetType)
     }
@@ -231,13 +294,15 @@ open class GenericConversionService : ConfigurableConversionService {
      */
     @Suppress("UNCHECKED_CAST")
     private class ConverterAdapter(private val converter: Converter<*, *>) : GenericConverter {
-        // 包装的普通的Converter，可以支持的转换的类型映射
+        /**
+         * 包装的普通的Converter，可以支持的转换的类型映射
+         */
         private val convertibleTypes = HashSet<ConvertiblePair>()
 
         /**
          * 添加可以转换的类型到列表当中("sourceType->targetType"的映射关系)
          *
-         * @param sourceType souceType
+         * @param sourceType sourceType
          * @param targetType targetType
          * @return this
          */
@@ -276,5 +341,23 @@ open class GenericConversionService : ConfigurableConversionService {
             (converter as Converter<Any, Any>).convert(source)
 
         override fun toString() = getConvertibleTypes().toString()
+    }
+
+    /**
+     * 不进行任何操作的Converter
+     */
+    private class NoOpConverter(val name: String) : GenericConverter {
+        override fun getConvertibleTypes(): Set<ConvertiblePair>? = null
+
+        @Suppress("UNCHECKED_CAST")
+        override fun <S : Any, T : Any> convert(source: Any?, sourceType: Class<S>, targetType: Class<T>): T? {
+            return source as T?
+        }
+
+        override fun convert(source: Any?, sourceType: TypeDescriptor, targetType: TypeDescriptor): Any? {
+            return source
+        }
+
+        override fun toString(): String = name
     }
 }

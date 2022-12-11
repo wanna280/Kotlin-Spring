@@ -1,5 +1,6 @@
 package com.wanna.framework.util
 
+import com.wanna.framework.lang.Nullable
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
 
@@ -48,7 +49,7 @@ object ClassUtils {
      * @param childClass 子类
      */
     @JvmStatic
-    fun isAssignFrom(parentClass: Class<*>?, childClass: Class<*>?): Boolean {
+    fun isAssignFrom(@Nullable parentClass: Class<*>?, @Nullable childClass: Class<*>?): Boolean {
         return if (parentClass != null && childClass != null) parentClass.isAssignableFrom(childClass) else false
     }
 
@@ -85,6 +86,7 @@ object ClassUtils {
      * 根据className，获取到AnnotationClass
      *
      * @param clazzName className
+     * @param T 需要返回的注解类型
      * @return Class.forName得到的AnnotationClass
      */
     @JvmStatic
@@ -112,7 +114,7 @@ object ClassUtils {
      */
     @Throws(ClassNotFoundException::class)
     @JvmStatic
-    fun <T> forName(clazzName: String, classLoader: ClassLoader?): Class<T> {
+    fun <T> forName(clazzName: String, @Nullable classLoader: ClassLoader?): Class<T> {
         val classLoaderToUse = classLoader ?: getDefaultClassLoader()
         try {
             return Class.forName(clazzName, false, classLoaderToUse) as Class<T>
@@ -133,7 +135,7 @@ object ClassUtils {
      */
     @JvmStatic
     @Throws(IllegalArgumentException::class)
-    fun resolveClassName(clazzName: String, classLoader: ClassLoader?): Class<*> {
+    fun resolveClassName(clazzName: String, @Nullable classLoader: ClassLoader?): Class<*> {
         try {
             return forName<Any>(clazzName, classLoader)
         } catch (ex: ClassNotFoundException) {
@@ -197,7 +199,7 @@ object ClassUtils {
      * @return 存在return true；不存在return false
      */
     @JvmStatic
-    fun isPresent(className: String, classLoader: ClassLoader? = null): Boolean {
+    fun isPresent(className: String, @Nullable classLoader: ClassLoader? = null): Boolean {
         return try {
             forName<Any>(className, classLoader)
             true
@@ -250,9 +252,10 @@ object ClassUtils {
      *
      * @param method method
      * @param clazz clazz(如果为null，将会使用method.declaringClass作为clazz)
+     * @return 该方法的全限定名
      */
     @JvmStatic
-    fun getQualifiedMethodName(method: Method, clazz: Class<*>?): String {
+    fun getQualifiedMethodName(method: Method, @Nullable clazz: Class<*>?): String {
         return (clazz ?: method.declaringClass).name + "." + method.name
     }
 

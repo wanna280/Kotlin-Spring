@@ -766,6 +766,17 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     }
 
     /**
+     * 检查当前BeanFactory当中是否包含有这样的beanName的Bean?
+     *
+     * @param name name
+     * @return 如果BeanFactory当中包含有这样的beanName的话Bean的话, 那么return true; 如果不包含的话, 那么return false
+     */
+    override fun containsBean(name: String): Boolean {
+        assertBeanFactoryActive()
+        return getBeanFactory().containsBean(name)
+    }
+
+    /**
      * 判断给定的beanName的Bean在BeanFactory当中是否是单例的？
      *
      * @param beanName beanName

@@ -50,6 +50,8 @@ open class ConfigController {
         @RequestParam(required = false, defaultValue = "") tenant: String, @RequestParam content: String,
         @RequestParam(required = false, defaultValue = Constants.DEFAULT_CONFIG_TYPE) type: String,
     ) {
+        // Note:对于namespace="null"/namespace="public"的情况我们都将namespace去转为""
+        val tenant = processNamespaceParameter(tenant)
         val srcUser = getSrcUserName(request)
         val configInfo = ConfigInfo(dataId, group, content)
         configInfo.type = type //  fileType
@@ -115,7 +117,9 @@ open class ConfigController {
     }
 
     /**
-     * 添加一个Listener监听配置信息的变化, 如果配置文件已经发生了变化的话, 那么就需要通知发送这个请求的客户端
+     * 添加一个Listener监听配置信息的变化, 如果配置文件已经发生了变化的话, 那么就需要通知发送这个请求的客户端;
+     * 这是客户端发送的一个长轮询请求, ConfigServer这边会保存下来request和response, 等待配置文件发生变化时
+     * 自动利用response去发送给客户端, 客户端在收到变更之后, 会继续发送长轮询请求过来, 继续保存request和response...
      *
      * @param request request
      * @param response response
@@ -127,7 +131,7 @@ open class ConfigController {
         if (probeModify == null || probeModify.isBlank()) {
             throw IllegalArgumentException("不合法的probeModify")
         }
-        probeModify = URLDecoder.decode(probeModify, com.wanna.nacos.config.server.constant.Constants.ENCODE_UTF8)
+        probeModify = URLDecoder.decode(probeModify, Constants.ENCODE)
         val clientMd5Map: Map<String, String>
         try {
             clientMd5Map = getClientMd5Map(probeModify)

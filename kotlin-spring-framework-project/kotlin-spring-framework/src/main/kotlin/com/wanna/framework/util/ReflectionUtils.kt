@@ -559,4 +559,20 @@ object ReflectionUtils {
         }
         return defaultMethods
     }
+
+    /**
+     * 获取一个给定clazz的可以去进行访问的构造器
+     *
+     * @param clazz 要去进行寻找构造器的类
+     * @param parameterTypes 构造器的参数类型列表
+     * @return 获取到的可以去进行访问的构造器
+     * @throws NoSuchMethodException 如果找不到给定的这样的参数类型列表的构造器
+     */
+    @JvmStatic
+    @Throws(NoSuchMethodException::class)
+    fun accessibleConstructor(clazz: Class<*>, vararg parameterTypes: Class<*>): Constructor<*> {
+        val constructor = clazz.getConstructor(*parameterTypes)
+        makeAccessible(constructor)
+        return constructor
+    }
 }

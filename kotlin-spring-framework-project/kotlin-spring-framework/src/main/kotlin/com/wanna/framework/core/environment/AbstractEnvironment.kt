@@ -24,11 +24,15 @@ abstract class AbstractEnvironment(
         propertySources.forEach { this.propertySources.addLast(it) }
     }
 
-    // 活跃的profiles
-    private var activeProfiles = HashSet<String>()
+    /**
+     * 活跃的profiles
+     */
+    private var activeProfiles: MutableSet<String> = LinkedHashSet()
 
-    // 默认的profiles
-    private var defaultProfiles = HashSet<String>(setOf("default"))
+    /**
+     * 默认的profiles
+     */
+    private var defaultProfiles: MutableSet<String> = LinkedHashSet(setOf("default"))
 
     init {
         // 在初始化时，自动去执行customizePropertySources，完成PropertySources当中的PropertySource列表的初始化工作
@@ -45,7 +49,7 @@ abstract class AbstractEnvironment(
     }
 
     override fun setActiveProfiles(vararg profiles: String) {
-        this.activeProfiles = HashSet(profiles.toList())
+        this.activeProfiles = LinkedHashSet(profiles.toList())
     }
 
     override fun addActiveProfiles(profile: String) {
@@ -61,7 +65,7 @@ abstract class AbstractEnvironment(
     }
 
     override fun setDefaultProfiles(vararg profiles: String) {
-        this.defaultProfiles = HashSet(profiles.toList())
+        this.defaultProfiles = LinkedHashSet(profiles.toList())
     }
 
     override fun getPropertySources(): MutablePropertySources {

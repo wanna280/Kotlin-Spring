@@ -1,7 +1,7 @@
 package com.wanna.nacos.config.server.model
 
+import com.wanna.nacos.api.common.Constants
 import com.wanna.nacos.api.utils.Md5Utils
-import com.wanna.nacos.config.server.constant.Constants
 
 /**
  * ConfigInfo的一些基础信息
@@ -30,7 +30,7 @@ open class ConfigInfoBase(
     init {
         // 如果指定了内容的话, 那么我们去生成MD5值去进行保存
         if (this.content != null) {
-            this.md5 = Md5Utils.md5Hex(content!!, Constants.ENCODE_UTF8)
+            this.md5 = Md5Utils.md5Hex(content!!, Constants.ENCODE)
         }
     }
 

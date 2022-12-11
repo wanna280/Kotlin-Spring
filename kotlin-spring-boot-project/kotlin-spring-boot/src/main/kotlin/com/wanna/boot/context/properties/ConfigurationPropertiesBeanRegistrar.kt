@@ -18,12 +18,15 @@ import com.wanna.framework.context.annotation.AnnotationAttributesUtils
  */
 open class ConfigurationPropertiesBeanRegistrar(private val registry: BeanDefinitionRegistry) {
 
+    /**
+     * BeanFactory
+     */
     private val beanFactory: BeanFactory = registry as BeanFactory
 
     /**
      * 将指定的clazz注册到容器当中，自动从类上去寻找ConfigurationProperties注解中的相关属性
      *
-     * @param type 要注册到容器当中的配置类
+     * @param type 要注册到SpringBeanFactory当中的配置类
      */
     open fun register(type: Class<*>) {
         register(type, getConfigurationPropertiesAnnotationAttributes(type))

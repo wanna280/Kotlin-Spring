@@ -20,6 +20,9 @@ object BeanFactoryUtils {
 
     /**
      * 将beanName前缀中的"&"全部去掉，实现解引用
+     *
+     * @param beanName beanName
+     * @return 转换之后得到的beanName
      */
     @JvmStatic
     fun transformBeanName(beanName: String): String {
@@ -37,7 +40,7 @@ object BeanFactoryUtils {
     /**
      * 从beanFactory当中去获取符合指定类型的BeanName列表(包含parentBeanFactory)
      *
-     * @param lbf 目标BeanFactory
+     * @param lbf 目标ListableBeanFactory
      * @param type 要去BeanFactory当中去进行获取的指定类型
      * @return 该类型的所有BeanNames
      */

@@ -5,7 +5,7 @@ import com.wanna.framework.web.bind.annotation.ControllerAdvice
 import com.wanna.framework.web.bind.annotation.ExceptionHandler
 
 /**
- * 全局的ExceptionHandler
+ * 全局的ExceptionHandler, 捕捉NacosConfig处理全局的异常的情况...
  *
  * @author jianchao.jia
  * @version v1.0
