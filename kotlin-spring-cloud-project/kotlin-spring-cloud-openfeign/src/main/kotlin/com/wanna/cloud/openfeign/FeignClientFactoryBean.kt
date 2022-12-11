@@ -64,13 +64,9 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
         val beanFactory = this.beanFactory
         val applicationContext = this.applicationContext
 
-        val context = if (beanFactory != null) {
-            beanFactory.getBean(FeignContext::class.java)
-        } else if (applicationContext != null) {
-            applicationContext.getBean(FeignContext::class.java)
-        } else {
-            throw IllegalStateException("BeanFactory和ApplicationContext不能都为空")
-        }
+        val context = beanFactory?.getBean(FeignContext::class.java)
+            ?: (applicationContext?.getBean(FeignContext::class.java)
+                ?: throw IllegalStateException("BeanFactory和ApplicationContext不能都为空"))
         // 从ChildContext当中去获取FeignBuilder
         val feign = feign(context)
         // 如果url为空的话，那么通过serviceName去进行负载均衡...
@@ -127,11 +123,10 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
      * @return 完成初始化之后的Feign.Builder
      */
     private fun feign(context: FeignContext): Feign.Builder {
-        val feign = get(context, Feign.Builder::class.java)
+        return get(context, Feign.Builder::class.java)
             .decoder(get(context, Decoder::class.java))
             .encoder(get(context, Encoder::class.java))
             .contract(get(context, Contract::class.java))
-        return feign
     }
 
     /**
@@ -160,7 +155,7 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
      * @param type 想要获取的类型
      * @return return 获取到的Bean，如果获取到了return Bean；如果没有获取到，直接抛出异常
      */
-    protected open fun <T> get(context: FeignContext, type: Class<T>): T {
+    protected open fun <T : Any> get(context: FeignContext, type: Class<T>): T {
         return context.getInstance(contextId!!, type)!!
     }
 
@@ -171,7 +166,7 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
      * @param type 想要获取的类型
      * @return return 获取到的Bean，如果获取到了return Bean；如果没有获取到，return null
      */
-    protected open fun <T> getOptional(context: FeignContext, type: Class<T>): T? {
+    protected open fun <T : Any> getOptional(context: FeignContext, type: Class<T>): T? {
         return context.getInstance(contextId!!, type)
     }
 

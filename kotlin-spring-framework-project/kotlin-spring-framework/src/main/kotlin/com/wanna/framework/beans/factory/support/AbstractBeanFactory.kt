@@ -519,6 +519,16 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     }
 
     /**
+     * 检查当前BeanFactory当中是否包含有这样的beanName的Bean?
+     *
+     * @param name name
+     * @return 如果BeanFactory当中包含有这样的beanName的话Bean的话, 那么return true; 如果不包含的话, 那么return false
+     */
+    override fun containsBean(name: String): Boolean {
+        return containsBeanDefinition(name)
+    }
+
+    /**
      * 给定一个beanName，从容器当中去获取BeanDefinition，去判断是否是单例的？
      *
      * @throws NoSuchBeanDefinitionException 如果容器当中不存在这样的BeanDefinition

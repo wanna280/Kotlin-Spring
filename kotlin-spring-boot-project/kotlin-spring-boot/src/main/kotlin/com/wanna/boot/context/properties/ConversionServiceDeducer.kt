@@ -2,6 +2,8 @@ package com.wanna.boot.context.properties
 
 import com.wanna.boot.convert.ApplicationConversionService
 import com.wanna.framework.beans.factory.ListableBeanFactory
+import com.wanna.framework.beans.factory.annotation.BeanFactoryAnnotationUtils
+import com.wanna.framework.beans.factory.annotation.BeanFactoryAnnotationUtils.qualifiedBeansOfType
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext.Companion.CONVERSION_SERVICE_BEAN_NAME
@@ -74,7 +76,10 @@ class ConversionServiceDeducer(private val applicationContext: ApplicationContex
     }
 
     /**
-     * 从给定的[ApplicationContext]当中, 找到那些标注了`@C`
+     * 从给定的[ApplicationContext]当中, 找到那些标注了`@ConfigurationPropertiesBinding`注解的Converter,
+     * 并将这些Converter去添加到给定的[ConverterRegistry]当中去
+     *
+     * @param applicationContext ApplicationContext
      */
     private class ConverterBeans(applicationContext: ConfigurableApplicationContext) {
 
@@ -97,26 +102,24 @@ class ConversionServiceDeducer(private val applicationContext: ApplicationContex
         /**
          * 从Spring BeanFactory当中, 找到所有的qualifier和type匹配的对应类型的Bean的列表
          *
-         * @param type type
-         * @param qualifier qualifier(TODO)
+         * @param type beanType
+         * @param qualifier qualifier
          * @param beanFactory beanFactory
-         * @return beans
+         * @return 根据Qualifier和beanType, 从BeanFactory当中去寻找到的合适的Bean的列表
          */
         private fun <T : Any> beans(type: Class<T>, qualifier: String, beanFactory: ListableBeanFactory): List<T> {
-            return beanFactory.getBeanNamesForType(type, true, false)
-                .map { beanFactory.getBean(it, type) }
-                .toList()
+            return qualifiedBeansOfType(beanFactory, type, qualifier).values.toList()
         }
 
         /**
-         * 检查是否存在有Converter?
+         * 检查是否存在有从BeanFactory当中去搜索到合适的Converter?
          *
-         * @return 如果合适的Converter, 那么return true; 否则return false
+         * @return 如果从BeanFactory当中存在有合适的Converter, 那么return true; 否则return false
          */
         fun isEmpty(): Boolean = this.converters.isEmpty() && this.genericConverters.isEmpty()
 
         /**
-         * 将所有的Converter全部都加入到[ConverterRegistry]当中去
+         * 将从BeanFactory当中收集得到的所有的Converter全部都加入到[ConverterRegistry]当中去
          *
          * @param registry ConverterRegistry
          */

@@ -63,6 +63,14 @@ interface BeanFactory {
     fun <T : Any> getBean(type: Class<T>): T
 
     /**
+     * 检查当前BeanFactory当中是否包含有这样的beanName的Bean?
+     *
+     * @param name name
+     * @return 如果BeanFactory当中包含有这样的beanName的话Bean的话, 那么return true; 如果不包含的话, 那么return false
+     */
+    fun containsBean(name: String): Boolean
+
+    /**
      * 根据beanName去判断该Bean是否是单例Bean？
      *
      * @param beanName beanName

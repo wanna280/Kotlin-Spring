@@ -3,6 +3,7 @@ package com.wanna.framework.transaction.interceptor
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.InitializingBean
+import com.wanna.framework.beans.factory.annotation.BeanFactoryAnnotationUtils
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.core.NamedThreadLocal
 import com.wanna.framework.util.ClassUtils
@@ -133,11 +134,11 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
 
         // 1.尝试从@Transactional注解当中去进行获取特殊的TransactionManager
         if (StringUtils.hasText(txAttr.getQualifier())) {
-            return determineQualifiedTransactionManager(txAttr.getQualifier()!!)
+            return determineQualifiedTransactionManager(beanFactory!!, txAttr.getQualifier()!!)
 
             // 2.如果配置了transactionManagerBeanName
         } else if (StringUtils.hasText(transactionManagerBeanName)) {
-            return determineQualifiedTransactionManager(transactionManagerBeanName!!)
+            return determineQualifiedTransactionManager(beanFactory!!, transactionManagerBeanName!!)
 
             // 3.如果还是没有，那么直接尝试从beanFactory当中去获取TransactionManager...
         } else {
@@ -159,12 +160,16 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
     /**
      * 基于Qualifier的方式去决定要使用哪个事务管理器
      *
+     * @param beanFactory 需要去寻找TransactionManager的BeanFactory
      * @param qualifier qualifier
-     * @return 获取到的事务同步管理器(如果beanFactory为null，那么return null)
+     * @return 获取到的事务同步管理器
      * @throws NoSuchBeanDefinitionException 如果无法从beanFactory当中获取到TransactionManager
      */
-    protected open fun determineQualifiedTransactionManager(qualifier: String): TransactionManager? {
-        return beanFactory?.getBean(qualifier, TransactionManager::class.java)
+    protected open fun determineQualifiedTransactionManager(
+        beanFactory: BeanFactory,
+        qualifier: String
+    ): TransactionManager? {
+        return BeanFactoryAnnotationUtils.qualifiedBeanOfType(beanFactory, TransactionManager::class.java, qualifier)
     }
 
     /**
