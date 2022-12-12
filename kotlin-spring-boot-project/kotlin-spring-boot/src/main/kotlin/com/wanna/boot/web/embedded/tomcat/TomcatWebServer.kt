@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/12/11
+ *
+ * @param tomcat Embedded Tomcat
  */
 open class TomcatWebServer(private val tomcat: Tomcat) : WebServer {
 
@@ -22,12 +24,21 @@ open class TomcatWebServer(private val tomcat: Tomcat) : WebServer {
     }
 
     override fun start() {
-        tomcat.start()
-        logger.info("Tomcat Web Server在[{}]端口启动", getPort())
+        try {
+            tomcat.start()
+            logger.info("Tomcat Web Server在[{}]端口启动", getPort())
+        } catch (ex: Exception) {
+            logger.error("Tomcat Web Server启动失败", ex)
+        }
     }
 
     override fun stop() {
-        tomcat.stop()
+        try {
+            tomcat.stop()
+            logger.info("Tomcat Web Server关闭成功...")
+        } catch (ex: Exception) {
+            logger.error("Tomcat Web Server关闭失败", ex)
+        }
     }
 
     override fun getPort(): Int {

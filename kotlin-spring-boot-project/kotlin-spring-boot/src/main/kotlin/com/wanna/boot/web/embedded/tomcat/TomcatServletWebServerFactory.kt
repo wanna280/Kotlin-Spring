@@ -47,6 +47,13 @@ open class TomcatServletWebServerFactory(private var port: Int = 9966) : Servlet
     private var contextPath: String = ""
 
     /**
+     * Tomcat的baseDirectory, 也就是CatalinaHome/CatalinaBase,
+     * 默认情况下, 会从系统属性的"catalina.base"/"catalina.home"去进行寻找,
+     * 如果无法寻找到的话, 将会采用"{user.dir}/tomcat.{port}"去作为Tomcat的baseDir
+     */
+    private var baseDirectory: File? = null
+
+    /**
      * encoding
      */
     private var uriEncoding: Charset = Charsets.UTF_8
@@ -89,19 +96,27 @@ open class TomcatServletWebServerFactory(private var port: Int = 9966) : Servlet
      * 获取TomcatWebServer, 并完成TomcatWebSever的初始化工作
      *
      * @param initializers 需要利用ServletContext去执行初始化的Initializer
-     * @return TomcatWebServer
+     * @return 创建出来的TomcatWebServer
      */
     override fun getWebServer(vararg initializers: ServletContextInitializer): TomcatWebServer {
         val tomcat = Tomcat()
 
+        // set Tomcat BaseDir(CatalinaBase/CatalinaHome)
+        val baseDir = this.baseDirectory ?: createTempDir("tomcat")
+        tomcat.setBaseDir(baseDir.absolutePath)
+
+        // 正常的关系是Tomcat->Server->Services->Connectors, 但是因为绝大多数情况下,
+        // 对于Service/Connector很可能只用到一个, 因此嵌入式的Tomcat提供了快速去构建Service/Connector的方式...
         val connector = Connector(this.protocol)
         connector.throwOnFailure = true
+
+        // Note: 如果自定义Connector的话, 那么需要将它去同时添加到Service/Tomcat当中...
         tomcat.service.addConnector(connector)
+        tomcat.connector = connector
+        tomcat.host.autoDeploy = false
 
         // 执行对于Connector的更多自定义
         customizeConnector(connector)
-        tomcat.connector = connector
-        tomcat.host.autoDeploy = false
 
         // 执行对于Tomcat的Engine的自定义
         configureEngine(tomcat.engine)
@@ -119,8 +134,8 @@ open class TomcatServletWebServerFactory(private var port: Int = 9966) : Servlet
     /**
      * 准备Context, 构建处理一个Tomcat的Context, 并把它添加到Host当中
      *
-     * @param host host
-     * @param initializers ServletContext的初始化器
+     * @param host Tomcat Host
+     * @param initializers ServletContext的初始化器列表
      */
     protected open fun prepareContext(host: Host, initializers: Array<ServletContextInitializer>) {
         val context = TomcatEmbeddedContext()
@@ -130,6 +145,7 @@ open class TomcatServletWebServerFactory(private var port: Int = 9966) : Servlet
         context.path = getContextPath()
 
         // must create temp dir
+        // which is used by Tomcat to identify the location of the web application and to serve its contents to clients.
         val docBase = createTempDir("tomcat-docbase")
         context.docBase = docBase.absolutePath
 
@@ -200,6 +216,12 @@ open class TomcatServletWebServerFactory(private var port: Int = 9966) : Servlet
         return TomcatWebServer(tomcat)
     }
 
+    /**
+     * 创建一个临时的文件夹
+     *
+     * @param prefix 文件夹名的前缀
+     * @return 临时文件加对应的File
+     */
     protected open fun createTempDir(prefix: String): File {
         return try {
             val tempDir = Files.createTempDirectory(prefix + "." + getPort() + ".").toFile()
@@ -213,7 +235,7 @@ open class TomcatServletWebServerFactory(private var port: Int = 9966) : Servlet
     }
 
     /**
-     * get tomcat port
+     * get tomcat connector port
      *
      * @return port
      */
@@ -292,5 +314,14 @@ open class TomcatServletWebServerFactory(private var port: Int = 9966) : Servlet
      */
     override fun setResourceLoader(resourceLoader: ResourceLoader) {
         this.resourceLoader = resourceLoader
+    }
+
+    /**
+     * set Tomcat Base Directory
+     *
+     * @param baseDirectory baseDirectory
+     */
+    open fun setBaseDirectory(baseDirectory: File) {
+        this.baseDirectory = baseDirectory
     }
 }

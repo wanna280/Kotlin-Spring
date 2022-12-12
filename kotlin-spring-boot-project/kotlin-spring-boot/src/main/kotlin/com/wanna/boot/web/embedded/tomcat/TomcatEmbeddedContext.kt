@@ -3,6 +3,7 @@ package com.wanna.boot.web.embedded.tomcat
 import org.apache.catalina.core.StandardContext
 
 /**
+ * Tomcat的嵌入式的Context, Tomcat当中, 一个Context就代表了一个要交给Tomcat去进行部署的应用
  *
  * @author jianchao.jia
  * @version v1.0
