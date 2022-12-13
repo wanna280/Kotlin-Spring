@@ -1,6 +1,5 @@
 package com.wanna.boot.web.servlet.context
 
-import com.wanna.boot.web.mvc.server.NettyWebServerFactory
 import com.wanna.boot.web.server.WebServer
 import com.wanna.boot.web.server.WebServerApplicationContext
 import com.wanna.boot.web.server.WebServerManager
@@ -9,10 +8,10 @@ import com.wanna.boot.web.servlet.ServletContextInitializer
 import com.wanna.boot.web.servlet.ServletWebServerFactory
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContextException
-import com.wanna.framework.context.support.GenericApplicationContext
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.web.context.support.GenericWebApplicationContext
+import javax.servlet.ServletConfig
 import javax.servlet.ServletContext
-import kotlin.jvm.Throws
 
 /**
  *
@@ -23,13 +22,31 @@ import kotlin.jvm.Throws
  * @date 2022/12/11
  *
  * @param beanFactory ApplicationContext需要使用的BeanFactory
+ * @param servletContext ServletContext
  */
-open class ServletWebServerApplicationContext(beanFactory: DefaultListableBeanFactory) :
-    GenericApplicationContext(beanFactory), WebServerApplicationContext {
+open class ServletWebServerApplicationContext(
+    @Nullable servletContext: ServletContext? = null,
+    beanFactory: DefaultListableBeanFactory
+) : GenericWebApplicationContext(servletContext, beanFactory), WebServerApplicationContext {
+
     /**
-     * 提供一个无参数构造器
+     * 提供一个无参数构造器, 对于BeanFactory采用默认的BeanFactory
      */
-    constructor() : this(DefaultListableBeanFactory())
+    constructor() : this(null, DefaultListableBeanFactory())
+
+    /**
+     * 提供一个基于ServletContext的构造器
+     *
+     * @param servletContext ServletContext
+     */
+    constructor(@Nullable servletContext: ServletContext?) : this(servletContext, DefaultListableBeanFactory())
+
+    /**
+     * 提供一个基于BeanFactory的构造器
+     *
+     * @param beanFactory BeanFactory
+     */
+    constructor(beanFactory: DefaultListableBeanFactory) : this(null, beanFactory)
 
     /**
      * WebServerManager
@@ -40,31 +57,32 @@ open class ServletWebServerApplicationContext(beanFactory: DefaultListableBeanFa
     /**
      * WebServer
      */
+    @Volatile
     @Nullable
     private var webServer: WebServer? = null
 
     /**
-     * ServletContext
+     * ServletConfig
      */
     @Nullable
-    private var servletContext: ServletContext? = null
+    private var servletConfig: ServletConfig? = null
 
     /**
-     * 设置ServletContext
+     * set ServletConfig
      *
-     * @param servletContext ServletContext
+     * @param servletConfig ServletConfig
      */
-    open fun setServletContext(servletContext: ServletContext) {
-        this.servletContext = servletContext
+    override fun setServletConfig(@Nullable servletConfig: ServletConfig?) {
+        this.servletConfig = servletConfig
     }
 
     /**
-     * 获取ServletContext
+     * get ServletConfig
      *
-     * @return ServletContext
+     * @return ServletConfig
      */
     @Nullable
-    open fun getServletContext(): ServletContext? = this.servletContext
+    override fun getServletConfig(): ServletConfig? = this.servletConfig
 
     /**
      * 重写父类的refresh方法，当刷新SpringBeanFactory出现异常时，我们需要去关闭WebServer

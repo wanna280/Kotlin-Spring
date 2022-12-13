@@ -17,12 +17,7 @@ import javax.servlet.http.HttpServletResponse
  * @version v1.0
  * @date 2022/12/11
  */
-open class DispatcherServlet : FrameworkServlet(), ApplicationContextAware {
-
-    /**
-     * ApplicationContext
-     */
-    private var applicationContext: ApplicationContext? = null
+open class DispatcherServlet : FrameworkServlet() {
 
     /**
      * ServletTransformer
@@ -64,7 +59,7 @@ open class DispatcherServlet : FrameworkServlet(), ApplicationContextAware {
     }
 
     override fun setApplicationContext(applicationContext: ApplicationContext) {
-        this.applicationContext = applicationContext
+        super.setApplicationContext(applicationContext)
 
         try {
             // init DispatcherHandler
