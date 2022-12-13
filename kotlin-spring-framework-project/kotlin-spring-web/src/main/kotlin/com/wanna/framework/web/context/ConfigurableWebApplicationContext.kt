@@ -17,9 +17,9 @@ interface ConfigurableWebApplicationContext : WebApplicationContext {
 
     companion object {
         /**
-         * ServletContext的beanName
+         * ServletConfig的beanName
          */
-        const val SERVLET_CONFIG_BEAN_NAME = "servletContext"
+        const val SERVLET_CONFIG_BEAN_NAME = "servletConfig"
     }
 
 

@@ -13,7 +13,7 @@ import javax.servlet.ServletContext
  * @version v1.0
  * @date 2022/12/11
  *
- * @param D Filter/Servlet的Registration
+ * @param D Servlet3.0+的API当中Filter/Servlet的Registration类型
  *
  * @see ServletRegistrationBean
  * @see FilterRegistrationBean
@@ -40,7 +40,7 @@ abstract class DynamicRegistrationBean<D : Registration.Dynamic> : RegistrationB
     private var name: String? = null
 
     /**
-     * 初始化参数
+     * Servlet/Filter的初始化参数, 对于这些参数将会放入到Servlet3.0+ API的Registration当中...
      */
     private var initParameters = LinkedHashMap<String, String>()
 

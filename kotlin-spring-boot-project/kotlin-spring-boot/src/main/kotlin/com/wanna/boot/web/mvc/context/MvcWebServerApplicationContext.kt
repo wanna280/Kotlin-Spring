@@ -37,7 +37,7 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
     private var webServer: WebServer? = null
 
     /**
-     * 重写父类的refresh方法，当刷新SpringBeanFactory出现异常时，我们需要去关闭WebServer
+     * 重写父类的refresh方法, 当刷新SpringBeanFactory出现异常时, 我们需要去关闭WebServer
      *
      * @see WebServerManager.webServer
      * @see WebServer.stop
@@ -52,7 +52,7 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
     }
 
     /**
-     * 创建WebServer，并发布MvcWebServerInitializedEvent事件...
+     * 创建WebServer, 并发布MvcWebServerInitializedEvent事件...
      *
      * @see com.wanna.boot.web.server.WebServerInitializedEvent
      */
@@ -66,7 +66,7 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
     }
 
     /**
-     * 如果没有完成初始化的话，那么需要完成WebServer的创建
+     * 如果没有完成初始化的话, 那么需要完成WebServer的创建
      */
     private fun createWebServer() {
         if (this.webServerManager == null) {
@@ -91,10 +91,10 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
     }
 
     /**
-     * 从Spring BeanFactory当中去探测WebServerFactory。
-     * 如果探测到一个，直接返回；如果探测到多个/没有探测到WebServerFactory，都需要抛出异常。
+     * 从Spring BeanFactory当中去探测NettyWebServerFactory.
+     * 如果探测到一个, 直接返回; 如果探测到多个/没有探测到WebServerFactory, 都需要抛出异常.
      *
-     * @return 探测到的WebServerFactory
+     * @return 探测到的NettyWebServerFactory
      */
     private fun getWebServerFactory(): NettyWebServerFactory {
         val factoryNames = getBeanFactory().getBeanNamesForType(NettyWebServerFactory::class.java)
@@ -106,9 +106,10 @@ open class MvcWebServerApplicationContext(beanFactory: DefaultListableBeanFactor
     }
 
     /**
-     * 获取WebServer
+     * 获取NettyWebServer
      *
-     * @return WebServer
+     * @return NettyWebServer
      */
-    override fun getWebServer(): WebServer = this.webServer ?: throw IllegalStateException("无法获取到WebServer")
+    override fun getWebServer(): WebServer =
+        this.webServer ?: throw IllegalStateException("无法获取到WebServer, 请先初始化WebServer")
 }

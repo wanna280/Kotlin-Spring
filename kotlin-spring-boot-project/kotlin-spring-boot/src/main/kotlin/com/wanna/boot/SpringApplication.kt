@@ -21,6 +21,7 @@ import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StopWatch
 import com.wanna.framework.util.StringUtils.collectionToCommaDelimitedString
+import com.wanna.framework.web.context.support.StandardServletEnvironment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -765,7 +766,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         }
         return when (applicationType) {
             ApplicationType.NONE -> StandardEnvironment()
-            ApplicationType.SERVLET -> StandardEnvironment()
+            ApplicationType.SERVLET -> StandardServletEnvironment()
             ApplicationType.MVC -> StandardEnvironment()
         }
     }
