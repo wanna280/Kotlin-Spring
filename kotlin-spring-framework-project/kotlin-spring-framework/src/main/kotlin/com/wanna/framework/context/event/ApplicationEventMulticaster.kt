@@ -18,9 +18,9 @@ interface ApplicationEventMulticaster {
     fun addApplicationListener(listener: ApplicationListener<*>)
 
     /**
-     * 添加ApplicationListenerBean
+     * 使用SpringBean的beanName的方式去添加ApplicationListenerBean
      *
-     * @param listenerBeanName ApplicationListener的beanName
+     * @param listenerBeanName ApplicationListener对应的SpringBean的beanName
      */
     fun addApplicationListenerBean(listenerBeanName: String)
 
@@ -32,21 +32,21 @@ interface ApplicationEventMulticaster {
     fun removeApplicationListener(listener: ApplicationListener<*>)
 
     /**
-     * 移除ApplicationListenerBean
+     * 根据Spring的BeanName去移除ApplicationListenerBean
      *
      * @param listenerBeanName ApplicationListener的beanName
      */
     fun removeApplicationListenerBean(listenerBeanName: String)
 
     /**
-     * 移除所有的ApplicationListener
+     * 移除当前事件多播器当中的所有的ApplicationListener事件监听器
      */
     fun removeAllApplicationListeners()
 
     /**
      * 发布事件
      *
-     * @param event 需要去进行发布的事件
+     * @param event 需要去进行发布的ApplicationEvent事件
      */
     fun multicastEvent(event: ApplicationEvent)
 
