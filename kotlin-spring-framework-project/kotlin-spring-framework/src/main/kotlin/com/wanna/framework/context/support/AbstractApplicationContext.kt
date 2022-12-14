@@ -80,7 +80,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     }
 
     /**
-     * 当前ApplicationContext的启动时间的时间戳(ms)
+     * 当前ApplicationContext的开始去进行启动时间的时间戳(ms)
      */
     private var startupDate: Long = 0
 
@@ -95,6 +95,11 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
      */
     @Nullable
     private var parent: ApplicationContext? = null
+
+    /**
+     * 当前ApplicationContext的id
+     */
+    private var id: String = javaClass.name + "@" + System.identityHashCode(this).toString(16)
 
     /**
      * ResourcePatternResolver, 本身也是一个ResourceLoader, 提供资源的解析和加载;
@@ -115,7 +120,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     private val beanFactoryPostProcessors = ArrayList<BeanFactoryPostProcessor>()
 
     /**
-     * 存放监听器列表
+     * 存放监听当前的ApplicationContext的相关事件的ApplicationListener监听器列表
      */
     private var applicationListeners = LinkedHashSet<ApplicationListener<*>>()
 
@@ -139,7 +144,8 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     private var earlyApplicationListeners: MutableSet<ApplicationListener<*>>? = null
 
     /**
-     * ApplicationContext的应用的启动大锁, 只要拿到这个锁, 才能去对容器去进行启动或者关闭
+     * ApplicationContext的应用的启动/关闭大锁, 只有拿到这个锁之后, 才能去对容器去进行启动或者关闭;
+     * 避免ApplicationContext被并发进行刷新导致ApplicationContext的线程不安全的情况
      */
     private val startupShutdownMonitor = Any()
 
@@ -161,17 +167,22 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     private var shutdownHook: Thread? = null
 
     /**
-     * 当前的ApplicationContext是否还活跃？(当关闭时会被设置为true)
+     * 当前的ApplicationContext是否还活跃？(当应用启动时, 会被设置为true; 当关闭时会被设置为false)
+     *
+     * @see refresh
+     * @see close
      */
-    private var active = AtomicBoolean(true)
+    private var active = AtomicBoolean(false)
 
     /**
-     * 当前的ApplicationContext是否已经关闭了？
+     * 当前的ApplicationContext是否已经关闭了？(默认为false, 当应用关闭时, 会被设置为true)
      */
     private var closed = AtomicBoolean(false)
 
     /**
      * 完成当前ApplicationContext的刷新工作, 引导Spring BeanFactory的启动
+     *
+     * @see startupShutdownMonitor
      */
     override fun refresh() {
         synchronized(this.startupShutdownMonitor) {
@@ -215,13 +226,18 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
                 // 完成剩下的所有单实例Bean的初始化工作
                 finishBeanFactoryInitialization(beanFactory)
 
-                // 完成容器的刷新
+                // 完成当前的ApplicationContext的刷新工作
                 finishRefresh()
             } catch (ex: BeansException) {
-                if (logger.isDebugEnabled) {
-                    logger.debug("在Spring ApplicationContext刷新过程当中遇到异常", ex)
+                // log refresh error
+                if (logger.isWarnEnabled) {
+                    logger.warn("Exception encountered during context initialization - cancelling refresh attempt", ex)
                 }
+                //  Destroy already created singletons to avoid dangling resources.
                 this.destroyBeans()
+
+                // set 'active' to false, and notify subclasses
+                this.cancelRefresh(ex)
                 throw ex
             } finally {
                 contextRefresh.end()  // end context refresh
@@ -234,7 +250,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
      *
      * @return 当前的ApplicationContext的id
      */
-    override fun getId(): String = javaClass.name + "@" + System.identityHashCode(this).toString(16)
+    override fun getId(): String = this.id
 
     /**
      * 获取ResolvePatternResolver, 提供资源的解析, 支持子类当中去进行自定义
@@ -251,6 +267,15 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     override fun getStartupDate(): Long = this.startupDate
 
     /**
+     * 取消ApplicationContext刷新, 将'active'标志位从true->false
+     *
+     * @param ex 刷新过程中出现的BeansException异常
+     */
+    protected open fun cancelRefresh(ex: BeansException) {
+        this.active.set(false)
+    }
+
+    /**
      * 初始化PropertySources, 交给子类去进行完成初始化;
      * 是一个模板方法, 在容器启动时会自动回调, 去完成初始化工作
      *
@@ -262,13 +287,19 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     }
 
     /**
-     * 准备完成容器的刷新工作
-     * (1)初始化PropertySources
-     * (2)完成早期事件、早期监听器的初始化工作
+     * 准备完成ApplicationContext的刷新工作
+     *
+     * * (1)将当前ApplicationContext的状态设置为active
+     * * (2)初始化PropertySources
+     * * (3)完成早期事件、早期监听器的初始化工作
      */
     protected open fun prepareRefresh() {
-        // 先记录一下启动的时间戳
+        // 先记录一下当前ApplicationContext开始启动的时间戳
         this.startupDate = System.currentTimeMillis()
+
+        // 将当前的ApplicationContext的状态去设置为active状态
+        this.active.set(true)
+        this.closed.set(false)
 
         // 完成PropertySources的初始化工作, 给环境当中注册PropertySource, 可以用作配置文件的加载
         // 一般用来加载Servlet相关的配置信息到容器当中
@@ -509,12 +540,12 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
             beanFactory.setConversionService(conversionService)
         }
 
-        // 如果容器当中没有嵌入式的值解析器, 那么需要往容器当中加入一个默认的
+        // 如果容器当中没有嵌入式的值解析器, 那么需要往容器当中加入一个默认的基于Environment去进行解析的嵌入式值解析器...
         if (!getBeanFactory().hasEmbeddedValueResolver()) {
             getBeanFactory().addEmbeddedValueResolver { strVal -> getEnvironment().resolveRequiredPlaceholders(strVal) }
         }
 
-        // 完成剩下的所有单实例Bean的实例化和初始化工作
+        // 完成BeanFactory当中剩下的所有单实例Bean的实例化和初始化工作
         beanFactory.preInstantiateSingletons()
     }
 
@@ -631,7 +662,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     }
 
     /**
-     * 真正地去执行close方法, 关闭整个[ApplicationContext]
+     * 真正地去执行close方法, 关闭整个[ApplicationContext], 并完成相关的资源释放功能
      */
     protected open fun doClose() {
         // 使用CAS的方式, 去保证并发多线程下, 只有一个线程可以去关闭当前的这个ApplicationContext
@@ -663,7 +694,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
             // 5.onClose, 扩展的钩子方法, 如果子类需要的话, 自行去重写
             onClose()
 
-            this.active.set(false)  // set active to false
+            this.active.set(false)  // set active to false(closed flag has been set to true, no need to set again)
         }
     }
 

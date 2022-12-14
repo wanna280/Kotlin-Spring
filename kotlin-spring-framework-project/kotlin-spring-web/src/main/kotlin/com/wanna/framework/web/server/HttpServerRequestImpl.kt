@@ -16,21 +16,24 @@ import java.net.URL
  * @version 1.0
  */
 open class HttpServerRequestImpl : HttpServerRequest {
-    companion object {
-        const val PARAM_SEPARATOR = "&"
-        const val EQUAL = "="
-    }
-
-    // 请求方式
+    /**
+     * 请求方式
+     */
     private var method = RequestMethod.GET
 
-    // schema(protocol)
+    /**
+     * schema(protocol)
+     */
     var scheme: String = "http"
 
-    // 完成请求路径，包括query部分
+    /**
+     * 完成请求路径，包括query部分
+     */
     private var uri = "/"
 
-    // 请求路径，不包含query部分
+    /**
+     * 请求路径，不包含query部分
+     */
     private var url = "/"
 
     /**
@@ -56,13 +59,19 @@ open class HttpServerRequestImpl : HttpServerRequest {
      */
     private var cookies: Array<Cookie>? = null
 
-    // params
+    /**
+     * params
+     */
     private val params = LinkedMultiValueMap<String, String>()
 
-    // attributes
+    /**
+     * attributes
+     */
     private val attributes = LinkedHashMap<String, Any?>()
 
-    // ActionHook，当给予对应的状态码时，应该产生的动作
+    /**
+     * ActionHook，当给予对应的状态码时，应该产生的动作
+     */
     private var actionHook: ActionHook? = null
 
     /**
@@ -70,6 +79,9 @@ open class HttpServerRequestImpl : HttpServerRequest {
      */
     private var asyncContext: AsyncContextImpl? = null
 
+    /**
+     * InputStream
+     */
     private var inputStream: InputStream? = null
 
     open fun setInputStream(inputStream: InputStream) {
@@ -242,26 +254,11 @@ open class HttpServerRequestImpl : HttpServerRequest {
         this.uri = uri
     }
 
-    open fun init(init: HttpServerRequestImpl.() -> Unit) = init.invoke(this)
-
-    open fun parseUriUrlAndParams(uri: String) {
-        this.uri = uri
-        val indexOf = uri.indexOf("?")
-        if (indexOf == -1) {
-            this.url = uri
-            return
-        }
-        this.url = uri.substring(0, indexOf) // url
-
-        val params = uri.substring(indexOf + 1).split(PARAM_SEPARATOR)
-        params.forEach {
-            val eqIndex = it.indexOf(EQUAL)
-            val key = it.substring(0, eqIndex)
-            val value = it.substring(eqIndex + 1)
-            // 拼接param
-            this.params.add(key, value)
-        }
+    open fun setUrl(url: String) {
+        this.url = url
     }
+
+    open fun init(init: HttpServerRequestImpl.() -> Unit) = init.invoke(this)
 
     override fun getLocalHost() = headers.getHost() ?: ""
 
@@ -324,6 +321,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
     override fun getServerName() = URL(getSchema() + "://" + getLocalHost()).host!!
 
     override fun getUri() = this.uri
+
     override fun getUrl() = this.url
     override fun getMethod() = this.method
 

@@ -317,7 +317,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      */
     protected open fun notHandlerFound(request: HttpServerRequest, response: HttpServerResponse) {
         if (logger.isWarnEnabled) {
-            logger.warn("[NOT-FOUND]--没有找到合适的Handler去处理本次请求[path=${request.getUrl()}, method=${request.getMethod()}, headers=[${request.getHeaders()}]]")
+            logger.warn("[NOT-FOUND]--没有找到合适的Handler去处理本次请求[path=${request.getUri()}, method=${request.getMethod()}, headers=[${request.getHeaders()}]]")
         }
         // sendError(404)
         response.sendError(HttpServerResponse.SC_NOT_FOUND)
@@ -415,7 +415,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      *
      * @param applicationContext ApplicationContext
      */
-    open fun setApplicationContext(applicationContext: ApplicationContext) {
+    override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext
 
         // 初始化ApplicationContext，添加ContextRefreshListener，去完成内部的核心组件的初始化工作

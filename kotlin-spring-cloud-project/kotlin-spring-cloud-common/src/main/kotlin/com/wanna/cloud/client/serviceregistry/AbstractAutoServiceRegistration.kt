@@ -6,7 +6,7 @@ import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.core.environment.Environment
-import com.wanna.boot.web.mvc.context.WebServerInitializedEvent
+import com.wanna.boot.web.server.WebServerInitializedEvent
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**

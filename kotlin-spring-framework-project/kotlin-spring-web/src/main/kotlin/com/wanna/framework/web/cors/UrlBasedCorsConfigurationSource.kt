@@ -29,7 +29,7 @@ open class UrlBasedCorsConfigurationSource : CorsConfigurationSource {
     @Nullable
     override fun getCorsConfiguration(request: HttpServerRequest): CorsConfiguration? {
         corsConfigurations.forEach { (pattern, config) ->
-            if (pathMatcher.match(pattern, request.getUrl())) {
+            if (pathMatcher.match(pattern, request.getUri())) {
                 return config
             }
         }

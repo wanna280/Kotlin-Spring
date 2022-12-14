@@ -121,7 +121,7 @@ open class InvocableHandlerMethod() : HandlerMethod() {
             this.returnValueHandlers?.handleReturnValue(returnValue, webRequest, returnValueType, mavContainer)
         } catch (ex: Exception) {
             if (logger.isTraceEnabled) {
-                logger.trace("处理方法的返回值失败，原因是[${ex.message}]")
+                logger.trace("处理方法的返回值失败, 原因是[${ex.message}]")
             }
             throw ex
         }

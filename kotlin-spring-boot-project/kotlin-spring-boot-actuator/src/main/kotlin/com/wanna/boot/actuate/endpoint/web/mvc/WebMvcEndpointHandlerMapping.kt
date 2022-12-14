@@ -29,7 +29,7 @@ open class WebMvcEndpointHandlerMapping(
     protected inner class WebMvcLinksHandler : LinksHandler {
         @ResponseBody
         override fun links(request: HttpServerRequest, response: HttpServerResponse): Map<String, Map<String, Link>> {
-            return mapOf("_links" to linksResolver.resolveLinks(request.getLocalHost() + request.getUrl()))
+            return mapOf("_links" to linksResolver.resolveLinks(request.getLocalHost() + request.getUri()))
         }
 
         override fun toString() = "Actuator root web endpoint"

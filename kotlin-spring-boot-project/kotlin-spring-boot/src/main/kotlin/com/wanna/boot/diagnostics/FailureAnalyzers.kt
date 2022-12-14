@@ -11,12 +11,15 @@ import org.slf4j.LoggerFactory
  * @version v1.0
  * @date 2022/10/2
  * @see SpringBootExceptionReporter
+ *
+ * @param context ApplicationContext
  */
 class FailureAnalyzers(private val context: ConfigurableApplicationContext) : SpringBootExceptionReporter {
     companion object {
         /**
          * Logger
          */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(FailureAnalyzers::class.java)
     }
 

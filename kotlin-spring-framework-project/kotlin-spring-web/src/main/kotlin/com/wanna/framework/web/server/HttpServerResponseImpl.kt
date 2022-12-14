@@ -5,6 +5,7 @@ import com.wanna.framework.web.http.Cookie
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.http.MediaType
+import java.io.OutputStream
 
 /**
  * HttpServerResponse的默认实现
@@ -14,7 +15,10 @@ import com.wanna.framework.web.http.MediaType
  */
 open class HttpServerResponseImpl : HttpServerResponse {
     companion object {
-        private const val COMMA = "; "
+        /**
+         * 元素的分隔符
+         */
+        private const val ELEMENT_SEP = "; "
 
         /**
          * 默认的响应类型
@@ -82,7 +86,7 @@ open class HttpServerResponseImpl : HttpServerResponse {
      * @return 之前的旧的headerValue(如果有多个，使用"; "去进行分割)
      */
     @Nullable
-    override fun removeHeader(name: String) = this.headers.remove(name)?.joinToString(COMMA)
+    override fun removeHeader(name: String) = this.headers.remove(name)?.joinToString(ELEMENT_SEP)
 
     /**
      * 根据name和value去设置一个Header(如果之前已经有该header，那么直接清除掉之前所有的)
@@ -118,7 +122,7 @@ open class HttpServerResponseImpl : HttpServerResponse {
      * @param name headerName
      * @return headerValue(如果有多个，使用"; "去进行分割；如果不存在return null)
      */
-    override fun getHeader(name: String) = headers[name]?.joinToString(COMMA)
+    override fun getHeader(name: String) = headers[name]?.joinToString(ELEMENT_SEP)
 
     /**
      * 获取response的响应类型

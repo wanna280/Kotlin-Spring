@@ -30,7 +30,7 @@ open class DefaultRequestToViewNameTranslator : RequestToViewNameTranslator {
     var stripExtension = true
 
     override fun getViewName(request: HttpServerRequest): String? {
-        var path = request.getUrl()
+        var path = request.getUri()
         if (stripLeadingSlash && path.startsWith(SLASH)) {
             path = path.substring(1)
         }

@@ -42,15 +42,20 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         @JvmStatic
         private val IMPORT_REGISTRY_BEAN_NAME = ConfigurationClassPostProcessor::class.java.name + ".importRegistry"
 
+        /**
+         * Logger
+         */
         @JvmStatic
         private val logger = LoggerFactory.getLogger(ConfigurationClassPostProcessor::class.java)
     }
 
-    // order
+    /**
+     * BeanDefinitionRegistryPostProcessor的优先级
+     */
     private var order: Int = 0
 
     /**
-     * beanClassLoader
+     * beanClassLoader, 提供对于Spring的Bean的类加载功能
      */
     @Nullable
     private var classLoader: ClassLoader? = ClassUtils.getDefaultClassLoader()
@@ -78,16 +83,24 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
      */
     private var resourceLoader: ResourceLoader = DefaultResourceLoader()
 
-    // componentScan的beanNameGenerator，默认使用simpleName作为生成方式
+    /**
+     * ComponentScan扫描出来的BeanDefinition, 需要使用到的BeanNameGenerator，默认使用simpleName作为生成方式
+     */
     private var componentScanBeanNameGenerator: BeanNameGenerator = AnnotationBeanNameGenerator.INSTANCE
 
-    // import的Bean的beanNameGenerator，默认使用全限定名作为生成方式
+    /**
+     * 对于使用Import的方式去注册的BeanDefinition, 生成beanName时需要用到的BeanNameGenerator，默认使用全限定名作为生成方式
+     */
     private var importBeanBeanNameGenerator: BeanNameGenerator = FullyQualifiedAnnotationBeanNameGenerator.INSTANCE
 
-    // 是否设置了局部的BeanGenerator，如果设置了，将会采用默认的BeanNameGenerator
+    /**
+     * 是否设置了局部的BeanGenerator，如果设置了，将会采用默认的BeanNameGenerator
+     */
     private var localBeanNameGeneratorSet = false
 
-    // ApplicationStartup
+    /**
+     * ApplicationStartup
+     */
     private var applicationStartup: ApplicationStartup? = null
 
     /**
@@ -99,18 +112,48 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         this.componentScanBeanNameGenerator = generator
     }
 
+    /**
+     * 设置ApplicationStartup, 监控Spring BeanFactory的启动过程
+     *
+     * @param applicationStartup ApplicationStartup
+     */
     override fun setApplicationStartup(applicationStartup: ApplicationStartup) {
         this.applicationStartup = applicationStartup
     }
 
+    /**
+     * 获取到ApplicationStartup
+     *
+     * @return ApplicationStartup
+     */
+    open fun getApplicationStartup(): ApplicationStartup =
+        this.applicationStartup ?: throw IllegalStateException("ApplicationStartup is null, please init first")
+
+    /**
+     * 设置ResourceLoader, 提供资源的加载功能
+     *
+     * @param resourceLoader ResourceLoader
+     */
     override fun setResourceLoader(resourceLoader: ResourceLoader) {
         this.resourceLoader = resourceLoader
     }
 
+    /**
+     * 对于配置类提供后置处理功能, 将注册到Spring BeanDefinitionRegistry当中
+     *
+     * @param registry BeanDefinitionRegistry
+     */
     override fun postProcessBeanDefinitionRegistry(registry: BeanDefinitionRegistry) {
         processConfigBeanDefinitions(registry)
     }
 
+    /**
+     * 对于BeanFactory去进行后置处理,
+     *
+     * * 这里需要去注册一个BeanPostProcessor去提供[ImportAware]接口的自动注入功能
+     *
+     * @param beanFactory BeanFactory
+     */
     override fun postProcessBeanFactory(beanFactory: ConfigurableListableBeanFactory) {
         // 如果必要的话，需要尝试去增强配置类(@Configuration)
         enhanceConfigurationClasses(beanFactory)
@@ -177,8 +220,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
 
         // 只要candidates列表当中，仍旧还要候选的BeanDefinition可以作为配置类的话，那么就一直去进行循环处理
         do {
-            val parseConfig =
-                this.applicationStartup!!.start("spring.context.config-classes.parse")  // start parseConfig
+            val parseConfig = getApplicationStartup().start("spring.context.config-classes.parse")  // start parseConfig
 
             // 使用parser去进行解析配置类
             parser.parse(candidates)
@@ -246,7 +288,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
      * @param beanFactory beanFactory
      */
     open fun enhanceConfigurationClasses(beanFactory: ConfigurableListableBeanFactory) {
-        val enhanceConfigurationClass = this.applicationStartup!!.start("spring.context.config-classes.enhance")
+        val enhanceConfigurationClass = getApplicationStartup().start("spring.context.config-classes.enhance")
         val configBeanDefs = LinkedHashMap<String, AbstractBeanDefinition>()
         beanFactory.getBeanDefinitionNames().forEach { beanName ->
             val beanDefinition = beanFactory.getBeanDefinition(beanName)
@@ -255,9 +297,9 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
             val configClassAttr = beanDefinition.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE)
             if (configClassAttr == ConfigurationClassUtils.CONFIGURATION_CLASS_FULL) {
                 if (beanDefinition !is AbstractBeanDefinition) {
-                    throw IllegalStateException("给定的BeanDefinition不是AbstractBeanDefinition，不支持对该配置类去进行增强")
+                    throw IllegalStateException("Given BeanDefinition is not a AbstractBeanDefinition, unsupport to enhance it")
                 } else if (logger.isInfoEnabled && beanFactory.containsSingleton(beanName)) {
-                    logger.info("不支持对已经存在有单例对象的BeanDefinition[beanName=$beanName]上去进行增强")
+                    logger.info("Cannot support enhance Bean because bean factory exists its singleton object, beanName=$beanName")
                 } else {
                     configBeanDefs[beanName] = beanDefinition // add full ConfigurationClass
                 }
