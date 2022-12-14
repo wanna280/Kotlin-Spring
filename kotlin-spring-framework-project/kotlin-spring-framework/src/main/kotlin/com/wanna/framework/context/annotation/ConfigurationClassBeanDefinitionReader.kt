@@ -121,7 +121,7 @@ open class ConfigurationClassBeanDefinitionReader(
         // 如果这个@Bean方法，在子类当中已经存在了(子类去进行重写)，那么就别添加父类的@Bean方法了，得pass掉...得以子类的为准....
         if (isOverriddenByExistingDefinition(beanMethod, beanName)) {
             if (logger.isDebugEnabled) {
-                logger.debug("之前配置类[${beanMethod.configClass.metadata.getClassName()}]的@Bean已经导入过当前的beanName=[$beanName]的BeanDefinition了，不能被重复注册")
+                logger.debug("Spring Config Class ${beanMethod.configClass.metadata.getClassName()} has been registered, cannot register again, beanName=$beanName")
             }
             return
         }

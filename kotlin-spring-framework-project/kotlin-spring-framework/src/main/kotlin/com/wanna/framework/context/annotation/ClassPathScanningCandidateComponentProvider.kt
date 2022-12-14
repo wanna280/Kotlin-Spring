@@ -89,7 +89,7 @@ open class ClassPathScanningCandidateComponentProvider(
             val resources = getResourcePatternResolver().getResources(packageSearchPath)
             resources.forEach {
                 if (logger.isTraceEnabled) {
-                    logger.trace("正在扫描资源[$it]")
+                    logger.trace("Scanning resource... [$it]")
                 }
                 if (it.isReadable()) {
                     try {
@@ -107,33 +107,33 @@ open class ClassPathScanningCandidateComponentProvider(
                             // 对BeanDefinition去进行检查，排除掉抽象类
                             if (isCandidateComponent(beanDefinition)) {
                                 if (logger.isDebugEnabled) {
-                                    logger.debug("候选资源[$it]将会成为一个候选的BeanDefinition")
+                                    logger.debug("Resource [$it] will be a candidate BeanDefinition to register")
                                 }
                                 candidates += beanDefinition
                             } else {
                                 if (logger.isDebugEnabled) {
-                                    logger.debug("非具体的类(抽象类)[$it]被排除掉")
+                                    logger.debug("Resource of abstract class $it has been filtered")
                                 }
                             }
                         } else {
                             if (logger.isTraceEnabled) {
-                                logger.trace("忽略没被Filter匹配到的类[$it]")
+                                logger.trace("Ignore cannot match by filter resource $it")
                             }
                         }
                     } catch (ex: Throwable) {
                         // temp ignore LinkageError
                         if (ex !is NoClassDefFoundError) {
-                            throw IllegalStateException("无法去读给定位置的资源 [$it]", ex)
+                            throw IllegalStateException("Cannot read given resource [$it]", ex)
                         }
                     }
                 } else {
                     if (logger.isTraceEnabled) {
-                        logger.debug("忽略无法去进行读取的资源 [$it]")
+                        logger.debug("Ignore a cannot readable resource [$it]")
                     }
                 }
             }
         } catch (ex: IOException) {
-            throw IllegalStateException("读取资源文件失败", ex)
+            throw IllegalStateException("Read resource file Error", ex)
         }
         return candidates
     }
