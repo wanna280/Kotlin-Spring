@@ -2,8 +2,11 @@ package com.wanna.framework.web.server.servlet
 
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
-import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.web.context.ConfigurableWebApplicationContext
+import com.wanna.framework.web.context.ConfigurableWebEnvironment
 import com.wanna.framework.web.context.WebApplicationContext
 import com.wanna.framework.web.context.support.GenericWebApplicationContext
 import com.wanna.framework.web.context.support.WebApplicationContextUtils
@@ -32,6 +35,13 @@ abstract class FrameworkServlet : HttpServletBean(), ApplicationContextAware {
     private var contextAttribute: String? = null
 
     /**
+     * 要用于去进行创建WebApplicationContext的类(必须是ConfigurableWebApplicationContext的子类)
+     *
+     * @see ConfigurableWebApplicationContext
+     */
+    private var contextClass: Class<*> = GenericWebApplicationContext::class.java
+
+    /**
      * set ApplicationContext
      *
      * @param applicationContext ApplicationContext
@@ -52,7 +62,7 @@ abstract class FrameworkServlet : HttpServletBean(), ApplicationContextAware {
     }
 
     /**
-     * 初始化WebApplicationContext
+     * 初始化当前的Framework当中需要使用到的WebApplicationContext
      *
      * @return WebApplicationContext
      */
@@ -60,13 +70,21 @@ abstract class FrameworkServlet : HttpServletBean(), ApplicationContextAware {
         // 从ServletContext当中根据root的属性去寻找到rootContext
         val rootContext = WebApplicationContextUtils.getWebApplicationContext(servletContext)
 
-
-        // 1.优先使用setApplicationContext去设置ApplicationContext, 去作为要使用的WebApplicationContext
+        // 1.优先使用setApplicationContext去设置的ApplicationContext, 去作为要使用的WebApplicationContext
         var wac: WebApplicationContext? = null
         if (this.webApplicationContext != null) {
             wac = this.webApplicationContext
-            if (wac is ConfigurableApplicationContext) {
-                wac.setParent(rootContext)
+            if (wac is ConfigurableWebApplicationContext) {
+
+                // 如果之前WebApplicationContext没有被刷新的话, 那么需要对该ApplicationContext去进行刷新
+                if (!wac.isActive()) {
+                    if (wac.getParent() == null) {
+                        wac.setParent(rootContext)
+                    }
+
+                    // 执行对于WebApplicationContext的配置和刷新
+                    configureAndRefreshWebApplicationContext(wac)
+                }
             }
         }
 
@@ -75,7 +93,7 @@ abstract class FrameworkServlet : HttpServletBean(), ApplicationContextAware {
             wac = findWebApplicationContext()
         }
 
-        // 3.如果还是不存在的话, 那么在这里去创建一个WebApplicationContext
+        // 3.如果还是不存在的话, 那么在这里去尝试去根据contextClass去创建一个新的WebApplicationContext
         if (wac == null) {
             wac = createWebApplicationContext(rootContext)
         }
@@ -98,17 +116,76 @@ abstract class FrameworkServlet : HttpServletBean(), ApplicationContextAware {
     }
 
     /**
-     * 创建默认的WebApplicationContext
+     * 执行对于WebApplicationContext的配置和刷新
      *
-     * @param parent parent WebApplicationContext
+     * @param wac WebApplicationContext
+     */
+    protected open fun configureAndRefreshWebApplicationContext(wac: ConfigurableWebApplicationContext) {
+
+        // 初始化ServletConfig/ServletContext
+        wac.setServletConfig(servletConfig)
+        wac.setServletContext(servletContext)
+
+        // 如果Environment是ConfigurableWebEnvironment, 那么根据ServletContext/ServletConfig去初始化PropertySources
+        val environment = wac.getEnvironment()
+        if (environment is ConfigurableWebEnvironment) {
+            environment.initPropertySources(servletContext, servletConfig)
+        }
+
+        // 模板方法, 对于WebApplicationContext的后置处理, 交给子类去进行实现
+        postProcessWebApplicationContext(wac)
+
+        // 将ApplicationContextInitializer去应用给WebApplicationContext
+        applyInitializers(wac)
+
+        // 刷新WebApplicationContext
+        wac.refresh()
+    }
+
+    /**
+     * 针对给定的WebApplicationContext去应用ApplicationContextInitializer
+     *
+     * @param wac WebApplicationContext
+     */
+    protected open fun applyInitializers(wac: ConfigurableWebApplicationContext) {
+
+    }
+
+    /**
+     * 模板方法, 对于WebApplicationContext的后置处理, 交给子类去进行实现
+     *
+     * @param wac WebApplicationContext
+     */
+    protected open fun postProcessWebApplicationContext(wac: ConfigurableWebApplicationContext) {
+
+    }
+
+    /**
+     * 根据contextClass创建默认的WebApplicationContext
+     *
+     * @param parent parent WebApplicationContext(or null)
      * @return WebApplicationContext
      */
-    protected open fun createWebApplicationContext(parent: WebApplicationContext?): WebApplicationContext {
-        val applicationContext = GenericWebApplicationContext()
-        if (parent != null) {
-            applicationContext.setParent(parent)
+    protected open fun createWebApplicationContext(@Nullable parent: WebApplicationContext?): WebApplicationContext {
+        val contextClass = getContextClass()
+
+        // 检查类型是否是ConfigurableWebApplicationContext
+        if (!ClassUtils.isAssignFrom(ConfigurableWebApplicationContext::class.java, contextClass)) {
+            throw IllegalStateException("Given contextClass is ${ClassUtils.getQualifiedName(contextClass)} is not a ConfigurableWebApplicationContext, servletName=$servletName")
         }
-        return applicationContext
+
+        // 实例化WebApplicationContext
+        val wac = BeanUtils.instantiateClass(contextClass) as ConfigurableWebApplicationContext
+        if (parent != null) {
+            wac.setParent(parent)
+        }
+
+        // set Environment
+        wac.setEnvironment(getEnvironment())
+
+        // 刷新新创建的WebApplicationContext
+        configureAndRefreshWebApplicationContext(wac)
+        return wac
     }
 
     /**
@@ -159,7 +236,7 @@ abstract class FrameworkServlet : HttpServletBean(), ApplicationContextAware {
     /**
      * 设置要从ServletContext当中去寻找WebApplicationContext的属性名, 可以为null
      *
-     * @param contextAttribute 属性名
+     * @param contextAttribute 属性名(or null)
      */
     open fun setContextAttribute(@Nullable contextAttribute: String?) {
         this.contextAttribute = contextAttribute
@@ -168,8 +245,25 @@ abstract class FrameworkServlet : HttpServletBean(), ApplicationContextAware {
     /**
      * 设置要从ServletContext当中去寻找WebApplicationContext的属性名, 可以为null
      *
-     * @return contextAttribute属性名(可能为null)
+     * @return contextAttribute属性名(or null)
      */
     @Nullable
     open fun getContextAttribute(): String? = this.contextAttribute
+
+    /**
+     * 设置用于去创建WebApplicationContext的类(必须是ConfigurableWebApplicationContext的子类)
+     *
+     * @param contextClass contextClass
+     * @see ConfigurableWebApplicationContext
+     */
+    open fun setContextClass(contextClass: Class<*>) {
+        this.contextClass = contextClass
+    }
+
+    /**
+     * 获取到用于去创建WebApplicationContext的类
+     *
+     * @return contextClass
+     */
+    open fun getContextClass(): Class<*> = this.contextClass
 }

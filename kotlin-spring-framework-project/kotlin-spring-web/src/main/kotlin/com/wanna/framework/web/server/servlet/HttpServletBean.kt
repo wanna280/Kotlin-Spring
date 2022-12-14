@@ -53,7 +53,7 @@ abstract class HttpServletBean : HttpServlet(), EnvironmentCapable, EnvironmentA
      *
      * @return Environment, 如果之前还不存在这样的Environment的话, 那么先创建再去进行返回
      */
-    override fun getEnvironment(): Environment {
+    override fun getEnvironment(): ConfigurableEnvironment {
         if (this.environment == null) {
             this.environment = createEnvironment()
         }

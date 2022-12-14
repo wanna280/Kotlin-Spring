@@ -1,5 +1,6 @@
 package com.wanna.framework.web.context
 
+import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.lang.Nullable
 import javax.servlet.ServletConfig
 import javax.servlet.ServletContext
@@ -13,7 +14,7 @@ import javax.servlet.ServletContext
  *
  * @see WebApplicationContext
  */
-interface ConfigurableWebApplicationContext : WebApplicationContext {
+interface ConfigurableWebApplicationContext : WebApplicationContext, ConfigurableApplicationContext {
 
     companion object {
         /**

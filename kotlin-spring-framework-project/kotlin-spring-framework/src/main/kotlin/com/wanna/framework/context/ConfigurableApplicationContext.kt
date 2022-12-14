@@ -5,6 +5,7 @@ import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.context.processor.factory.BeanFactoryPostProcessor
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.metrics.ApplicationStartup
+import com.wanna.framework.lang.Nullable
 import java.io.Closeable
 
 /**
@@ -134,7 +135,7 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable, Lifecy
      *
      * @param parent 你想使用的parentApplicationContext(可以为null)
      */
-    fun setParent(parent: ApplicationContext?)
+    fun setParent(@Nullable parent: ApplicationContext?)
 
     /**
      * 设置加载BeanClass的ClassLoader
