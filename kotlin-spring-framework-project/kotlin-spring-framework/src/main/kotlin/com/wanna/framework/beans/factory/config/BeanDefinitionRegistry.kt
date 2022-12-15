@@ -4,7 +4,7 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 
 /**
- * 这是一个BeanDefinition的注册中心，它负责管理BeanDefinition的注册
+ * 这是一个BeanDefinition的注册中心, 它负责管理BeanDefinition的注册、删除
  */
 interface BeanDefinitionRegistry {
     /**
@@ -32,33 +32,36 @@ interface BeanDefinitionRegistry {
     fun getBeanDefinitionNames(): List<String>
 
     /**
-     * 获取已经注册的BeanDefinition的数量
+     * 获取当前BeanDefinitionRegistry已经注册的BeanDefinition的数量
      *
      * @return BeanFactory当中已经注册的BeanDefinition的数量
      */
     fun getBeanDefinitions(): List<BeanDefinition>
 
     /**
-     * 获取BeanDefinition，一定能获取到，如果获取不到直接抛出异常；
-     * 如果想要不抛出异常，请先使用[containsBeanDefinition]方法去进行判断该BeanDefinition是否存在
+     * 获取BeanDefinition, 一定能获取到, 如果获取不到直接抛出异常;
+     * 如果想要不抛出异常, 请先使用[containsBeanDefinition]方法去进行判断该BeanDefinition是否存在
      *
-     * @throws NoSuchBeanDefinitionException 如果没有找到这样的BeanDefinition异常
+     * @param beanName beanName
+     * @return BeanDefinition
      * @see containsBeanDefinition
+     * @throws NoSuchBeanDefinitionException 如果没有找到这样的BeanDefinition异常
      */
+    @Throws(NoSuchBeanDefinitionException::class)
     fun getBeanDefinition(beanName: String): BeanDefinition
 
     /**
      * 检查当前BeanDefinitionRegistry当中是否包含了给定的beanName的BeanDefinition
      *
      * @param name beanName
-     * @return 如果包含了该BeanDefinition，那么return true；否则return false
+     * @return 如果包含了该BeanDefinition, 那么return true; 否则return false
      */
     fun containsBeanDefinition(name: String): Boolean
 
     /**
      * 获取当前BeanDefinitionRegistry当中的BeanDefinition的数量
      *
-     * @return BeanDefinitionRegistry当中的BeanDefinition的数量
+     * @return count of BeanDefinition
      */
     fun getBeanDefinitionCount(): Int
 }

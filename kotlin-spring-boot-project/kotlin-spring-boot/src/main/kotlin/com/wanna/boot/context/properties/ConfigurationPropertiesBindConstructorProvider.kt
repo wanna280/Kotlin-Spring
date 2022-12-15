@@ -5,7 +5,9 @@ import com.wanna.boot.context.properties.bind.Bindable
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.ClassUtils.getQualifiedName
 import java.lang.reflect.Constructor
+import kotlin.jvm.Throws
 
 /**
  * 它主要是解析@ConfigurationProperties注解的Bean当中的@ConstructorBinding注解，去判断一个ConfigurationPropertiesBean
@@ -17,7 +19,7 @@ open class ConfigurationPropertiesBindConstructorProvider : BindConstructorProvi
 
     companion object {
         /**
-         * 对外暴露一个单例对象
+         * 对外暴露一个ConfigurationPropertiesBindConstructorProvide的单例对象
          */
         @JvmField
         val INSTANCE = ConfigurationPropertiesBindConstructorProvider()  // singleton object for visit
@@ -36,7 +38,7 @@ open class ConfigurationPropertiesBindConstructorProvider : BindConstructorProvi
     /**
      * 从给定的类上去寻找标注有[ConstructorBinding]注解的构造器
      *
-     * @return 获取@ConstructorBinding标注的的构造器；找不到的话，return null
+     * @return 获取@ConstructorBinding标注的的构造器; 找不到的话，return null
      */
     @Nullable
     open fun getBindConstructor(type: Class<*>): Constructor<*>? {
@@ -67,18 +69,21 @@ open class ConfigurationPropertiesBindConstructorProvider : BindConstructorProvi
      *
      * @param type 类型
      * @param candidates 要去检查@ConstructorBinding注解的候选的构造器列表
-     * @return 如果找到了，那么return 匹配的构造器；不然return null
+     * @return 如果找到了，那么return 匹配的构造器; 不然return null
      * @throws IllegalStateException 注解标注在无参数构造器上/找到了多个标注了注解的构造器
      */
+    @Nullable
+    @Throws(IllegalStateException::class)
     private fun findAnnotatedConstructor(type: Class<*>, candidates: Array<Constructor<*>>): Constructor<*>? {
         var constructor: Constructor<*>? = null
         candidates.forEach {
+            // 检查候选的构造器当中, 是否有标注了@ConstructorBinding注解的?
             if (AnnotatedElementUtils.isAnnotated(it, ConstructorBinding::class.java)) {
                 if (it.parameterCount == 0) {
-                    throw IllegalStateException("@ConstructorBinding注解不能标注在[type=${ClassUtils.getQualifiedName(type)}]的无参数构造器上")
+                    throw IllegalStateException("@ConstructorBinding注解不能标注在[type=${getQualifiedName(type)}]的无参数构造器上")
                 }
                 if (constructor != null) {
-                    throw IllegalStateException("@ConstructorBinding注解只能标注在[type=${ClassUtils.getQualifiedName(type)}]其中一个有参数构造器上")
+                    throw IllegalStateException("@ConstructorBinding注解只能标注在[type=${getQualifiedName(type)}]其中一个有参数构造器上")
                 }
                 constructor = it
             }
@@ -89,7 +94,7 @@ open class ConfigurationPropertiesBindConstructorProvider : BindConstructorProvi
     /**
      * 判断类上是否标注了@ConstructorBinding注解
      *
-     * @return 标注了return true；不然return false
+     * @return 标注了return true; 不然return false
      */
     private fun isConstructorBindingAnnotatedType(type: Class<*>): Boolean {
         return AnnotatedElementUtils.isAnnotated(type, ConstructorBinding::class.java)
@@ -97,11 +102,15 @@ open class ConfigurationPropertiesBindConstructorProvider : BindConstructorProvi
 
     /**
      * 推断合适的构造器作为@ConstructorBinding的构造器
+     *
+     * @param type 要去进行推断构造器的类
+     * @return 从type这个类上去找到了合适的构造器的话, return 该构造器, 没有找到的话return null
      */
+    @Nullable
     private fun deduceBindConstructor(type: Class<*>): Constructor<*>? {
         // TODO Kotlin的类型匹配
 
-        // 如果是个Java类，并且只要一个有参数构造器的话，return；不然return null
+        // 如果是个Java类，并且只要一个有参数构造器的话，return; 不然return null
         if (type.declaredConstructors.size == 1 && type.declaredConstructors[0].parameterCount > 0) {
             return type.declaredConstructors[0]
         }

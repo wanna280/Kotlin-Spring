@@ -31,7 +31,7 @@ open class ConfigurationPropertiesBean(
 ) {
 
     /**
-     * 绑定方式，是采用Setter的方式去进行注入还是使用构造器的方式去进行注入
+     * 决定当前ConfigurationPropertiesBean的属性绑定方式，是采用Setter的方式去进行注入还是使用构造器的方式去进行注入
      */
     private val bindMethod = BindMethod.forType(bindTarget.type.resolve(Any::class.java))
 
@@ -167,7 +167,7 @@ open class ConfigurationPropertiesBean(
         }
 
         /**
-         * 从给定的工程方法(FactoryMethod, @Bean方法)/type的类上上去找到指定类型的注解
+         * 从给定的工厂方法(FactoryMethod, 也就是对应的@Bean方法)/type的类上上去找到指定类型的注解
          *
          * @param A 要去寻找的目标注解的类型的泛型
          * @param annotationType 要去进行寻找的目标注解的类型
@@ -195,7 +195,7 @@ open class ConfigurationPropertiesBean(
     }
 
     /**
-     * 采用何种方式去进行绑定？JAVA_BEAN/VALUE_OBJECT两种方式
+     * 采用何种方式去进行绑定？JAVA_BEAN/VALUE_OBJECT两种方式, 对于VALUE_OBJECT是那种全部通过构造器去完成属性注入的Java对象
      */
     enum class BindMethod {
         JAVA_BEAN,  // setter for JavaBean
@@ -205,7 +205,7 @@ open class ConfigurationPropertiesBean(
             /**
              * 如果能从指定的Class当中去找到@ConstructorBinding标注的构造器，那么采用VALUE_OBJECT的方式去绑定；否则采用JAVA_BEAN的setter的方式去进行绑定
              *
-             * @return BindMethod for match
+             * @return 匹配到的要去进行绑定的方式, 如果有@ConstructorBinding注解, 那么return VALUE_OBJECT; 如果没有的话, 那么return JAVA_BEAN
              */
             @JvmStatic
             fun forType(type: Class<*>): BindMethod {
