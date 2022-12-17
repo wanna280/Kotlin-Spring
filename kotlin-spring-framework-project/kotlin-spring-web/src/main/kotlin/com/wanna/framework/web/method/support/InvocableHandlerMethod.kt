@@ -4,6 +4,7 @@ import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ParameterNameDiscoverer
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
@@ -90,7 +91,7 @@ open class InvocableHandlerMethod() : HandlerMethod() {
 
         // 初始化parameters和beanType
         this.parameters = Array(method.parameterCount) { MethodParameter(method, it) }
-        this.beanType = bean::class.java
+        this.beanType = ClassUtils.getUserClass(bean)
     }
 
     /**

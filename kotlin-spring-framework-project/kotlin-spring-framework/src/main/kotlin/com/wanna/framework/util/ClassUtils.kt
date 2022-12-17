@@ -28,6 +28,11 @@ object ClassUtils {
     private const val CLASS_FILE_SUFFIX = ".class"
 
     /**
+     * CGLIB生成的代理类的分隔符
+     */
+    const val CGLIB_CLASS_SEPARATOR = "$$"
+
+    /**
      * 包分隔符
      */
     const val PACKAGE_SEPARATOR = "."
@@ -208,12 +213,50 @@ object ClassUtils {
     /**
      * 判断childClass是否是parentClass的子类？如果其中一个返回为空，那么return true；只有两者均不为空时，才会去进行判断
      *
-     * @param parentClass 父类
-     * @param childClass 子类
+     * @param parentClass parentClass
+     * @param childClass parentClass
+     * @see isAssignFrom
      */
     @JvmStatic
-    fun isAssignFrom(@Nullable parentClass: Class<*>?, @Nullable childClass: Class<*>?): Boolean {
-        return if (parentClass != null && childClass != null) parentClass.isAssignableFrom(childClass) else false
+    fun isAssignFrom(@Nullable parentClass: Class<*>?, @Nullable childClass: Class<*>?): Boolean =
+        isAssignable(parentClass, childClass)
+
+    /**
+     * 检查给定的value, 能否被cast为给定的类型
+     *
+     * @param type type
+     * @param value 实例对象
+     * @return 如果value可以被cast成为type, 那么return true; 否则return false
+     */
+    @JvmStatic
+    fun isAssignableValue(type: Class<*>, @Nullable value: Any?): Boolean =
+        if (value != null) isAssignFrom(type, value::class.java) else !type.isPrimitive
+
+    /**
+     * 判断childClass是否是parentClass的子类？如果其中一个返回为空，那么return true；只有两者均不为空时，才会去进行判断
+     *
+     * @param parentClass parentClass
+     * @param childClass childClass
+     * @return 如果childClass可以转换为parentClass, 那么return true; 否则return false
+     */
+    @Nullable
+    fun isAssignable(@Nullable parentClass: Class<*>?, @Nullable childClass: Class<*>?): Boolean {
+        if (parentClass == null || childClass == null) {
+            return false
+        }
+        // 如果类型直接就能去进行转换的话, 那么return true
+        if (parentClass.isAssignableFrom(childClass)) {
+            return true
+        }
+        // 如果parent是基础数据类型的话
+        if (parentClass.isPrimitive) {
+            // 如果parentClass是基础类型的话, 那么看childClass是否是它的包装类?
+            return primitiveWrapperTypeMap[childClass] == childClass
+        }
+        // 如果parentClass不是基础数据类型, 但是childClass为基础数据类型的话, 那么拿出来childClass的包装类, 和parentClass去匹配...
+        // 例如parentClass=Number.class, childClass是Int.class这种情况, 是该return true的
+        val wrapper = primitiveTypeToWrapperMap[childClass]
+        return wrapper != null && parentClass.isAssignableFrom(wrapper)
     }
 
     /**
@@ -226,9 +269,7 @@ object ClassUtils {
      * @return 解析完成的短类名
      */
     @JvmStatic
-    fun getShortName(clazz: Class<*>): String {
-        return getShortName(clazz.name)
-    }
+    fun getShortName(clazz: Class<*>): String = getShortName(clazz.name)
 
     /**
      * 获取一个短的类名，也就是一个类的去掉包名之后的类名
@@ -284,6 +325,7 @@ object ClassUtils {
 
         // 尝试从基础数据类型/commonClass当中去获取
         val clazz = resolvePrimitiveClassName(clazzName) ?: commonClassCache[clazzName]
+        // 如果是一些commonClass的话, 那么直接return
         if (clazz != null) {
             return clazz as Class<T>
         }
@@ -570,6 +612,34 @@ object ClassUtils {
      * @param resourcePath 资源路径
      * @return className
      */
+    @JvmStatic
     fun convertResourcePathToClassName(resourcePath: String): String =
         resourcePath.replace(PATH_SEPARATOR, PACKAGE_SEPARATOR)
+
+    /**
+     * 获取目标对象的用户定义的类型, 因为有些对象是被CGLIB生成的, 因此我们有可能需要获取没有被CGLIB代理之前它的原始的类
+     *
+     * @param value Java对象
+     * @return 该Java对象对应的原始的类
+     */
+    @JvmStatic
+    fun getUserClass(value: Any): Class<*> = getUserClass(value::class.java)
+
+    /**
+     * 获取目标类的用户定义的类型, 因为有些类是被CGLIB生成的, 因此我们有可能需要获取没有被CGLIB代理之前它的原始的类
+     *
+     * @param clazz 原始的类(可能被CGLIB代理过)
+     * @return 解析出来的没有被CGLIB代理之前的用户定义的类
+     */
+    @JvmStatic
+    fun getUserClass(clazz: Class<*>): Class<*> {
+        // 如果类名当中含有"$$", 那么就说明它是被CGLIB代理过的类
+        if (clazz.name.contains(CGLIB_CLASS_SEPARATOR)) {
+            val superclass = clazz.superclass
+            if (superclass != null && superclass != Any::class.java) {
+                return superclass
+            }
+        }
+        return clazz
+    }
 }
