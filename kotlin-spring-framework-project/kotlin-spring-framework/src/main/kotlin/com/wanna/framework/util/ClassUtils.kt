@@ -428,6 +428,43 @@ object ClassUtils {
     }
 
     /**
+     * 获取目标类当中的给定的name的public方法(并且参数名也完全匹配)
+     *
+     * @param clazz clazz
+     * @param methodName methodName
+     * @param paramTypes parameterTypes
+     * @return 如果存在这样的方法, 那么return 该方法; 否则return null
+     */
+    @Nullable
+    @JvmStatic
+    fun getMethodOrNull(clazz: Class<*>, methodName: String, paramTypes: Array<Class<*>>): Method? {
+        try {
+            return clazz.getMethod(methodName, *paramTypes)
+        } catch (ex: Throwable) {
+            return null
+        }
+    }
+
+    /**
+     * 获取给定的类上的给定methodName的方法
+     *
+     * @param clazz clazz
+     * @param methodName methodName
+     * @param paramTypes paramTypes
+     * @return Method(如果无法找到, 或者是数量不为1的话, 那么return null)
+     */
+    @Nullable
+    @JvmStatic
+    fun getMethodIfAvailable(clazz: Class<*>, methodName: String, @Nullable paramTypes: Array<Class<*>>?): Method? {
+        if (paramTypes != null) {
+            return getMethodOrNull(clazz, methodName, paramTypes)
+        } else {
+            val methods = findMethodCandidatesByName(clazz, methodName)
+            return if (methods.size == 1) methods.iterator().next() else null
+        }
+    }
+
+    /**
      * 根据方法名去某个类当中去找到所有匹配的方法列表
      *
      * @param clazz 要去匹配的类

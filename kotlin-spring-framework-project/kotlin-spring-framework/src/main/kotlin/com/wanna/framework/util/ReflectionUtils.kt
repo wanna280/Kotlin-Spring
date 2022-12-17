@@ -1,5 +1,6 @@
 package com.wanna.framework.util
 
+import com.wanna.framework.lang.Nullable
 import java.lang.reflect.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -317,12 +318,15 @@ object ReflectionUtils {
     }
 
     /**
-     * 反射执行目标方法
+     * 使用反射的方式去执行目标方法
+     *
      * @param method 目标方法
      * @param target 目标方法要传递的this对象
+     * @return 执行目标方法的返回值
      */
+    @Nullable
     @JvmStatic
-    fun invokeMethod(method: Method, target: Any?): Any? {
+    fun invokeMethod(method: Method, @Nullable target: Any?): Any? {
         return invokeMethod(method, target, *emptyArray())
     }
 
@@ -335,8 +339,9 @@ object ReflectionUtils {
      * 又是传递的vararg，就导致了数组里套数组的情况，需要使用*将数组中的元素继续进行拆分开
      * @return 执行目标方法返回的对象
      */
+    @Nullable
     @JvmStatic
-    fun invokeMethod(method: Method, target: Any?, vararg args: Any?): Any? {
+    fun invokeMethod(method: Method, @Nullable target: Any?, vararg args: Any?): Any? {
         try {
             return method.invoke(target, *args)
         } catch (ex: Exception) {
