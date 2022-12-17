@@ -1,8 +1,13 @@
 package com.wanna.framework.util
 
+import com.wanna.framework.constants.ANY_ARRAY_TYPE
+import com.wanna.framework.constants.CLASS_ARRAY_TYPE
+import com.wanna.framework.constants.NUMBER_ARRAY_TYPE
+import com.wanna.framework.constants.STRING_ARRAY_TYPE
 import com.wanna.framework.lang.Nullable
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
+import java.util.*
 
 /**
  * Spring当中对于Class相关操作的工具类封装
@@ -104,10 +109,15 @@ object ClassUtils {
         primitiveWrapperTypeMap[Void::class.javaObjectType] = Void::class.java
 
         // 初始化包装类->非包装类之间的映射关系
-        primitiveWrapperTypeMap.forEach { primitiveTypeToWrapperMap[it.value] = it.key }
+        primitiveWrapperTypeMap.forEach {
+            primitiveTypeToWrapperMap[it.value] = it.key
+
+            // register JavaObjectType to CommonClassCache
+            registerCommonClasses(it.key)
+        }
 
         // 统计出来所有的基础数据类型, 以及它的数组类型
-        val primitiveTypes = LinkedHashSet<Class<*>>(primitiveWrapperTypeMap.values)
+        val primitiveTypes = LinkedHashSet(primitiveWrapperTypeMap.values)
         primitiveTypes.addAll(
             arrayOf(
                 IntArray::class.java,
@@ -120,10 +130,61 @@ object ClassUtils {
                 CharArray::class.java
             )
         )
+
         // 初始化基础数据类型的name->type的映射关系
         primitiveTypes.forEach { primitiveTypeNameMap[it.name] = it }
 
+        // 注册基础数据类型数组, 比如Integer[]注册到CommonClassCache当中
+        registerCommonClasses(
+            Array<Boolean?>::class.java,
+            Array<Byte?>::class.java,
+            Array<Char?>::class.java,
+            Array<Double?>::class.java,
+            Array<Float?>::class.java,
+            Array<Int?>::class.java,
+            Array<Long?>::class.java,
+            Array<Short?>::class.java
+        )
+        // 注册Number/Array<Number>/String/Array<String>/Class/Array<Class>/Object/Array<Object>
+        registerCommonClasses(
+            Number::class.java,
+            NUMBER_ARRAY_TYPE::class.java,
+            String::class.java,
+            STRING_ARRAY_TYPE::class.java,
+            Class::class.java,
+            CLASS_ARRAY_TYPE::class.java,
+            Any::class.java,
+            ANY_ARRAY_TYPE::class.java
+        )
 
+        // 注册异常相关的公共类
+        registerCommonClasses(
+            Throwable::class.java, Exception::class.java, RuntimeException::class.java,
+            Error::class.java, StackTraceElement::class.java, Array<StackTraceElement>::class.java
+        )
+
+        // 注册迭代相关的基础类
+        registerCommonClasses(
+            Enum::class.java,
+            Iterable::class.java,
+            MutableIterator::class.java,
+            Enumeration::class.java,
+            MutableCollection::class.java,
+            MutableList::class.java,
+            MutableSet::class.java,
+            MutableMap::class.java,
+            MutableMap.MutableEntry::class.java,
+            Optional::class.java
+        )
+    }
+
+    /**
+     * 将给定的这些类去注册到commonClassesCache这个缓存当中去(提供对于类的解析时的快速获取)
+     *
+     * @param commonClasses 要去进行注册的commonClasses
+     */
+    private fun registerCommonClasses(vararg commonClasses: Class<*>) {
+        commonClasses.forEach { commonClassCache[it.name] = it }
     }
 
     /**
