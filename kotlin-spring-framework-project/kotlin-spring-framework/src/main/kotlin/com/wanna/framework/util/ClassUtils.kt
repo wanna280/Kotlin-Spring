@@ -362,7 +362,12 @@ object ClassUtils {
         return try {
             forName<Any>(className, null)
             true
-        } catch (ex: ClassNotFoundException) {
+        } catch (ex: IllegalAccessException) {
+            throw IllegalStateException(
+                "Readability mismatch in inheritance hierarchy of class [$className], message:${ex.message}", ex
+            )
+        } catch (ex: Throwable) {
+            // NoClassDefException/ClassNotFoundException
             return false
         }
     }
