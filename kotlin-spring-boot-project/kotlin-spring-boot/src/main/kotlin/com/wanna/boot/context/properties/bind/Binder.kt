@@ -498,6 +498,11 @@ class Binder(
         private val dataObjectBindings = ArrayDeque<Class<*>>()
 
         /**
+         * 维护正在去执行构造器绑定的队列
+         */
+        private val constructorBindings = ArrayDeque<Class<*>>()
+
+        /**
          * Source的栈的深度
          */
         private var sourcePushCount: Int = 0
@@ -506,6 +511,25 @@ class Binder(
          * Source栈
          */
         private val source = ArrayList<ConfigurationPropertySource>(listOf())
+
+        /**
+         * 将给定的Class压入到要去进行构造器绑定的type的队列当中
+         *
+         * @param value value
+         */
+        fun pushConstructorBoundTypes(value: Class<*>) = this.constructorBindings.add(value)
+
+        /**
+         * 将正在去进行构造器绑定的队列当中的最后一个Class元素弹出
+         */
+        fun popConstructorBoundTypes() = this.constructorBindings.removeLastOrNull()
+
+        /**
+         * 是否是构造器的嵌套绑定?
+         *
+         * @return 如果是构造器的嵌套绑定return true; 否则return false
+         */
+        fun isNestedConstructorBinding(): Boolean = constructorBindings.isNotEmpty()
 
         /**
          * 使用DataObject的方式去进行绑定
