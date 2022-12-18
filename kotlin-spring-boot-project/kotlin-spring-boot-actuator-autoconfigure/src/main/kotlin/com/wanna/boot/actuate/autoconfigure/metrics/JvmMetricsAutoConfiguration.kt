@@ -65,6 +65,9 @@ open class JvmMetricsAutoConfiguration {
     /**
      * 提供JVM的ClassLoader的指标的Bean
      *
+     * * 1."jvm.classes.loaded", 获取到当前JVM的已经加载的类的数量
+     * * 2."jvm.classes.unloaded", 获取到当前JVM的未加载的类的数量
+     *
      * @return ClassLoaderMetrics
      */
     @Bean
@@ -73,6 +76,10 @@ open class JvmMetricsAutoConfiguration {
 
     /**
      * 提供JVM的信息的监控指标的Bean
+     *
+     * * 1."java.runtime.version", 获取当前JVM的Java运行时版本
+     * * 2."java.vm.vendor", 获取当前JVM的供应商信息(例如"Oracle Corporation")
+     * * 3."java.runtime.name"获取到Java的运行时
      *
      * @return JvmInfoMetrics
      */

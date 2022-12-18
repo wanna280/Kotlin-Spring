@@ -194,7 +194,7 @@ class Binder(
         // 根据属性名, 从PropertySource列表当中去找到合适的ConfigurationProperty
         val property = findProperty(name, target, context)
 
-        // 如果找不到对应的属性值, 并且深度不为0的话, 并且了确实一定是不存在有这样的name作为前缀对应的子属性的话, 那么pass掉...return null
+        // 如果找不到对应的属性值, 并且深度不为0的话, 并且已经确定了确实一定是不存在有这样的name作为前缀对应的子属性的话, 那么pass掉...return null
         if (property == null && context.getDepth() != 0 && containsNoDescendantOf(context.getSources(), name)) {
             return null
         }
@@ -396,6 +396,11 @@ class Binder(
         // 获取到目标对象的类型
         val type = target.type.resolve(Any::class.java)
 
+        // 如果不允许递归绑定, 并且当前类已经在DataObject的绑定栈当中了, 那么别去进行继续绑定了, return null
+        if (!allowRecursiveBinding && context.isDataObjectBinding(type)) {
+            return null
+        }
+
         // 获取对单个的属性值去进行绑定的DataObjectPropertyBinder
         // 对于PropertyBinder的target, 是属性值的target, 也就是基于一个对象的具体字段去进行的描述信息
         // 一个字段来说, 应该也需要使用bind方法去进行绑定, 其实也就是递归绑定, 对于一个对象内部的定义的对象, 都支持进行递归的绑定
@@ -404,10 +409,6 @@ class Binder(
             // (1)对于某一个字段来说, 它需要绑定的配置文件的前缀为"{name}.{propertyName}", 因此这里需要生成出来子属性名...
             // (2)这里需要去进行绑定的是某个属性的Bindable(propertyTarget), 而不是原始的target...
             bind(name.append(propertyName), propertyTarget, handler, false)
-        }
-        // 如果不允许递归绑定, 并且当前类已经在DataObject的绑定栈当中了, 那么别去进行继续绑定了, return null
-        if (!allowRecursiveBinding && context.isDataObjectBinding(type)) {
-            return null
         }
 
         // 利用所有的DataObjectBinder, 尝试去对target去使用JavaBean的绑定方式进行绑定
@@ -497,6 +498,11 @@ class Binder(
         private val dataObjectBindings = ArrayDeque<Class<*>>()
 
         /**
+         * 维护正在去执行构造器绑定的队列
+         */
+        private val constructorBindings = ArrayDeque<Class<*>>()
+
+        /**
          * Source的栈的深度
          */
         private var sourcePushCount: Int = 0
@@ -505,6 +511,25 @@ class Binder(
          * Source栈
          */
         private val source = ArrayList<ConfigurationPropertySource>(listOf())
+
+        /**
+         * 将给定的Class压入到要去进行构造器绑定的type的队列当中
+         *
+         * @param value value
+         */
+        fun pushConstructorBoundTypes(value: Class<*>) = this.constructorBindings.add(value)
+
+        /**
+         * 将正在去进行构造器绑定的队列当中的最后一个Class元素弹出
+         */
+        fun popConstructorBoundTypes() = this.constructorBindings.removeLastOrNull()
+
+        /**
+         * 是否是构造器的嵌套绑定?
+         *
+         * @return 如果是构造器的嵌套绑定return true; 否则return false
+         */
+        fun isNestedConstructorBinding(): Boolean = constructorBindings.isNotEmpty()
 
         /**
          * 使用DataObject的方式去进行绑定

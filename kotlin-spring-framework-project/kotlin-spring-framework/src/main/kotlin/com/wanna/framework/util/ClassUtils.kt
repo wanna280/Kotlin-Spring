@@ -1,8 +1,13 @@
 package com.wanna.framework.util
 
+import com.wanna.framework.constants.ANY_ARRAY_TYPE
+import com.wanna.framework.constants.CLASS_ARRAY_TYPE
+import com.wanna.framework.constants.NUMBER_ARRAY_TYPE
+import com.wanna.framework.constants.STRING_ARRAY_TYPE
 import com.wanna.framework.lang.Nullable
 import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
+import java.util.*
 
 /**
  * Spring当中对于Class相关操作的工具类封装
@@ -23,6 +28,11 @@ object ClassUtils {
     private const val CLASS_FILE_SUFFIX = ".class"
 
     /**
+     * CGLIB生成的代理类的分隔符
+     */
+    const val CGLIB_CLASS_SEPARATOR = "$$"
+
+    /**
      * 包分隔符
      */
     const val PACKAGE_SEPARATOR = "."
@@ -38,19 +48,215 @@ object ClassUtils {
     const val ARRAY_SUFFIX = "[]"
 
     /**
+     * 非基础类型的数组前缀, 例如"[Ljava.lang.String;"
+     */
+    const val NON_PRIMITIVE_ARRAY_PREFIX = "[L"
+
+    /**
+     * 内层数组的前缀, 比如"[[I"或者是"[[java.lang.String;"这种情况
+     */
+    const val INTERNAL_ARRAY_PREFIX = "["
+
+    /**
+     * 内部类的分隔符
+     */
+    const val NESTED_CLASS_SEPARATOR = "$"
+
+    /**
      * Logger
      */
+    @JvmStatic
     private val logger = LoggerFactory.getLogger(ClassUtils::class.java)
+
+    /**
+     * Java的8种基础数据类型的"包装类->非包装类型"的映射关系
+     */
+    @JvmStatic
+    private val primitiveWrapperTypeMap = LinkedHashMap<Class<*>, Class<*>>(8)
+
+    /**
+     * Java的8钟基础类型的"非包装类型->包装类型的映射关系"
+     */
+    @JvmStatic
+    private val primitiveTypeToWrapperMap = LinkedHashMap<Class<*>, Class<*>>(8)
+
+    /**
+     * Java的8种基础数据类型的name->Type之间的映射关系, 例如"int"->"int.class", 当然也包含了对应的数组类型
+     */
+    @JvmStatic
+    private val primitiveTypeNameMap = LinkedHashMap<String, Class<*>>(8)
+
+    /**
+     * 一些公共类的Cache
+     */
+    private val commonClassCache = LinkedHashMap<String, Class<*>>()
+
+    init {
+
+        // 初始化包装类->非包装类的映射关系(8种基础数据类型&Void)
+        // Integer->int
+        primitiveWrapperTypeMap[Int::class.javaObjectType] = Int::class.java
+        // Double->double
+        primitiveWrapperTypeMap[Double::class.javaObjectType] = Double::class.java
+        // Boolean->boolean
+        primitiveWrapperTypeMap[Boolean::class.javaObjectType] = Boolean::class.java
+        // Float->float
+        primitiveWrapperTypeMap[Float::class.javaObjectType] = Float::class.java
+        // Byte->byte
+        primitiveWrapperTypeMap[Byte::class.javaObjectType] = Byte::class.java
+        // Long->long
+        primitiveWrapperTypeMap[Long::class.javaObjectType] = Long::class.java
+        // Short->short
+        primitiveWrapperTypeMap[Short::class.javaObjectType] = Short::class.java
+        // Char->char
+        primitiveWrapperTypeMap[Char::class.javaObjectType] = Char::class.java
+        // Void->void
+        primitiveWrapperTypeMap[Void::class.javaObjectType] = Void::class.java
+
+        // 初始化包装类->非包装类之间的映射关系
+        primitiveWrapperTypeMap.forEach {
+            primitiveTypeToWrapperMap[it.value] = it.key
+
+            // register JavaObjectType to CommonClassCache
+            registerCommonClasses(it.key)
+        }
+
+        // 统计出来所有的基础数据类型, 以及它的数组类型
+        val primitiveTypes = LinkedHashSet(primitiveWrapperTypeMap.values)
+        primitiveTypes.addAll(
+            arrayOf(
+                IntArray::class.java,
+                DoubleArray::class.java,
+                BooleanArray::class.java,
+                FloatArray::class.java,
+                ByteArray::class.java,
+                LongArray::class.java,
+                ShortArray::class.java,
+                CharArray::class.java
+            )
+        )
+
+        // 初始化基础数据类型的name->type的映射关系
+        primitiveTypes.forEach { primitiveTypeNameMap[it.name] = it }
+
+        // 注册基础数据类型数组, 比如Integer[]注册到CommonClassCache当中
+        registerCommonClasses(
+            Array<Boolean?>::class.java,
+            Array<Byte?>::class.java,
+            Array<Char?>::class.java,
+            Array<Double?>::class.java,
+            Array<Float?>::class.java,
+            Array<Int?>::class.java,
+            Array<Long?>::class.java,
+            Array<Short?>::class.java
+        )
+        // 注册Number/Array<Number>/String/Array<String>/Class/Array<Class>/Object/Array<Object>
+        registerCommonClasses(
+            Number::class.java,
+            NUMBER_ARRAY_TYPE::class.java,
+            String::class.java,
+            STRING_ARRAY_TYPE::class.java,
+            Class::class.java,
+            CLASS_ARRAY_TYPE::class.java,
+            Any::class.java,
+            ANY_ARRAY_TYPE::class.java
+        )
+
+        // 注册异常相关的公共类
+        registerCommonClasses(
+            Throwable::class.java, Exception::class.java, RuntimeException::class.java,
+            Error::class.java, StackTraceElement::class.java, Array<StackTraceElement>::class.java
+        )
+
+        // 注册迭代相关的基础类
+        registerCommonClasses(
+            Enum::class.java,
+            Iterable::class.java,
+            MutableIterator::class.java,
+            Enumeration::class.java,
+            MutableCollection::class.java,
+            MutableList::class.java,
+            MutableSet::class.java,
+            MutableMap::class.java,
+            MutableMap.MutableEntry::class.java,
+            Optional::class.java
+        )
+    }
+
+    /**
+     * 将给定的这些类去注册到commonClassesCache这个缓存当中去(提供对于类的解析时的快速获取)
+     *
+     * @param commonClasses 要去进行注册的commonClasses
+     */
+    private fun registerCommonClasses(vararg commonClasses: Class<*>) {
+        commonClasses.forEach { commonClassCache[it.name] = it }
+    }
+
+    /**
+     * 根据基础数据类型的name去获取到对应的基础数据类型的Class
+     *
+     * @param name (int/float/double/long/...)
+     * @return 如果name是一个基础数据类型, 返回对应的基础数据类型Class; 否则return null
+     */
+    @JvmStatic
+    @Nullable
+    fun resolvePrimitiveClassName(@Nullable name: String?): Class<*>? {
+        var result: Class<*>? = null
+        // 因为对于大多数的类都会很长, 因为它们都被放到一个包当中,
+        // 但是基础数据类型没有包, 因此对于包的长度检验是很有价值的...
+        if (name != null && name.length < 7) {
+            result = primitiveTypeNameMap[name]
+        }
+        return result
+    }
 
     /**
      * 判断childClass是否是parentClass的子类？如果其中一个返回为空，那么return true；只有两者均不为空时，才会去进行判断
      *
-     * @param parentClass 父类
-     * @param childClass 子类
+     * @param parentClass parentClass
+     * @param childClass parentClass
+     * @see isAssignFrom
      */
     @JvmStatic
-    fun isAssignFrom(@Nullable parentClass: Class<*>?, @Nullable childClass: Class<*>?): Boolean {
-        return if (parentClass != null && childClass != null) parentClass.isAssignableFrom(childClass) else false
+    fun isAssignFrom(@Nullable parentClass: Class<*>?, @Nullable childClass: Class<*>?): Boolean =
+        isAssignable(parentClass, childClass)
+
+    /**
+     * 检查给定的value, 能否被cast为给定的类型
+     *
+     * @param type type
+     * @param value 实例对象
+     * @return 如果value可以被cast成为type, 那么return true; 否则return false
+     */
+    @JvmStatic
+    fun isAssignableValue(type: Class<*>, @Nullable value: Any?): Boolean =
+        if (value != null) isAssignFrom(type, value::class.java) else !type.isPrimitive
+
+    /**
+     * 判断childClass是否是parentClass的子类？如果其中一个返回为空，那么return true；只有两者均不为空时，才会去进行判断
+     *
+     * @param parentClass parentClass
+     * @param childClass childClass
+     * @return 如果childClass可以转换为parentClass, 那么return true; 否则return false
+     */
+    @Nullable
+    fun isAssignable(@Nullable parentClass: Class<*>?, @Nullable childClass: Class<*>?): Boolean {
+        if (parentClass == null || childClass == null) {
+            return false
+        }
+        // 如果类型直接就能去进行转换的话, 那么return true
+        if (parentClass.isAssignableFrom(childClass)) {
+            return true
+        }
+        // 如果parent是基础数据类型的话
+        if (parentClass.isPrimitive) {
+            // 如果parentClass是基础类型的话, 那么看childClass是否是它的包装类?
+            return primitiveWrapperTypeMap[childClass] == childClass
+        }
+        // 如果parentClass不是基础数据类型, 但是childClass为基础数据类型的话, 那么拿出来childClass的包装类, 和parentClass去匹配...
+        // 例如parentClass=Number.class, childClass是Int.class这种情况, 是该return true的
+        val wrapper = primitiveTypeToWrapperMap[childClass]
+        return wrapper != null && parentClass.isAssignableFrom(wrapper)
     }
 
     /**
@@ -63,9 +269,7 @@ object ClassUtils {
      * @return 解析完成的短类名
      */
     @JvmStatic
-    fun getShortName(clazz: Class<*>): String {
-        return getShortName(clazz.name)
-    }
+    fun getShortName(clazz: Class<*>): String = getShortName(clazz.name)
 
     /**
      * 获取一个短的类名，也就是一个类的去掉包名之后的类名
@@ -108,19 +312,63 @@ object ClassUtils {
     /**
      * 使用Class.forName的方式去，获取到Class(可以使用自定义的ClassLoader)
      *
+     * Note: 支持各种各样的数组风格, 也支持基于基础数据类型的Class的获取
+     *
      * @param clazzName className
      * @param classLoader 要使用的ClassLoader
-     * @return 加载到的类
+     * @return 根据给定的className, 去获取到的类Class对象
+     * @throws ClassNotFoundException 如果给定的className对应的类无法找到
      */
     @Throws(ClassNotFoundException::class)
     @JvmStatic
     fun <T> forName(clazzName: String, @Nullable classLoader: ClassLoader?): Class<T> {
+
+        // 尝试从基础数据类型/commonClass当中去获取
+        val clazz = resolvePrimitiveClassName(clazzName) ?: commonClassCache[clazzName]
+        // 如果是一些commonClass的话, 那么直接return
+        if (clazz != null) {
+            return clazz as Class<T>
+        }
+        // 如果它是以"[]"作为后缀的话, 说明它是数组类型话, 那么需要解析它的elementType去进行递归forName
+        if (clazzName.endsWith(ARRAY_SUFFIX)) {
+            val elementClassName = clazzName.substring(0, clazzName.length - ARRAY_SUFFIX.length)
+            val elementClass = forName<Any>(elementClassName, classLoader)
+            return java.lang.reflect.Array.newInstance(elementClass, 0).javaClass as Class<T>
+        }
+        // 如果是"[Ljava.lang.String;"这种风格的数组的话, 那么也需要解析它的elementType去进行递归forName
+        if (clazzName.startsWith(NON_PRIMITIVE_ARRAY_PREFIX) && clazzName.endsWith(";")) {
+            val elementClassName = clazzName.substring(NON_PRIMITIVE_ARRAY_PREFIX.length, clazzName.length - 1)
+            val elementClass = forName<Any>(elementClassName, classLoader)
+            return java.lang.reflect.Array.newInstance(elementClass, 0).javaClass as Class<T>
+        }
+
+        // 如果不是以"[]"作为后缀, 也不是以"[L"作为前缀, 但是是以"["作为前缀的话, 它可能是一个多层的数组, 也需要递归解析元素类型
+        if (clazzName.startsWith(INTERNAL_ARRAY_PREFIX)) {
+            val elementClassName = clazzName.substring(INTERNAL_ARRAY_PREFIX.length)
+            val elementClass = forName<Any>(elementClassName, classLoader)
+            return java.lang.reflect.Array.newInstance(elementClass, 0).javaClass as Class<T>
+        }
+
+        // 如果不是数组的话, 那么我们支持
         val classLoaderToUse = classLoader ?: getDefaultClassLoader()
         try {
             return Class.forName(clazzName, false, classLoaderToUse) as Class<T>
         } catch (ex: ClassNotFoundException) {
+            // 如果丢出来异常的话, 那么继续尝试解析一下看它是否是内部类的情况, 但是写成了"."的方式去进行分割的className
+            // 比如com.wanna.UserInfo的内部类有一个User, 那么支持fallback去使用com.wanna.UserInfo.User的方式去获取到这个内部类
+            val dotIndex = clazzName.lastIndexOf(DOT)
+            if (dotIndex != -1) {
+                // 如果是
+                val nestedClassName =
+                    clazzName.substring(0, dotIndex) + NESTED_CLASS_SEPARATOR + clazzName.substring(dotIndex + 1)
+                try {
+                    return forName<T>(nestedClassName, classLoader)
+                } catch (ex: ClassNotFoundException) {
+                    // 对于解析内部类的fallback的情况, 我们不进行处理, 别把外层的原始异常吃掉了... 需要直接把原始的异常丢出去
+                }
+            }
             if (logger.isTraceEnabled) {
-                logger.trace("无法从当前JVM的依赖当中去解析到给定的className=[$clazzName]的类")
+                logger.trace("Cannot find Class for name: $clazzName, classLoader=$classLoaderToUse")
             }
             throw ex
         }
@@ -156,7 +404,12 @@ object ClassUtils {
         return try {
             forName<Any>(className, null)
             true
-        } catch (ex: ClassNotFoundException) {
+        } catch (ex: IllegalAccessException) {
+            throw IllegalStateException(
+                "Readability mismatch in inheritance hierarchy of class [$className], message:${ex.message}", ex
+            )
+        } catch (ex: Throwable) {
+            // NoClassDefException/ClassNotFoundException
             return false
         }
     }
@@ -172,6 +425,43 @@ object ClassUtils {
     fun hasMethod(clazz: Class<*>, methodName: String): Boolean {
         val candidates = findMethodCandidatesByName(clazz, methodName)
         return candidates.size == 1
+    }
+
+    /**
+     * 获取目标类当中的给定的name的public方法(并且参数名也完全匹配)
+     *
+     * @param clazz clazz
+     * @param methodName methodName
+     * @param paramTypes parameterTypes
+     * @return 如果存在这样的方法, 那么return 该方法; 否则return null
+     */
+    @Nullable
+    @JvmStatic
+    fun getMethodOrNull(clazz: Class<*>, methodName: String, paramTypes: Array<Class<*>>): Method? {
+        try {
+            return clazz.getMethod(methodName, *paramTypes)
+        } catch (ex: Throwable) {
+            return null
+        }
+    }
+
+    /**
+     * 获取给定的类上的给定methodName的方法
+     *
+     * @param clazz clazz
+     * @param methodName methodName
+     * @param paramTypes paramTypes
+     * @return Method(如果无法找到, 或者是数量不为1的话, 那么return null)
+     */
+    @Nullable
+    @JvmStatic
+    fun getMethodIfAvailable(clazz: Class<*>, methodName: String, @Nullable paramTypes: Array<Class<*>>?): Method? {
+        if (paramTypes != null) {
+            return getMethodOrNull(clazz, methodName, paramTypes)
+        } else {
+            val methods = findMethodCandidatesByName(clazz, methodName)
+            return if (methods.size == 1) methods.iterator().next() else null
+        }
     }
 
     /**
@@ -359,6 +649,34 @@ object ClassUtils {
      * @param resourcePath 资源路径
      * @return className
      */
+    @JvmStatic
     fun convertResourcePathToClassName(resourcePath: String): String =
         resourcePath.replace(PATH_SEPARATOR, PACKAGE_SEPARATOR)
+
+    /**
+     * 获取目标对象的用户定义的类型, 因为有些对象是被CGLIB生成的, 因此我们有可能需要获取没有被CGLIB代理之前它的原始的类
+     *
+     * @param value Java对象
+     * @return 该Java对象对应的原始的类
+     */
+    @JvmStatic
+    fun getUserClass(value: Any): Class<*> = getUserClass(value::class.java)
+
+    /**
+     * 获取目标类的用户定义的类型, 因为有些类是被CGLIB生成的, 因此我们有可能需要获取没有被CGLIB代理之前它的原始的类
+     *
+     * @param clazz 原始的类(可能被CGLIB代理过)
+     * @return 解析出来的没有被CGLIB代理之前的用户定义的类
+     */
+    @JvmStatic
+    fun getUserClass(clazz: Class<*>): Class<*> {
+        // 如果类名当中含有"$$", 那么就说明它是被CGLIB代理过的类
+        if (clazz.name.contains(CGLIB_CLASS_SEPARATOR)) {
+            val superclass = clazz.superclass
+            if (superclass != null && superclass != Any::class.java) {
+                return superclass
+            }
+        }
+        return clazz
+    }
 }

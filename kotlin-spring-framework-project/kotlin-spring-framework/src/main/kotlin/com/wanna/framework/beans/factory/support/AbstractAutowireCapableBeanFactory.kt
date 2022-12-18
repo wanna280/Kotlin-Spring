@@ -21,10 +21,13 @@ import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.util.StringUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.beans.Introspector
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 import java.util.function.Supplier
+import kotlin.jvm.Throws
 
 /**
  * 这是一个拥有Autowire自动装配能力的BeanFactory, 不仅提供了普通的BeanFactory的能力,
@@ -34,6 +37,12 @@ import java.util.function.Supplier
  * @see DefaultListableBeanFactory
  */
 abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), AutowireCapableBeanFactory {
+
+    /**
+     * Logger
+     */
+    protected val logger: Logger = LoggerFactory.getLogger(this::class.java)
+
 
     /**
      * 提供一个存在有parentBeanFactory的构造器
@@ -606,18 +615,36 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
      * @param beanName beanName
      * @param mbd MergedBeanDefinition
      */
-    private fun invokeInitMethod(bean: Any, beanName: String, @Nullable mbd: RootBeanDefinition?) {
+    protected open fun invokeInitMethod(bean: Any, beanName: String, @Nullable mbd: RootBeanDefinition?) {
         // 如果它是一个InitializingBean, 那么需要在这里去进行回调去完成Bean的初始化
         if (bean is InitializingBean) {
             bean.afterPropertiesSet()
         }
+
         val beanClass = bean::class.java
         // 如果beanDefinition当中设置了initMethodName的话, 那么需要获取该方法去执行
         if (mbd != null && beanClass != NullBean::class.java && StringUtils.hasText(mbd.getInitMethodName())) {
-            val initMethod = beanClass.getMethod(mbd.getInitMethodName()!!)
-            ReflectionUtils.makeAccessible(initMethod)
-            ReflectionUtils.invokeMethod(initMethod, bean)
+            invokeCustomInitMethod(beanName, bean, mbd)
         }
+    }
+
+    /**
+     * 执行自定义的init方法
+     *
+     * @param bean bean
+     * @param beanName beanName
+     * @param mbd MergedBeanDefinition
+     */
+    @Throws(Throwable::class)
+    protected open fun invokeCustomInitMethod(beanName: String, bean: Any, mbd: RootBeanDefinition) {
+        val initMethod = ClassUtils.getMethodOrNull(bean::class.java, mbd.getInitMethodName()!!, emptyArray()) ?: return
+
+        // trace log
+        if (logger.isTraceEnabled) {
+            logger.trace("Invoking init method '${initMethod.name}' on bean with name $beanName")
+        }
+        ReflectionUtils.makeAccessible(initMethod)
+        ReflectionUtils.invokeMethod(initMethod, bean)
     }
 
     /**

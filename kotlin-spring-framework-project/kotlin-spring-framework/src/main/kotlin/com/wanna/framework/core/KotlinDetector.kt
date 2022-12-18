@@ -9,11 +9,18 @@ import java.lang.reflect.Method
  */
 object KotlinDetector {
 
+    /**
+     * Kotlin的@Metadata注解, 标识它是一个Kotlin的类(不存在的话, 值为null)
+     */
     @JvmStatic
-    private var kotlinMetadata: Class<out Annotation>? = null  // Kotlin Metadata
+    private var kotlinMetadata: Class<out Annotation>? = null
 
+    /**
+     * Kotlin反射是否存在的标识位？
+     */
     @JvmStatic
-    private var kotlinReflectPresent: Boolean = false // Kotlin反射是否存在？
+    private var kotlinReflectPresent: Boolean =
+        ClassUtils.isPresent("kotlin.reflect.full.KClasses", KotlinDetector::class.java.classLoader)
 
     init {
         val classLoader = KotlinDetector::class.java.classLoader
@@ -22,26 +29,35 @@ object KotlinDetector {
         } catch (ex: ClassNotFoundException) {
             null
         }
-        kotlinReflectPresent = ClassUtils.isPresent("kotlin.reflect.full.KClasses", classLoader)
     }
 
     /**
-     * Kotlin是否存在？
+     * 检查当前环境当中Kotlin是否存在? (探测Kotlin的`@Metadata`注解是否存在)
+     *
+     * @return 如果当前环境当中是Kotlin环境, return true; 否则return false
      */
     fun isKotlinPresent(): Boolean = kotlinMetadata != null
 
     /**
      * 它是否是一个Kotlin类型？判断Kotlin的Metadata标识类是否存在即可
+     *
+     * @param clazz 待探查的目标类
+     * @return 如果它是KotlinType, return true; 否则return false
      */
     fun isKotlinType(clazz: Class<*>): Boolean = kotlinMetadata != null && clazz.isAnnotationPresent(kotlinMetadata!!)
 
     /**
      * 是否Kotlin反射的相关依赖存在？
+     *
+     * @return Kotlin反射存在, return true; 否则return false
      */
     fun isKotlinReflectPresent(): Boolean = kotlinReflectPresent
 
     /**
      * 是否是一个Kotlin的挂起函数？只需要判断函数的最后一个参数是否是Continuation即可
+     *
+     * @param method 要去检测的方法
+     * @return 它是否是一个Kotlin的挂起函数?
      */
     fun isSuspendingFunction(method: Method): Boolean {
         if (isKotlinType(method.declaringClass)) {

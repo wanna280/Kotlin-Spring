@@ -6,6 +6,7 @@ import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ReflectionUtils
+import org.slf4j.LoggerFactory
 import java.beans.Introspector
 import java.lang.reflect.Field
 import java.lang.reflect.Method
@@ -14,13 +15,13 @@ import java.util.function.BiConsumer
 import java.util.function.Supplier
 
 /**
- * JavaBean的Binder, 提供对于JavaBean的属性绑定功能
+ * JavaBean的Binder, 基于JavaBean的Getter&Setter的方式去进行提供JavaBean的属性绑定功能
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/12/3
  */
-class JavaBeanBinder : DataObjectBinder {
+open class JavaBeanBinder : DataObjectBinder {
 
     companion object {
         /**
@@ -28,6 +29,12 @@ class JavaBeanBinder : DataObjectBinder {
          */
         @JvmStatic
         val INSTANCE = JavaBeanBinder()
+
+        /**
+         * Logger
+         */
+        @JvmStatic
+        private val logger = LoggerFactory.getLogger(JavaBeanBinder::class.java)
     }
 
     /**
@@ -40,7 +47,7 @@ class JavaBeanBinder : DataObjectBinder {
      * @param target 要去进行绑定的对象目标Bindable(可能是来自一个正常的Java对象, 也可能是来自于一个BeanProperty的Getter字段)
      * @param context Binder去进行绑定属性时用到的上下文信息
      * @param propertyBinder 对单个属性去提供绑定的PropertyBinder
-     * @return 绑定完成的实例对象(或者是null)
+     * @return 绑定完成的实例对象(或者是绑定失败return null)
      */
     override fun <T : Any> bind(
         name: ConfigurationPropertyName,
@@ -56,6 +63,8 @@ class JavaBeanBinder : DataObjectBinder {
 
         // 执行真正的绑定工作, 遍历所有的BeanProperty, 去执行逐一绑定...
         val bound = bind(propertyBinder, bean, beanSupplier, context)
+
+        // 如果其中一个字段绑定成功, 那么返回绑定成功的对象; 否则return null
         return if (bound) beanSupplier.get() else null
     }
 

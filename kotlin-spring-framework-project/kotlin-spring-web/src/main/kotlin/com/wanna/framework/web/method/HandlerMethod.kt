@@ -4,6 +4,7 @@ import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 import java.lang.reflect.Method
 import java.util.*
 
@@ -75,7 +76,9 @@ open class HandlerMethod() {
         this.bean = handler
         this.method = method
         this.parameters = Array(method.parameterCount) { MethodParameter(method, it) }
-        this.beanType = beanFactory.getType(handler)
+        val type = beanFactory.getType(handler)
+            ?: throw IllegalStateException("Cannot resolve bean type for bean with name '$handler'")
+        this.beanType = ClassUtils.getUserClass(type)
     }
 
     /**
@@ -90,7 +93,7 @@ open class HandlerMethod() {
 
         // 初始化parameters和beanType
         this.parameters = Array(method.parameterCount) { MethodParameter(method, it) }
-        this.beanType = bean::class.java
+        this.beanType = ClassUtils.getUserClass(bean)
     }
 
 

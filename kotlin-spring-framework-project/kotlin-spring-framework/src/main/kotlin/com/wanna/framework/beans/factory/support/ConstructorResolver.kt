@@ -8,6 +8,8 @@ import com.wanna.framework.beans.factory.config.ConstructorArgumentValues
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.NamedThreadLocal
+import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 import java.beans.ConstructorProperties
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
@@ -23,17 +25,25 @@ import java.lang.reflect.Method
 open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableBeanFactory) {
 
     companion object {
-        // 空参数的标识符
+        /**
+         * 空参数的标识符
+         */
         private val EMPTY_ARGS = emptyArray<Any>()
 
-        // 当前正在注入的的InjectionPoint(字段/方法参数)
+        /**
+         * 当前正在注入的的InjectionPoint(字段/方法参数)
+         */
         private val currentInjectionPoint = NamedThreadLocal<InjectionPoint>("Current Injection Point")
 
         /**
          * 设置新的InjectionPoint，并返回之前的InjectionPoint
+         *
+         * @param injectionPoint newInjectionPoint
+         * @return oldInjectionPoint
          */
+        @Nullable
         @JvmStatic
-        fun setCurrentInjectionPoint(injectionPoint: InjectionPoint?): InjectionPoint? {
+        fun setCurrentInjectionPoint(@Nullable injectionPoint: InjectionPoint?): InjectionPoint? {
             val old = currentInjectionPoint.get()
             if (injectionPoint != null) {
                 currentInjectionPoint.set(old)
@@ -56,7 +66,10 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
      * @return beanWrapper
      */
     open fun autowireConstructor(
-        beanName: String, mbd: RootBeanDefinition, ctors: Array<Constructor<*>>?, args: Array<out Any?>?
+        beanName: String,
+        mbd: RootBeanDefinition,
+        @Nullable ctors: Array<Constructor<*>>?,
+        @Nullable args: Array<out Any?>?
     ): BeanWrapper {
         val beanWrapper = BeanWrapperImpl()
 
@@ -170,7 +183,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
 
         if (factoryMethodName != null) {
             factoryBean = beanFactory.getBean(factoryBeanName!!)
-            factoryClass = factoryBean::class.java
+            factoryClass = ClassUtils.getUserClass(factoryBean)
         }
 
         val parameterNameDiscoverer = this.beanFactory.getParameterNameDiscoverer()
@@ -214,7 +227,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
         beanWrapper: BeanWrapper,
         resolveValues: ConstructorArgumentValues?,
         paramTypes: Array<Class<*>>,
-        paramNames: Array<String>?,
+        @Nullable paramNames: Array<String>?,
         executable: Executable,
         autowiring: Boolean = true
     ): Array<Any?> {

@@ -29,4 +29,14 @@ open class FilteredIterableConfigurationPropertiesSource(
         }
         throw IllegalStateException("给定的source=[$source], type=[${getQualifiedName(source::class.java)}], 类型不是IterableConfigurationPropertySource, 无法去进行迭代")
     }
+
+    /**
+     * 是否含有给定的属性名的子属性Key?
+     *
+     * @param name 前缀
+     * @return 是否包含该前缀的属性Key?
+     */
+    override fun containsDescendantOf(name: ConfigurationPropertyName): ConfigurationPropertyState {
+        return source.containsDescendantOf(name)
+    }
 }

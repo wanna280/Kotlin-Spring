@@ -57,7 +57,11 @@ open class SpringIterableConfigurationPropertySource(
      * @return 如果存在return PRESENT, 如果不存在, return ABSENT; 默认实现为UNKNOWN
      */
     override fun containsDescendantOf(name: ConfigurationPropertyName): ConfigurationPropertyState {
-        // TODO, 这里需要根据属性名去进行一个个匹配...
-        return ConfigurationPropertyState.UNKNOWN
+        getConfigurationPropertyNames().forEach {
+            if (name.isAncestorOf(it)) {
+                return ConfigurationPropertyState.PRESENT
+            }
+        }
+        return ConfigurationPropertyState.ABSENT
     }
 }

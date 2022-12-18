@@ -14,11 +14,15 @@ import com.wanna.framework.util.ClassUtils
  */
 open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowireCandidateResolver() {
 
-    // value的注解类型
+    /**
+     * Value的注解类型
+     */
     private var valueAnnotationType: Class<out Annotation> = Value::class.java
 
     companion object {
-        // Qualifier的注解列表，包括来自于javax.annotation包下的的Qualifier注解，也包括来自于Spring家的Qualifier
+        /**
+         * Qualifier的注解列表，包括来自于javax.annotation包下的的Qualifier注解，也包括来自于Spring家的Qualifier
+         */
         private val qualifierAnnotationTypes: MutableList<Class<out Annotation>> = ArrayList()
 
         init {
@@ -157,7 +161,8 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
         var targetAnnotation: Annotation? = null
         val beanClass = beanDefinition.getBeanClass()
         if (beanClass != null) {
-            targetAnnotation = AnnotatedElementUtils.getMergedAnnotation(beanClass, annotationClass)
+            targetAnnotation = AnnotatedElementUtils
+                .getMergedAnnotation(ClassUtils.getUserClass(beanClass), annotationClass)
         }
         if (beanDefinition.getFactoryMethodName() != null && targetAnnotation == null) {
             val factoryMethod = beanDefinition.getResolvedFactoryMethod()!!

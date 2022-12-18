@@ -2,6 +2,7 @@ package com.wanna.framework.web.handler
 
 import com.wanna.framework.beans.factory.InitializingBean
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.LinkedMultiValueMap
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.web.HandlerMapping
@@ -116,9 +117,12 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     protected open fun detectHandlerMethods(handler: Any) {
         // 如果给定的handler是String，那么从容器当中getType；如果它不是String，那么直接getClass
         val handlerType = if (handler is String) obtainApplicationContext().getType(handler)!! else handler::class.java
-        ReflectionUtils.doWithMethods(handlerType) {
+
+        // 获取到userClass(因为handlerType有可能被CGLIB代理过, 这里获取到原始的类)
+        val userType = ClassUtils.getUserClass(handlerType)
+        ReflectionUtils.doWithMethods(userType) {
             // 交给子类去告诉我，当前的方法是否是一个HandlerMethod？如果return null，则不是；return not null，则是
-            val mapping = getMappingForMethod(it, handlerType) ?: return@doWithMethods
+            val mapping = getMappingForMethod(it, userType) ?: return@doWithMethods
             registerHandlerMethod(handler, it, mapping)
         }
     }
