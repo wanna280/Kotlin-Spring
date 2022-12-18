@@ -20,12 +20,12 @@ object ClassUtils {
     /**
      * "."的常量
      */
-    private const val DOT = "."
+    const val DOT = "."
 
     /**
      * .class文件的后缀名
      */
-    private const val CLASS_FILE_SUFFIX = ".class"
+    const val CLASS_FILE_SUFFIX = ".class"
 
     /**
      * CGLIB生成的代理类的分隔符
@@ -606,15 +606,6 @@ object ClassUtils {
     }
 
     /**
-     * 将类名转换成为资源名，将包名当中的"."去替换成为"/"
-     *
-     * @param className className
-     * @return 资源路径
-     */
-    @JvmStatic
-    fun convertClassNameToResourcePath(className: String): String = className.replace(PACKAGE_SEPARATOR, PATH_SEPARATOR)
-
-    /**
      * 给定一个类，去生成这个类的全限定名；
      * 如果这个类是一个数组类，那么需要加上后缀"[]"；
      * 如果一个类不是一个数组类，那么就是正常返回一个类的className
@@ -652,6 +643,15 @@ object ClassUtils {
     @JvmStatic
     fun convertResourcePathToClassName(resourcePath: String): String =
         resourcePath.replace(PATH_SEPARATOR, PACKAGE_SEPARATOR)
+
+    /**
+     * 将类名转换成为资源名，将包名当中的"."去替换成为"/"
+     *
+     * @param className className
+     * @return 资源路径
+     */
+    @JvmStatic
+    fun convertClassNameToResourcePath(className: String): String = className.replace(PACKAGE_SEPARATOR, PATH_SEPARATOR)
 
     /**
      * 获取目标对象的用户定义的类型, 因为有些对象是被CGLIB生成的, 因此我们有可能需要获取没有被CGLIB代理之前它的原始的类

@@ -90,7 +90,7 @@ open class FeignClientsRegistrar : ImportBeanDefinitionRegistrar, EnvironmentAwa
     ) {
         val clientName = getClientName(attributes)
         val type =
-            if (metadata is StandardAnnotationMetadata) metadata.clazz
+            if (metadata is StandardAnnotationMetadata) metadata.introspectedClass
             else ClassUtils.forName<Any>(metadata.getClassName())
 
         val factoryBean = FeignClientFactoryBean()

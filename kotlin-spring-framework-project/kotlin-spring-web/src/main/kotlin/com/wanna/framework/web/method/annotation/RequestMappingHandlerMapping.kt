@@ -10,10 +10,8 @@ import com.wanna.framework.web.bind.annotation.CrossOrigin
 import com.wanna.framework.web.bind.annotation.RequestMapping
 import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.cors.CorsConfiguration
-import com.wanna.framework.web.method.HandlerMethod
 import com.wanna.framework.web.method.RequestMappingInfo
 import com.wanna.framework.web.method.RequestMappingInfoHandlerMapping
-import io.netty.handler.codec.http.cors.CorsConfig
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Method
 
