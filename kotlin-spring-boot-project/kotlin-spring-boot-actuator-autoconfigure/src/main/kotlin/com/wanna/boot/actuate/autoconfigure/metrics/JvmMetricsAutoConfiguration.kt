@@ -27,7 +27,7 @@ import io.micrometer.core.instrument.binder.jvm.*
 open class JvmMetricsAutoConfiguration {
 
     /**
-     * 提供JVM的Gc监控指标的Bean
+     * 提供JVM的Gc监控指标的Bean, 通过JVM的MemoryPoolMXBean去提供获取
      *
      * @return JvmGcMetrics
      */
@@ -36,7 +36,7 @@ open class JvmMetricsAutoConfiguration {
     open fun jvmGcMetrics(): JvmGcMetrics = JvmGcMetrics()
 
     /**
-     * 提供JVM的堆指标的压力指标的Bean
+     * 提供JVM的堆压力指标的压力指标的Bean, 通过JVM的GarbageCollectorMXBean去进行获取
      *
      * @return JvmHeapPressureMetrics
      */
@@ -54,7 +54,7 @@ open class JvmMetricsAutoConfiguration {
     open fun jvmMemoryMetrics(): JvmMemoryMetrics = JvmMemoryMetrics()
 
     /**
-     * 提供JVM的线程指标的Bean
+     * 提供JVM的线程指标的Bean, 通过JVM的ThreadMXBean去进行获取
      *
      * @return JvmThreadMetrics
      */
@@ -63,10 +63,10 @@ open class JvmMetricsAutoConfiguration {
     open fun jvmThreadMetrics(): JvmThreadMetrics = JvmThreadMetrics()
 
     /**
-     * 提供JVM的ClassLoader的指标的Bean
+     * 提供JVM的ClassLoader的指标的Bean, 通过JVM的ClassLoadingMXBean去进行获取
      *
      * * 1."jvm.classes.loaded", 获取到当前JVM的已经加载的类的数量
-     * * 2."jvm.classes.unloaded", 获取到当前JVM的未加载的类的数量
+     * * 2."jvm.classes.unloaded", 获取到当前JVM的已经卸载的类的数量
      *
      * @return ClassLoaderMetrics
      */
@@ -75,7 +75,7 @@ open class JvmMetricsAutoConfiguration {
     open fun classLoaderMetrics(): ClassLoaderMetrics = ClassLoaderMetrics()
 
     /**
-     * 提供JVM的信息的监控指标的Bean
+     * 提供JVM的信息的监控指标的Bean, 通过SystemProperty去进行获取
      *
      * * 1."java.runtime.version", 获取当前JVM的Java运行时版本
      * * 2."java.vm.vendor", 获取当前JVM的供应商信息(例如"Oracle Corporation")
@@ -88,7 +88,7 @@ open class JvmMetricsAutoConfiguration {
     open fun jvmInfoMetrics(): JvmInfoMetrics = JvmInfoMetrics()
 
     /**
-     * 提供JVM的编译器相关的指标的Bean
+     * 提供JVM的编译器相关的指标的Bean, 通过JVM的CompilationMXBean去进行获取
      *
      * @return JvmCompilationMetrics
      */
