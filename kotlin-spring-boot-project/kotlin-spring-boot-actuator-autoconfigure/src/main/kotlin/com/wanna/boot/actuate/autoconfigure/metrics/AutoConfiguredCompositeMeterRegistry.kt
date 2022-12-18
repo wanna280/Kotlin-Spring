@@ -14,6 +14,9 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry
  *
  * @see CompositeMeterRegistry
  * @see MeterRegistry
+ *
+ * @param clock 时钟Clock
+ * @param registries 需要去组合的多个MeterRegistry
  */
 open class AutoConfiguredCompositeMeterRegistry(clock: Clock, registries: List<MeterRegistry>) :
     CompositeMeterRegistry(clock, registries)
