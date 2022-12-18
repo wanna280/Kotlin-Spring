@@ -29,7 +29,8 @@ interface AnnotatedTypeMetadata {
      * @param annotationClass 注解的类型
      * @return 解析到的注解属性，如果该注解没有属性，那么return empty
      */
-    fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any>
+    fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any> =
+        getAnnotationAttributes(annotationClass.name)
 
     /**
      * 判断该类型上是否标注了某个注解？

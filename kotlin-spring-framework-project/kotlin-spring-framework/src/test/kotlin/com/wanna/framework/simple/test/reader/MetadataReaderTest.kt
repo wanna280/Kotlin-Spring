@@ -13,6 +13,11 @@ import com.wanna.framework.transaction.annotation.Transactional
 @Transactional(isolation = Isolation.DEFAULT)
 @Ann([Ann2(["1", "2"]), Ann2(["3", "4"])])
 class MetadataReaderTest {
+
+    @Ann2(["111", "222"])
+    fun method() {
+
+    }
 }
 
 

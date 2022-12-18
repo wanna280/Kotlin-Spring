@@ -13,5 +13,4 @@ open class RecursiveAnnotationAttributesVisitor(
     val annotationType: String,
     classLoader: ClassLoader,
     attributes: AnnotationAttributes
-) :
-    AbstractRecursiveAnnotationVisitor(classLoader, attributes)
+) : AbstractRecursiveAnnotationVisitor(classLoader, attributes)

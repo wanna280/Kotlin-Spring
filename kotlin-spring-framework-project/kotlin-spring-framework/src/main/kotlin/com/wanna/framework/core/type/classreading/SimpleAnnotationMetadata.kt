@@ -30,11 +30,8 @@ open class SimpleAnnotationMetadata(
     override fun getAnnotations(): Array<Annotation> = this.annotations
 
     override fun getAnnotationAttributes(annotationName: String): Map<String, Any> {
-        TODO("Not yet implemented")
+        return attributesMap.getFirst(annotationName) ?: emptyMap()
     }
-
-    override fun getAnnotationAttributes(annotationClass: Class<out Annotation>) =
-        getAnnotationAttributes(annotationClass.name)
 
     override fun getClassName(): String = this.className
 
@@ -98,4 +95,6 @@ open class SimpleAnnotationMetadata(
     override fun getAnnotatedMethods(annotationName: String): Set<MethodMetadata> {
         return methodMetadataSet.filter { it.isAnnotated(annotationName) }.toSet()
     }
+
+    override fun toString(): String = this.className
 }

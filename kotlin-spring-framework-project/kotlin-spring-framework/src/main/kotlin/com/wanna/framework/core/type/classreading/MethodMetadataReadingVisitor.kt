@@ -15,6 +15,13 @@ import org.objectweb.asm.Type
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/12/18
+ *
+ * @param methodName 要去读取的方法的方法名
+ * @param access 该方法的访问修饰符
+ * @param declaringClassName 定义该方法的类
+ * @param returnTypeName 该方法的返回值类型
+ * @param classLoader ClassLoader
+ * @param methodMetadataSet MethodMetadataSet
  */
 open class MethodMetadataReadingVisitor(
     private val methodName: String,
@@ -23,7 +30,7 @@ open class MethodMetadataReadingVisitor(
     private val returnTypeName: String,
     private val classLoader: ClassLoader,
     private val methodMetadataSet: MutableSet<MethodMetadata>
-) : MethodVisitor(SpringAsmInfo.ASM_VERSION), MethodMetadata {
+) : MethodVisitor(SpringAsmInfo.ASM_VERSION) {
 
     /**
      * MetaAnnotationMap
@@ -35,42 +42,45 @@ open class MethodMetadataReadingVisitor(
      */
     protected val attributesMap = LinkedMultiValueMap<String, AnnotationAttributes>()
 
-    override fun getAnnotations(): Array<Annotation> {
-        TODO("Not yet implemented")
-    }
+    /**
+     *
+     */
+    private val annotationSet = LinkedHashSet<String>()
 
-    override fun getAnnotationAttributes(annotationName: String): Map<String, Any> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any> =
-        getAnnotationAttributes(annotationClass.name)
+    /**
+     * MethodMetadata
+     */
+    private var methodMetadata: SimpleMethodMetadata? = null
 
     /**
      * 当访问一个方法上的一个注解时, 自动回调这个方法作为Callback
      *
-     * @param descriptor 注解的描述信息
+     * @param descriptor 注解的描述信息(例如"Ljava.lang.String;")
      * @return 提供对于注解当中的属性读取的AnnotationVisitor
      */
     override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor {
         val className = Type.getType(descriptor).className
-        this.methodMetadataSet += this
+        this.annotationSet += className
+        this.methodMetadataSet += buildMetadata()
         return AnnotationAttributesReadingVisitor(className, attributesMap, metaAnnotationMap, classLoader)
     }
 
-    override fun getMethodName(): String = this.methodName
+    override fun visitEnd() {
+        this.methodMetadata = buildMetadata()
+    }
 
-    override fun getDeclaringClassName(): String = this.declaringClassName
+    open fun buildMetadata(): SimpleMethodMetadata {
+        return SimpleMethodMetadata(
+            this.methodName,
+            this.declaringClassName,
+            this.returnTypeName,
+            access,
+            emptyArray(),
+            this.attributesMap,
+            this.annotationSet
+        )
+    }
 
-    override fun getReturnTypeName(): String = this.returnTypeName
-
-    override fun isAbstract(): Boolean = (access and Opcodes.ACC_ABSTRACT) != 0
-
-    override fun isStatic(): Boolean = (access and Opcodes.ACC_STATIC) != 0
-
-    override fun isOverridable(): Boolean = !isStatic() && !isFinal() && !isPrivate()
-
-    override fun isPrivate(): Boolean = (access and Opcodes.ACC_PRIVATE) != 0
-
-    override fun isFinal(): Boolean = (access and Opcodes.ACC_FINAL) != 0
+    open fun getMetadata(): SimpleMethodMetadata =
+        this.methodMetadata ?: throw IllegalStateException("MethodMetadata is null")
 }

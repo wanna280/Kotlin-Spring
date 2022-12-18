@@ -99,7 +99,7 @@ open class AnnotationMetadataReadingVisitor(protected val classLoader: ClassLoad
             independentInnerClass,
             interfaces ?: emptyArray(),
             memberClassNames.toTypedArray(),
-            emptySet(),
+            this.methodMetadataSet,
             emptyArray(),
             attributesMap,
             annotationSet

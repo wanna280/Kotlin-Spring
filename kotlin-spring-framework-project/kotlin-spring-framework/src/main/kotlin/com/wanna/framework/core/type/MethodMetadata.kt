@@ -44,7 +44,7 @@ interface MethodMetadata : AnnotatedTypeMetadata {
      *
      * @return 该方法如果可以重写，那么return true；否则return false
      */
-    fun isOverridable(): Boolean
+    fun isOverridable(): Boolean = !isFinal() && !isPrivate() && !isStatic()
 
     /**
      * 方法是否是private的？
