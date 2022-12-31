@@ -10,12 +10,12 @@ object AnnotatedElementUtils {
 
     @JvmStatic
     fun isAnnotated(element: AnnotatedElement, annotationType: Class<out Annotation>): Boolean {
-        return AnnotatedElementUtils.isAnnotated(element, annotationType)
+        return getAnnotations(element).isPresent(annotationType)
     }
 
     @JvmStatic
     fun isAnnotated(element: AnnotatedElement, annotationClassName: String): Boolean {
-        return AnnotatedElementUtils.isAnnotated(element, annotationClassName)
+        return getAnnotations(element).isPresent(annotationClassName)
     }
 
     @JvmStatic
@@ -43,5 +43,14 @@ object AnnotatedElementUtils {
     @JvmStatic
     fun hasAnnotation(element: AnnotatedElement, annotationType: Class<out Annotation>): Boolean {
         return AnnotatedElementUtils.hasAnnotation(element, annotationType)
+    }
+
+    @JvmStatic
+    private fun getAnnotations(annotatedElement: AnnotatedElement): MergedAnnotations {
+        return MergedAnnotations.from(annotatedElement, MergedAnnotations.SearchStrategy.INHERITED_ANNOTATIONS, null)
+    }
+
+    private fun findAnnotations(annotatedElement: AnnotatedElement): MergedAnnotations {
+        return MergedAnnotations.from(annotatedElement, MergedAnnotations.SearchStrategy.TYPE_HIERARCHY, null)
     }
 }
