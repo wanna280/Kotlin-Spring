@@ -21,6 +21,8 @@ import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.io.DefaultResourceLoader
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
+import com.wanna.framework.core.type.classreading.CachingMetadataReaderFactory
+import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.util.ClassUtils
@@ -82,6 +84,11 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
      * ResourceLoader，提供资源的加载
      */
     private var resourceLoader: ResourceLoader = DefaultResourceLoader()
+
+    /**
+     * MetadataReader Factory
+     */
+    private val metadataReaderFactory: MetadataReaderFactory = CachingMetadataReaderFactory()
 
     /**
      * ComponentScan扫描出来的BeanDefinition, 需要使用到的BeanNameGenerator，默认使用simpleName作为生成方式
@@ -210,7 +217,8 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
             environment,
             classLoader,
             componentScanBeanNameGenerator,
-            resourceLoader
+            resourceLoader,
+            metadataReaderFactory
         )
 
         // 候选的，要交给parser去进行配置类解析的BeanDefinition列表(放在循环外，供每次循环所共享)
@@ -255,7 +263,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
             // 加入candidates列表当中，将会触发循环被二次执行，交给reader/parser完成candidates当中的配置类的解析工作
             if (registry.getBeanDefinitionCount() > candidateNames.size) {
                 val newCandidateNames = registry.getBeanDefinitionNames()
-                val alreadyParsedClasses = alreadyParsed.map { it.configurationClass.name }.toSet()
+                val alreadyParsedClasses = alreadyParsed.map { it.metadata.getClassName() }.toSet()
                 newCandidateNames.forEach { beanName ->
                     val beanDefinition = registry.getBeanDefinition(beanName)
                     // 遍历所有的没有被处理过的配置类去进行检查，如果它是合格的配置类，但是还未被处理过，将其添加到candidates当中

@@ -38,12 +38,20 @@ open class ConfigurationClassBeanDefinitionReader(
          */
         @JvmStatic
         private val logger = LoggerFactory.getLogger(ConfigurationClassBeanDefinitionReader::class.java)
+
+
+        /**
+         * Scope Metadata Resolver
+         */
+        @JvmStatic
+        private val scopeMetadataResolver = AnnotationScopeMetadataResolver()
     }
 
     /**
      * 这是一个条件计算器，去计算一个Bean是否应该被注册
      */
     private val conditionEvaluator = ConditionEvaluator(registry, environment, resourceLoader)
+
 
     /**
      * 从配置类当中加载BeanDefinition，例如@ImportResource/ImportBeanDefinitionRegistrar/@Bean方法
@@ -80,7 +88,7 @@ open class ConfigurationClassBeanDefinitionReader(
             if (configurationClass.beanName != null && configurationClass.beanName!!.isEmpty()) {
                 registry.removeBeanDefinition(configurationClass.beanName!!)
             }
-            this.importRegistry.removeImportingClass(configurationClass.configurationClass.name)
+            this.importRegistry.removeImportingClass(configurationClass.metadata.getClassName())
             return
         }
 
@@ -261,21 +269,22 @@ open class ConfigurationClassBeanDefinitionReader(
      * Note: 通过Import导入的配置类会在这里被设置好name，为了方便后续@Import导入的配置类的@Bean方法的处理
      */
     private fun registerBeanDefinitionForImportedConfigurationClass(configurationClass: ConfigurationClass) {
-        val clazz = configurationClass.configurationClass
         val metadata = configurationClass.metadata
-        val beanDefinition = AnnotatedGenericBeanDefinition(clazz)  // 构建一个注解的BeanDefinition
+        val beanDefinition = AnnotatedGenericBeanDefinition(metadata)  // 构建一个注解的BeanDefinition
 
         // 处理@Role/@Primary/@DependsOn/@Lazy注解
         AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition, metadata)
-        val scope = AnnotatedElementUtils.getMergedAnnotation(clazz, Scope::class.java)
-        if (scope != null) {
-            beanDefinition.setScope(scope.scopeName)
-        }
+
+        // 处理@Scope注解
+        val scopeMetadata = scopeMetadataResolver.resolveScopeMetadata(beanDefinition)
+        beanDefinition.setScope(scopeMetadata.scopeName)
 
         // 生成beanName
         val beanName = importBeanNameGenerator.generateBeanName(beanDefinition, registry)
         registry.registerBeanDefinition(beanName, beanDefinition)
-        configurationClass.beanName = beanName  // set ConfigurationClass beanName
+
+        // set ConfigurationClass beanName
+        configurationClass.beanName = beanName
     }
 
     /**

@@ -14,6 +14,9 @@ import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.DefaultPropertySourceFactory
 import com.wanna.framework.core.io.support.PropertySourceFactory
 import com.wanna.framework.core.type.AnnotationMetadata
+import com.wanna.framework.core.type.StandardAnnotationMetadata
+import com.wanna.framework.core.type.classreading.MetadataReader
+import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
@@ -23,6 +26,7 @@ import java.net.SocketException
 import java.net.UnknownHostException
 import java.util.*
 import java.util.function.Predicate
+import kotlin.collections.LinkedHashSet
 
 /**
  * 这是一个配置类的解析器，用来扫描配置类相关的注解，将其注册到容器当中
@@ -32,7 +36,8 @@ open class ConfigurationClassParser(
     private val environment: Environment,
     classLoader: ClassLoader,
     componentScanBeanNameGenerator: BeanNameGenerator,
-    private val resourceLoader: ResourceLoader
+    private val resourceLoader: ResourceLoader,
+    private val metadataReaderFactory: MetadataReaderFactory
 ) {
     companion object {
 
@@ -137,7 +142,41 @@ open class ConfigurationClassParser(
     }
 
     private fun asSourceClass(configClass: ConfigurationClass): SourceClass {
-        return SourceClass(configClass.configurationClass)
+        val metadata = configClass.metadata
+        if (metadata is StandardAnnotationMetadata) {
+            return asSourceClass(metadata.introspectedClass)
+        }
+        return asSourceClass(metadata.getClassName())
+    }
+
+    /**
+     * 将一个配置类去作为sourceClass
+     *
+     * @param clazz clazz
+     * @return SourceClass
+     */
+    private fun asSourceClass(clazz: Class<*>): SourceClass {
+        return SourceClass(clazz)
+    }
+
+    /**
+     * 将className去作为SourceClass
+     *
+     * @param className className
+     * @return SourceClass
+     */
+    private fun asSourceClass(className: String): SourceClass {
+        // 对于JavaType, 别使用ASM去进行加载
+        if (className.startsWith("java")) {
+            try {
+                return SourceClass(ClassUtils.forName<Any>(className, this.resourceLoader.getClassLoader()))
+            } catch (ex: ClassNotFoundException) {
+                throw IllegalStateException("Failed to load class '$className'", ex)
+            }
+        }
+
+        // 使用MetadataReader的方式, 去构建SourceClass
+        return SourceClass(metadataReaderFactory.getMetadataReader(className))
     }
 
     /**
@@ -194,7 +233,7 @@ open class ConfigurationClassParser(
         processImportSources(configClass, sourceClass)
 
         // 处理@Import注解
-        processImports(configClass, sourceClass, asSourceClasses(configClass.configurationClass, filter), filter)
+        processImports(configClass, sourceClass, getImports(sourceClass), filter)
 
         // 处理@Bean注解
         processBeanMethods(configClass, sourceClass)
@@ -330,7 +369,8 @@ open class ConfigurationClassParser(
      * @param configClass 要处理的目标配置类
      */
     private fun processBeanMethods(configClass: ConfigurationClass, sourceClass: SourceClass) {
-        val beanMethods = sourceClass.metadata.getAnnotatedMethods(Bean::class.java.name)
+        val original = sourceClass.metadata
+        val beanMethods = original.getAnnotatedMethods(Bean::class.java.name)
         beanMethods.forEach {
             configClass.addBeanMethod(BeanMethod(it, configClass))
         }
@@ -430,20 +470,48 @@ open class ConfigurationClassParser(
     }
 
     /**
-     * 获取@Import中导入的组件列表
+     * 获取通过@Import注解导入的那些SourceClass(Note: 对于这里的@Import注解需要去进行递归处理, 考虑那些Meta注解的情况)
      *
-     * @param clazz 目标配置类
-     * @param filter 要去进行排除的Filter
-     * @return @Import导入的配置类列表
+     * @param sourceClass sourceClass
+     * @return 通过@Import导入进来的SourceClass列表
      */
-    private fun asSourceClasses(clazz: Class<*>, filter: Predicate<String>): Set<SourceClass> {
-        val imports = AnnotatedElementUtils.findAllMergedAnnotations(clazz, Import::class.java)
-        return AnnotationAttributesUtils.asAnnotationAttributesSet(imports)  // attributes(set)
-            .map { it.getClassArray("value") }  // (classArray)
-            .flatMap { it.toList() }  // flatMap，将classArray摊开
-            .filter { !filter.test(it.name) }  // 使用filter去进行过滤
-            .map { SourceClass(it) }  // 转为sourceClass
-            .toSet()  // 转为Set去进行return
+    private fun getImports(sourceClass: SourceClass): Collection<SourceClass> {
+        val imported = LinkedHashSet<SourceClass>()
+        val visited = LinkedHashSet<SourceClass>()
+
+        // 进行递归的@Import导入的配置类的收集
+        collectImports(sourceClass, imported, visited)
+        return imported
+    }
+
+    /**
+     * 收集起来所有的@Import注解的相关信息
+     *
+     * @param sourceClass sourceClass
+     */
+    private fun collectImports(
+        sourceClass: SourceClass, imported: MutableCollection<SourceClass>, visited: MutableCollection<SourceClass>
+    ) {
+        if (visited.add(sourceClass)) {
+
+            // 递归遍历它的所有的注解...我们本来应该获取所有的MergedAnnotation的,
+            // 但是很可惜的是, 我们这里拿不到真实的类, 因此无法使用MergedAnnotation, 只能使用手动递归的方式了
+            for (annotation in sourceClass.getAnnotations()) {
+                val annName = annotation.metadata.getClassName()
+                if (annName != Import::class.java.name) {
+                    collectImports(annotation, imported, visited)
+                }
+            }
+
+            // 如果当前注解是@Import注解的话, 那么我们需要收集起来它的value当中配置的所有的配置类
+            val mergedAnnotation = sourceClass.metadata.getAnnotations().get(Import::class.java)
+            if (!mergedAnnotation.present) {
+                return
+            }
+            for (clazz in mergedAnnotation.getClassArray("value")) {
+                imported += SourceClass(clazz)
+            }
+        }
     }
 
     /**
@@ -473,10 +541,32 @@ open class ConfigurationClassParser(
      * 描述了要去进行解析的一个配置类的相关信息，对于一个配置类来说，可能会存在有多个父类，
      * 对于它以及它的所有的父类，都应该当做一个SourceClass去进行处理
      *
-     * @param clazz 要去进行描述的配置类
+     * @param source source
      */
-    private inner class SourceClass(val clazz: Class<*>) {
-        val metadata = AnnotationMetadata.introspect(clazz)
+    private inner class SourceClass(val source: Any) {
+
+        /**
+         * Class, TODO, 后续完善之后这个Class不应该继续存在...
+         */
+        val clazz: Class<*>
+
+        /**
+         * AnnotationMetadata
+         */
+        val metadata: AnnotationMetadata
+
+        init {
+            if (source is Class<*>) {
+                metadata = AnnotationMetadata.introspect(source)
+            } else {
+                metadata = (source as MetadataReader).annotationMetadata
+            }
+            if (source is Class<*>) {
+                this.clazz = source
+            } else {
+                this.clazz = ClassUtils.forName<Any>(metadata.getClassName(), resourceLoader.getClassLoader())
+            }
+        }
 
         /**
          * 将SourceClass转换为ConfigurationClass(配置类对象)
@@ -485,13 +575,11 @@ open class ConfigurationClassParser(
          * @return 构建好的ConfigurationClass
          */
         fun asConfigClass(importedBy: ConfigurationClass): ConfigurationClass {
-            val configClass = ConfigurationClass(clazz)
-            configClass.setImportedBy(importedBy)
-
-            // init Resource
-            val resource = resourceLoader.getResource(ClassUtils.convertClassNameToResourcePath(clazz.name + ".class"))
-            configClass.resource = resource
-            return configClass
+            return if (source is Class<*>) {
+                ConfigurationClass(clazz, importedBy)
+            } else {
+                ConfigurationClass(source as MetadataReader, importedBy)
+            }
         }
 
         /**
@@ -504,7 +592,37 @@ open class ConfigurationClassParser(
             return ClassUtils.isAssignFrom(parentClass, clazz)
         }
 
-        override fun toString(): String = "SourceClass(clazz=$clazz)"
+        /**
+         * 获取当前的SourceClass上的全部直接标注的注解
+         *
+         * @return 当前SourceClass上的注解列表
+         */
+        fun getAnnotations(): Collection<SourceClass> {
+            val result = LinkedHashSet<SourceClass>()
+            if (this.source is Class<*>) {
+                for (annotation in source.declaredAnnotations) {
+                    val annotationType = annotation.annotationClass.java
+                    if (!annotationType.name.startsWith("java")) {
+                        result += asSourceClass(annotationType)
+                    }
+                }
+            } else {
+                for (annotationType in this.metadata.getAnnotationTypes()) {
+                    if (!annotationType.startsWith("java")) {
+                        result += asSourceClass(annotationType)
+                    }
+                }
+            }
+
+            return result
+        }
+
+        override fun toString(): String = "$source"
+
+        override fun equals(other: Any?): Boolean =
+            this === other || other is SourceClass && other.metadata.getClassName() == this.metadata.getClassName()
+
+        override fun hashCode(): Int = metadata.getClassName().hashCode()
     }
 
 

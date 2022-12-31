@@ -18,11 +18,11 @@ class MissingMergedAnnotation<A : Annotation> : AbstractMergedAnnotation<A>() {
     }
 
     override val distance: Int
-        get() = TODO("Not yet implemented")
+        get() = 0
     override val type: Class<A>
         get() = TODO("Not yet implemented")
     override val present: Boolean
-        get() = TODO("Not yet implemented")
+        get() = false
 
     override val root: MergedAnnotation<*>
         get() = TODO("Not yet implemented")

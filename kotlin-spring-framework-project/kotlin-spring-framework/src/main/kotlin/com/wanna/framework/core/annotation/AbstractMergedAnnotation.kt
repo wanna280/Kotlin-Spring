@@ -1,5 +1,6 @@
 package com.wanna.framework.core.annotation
 
+import com.wanna.framework.constants.CLASS_ARRAY_TYPE
 import com.wanna.framework.lang.Nullable
 import java.util.*
 import kotlin.NoSuchElementException
@@ -74,6 +75,8 @@ abstract class AbstractMergedAnnotation<A : Annotation> : MergedAnnotation<A> {
     override fun getFloat(attributeName: String) = getRequiredAttributeValue(attributeName, Float::class.javaObjectType)
 
     override fun getClass(attributeName: String) = getRequiredAttributeValue(attributeName, Class::class.java)
+
+    override fun getClassArray(attributeName: String) = getRequiredAttributeValue(attributeName, CLASS_ARRAY_TYPE)
 
     override fun <E : Enum<E>> getEnum(attributeName: String, type: Class<E>): E =
         getRequiredAttributeValue(attributeName, type)

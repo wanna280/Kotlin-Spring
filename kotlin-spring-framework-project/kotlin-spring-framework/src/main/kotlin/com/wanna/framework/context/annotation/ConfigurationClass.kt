@@ -4,34 +4,17 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.core.io.DescriptiveResource
 import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.type.AnnotationMetadata
+import com.wanna.framework.core.type.classreading.MetadataReader
+import com.wanna.framework.lang.Nullable
 
 /**
  * 这是对一个配置类的封装，一个配置类当中，往往会记录它导入的ImportSource、BeanMethod、ImportBeanDefinitionRegistrar等信息
  *
- * @param _clazz 目标配置类
- * @param _beanName beanName(可以为null，后期去进行生成)
+ * @param metadata 配置类的注解元信息
+ * @param resource 配置类的资源
+ * @param beanName beanName
  */
-open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
-    /**
-     * 该配置类的注解元信息
-     */
-    val metadata: AnnotationMetadata = AnnotationMetadata.introspect(_clazz)
-
-    /**
-     * Resource
-     */
-    var resource: Resource
-
-    /**
-     * clazz
-     */
-    val configurationClass: Class<*> = _clazz
-
-    /**
-     * beanName
-     */
-    var beanName: String? = _beanName
-
+open class ConfigurationClass(val metadata: AnnotationMetadata, var resource: Resource, var beanName: String?) {
     /**
      * beanMethods
      */
@@ -52,12 +35,63 @@ open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
      */
     private val importBeanDefinitionRegistrars = LinkedHashMap<ImportBeanDefinitionRegistrar, AnnotationMetadata>()
 
-    constructor(_clazz: Class<*>) : this(_clazz, null)
-    constructor(beanDefinition: BeanDefinition, beanName: String?) : this(beanDefinition.getBeanClass()!!, beanName)
+    /**
+     * 基于clazz和beanName去进行构建
+     *
+     * @param clazz Class
+     * @param beanName beanName
+     */
+    constructor(clazz: Class<*>, beanName: String?) : this(
+        AnnotationMetadata.introspect(clazz), DescriptiveResource(clazz.name), beanName
+    )
 
-    init {
-        this.resource = DescriptiveResource(_clazz.name)
+    /**
+     * 基于Class和importedBy去进行构建
+     *
+     * @param clazz Class
+     * @param importedBy importedBy
+     */
+    constructor(clazz: Class<*>, importedBy: ConfigurationClass?) : this(clazz, beanName = null) {
+        if (importedBy != null) {
+            this.importedBy.add(importedBy)
+        }
     }
+
+    /**
+     * 基于AnnotationMetadata和beanName去进行构建
+     *
+     * @param metadata AnnotationMetadata
+     * @param beanName beanName
+     */
+    constructor(metadata: AnnotationMetadata, beanName: String) : this(
+        metadata, DescriptiveResource(metadata.getClassName()), beanName
+    )
+
+    /**
+     * 基于AnnotationMetadata和beanName去进行构建
+     *
+     * @param metadataReader MetadataReader
+     * @param beanName beanName
+     */
+    constructor(metadataReader: MetadataReader, beanName: String?) : this(
+        metadataReader.annotationMetadata, metadataReader.resource, beanName
+    )
+
+    /**
+     * 基于MetadataReader和importedBy去进行构建
+     *
+     * @param metadataReader MetadataReader
+     * @param importedBy importedBy
+     */
+    constructor(metadataReader: MetadataReader, @Nullable importedBy: ConfigurationClass?) : this(
+        metadataReader, beanName = null
+    ) {
+        if (importedBy != null) {
+            this.importedBy.add(importedBy)
+        }
+    }
+
+    constructor(beanDefinition: BeanDefinition, beanName: String?) : this(beanDefinition.getBeanClass()!!, beanName)
 
 
     /**
@@ -133,14 +167,12 @@ open class ConfigurationClass(_clazz: Class<*>, _beanName: String?) {
         importedSources[resource] = reader
     }
 
-    override fun hashCode() = configurationClass.hashCode()
+    override fun hashCode() = metadata.getClassName().hashCode()
 
     override fun equals(other: Any?): Boolean {
-        // 如果configurationClass匹配的话，那么return true
-        return if (other != null && other is ConfigurationClass) other.configurationClass == configurationClass else false
+        // 如果configurationClassName匹配的话，那么return true
+        return if (other != null && other is ConfigurationClass) other.metadata.getClassName() == metadata.getClassName() else false
     }
 
-    override fun toString(): String {
-        return "ConfigurationClass($beanName, $configurationClass)"
-    }
+    override fun toString(): String = "ConfigurationClass: beanName='$beanName', resource= $resource"
 }

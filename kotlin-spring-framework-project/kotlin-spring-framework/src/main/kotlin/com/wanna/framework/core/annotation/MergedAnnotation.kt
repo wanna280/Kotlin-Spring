@@ -138,6 +138,14 @@ interface MergedAnnotation<A : Annotation> {
     fun getClass(attributeName: String): Class<*>
 
     /**
+     * 获取到给定的属性名对应的Class[]形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    fun getClassArray(attributeName: String):Array<Class<*>>
+
+    /**
      * 获取到给定的属性名对应的枚举形式的属性值
      *
      * @param attributeName attributeName
