@@ -14,7 +14,7 @@ class MissingMergedAnnotation<A : Annotation> : AbstractMergedAnnotation<A>() {
 
         @Suppress("UNCHECKED_CAST")
         @JvmStatic
-        fun <A:Annotation> getInstance():MergedAnnotation<A> = this.INSTANCE as MergedAnnotation<A>
+        fun <A : Annotation> getInstance(): MergedAnnotation<A> = this.INSTANCE as MergedAnnotation<A>
     }
 
     override val distance: Int

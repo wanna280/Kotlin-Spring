@@ -7,6 +7,7 @@ import com.wanna.framework.beans.factory.support.definition.*
 import com.wanna.framework.beans.factory.xml.XmlBeanDefinitionReader
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase.REGISTER_BEAN
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.type.AnnotationMetadata
@@ -111,9 +112,7 @@ open class ConfigurationClassBeanDefinitionReader(
         }
 
         val configClass = beanMethod.configClass
-        val beanAnnotation = metadata.getAnnotations()
-            .filter { it.annotationClass.java.name == Bean::class.java.name }
-            .toList()[0] as Bean
+        val beanAnnotation = metadata.getAnnotations().get(Bean::class.java)
 
         // 从@Bean的注解上找到合适的beanName
         val beanName: String = findBeanNameFromBeanAnnotation(beanAnnotation, metadata)
@@ -148,17 +147,17 @@ open class ConfigurationClassBeanDefinitionReader(
         // 处理@Bean方法上的@Role/@Primary/@DependsOn/@Lazy注解
         AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition, metadata)
 
-        // 根据@Bean注解当中的init方法和destory方法，去设置BeanDefinition的initMethod和destoryMethod
-        if (StringUtils.hasText(beanAnnotation.initMethod)) {
-            beanDefinition.setInitMethodName(beanAnnotation.initMethod)
+        // 根据@Bean注解当中的init方法和destory方法，去设置BeanDefinition的initMethod和destroyMethod
+        if (StringUtils.hasText(beanAnnotation.getString("initMethod"))) {
+            beanDefinition.setInitMethodName(beanAnnotation.getString("initMethod"))
         }
-        if (StringUtils.hasText(beanAnnotation.destroyMethod)) {
-            beanDefinition.setDestroyMethodName(beanAnnotation.destroyMethod)
+        if (StringUtils.hasText(beanAnnotation.getString("destroyMethod"))) {
+            beanDefinition.setDestroyMethodName(beanAnnotation.getString("destroyMethod"))
         }
 
         // 设置是否是AutowireCandidate以及AutowireMode
-        beanDefinition.setAutowireCandidate(beanAnnotation.autowireCandidate)
-        beanDefinition.setAutowireMode(beanAnnotation.autowireMode)
+        beanDefinition.setAutowireCandidate(beanAnnotation.getBoolean("autowireCandidate"))
+        beanDefinition.setAutowireMode(beanAnnotation.getInt("autowireMode"))
 
         // 解析scope
         val scope = metadata.getAnnotationAttributes(Scope::class.java.name)
@@ -331,13 +330,16 @@ open class ConfigurationClassBeanDefinitionReader(
      *
      * @return 解析到的beanName
      */
-    private fun findBeanNameFromBeanAnnotation(beanAnnotation: Bean, metadata: MethodMetadata): String {
+    private fun findBeanNameFromBeanAnnotation(
+        beanAnnotation: MergedAnnotation<Bean>,
+        metadata: MethodMetadata
+    ): String {
         var beanName: String? = null
-        if (StringUtils.hasText(beanAnnotation.name)) {
-            beanName = beanAnnotation.name
+        if (StringUtils.hasText(beanAnnotation.getString("name"))) {
+            beanName = beanAnnotation.getString("name")
         }
-        if (!StringUtils.hasText(beanName) && StringUtils.hasText(beanAnnotation.value)) {
-            beanName = beanAnnotation.value
+        if (!StringUtils.hasText(beanName) && StringUtils.hasText(beanAnnotation.getString("value"))) {
+            beanName = beanAnnotation.getString("value")
         }
         if (!StringUtils.hasText(beanName)) {
             beanName = metadata.getMethodName()

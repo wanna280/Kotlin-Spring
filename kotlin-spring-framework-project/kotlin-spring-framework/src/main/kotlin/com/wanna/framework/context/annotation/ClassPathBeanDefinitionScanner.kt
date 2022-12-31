@@ -32,7 +32,6 @@ open class ClassPathBeanDefinitionScanner(
      */
     private var beanNameGenerator: BeanNameGenerator = AnnotationBeanNameGenerator.INSTANCE
 
-
     /**
      * 是否包含注解版的配置？如果开启了，使用它进行扫描时，就会往容器中注册注解的通用处理器(默认为true)
      */

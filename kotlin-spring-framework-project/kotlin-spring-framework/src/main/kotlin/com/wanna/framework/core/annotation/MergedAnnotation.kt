@@ -80,6 +80,72 @@ interface MergedAnnotation<A : Annotation> {
     fun getInt(attributeName: String): Int
 
     /**
+     * 获取到给定的属性名对应的Long形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    fun getLong(attributeName: String): Long
+
+    /**
+     * 获取到给定的属性名对应的Byte形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    fun getByte(attributeName: String): Byte
+
+    /**
+     * 获取到给定的属性名对应的ByteArray形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return ByteArray属性值
+     */
+    fun getByteArray(attributeName: String): ByteArray
+
+    /**
+     * 获取到给定的属性名对应的Boolean形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    @Throws(NoSuchElementException::class)
+    fun getBoolean(attributeName: String): Boolean
+
+    /**
+     * 获取到给定的属性名对应的Double形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    @Throws(NoSuchElementException::class)
+    fun getDouble(attributeName: String): Double
+
+    /**
+     * 获取到给定的属性名对应的Float形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    fun getFloat(attributeName: String): Float
+
+    /**
+     * 获取到给定的属性名对应的Class形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    fun getClass(attributeName: String): Class<*>
+
+    /**
+     * 获取到给定的属性名对应的枚举形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    fun <E : Enum<E>> getEnum(attributeName: String, type: Class<E>): E
+
+    /**
      * 从注解当中去获取一个可选的属性值
      *
      * @param attributeName attributeName

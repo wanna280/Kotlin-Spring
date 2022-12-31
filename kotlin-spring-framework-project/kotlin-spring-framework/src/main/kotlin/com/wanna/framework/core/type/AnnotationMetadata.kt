@@ -1,5 +1,7 @@
 package com.wanna.framework.core.type
 
+import java.util.stream.Collectors
+
 /**
  * 这是一个AnnotationMetadata，维护了一个类上的注解的相关信息，是Spring当中对于一个类上标注的相关注解的描述
  *
@@ -9,10 +11,13 @@ package com.wanna.framework.core.type
 interface AnnotationMetadata : AnnotatedTypeMetadata, ClassMetadata {
 
     /**
-     * 获取标注的注解的类型集合(String)
+     * 获取直接标注的注解的类型集合(String)
+     *
+     * @return 直接标注的注解列表
      */
     fun getAnnotationTypes(): Set<String> {
-        return getAnnotations().map { it.annotationClass::class.java.name }.toSet()
+        return getAnnotations().stream().filter { it.directPresent }.map { it.type.name }
+            .collect(Collectors.toSet())
     }
 
     /**

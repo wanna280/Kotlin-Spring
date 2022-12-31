@@ -26,9 +26,7 @@ open class SimpleMethodMetadata(
     private val annotationSet: Set<String>
 ) : MethodMetadata {
 
-    override fun getAnnotations(): Array<Annotation> = emptyArray()
-
-    override fun getMergedAnnotations(): MergedAnnotations = this.annotations
+    override fun getAnnotations() = this.annotations
 
     override fun getAnnotationAttributes(annotationName: String): Map<String, Any> {
         return attributesMap.getFirst(annotationName) ?: emptyMap()

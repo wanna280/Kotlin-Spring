@@ -1,10 +1,9 @@
 package com.wanna.framework.core.type.classreading
 
-import com.wanna.framework.context.annotation.AnnotationAttributes
+import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.util.ClassUtils
-import com.wanna.framework.util.MultiValueMap
 import org.objectweb.asm.Opcodes
 
 /**
@@ -22,15 +21,13 @@ open class SimpleAnnotationMetadata(
     private val independentInnerClass: Boolean,
     private val interfaceNames: Array<String>,
     private val memberClassNames: Array<String>,
-    private val methodMetadataSet: Set<MethodMetadata>,
-    private val annotations: Array<Annotation>,
-    private val attributesMap: MultiValueMap<String, AnnotationAttributes>,
-    private val annotationSet: Set<String>
+    private val annotatedMethods: Set<MethodMetadata>,
+    private val annotations: MergedAnnotations
 ) : AnnotationMetadata {
-    override fun getAnnotations(): Array<Annotation> = this.annotations
+    override fun getAnnotations() = this.annotations
 
     override fun getAnnotationAttributes(annotationName: String): Map<String, Any> {
-        return attributesMap.getFirst(annotationName) ?: emptyMap()
+        return emptyMap()
     }
 
     override fun getClassName(): String = this.className
@@ -62,28 +59,13 @@ open class SimpleAnnotationMetadata(
     override fun getMemberClassNames(): Array<String> = this.memberClassNames
 
     /**
-     * 检查当前的类上是否存在有这样的注解
-     *
-     * @param annotationName 注解名
-     * @return 如果包含给定的name的注解, return true; 否则return false
-     */
-    override fun hasAnnotation(annotationName: String): Boolean = this.annotationSet.contains(annotationName)
-
-    /**
-     * 获取到当前类上的注解的类型列表
-     *
-     * @return 注解类型的className的列表
-     */
-    override fun getAnnotationTypes(): Set<String> = this.annotationSet
-
-    /**
      * 检查当前类上是否标注了给定的AnnotationName对应的注解?
      *
      * @param annotationName 注解类名
      * @return 如果存在有该注解的话, return null; 否则return true
      */
     override fun isAnnotated(annotationName: String): Boolean {
-        return !annotationName.startsWith("java.lang.annotation") && attributesMap.containsKey(annotationName)
+        return !annotationName.startsWith("java.lang.annotation") && getAnnotations().isPresent(annotationName)
     }
 
     /**
@@ -93,7 +75,7 @@ open class SimpleAnnotationMetadata(
      * @return 标注了该注解的所有的方法的元信息
      */
     override fun getAnnotatedMethods(annotationName: String): Set<MethodMetadata> {
-        return methodMetadataSet.filter { it.isAnnotated(annotationName) }.toSet()
+        return annotatedMethods.filter { it.isAnnotated(annotationName) }.toSet()
     }
 
     override fun toString(): String = this.className

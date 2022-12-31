@@ -3,6 +3,7 @@ package com.wanna.framework.core.annotation
 import com.wanna.framework.lang.Nullable
 import java.lang.reflect.AnnotatedElement
 import java.util.function.Predicate
+import java.util.stream.Stream
 
 /**
  * 针对一个具体的类型(类/方法/字段/构造器等), 去进行描述的MergedAnnotations
@@ -121,7 +122,15 @@ open class TypeMappedAnnotations(
         return result ?: MergedAnnotation.missing()
     }
 
-    //---------------------------------------提供去获取注解的相关API开始-----------------------------------
+    //---------------------------------------提供去获取注解的相关API结束-----------------------------------
+
+    override fun iterator(): Iterator<MergedAnnotation<Annotation>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun stream(): Stream<MergedAnnotation<Annotation>> {
+        TODO("Not yet implemented")
+    }
 
     /**
      * 利用AnnotationsProcessor, 去执行处理

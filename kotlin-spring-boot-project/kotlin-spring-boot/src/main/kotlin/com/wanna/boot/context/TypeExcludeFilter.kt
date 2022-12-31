@@ -3,6 +3,8 @@ package com.wanna.boot.context
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.ListableBeanFactory
+import com.wanna.framework.core.type.classreading.MetadataReader
+import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 import com.wanna.framework.core.type.filter.TypeFilter
 
 /**
@@ -43,6 +45,11 @@ open class TypeExcludeFilter : TypeFilter, BeanFactoryAware {
                 }
             }
         }
+        return false
+    }
+
+    override fun matches(metadataReader: MetadataReader, metadataReaderFactory: MetadataReaderFactory): Boolean {
+        // TODO
         return false
     }
 

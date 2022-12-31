@@ -3,14 +3,16 @@ package com.wanna.framework.core.annotation
 import com.wanna.framework.lang.Nullable
 import java.lang.reflect.AnnotatedElement
 import java.util.function.Predicate
+import java.util.stream.Stream
 
 /**
+ * MergedAnnotations
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/9/21
  */
-interface MergedAnnotations {
+interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
 
     /**
      * 检查MergedAnnotations当中是否存在有给定的注解?
@@ -109,6 +111,13 @@ interface MergedAnnotations {
         @Nullable predicate: Predicate<in MergedAnnotation<A>>?,
         @Nullable selector: MergedAnnotationSelector<A>?
     ): MergedAnnotation<A>
+
+    /**
+     * 获取到迭代所有的注解的Stream
+     *
+     * @return Stream of MergedAnnotations
+     */
+    fun stream(): Stream<MergedAnnotation<Annotation>>
 
     enum class SearchStrategy {
         DIRECT, INHERITED_ANNOTATIONS, SUPERCLASS, TYPE_HIERARCHY, TYPE_HIERARCHY_AND_ENCLOSING_CLASSES

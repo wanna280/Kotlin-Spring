@@ -16,14 +16,8 @@ interface AnnotatedTypeMetadata {
      *
      * @return MergedAnnotations
      */
-    fun getMergedAnnotations(): MergedAnnotations = MergedAnnotations.of(emptyArray())
+    fun getAnnotations(): MergedAnnotations
 
-    /**
-     * 获取类型上标注的注解信息
-     *
-     * @return 该类/方法上的直接注解
-     */
-    fun getAnnotations(): Array<Annotation>
 
     /**
      * 指定具体的注解name，去寻找到合适的注解的对应属性

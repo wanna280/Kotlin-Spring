@@ -57,7 +57,26 @@ abstract class AbstractMergedAnnotation<A : Annotation> : MergedAnnotation<A> {
 
     override fun getString(attributeName: String): String = getRequiredAttributeValue(attributeName, String::class.java)
 
-    override fun getInt(attributeName: String): Int = getRequiredAttributeValue(attributeName, Int::class.java)
+    override fun getInt(attributeName: String) = getRequiredAttributeValue(attributeName, Int::class.javaObjectType)
+
+    override fun getBoolean(attributeName: String) =
+        getRequiredAttributeValue(attributeName, Boolean::class.javaObjectType)
+
+    override fun getLong(attributeName: String) = getRequiredAttributeValue(attributeName, Long::class.javaObjectType)
+
+    override fun getByte(attributeName: String) = getRequiredAttributeValue(attributeName, Byte::class.javaObjectType)
+
+    override fun getByteArray(attributeName: String) = getRequiredAttributeValue(attributeName, ByteArray::class.java)
+
+    override fun getDouble(attributeName: String) =
+        getRequiredAttributeValue(attributeName, Double::class.javaObjectType)
+
+    override fun getFloat(attributeName: String) = getRequiredAttributeValue(attributeName, Float::class.javaObjectType)
+
+    override fun getClass(attributeName: String) = getRequiredAttributeValue(attributeName, Class::class.java)
+
+    override fun <E : Enum<E>> getEnum(attributeName: String, type: Class<E>): E =
+        getRequiredAttributeValue(attributeName, type)
 
     /**
      * 获取到给定类型的属性值

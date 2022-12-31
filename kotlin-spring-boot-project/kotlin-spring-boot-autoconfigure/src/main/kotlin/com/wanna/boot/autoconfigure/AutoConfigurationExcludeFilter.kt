@@ -3,6 +3,8 @@ package com.wanna.boot.autoconfigure
 import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
+import com.wanna.framework.core.type.classreading.MetadataReader
+import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 import com.wanna.framework.core.type.filter.TypeFilter
 
 /**
@@ -19,7 +21,19 @@ open class AutoConfigurationExcludeFilter : TypeFilter {
      * @param clazz 要去进行匹配的配置类
      * @return 如果又是@Configuration配置类，又是AutoConfiguration，return true，否则return false
      */
-    override fun matches(clazz: Class<*>?) = clazz != null && isConfiguration(clazz) && isAutoConfiguration(clazz)
+    override fun matches(clazz: Class<*>?) = clazz != null && isConfiguration(clazz) && isAutoConfiguration(clazz.name)
+
+    override fun matches(metadataReader: MetadataReader, metadataReaderFactory: MetadataReaderFactory): Boolean {
+        return isConfiguration(metadataReader) && isAutoConfiguration(metadataReader)
+    }
+
+    open fun isAutoConfiguration(metadataReader: MetadataReader): Boolean {
+        return getAutoConfigurations().contains(metadataReader.classMetadata.getClassName())
+    }
+
+    open fun isConfiguration(metadataReader: MetadataReader): Boolean {
+        return metadataReader.annotationMetadata.isAnnotated(Configuration::class.java.name)
+    }
 
     /**
      * 判断给定的类是否是一个配置类
@@ -33,10 +47,10 @@ open class AutoConfigurationExcludeFilter : TypeFilter {
     /**
      * 判断给定的类是否是一个自动配置类
      *
-     * @param clazz 要去进行匹配的目标类
+     * @param className 要去进行匹配的className
      * @return 它是否配置在了SpringFactories当中？如果存在的话，return true，否则return false
      */
-    open fun isAutoConfiguration(clazz: Class<*>) = getAutoConfigurations().contains(clazz.name)
+    open fun isAutoConfiguration(className: String) = getAutoConfigurations().contains(className)
 
     /**
      * 从SpringFactories当中去获取所有的自动配置类的列表

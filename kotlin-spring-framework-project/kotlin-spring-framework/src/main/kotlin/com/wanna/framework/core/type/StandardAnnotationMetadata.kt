@@ -2,6 +2,7 @@ package com.wanna.framework.core.type
 
 import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.Modifier
@@ -13,7 +14,12 @@ import java.lang.reflect.Modifier
  */
 open class StandardAnnotationMetadata(val introspectedClass: Class<*>) : AnnotationMetadata {
 
-    override fun getAnnotations(): Array<Annotation> = introspectedClass.annotations
+    /**
+     * MergedAnnotations
+     */
+    private val annotations = MergedAnnotations.from(introspectedClass)
+
+    override fun getAnnotations() = this.annotations
 
     override fun getAnnotationAttributes(annotationName: String): Map<String, Any> {
         return getAnnotationAttributes(ClassUtils.forName(annotationName))

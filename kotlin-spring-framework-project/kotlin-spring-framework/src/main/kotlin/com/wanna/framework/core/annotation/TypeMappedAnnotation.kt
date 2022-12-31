@@ -229,7 +229,7 @@ open class TypeMappedAnnotation<A : Annotation>(
     @Nullable
     private fun <T> adapt(attribute: Method, @Nullable value: Any?, type: Class<T>): T? {
         value ?: return null
-        var result: Any? = value
+        var result: Any? = adaptForAttribute(attribute, value)
 
         // 如果type=Object的话, 对type去进行转换, 使用注解的属性类型作为targetType
         val targetType = getAdaptType(attribute, type)
@@ -259,7 +259,7 @@ open class TypeMappedAnnotation<A : Annotation>(
             result = Array(value.size) { (value[it] as MergedAnnotation<*>).synthesize() }
         }
 
-        // 如果类型不匹配的话...那么丢出异常
+        // 如果类型不匹配的话...那么丢出异常(Note: 这里要求type必须是包装类的类型)
         if (!targetType.isInstance(result)) {
             throw IllegalArgumentException("Unable to adapt value of type ${result!!.javaClass.name} to ${targetType.name}")
         }
@@ -278,7 +278,15 @@ open class TypeMappedAnnotation<A : Annotation>(
         if (attributeType.isAnnotation && attributeType.componentType.isAnnotation) {
             return emptyArray<MergedAnnotation<*>>()::class.java as Class<T>
         }
+
+        // 如果是八种基础数据类型的话, 那么我们使用包装类去进行返回
         return ClassUtils.resolvePrimitiveIfNecessary(type) as Class<T>
+    }
+
+    private fun adaptForAttribute(attribute: Method, value: Any): Any {
+        val attributeType = ClassUtils.resolvePrimitiveIfNecessary(attribute.returnType)
+
+        return value
     }
 
     /**
@@ -297,10 +305,19 @@ open class TypeMappedAnnotation<A : Annotation>(
     override fun createSynthesized(): A = SynthesizedMergedAnnotationInvocationHandler.createProxy(this, type)
 
     companion object {
+
         @Nullable
         @JvmStatic
         fun <A : Annotation> createIfPossible(
-            mapping: AnnotationTypeMapping, source: Any?, annotation: Annotation, aggregateIndex: Int
+            mapping: AnnotationTypeMapping, source: Any?
+        ): MergedAnnotation<A>? {
+            return createIfPossible(mapping, source, mapping.annotation, 0, ReflectionUtils::invokeMethod)
+        }
+
+        @Nullable
+        @JvmStatic
+        fun <A : Annotation> createIfPossible(
+            mapping: AnnotationTypeMapping, source: Any?, annotation: Annotation?, aggregateIndex: Int
         ): MergedAnnotation<A>? {
             return createIfPossible(mapping, source, annotation, aggregateIndex, ReflectionUtils::invokeMethod)
         }
@@ -310,7 +327,7 @@ open class TypeMappedAnnotation<A : Annotation>(
         fun <A : Annotation> createIfPossible(
             mapping: AnnotationTypeMapping,
             source: Any?,
-            annotation: Annotation,
+            annotation: Annotation?,
             aggregateIndex: Int,
             valueExtractor: ValueExtractor,
         ): MergedAnnotation<A>? {

@@ -1,10 +1,9 @@
 package com.wanna.framework.core.type.classreading
 
-import com.wanna.framework.context.annotation.AnnotationAttributes
-import com.wanna.framework.core.type.AnnotationMetadata
+import com.wanna.framework.core.annotation.MergedAnnotation
+import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.lang.Nullable
-import com.wanna.framework.util.LinkedMultiValueMap
 import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
@@ -28,24 +27,19 @@ open class AnnotationMetadataReadingVisitor(protected val classLoader: ClassLoad
     protected val annotationSet = LinkedHashSet<String>()
 
     /**
-     * MetaAnnotationMap
-     */
-    protected val metaAnnotationMap = LinkedHashMap<String, Set<String>>()
-
-    /**
-     * 注解属性信息的Map(Key-Annotation ClassName, Value-该注解对应的注解的属性信息)
-     */
-    protected val attributesMap = LinkedMultiValueMap<String, AnnotationAttributes>()
-
-    /**
      * 一个类当中的各个方法的Metadata的集合
      */
-    protected val methodMetadataSet = LinkedHashSet<MethodMetadata>()
+    protected val annotatedMethods = LinkedHashSet<MethodMetadata>()
 
     /**
      * AnnotationMetadata, 作为访问完成之后的最终结果的输出
      */
     private var annotationMetadata: SimpleAnnotationMetadata? = null
+
+    /**
+     * MergedAnnotations
+     */
+    private var mergedAnnotations: MutableList<MergedAnnotation<Annotation>> = ArrayList()
 
     /**
      * 访问一个类当中的方法时, 我们需要返回一个MethodVisitor, 去将方法的信息去收集起来
@@ -58,11 +52,7 @@ open class AnnotationMetadataReadingVisitor(protected val classLoader: ClassLoad
      * @return 提供MethodMetadata的访问的MethodVisitor
      */
     override fun visitMethod(
-        access: Int,
-        name: String,
-        descriptor: String,
-        signature: String?,
-        @Nullable exceptions: Array<out String>?
+        access: Int, name: String, descriptor: String, signature: String?, @Nullable exceptions: Array<out String>?
     ): MethodVisitor {
         // 桥接方法直接invoke Super
         if ((access and Opcodes.ACC_BRIDGE) != 0) {
@@ -71,8 +61,7 @@ open class AnnotationMetadataReadingVisitor(protected val classLoader: ClassLoad
 
         // 提供对于方法的MethodMetadata的访问的Visitor
         return MethodMetadataReadingVisitor(
-            name, access, className!!,
-            Type.getReturnType(descriptor).className, classLoader, methodMetadataSet
+            name, access, className!!, Type.getReturnType(descriptor).className, classLoader, annotatedMethods
         )
     }
 
@@ -85,25 +74,18 @@ open class AnnotationMetadataReadingVisitor(protected val classLoader: ClassLoad
     override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor {
         val className = Type.getType(descriptor).className
         this.annotationSet += className
-        return AnnotationAttributesReadingVisitor(className, attributesMap, this.metaAnnotationMap, classLoader)
+        return MergedAnnotationReadingVisitor.get(classLoader, null, descriptor, this.mergedAnnotations)
     }
 
     /**
      * 在访问应该类完成之后, 我们需要去构建出来AnnotationMetadata
      */
     override fun visitEnd() {
+        val annotations = MergedAnnotations.of(mergedAnnotations.toTypedArray())
         this.annotationMetadata = SimpleAnnotationMetadata(
-            className!!,
-            access,
-            enclosingClassName,
-            superClassName,
-            independentInnerClass,
-            interfaces ?: emptyArray(),
-            memberClassNames.toTypedArray(),
-            this.methodMetadataSet,
-            emptyArray(),
-            attributesMap,
-            annotationSet
+            className!!, access, enclosingClassName, superClassName,
+            independentInnerClass, interfaces ?: emptyArray(),
+            memberClassNames.toTypedArray(), this.annotatedMethods, annotations
         )
     }
 

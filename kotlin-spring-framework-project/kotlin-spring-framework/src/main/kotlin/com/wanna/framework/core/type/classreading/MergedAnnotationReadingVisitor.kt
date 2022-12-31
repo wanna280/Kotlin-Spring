@@ -20,7 +20,7 @@ open class MergedAnnotationReadingVisitor<A : Annotation>(
     private val classLoader: ClassLoader,
     private val source: Any?,
     private val descriptor: String,
-    private val annotations: MutableSet<MergedAnnotation<A>>
+    private val annotations: MutableCollection<MergedAnnotation<A>>
 ) : AnnotationVisitor(SpringAsmInfo.ASM_VERSION) {
 
     /**
@@ -66,7 +66,7 @@ open class MergedAnnotationReadingVisitor<A : Annotation>(
             classLoader: ClassLoader,
             @Nullable source: Any?,
             descriptor: String,
-            annotations: MutableSet<MergedAnnotation<A>>
+            annotations: MutableCollection<MergedAnnotation<A>>
         ): AnnotationVisitor {
             return MergedAnnotationReadingVisitor(classLoader, source, descriptor, annotations)
         }
