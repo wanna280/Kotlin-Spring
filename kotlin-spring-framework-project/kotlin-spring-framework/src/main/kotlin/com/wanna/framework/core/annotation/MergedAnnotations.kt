@@ -119,8 +119,34 @@ interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
      */
     fun stream(): Stream<MergedAnnotation<Annotation>>
 
+    /**
+     * 注解的搜索策略枚举
+     */
     enum class SearchStrategy {
-        DIRECT, INHERITED_ANNOTATIONS, SUPERCLASS, TYPE_HIERARCHY, TYPE_HIERARCHY_AND_ENCLOSING_CLASSES
+        /**
+         * 只去处理直接注解
+         */
+        DIRECT,
+
+        /**
+         * 不仅去处理直接注解, 还得去处理继承的注解
+         */
+        INHERITED_ANNOTATIONS,
+
+        /**
+         * 不仅去处理直接注解, 还得处理它的父类
+         */
+        SUPERCLASS,
+
+        /**
+         * 不仅去处理直接注解, 还得处理父类/接口
+         */
+        TYPE_HIERARCHY,
+
+        /**
+         * 不仅处理直接注解, 还去处理父类/接口/外部类
+         */
+        TYPE_HIERARCHY_AND_ENCLOSING_CLASSES
     }
 
     companion object {
