@@ -236,7 +236,7 @@ internal class JarURLConnection constructor(
             private set
 
         private fun decode(source: StringSequence): StringSequence {
-            if (source.isEmpty || source.indexOf('%') < 0) {
+            if (source.isEmpty() || source.indexOf('%') < 0) {
                 return source
             }
             val bos = ByteArrayOutputStream(source.length)
@@ -281,7 +281,7 @@ internal class JarURLConnection constructor(
         override fun toString() = this.name.toString()
 
         val isEmpty: Boolean
-            get() = name.isEmpty
+            get() = name.isEmpty()
 
         private fun deduceContentType(): String {
             // Guess the content type, don't bother with streams as mark is not supported

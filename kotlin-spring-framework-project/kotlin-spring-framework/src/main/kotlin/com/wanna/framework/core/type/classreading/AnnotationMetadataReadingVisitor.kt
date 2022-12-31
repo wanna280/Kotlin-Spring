@@ -11,13 +11,14 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
 /**
- * 基于ASM的方式去提供AnnotationMetadata的读取的Visitor
+ * 基于ASM的方式去提供AnnotationMetadata的读取的ClassVisitor
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/12/18
  *
  * @param classLoader ClassLoader
+ * @see org.objectweb.asm.ClassVisitor
  */
 open class AnnotationMetadataReadingVisitor(protected val classLoader: ClassLoader) : ClassMetadataReadingVisitor() {
 
@@ -47,7 +48,7 @@ open class AnnotationMetadataReadingVisitor(protected val classLoader: ClassLoad
     private var annotationMetadata: SimpleAnnotationMetadata? = null
 
     /**
-     * 访问类当中的方法时, 我们将方法的信息去收集起来
+     * 访问一个类当中的方法时, 我们需要返回一个MethodVisitor, 去将方法的信息去收集起来
      *
      * @param access 方法的访问标识符
      * @param name 方法名
@@ -65,7 +66,7 @@ open class AnnotationMetadataReadingVisitor(protected val classLoader: ClassLoad
     ): MethodVisitor {
         // 桥接方法直接invoke Super
         if ((access and Opcodes.ACC_BRIDGE) != 0) {
-            super.visitMethod(access, name, descriptor, signature, exceptions)
+            return super.visitMethod(access, name, descriptor, signature, exceptions)
         }
 
         // 提供对于方法的MethodMetadata的访问的Visitor
@@ -76,7 +77,7 @@ open class AnnotationMetadataReadingVisitor(protected val classLoader: ClassLoad
     }
 
     /**
-     * 访问类上的一个注解时, 我们将注解信息去收集起来
+     * 访问类上的一个注解时, 我们需要去返回一个AnnotationVisitor将注解信息去收集起来
      *
      * @param descriptor descriptor
      * @return 获取一个提供注解的访问的AnnotationVisitor
@@ -88,7 +89,7 @@ open class AnnotationMetadataReadingVisitor(protected val classLoader: ClassLoad
     }
 
     /**
-     * 在访问完成之后, 构建出来AnnotationMetadata
+     * 在访问应该类完成之后, 我们需要去构建出来AnnotationMetadata
      */
     override fun visitEnd() {
         this.annotationMetadata = SimpleAnnotationMetadata(
@@ -106,6 +107,11 @@ open class AnnotationMetadataReadingVisitor(protected val classLoader: ClassLoad
         )
     }
 
+    /**
+     * 获取到AnnotationMetadata
+     *
+     * @return AnnotationMetadata
+     */
     open fun getMetadata(): SimpleAnnotationMetadata =
-        this.annotationMetadata ?: throw IllegalStateException("AnnotationMetadata is  null")
+        this.annotationMetadata ?: throw IllegalStateException("AnnotationMetadata is null")
 }

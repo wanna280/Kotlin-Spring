@@ -26,14 +26,19 @@ import kotlin.reflect.KClass
 @ContextConfiguration
 @ExtendWith(SpringExtension::class)
 annotation class SpringJUnitConfig(
+    @get:com.wanna.framework.core.annotation.AliasFor("value", annotation = ContextConfiguration::class)
     @get:AliasFor("value", annotation = ContextConfiguration::class)
     val value: Array<String> = [],
+    @get:com.wanna.framework.core.annotation.AliasFor("locations", annotation = ContextConfiguration::class)
     @get:AliasFor("locations", annotation = ContextConfiguration::class)
     val locations: Array<String> = [],
+    @get:com.wanna.framework.core.annotation.AliasFor("classes", annotation = ContextConfiguration::class)
     @get:AliasFor("classes", annotation = ContextConfiguration::class)
     val classes: Array<KClass<*>> = [],
+    @get:com.wanna.framework.core.annotation.AliasFor("initializers", annotation = ContextConfiguration::class)
     @get:AliasFor("initializers", annotation = ContextConfiguration::class)
     val initializers: Array<KClass<out ApplicationContextInitializer<out ConfigurableApplicationContext>>> = [],
+    @get:com.wanna.framework.core.annotation.AliasFor("loader", annotation = ContextConfiguration::class)
     @get:AliasFor("loader", annotation = ContextConfiguration::class)
     val loader: KClass<out ContextLoader> = ContextLoader::class
 )

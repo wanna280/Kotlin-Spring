@@ -1,6 +1,8 @@
 package com.wanna.framework.core.type.classreading
 
 import com.wanna.framework.context.annotation.AnnotationAttributes
+import com.wanna.framework.core.annotation.MergedAnnotation
+import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.util.MultiValueMap
 import org.objectweb.asm.Opcodes
@@ -19,12 +21,14 @@ open class SimpleMethodMetadata(
     private val declaringClassName: String,
     private val returnTypeName: String,
     private val access: Int,
-    private val annotations: Array<Annotation>,
+    private val annotations: MergedAnnotations,
     private val attributesMap: MultiValueMap<String, AnnotationAttributes>,
     private val annotationSet: Set<String>
 ) : MethodMetadata {
 
-    override fun getAnnotations(): Array<Annotation> = this.annotations
+    override fun getAnnotations(): Array<Annotation> = emptyArray()
+
+    override fun getMergedAnnotations(): MergedAnnotations = this.annotations
 
     override fun getAnnotationAttributes(annotationName: String): Map<String, Any> {
         return attributesMap.getFirst(annotationName) ?: emptyMap()

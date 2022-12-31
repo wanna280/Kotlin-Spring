@@ -26,9 +26,11 @@ import org.springframework.core.annotation.AliasFor
  */
 @Target(AnnotationTarget.FUNCTION)
 annotation class Bean(
+    @get:com.wanna.framework.core.annotation.AliasFor("name")
     @get:AliasFor("name")
     val value: String = "",
     @get:AliasFor("value")
+    @get:com.wanna.framework.core.annotation.AliasFor("value")
     val name: String = "",
     val autowireCandidate: Boolean = true,  // 是否是AutowireCandidate？
     val autowireMode: Int = AutowireCapableBeanFactory.AUTOWIRE_NO,  // AutowireMode

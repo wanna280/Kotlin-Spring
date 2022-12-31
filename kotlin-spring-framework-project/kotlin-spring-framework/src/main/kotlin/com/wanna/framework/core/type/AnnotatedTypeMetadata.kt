@@ -1,5 +1,7 @@
 package com.wanna.framework.core.type
 
+import com.wanna.framework.core.annotation.MergedAnnotations
+
 /**
  * 这是一个被注解标注的的类型的Metadata信息，支持去获取到注解的相关属性；
  * 主要有两类AnnotatedTypeMetadata的实现，一类是方法的Metadata(MethodMetadata)，另外一类是类的Metadata(AnnotationMetadata)；
@@ -8,6 +10,14 @@ package com.wanna.framework.core.type
  * @see AnnotationMetadata
  */
 interface AnnotatedTypeMetadata {
+
+    /**
+     * 获取MergedAnnotations
+     *
+     * @return MergedAnnotations
+     */
+    fun getMergedAnnotations(): MergedAnnotations = MergedAnnotations.of(emptyArray())
+
     /**
      * 获取类型上标注的注解信息
      *

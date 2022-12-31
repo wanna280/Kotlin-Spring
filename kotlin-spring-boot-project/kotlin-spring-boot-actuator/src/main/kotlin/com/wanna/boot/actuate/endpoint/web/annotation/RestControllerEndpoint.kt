@@ -7,6 +7,7 @@ import org.springframework.core.annotation.AliasFor
 @ControllerEndpoint
 @ResponseBody
 annotation class RestControllerEndpoint(
-    @get:AliasFor("id",annotation = ControllerEndpoint::class)
+    @get:com.wanna.framework.core.annotation.AliasFor("id", annotation = ControllerEndpoint::class)
+    @get:AliasFor("id", annotation = ControllerEndpoint::class)
     val id: String = ""
 )

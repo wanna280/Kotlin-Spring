@@ -211,6 +211,17 @@ object ClassUtils {
     }
 
     /**
+     * 如果给定的类型是基础数据类型的话, 那么返回它的包装类, 否则返回原始的类型
+     *
+     * @param clazz 原始的Class
+     * @return 经过解析之后的Class
+     */
+    @JvmStatic
+    fun resolvePrimitiveIfNecessary(clazz: Class<*>): Class<*> {
+        return if (clazz.isPrimitive && clazz != Unit::class.java) primitiveTypeToWrapperMap[clazz]!! else clazz
+    }
+
+    /**
      * 判断childClass是否是parentClass的子类？如果其中一个返回为空，那么return true；只有两者均不为空时，才会去进行判断
      *
      * @param parentClass parentClass

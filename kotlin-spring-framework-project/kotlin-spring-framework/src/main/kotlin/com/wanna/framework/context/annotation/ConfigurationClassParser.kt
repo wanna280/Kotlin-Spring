@@ -39,16 +39,19 @@ open class ConfigurationClassParser(
         /**
          * Logger
          */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(ConfigurationClass::class.java)
 
         /**
          * 默认情况下的PropertySourceFactory，用于去创建PropertySource
          */
+        @JvmStatic
         private val DEFAULT_PROPERTY_SOURCE_FACTORY = DefaultPropertySourceFactory()
 
         /**
          * DeferredImportSelectorHolder的比较器，因为对DeferredImportSelector包装了一层，因此需要包装一层
          */
+        @JvmStatic
         private val DEFERRED_IMPORT_SELECTOR_COMPARATOR = Comparator<DeferredImportSelectorHolder> { o1, o2 ->
             AnnotationAwareOrderComparator.INSTANCE.compare(o1.deferredImportSelector, o2.deferredImportSelector)
         }
@@ -56,6 +59,7 @@ open class ConfigurationClassParser(
         /**
          * 默认的用来去进行排除的Filter
          */
+        @JvmStatic
         private val DEFAULT_EXCLUSION_FILTER =
             Predicate<String> { it.startsWith("java.") || it.startsWith("com.wanna.framework.context.stereotype.") }
     }

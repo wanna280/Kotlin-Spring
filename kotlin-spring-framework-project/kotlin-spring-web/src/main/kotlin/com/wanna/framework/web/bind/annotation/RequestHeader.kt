@@ -16,8 +16,10 @@ import org.springframework.core.annotation.AliasFor
  */
 @Target(AnnotationTarget.TYPE_PARAMETER, AnnotationTarget.VALUE_PARAMETER)
 annotation class RequestHeader(
+    @get:com.wanna.framework.core.annotation.AliasFor("name")
     @get:AliasFor("name")
     val value: String = "",
+    @get:com.wanna.framework.core.annotation.AliasFor("name")
     @get:AliasFor("value")
     val name: String = "",
     val required: Boolean = true,

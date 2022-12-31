@@ -9,8 +9,10 @@ import org.springframework.core.annotation.AliasFor
 @Component
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 annotation class ShellComponent(
-    @get:AliasFor("name", annotation = Component::class)
+    @get:com.wanna.framework.core.annotation.AliasFor("value", annotation = Component::class)
+    @get:AliasFor("value", annotation = Component::class)
     val value: String = "",
+    @get:com.wanna.framework.core.annotation.AliasFor("value", annotation = Component::class)
     @get:AliasFor("value", annotation = Component::class)
     val name: String = ""
 )

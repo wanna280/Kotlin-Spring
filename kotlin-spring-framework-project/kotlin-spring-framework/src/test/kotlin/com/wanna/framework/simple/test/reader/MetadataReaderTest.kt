@@ -1,5 +1,8 @@
 package com.wanna.framework.simple.test.reader
 
+import com.wanna.framework.context.annotation.Configuration
+import com.wanna.framework.core.annotation.AnnotationTypeMapping
+import com.wanna.framework.core.annotation.AnnotationTypeMappings
 import com.wanna.framework.core.type.classreading.SimpleMetadataReaderFactory
 import com.wanna.framework.transaction.annotation.Isolation
 import com.wanna.framework.transaction.annotation.Transactional

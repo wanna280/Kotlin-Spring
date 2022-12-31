@@ -1,6 +1,8 @@
 package com.wanna.framework.core.type.classreading
 
 import com.wanna.framework.context.annotation.AnnotationAttributes
+import com.wanna.framework.core.annotation.MergedAnnotation
+import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.core.asm.SpringAsmInfo
 import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.util.LinkedMultiValueMap
@@ -43,44 +45,43 @@ open class MethodMetadataReadingVisitor(
     protected val attributesMap = LinkedMultiValueMap<String, AnnotationAttributes>()
 
     /**
-     *
+     * 一个方法上的注解的类名列表
      */
     private val annotationSet = LinkedHashSet<String>()
 
     /**
-     * MethodMetadata
+     * 一个方法上的注解列表
      */
-    private var methodMetadata: SimpleMethodMetadata? = null
+    private var annotations = LinkedHashSet<MergedAnnotation<Annotation>>()
 
     /**
-     * 当访问一个方法上的一个注解时, 自动回调这个方法作为Callback
+     * 当访问一个方法上标注的一个注解时, 自动回调这个方法作为Callback
      *
-     * @param descriptor 注解的描述信息(例如"Ljava.lang.String;")
+     * @param descriptor 注解的描述信息(例如"Ljava.lang.String;"这样的格式)
      * @return 提供对于注解当中的属性读取的AnnotationVisitor
      */
-    override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor {
+    override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor? {
         val className = Type.getType(descriptor).className
         this.annotationSet += className
-        this.methodMetadataSet += buildMetadata()
-        return AnnotationAttributesReadingVisitor(className, attributesMap, metaAnnotationMap, classLoader)
+        return MergedAnnotationReadingVisitor.get(classLoader, null, descriptor, this.annotations)
     }
 
+    /**
+     * 当访问结束时, 需要将所有的注解信息去Merge成为MergedAnnotations, 并收集到MethodMetadata当中
+     *
+     * @see MergedAnnotations
+     */
     override fun visitEnd() {
-        this.methodMetadata = buildMetadata()
-    }
-
-    open fun buildMetadata(): SimpleMethodMetadata {
-        return SimpleMethodMetadata(
+        // MergedAnnotations
+        val mergedAnnotations = MergedAnnotations.of(this.annotations.toTypedArray())
+        this.methodMetadataSet += SimpleMethodMetadata(
             this.methodName,
             this.declaringClassName,
             this.returnTypeName,
             access,
-            emptyArray(),
+            mergedAnnotations,
             this.attributesMap,
             this.annotationSet
         )
     }
-
-    open fun getMetadata(): SimpleMethodMetadata =
-        this.methodMetadata ?: throw IllegalStateException("MethodMetadata is null")
 }

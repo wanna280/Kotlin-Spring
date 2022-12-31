@@ -56,8 +56,7 @@ class StringSequence(
         )
     }
 
-    val isEmpty: Boolean
-        get() = length == 0
+    override fun isEmpty(): Boolean = length == 0
 
     fun indexOf(ch: Char): Int {
         return source.indexOf(ch, start) - start
