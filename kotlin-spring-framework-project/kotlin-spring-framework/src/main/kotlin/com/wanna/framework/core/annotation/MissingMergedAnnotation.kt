@@ -1,6 +1,8 @@
 package com.wanna.framework.core.annotation
 
 import com.wanna.framework.lang.Nullable
+import java.util.*
+import kotlin.NoSuchElementException
 
 /**
  *
@@ -37,6 +39,13 @@ class MissingMergedAnnotation<A : Annotation> : AbstractMergedAnnotation<A>() {
      * 对于missing, 不支持创建合成注解
      */
     override fun createSynthesized() = throw NoSuchElementException("Unable to synthesize missing annotation")
+
+    /**
+     * 对于missing, 默认值为null
+     *
+     * @return [Optional.empty]
+     */
+    override fun <T : Any> getDefaultValue(attributeName: String, type: Class<T>): Optional<T> = Optional.empty()
 
     override fun hasDefaultValue(attributeName: String) =
         throw NoSuchElementException("Unable to check default value for missing annotation")

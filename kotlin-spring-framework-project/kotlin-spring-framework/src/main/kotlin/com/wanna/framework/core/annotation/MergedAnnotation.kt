@@ -239,6 +239,23 @@ interface MergedAnnotation<A : Annotation> {
     fun <T : Any> getValue(attributeName: String, type: Class<T>): Optional<T>
 
     /**
+     * 从MergedAnnotation当中获取给定的属性名的默认值
+     *
+     * @param attributeName attributeName
+     * @return 该属性名对应的默认值的Optional, 如果不存在的话, return [Optional.empty]
+     */
+    fun getDefaultValue(attributeName: String): Optional<Any>
+
+    /**
+     * 从MergedAnnotation当中获取给定的属性名的默认值
+     *
+     * @param attributeName attributeName
+     * @param type 想要获取的默认值的类型
+     * @return 该属性名对应的默认值的Optional, 如果不存在的话, return [Optional.empty]
+     */
+    fun <T : Any> getDefaultValue(attributeName: String, type: Class<T>): Optional<T>
+
+    /**
      * 获取到经过合成之后的注解对象
      *
      * @return 合成之后的注解对象

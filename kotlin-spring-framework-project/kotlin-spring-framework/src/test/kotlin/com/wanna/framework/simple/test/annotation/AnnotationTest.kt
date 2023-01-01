@@ -97,7 +97,11 @@ class AnnotationTest4 {
 fun testAnnotation6() {
     val allMergedAnnotations =
         AnnotatedElementUtils.getAllMergedAnnotations(AnnotationTest4::class.java, Component::class.java)
-    println(allMergedAnnotations.size)
+    println("annotation6 component size is" + allMergedAnnotations.size)
+
+    val mergedAnnotation = MergedAnnotations.from(AnnotationTest4::class.java).get(Component::class.java)
+    val defaultValue = mergedAnnotation.getDefaultValue("value")
+    println("annotation6 default value is ${defaultValue.get()}")
 }
 
 

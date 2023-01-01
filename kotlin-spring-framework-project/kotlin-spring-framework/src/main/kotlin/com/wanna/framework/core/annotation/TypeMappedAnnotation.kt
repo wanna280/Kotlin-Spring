@@ -6,6 +6,8 @@ import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.Method
+import java.util.*
+import kotlin.NoSuchElementException
 
 /**
  * TypeMapped MergedAnnotation
@@ -48,7 +50,7 @@ open class TypeMappedAnnotation<A : Annotation>(
         get() = true
 
     /**
-     * distance
+     * distance, 也就是当前注解距离root注解的距离
      */
     final override val distance: Int
         get() = mapping.distance
@@ -69,7 +71,20 @@ open class TypeMappedAnnotation<A : Annotation>(
         )
 
     override fun hasDefaultValue(attributeName: String): Boolean {
-        return false
+        val attributeIndex = getAttributeIndex(attributeName, true)
+        val value = getValue(attributeIndex, true, false)
+        return value == null
+    }
+
+    override fun <T : Any> getDefaultValue(attributeName: String, type: Class<T>): Optional<T> {
+        val attributeIndex = getAttributeIndex(attributeName, false)
+        // 如果不存在该属性名对应的属性方法, return empty
+        if (attributeIndex == -1) {
+            return Optional.empty()
+        }
+        // 如果存在的话, 返回该属性方法的默认值
+        val attribute = this.mapping.attributes[attributeIndex]
+        return Optional.ofNullable(adapt(attribute, attribute.defaultValue, type))
     }
 
     @Nullable
@@ -284,7 +299,7 @@ open class TypeMappedAnnotation<A : Annotation>(
 
     private fun adaptForAttribute(attribute: Method, value: Any): Any {
         val attributeType = ClassUtils.resolvePrimitiveIfNecessary(attribute.returnType)
-
+        // TODO
         return value
     }
 

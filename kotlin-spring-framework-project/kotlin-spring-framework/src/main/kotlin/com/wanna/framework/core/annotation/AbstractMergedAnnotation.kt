@@ -147,6 +147,14 @@ abstract class AbstractMergedAnnotation<A : Annotation> : MergedAnnotation<A> {
         Optional.ofNullable(getAttributeValue(attributeName, type))
 
     /**
+     * 从MergedAnnotation当中获取给定的属性名的默认值
+     *
+     * @param attributeName attributeName
+     * @return 该属性名对应的默认值的Optional, 如果不存在的话, return [Optional.empty]
+     */
+    override fun getDefaultValue(attributeName: String): Optional<Any> = getDefaultValue(attributeName, Any::class.java)
+
+    /**
      * 从注解当中去获取到属性值, 模板方法, 交给子类去完成
      *
      * @param attributeName attributeName
