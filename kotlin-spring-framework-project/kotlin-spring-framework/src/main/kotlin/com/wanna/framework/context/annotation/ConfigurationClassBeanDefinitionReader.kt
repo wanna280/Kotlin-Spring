@@ -79,8 +79,7 @@ open class ConfigurationClassBeanDefinitionReader(
      * @param trackedConditionEvaluator 带轨迹追踪功能的条件计算器
      */
     protected open fun loadBeanDefinitionsForConfigurationClass(
-        configurationClass: ConfigurationClass,
-        trackedConditionEvaluator: TrackedConditionEvaluator
+        configurationClass: ConfigurationClass, trackedConditionEvaluator: TrackedConditionEvaluator
     ) {
         // 比较所有导入当前的配置类的配置类是否都已经被移除掉了？如果都已经被移除掉了，那么当前的配置类也应该被移除掉！
         // 如果该配置类应该被skip掉，那么它应该从BeanDefinitionRegistry当中移除掉
@@ -147,7 +146,12 @@ open class ConfigurationClassBeanDefinitionReader(
         if (metadata is StandardMethodMetadata) {
             beanDefinition.setResolvedFactoryMethod(metadata.getMethod())
             beanDefinition.setBeanClass(metadata.getMethod().returnType)
+        } else {
+
+            // 如果不是StandardMethodMetadata的话, 那么也得设置beanClassName
+            beanDefinition.setBeanClassName(metadata.getReturnTypeName())
         }
+
 
         // 设置autowiredMode为构造器注入
         beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR)
@@ -168,9 +172,9 @@ open class ConfigurationClassBeanDefinitionReader(
         beanDefinition.setAutowireMode(beanAnnotation.getInt("autowireMode"))
 
         // 解析scope
-        val scope = metadata.getAnnotationAttributes(Scope::class.java.name)
-        if (scope.isNotEmpty()) {
-            beanDefinition.setScope(scope["scopeName"]!!.toString())
+        val scope = metadata.getAnnotations().get(Scope::class.java)
+        if (scope.present) {
+            beanDefinition.setScope(scope.getString("value"))
         }
 
         // 注册beanDefinition到容器当中
@@ -220,8 +224,7 @@ open class ConfigurationClassBeanDefinitionReader(
         // 4.如果BeanFactory本身就不允许发生BeanDefinition的覆盖的话，那么需要丢出异常
         if (this.registry is DefaultListableBeanFactory && !this.registry.isAllowBeanDefinitionOverriding()) {
             throw BeanDefinitionStoreException(
-                beanName,
-                "@Bean方法的BeanDefinition尝试去替换掉之前的BeanDefinition $existBeanDef 的操作不合法"
+                beanName, "@Bean方法的BeanDefinition尝试去替换掉之前的BeanDefinition $existBeanDef 的操作不合法"
             )
         }
         if (logger.isDebugEnabled) {
@@ -340,8 +343,7 @@ open class ConfigurationClassBeanDefinitionReader(
      * @return 解析到的beanName
      */
     private fun findBeanNameFromBeanAnnotation(
-        beanAnnotation: MergedAnnotation<Bean>,
-        metadata: MethodMetadata
+        beanAnnotation: MergedAnnotation<Bean>, metadata: MethodMetadata
     ): String {
         var beanName: String? = null
         if (StringUtils.hasText(beanAnnotation.getString("name"))) {
@@ -364,8 +366,7 @@ open class ConfigurationClassBeanDefinitionReader(
      * @param methodMetadata 方法的MethodData
      */
     class ConfigurationClassBeanDefinition(
-        private val configurationClass: ConfigurationClass,
-        private val methodMetadata: MethodMetadata?
+        private val configurationClass: ConfigurationClass, private val methodMetadata: MethodMetadata?
     ) : RootBeanDefinition(), AnnotatedBeanDefinition {
         init {
             // 设置Resource

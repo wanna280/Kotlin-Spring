@@ -42,6 +42,7 @@ interface AnnotatedTypeMetadata {
      * @param annotationName 注解的全类名
      * @return 如果标注了，那么return true；否则return false
      */
-    fun isAnnotated(annotationName: String): Boolean =
-        getAnnotations().map { it::class.java.name }.contains(annotationName)
+    fun isAnnotated(annotationName: String): Boolean {
+        return !annotationName.startsWith("java.lang.annotation") && getAnnotations().isPresent(annotationName)
+    }
 }

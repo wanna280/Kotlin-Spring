@@ -17,11 +17,11 @@ open class OnResourceCondition : SpringBootCondition() {
     @Suppress("UNCHECKED_CAST")
     override fun getConditionOutcome(context: ConditionContext, metadata: AnnotatedTypeMetadata): ConditionOutcome {
         val resourceLoader = context.getResourceLoader()
-        val attributes = metadata.getAnnotationAttributes(ConditionalOnResource::class.java)
-        if (attributes.isEmpty()) {
+        val annotation = metadata.getAnnotations().get(ConditionalOnResource::class.java)
+        if (!annotation.present) {
             throw IllegalStateException("无法找到@ConditionalOnResource注解")
         }
-        val resources = attributes["resources"] as Array<String>
+        val resources = annotation.getStringArray("resources")
         if (resources.isEmpty()) {
             throw IllegalStateException("@ConditionalOnResource注解的resource属性当中必须指定至少一个资源文件")
         }

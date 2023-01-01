@@ -33,24 +33,8 @@ open class MethodMetadataReadingVisitor(
     private val classLoader: ClassLoader,
     private val methodMetadataSet: MutableSet<MethodMetadata>
 ) : MethodVisitor(SpringAsmInfo.ASM_VERSION) {
-
     /**
-     * MetaAnnotationMap
-     */
-    protected val metaAnnotationMap = LinkedHashMap<String, Set<String>>()
-
-    /**
-     * 维护一个方法上的注解的属性信息(Key是AnnotationName, Value-该注解对应的属性信息)
-     */
-    protected val attributesMap = LinkedMultiValueMap<String, AnnotationAttributes>()
-
-    /**
-     * 一个方法上的注解的类名列表
-     */
-    private val annotationSet = LinkedHashSet<String>()
-
-    /**
-     * 一个方法上的注解列表
+     * 一个方法上的MergedAnnotation注解列表
      */
     private var annotations = LinkedHashSet<MergedAnnotation<Annotation>>()
 
@@ -61,8 +45,6 @@ open class MethodMetadataReadingVisitor(
      * @return 提供对于注解当中的属性读取的AnnotationVisitor
      */
     override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor? {
-        val className = Type.getType(descriptor).className
-        this.annotationSet += className
         return MergedAnnotationReadingVisitor.get(classLoader, null, descriptor, this.annotations)
     }
 
@@ -75,13 +57,7 @@ open class MethodMetadataReadingVisitor(
         // MergedAnnotations
         val mergedAnnotations = MergedAnnotations.of(this.annotations.toTypedArray())
         this.methodMetadataSet += SimpleMethodMetadata(
-            this.methodName,
-            this.declaringClassName,
-            this.returnTypeName,
-            access,
-            mergedAnnotations,
-            this.attributesMap,
-            this.annotationSet
+            this.methodName, this.declaringClassName, this.returnTypeName, access, mergedAnnotations
         )
     }
 }

@@ -2,6 +2,7 @@ package com.wanna.framework.beans.factory.support.definition
 
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.core.type.MethodMetadata
+import com.wanna.framework.lang.Nullable
 import java.lang.reflect.Executable
 import java.lang.reflect.Method
 
@@ -34,43 +35,75 @@ open class RootBeanDefinition constructor(beanClass: Class<*>?) : AbstractBeanDe
         }
     }
 
-    // factoryMethod(@Bean方法标注的方法)
+    /**
+     * factoryMethod(@Bean方法标注的方法)
+     */
     private var factoryMethodToIntrospect: Method? = null
 
-    // 进行后置处理的锁
-    var postProcessLock = Any()
+    /**
+     * 进行后置处理的锁
+     */
+    val postProcessLock = Any()
 
-    // 是否已经被merged？
+    /**
+     * 是否已经被merged?
+     */
     var postProcessed: Boolean = false
 
-    // 当前的BeanDefinition，是否已经陈旧了？需要去进行re-merge？
+    /**
+     * 当前的BeanDefinition，是否已经陈旧了?  需要去进行re-merge?
+     */
     var stale: Boolean = false
 
-    // 操作构造器的锁
+    /**
+     * 操作构造器的锁
+     */
     val constructorArgumentLock = Any()
 
-    // 已经解析的FactoryMethod或者Constructor
+    /**
+     * 已经解析的FactoryMethod或者Constructor
+     */
+    @Nullable
     var resolvedConstructorOrFactoryMethod: Executable? = null
 
-    // 准备的构造器参数列表，需要完成解析后，才能成为最终的参数列表
+    /**
+     * 准备的构造器参数列表，需要完成解析后，才能成为最终的参数列表
+     */
+    @Nullable
     var preparedConstructorArguments: Array<out Any?>? = null
 
-    // 已经解析出来的构造器参数列表
+    /**
+     * 已经解析出来的构造器参数列表
+     */
+    @Nullable
     var resolvedConstructorArguments: Array<out Any?>? = null
 
-    // 构造器参数是否已经完成了解析？如果已经完成了解析，那么就可以通过RootBeanDefinition当中去获取到构造器参数列表
+    /**
+     * 构造器参数是否已经完成了解析? 如果已经完成了解析，那么就可以通过RootBeanDefinition当中去获取到构造器参数列表
+     */
     var constructorArgumentsResolved = false
 
-    // 一个BeanDefinition所装饰的BeanDefinition，因为需要维护beanName，所以这里保存一个BeanDefinitionHolder
+    /**
+     * 一个BeanDefinition所装饰的BeanDefinition，因为需要维护beanName，所以这里保存一个BeanDefinitionHolder
+     */
+    @Nullable
     var decoratedDefinition: BeanDefinitionHolder? = null
 
-    // 能否在beforeInstantiation当中解析到合适的Bean？如果解析不到，那么下次就不会回调beforeInstantiation了(提高性能)
+    /**
+     * 能否在beforeInstantiation当中解析到合适的Bean? 如果解析不到，那么下次就不会回调beforeInstantiation了(提高性能)
+     */
     var beforeInstantiationResolved: Boolean = true
 
-    // 是否已经解析出来destory方法？
+    /**
+     * 是否已经解析出来destroy方法?
+     */
+    @Nullable
     var resolvedDestroyMethodName: String? = null
 
-    // 是否是FactoryBean，可以为null
+    /**
+     * 是否是FactoryBean，可以为null代表还没解析过
+     */
+    @Nullable
     private var isFactoryBean: Boolean? = null
 
     open fun isFactoryBean(): Boolean? = isFactoryBean

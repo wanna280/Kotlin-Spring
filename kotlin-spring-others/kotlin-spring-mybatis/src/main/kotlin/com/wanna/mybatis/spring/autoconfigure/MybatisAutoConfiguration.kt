@@ -38,6 +38,11 @@ import javax.sql.DataSource
 @Configuration(proxyBeanMethods = false)
 open class MybatisAutoConfiguration {
     companion object {
+
+        /**
+         * Logger
+         */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(MybatisAutoConfiguration::class.java)
     }
 
@@ -64,7 +69,7 @@ open class MybatisAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    open fun sqlSessionFactory(dataSource: DataSource): SqlSessionFactoryBean {
+    open fun sqlSessionFactory(dataSource: DataSource): SqlSessionFactory {
         val sqlSessionFactoryBean = SqlSessionFactoryBean()
         sqlSessionFactoryBean.dataSource = dataSource
         sqlSessionFactoryBean.configLocation = properties.configLocation
@@ -72,7 +77,7 @@ open class MybatisAutoConfiguration {
         sqlSessionFactoryBean.typeHandlersPackage = properties.typeHandlersPackage
         sqlSessionFactoryBean.plugins = interceptors
         sqlSessionFactoryBean.typeHandlers = typeHandlers
-        return sqlSessionFactoryBean
+        return sqlSessionFactoryBean.getObject()
     }
 
     /**

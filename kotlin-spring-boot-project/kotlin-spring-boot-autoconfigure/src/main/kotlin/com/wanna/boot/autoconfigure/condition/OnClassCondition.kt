@@ -132,11 +132,11 @@ open class OnClassCondition : FilteringSpringBootCondition() {
         val message = ConditionMessage.empty()
         // 匹配@ConditionOnClass
         if (metadata.isAnnotated(ConditionalOnClass::class.java.name)) {
-            val onClassAttrs = metadata.getAnnotationAttributes(ConditionalOnClass::class.java.name)
+            val onClassAttrs = metadata.getAnnotations().get(ConditionalOnClass::class.java)
 
             // 获取用户配置的所有classNames
-            val classNames = (onClassAttrs["name"] as Array<String>).toMutableList()
-            classNames += (onClassAttrs["value"] as Array<Class<*>>).map { it.name }.toList()
+            val classNames = onClassAttrs.getStringArray("name").toMutableList()
+            classNames += onClassAttrs.getClassArray("value").map { it.name }.toList()
 
             // 过滤出来所有的missing的className
             val misssing = filter(classNames, ClassNameFilter.MISSING, context.getClassLoader())
@@ -148,9 +148,9 @@ open class OnClassCondition : FilteringSpringBootCondition() {
         }
         // 匹配@ConditionOnMissingClass
         if (metadata.isAnnotated(ConditionalOnMissingClass::class.java.name)) {
-            val onMissingClassAttrs = metadata.getAnnotationAttributes(ConditionalOnMissingClass::class.java.name)
+            val onMissingClassAttrs = metadata.getAnnotations().get(ConditionalOnMissingClass::class.java)
             // 获取用户配置的所有classNames
-            val classNames = (onMissingClassAttrs["value"] as Array<String>).toMutableList()
+            val classNames = onMissingClassAttrs.getStringArray("value").toMutableList()
 
             // 过滤出来所有的present的className
             val present = filter(classNames, ClassNameFilter.PRESENT, context.getClassLoader())

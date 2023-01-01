@@ -5,6 +5,7 @@ import com.wanna.framework.context.annotation.AnnotationAttributes
 import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.ImportAware
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.type.AnnotationMetadata
 import java.util.concurrent.Executor
 import java.util.function.Supplier
@@ -14,8 +15,10 @@ import java.util.function.Supplier
  */
 abstract class AbstractAsyncConfiguration : ImportAware {
 
-    // @EnableAsync注解的属性
-    protected var annotationAttributes: AnnotationAttributes? = null
+    /**
+     * 描述@EnableAsync注解的属性
+     */
+    protected var annotationAttributes: MergedAnnotation<*>? = null
 
     // 执行异步方法的默认Executor
     protected var executor: Supplier<Executor>? = null
@@ -29,8 +32,11 @@ abstract class AbstractAsyncConfiguration : ImportAware {
      * @param annotationMetadata 注解元信息
      */
     override fun setImportMetadata(annotationMetadata: AnnotationMetadata) {
-        val attributes = annotationMetadata.getAnnotationAttributes(EnableAsync::class.java)
-        this.annotationAttributes = AnnotationAttributesUtils.fromMap(attributes)
+        val attributes = annotationMetadata.getAnnotations().get(EnableAsync::class.java)
+        if (!attributes.present) {
+            throw IllegalStateException("Cannot find @EnableAsync Annotation from ${annotationMetadata.getClassName()}")
+        }
+        this.annotationAttributes = attributes
     }
 
     /**

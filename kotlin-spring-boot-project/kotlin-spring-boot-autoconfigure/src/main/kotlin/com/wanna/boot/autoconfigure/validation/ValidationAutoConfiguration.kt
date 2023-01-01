@@ -24,7 +24,7 @@ import javax.validation.Validator
  * @see LocalValidatorFactoryBean
  */
 @Order(Ordered.ORDER_HIGHEST + 20)  // highest order
-@ConditionalOnResource("classpath:META-INF/services/javax.validation.spi.ValidationProvider")
+@ConditionalOnResource(resources = ["classpath:META-INF/services/javax.validation.spi.ValidationProvider"])
 @ConditionalOnClass(name = ["javax.validation.Validator"])
 @Configuration(proxyBeanMethods = false)
 open class ValidationAutoConfiguration {

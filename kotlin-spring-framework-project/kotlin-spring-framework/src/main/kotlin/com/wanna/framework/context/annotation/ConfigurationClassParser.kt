@@ -28,6 +28,7 @@ import java.net.SocketException
 import java.net.UnknownHostException
 import java.util.*
 import java.util.function.Predicate
+import kotlin.collections.LinkedHashMap
 import kotlin.collections.LinkedHashSet
 
 /**
@@ -663,7 +664,7 @@ open class ConfigurationClassParser(
      *
      * Note: 它会被注册到容器当中, 去支持ImportAware的解析, 因为有些被Import的配置类是需要获取到导入它的类的相关信息的
      */
-    private class ImportStack : ImportRegistry, java.util.ArrayDeque<ConfigurationClass>() {
+    private class ImportStack : ImportRegistry, ArrayDeque<ConfigurationClass>() {
 
         /**
          * key-importedClass,value-导入importedClass该类的注解元信息
@@ -722,8 +723,15 @@ open class ConfigurationClassParser(
      * 这是一个DeferredImportSelector的分组的Handler
      */
     private inner class DeferredImportSelectorGroupingHandler {
-        // key-分组, value-分组当中的DeferredSelector列表
-        private val groupings: MutableMap<Any, DeferredImportSelectorGrouping> = HashMap()
+        /**
+         * key-分组, value-分组当中的DeferredSelector列表
+         */
+        private val groupings: MutableMap<Any, DeferredImportSelectorGrouping> = LinkedHashMap()
+
+        /**
+         * 根据AnnotationMetadata去获取到对应的ConfigurationClass的缓存
+         */
+        private val configurationClasses = LinkedHashMap<AnnotationMetadata, ConfigurationClass>()
 
         /**
          * 注册一个DeferredImportSelector到GroupingHandler当中, 交给GroupingHandler去进行处理
@@ -732,23 +740,35 @@ open class ConfigurationClassParser(
          */
         fun register(holder: DeferredImportSelectorHolder) {
             val groupClass = holder.deferredImportSelector.getGroup() ?: DeferredImportSelector.Group::class.java
-            groupings.putIfAbsent(groupClass, DeferredImportSelectorGrouping())
+            groupings.putIfAbsent(groupClass, DeferredImportSelectorGrouping(createGroup(groupClass)))
             groupings[groupClass]?.add(holder)
+
+            // 建立起来Metadata->ConfigClass的缓存
+            this.configurationClasses[holder.configClass.metadata] = holder.configClass
+        }
+
+        /**
+         * 创建Group实例对象
+         *
+         * @param groupType groupType
+         * @return Group
+         */
+        private fun createGroup(groupType: Class<out DeferredImportSelector.Group>): DeferredImportSelector.Group {
+            return ParserStrategyUtils.instanceClass(groupType, environment, registry, resourceLoader)
         }
 
         /**
          * 处理分组的导入, 遍历GroupingHandler当中的所有的已经注册的所有的分组, 去完成分组的导入
          */
         fun processGroupImports() {
-            groupings.forEach { (_, grouping) ->
+            this.groupings.forEach { (_, grouping) ->
                 // 遍历该分组下的所有的DeferredImportSelector列表, 去完成Selector的处理
-                grouping.getImports().forEach {
-                    val selector = it.deferredImportSelector
-                    val configClass = it.configClass
+                grouping.getImports().forEach { entry ->
+                    val configClass = configurationClasses[entry.metadata]!!
                     // 调用ConfigurationClassParser的processImports方法, 去使用正常的方式去地处理@Import注解
-                    this@ConfigurationClassParser.processImports(configClass,
-                        asSourceClass(configClass),
-                        asSourceClasses(selector.selectImports(configClass.metadata)) { false }) { false }
+                    this@ConfigurationClassParser.processImports(
+                        configClass, asSourceClass(configClass), listOf(asSourceClass(entry.importClassName))
+                    ) { false }
                 }
             }
         }
@@ -757,7 +777,11 @@ open class ConfigurationClassParser(
     /**
      * 这是一个DeferredImportSelector的分组的抽象, 在它的内部维护了该分组下的DeferredImportSelector列表
      */
-    private inner class DeferredImportSelectorGrouping {
+    private inner class DeferredImportSelectorGrouping(private val group: DeferredImportSelector.Group) {
+
+        /**
+         * DeferredSelectors
+         */
         private val deferredImportSelectors = ArrayList<DeferredImportSelectorHolder>()
 
         /**
@@ -768,10 +792,15 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 获取该分组下已经注册的DeferredImportSelector列表
+         * 获取所有要去进行导入的自动配置类
+         *
+         * @return 自动配置类的Entry列表
          */
-        fun getImports(): List<DeferredImportSelectorHolder> {
-            return this.deferredImportSelectors
+        fun getImports(): Iterable<DeferredImportSelector.Group.Entry> {
+            for (selector in this.deferredImportSelectors) {
+                this.group.process(selector.configClass.metadata, selector.deferredImportSelector)
+            }
+            return this.group.selectImports()
         }
     }
 
@@ -783,6 +812,10 @@ open class ConfigurationClassParser(
      * @see DeferredImportSelector.getGroup
      */
     private inner class DeferredImportSelectorHandler {
+
+        /**
+         * DeferredImportSelectorHolders
+         */
         private val deferredImportSelectors = ArrayList<DeferredImportSelectorHolder>()
 
         /**

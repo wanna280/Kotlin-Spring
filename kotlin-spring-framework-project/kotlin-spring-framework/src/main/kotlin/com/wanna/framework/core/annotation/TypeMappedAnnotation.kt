@@ -17,7 +17,7 @@ import java.lang.reflect.Method
  * @param mapping 注解的映射信息
  * @param classLoader ClassLoader
  * @param source source
- * @param rootAttribute root属性(可能是Map, 可能是Annotation)
+ * @param rootAttributes root属性(可能是Map, 可能是Annotation)
  * @param valueExtractor 从root属性当中去提取到对应的属性值的提取器Extractor
  * @param useMergedValues 是否要使用MergedValues?
  */
@@ -25,7 +25,7 @@ open class TypeMappedAnnotation<A : Annotation>(
     private val mapping: AnnotationTypeMapping,
     @Nullable private val classLoader: ClassLoader?,
     @Nullable private val source: Any?,
-    @Nullable private val rootAttribute: Any?,
+    @Nullable private val rootAttributes: Any?,
     private val valueExtractor: ValueExtractor,
     private val useMergedValues: Boolean = true
 ) : AbstractMergedAnnotation<A>() {
@@ -33,14 +33,13 @@ open class TypeMappedAnnotation<A : Annotation>(
     /**
      * root注解的Mirrors
      */
-    private val resolvedRootMirrors = mapping.root.mirrorSets.resolve(source, rootAttribute, valueExtractor)
+    private val resolvedRootMirrors = mapping.root.mirrorSets.resolve(source, rootAttributes, valueExtractor)
 
     /**
      * 当前注解的Mirrors
      */
-    private val resolvedMirrors: IntArray =
-        if (distance == 0) resolvedRootMirrors
-        else mapping.mirrorSets.resolve(source, rootAttribute, this::getValueForMirrorResolution)
+    private val resolvedMirrors: IntArray = if (distance == 0) resolvedRootMirrors
+    else mapping.mirrorSets.resolve(source, rootAttributes, this::getValueForMirrorResolution)
 
     /**
      * present?
@@ -66,7 +65,7 @@ open class TypeMappedAnnotation<A : Annotation>(
      */
     override val root: MergedAnnotation<*>
         get() = if (distance == 0) this else TypeMappedAnnotation<Annotation>(
-            mapping.root, classLoader, source, rootAttribute, valueExtractor
+            mapping.root, classLoader, source, rootAttributes, valueExtractor
         )
 
     override fun hasDefaultValue(attributeName: String): Boolean {
@@ -177,7 +176,7 @@ open class TypeMappedAnnotation<A : Annotation>(
         // 如果mapping对应的distance=0的话, 说明是需要处理的是root注解, 直接使用valueExtractor去进行提取即可
         if (mapping.distance == 0) {
             val attribute = mapping.attributes[attrIndex]
-            val value = this.valueExtractor.extract(attribute, this.rootAttribute)
+            val value = this.valueExtractor.extract(attribute, this.rootAttributes)
             return value ?: attribute.defaultValue
         }
         // 如果mapping的distance不是0的话, 那么从Meta注解当中去获取属性值
@@ -309,9 +308,14 @@ open class TypeMappedAnnotation<A : Annotation>(
         @Nullable
         @JvmStatic
         fun <A : Annotation> createIfPossible(
-            mapping: AnnotationTypeMapping, source: Any?
+            mapping: AnnotationTypeMapping, annotation: MergedAnnotation<*>
         ): MergedAnnotation<A>? {
-            return createIfPossible(mapping, source, mapping.annotation, 0, ReflectionUtils::invokeMethod)
+            if (annotation is TypeMappedAnnotation<*>) {
+                return createIfPossible(
+                    mapping, annotation.source, annotation.rootAttributes, 0, annotation.valueExtractor
+                )
+            }
+            return null
         }
 
         @Nullable
@@ -327,11 +331,11 @@ open class TypeMappedAnnotation<A : Annotation>(
         fun <A : Annotation> createIfPossible(
             mapping: AnnotationTypeMapping,
             source: Any?,
-            annotation: Annotation?,
+            rootAnnotation: Any?,
             aggregateIndex: Int,
             valueExtractor: ValueExtractor,
         ): MergedAnnotation<A>? {
-            return TypeMappedAnnotation(mapping, null, source, annotation, valueExtractor)
+            return TypeMappedAnnotation(mapping, null, source, rootAnnotation, valueExtractor)
         }
 
         /**

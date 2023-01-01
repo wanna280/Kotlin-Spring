@@ -7,6 +7,7 @@ import com.wanna.framework.context.annotation.AnnotationAttributes
 import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.context.annotation.BeanNameGenerator
 import com.wanna.framework.context.annotation.ImportBeanDefinitionRegistrar
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
@@ -22,9 +23,8 @@ import com.wanna.mybatis.spring.mapper.MapperScannerConfigurer
 open class MapperScannerRegistrar : ImportBeanDefinitionRegistrar {
 
     override fun registerBeanDefinitions(annotationMetadata: AnnotationMetadata, registry: BeanDefinitionRegistry) {
-        val attributesMap = annotationMetadata.getAnnotationAttributes(MapperScan::class.java)
-        if (attributesMap.isNotEmpty()) {
-            val attributes = AnnotationAttributesUtils.fromMap(attributesMap)
+        val attributes = annotationMetadata.getAnnotations().get(MapperScan::class.java)
+        if (attributes.present) {
             registerBeanDefinitions(
                 annotationMetadata, registry, attributes, generateBaseBeanName(annotationMetadata, 0)
             )
@@ -45,7 +45,7 @@ open class MapperScannerRegistrar : ImportBeanDefinitionRegistrar {
     protected open fun registerBeanDefinitions(
         importClassMetadata: AnnotationMetadata,
         registry: BeanDefinitionRegistry,
-        attributes: AnnotationAttributes,
+        attributes: MergedAnnotation<*>,
         beanName: String
     ) {
         val beanDefinition = GenericBeanDefinition(MapperScannerConfigurer::class.java)

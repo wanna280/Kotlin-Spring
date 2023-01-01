@@ -27,16 +27,15 @@ open class OnWebApplicationCondition : FilteringSpringBootCondition() {
     }
 
     override fun getOutcomes(
-        autoConfigurationClasses: Array<String?>,
-        autoConfigurationMetadata: AutoConfigurationMetadata
+        autoConfigurationClasses: Array<String?>, autoConfigurationMetadata: AutoConfigurationMetadata
     ): Array<ConditionOutcome?> {
         return emptyArray()
     }
 
     override fun getConditionOutcome(context: ConditionContext, metadata: AnnotatedTypeMetadata): ConditionOutcome {
         if (metadata.isAnnotated(ConditionalOnWebApplication::class.java.name)) {
-            val onWeb = metadata.getAnnotationAttributes(ConditionalOnWebApplication::class.java)
-            val type = onWeb["type"] as ConditionalOnWebApplication.Type
+            val onWeb = metadata.getAnnotations().get(ConditionalOnWebApplication::class.java)
+            val type = onWeb.getEnum("type", ConditionalOnWebApplication.Type::class.java)
             return if (isServlet(context) && type == SERVLET) {
                 ConditionOutcome.match()
             } else if (isMvc(context) && type == MVC) {

@@ -31,12 +31,12 @@ open class OnJavaCondition : SpringBootCondition() {
      * @return 匹配Java版本的结果
      */
     override fun getConditionOutcome(context: ConditionContext, metadata: AnnotatedTypeMetadata): ConditionOutcome {
-        val attributes = metadata.getAnnotationAttributes(ConditionalOnJava::class.java)
-        if (attributes.isEmpty()) {
+        val attributes = metadata.getAnnotations().get(ConditionalOnJava::class.java)
+        if (!attributes.present) {
             throw IllegalStateException("无法找到@ConditionalOnJava注解")
         }
-        val range = attributes["range"] as ConditionalOnJava.Range
-        val javaVersion = attributes["value"] as JavaVersion
+        val range = attributes.getEnum("range", ConditionalOnJava.Range::class.java)
+        val javaVersion = attributes.getEnum("value", JavaVersion::class.java) as JavaVersion
         return getMatchOutcome(range, JVM_VERSION, javaVersion)
     }
 
@@ -54,7 +54,8 @@ open class OnJavaCondition : SpringBootCondition() {
             ConditionalOnJava.Range.EQUAL_OR_NEWER -> runningVersion.isEqualOrNewerThan(version)
             ConditionalOnJava.Range.OLDER_THAN -> runningVersion.isOlderThan(version)
         }
-        val message = "需要的是Java版本[${range.rangeName}${version.versionName}], 实际是[${runningVersion.versionName}]"
+        val message =
+            "需要的是Java版本[${range.rangeName}${version.versionName}], 实际是[${runningVersion.versionName}]"
         return if (result) ConditionOutcome.match(message)
         else ConditionOutcome.noMatch("Java版本不匹配！$message")
     }

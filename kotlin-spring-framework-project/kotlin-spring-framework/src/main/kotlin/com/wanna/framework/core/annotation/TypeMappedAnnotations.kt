@@ -271,11 +271,12 @@ open class TypeMappedAnnotations(
             val mappings = AnnotationTypeMappings.forAnnotationType(annotation.annotationClass.java, annotationFilter)
 
             for (i in 0 until mappings.size) {
-                if (isMappingForType(mappings[i], annotationFilter, this.requiredType)) {
+                val mapping = mappings[i]
+                if (isMappingForType(mapping, annotationFilter, this.requiredType)) {
 
                     // 为该注解实例去创建出来一个MergedAnnotation
                     val mergedAnnotation =
-                        TypeMappedAnnotation.createIfPossible<A>(mappings[i], source, annotation, aggregateIndex)
+                        TypeMappedAnnotation.createIfPossible<A>(mapping, source, annotation, aggregateIndex)
 
                     // 更新lastResult
                     if (mergedAnnotation != null && (this.predicate == null || predicate.test(mergedAnnotation))) {

@@ -71,6 +71,14 @@ interface MergedAnnotation<A : Annotation> {
     fun getString(attributeName: String): String
 
     /**
+     * 获取到给定的属性名对应的String[]形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    fun getStringArray(attributeName: String): Array<String>
+
+    /**
      * 获取到给定的属性名对应的Int形式的属性值
      *
      * @param attributeName attributeName
@@ -143,7 +151,7 @@ interface MergedAnnotation<A : Annotation> {
      * @param attributeName attributeName
      * @return 属性值
      */
-    fun getClassArray(attributeName: String):Array<Class<*>>
+    fun getClassArray(attributeName: String): Array<Class<*>>
 
     /**
      * 获取到给定的属性名对应的枚举形式的属性值
@@ -154,12 +162,21 @@ interface MergedAnnotation<A : Annotation> {
     fun <E : Enum<E>> getEnum(attributeName: String, type: Class<E>): E
 
     /**
+     * 获取到给定的属性名对应的Annotation[]形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    fun <A : Annotation> getAnnotationArray(attributeName: String, type: Class<Array<A>>): Array<A>
+
+    /**
      * 从注解当中去获取一个可选的属性值
      *
      * @param attributeName attributeName
      * @return 属性值(如果不存在的话, return [Optional.empty])
      */
     fun getValue(attributeName: String): Optional<Any>
+
 
     /**
      * 从注解当中去获取一个可选的属性值

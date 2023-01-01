@@ -128,9 +128,9 @@ class AutoConfigurationPackages {
         private val packages = LinkedHashSet<String>()
 
         init {
-            val attributes = annotationMetadata.getAnnotationAttributes(AutoConfigurationPackage::class.java)
-            packages += (attributes["basePackages"] as Array<String>)
-            packages += (attributes["basePackageClasses"] as Array<Class<*>>).map { it.packageName }.toList()
+            val attributes = annotationMetadata.getAnnotations().get(AutoConfigurationPackage::class.java)
+            packages += attributes.getStringArray("basePackages")
+            packages += attributes.getClassArray("basePackageClasses").map { it.packageName }.toList()
             if (packages.isEmpty()) {
                 packages += ClassUtils.getPackageName(annotationMetadata.getClassName())  // fixed: use packageName to replace old className
             }

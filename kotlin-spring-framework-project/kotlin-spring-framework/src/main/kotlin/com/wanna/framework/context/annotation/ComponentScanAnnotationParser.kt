@@ -85,7 +85,7 @@ open class ComponentScanAnnotationParser(
                     FilterType.ANNOTATION -> typeFilters += AnnotationTypeFilter(it as Class<out Annotation>)
                     FilterType.ASSIGNABLE_TYPE -> typeFilters += AssignableTypeFilter(it)
                     FilterType.CUSTOM -> typeFilters += ParserStrategyUtils.instanceClass<TypeFilter>(
-                        it, environment, registry
+                        it, environment, registry,
                     )
                 }
             }

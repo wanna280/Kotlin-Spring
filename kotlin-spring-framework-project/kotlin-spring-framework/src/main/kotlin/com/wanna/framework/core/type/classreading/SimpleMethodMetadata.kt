@@ -21,23 +21,14 @@ open class SimpleMethodMetadata(
     private val declaringClassName: String,
     private val returnTypeName: String,
     private val access: Int,
-    private val annotations: MergedAnnotations,
-    private val attributesMap: MultiValueMap<String, AnnotationAttributes>,
-    private val annotationSet: Set<String>
+    private val annotations: MergedAnnotations
 ) : MethodMetadata {
 
     override fun getAnnotations() = this.annotations
 
     override fun getAnnotationAttributes(annotationName: String): Map<String, Any> {
-        return attributesMap.getFirst(annotationName) ?: emptyMap()
+        return emptyMap()
     }
-
-    override fun getAnnotationTypes(): Set<String> = this.annotationSet
-
-    override fun hasAnnotation(annotationName: String): Boolean = attributesMap.containsKey(annotationName)
-
-    override fun isAnnotated(annotationName: String): Boolean =
-        !annotationName.startsWith("java.lang.annotation") && attributesMap.containsKey(annotationName)
 
     override fun getMethodName(): String = this.methodName
 

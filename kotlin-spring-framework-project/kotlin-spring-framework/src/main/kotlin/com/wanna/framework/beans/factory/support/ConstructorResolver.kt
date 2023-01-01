@@ -10,6 +10,7 @@ import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.NamedThreadLocal
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.ReflectionUtils
 import java.beans.ConstructorProperties
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
@@ -137,8 +138,13 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
 
                 // 在解析完所有的构造器参数名之后，需要去为该构造器去创建参数列表
                 argsToUse = createArgumentArray(
-                    beanName, mbd, beanWrapper, null,
-                    constructorToUse!!.parameterTypes, parameterNames, constructorToUse!!
+                    beanName,
+                    mbd,
+                    beanWrapper,
+                    null,
+                    constructorToUse!!.parameterTypes,
+                    parameterNames,
+                    constructorToUse!!
                 )
             }
         }
@@ -175,7 +181,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
 
         val factoryMethodName = mbd.getFactoryMethodName()
         val factoryBeanName = mbd.getFactoryBeanName()
-        val resolvedFactoryMethod: Method? = mbd.getResolvedFactoryMethod()
+        var resolvedFactoryMethod: Method? = mbd.getResolvedFactoryMethod()
 
         // factoryBean and factoryClass
         var factoryBean: Any? = null
@@ -186,18 +192,37 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
             factoryClass = ClassUtils.getUserClass(factoryBean)
         }
 
+
+        // TODO, 这里有点问题, 不能这样搞, 目前先以可用为主...
+        if (resolvedFactoryMethod == null) {
+            ReflectionUtils.doWithMethods(factoryClass!!) {
+                if (it.name == mbd.getFactoryMethodName()) {
+                    if (resolvedFactoryMethod == null) {
+                        resolvedFactoryMethod = it
+                        mbd.setResolvedFactoryMethod(it)
+                    }
+                }
+            }
+        }
+
         val parameterNameDiscoverer = this.beanFactory.getParameterNameDiscoverer()
         val parameterNames = parameterNameDiscoverer?.getParameterNames(resolvedFactoryMethod!!)
 
         // 创建执行目标方法需要用到的参数数组
         val argumentArray = createArgumentArray(
-            beanName, mbd, beanWrapper, mbd.getConstructorArgumentValues(),
-            resolvedFactoryMethod!!.parameterTypes, parameterNames, resolvedFactoryMethod, true
+            beanName,
+            mbd,
+            beanWrapper,
+            mbd.getConstructorArgumentValues(),
+            resolvedFactoryMethod!!.parameterTypes,
+            parameterNames,
+            resolvedFactoryMethod!!,
+            true
         )
 
         // 使用BeanFactory提供的实例化策略，去完成实例化
         var instance = beanFactory.getInstantiationStrategy().instantiate(
-            mbd, beanName, beanFactory, factoryMethod = resolvedFactoryMethod, factoryBean!!, *argumentArray
+            mbd, beanName, beanFactory, factoryMethod = resolvedFactoryMethod!!, factoryBean!!, *argumentArray
         )
 
         if (instance == null) {  // 如果从实例化的Supplier当中获取到了null，那么封装NullBean

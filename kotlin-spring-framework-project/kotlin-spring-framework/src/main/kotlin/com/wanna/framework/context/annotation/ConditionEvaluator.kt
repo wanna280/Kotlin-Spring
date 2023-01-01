@@ -86,8 +86,9 @@ open class ConditionEvaluator(
      */
     @Suppress("UNCHECKED_CAST")
     private fun getConditionClasses(metadata: AnnotatedTypeMetadata): Array<String> {
-        return (metadata.getAnnotationAttributes(Conditional::class.java)["value"] as Array<Class<*>>)
-            .map { it.name }
+        return metadata.getAnnotations()
+            .get(Conditional::class.java)
+            .getClassArray("value").map { it.name }
             .toTypedArray()
     }
 

@@ -6,9 +6,12 @@ import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.Type
+import java.util.function.Consumer
 
 /**
  * MergedAnnotation的读取的AnnotationVisitor
+ *
+ * // TODO 这里还有很多方法需要完善
  *
  * @author jianchao.jia
  * @version v1.0
@@ -40,6 +43,22 @@ open class MergedAnnotationReadingVisitor<A : Annotation>(
     }
 
     /**
+     * 访问Array
+     */
+    override fun visitArray(name: String): AnnotationVisitor? {
+        return ArrayVisitor { attributes[name] = it }
+    }
+
+    /**
+     * 访问枚举值
+     */
+    override fun visitEnum(name: String, descriptor: String?, value: String) {
+        val className = Type.getType(descriptor).className
+        val enumClass = ClassUtils.forName<Enum<*>>(className, classLoader)
+        attributes[name] = java.lang.Enum.valueOf(enumClass, value)
+    }
+
+    /**
      * 在访问结束的时候, 将收集到的一个注解的相关信息去merge到annotations当中去
      *
      * @see MergedAnnotation
@@ -49,6 +68,35 @@ open class MergedAnnotationReadingVisitor<A : Annotation>(
         val annotationType = ClassUtils.forName<A>(className, classLoader)
 
         annotations += MergedAnnotation.of(classLoader, source, annotationType, attributes)
+    }
+
+    class ArrayVisitor(private val consumer: Consumer<Array<Any>>) : AnnotationVisitor(SpringAsmInfo.ASM_VERSION) {
+
+        private val elements = ArrayList<Any>()
+
+        override fun visit(name: String?, value: Any) {
+            if (value is Type) {
+                elements.add(value.className)
+            } else {
+                elements.add(value)
+            }
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        override fun visitEnd() {
+            val array = java.lang.reflect.Array.newInstance(getComponentType(), elements.size) as Array<Any>
+            for (i in 0 until elements.size) {
+                array[i] = elements[i]
+            }
+            consumer.accept(array)
+        }
+
+        private fun getComponentType(): Class<*> {
+            if (elements.isEmpty()) {
+                return Any::class.java
+            }
+            return elements[0].javaClass
+        }
     }
 
     companion object {
