@@ -1,5 +1,6 @@
 package com.wanna.framework.core.annotation
 
+import com.wanna.framework.core.annotation.MergedAnnotations.SearchStrategy
 import com.wanna.framework.lang.Nullable
 import java.lang.reflect.AnnotatedElement
 import java.util.*
@@ -16,6 +17,7 @@ import java.util.stream.StreamSupport
  * @date 2022/9/21
  *
  * @param annotationFilter 要去进行过滤的注解Filter
+ * @param source source
  * @param annotations 注解列表
  * @param element 要去进行描述的目标元素(类/方法/字段)
  * @param searchStrategy 搜索注解的策略
@@ -23,9 +25,10 @@ import java.util.stream.StreamSupport
  */
 open class TypeMappedAnnotations(
     private val annotationFilter: AnnotationFilter,
+    private val source: Any?,
     @Nullable private val annotations: Array<Annotation>? = null,
     @Nullable private val element: AnnotatedElement? = null,
-    @Nullable private val searchStrategy: MergedAnnotations.SearchStrategy? = null,
+    @Nullable private val searchStrategy: SearchStrategy? = null,
     private val repeatableContainers: RepeatableContainers
 ) : MergedAnnotations {
 
@@ -509,14 +512,14 @@ open class TypeMappedAnnotations(
     }
 
     /**
-     * MergedAnnotation的Finder
+     * MergedAnnotation的Finder, 从给定的候选注解列表当中去选取出来一个合适的注解, 并构建为MergedAnnotation
      *
-     * @param requiredType 需要的注解类型
+     * @param requiredType 需要的注解类型(null/annotationType/annotationName)
      * @param predicate 执行对于MergedAnnotation去进行匹配的断言, 只有在符合断言的情况下, 该结果才是我们需要的
-     * @param selector 当遇到多个匹配的注解(MergedAnnotation)的话, 应该选取哪个去作为最终的结果的Selector
+     * @param selector 当遇到多个匹配的注解(MergedAnnotation)的话, 应该选取哪个去作为最终的结果的选择器Selector
      */
     private inner class MergedAnnotationFinder<A : Annotation>(
-        private val requiredType: Any?,
+        @Nullable private val requiredType: Any?,
         @Nullable private val predicate: Predicate<in MergedAnnotation<A>>?,
         @Nullable selector: MergedAnnotationSelector<A>?
     ) : AnnotationsProcessor<Any, MergedAnnotation<A>> {
@@ -533,9 +536,17 @@ open class TypeMappedAnnotations(
 
         override fun doWithAggregate(context: Any, aggregateIndex: Int): MergedAnnotation<A>? = this.result
 
+        /**
+         * 根据给定的注解, 去执行处理
+         *
+         * @param annotations 候选的待去进行处理的注解列表
+         * @return 找到的类型匹配的注解的MergedAnnotation
+         */
+        @Nullable
         override fun doWithAnnotations(
-            context: Any, aggregateIndex: Int, source: Any?, annotations: Array<Annotation>
+            context: Any, aggregateIndex: Int, @Nullable source: Any?, annotations: Array<Annotation>
         ): MergedAnnotation<A>? {
+            // 根据给定的所有的候选的注解当中, 去找出来一个合适的
             for (annotation in annotations) {
                 if (!annotationFilter.matches(annotation)) {
                     val result = process(context, aggregateIndex, source, annotation)
@@ -549,9 +560,13 @@ open class TypeMappedAnnotations(
 
         /**
          * 对单个注解上的元注解去进行处理
+         *
+         * @param source  source
+         * @param annotation 待进行处理的Annotation
          */
+        @Nullable
         private fun process(
-            type: Any, aggregateIndex: Int, source: Any?, annotation: Annotation
+            type: Any, aggregateIndex: Int, @Nullable source: Any?, annotation: Annotation
         ): MergedAnnotation<A>? {
             // 如果有@Repeatable重复注解的Container, 那么对重复注解去进行匹配
             val repeatedAnnotations = repeatableContainers.findRepeatedAnnotations(annotation)
@@ -559,18 +574,22 @@ open class TypeMappedAnnotations(
                 return doWithAnnotations(type, aggregateIndex, source, repeatedAnnotations)
             }
 
-            // 建立起来给定的注解的注解的映射关系
+            // 建立起来给定的注解的注解的映射关系(包含当前注解, 也包含对应的Meta注解的相关信息)
             val mappings = AnnotationTypeMappings.forAnnotationType(annotation.annotationClass.java, annotationFilter)
 
+            // 根据该注解以及该注解上的全部的Meta注解, 去进行检查, 是否有符合要求的注解?
             for (i in 0 until mappings.size) {
                 val mapping = mappings[i]
+
+                // 如果这个Mapping的注解类型和requiredType匹配的话, 那么该注解需要去收集起来
                 if (isMappingForType(mapping, annotationFilter, this.requiredType)) {
 
                     // 为该注解实例去创建出来一个MergedAnnotation
                     val mergedAnnotation =
                         TypeMappedAnnotation.createIfPossible<A>(mapping, source, annotation, aggregateIndex)
 
-                    // 更新lastResult
+                    // 如果这个注解是符合要求的话, 那么需要根据Selector的选择策略, 去进行更新lastResult
+                    // 最终决策出来一个合适的MergedAnnotation...
                     if (mergedAnnotation != null && (this.predicate == null || predicate.test(mergedAnnotation))) {
                         // 如果它已经是最好的选择了的话, 那么直接return
                         if (this.selector.isBestCandidate(mergedAnnotation)) {
@@ -587,7 +606,9 @@ open class TypeMappedAnnotations(
         }
 
         /**
-         * 更新result
+         * 根据Selector的选择策略, 去进行更新result
+         *
+         * @param candidate 候选的新产生的MergedAnnotation
          */
         private fun updateLastResult(candidate: MergedAnnotation<A>) {
             val lastResult = this.result
@@ -606,6 +627,15 @@ open class TypeMappedAnnotations(
 
 
     companion object {
+
+        /**
+         * 检查给定的mapping和requiredType是否匹配?
+         *
+         * @param mapping mapping
+         * @param annotationFilter AnnotationFilter
+         * @return 需要的注解的类型(Class/ClassName)
+         * @return 如果匹配的话, return true, 该注解需要去进行收集起来; 否则return false
+         */
         @JvmStatic
         private fun isMappingForType(
             mapping: AnnotationTypeMapping, annotationFilter: AnnotationFilter, requiredType: Any?
@@ -614,24 +644,42 @@ open class TypeMappedAnnotations(
             return !annotationFilter.matches(annotationType) && (requiredType == null || requiredType == annotationType || requiredType == annotationType.name)
         }
 
+        /**
+         * 从给定的AnnotatedElement去构建出来注解的映射信息MergedAnnotations
+         *
+         * @param element 待寻找注解的AnnotatedElement(方法/字段/构造器/类...)
+         * @param searchStrategy 注解的搜索策略, 要去搜索哪些地方的注解?
+         * @param repeatableContainers Repeatable注解的Container当中的注解的收集器
+         * @param annotationFilter 要去进行过滤掉注解的AnnotationFilter
+         * @return 为该AnnotatedElement去构建出来的MergedAnnotations
+         */
         @JvmStatic
         fun from(
             element: AnnotatedElement,
-            searchStrategy: MergedAnnotations.SearchStrategy,
+            searchStrategy: SearchStrategy,
             repeatableContainers: RepeatableContainers,
             annotationFilter: AnnotationFilter
         ): MergedAnnotations {
-            return TypeMappedAnnotations(annotationFilter, null, element, searchStrategy, repeatableContainers)
+            return TypeMappedAnnotations(annotationFilter, element, null, element, searchStrategy, repeatableContainers)
         }
 
+        /**
+         * 为给定的注解列表, 去构建出来注解的映射信息MergedAnnotations
+         *
+         * @param source source
+         * @param annotations 要去进行构建映射关系的候选注解列表
+         * @param repeatableContainers Repeatable注解的Container当中的注解的收集器
+         * @param annotationFilter 要去进行过滤掉注解的AnnotationFilter
+         * @return 为给定的候选这些Annotation去构建出来的MergedAnnotations
+         */
         @JvmStatic
         fun from(
-            source: Any?,
+            @Nullable source: Any?,
             annotations: Array<Annotation>,
             repeatableContainers: RepeatableContainers,
             annotationFilter: AnnotationFilter
         ): MergedAnnotations {
-            return TypeMappedAnnotations(annotationFilter, annotations, null, null, repeatableContainers)
+            return TypeMappedAnnotations(annotationFilter, source, annotations, null, null, repeatableContainers)
         }
     }
 
