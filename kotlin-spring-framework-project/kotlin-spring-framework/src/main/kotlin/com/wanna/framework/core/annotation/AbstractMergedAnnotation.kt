@@ -63,10 +63,17 @@ abstract class AbstractMergedAnnotation<A : Annotation> : MergedAnnotation<A> {
 
     override fun getInt(attributeName: String) = getRequiredAttributeValue(attributeName, Int::class.javaObjectType)
 
+    override fun getIntArray(attributeName: String) = getRequiredAttributeValue(attributeName, IntArray::class.java)
+
     override fun getBoolean(attributeName: String) =
         getRequiredAttributeValue(attributeName, Boolean::class.javaObjectType)
 
+    override fun getBooleanArray(attributeName: String) =
+        getRequiredAttributeValue(attributeName, BooleanArray::class.java)
+
     override fun getLong(attributeName: String) = getRequiredAttributeValue(attributeName, Long::class.javaObjectType)
+
+    override fun getLongArray(attributeName: String) = getRequiredAttributeValue(attributeName, LongArray::class.java)
 
     override fun getByte(attributeName: String) = getRequiredAttributeValue(attributeName, Byte::class.javaObjectType)
 
@@ -75,13 +82,21 @@ abstract class AbstractMergedAnnotation<A : Annotation> : MergedAnnotation<A> {
     override fun getDouble(attributeName: String) =
         getRequiredAttributeValue(attributeName, Double::class.javaObjectType)
 
+    override fun getDoubleArrau(attributeName: String) =
+        getRequiredAttributeValue(attributeName, DoubleArray::class.java)
+
     override fun getFloat(attributeName: String) = getRequiredAttributeValue(attributeName, Float::class.javaObjectType)
+
+    override fun getFloatArray(attributeName: String) = getRequiredAttributeValue(attributeName, FloatArray::class.java)
 
     override fun getClass(attributeName: String) = getRequiredAttributeValue(attributeName, Class::class.java)
 
     override fun getClassArray(attributeName: String) = getRequiredAttributeValue(attributeName, CLASS_ARRAY_TYPE)
 
     override fun <E : Enum<E>> getEnum(attributeName: String, type: Class<E>): E =
+        getRequiredAttributeValue(attributeName, type)
+
+    override fun <E : Enum<E>> getEnumArray(attributeName: String, type: Class<Array<E>>) =
         getRequiredAttributeValue(attributeName, type)
 
     override fun <A : Annotation> getAnnotationArray(attributeName: String, type: Class<Array<A>>): Array<A> =

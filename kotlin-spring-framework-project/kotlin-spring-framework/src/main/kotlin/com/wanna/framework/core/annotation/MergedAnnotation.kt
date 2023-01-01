@@ -88,12 +88,28 @@ interface MergedAnnotation<A : Annotation> {
     fun getInt(attributeName: String): Int
 
     /**
+     * 获取到给定的属性名对应的Int[]形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    fun getIntArray(attributeName: String): IntArray
+
+    /**
      * 获取到给定的属性名对应的Long形式的属性值
      *
      * @param attributeName attributeName
      * @return 属性值
      */
     fun getLong(attributeName: String): Long
+
+    /**
+     * 获取到给定的属性名对应的Long[]形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    fun getLongArray(attributeName: String): LongArray
 
     /**
      * 获取到给定的属性名对应的Byte形式的属性值
@@ -121,6 +137,15 @@ interface MergedAnnotation<A : Annotation> {
     fun getBoolean(attributeName: String): Boolean
 
     /**
+     * 获取到给定的属性名对应的Boolean[]形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    @Throws(NoSuchElementException::class)
+    fun getBooleanArray(attributeName: String): BooleanArray
+
+    /**
      * 获取到给定的属性名对应的Double形式的属性值
      *
      * @param attributeName attributeName
@@ -130,12 +155,29 @@ interface MergedAnnotation<A : Annotation> {
     fun getDouble(attributeName: String): Double
 
     /**
+     * 获取到给定的属性名对应的Double形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    @Throws(NoSuchElementException::class)
+    fun getDoubleArrau(attributeName: String): DoubleArray
+
+    /**
      * 获取到给定的属性名对应的Float形式的属性值
      *
      * @param attributeName attributeName
      * @return 属性值
      */
     fun getFloat(attributeName: String): Float
+
+    /**
+     * 获取到给定的属性名对应的Float形式的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    fun getFloatArray(attributeName: String): FloatArray
 
     /**
      * 获取到给定的属性名对应的Class形式的属性值
@@ -160,6 +202,14 @@ interface MergedAnnotation<A : Annotation> {
      * @return 属性值
      */
     fun <E : Enum<E>> getEnum(attributeName: String, type: Class<E>): E
+
+    /**
+     * 获取到给定的属性名对应的Enum[]的属性值
+     *
+     * @param attributeName attributeName
+     * @return 属性值
+     */
+    fun <E : Enum<E>> getEnumArray(attributeName: String, type: Class<Array<E>>): Array<E>
 
     /**
      * 获取到给定的属性名对应的Annotation[]形式的属性值

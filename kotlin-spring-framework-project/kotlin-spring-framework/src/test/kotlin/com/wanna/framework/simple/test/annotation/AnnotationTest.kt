@@ -77,12 +77,26 @@ fun testAnnotation4() {
     println("annotation4 value is ${componentMergedAnnotation.getValue("value").get()}")
 }
 
+/**
+ * 测试合成注解能否正常使用
+ */
+fun testAnnotation5() {
+    val annotations = MergedAnnotations.from(AnnotationTest2::class.java)
+    val annotation = annotations.get(MirrorAnn::class.java)
+    val synthesize = annotation.synthesize()
+    println("annotation5 name is " + synthesize.name)
+    println("annotation5 value is " + synthesize.value)
+    println("annotation5 hashCode is " + synthesize.hashCode())
+    println(synthesize)
+}
+
 
 fun main() {
     testAnnotation1()
     testAnnotation2()
     testAnnotation3()
     testAnnotation4()
+    testAnnotation5()
 
 
 }
