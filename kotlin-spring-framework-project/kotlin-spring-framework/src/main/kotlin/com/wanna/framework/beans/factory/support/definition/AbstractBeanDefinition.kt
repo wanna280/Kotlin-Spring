@@ -49,15 +49,14 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
             target.setBeanClassName(origin.beanClassName)
             target.setSource(origin.getSource())
             target.setSynthetic(origin.synthetic)
-            target.setAutowireMode(origin.getAutowireMode())
-            target.dependsOn = origin.getDependsOn()
-            target.methodOverrides = MethodOverrides(origin.getMethodOverrides())
-            target.propertyValues = MutablePropertyValues(MutablePropertyValues())
-            target.setSource(origin.getSource())
-            target.setDescription(origin.getDescription())
-            target.setResource(origin.getResource())
-            target.constructorArgumentValues = ConstructorArgumentValues(origin.getConstructorArgumentValues())
-            this.getPropertyValues().addPropertyValues(origin.getPropertyValues().getPropertyValues().toList())
+            target.setAutowireMode(origin.autowireMode)
+            target.dependsOn = origin.dependsOn
+            target.methodOverrides = MethodOverrides(origin.methodOverrides)
+            target.propertyValues = MutablePropertyValues(origin.propertyValues)
+            target.setDescription(origin.description)
+            target.setResource(origin.resource)
+            target.constructorArgumentValues = ConstructorArgumentValues(origin.constructorArgumentValues)
+            this.getPropertyValues().addPropertyValues(origin.propertyValues.getPropertyValues().toList())
         }
     }
 
@@ -490,7 +489,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
      *
      * @param resource Resource
      */
-    open fun setResource(resource: Resource?) {
+    open fun setResource(@Nullable resource: Resource?) {
         this.resource = resource
     }
 
@@ -499,6 +498,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
      *
      * @return Resource
      */
+    @Nullable
     open fun getResource(): Resource? = this.resource
 
     /**

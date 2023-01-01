@@ -13,6 +13,7 @@ import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.core.type.StandardMethodMetadata
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.StringUtils
@@ -275,6 +276,9 @@ open class ConfigurationClassBeanDefinitionReader(
         val metadata = configurationClass.metadata
         val beanDefinition = AnnotatedGenericBeanDefinition(metadata)  // 构建一个注解的BeanDefinition
 
+        // 设置Resource
+        beanDefinition.setResource(configurationClass.resource)
+
         // 处理@Role/@Primary/@DependsOn/@Lazy注解
         AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition, metadata)
 
@@ -366,7 +370,8 @@ open class ConfigurationClassBeanDefinitionReader(
      * @param methodMetadata 方法的MethodData
      */
     class ConfigurationClassBeanDefinition(
-        private val configurationClass: ConfigurationClass, private val methodMetadata: MethodMetadata?
+        private val configurationClass: ConfigurationClass,
+        @Nullable private val methodMetadata: MethodMetadata?
     ) : RootBeanDefinition(), AnnotatedBeanDefinition {
         init {
             // 设置Resource

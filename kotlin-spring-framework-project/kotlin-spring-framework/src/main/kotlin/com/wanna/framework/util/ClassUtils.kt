@@ -164,8 +164,12 @@ object ClassUtils {
 
         // 注册异常相关的公共类
         registerCommonClasses(
-            Throwable::class.java, Exception::class.java, RuntimeException::class.java,
-            Error::class.java, StackTraceElement::class.java, Array<StackTraceElement>::class.java
+            Throwable::class.java,
+            Exception::class.java,
+            RuntimeException::class.java,
+            Error::class.java,
+            StackTraceElement::class.java,
+            Array<StackTraceElement>::class.java
         )
 
         // 注册迭代相关的基础类
@@ -573,10 +577,19 @@ object ClassUtils {
     }
 
     /**
+     * 获取指定的类的包名
+     *
+     * @param clazz clazz
+     * @return packageName
+     */
+    @JvmStatic
+    fun getPackageName(clazz: Class<*>): String = getPackageName(clazz.name)
+
+    /**
      * 指定一个className，获取它的包名
      *
      * @param fullQualifierName 类的全类名
-     * @return 解析到的包名
+     * @return 解析到的包名(切取最后一个'.'之前的部分去作为packageName)
      */
     @JvmStatic
     fun getPackageName(fullQualifierName: String): String {
