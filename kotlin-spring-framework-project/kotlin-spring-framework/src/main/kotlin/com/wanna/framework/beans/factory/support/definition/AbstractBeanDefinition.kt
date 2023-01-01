@@ -15,7 +15,7 @@ import java.util.function.Supplier
 /**
  * 这是一个抽象的BeanDefinition，它继承了BeanMetadataAttributeAccessor，支持进行属性的设置和获取
  */
-abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*>? = null) : BeanDefinition,
+abstract class AbstractBeanDefinition : BeanDefinition,
     BeanMetadataAttributeAccessor() {
     companion object {
         const val DEFAULT_SCOPE = ""
@@ -31,7 +31,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      * @param origin 原始的BeanDefinition
      * @param target 要去拷贝到目标BeanDefinition的对象
      */
-    open fun <T : BeanDefinition> copy(origin: BeanDefinition?, target: T) {
+    open fun <T : BeanDefinition> copy(@Nullable origin: BeanDefinition?, target: T) {
         origin ?: return
         target.setBeanClass(origin.getBeanClass())
         target.setAbstract(origin.isAbstract())
@@ -48,6 +48,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
         if (origin is AbstractBeanDefinition && target is AbstractBeanDefinition) {
             target.setBeanClassName(origin.beanClassName)
             target.setSource(origin.getSource())
+            target.setSynthetic(origin.synthetic)
             target.setAutowireMode(origin.getAutowireMode())
             target.dependsOn = origin.getDependsOn()
             target.methodOverrides = MethodOverrides(origin.getMethodOverrides())
@@ -67,9 +68,20 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
     private var beanClassName: String? = null
 
     /**
+     * beanClass
+     */
+    @Nullable
+    private var beanClass: Class<*>? = null
+
+    /**
      * 在进行autowire时，它是否是优先注入的Bean？
      */
     private var primary = false
+
+    /**
+     * 该BeanDefinition是否是一个合成的BeanDefinition? 如果为true, 代表它不会经过AOP的自动代理
+     */
+    private var synthetic = false
 
     /**
      * 初始化回调方法的name
@@ -77,38 +89,91 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
     @Nullable
     private var initMethodName: String? = null
 
+    /**
+     * destroy的回调方法name
+     */
     @Nullable
-    private var destroyMethodName: String? = null // destroy的回调方法name
+    private var destroyMethodName: String? = null
 
-    private var scope = DEFAULT_SCOPE  // bean的作用域，比如singleton/prototype
-    private var role = ROLE_APPLICATION   // bean的角色，Application(0)、Support(1)和Infrastructure(2)
+    /**
+     * Bean所处的作用域，比如singleton/prototype
+     */
+    private var scope = DEFAULT_SCOPE
 
-    private var abstractFlag = false  // 它是否是抽象的？
+    /**
+     * Bean所处的角色，Application(0)、Support(1)和Infrastructure(2)
+     */
+    private var role = ROLE_APPLICATION
 
+    /**
+     * 它是否是抽象的？
+     */
+    private var abstractFlag = false
+
+    /**
+     * 实例化Bean的Supplier
+     */
     @Nullable
-    private var instanceSupplier: Supplier<*>? = null  // 实例化Bean的Supplier
+    private var instanceSupplier: Supplier<*>? = null
 
+    /**
+     * 工厂方法(@Bean方法)的方法的name
+     */
     @Nullable
-    private var factoryMethodName: String? = null  // @Bean的方法name
+    private var factoryMethodName: String? = null
 
+    /**
+     * 工厂方法(@Bean方法)所在类的Bean的beanName
+     */
     @Nullable
-    private var factoryBeanName: String? = null  // @Bean的方法所在类的Bean的beanName
+    private var factoryBeanName: String? = null
 
-    private var autowireMode = AUTOWIRE_NO  // autowire的模式，BY_TYPE/BY_NAME/CONSTRUCTOR
-    private var autowireCandidate = true  // 是否是一个候选去进行autowire的Bean
+    /**
+     * autowire的模式，BY_TYPE/BY_NAME/CONSTRUCTOR
+     */
+    private var autowireMode = AUTOWIRE_NO
 
-    private var lazyInit = false  // 是否懒加载，默认为false
-    private var dependsOn: Array<String> = emptyArray()  // Bean所依赖的Bean的列表
+    /**
+     * 是否是一个候选去进行autowire的Bean
+     */
+    private var autowireCandidate = true
 
-    private var methodOverrides = MethodOverrides()  // 运行时方法重写的列表
-    private var propertyValues = MutablePropertyValues()  // 要对Bean进行设置的属性值列表
-    private var constructorArgumentValues = ConstructorArgumentValues()  // Bean的构造器参数列表
+    /**
+     * 是否懒加载，默认为false
+     */
+    private var lazyInit = false
 
+    /**
+     * Bean所依赖的Bean的列表, 设置的是依赖的BeanName
+     */
+    private var dependsOn: Array<String> = emptyArray()
+
+    /**
+     * 运行时方法重写的列表
+     */
+    private var methodOverrides = MethodOverrides()
+
+    /**
+     * 要对Bean进行设置的属性值列表, 在运行时将会完成属性值的自动注入
+     */
+    private var propertyValues = MutablePropertyValues()
+
+    /**
+     * Bean的构造器参数列表, 在运行时将会根据构造器参数列表完成属性值的自动注入
+     */
+    private var constructorArgumentValues = ConstructorArgumentValues()
+
+    /**
+     * 解析到BeanDefinition的Resource
+     */
     @Nullable
-    private var resource: Resource? = null // 解析到BeanDefinition的Resource
+    private var resource: Resource? = null
 
+    /**
+     * BeanDefinition的描述信息
+     */
     @Nullable
-    private var description: String? = null  // BeanDefinition的描述信息
+    private var description: String? = null
 
     /**
      * 判断当前BeanDefinition是否是单例的？
@@ -389,6 +454,22 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
      * @return 如果当前BeanDefinition当中已经有beanClass了，return true；否则return false
      */
     open fun hasBeanClass(): Boolean = beanClass != null
+
+    /**
+     * 该BeanDefinition是否是一个合成的BeanDefinition? 如果为true, 代表它不会经过AOP的自动代理
+     *
+     * @param synthetic 是否是合成的标志位
+     */
+    open fun setSynthetic(synthetic: Boolean) {
+        this.synthetic = synthetic
+    }
+
+    /**
+     * 该BeanDefinition是否是一个合成的BeanDefinition? 如果为true, 代表它不会经过AOP的自动代理
+     *
+     * @return synthetic
+     */
+    open fun isSynthetic(): Boolean = this.synthetic
 
     /**
      * 设置当前BeanDefinition的Resource

@@ -115,23 +115,27 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
      * @param mbd MergedBeanDefinition
      * @return 如果BeanPostProcessor已经推断出来了合适的Bean, return Bean; 不然return null
      */
+    @Nullable
     protected open fun resolveBeforeInstantiation(beanName: String, mbd: RootBeanDefinition): Any? {
         var bean: Any? = null
 
         // 判断有没有可能在初始化之前解析到Bean？最初被初始化为true, 如果第一次解析的时候为bean=null, 那么设为false, 后续就不用再去进行解析了
         if (!mbd.beforeInstantiationResolved) {
-            val beanClass = mbd.getBeanClass()
-            if (beanClass != null) {
-                // 如果实例之前的BeanPostProcessor已经return 非空, 产生出来一个对象了, 那么需要完成初始化工作...
-                // 如果必要的话, 会完成动态代理, 如果创建出来Bean, 那么直接return, 就不走doCreateBean的创建Bean的逻辑了...
-                for (postProcessor in getBeanPostProcessorCache().instantiationAwareCache) {
-                    bean = postProcessor.postProcessBeforeInstantiation(beanName, beanClass)
-                    if (bean != null) {
-                        bean = applyBeanPostProcessorsAfterInitialization(bean, beanName)
+
+            if (!mbd.isSynthetic() && getBeanPostProcessorCache().hasInstantiationAware()) {
+                val beanClass = mbd.getBeanClass()
+                if (beanClass != null) {
+                    // 如果实例之前的BeanPostProcessor已经return 非空, 产生出来一个对象了, 那么需要完成初始化工作...
+                    // 如果必要的话, 会完成动态代理, 如果创建出来Bean, 那么直接return, 就不走doCreateBean的创建Bean的逻辑了...
+                    for (postProcessor in getBeanPostProcessorCache().instantiationAwareCache) {
+                        bean = postProcessor.postProcessBeforeInstantiation(beanName, beanClass)
+                        if (bean != null) {
+                            bean = applyBeanPostProcessorsAfterInitialization(bean, beanName)
+                        }
                     }
                 }
             }
-            mbd.beforeInstantiationResolved = bean != null
+            mbd.beforeInstantiationResolved = (bean != null)
         }
         return bean
     }
@@ -156,7 +160,7 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
         if (earlySingletonExposure) {
             // 添加到SingletonFactory当中, ObjectFactory当中包装的是一getEarlyReference, 当从SingletonFactory中获取对象时
             // 会自动回调getEarlyReference方法完成对象的创建
-            addSingletonFactory(beanName) { getEarlyReference(beanInstance, beanName) }
+            addSingletonFactory(beanName) { getEarlyReference(mbd, beanInstance, beanName) }
         }
 
         synchronized(mbd.postProcessLock) {
@@ -348,8 +352,8 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
      */
     private fun applyMergedBeanDefinitionPostProcessor(mbd: RootBeanDefinition, beanType: Class<*>, beanName: String) {
         if (getBeanPostProcessorCache().hasMergedDefinition()) {
-            getBeanPostProcessorCache().mergedDefinitions.forEach {
-                it.postProcessMergedBeanDefinition(mbd, beanType, beanName)
+            for (processor in getBeanPostProcessorCache().mergedDefinitions) {
+                processor.postProcessMergedBeanDefinition(mbd, beanType, beanName)
             }
         }
     }
@@ -363,13 +367,17 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
      * @throws BeanCreationException 执行初始化过程当中发生了异常
      * @throws Throwable 在执行初始化之前/之后的方法当中, 发生的异常将会直接往上抛
      */
-    protected open fun initializeBean(bean: Any, beanName: String, mbd: RootBeanDefinition?): Any {
+    protected open fun initializeBean(bean: Any, beanName: String, @Nullable mbd: RootBeanDefinition?): Any {
         // 在初始化之前, 需要去执行Aware接口当中的setXXX方法去注入相关的容器对象, beanName和beanFactory是需要这里去完成的, 别的类型的Aware接口
         // 就交给ApplicationContextAwareBeanPostProcessor去完成, 因为ApplicationContextAware能获取更多对象, 比如Environment
         invokeAwareMethods(bean, beanName)
 
         // 执行初始化之前的方法(BeforeInitialization), 应用所有的对Bean的初始化进行干涉的BeanPostProcessor
-        var wrappedBean: Any = applyBeanPostProcessorsBeforeInitialization(bean, beanName)
+        var wrappedBean: Any = bean
+
+        if (mbd == null || !mbd.isSynthetic()) {
+            wrappedBean = applyBeanPostProcessorsBeforeInitialization(bean, beanName)
+        }
 
 
         // 执行初始化方法, 如果在执行初始化过程当中发生了异常, 那么把异常包装成为BeanCreationException抛出去
@@ -380,7 +388,9 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
         }
 
         // 执行初始化之后的方法(AfterInitialization), 应用所有的对Bean的初始化进行干涉的BeanPostProcessor
-        wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName)
+        if (mbd == null || !mbd.isSynthetic()) {
+            wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName)
+        }
         return wrappedBean
     }
 
@@ -393,7 +403,7 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
      */
     private fun populateBean(wrapper: BeanWrapper, mbd: RootBeanDefinition, beanName: String) {
         // 在实例化之后, 应用所有的干涉Bean的实例化的处理器(InstantiationAwareBeanPostProcessor)
-        if (getBeanPostProcessorCache().hasInstantiationAware()) {
+        if (!mbd.isSynthetic() && getBeanPostProcessorCache().hasInstantiationAware()) {
             // 执行实例化之后的BeanPostProcessor
             for (postProcessor in getBeanPostProcessorCache().instantiationAwareCache) {
                 if (!postProcessor.postProcessAfterInstantiation(beanName, wrapper.getWrappedInstance())) {
@@ -538,8 +548,7 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
             // 典型的就是A=MyBatisAutoConfiguration, B=SqlSessionFactoryBean, C=MyBatisProperties这种情况
             if (mbd.getFactoryMethodName() != null) {
                 val factoryClass = mbd.getResolvedFactoryMethod()!!.declaringClass
-                val resolvableType =
-                    getTypeForFactoryBeanFromMethod(factoryClass, mbd.getFactoryMethodName()!!)
+                val resolvableType = getTypeForFactoryBeanFromMethod(factoryClass, mbd.getFactoryMethodName()!!)
                 if (resolvableType != null) {
                     return resolvableType.resolve()
                 }
@@ -557,8 +566,7 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
      * @return 解析到的FactoryBeanObjectClass(没有解析到return null)
      */
     protected open fun getTypeForFactoryBeanFromMethod(
-        factoryClass: Class<*>,
-        factoryMethodName: String
+        factoryClass: Class<*>, factoryMethodName: String
     ): ResolvableType? {
         var resolvableType: ResolvableType? = null
         ReflectionUtils.doWithMethods(factoryClass) {
@@ -592,8 +600,7 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
      * @param bw BeanWrapper
      */
     protected open fun unsatisfiedNonSimpleProperties(
-        mbd: AbstractBeanDefinition,
-        bw: BeanWrapper
+        mbd: AbstractBeanDefinition, bw: BeanWrapper
     ): Map<String, Method> {
         val result = HashMap<String, Method>()
         val propertyValues = mbd.getPropertyValues()
@@ -678,12 +685,13 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
      * @param beanName beanName
      * @return 如果可能的话, 这里返回的就是包装的经过代理的Bean了(如果没有产生代理的话, 这里返回的就是原始的bean)
      */
-    protected open fun getEarlyReference(bean: Any, beanName: String): Any {
+    protected open fun getEarlyReference(mbd: RootBeanDefinition, bean: Any, beanName: String): Any {
         var result = bean
-        // 遍历所有的SmartInstantiationAware的BeanPostProcessor的getEarlyReference方法
-        // 如果必要的话, 会在这里完成AOP动态代理
-        for (postProcessor in getBeanPostProcessorCache().smartInstantiationAwareCache) {
-            result = postProcessor.getEarlyReference(bean, beanName)
+        // 遍历所有的SmartInstantiationAware的BeanPostProcessor的getEarlyReference方法, 如果必要的话, 会在这里完成AOP动态代理
+        if (!mbd.isSynthetic() && getBeanPostProcessorCache().hasInstantiationAware()) {
+            for (postProcessor in getBeanPostProcessorCache().smartInstantiationAwareCache) {
+                result = postProcessor.getEarlyReference(bean, beanName)
+            }
         }
         return result
     }

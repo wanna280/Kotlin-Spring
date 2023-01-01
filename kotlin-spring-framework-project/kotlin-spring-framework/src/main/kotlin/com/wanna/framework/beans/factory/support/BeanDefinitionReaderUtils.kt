@@ -42,7 +42,7 @@ object BeanDefinitionReaderUtils {
         classLoader: ClassLoader?
     ): AbstractBeanDefinition {
         val beanDefinition = GenericBeanDefinition()
-        beanDefinition.setParent(parentName)
+        beanDefinition.parent = parentName
         if (className != null) {
             if (classLoader != null) {
                 val clazz = ClassUtils.forName<Any>(className, classLoader)

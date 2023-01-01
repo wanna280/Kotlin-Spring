@@ -14,17 +14,17 @@ import java.lang.reflect.Method
  * @see BeanDefinition
  * @see GenericBeanDefinition
  */
-open class RootBeanDefinition constructor(beanClass: Class<*>?) : AbstractBeanDefinition(beanClass) {
-
-    /**
-     * 提供一个无参数构造器
-     */
-    constructor() : this(null)
+open class RootBeanDefinition() : AbstractBeanDefinition() {
+    constructor(beanClass: Class<*>?) : this() {
+        this.setBeanClass(beanClass)
+    }
 
     /**
      * 调用super.copy方法将元素拷贝到当前对象当中
+     *
+     * @param beanDefinition 要去进行拷贝的BeanDefinition
      */
-    constructor(beanDefinition: BeanDefinition) : this(null) {
+    constructor(beanDefinition: BeanDefinition) : this() {
         super.copy(beanDefinition, this)
         if (beanDefinition is RootBeanDefinition) {
             this.isFactoryBean = beanDefinition.isFactoryBean
