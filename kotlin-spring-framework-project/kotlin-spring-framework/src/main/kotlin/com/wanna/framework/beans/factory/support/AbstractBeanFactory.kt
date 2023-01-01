@@ -661,6 +661,43 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         return null
     }
 
+    /**
+     * 根据BeanDefinition, 去解析出来合适的beanClass
+     *
+     * @param mbd BeanDefinition
+     * @param beanName beanName
+     */
+    @Nullable
+    protected open fun resolveBeanClass(
+        mbd: RootBeanDefinition, beanName: String, vararg typeToMatch: Class<*>
+    ): Class<*>? {
+        try {
+            // 1.如果已经存在有beanClass, 那么直接return beanClass
+            if (mbd.hasBeanClass()) {
+                return mbd.getBeanClass()!!
+            }
+            return doResolveBeanClass(mbd, typeToMatch = typeToMatch)
+        } catch (ex: Throwable) {
+            throw CannotLoadBeanClassException("Cannot load bean class", ex)
+        }
+    }
+
+    /**
+     * 执行真正的beanClass的解析
+     *
+     * @param mbd BeanDefinition
+     * @return 解析到的beanClass(没有解析到return null)
+     */
+    @Nullable
+    private fun doResolveBeanClass(mbd: RootBeanDefinition, vararg typeToMatch: Class<*>): Class<*>? {
+        val beanClassName = mbd.getBeanClassName()
+        val beanClassLoader = getBeanClassLoader()
+        if (beanClassName != null) {
+            return beanClassLoader.loadClass(beanClassName)
+        }
+        return mbd.resolveBeanClass(beanClassLoader)
+    }
+
 
     /**
      * 根据beanName获取到该Bean在容器中的类型

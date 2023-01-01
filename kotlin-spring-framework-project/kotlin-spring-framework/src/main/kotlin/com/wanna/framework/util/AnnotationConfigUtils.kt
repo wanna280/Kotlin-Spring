@@ -8,6 +8,7 @@ import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinit
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.annotation.DependsOn
+import com.wanna.framework.context.annotation.Lazy
 import com.wanna.framework.context.annotation.Primary
 import com.wanna.framework.context.annotation.Role
 import com.wanna.framework.context.event.DefaultEventListenerFactory
@@ -16,6 +17,7 @@ import com.wanna.framework.context.processor.beans.internal.CommonAnnotationPost
 import com.wanna.framework.context.processor.factory.internal.ConfigurationClassPostProcessor
 import com.wanna.framework.context.event.EventListenerMethodProcessor
 import com.wanna.framework.context.support.GenericApplicationContext
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
 
@@ -78,7 +80,7 @@ object AnnotationConfigUtils {
         }
 
         // 如果标注了@Lazy注解，将BeanDefinition的LazyInit设置为true
-        val lazy = metadata.isAnnotated(com.wanna.framework.context.annotation.Lazy::class.java.name)
+        val lazy = metadata.isAnnotated(Lazy::class.java.name)
         if (lazy) {
             abd.setLazyInit(true)
         }
@@ -86,14 +88,15 @@ object AnnotationConfigUtils {
         // 如果标注了Role注解，需要设置Bean的Role信息
         val role = metadata.isAnnotated(Role::class.java.name)
         if (role) {
-            val bdRole = metadata.getAnnotations().get(Role::class.java).getInt("value")
+            val bdRole = metadata.getAnnotations().get(Role::class.java).getInt(MergedAnnotation.VALUE)
             abd.setRole(bdRole)
         }
 
         // 如果标注了DependsOn注解的话
         val dependsOn = metadata.isAnnotated(DependsOn::class.java.name)
         if (dependsOn) {
-            val bdDependsOn = metadata.getAnnotations().get(DependsOn::class.java).getStringArray("value")
+            val bdDependsOn =
+                metadata.getAnnotations().get(DependsOn::class.java).getStringArray(MergedAnnotation.VALUE)
             abd.setDependsOn(bdDependsOn)
         }
     }
@@ -114,8 +117,7 @@ object AnnotationConfigUtils {
      */
     @JvmStatic
     fun registerAnnotationConfigProcessors(
-        registry: BeanDefinitionRegistry,
-        source: Any?
+        registry: BeanDefinitionRegistry, source: Any?
     ): MutableSet<BeanDefinitionHolder> {
         val beanFactory = unwrapDefaultListableBeanFactory(registry)
         if (beanFactory != null) {
@@ -138,9 +140,7 @@ object AnnotationConfigUtils {
             val rootBeanDefinition = RootBeanDefinition(ConfigurationClassPostProcessor::class.java)
             rootBeanDefinition.setSource(source)
             beanDefs += registerProcessor(
-                CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME,
-                rootBeanDefinition,
-                registry
+                CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME, rootBeanDefinition, registry
             )
         }
 
@@ -180,9 +180,7 @@ object AnnotationConfigUtils {
      */
     @JvmStatic
     private fun registerProcessor(
-        beanName: String,
-        beanDefinition: RootBeanDefinition,
-        registry: BeanDefinitionRegistry
+        beanName: String, beanDefinition: RootBeanDefinition, registry: BeanDefinitionRegistry
     ): BeanDefinitionHolder {
         beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE)  // 设置role为基础设施Bean
         registry.registerBeanDefinition(beanName, beanDefinition)

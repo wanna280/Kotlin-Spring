@@ -1,10 +1,14 @@
 package com.wanna.framework.validation
 
+import com.wanna.framework.beans.BeanWrapper
+import com.wanna.framework.beans.BeanWrapperImpl
 import com.wanna.framework.beans.ConfigurablePropertyAccessor
 import com.wanna.framework.beans.PropertyEditorRegistry
 
 /**
  * 基于BeanProperty的BindingResult
+ *
+ * // TODO
  *
  * @see BindingResult
  * @see Errors
@@ -12,17 +16,19 @@ import com.wanna.framework.beans.PropertyEditorRegistry
 open class BeanPropertyBindingResult(private val target: Any?, objectName: String) :
     AbstractPropertyBindingResult(objectName) {
 
-    // Errors
+    /**
+     * Errors
+     */
     private val errors = ArrayList<ObjectError>()
 
     override fun getTarget() = this.target
 
     override fun getPropertyAccessor(): ConfigurablePropertyAccessor {
-        TODO("Not yet implemented")
+        return createBeanWrapper()
     }
 
     override fun getModel(): MutableMap<String, Any> {
-        TODO("Not yet implemented")
+        return mutableMapOf()
     }
 
     override fun getPropertyEditorRegistry(): PropertyEditorRegistry {
@@ -30,11 +36,11 @@ open class BeanPropertyBindingResult(private val target: Any?, objectName: Strin
     }
 
     override fun reject(errorCode: String) {
-        TODO("Not yet implemented")
+
     }
 
     override fun reject(errorCode: String, defaultMessage: String) {
-        TODO("Not yet implemented")
+
     }
 
     override fun hasErrors(): Boolean {
@@ -49,5 +55,9 @@ open class BeanPropertyBindingResult(private val target: Any?, objectName: Strin
 
     override fun addError(error: ObjectError) {
         this.errors.add(error)
+    }
+
+    protected open fun createBeanWrapper(): BeanWrapper {
+        return BeanWrapperImpl()
     }
 }

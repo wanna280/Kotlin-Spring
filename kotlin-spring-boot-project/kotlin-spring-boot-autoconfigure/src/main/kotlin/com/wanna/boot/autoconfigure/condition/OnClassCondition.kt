@@ -4,6 +4,7 @@ import com.wanna.boot.autoconfigure.AutoConfigurationMetadata
 import com.wanna.framework.context.annotation.ConditionContext
 import com.wanna.framework.core.Order
 import com.wanna.framework.core.Ordered
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
 
 
@@ -136,7 +137,7 @@ open class OnClassCondition : FilteringSpringBootCondition() {
 
             // 获取用户配置的所有classNames,
             // Note: 这里对于value和name, 我们都使用getStringArray的方式去进行获取, 不然会出现NoClassDefError链接错误的情况
-            val classNames = onClassAttrs.getStringArray("name") + onClassAttrs.getStringArray("value")
+            val classNames = onClassAttrs.getStringArray("name") + onClassAttrs.getStringArray(MergedAnnotation.VALUE)
 
             // 过滤出来所有的missing的className
             val missing = filter(classNames.toList(), ClassNameFilter.MISSING, context.getClassLoader())
@@ -150,7 +151,7 @@ open class OnClassCondition : FilteringSpringBootCondition() {
         if (metadata.isAnnotated(ConditionalOnMissingClass::class.java.name)) {
             val onMissingClassAttrs = metadata.getAnnotations().get(ConditionalOnMissingClass::class.java)
             // 获取用户配置的所有classNames
-            val classNames = onMissingClassAttrs.getStringArray("value").toMutableList()
+            val classNames = onMissingClassAttrs.getStringArray(MergedAnnotation.VALUE).toList()
 
             // 过滤出来所有的present的className
             val present = filter(classNames, ClassNameFilter.PRESENT, context.getClassLoader())

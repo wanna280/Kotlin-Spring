@@ -2,6 +2,7 @@ package com.wanna.boot.context.properties
 
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.context.annotation.ImportBeanDefinitionRegistrar
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.type.AnnotationMetadata
 
 /**
@@ -39,7 +40,9 @@ open class EnableConfigurationPropertiesRegistrar : ImportBeanDefinitionRegistra
      */
     @Suppress("UNCHECKED_CAST")
     private fun getTypes(metadata: AnnotationMetadata): Array<Class<*>> {
-        return metadata.getAnnotations().get(EnableConfigurationProperties::class.java).getClassArray("value")
+        return metadata.getAnnotations()
+            .get(EnableConfigurationProperties::class.java)
+            .getClassArray(MergedAnnotation.VALUE)
     }
 
     companion object {

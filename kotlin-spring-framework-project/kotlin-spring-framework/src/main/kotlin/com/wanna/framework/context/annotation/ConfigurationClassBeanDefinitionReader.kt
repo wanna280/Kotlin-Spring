@@ -13,6 +13,7 @@ import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.core.type.StandardMethodMetadata
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.StringUtils
@@ -122,7 +123,7 @@ open class ConfigurationClassBeanDefinitionReader(
         val beanAnnotation = metadata.getAnnotations().get(Bean::class.java)
 
         // 从@Bean的注解上找到合适的beanName
-        val beanName: String = findBeanNameFromBeanAnnotation(beanAnnotation, metadata)
+        val beanName = findBeanNameFromBeanAnnotation(beanAnnotation, metadata)
 
         // 如果这个@Bean方法，在子类当中已经存在了(子类去进行重写)，那么就别添加父类的@Bean方法了，得pass掉...得以子类的为准....
         if (isOverriddenByExistingDefinition(beanMethod, beanName)) {
@@ -275,6 +276,9 @@ open class ConfigurationClassBeanDefinitionReader(
         val metadata = configurationClass.metadata
         val beanDefinition = AnnotatedGenericBeanDefinition(metadata)  // 构建一个注解的BeanDefinition
 
+        // 设置Resource
+        beanDefinition.setResource(configurationClass.resource)
+
         // 处理@Role/@Primary/@DependsOn/@Lazy注解
         AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition, metadata)
 
@@ -349,8 +353,8 @@ open class ConfigurationClassBeanDefinitionReader(
         if (StringUtils.hasText(beanAnnotation.getString("name"))) {
             beanName = beanAnnotation.getString("name")
         }
-        if (!StringUtils.hasText(beanName) && StringUtils.hasText(beanAnnotation.getString("value"))) {
-            beanName = beanAnnotation.getString("value")
+        if (!StringUtils.hasText(beanName) && StringUtils.hasText(beanAnnotation.getString(MergedAnnotation.VALUE))) {
+            beanName = beanAnnotation.getString(MergedAnnotation.VALUE)
         }
         if (!StringUtils.hasText(beanName)) {
             beanName = metadata.getMethodName()
@@ -366,7 +370,8 @@ open class ConfigurationClassBeanDefinitionReader(
      * @param methodMetadata 方法的MethodData
      */
     class ConfigurationClassBeanDefinition(
-        private val configurationClass: ConfigurationClass, private val methodMetadata: MethodMetadata?
+        private val configurationClass: ConfigurationClass,
+        @Nullable private val methodMetadata: MethodMetadata?
     ) : RootBeanDefinition(), AnnotatedBeanDefinition {
         init {
             // 设置Resource

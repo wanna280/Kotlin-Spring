@@ -4,6 +4,7 @@ import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.EnvironmentCapable
@@ -88,8 +89,7 @@ open class ConditionEvaluator(
     private fun getConditionClasses(metadata: AnnotatedTypeMetadata): Array<String> {
         return metadata.getAnnotations()
             .get(Conditional::class.java)
-            .getClassArray("value").map { it.name }
-            .toTypedArray()
+            .getStringArray(MergedAnnotation.VALUE)
     }
 
 

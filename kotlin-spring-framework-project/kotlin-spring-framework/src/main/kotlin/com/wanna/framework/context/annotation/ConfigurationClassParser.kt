@@ -8,6 +8,7 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.environment.CompositePropertySource
 import com.wanna.framework.core.environment.ConfigurableEnvironment
@@ -539,7 +540,7 @@ open class ConfigurationClassParser(
             if (!mergedAnnotation.present) {
                 return
             }
-            for (clazz in mergedAnnotation.getClassArray("value")) {
+            for (clazz in mergedAnnotation.getClassArray(MergedAnnotation.VALUE)) {
                 imported += SourceClass(clazz)
             }
         }

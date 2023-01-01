@@ -1,21 +1,20 @@
 package com.wanna.framework.beans.factory.support.definition
 
+import com.wanna.framework.lang.Nullable
+
 /**
  * 这是一个通用的BeanDefinition，它主要为parent的BeanDefinition的动态设置提供支持
+ *
+ * @see AbstractBeanDefinition
  */
-open class GenericBeanDefinition(beanClass: Class<*>?) : AbstractBeanDefinition(beanClass) {
-
-    // 提供无参数构造器
-    constructor() : this(null)
-
-    // parent BeanDefinition的名字
-    private var parent: String? = null
-
-    open fun setParent(parent: String?) {
-        this.parent = parent
+open class GenericBeanDefinition() : AbstractBeanDefinition() {
+    constructor(@Nullable beanClass: Class<*>?) : this() {
+        this.setBeanClass(beanClass)
     }
 
-    open fun getParent(): String? {
-        return this.parent
-    }
+    /**
+     * parent BeanDefinition的名字
+     */
+    @Nullable
+    var parent: String? = null
 }

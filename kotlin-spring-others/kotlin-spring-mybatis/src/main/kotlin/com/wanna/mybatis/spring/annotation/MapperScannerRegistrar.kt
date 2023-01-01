@@ -92,9 +92,9 @@ open class MapperScannerRegistrar : ImportBeanDefinitionRegistrar {
 
         // 添加basePackages
         val basePackages = ArrayList<String>()
-        attributes.getStringArray("value").filter { StringUtils.hasText(it) }.forEach(basePackages::add)
-        attributes.getStringArray("basePackages").filter { StringUtils.hasText(it) }.forEach(basePackages::add)
-        attributes.getClassArray("basePackageClasses").map { it.packageName }.forEach(basePackages::add)
+        attributes.getStringArray(MergedAnnotation.VALUE).filter(StringUtils::hasText).forEach(basePackages::add)
+        attributes.getStringArray("basePackages").filter(StringUtils::hasText).forEach(basePackages::add)
+        attributes.getClassArray("basePackageClasses").map(Class<*>::getPackageName).forEach(basePackages::add)
         if (basePackages.isEmpty()) {  // 如果必要的话，需要获取默认的basePackages
             basePackages.add(getDefaultBasePackage(importClassMetadata))
         }
