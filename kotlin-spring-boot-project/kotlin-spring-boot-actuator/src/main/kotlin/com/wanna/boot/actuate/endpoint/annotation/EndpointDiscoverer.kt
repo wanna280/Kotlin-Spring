@@ -129,22 +129,28 @@ abstract class EndpointDiscoverer<E : ExposableEndpoint<O>, O : Operation>(priva
     private fun createEndpointBeans(): Collection<EndpointBean> {
         val endpointBeans = HashMap<EndpointId, EndpointBean>()
         val beanFactory = (applicationContext as ConfigurableApplicationContext).getBeanFactory()
-        val beanDefinitionNames = beanFactory.getBeanDefinitionNames()
-        beanDefinitionNames.forEach { beanName ->
+        for (beanName in beanFactory.getBeanDefinitionNames()) {
             val definition = beanFactory.getMergedBeanDefinition(beanName) as RootBeanDefinition
 
             // 1.尝试获取beanClass，如果没有beanClass，那么尝试从@Bean方法的返回值上去进行获取
             var beanClass: Class<*>? = null
-            if (definition.getBeanClass() != null) {
+            if (definition.hasBeanClass()) {
                 beanClass = definition.getBeanClass()
             }
+            // 2.如果beanClass确实是存在的话, 那么解析一下beanClassName
+            if (definition.getBeanClassName() != null) {
+                beanClass = definition.resolveBeanClass(beanFactory.getBeanClassLoader())
+            }
+
+            // 3.再检查一下@Bean方法的返回值
             if (beanClass == null && definition.getResolvedFactoryMethod() != null) {
                 beanClass = definition.getResolvedFactoryMethod()?.returnType
             }
 
             // 如果beanClass==null或者beanClass上没有Endpoint注解，那么直接pass掉
-            beanClass ?: return@forEach
-            AnnotatedElementUtils.getMergedAnnotation(beanClass, Endpoint::class.java) ?: return@forEach
+            if (beanClass == null || !AnnotatedElementUtils.isAnnotated(beanClass, Endpoint::class.java)) {
+                continue
+            }
 
             // 创建EndpointBean，并加入到结果的列表当中
             val endpointBean = createEndpointBean(beanName)

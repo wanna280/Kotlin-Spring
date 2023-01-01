@@ -228,21 +228,29 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @return 是否是一个Autowire的候选Bean？
      */
     override fun isAutowireCandidate(beanName: String, descriptor: DependencyDescriptor): Boolean {
-        val resolver = getAutowireCandidateResolver()
+        return isAutowireCandidate(beanName, descriptor, getAutowireCandidateResolver())
+    }
 
+    protected open fun isAutowireCandidate(
+        beanName: String, descriptor: DependencyDescriptor, resolver: AutowireCandidateResolver
+    ): Boolean {
         // 如果包含单实例BeanDefinition的话, 那么我们拿它的BeanDefinition去进行匹配
         if (containsBeanDefinition(beanName)) {
-            return resolver.isAutowireCandidate(
-                BeanDefinitionHolder(getMergedBeanDefinition(beanName), beanName), descriptor
-            )
-
+            return isAutowireCandidate(beanName, getMergedLocalBeanDefinition(beanName), descriptor, resolver)
             // 如果包含SingletonBean, 但是没有BeanDefinition的话, 我们这里构建一个BeanDefinition去适配一下
         } else if (containsSingleton(beanName)) {
-            return resolver.isAutowireCandidate(
-                BeanDefinitionHolder(RootBeanDefinition(getType(beanName)), beanName), descriptor
-            )
+            return isAutowireCandidate(beanName, RootBeanDefinition(getType(beanName)), descriptor, resolver)
         }
         return true
+    }
+
+    protected open fun isAutowireCandidate(
+        beanName: String, mbd: RootBeanDefinition, descriptor: DependencyDescriptor, resolver: AutowireCandidateResolver
+    ): Boolean {
+        val beanNameToUse = BeanFactoryUtils.transformBeanName(beanName)
+        // 先解析beanClass
+        resolveBeanClass(mbd, beanNameToUse)
+        return resolver.isAutowireCandidate(BeanDefinitionHolder(mbd, beanNameToUse), descriptor)
     }
 
     /**
@@ -464,8 +472,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             if (matchingBeans.isEmpty()) {
                 if (isRequired(descriptor)) {
                     throw NoSuchBeanDefinitionException(
-                        "至少需要一个该类型的Bean, beanType=[$type], 但是在BeanFactory当中不存在",
-                        null, null, type
+                        "至少需要一个该类型的Bean, beanType=[$type], 但是在BeanFactory当中不存在", null, null, type
                     )
                 }
                 return null
@@ -492,8 +499,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             if (result == null) {
                 if (descriptor.isRequired()) {
                     throw NoSuchBeanDefinitionException(
-                        "至少需要一个该类型的Bean, beanType=[$type], 但是在BeanFactory当中不存在",
-                        null, null, type
+                        "至少需要一个该类型的Bean, beanType=[$type], 但是在BeanFactory当中不存在", null, null, type
                     )
                 }
                 result = null
@@ -604,8 +610,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @return 构建好的Optional对象
      */
     private fun createOptionalDependency(
-        descriptor: DependencyDescriptor,
-        @Nullable requestingBeanName: String?
+        descriptor: DependencyDescriptor, @Nullable requestingBeanName: String?
     ): Optional<*> {
         val available = DependencyObjectProvider(descriptor, requestingBeanName, Optional::class.java).getIfAvailable()
         return Optional.ofNullable(available)
@@ -736,10 +741,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param descriptor 原始的Descriptor
      */
     private class MultiElementDescriptor(descriptor: DependencyDescriptor) : DependencyDescriptor(
-        descriptor.getField(),
-        descriptor.getMethodParameter(),
-        descriptor.isRequired(),
-        descriptor.isEager()
+        descriptor.getField(), descriptor.getMethodParameter(), descriptor.isRequired(), descriptor.isEager()
     )
 
     /**
@@ -817,10 +819,9 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @return 它是否是MultipleBean(如果是Array/Collection/Map的话, return true；否则return false)
      */
     private fun indicatesMultipleBeans(type: Class<*>): Boolean {
-        return type.isArray ||
-                (type.isInterface && (
-                        ClassUtils.isAssignFrom(Collection::class.java, type)
-                                || ClassUtils.isAssignFrom(Map::class.java, type)))
+        return type.isArray || (type.isInterface && (ClassUtils.isAssignFrom(
+            Collection::class.java, type
+        ) || ClassUtils.isAssignFrom(Map::class.java, type)))
     }
 
     /**

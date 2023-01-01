@@ -10,13 +10,13 @@ import com.wanna.framework.beans.factory.support.definition.config.BeanMetadataA
 import com.wanna.framework.beans.method.MethodOverrides
 import com.wanna.framework.core.io.Resource
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 import java.util.function.Supplier
 
 /**
  * 这是一个抽象的BeanDefinition，它继承了BeanMetadataAttributeAccessor，支持进行属性的设置和获取
  */
-abstract class AbstractBeanDefinition : BeanDefinition,
-    BeanMetadataAttributeAccessor() {
+abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAccessor() {
     companion object {
         const val DEFAULT_SCOPE = ""
         const val AUTOWIRE_NO = AutowireCapableBeanFactory.AUTOWIRE_NO
@@ -454,6 +454,20 @@ abstract class AbstractBeanDefinition : BeanDefinition,
      * @return 如果当前BeanDefinition当中已经有beanClass了，return true；否则return false
      */
     open fun hasBeanClass(): Boolean = beanClass != null
+
+    /**
+     * 根据给定的ClassLoader, 去将beanClassName去解析解析beanClass
+     *
+     * @param classLoader ClassLoader
+     * @return beanClass(如果没有beanClassName的话, return null)
+     */
+    @Nullable
+    open fun resolveBeanClass(@Nullable classLoader: ClassLoader?): Class<*>? {
+        val beanClassName = getBeanClassName() ?: return null
+        val resolvedClass = ClassUtils.forName<Any>(beanClassName, classLoader)
+        this.beanClass = resolvedClass
+        return resolvedClass
+    }
 
     /**
      * 该BeanDefinition是否是一个合成的BeanDefinition? 如果为true, 代表它不会经过AOP的自动代理

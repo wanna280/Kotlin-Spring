@@ -122,7 +122,7 @@ open class ConfigurationClassBeanDefinitionReader(
         val beanAnnotation = metadata.getAnnotations().get(Bean::class.java)
 
         // 从@Bean的注解上找到合适的beanName
-        val beanName: String = findBeanNameFromBeanAnnotation(beanAnnotation, metadata)
+        val beanName = findBeanNameFromBeanAnnotation(beanAnnotation, metadata)
 
         // 如果这个@Bean方法，在子类当中已经存在了(子类去进行重写)，那么就别添加父类的@Bean方法了，得pass掉...得以子类的为准....
         if (isOverriddenByExistingDefinition(beanMethod, beanName)) {

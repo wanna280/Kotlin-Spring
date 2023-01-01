@@ -82,17 +82,26 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
      * @return 创建好的Bean, 有可能为NullBean
      */
     override fun createBean(beanName: String, mbd: RootBeanDefinition, args: Array<Any?>?): Any {
+        var mbdToUse = mbd
+        // 如果mbd的beanClassName不为空的话, 那么这里创建一个新的RootBeanDefinition, 并设置beanClass, 别去污染缓存当中的MergedBeanDefinition
+        val resolveBeanClass = resolveBeanClass(mbd, beanName)
+        if (resolveBeanClass != null && !mbd.hasBeanClass() && mbd.getBeanClassName() != null) {
+            mbdToUse = RootBeanDefinition(mbd)
+            mbdToUse.setBeanClass(resolveBeanClass)
+        }
+
+
         // 在实例化之前, 交给有资格对实例化去进行干涉的BeanPostProcessor(InstantiationAwareBeanPostProcessor)去进行回调
         // 让它们去进行干涉, 如果它们可以成功return对象, 那么说明它们创建对象成功, 直接return即可, 不用去执行后续的创建Bean的过程了
         try {
-            val bean = resolveBeforeInstantiation(beanName, mbd)
+            val bean = resolveBeforeInstantiation(beanName, mbdToUse)
             if (bean != null) {
                 return bean
             }
         } catch (ex: Throwable) {
             throw BeanCreationException("在执行BeforeInstantiation的过程中发生了异常", ex, beanName)
         }
-        return doCreateBean(beanName, mbd, args)
+        return doCreateBean(beanName, mbdToUse, args)
     }
 
     /**
