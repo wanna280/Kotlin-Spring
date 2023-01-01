@@ -5,6 +5,7 @@ import com.wanna.boot.autoconfigure.AutoConfigurationMetadata
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.context.aware.BeanClassLoaderAware
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 
 /**
@@ -65,8 +66,8 @@ abstract class FilteringSpringBootCondition : SpringBootCondition(), AutoConfigu
      * @param filter 如何去过滤？可以使用PRESENT/MISSING两种方式去过滤
      * @return 如果原始classNames不为空，那么返回经过filter过滤之后的classNames；如果原始classNames为空，那么return 空的List
      */
-    protected fun filter(classNames: Collection<String>?, filter: ClassNameFilter, classLoader: ClassLoader) =
-        if (classNames == null || classNames.isEmpty()) emptyList()
+    protected fun filter(@Nullable classNames: Collection<String>?, filter: ClassNameFilter, classLoader: ClassLoader) =
+        if (classNames.isNullOrEmpty()) emptyList()
         else classNames.filter { filter.matches(it, classLoader) }.toMutableList()
 
     override fun setBeanClassLoader(classLoader: ClassLoader) {
@@ -91,13 +92,16 @@ abstract class FilteringSpringBootCondition : SpringBootCondition(), AutoConfigu
             override fun matches(className: String, classLoader: ClassLoader) = !isPresent(className, classLoader)
         };
 
-        // 匹配方法，抽象方法，内部的枚举单例对象也都必须去实现这个方法
+        /**
+         * 匹配方法，抽象方法，内部的枚举单例对象也都必须去实现这个方法
+         */
         abstract fun matches(className: String, classLoader: ClassLoader): Boolean
 
-        // **枚举类内部还能定义抽象方法！！！**
+        // **枚举类内部还能定义抽象方法!!!**
         companion object {
             /**
              * 根据className去判断该类是否已经存在于依赖当中
+             *
              * @param className className to matches
              * @param classLoader classLoader for Class.forName
              */

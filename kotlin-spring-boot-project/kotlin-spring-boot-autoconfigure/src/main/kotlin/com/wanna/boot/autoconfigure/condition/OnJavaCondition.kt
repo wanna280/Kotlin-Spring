@@ -1,6 +1,7 @@
 package com.wanna.boot.autoconfigure.condition
 
 import com.wanna.framework.context.annotation.ConditionContext
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
 
 /**
@@ -36,7 +37,7 @@ open class OnJavaCondition : SpringBootCondition() {
             throw IllegalStateException("无法找到@ConditionalOnJava注解")
         }
         val range = attributes.getEnum("range", ConditionalOnJava.Range::class.java)
-        val javaVersion = attributes.getEnum("value", JavaVersion::class.java) as JavaVersion
+        val javaVersion = attributes.getEnum(MergedAnnotation.VALUE, JavaVersion::class.java)
         return getMatchOutcome(range, JVM_VERSION, javaVersion)
     }
 

@@ -349,8 +349,8 @@ open class ConfigurationClassBeanDefinitionReader(
         if (StringUtils.hasText(beanAnnotation.getString("name"))) {
             beanName = beanAnnotation.getString("name")
         }
-        if (!StringUtils.hasText(beanName) && StringUtils.hasText(beanAnnotation.getString("value"))) {
-            beanName = beanAnnotation.getString("value")
+        if (!StringUtils.hasText(beanName) && StringUtils.hasText(beanAnnotation.getString(MergedAnnotation.VALUE))) {
+            beanName = beanAnnotation.getString(MergedAnnotation.VALUE)
         }
         if (!StringUtils.hasText(beanName)) {
             beanName = metadata.getMethodName()
