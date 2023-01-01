@@ -1,5 +1,7 @@
 package com.wanna.framework.core.annotation
 
+import com.wanna.framework.lang.Nullable
+
 /**
  *
  * @author jianchao.jia
@@ -18,24 +20,30 @@ class MissingMergedAnnotation<A : Annotation> : AbstractMergedAnnotation<A>() {
     }
 
     override val distance: Int
-        get() = 0
+        get() = -1
     override val type: Class<A>
-        get() = TODO("Not yet implemented")
+        get() = throw NoSuchElementException("Unable to get type for missing annotation")
+
+    /**
+     * 对missing的MergedAnnotation来说, 应该是不存在的, present=false
+     */
     override val present: Boolean
         get() = false
 
     override val root: MergedAnnotation<*>
-        get() = TODO("Not yet implemented")
+        get() = this
 
-    override fun createSynthesized(): A {
-        TODO("Not yet implemented")
-    }
+    /**
+     * 对于missing, 不支持创建合成注解
+     */
+    override fun createSynthesized() = throw NoSuchElementException("Unable to synthesize missing annotation")
 
-    override fun hasDefaultValue(attributeName: String): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun hasDefaultValue(attributeName: String) =
+        throw NoSuchElementException("Unable to check default value for missing annotation")
 
-    override fun <T> getAttributeValue(attributeName: String, type: Class<T>): T? {
-        TODO("Not yet implemented")
-    }
+    @Nullable
+    override fun <T> getAttributeValue(attributeName: String, type: Class<T>) =
+        throw NoSuchElementException("Unable to get attribute value for missing annotation")
+
+    override fun toString(): String = "(missing)"
 }
