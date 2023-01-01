@@ -1,8 +1,11 @@
 package com.wanna.framework.core.annotation
 
 import com.wanna.framework.lang.Nullable
+import java.util.*
+import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.stream.Stream
+import java.util.stream.StreamSupport
 
 /**
  * 根据MergedAnnotation列表去构建MergedAnnotations
@@ -62,13 +65,38 @@ open class MergedAnnotationsCollection(private val annotations: Array<MergedAnno
         return find(annotationName, predicate, selector) ?: MergedAnnotation.missing()
     }
 
-    @Suppress("UNCHECKED_CAST")
-    override fun stream(): Stream<MergedAnnotation<Annotation>> =
-        this.annotations.toList().stream() as Stream<MergedAnnotation<Annotation>>
+    override fun stream(): Stream<MergedAnnotation<Annotation>> {
+        return StreamSupport.stream(spliterator(), false)
+    }
 
     @Suppress("UNCHECKED_CAST")
-    override fun iterator(): Iterator<MergedAnnotation<Annotation>> =
-        this.annotations.iterator() as Iterator<MergedAnnotation<Annotation>>
+    override fun <A : Annotation> stream(annotationType: Class<A>): Stream<MergedAnnotation<A>> {
+        return StreamSupport.stream(spliterator(annotationType), false)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <A : Annotation> stream(annotationName: String): Stream<MergedAnnotation<A>> {
+        return StreamSupport.stream(spliterator(annotationName), false)
+    }
+
+    override fun iterator(): Iterator<MergedAnnotation<Annotation>> {
+        return Spliterators.iterator(spliterator())
+    }
+
+    override fun spliterator(): Spliterator<MergedAnnotation<Annotation>> {
+        return spliterator(null)
+    }
+
+
+    /**
+     * 获取到MergedAnnotation的Spliterator
+     *
+     * @param annotationType 需要的注解类型(null代表要全部类型)
+     * @return Spliterator of MergedAnnotation
+     */
+    private fun <A : Annotation> spliterator(@Nullable annotationType: Any?): Spliterator<MergedAnnotation<A>> {
+        return AnnotationsSpliterator(annotationType)
+    }
 
     /**
      * 检查是否存在有指定的注解?
@@ -115,7 +143,7 @@ open class MergedAnnotationsCollection(private val annotations: Array<MergedAnno
                     continue
                 }
                 val candidate =
-                    if (i == 0) root as MergedAnnotation<A> else TypeMappedAnnotation.createIfPossible<A>(mapping, root)
+                    if (i == 0) root as MergedAnnotation<A> else TypeMappedAnnotation.createIfPossible(mapping, root)
                 if (candidate != null && (predicate == null || predicate.test(candidate))) {
                     if (selectorToUse.isBestCandidate(candidate)) {
                         return candidate
@@ -125,6 +153,110 @@ open class MergedAnnotationsCollection(private val annotations: Array<MergedAnno
             }
         }
         return result
+    }
+
+    /**
+     * AnnotationSpliterator
+     *
+     * @param requiredType 要去进行遍历的注解类型(null代表遍历所有)
+     */
+    private inner class AnnotationsSpliterator<A : Annotation>(@Nullable private val requiredType: Any?) :
+        Spliterator<MergedAnnotation<A>> {
+
+        /**
+         * mappingCursor, 记录AnnotationIndex对应的AnnotationTypeMappings迭代到的位置
+         */
+        private val mappingCursors = IntArray(annotations.size)
+        override fun tryAdvance(action: Consumer<in MergedAnnotation<A>>): Boolean {
+            var lowestDistance = Int.MAX_VALUE
+            var annotationResult = -1
+            for (annotationIndex in annotations.indices) {
+                val mapping: AnnotationTypeMapping? = getNextSuitableMapping(annotationIndex)
+                if (mapping != null && mapping.distance < lowestDistance) {
+                    annotationResult = annotationIndex
+                    lowestDistance = mapping.distance
+                }
+                if (lowestDistance == 0) {
+                    break
+                }
+            }
+            if (annotationResult != -1) {
+                val mergedAnnotation =
+                    createMergedAnnotationIfPossible(annotationResult, mappingCursors[annotationResult])
+                mappingCursors[annotationResult]++
+                if (mergedAnnotation == null) {
+                    return tryAdvance(action)
+                }
+                action.accept(mergedAnnotation)
+                return true
+            }
+            return false
+        }
+
+        /**
+         * 获取下一个位置的合适的AnnotationTypeMapping
+         *
+         * @param annotationIndex annotationIndex
+         * @return AnnotationTypeMapping(如果没有合适的了, return null)
+         */
+        @Nullable
+        private fun getNextSuitableMapping(annotationIndex: Int): AnnotationTypeMapping? {
+            var mapping: AnnotationTypeMapping?
+            do {
+                mapping = getMapping(annotationIndex, mappingCursors[annotationIndex])
+                if (mapping != null && isMappingForType(mapping, requiredType)) {
+                    return mapping
+                }
+                mappingCursors[annotationIndex]++
+            } while (mapping != null)
+            return null
+        }
+
+        /**
+         * 根据AnnotationIndex和MappingIndex, 去获取到对应位置的AnnotationTypeMapping
+         *
+         * @param annotationIndex annotationIndex
+         * @param mappingIndex mappingIndex
+         * @return AnnotationTypeMapping(mappingIndex越界return null)
+         */
+        @Nullable
+        private fun getMapping(annotationIndex: Int, mappingIndex: Int): AnnotationTypeMapping? {
+            val typeMappings = mappings[annotationIndex]
+            return if (mappingIndex < typeMappings.size) typeMappings[mappingIndex] else null
+        }
+
+        /**
+         * 如果必要的话, 创建一个MergedAnnotation
+         *
+         * @param annotationIndex annotationIndex
+         * @param mappingIndex mappingIndex
+         * @return MergedAnnotation
+         */
+        @Suppress("UNCHECKED_CAST")
+        @Nullable
+        private fun createMergedAnnotationIfPossible(annotationIndex: Int, mappingIndex: Int): MergedAnnotation<A>? {
+            val root = annotations[annotationIndex]
+            if (mappingIndex == 0) {
+                return root as MergedAnnotation<A>
+            }
+            return TypeMappedAnnotation.createIfPossible(mappings[annotationIndex][mappingIndex], root)
+        }
+
+        @Nullable
+        override fun trySplit(): Spliterator<MergedAnnotation<A>>? = null
+
+        override fun estimateSize(): Long {
+            var size = 0
+            for (i in annotations.indices) {
+                val mappings: AnnotationTypeMappings = mappings[i]
+                var numberOfMappings = mappings.size
+                numberOfMappings -= mappingCursors[i].coerceAtMost(mappings.size)
+                size += numberOfMappings
+            }
+            return size.toLong()
+        }
+
+        override fun characteristics(): Int = Spliterator.NONNULL or Spliterator.IMMUTABLE
     }
 
     companion object {

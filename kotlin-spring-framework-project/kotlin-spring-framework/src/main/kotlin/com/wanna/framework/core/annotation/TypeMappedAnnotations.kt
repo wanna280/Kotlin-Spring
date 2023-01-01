@@ -2,8 +2,11 @@ package com.wanna.framework.core.annotation
 
 import com.wanna.framework.lang.Nullable
 import java.lang.reflect.AnnotatedElement
+import java.util.*
+import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.stream.Stream
+import java.util.stream.StreamSupport
 
 /**
  * 针对一个具体的类型(类/方法/字段/构造器等), 去进行描述的MergedAnnotations
@@ -25,6 +28,10 @@ open class TypeMappedAnnotations(
     @Nullable private val searchStrategy: MergedAnnotations.SearchStrategy? = null,
     private val repeatableContainers: RepeatableContainers?
 ) : MergedAnnotations {
+
+    @Nullable
+    private var aggregates: List<Aggregate>? = null
+
 
     //---------------------------------------检查注解是否存在的相关API开始-----------------------------------
     /**
@@ -124,12 +131,69 @@ open class TypeMappedAnnotations(
 
     //---------------------------------------提供去获取注解的相关API结束-----------------------------------
 
-    override fun iterator(): Iterator<MergedAnnotation<Annotation>> {
-        TODO("Not yet implemented")
+    override fun stream(): Stream<MergedAnnotation<Annotation>> {
+        if (this.annotationFilter == AnnotationFilter.ALL) {
+            return Stream.empty()
+        }
+        return StreamSupport.stream(spliterator(), false)
     }
 
-    override fun stream(): Stream<MergedAnnotation<Annotation>> {
-        TODO("Not yet implemented")
+    @Suppress("UNCHECKED_CAST")
+    override fun <A : Annotation> stream(annotationType: Class<A>): Stream<MergedAnnotation<A>> {
+        if (this.annotationFilter == AnnotationFilter.ALL) {
+            return Stream.empty()
+        }
+        return StreamSupport.stream(spliterator(annotationType), false)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <A : Annotation> stream(annotationName: String): Stream<MergedAnnotation<A>> {
+        if (this.annotationFilter == AnnotationFilter.ALL) {
+            return Stream.empty()
+        }
+        return StreamSupport.stream(spliterator(annotationName), false)
+    }
+
+    override fun iterator(): Iterator<MergedAnnotation<Annotation>> {
+        if (this.annotationFilter == AnnotationFilter.ALL) {
+            return Collections.emptyIterator()
+        }
+        return Spliterators.iterator(spliterator())
+    }
+
+    override fun spliterator(): Spliterator<MergedAnnotation<Annotation>> {
+        if (this.annotationFilter == AnnotationFilter.ALL) {
+            return Spliterators.emptySpliterator()
+        }
+        return spliterator(null)
+    }
+
+
+    /**
+     * 获取到MergedAnnotation的Spliterator
+     *
+     * @param annotationType 需要的注解类型(null代表要全部类型)
+     * @return Spliterator of MergedAnnotation
+     */
+    private fun <A : Annotation> spliterator(@Nullable annotationType: Any?): Spliterator<MergedAnnotation<A>> {
+        return AggregatesSpliterator(annotationType, getAggregates())
+    }
+
+    /**
+     * 获取到所有的聚合元素
+     *
+     * @return Aggregates
+     */
+    private fun getAggregates(): List<Aggregate> {
+        var aggregates: List<Aggregate>? = this.aggregates
+        if (aggregates == null) {
+            aggregates = scan(this, AggregateCollector())
+            if (aggregates.isNullOrEmpty()) {
+                aggregates = Collections.emptyList()
+            }
+            this.aggregates = aggregates
+        }
+        return aggregates!!
     }
 
     /**
@@ -138,6 +202,7 @@ open class TypeMappedAnnotations(
      * @param criteria AnnotationType(AnnotationClassName)
      * @param processor AnnotationsProcessor
      */
+    @Nullable
     private fun <C, R> scan(criteria: C, processor: AnnotationsProcessor<C, R>): R? {
         // 如果存在有直接给定的注解的话, 那么直接根据AnnotationProcessor从注解上去进行搜索即可
         if (this.annotations != null) {
@@ -150,6 +215,212 @@ open class TypeMappedAnnotations(
             return AnnotationsScanner.scan(criteria, element, searchStrategy, processor)
         }
         return null
+    }
+
+    /**
+     * 聚合注解的Spliterator
+     *
+     * @param requiredType 需要的注解类型
+     * @param aggregates 聚合注解列表
+     */
+    private inner class AggregatesSpliterator<A : Annotation>(
+        @Nullable val requiredType: Any?, val aggregates: List<Aggregate>
+    ) : Spliterator<MergedAnnotation<A>> {
+
+        /**
+         * Aggregate迭代的游标
+         */
+        private var aggregateCursor = 0
+
+        /**
+         * MappingCursors, 记录的是AnnotationIndex对应的MappingIndex的迭代index
+         */
+        @Nullable
+        private var mappingCursors: IntArray? = null
+
+        /**
+         * 如果有, 则遍历下一个元素
+         */
+        override fun tryAdvance(action: Consumer<in MergedAnnotation<A>>): Boolean {
+            while (aggregateCursor < aggregates.size) {
+                val aggregate = this.aggregates[aggregateCursor]
+                if (tryAdvance(aggregate, action)) {
+                    return true
+                }
+                this.mappingCursors = null
+                aggregateCursor++
+            }
+            return false
+        }
+
+        private fun tryAdvance(aggregate: Aggregate, action: Consumer<in MergedAnnotation<A>>): Boolean {
+            // 初始化一个size=annotationIndex的数组
+            if (this.mappingCursors == null) {
+                this.mappingCursors = IntArray(aggregate.size)
+            }
+            var lowestDistance = Int.MAX_VALUE
+            var annotationResult = -1
+            for (annotationIndex in 0 until aggregate.size) {
+                val mapping = getNextSuitableMapping(aggregate, annotationIndex)
+                if (mapping != null && mapping.distance < lowestDistance) {
+                    annotationResult = annotationIndex
+                    lowestDistance = mapping.distance
+                }
+                if (lowestDistance == 0) {
+                    break
+                }
+            }
+            if (annotationResult != -1) {
+                val mergedAnnotation =
+                    aggregate.createIfPossible<A>(annotationResult, mappingCursors!![annotationResult])
+                this.mappingCursors!![annotationResult]++
+                if (mergedAnnotation == null) {
+                    return tryAdvance(aggregate, action)
+                }
+                action.accept(mergedAnnotation)
+                return true
+            }
+            return false
+        }
+
+        /**
+         * 获取到下一个合适的AnnotationTypeMapping
+         *
+         * @param aggregate aggregate
+         * @param annotationIndex annotationIndex
+         */
+        @Nullable
+        private fun getNextSuitableMapping(aggregate: Aggregate, annotationIndex: Int): AnnotationTypeMapping? {
+            val cursors = this.mappingCursors
+            if (cursors != null) {
+                var mapping: AnnotationTypeMapping?
+                do {
+                    mapping = aggregate.getMapping(annotationIndex, cursors[annotationIndex])
+                    if (mapping != null && isMappingForType(mapping, annotationFilter, requiredType)) {
+                        return mapping
+                    }
+                    cursors[annotationIndex]++
+                } while (mapping != null)
+            }
+            return null
+        }
+
+        override fun trySplit(): Spliterator<MergedAnnotation<A>>? = null
+
+        override fun estimateSize(): Long {
+            var size = 0
+            for (aggregateIndex in aggregateCursor until this.aggregates.size) {
+                val aggregate: Aggregate = this.aggregates[aggregateIndex]
+                for (annotationIndex in 0 until aggregate.size) {
+                    val mappings = aggregate.getMappings(annotationIndex)
+                    var numberOfMappings = mappings.size
+                    if (aggregateIndex == aggregateCursor && mappingCursors != null) {
+                        numberOfMappings -= Math.min(mappingCursors!![annotationIndex], mappings.size)
+                    }
+                    size += numberOfMappings
+                }
+            }
+            return size.toLong()
+        }
+
+        override fun characteristics(): Int = Spliterator.NONNULL or Spliterator.IMMUTABLE
+    }
+
+    private class Aggregate(
+        private val aggregateIndex: Int, private val source: Any?, private val annotations: List<Annotation>
+    ) {
+
+        /**
+         * 为每个注解, 去构建出来AnnotationTypeMappings映射信息
+         */
+        private val mappings: Array<AnnotationTypeMappings> = Array(annotations.size) {
+            AnnotationTypeMappings.forAnnotationType(annotations[it].annotationClass.java)
+        }
+
+        /**
+         *
+         * Annotation Size
+         */
+        val size: Int
+            get() = this.annotations.size
+
+        /**
+         * 根据annotationIndex和mappingIndex去获取到该位置的AnnotationTypeMapping
+         *
+         * @param annotationIndex annotationIndex
+         * @param mappingIndex mappingIndex
+         * @return 该位置的AnnotationTypeMapping(如果mappingIndex越界return null)
+         */
+        @Nullable
+        fun getMapping(annotationIndex: Int, mappingIndex: Int): AnnotationTypeMapping? {
+            val typeMappings = mappings[annotationIndex]
+            return if (mappingIndex < typeMappings.size) typeMappings[mappingIndex] else null
+        }
+
+        /**
+         * 根据index去获取到对应位置的AnnotationTypeMappings
+         *
+         * @param annotationIndex index
+         * @return AnnotationTypeMappings
+         */
+        fun getMappings(annotationIndex: Int): AnnotationTypeMappings = mappings[annotationIndex]
+
+        /**
+         * 根据annotationIndex和mappingIndex, 去创建出来MergedAnnotation
+         *
+         * @param annotationIndex annotationIndex
+         * @param mappingIndex mappingIndex
+         * @return 创建出来的MergedAnnotation对象
+         */
+        @Nullable
+        fun <A : Annotation> createIfPossible(annotationIndex: Int, mappingIndex: Int): MergedAnnotation<A>? {
+            return TypeMappedAnnotation.createIfPossible<A>(
+                this.mappings[annotationIndex][mappingIndex],
+                this.source,
+                this.annotations[annotationIndex],
+                this.aggregateIndex
+            )
+        }
+
+    }
+
+    /**
+     * 聚合注解的收集器, 用于去将所有的注解去收集起来
+     */
+    private inner class AggregateCollector : AnnotationsProcessor<Any, List<Aggregate>> {
+
+        private val aggregates = ArrayList<Aggregate>()
+
+        @Nullable
+        override fun doWithAnnotations(
+            context: Any, aggregateIndex: Int, source: Any?, annotations: Array<Annotation>
+        ): List<Aggregate>? {
+            aggregates.add(createAggregate(aggregateIndex, source, annotations))
+            return null
+        }
+
+        private fun createAggregate(aggregateIndex: Int, source: Any?, annotations: Array<Annotation>): Aggregate {
+            return Aggregate(aggregateIndex, source, getAggregateAnnotations(annotations))
+        }
+
+        private fun getAggregateAnnotations(annotations: Array<Annotation>): List<Annotation> {
+            val aggregateAnnotations = ArrayList<Annotation>()
+            addAggregateAnnotations(aggregateAnnotations, annotations)
+            return aggregateAnnotations
+        }
+
+        private fun addAggregateAnnotations(
+            aggregateAnnotations: MutableList<Annotation>, annotations: Array<Annotation>
+        ) {
+            for (annotation in annotations) {
+                if (!annotationFilter.matches(annotation)) {
+                    aggregateAnnotations.add(annotation)
+                }
+            }
+
+        }
+
+        override fun finish(result: List<Aggregate>?): List<Aggregate> = this.aggregates
     }
 
     /**

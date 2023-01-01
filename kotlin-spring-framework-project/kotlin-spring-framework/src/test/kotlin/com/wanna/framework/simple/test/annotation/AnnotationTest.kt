@@ -3,6 +3,7 @@ package com.wanna.framework.simple.test.annotation
 import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.core.annotation.*
+import com.wanna.framework.core.type.GlobalTypeSwitch
 
 /**
  *
@@ -32,17 +33,12 @@ fun testAnnotation2() {
 
 
 annotation class MirrorAnn(
-    @get:AliasFor("value")
-    val name: String = "",
-    @get:AliasFor("name")
-    val value: String = ""
+    @get:AliasFor("value") val name: String = "", @get:AliasFor("name") val value: String = ""
 )
 
 annotation class MirrorAnn2(
-    @get:AliasFor("value", annotation = MirrorAnn::class)
-    val name: String = "",
-    @get:AliasFor("name", annotation = MirrorAnn::class)
-    val value: String = ""
+    @get:AliasFor("value", annotation = MirrorAnn::class) val name: String = "",
+    @get:AliasFor("name", annotation = MirrorAnn::class) val value: String = ""
 )
 
 
@@ -92,6 +88,8 @@ fun testAnnotation5() {
 
 
 fun main() {
+    GlobalTypeSwitch.annotatedElementUtilsOpen = true
+
     testAnnotation1()
     testAnnotation2()
     testAnnotation3()

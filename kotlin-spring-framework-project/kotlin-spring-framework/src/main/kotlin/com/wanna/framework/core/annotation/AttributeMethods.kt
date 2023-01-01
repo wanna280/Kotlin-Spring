@@ -86,8 +86,10 @@ class AttributeMethods(
          */
         @JvmStatic
         private fun compute(annotationType: Class<out Annotation>): AttributeMethods {
-            val attributeMethods =
-                annotationType.methods.filter { isAttributeMethod(it) }.sortedWith(methodComparator).toTypedArray()
+            // Note: 这里要使用DeclaredMethods, 不能使用Methods, 否则hashCode/toString等方法都会涉及到, 会有问题
+            val attributeMethods = annotationType.declaredMethods
+                .filter { isAttributeMethod(it) }.sortedWith(methodComparator)
+                .toTypedArray()
             return if (attributeMethods.isEmpty()) NONE else AttributeMethods(annotationType, attributeMethods)
         }
 

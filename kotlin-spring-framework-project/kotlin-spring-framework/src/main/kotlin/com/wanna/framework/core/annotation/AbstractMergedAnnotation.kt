@@ -4,6 +4,7 @@ import com.wanna.framework.constants.CLASS_ARRAY_TYPE
 import com.wanna.framework.constants.STRING_ARRAY_TYPE
 import com.wanna.framework.lang.Nullable
 import java.util.*
+import java.util.function.Predicate
 import kotlin.NoSuchElementException
 import kotlin.jvm.Throws
 
@@ -57,6 +58,16 @@ abstract class AbstractMergedAnnotation<A : Annotation> : MergedAnnotation<A> {
         return annotation
     }
 
+    /**
+     * 获取到经过合成的代理对象
+     *
+     * @param condition 当前注解要符合的要求的断言
+     * @return 断言和当前MergedAnnotation匹配的话, return合成之后的注解; 否则return [Optional.empty]
+     */
+    override fun synthesize(condition: Predicate<in MergedAnnotation<A>>): Optional<A> {
+        return if (condition.test(this)) Optional.ofNullable(synthesize()) else Optional.empty()
+    }
+
     override fun getString(attributeName: String): String = getRequiredAttributeValue(attributeName, String::class.java)
 
     override fun getStringArray(attributeName: String) = getRequiredAttributeValue(attributeName, STRING_ARRAY_TYPE)
@@ -82,7 +93,7 @@ abstract class AbstractMergedAnnotation<A : Annotation> : MergedAnnotation<A> {
     override fun getDouble(attributeName: String) =
         getRequiredAttributeValue(attributeName, Double::class.javaObjectType)
 
-    override fun getDoubleArrau(attributeName: String) =
+    override fun getDoubleArray(attributeName: String) =
         getRequiredAttributeValue(attributeName, DoubleArray::class.java)
 
     override fun getFloat(attributeName: String) = getRequiredAttributeValue(attributeName, Float::class.javaObjectType)

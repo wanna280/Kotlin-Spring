@@ -2,6 +2,7 @@ package com.wanna.framework.core.annotation
 
 import com.wanna.framework.lang.Nullable
 import java.util.Optional
+import java.util.function.Predicate
 import kotlin.jvm.Throws
 
 /**
@@ -161,7 +162,7 @@ interface MergedAnnotation<A : Annotation> {
      * @return 属性值
      */
     @Throws(NoSuchElementException::class)
-    fun getDoubleArrau(attributeName: String): DoubleArray
+    fun getDoubleArray(attributeName: String): DoubleArray
 
     /**
      * 获取到给定的属性名对应的Float形式的属性值
@@ -243,6 +244,14 @@ interface MergedAnnotation<A : Annotation> {
      * @return 合成之后的注解对象
      */
     fun synthesize(): A
+
+    /**
+     * 获取到经过合成的代理对象
+     *
+     * @param condition 当前注解要符合的要求的断言
+     * @return 断言和当前MergedAnnotation匹配的话, return合成之后的注解; 否则return [Optional.empty]
+     */
+    fun synthesize(condition: Predicate<in MergedAnnotation<A>>): Optional<A>
 
     companion object {
 

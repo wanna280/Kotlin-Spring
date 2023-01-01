@@ -115,9 +115,25 @@ interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
     /**
      * 获取到迭代所有的注解的Stream
      *
-     * @return Stream of MergedAnnotations
+     * @return Stream of MergedAnnotation
      */
     fun stream(): Stream<MergedAnnotation<Annotation>>
+
+    /**
+     * 迭代MergedAnnotation当中的所有的给定的注解类型的MergedAnnotation的Stream
+     *
+     * @param annotationType 要去进行迭代注解类型AnnotationType
+     * @return Stream of MergedAnnotation for given AnnotationType
+     */
+    fun <A : Annotation> stream(annotationType: Class<A>): Stream<MergedAnnotation<A>>
+
+    /**
+     * 迭代MergedAnnotation当中的所有的给定的注解类型的MergedAnnotation的Stream
+     *
+     * @param annotationName 要去进行迭代注解的类名
+     * @return Stream of MergedAnnotation for given AnnotationType
+     */
+    fun <A : Annotation> stream(annotationName: String): Stream<MergedAnnotation<A>>
 
     /**
      * 注解的搜索策略枚举
