@@ -86,7 +86,7 @@ open class TypeMappedAnnotations(
     }
     //---------------------------------------检查注解是否存在的相关API结束-----------------------------------
 
-    //---------------------------------------提供去获取注解的相关API开始-----------------------------------
+    //---------------------------------------提供获取指定类型注解的相关API开始-----------------------------------
 
     override fun <A : Annotation> get(annotationType: Class<A>): MergedAnnotation<A> {
         return get(annotationType, null, null)
@@ -132,7 +132,9 @@ open class TypeMappedAnnotations(
         return result ?: MergedAnnotation.missing()
     }
 
-    //---------------------------------------提供去获取注解的相关API结束-----------------------------------
+    //---------------------------------------提供获取指定类型注解的相关API结束-----------------------------------
+
+    //---------------------------------------提供注解的迭代的相关API开始-----------------------------------
 
     override fun stream(): Stream<MergedAnnotation<Annotation>> {
         if (this.annotationFilter == AnnotationFilter.ALL) {
@@ -182,14 +184,18 @@ open class TypeMappedAnnotations(
         return AggregatesSpliterator(annotationType, getAggregates())
     }
 
+    //---------------------------------------提供注解的迭代的相关API结束-----------------------------------
+
     /**
-     * 获取到所有的聚合元素
+     * 获取到所有的聚合注解信息, 对于一个Aggregate就维护了多个注解的相关信息
      *
      * @return Aggregates
      */
     private fun getAggregates(): List<Aggregate> {
         var aggregates: List<Aggregate>? = this.aggregates
         if (aggregates == null) {
+
+            // 执行扫描, 将全部的注解的聚合信息扫描出来
             aggregates = scan(this, AggregateCollector())
             if (aggregates.isNullOrEmpty()) {
                 aggregates = Collections.emptyList()
@@ -223,20 +229,21 @@ open class TypeMappedAnnotations(
     /**
      * 聚合注解的Spliterator
      *
-     * @param requiredType 需要的注解类型
-     * @param aggregates 聚合注解列表
+     * @param requiredType 需要的注解类型(null/Class/className)
+     * @param aggregates 候选的聚合注解列表
      */
     private inner class AggregatesSpliterator<A : Annotation>(
-        @Nullable val requiredType: Any?, val aggregates: List<Aggregate>
+        @Nullable private val requiredType: Any?, private val aggregates: List<Aggregate>
     ) : Spliterator<MergedAnnotation<A>> {
 
         /**
-         * Aggregate迭代的游标
+         * Aggregate对象迭代的游标index
          */
         private var aggregateCursor = 0
 
         /**
-         * MappingCursors, 记录的是AnnotationIndex对应的MappingIndex的迭代index
+         * MappingCursors, 记录的是AnnotationIndex对应的MappingIndex的迭代index;
+         * 在遍历每个Aggregate时, 将会重新创建一个新对象去进行使用
          */
         @Nullable
         private var mappingCursors: IntArray? = null
@@ -329,12 +336,23 @@ open class TypeMappedAnnotations(
         override fun characteristics(): Int = Spliterator.NONNULL or Spliterator.IMMUTABLE
     }
 
+    /**
+     * 一个Aggregate维护了许多个注解的相关映射信息, 可以通过annotationIndex去获取到该注解的相关信息,
+     * 对于每个注解, 将会通过AnnotationTypeMappings的方式, 去维护该注解以及它的所有的Meta注解的相关信息,
+     * 因此想要获取到该注解的映射信息, 或者是它的Meta注解的相关信息, 还需要提供一个mappingIndex, 对应的也就是
+     * AnnotationTypeMappings当中的AnnotationTypeMapping的数组index
+     *
+     * @param aggregateIndex AggregateIndex
+     * @param source source
+     * @param annotations 要去进行聚合的注解列表
+     */
     private class Aggregate(
-        private val aggregateIndex: Int, private val source: Any?, private val annotations: List<Annotation>
+        private val aggregateIndex: Int, @Nullable private val source: Any?, private val annotations: List<Annotation>
     ) {
 
         /**
-         * 为每个注解, 去构建出来AnnotationTypeMappings映射信息
+         * 为每个注解, 去构建出来AnnotationTypeMappings映射信息,
+         * 每个AnnotationTypeMappings就维护了该注解, 以及它的所有的Meta注解的相关信息
          */
         private val mappings: Array<AnnotationTypeMappings> = Array(annotations.size) {
             AnnotationTypeMappings.forAnnotationType(annotations[it].annotationClass.java)
@@ -348,7 +366,7 @@ open class TypeMappedAnnotations(
             get() = this.annotations.size
 
         /**
-         * 根据annotationIndex和mappingIndex去获取到该位置的AnnotationTypeMapping
+         * 根据annotationIndex和mappingIndex去获取到该位置的Meta注解的映射信息AnnotationTypeMapping
          *
          * @param annotationIndex annotationIndex
          * @param mappingIndex mappingIndex
@@ -361,15 +379,15 @@ open class TypeMappedAnnotations(
         }
 
         /**
-         * 根据index去获取到对应位置的AnnotationTypeMappings
+         * 根据annotationIndex去获取到对应位置的AnnotationTypeMappings
          *
-         * @param annotationIndex index
-         * @return AnnotationTypeMappings
+         * @param annotationIndex annotationIndex
+         * @return annotationIndex对应的注解的映射信息AnnotationTypeMappings
          */
         fun getMappings(annotationIndex: Int): AnnotationTypeMappings = mappings[annotationIndex]
 
         /**
-         * 根据annotationIndex和mappingIndex, 去创建出来MergedAnnotation
+         * 根据annotationIndex和mappingIndex, 去创建该位置的Meta注解出来MergedAnnotation
          *
          * @param annotationIndex annotationIndex
          * @param mappingIndex mappingIndex
@@ -392,20 +410,47 @@ open class TypeMappedAnnotations(
      */
     private inner class AggregateCollector : AnnotationsProcessor<Any, List<Aggregate>> {
 
+        /**
+         * 聚合注解的收集的结果, 一个元素就代表了很多个注解的聚合结果
+         */
         private val aggregates = ArrayList<Aggregate>()
 
+        /**
+         * 处理给定的这些注解列表
+         *
+         * @param context context
+         * @param aggregateIndex aggregateIndex
+         * @param source source
+         * @return null(无需返回, 对于最终的结果通过finish方法去进行汇总)
+         */
         @Nullable
         override fun doWithAnnotations(
-            context: Any, aggregateIndex: Int, source: Any?, annotations: Array<Annotation>
+            context: Any, aggregateIndex: Int, @Nullable source: Any?, annotations: Array<Annotation>
         ): List<Aggregate>? {
             aggregates.add(createAggregate(aggregateIndex, source, annotations))
             return null
         }
 
-        private fun createAggregate(aggregateIndex: Int, source: Any?, annotations: Array<Annotation>): Aggregate {
+        /**
+         * 为给定的这些注解, 去创建一个Aggregate对象
+         *
+         * @param annotations 要去进行创建聚合注解的候选注解列表
+         * @param source source
+         * @param aggregateIndex aggregateIndex
+         * @return 创建得到的汇总了所有的注解的Aggregate对象
+         */
+        private fun createAggregate(
+            aggregateIndex: Int, @Nullable source: Any?, annotations: Array<Annotation>
+        ): Aggregate {
             return Aggregate(aggregateIndex, source, getAggregateAnnotations(annotations))
         }
 
+        /**
+         * 从给定的这些注解当中, 收集起来那些我们需要去进行汇总的注解列表
+         *
+         * @param annotations 候选的注解列表
+         * @return 需要去进行汇总的注解列表(使用AnnotationFilter去执行过滤操作)
+         */
         private fun getAggregateAnnotations(annotations: Array<Annotation>): List<Annotation> {
             val aggregateAnnotations = ArrayList<Annotation>()
             addAggregateAnnotations(aggregateAnnotations, annotations)

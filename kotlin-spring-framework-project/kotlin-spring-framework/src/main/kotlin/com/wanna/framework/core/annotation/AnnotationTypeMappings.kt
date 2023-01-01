@@ -5,13 +5,13 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 /**
- * 描述了一个注解对应的所有的间接Meta注解的描述信息
+ * 描述了一个注解以及该注解对应的所有的间接Meta注解的描述信息
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/12/24
  *
- * @param repeatableContainers 重复注解的Container
+ * @param repeatableContainers 重复注解的Container(@Repeatable注解的Container)
  * @param annotationType 要去进行描述的注解的类型
  * @param annotationFilter 对于该注解当中的MetaAnnotation来说, 哪些是需要被过滤的?
  */
@@ -49,7 +49,7 @@ class AnnotationTypeMappings(
 
 
     /**
-     * 从给定的AnnotationType开始, 去递归构建出来所有的Meta注解的相关信息
+     * 从给定的AnnotationType开始, 为该注解类型去递归构建出来所有的Meta注解的相关信息
      *
      * @param annotationType root AnnotationType
      */
@@ -60,6 +60,8 @@ class AnnotationTypeMappings(
 
         // 使用BFS广度优先遍历的方式, 将所有的递归的Meta注解全部进行处理, 并添加到mappings当中
         while (queue.isNotEmpty()) {
+
+            // 从队列当中移除出来当前位置的AnnotationTypeMapping, 去处理它的所有的Meta注解
             val mapping = queue.removeFirst()
             mappings += mapping
 
@@ -71,7 +73,7 @@ class AnnotationTypeMappings(
     /**
      * 将给定的source的注解的所有元注解添加到队列当中
      *
-     * @param queue queue
+     * @param queue 正在进行处理的AnnotationTypeMapping的BFS遍历队列
      * @param source source(描述了一个注解的相关信息)
      */
     private fun addMetaAnnotationsToQueue(queue: Deque<AnnotationTypeMapping>, source: AnnotationTypeMapping) {
@@ -82,7 +84,7 @@ class AnnotationTypeMappings(
             if (!isMappable(source, it)) {
                 return@forEach
             }
-            // 如果存在有重复注解的Conatiner, 那么尝试处理重复注解的情况
+            // 如果存在有重复注解的Container, 那么尝试处理重复注解的情况
             val repeatedAnnotations = repeatableContainers.findRepeatedAnnotations(it)
             if (repeatedAnnotations != null) {
                 for (index in repeatedAnnotations.indices) {
@@ -90,17 +92,19 @@ class AnnotationTypeMappings(
                     if (!isMappable(source, repeatAnnotation)) {
                         continue
                     }
+                    // 如果该Meta注解符合AnnotationFilter的要求的话, 那么加入到队列当中
                     addIfPossible(queue, source, repeatAnnotation)
                 }
-            } else {
+
                 // 如果该Meta注解符合AnnotationFilter的要求的话, 那么加入到队列当中
+            } else {
                 addIfPossible(queue, source, it)
             }
         }
     }
 
     /**
-     * 检查这个注解是否需要我们去进行映射?
+     * 检查这个注解的AnnotationMapping是否需要我们去进行映射?
      *
      * @param source source注解信息
      * @param metaAnnotation Meta注解
@@ -111,12 +115,27 @@ class AnnotationTypeMappings(
                 && !AnnotationFilter.PLAIN.matches(source.annotationType)  // check source
     }
 
+    /**
+     * 如果必要的话, 将给定的注解信息去构建出来AnnotationTypeMapping, 添加到队列当中
+     *
+     * @param queue AnnotationTypeMapping的BFS队列
+     * @param ann 要去进行添加的注解
+     * @param source source
+     */
     private fun addIfPossible(
         queue: Deque<AnnotationTypeMapping>, @Nullable source: AnnotationTypeMapping?, ann: Annotation
     ) {
         addIfPossible(queue, source, ann.annotationClass.java, ann)
     }
 
+    /**
+     * 如果必要的话, 将给定的注解信息去构建出来AnnotationTypeMapping, 添加到队列当中
+     *
+     * @param queue AnnotationTypeMapping的BFS队列
+     * @param ann 要去进行添加的注解(可以为null)
+     * @param annotationType 要去进行构建AnnotationTypeMapping注解类型
+     * @param source source(构建出来的这个AnnotationTypeMapping的来源信息)
+     */
     private fun addIfPossible(
         queue: Deque<AnnotationTypeMapping>,
         @Nullable source: AnnotationTypeMapping?,
