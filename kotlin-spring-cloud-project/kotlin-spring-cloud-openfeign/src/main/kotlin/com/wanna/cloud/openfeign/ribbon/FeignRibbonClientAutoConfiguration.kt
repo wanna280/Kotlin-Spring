@@ -12,7 +12,7 @@ import com.wanna.framework.context.annotation.Import
  * @see DefaultFeignLoadBalancedConfiguration
  * @see RibbonLoadBalancerFeignClient
  */
-@ConditionalOnClass(name = ["com.netflix.loadbalancer.ILoadBalancer", "feign.Feign"])
+@ConditionalOnClass(value = [com.netflix.loadbalancer.ILoadBalancer::class, feign.Feign::class])
 // import order is very import!!!default must be the last
 @Import([HttpClientFeignLoadBalancedConfiguration::class, DefaultFeignLoadBalancedConfiguration::class])
 @Configuration(proxyBeanMethods = false)

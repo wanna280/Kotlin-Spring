@@ -20,6 +20,8 @@ import com.wanna.framework.context.processor.beans.internal.ApplicationContextAw
 import com.wanna.framework.context.processor.beans.internal.ApplicationListenerDetector
 import com.wanna.framework.context.processor.factory.BeanFactoryPostProcessor
 import com.wanna.framework.context.weaving.LoadTimeWeaverAwareProcessor
+import com.wanna.framework.core.ResolvableType
+import com.wanna.framework.core.annotation.AnnotationUtils
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.StandardEnvironment
@@ -30,6 +32,7 @@ import com.wanna.framework.core.io.support.PathMatchingResourcePatternResolver
 import com.wanna.framework.core.io.support.ResourcePatternResolver
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ReflectionUtils
 import org.slf4j.LoggerFactory
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -240,6 +243,8 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
                 this.cancelRefresh(ex)
                 throw ex
             } finally {
+                // 清除一些公共工具类当中的缓存, 比如AnnotationUtils/ReflectionUtils当中的缓存
+                resetCommonCaches()
                 contextRefresh.end()  // end context refresh
             }
         }
@@ -1044,6 +1049,20 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
 
         // 使用LifecycleProcessor去关闭所有的Lifecycle
         getLifecycleProcessor().stop()
+    }
+
+    /**
+     * 清除一些公共的工具类当中的缓存
+     */
+    protected open fun resetCommonCaches() {
+        // 清除ReflectionUtils当中的缓存
+        ReflectionUtils.clearCache()
+
+        // 清除AnnotationUtils当中的缓存
+        AnnotationUtils.clearCache()
+
+        // 清除ResolvableType当中的缓存
+        ResolvableType.clearCache()
     }
 
     /**

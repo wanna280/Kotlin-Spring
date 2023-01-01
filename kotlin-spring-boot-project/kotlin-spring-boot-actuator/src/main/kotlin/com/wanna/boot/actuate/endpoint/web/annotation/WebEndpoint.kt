@@ -9,6 +9,7 @@ import org.springframework.core.annotation.AliasFor
 @Endpoint
 @Target(AnnotationTarget.CLASS)
 annotation class WebEndpoint(
+    @get:com.wanna.framework.core.annotation.AliasFor(annotation = Endpoint::class, value = "id")
     @get:AliasFor(annotation = Endpoint::class, value = "id")
     val id: String
 )

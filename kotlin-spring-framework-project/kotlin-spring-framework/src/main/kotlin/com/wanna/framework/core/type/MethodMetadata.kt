@@ -2,6 +2,8 @@ package com.wanna.framework.core.type
 
 /**
  * 这是对一个方法的元信息进行维护的组件
+ *
+ * @see AnnotatedTypeMetadata
  */
 interface MethodMetadata : AnnotatedTypeMetadata {
     /**
@@ -44,14 +46,14 @@ interface MethodMetadata : AnnotatedTypeMetadata {
      *
      * @return 该方法如果可以重写，那么return true；否则return false
      */
-    fun isOverridable(): Boolean
+    fun isOverridable(): Boolean = !isFinal() && !isPrivate() && !isStatic()
 
     /**
      * 方法是否是private的？
      *
      * @return 如果该方法是private的，return true；否则return false
      */
-    fun isPrivate() : Boolean
+    fun isPrivate(): Boolean
 
     /**
      * 方法是否是Final的？
@@ -65,9 +67,8 @@ interface MethodMetadata : AnnotatedTypeMetadata {
      *
      * @return 该方法的注解类型的全类名列表
      */
-    fun getAnnotationTypes(): Set<String> {
-        return getAnnotations().map { it.annotationClass.java.name }.toCollection(HashSet<String>())
-    }
+    fun getAnnotationTypes(): Set<String> =
+        getAnnotations().filter { it.directPresent }.map { it.type.name }.toCollection(LinkedHashSet<String>())
 
     /**
      * 是否直接标注了这个注解？

@@ -18,11 +18,11 @@ open class AspectJAutoProxyRegistrar : ImportBeanDefinitionRegistrar {
         AopConfigUtils.registerAspectJAnnotationAutoProxyCreatorIfNecessary(registry)
 
         // 获取EnableAspectJAutoProxy的注解信息
-        val annotationAttributes = annotationMetadata.getAnnotationAttributes(EnableAspectJAutoProxy::class.java)
-        if (annotationAttributes["proxyTargetClass"] == true) {
+        val annotationAttributes = annotationMetadata.getAnnotations().get(EnableAspectJAutoProxy::class.java)
+        if (annotationAttributes.getBoolean("proxyTargetClass")) {
             AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(registry)
         }
-        if (annotationAttributes["exposeProxy"] == true) {
+        if (annotationAttributes.getBoolean("exposeProxy")) {
             AopConfigUtils.forceAutoProxyCreatorToExposeProxy(registry)
         }
     }

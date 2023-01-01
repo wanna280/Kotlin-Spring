@@ -884,7 +884,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
                 logger.trace("给定的beanName[$beanName]在BeanFactory[$this]当中不存在对应的BeanDefinition")
             }
         }
-        return beanDefinition ?: throw NoSuchBeanDefinitionException("BeanFactory当中没有name=[$beanName]的BeanDefinition")
+        return beanDefinition
+            ?: throw NoSuchBeanDefinitionException("BeanFactory当中没有name=[$beanName]的BeanDefinition")
     }
 
     /**
@@ -895,7 +896,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @throws NoSuchBeanDefinitionException 如果没有根据name找到该BeanDefinition的话
      */
     override fun removeBeanDefinition(name: String) {
-        beanDefinitionMap[name] ?: throw NoSuchBeanDefinitionException("BeanFactory当中没有name=[$name]的BeanDefinition")
+        beanDefinitionMap[name]
+            ?: throw NoSuchBeanDefinitionException("BeanFactory当中没有name=[$name]的BeanDefinition")
         synchronized(this.beanDefinitionMap) {
             // copy一份原来的数据, 不要动原来的数据, 保证可以进行更加安全的迭代
             val beanDefinitionNames = ArrayList(beanDefinitionNames)
@@ -1015,7 +1017,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * @param T beanType类型
      */
     @Suppress("UNCHECKED_CAST")
-    override fun <T:Any> getBeansForType(type: Class<T>): Map<String, T> {
+    override fun <T : Any> getBeansForType(type: Class<T>): Map<String, T> {
         val beans = HashMap<String, T>()
         getBeanNamesForType(type).forEach { beans[it] = getBean(it, type) }
         return beans
@@ -1063,7 +1065,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         type: Class<*>, includeNonSingletons: Boolean, allowEagerInit: Boolean
     ): List<String> {
         val beanNames = ArrayList<String>()
-        getBeanDefinitionNames().forEach { beanName ->
+        for (beanName in getBeanDefinitionNames()) {
             var beanNameToUse = beanName
             val mbd = getMergedLocalBeanDefinition(beanNameToUse)
             val isFactoryBean = isFactoryBean(beanNameToUse, mbd)
@@ -1094,6 +1096,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
                 beanNames += beanNameToUse
             }
         }
+
         // 匹配已经注册的单实例Bean的列表
         this.manualSingletonNames.forEach {
             val singleton = getSingleton(it)

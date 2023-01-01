@@ -1,5 +1,7 @@
 package com.wanna.framework.core.type
 
+import com.wanna.framework.core.annotation.MergedAnnotations
+
 /**
  * 这是一个被注解标注的的类型的Metadata信息，支持去获取到注解的相关属性；
  * 主要有两类AnnotatedTypeMetadata的实现，一类是方法的Metadata(MethodMetadata)，另外一类是类的Metadata(AnnotationMetadata)；
@@ -8,12 +10,14 @@ package com.wanna.framework.core.type
  * @see AnnotationMetadata
  */
 interface AnnotatedTypeMetadata {
+
     /**
-     * 获取类型上标注的注解信息
+     * 获取MergedAnnotations
      *
-     * @return 该类/方法上的直接注解
+     * @return MergedAnnotations
      */
-    fun getAnnotations(): Array<Annotation>
+    fun getAnnotations(): MergedAnnotations
+
 
     /**
      * 指定具体的注解name，去寻找到合适的注解的对应属性
@@ -29,7 +33,8 @@ interface AnnotatedTypeMetadata {
      * @param annotationClass 注解的类型
      * @return 解析到的注解属性，如果该注解没有属性，那么return empty
      */
-    fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any>
+    fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any> =
+        getAnnotationAttributes(annotationClass.name)
 
     /**
      * 判断该类型上是否标注了某个注解？
@@ -37,6 +42,7 @@ interface AnnotatedTypeMetadata {
      * @param annotationName 注解的全类名
      * @return 如果标注了，那么return true；否则return false
      */
-    fun isAnnotated(annotationName: String): Boolean =
-        getAnnotations().map { it::class.java.name }.contains(annotationName)
+    fun isAnnotated(annotationName: String): Boolean {
+        return !annotationName.startsWith("java.lang.annotation") && getAnnotations().isPresent(annotationName)
+    }
 }

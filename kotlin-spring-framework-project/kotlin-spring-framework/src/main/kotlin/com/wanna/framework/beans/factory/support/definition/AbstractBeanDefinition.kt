@@ -46,6 +46,7 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
         target.setLazyInit(origin.isLazyInit())
         target.setAutowireCandidate(origin.isAutowireCandidate())
         if (origin is AbstractBeanDefinition && target is AbstractBeanDefinition) {
+            target.setBeanClassName(origin.beanClassName)
             target.setSource(origin.getSource())
             target.setAutowireMode(origin.getAutowireMode())
             target.dependsOn = origin.getDependsOn()
@@ -55,15 +56,26 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
             target.setDescription(origin.getDescription())
             target.setResource(origin.getResource())
             target.constructorArgumentValues = ConstructorArgumentValues(origin.getConstructorArgumentValues())
-            this.getPropertyValues()
-                .addPropertyValues(origin.getPropertyValues().getPropertyValues().toList())
+            this.getPropertyValues().addPropertyValues(origin.getPropertyValues().getPropertyValues().toList())
         }
     }
 
-    private var primary = false  // 在进行autowire时，它是否是优先注入的Bean？
-
+    /**
+     * beanClassName
+     */
     @Nullable
-    private var initMethodName: String? = null  // 初始化回调方法的name
+    private var beanClassName: String? = null
+
+    /**
+     * 在进行autowire时，它是否是优先注入的Bean？
+     */
+    private var primary = false
+
+    /**
+     * 初始化回调方法的name
+     */
+    @Nullable
+    private var initMethodName: String? = null
 
     @Nullable
     private var destroyMethodName: String? = null // destroy的回调方法name
@@ -346,12 +358,21 @@ abstract class AbstractBeanDefinition constructor(private var beanClass: Class<*
     override fun getBeanClass() = beanClass
 
     /**
+     * 设置beanClassName
+     *
+     * @param beanClassName beanClassName
+     */
+    open fun setBeanClassName(beanClassName: String?) {
+        this.beanClassName = beanClassName
+    }
+
+    /**
      * 获取beanClassName，有可能为null
      *
      * @return beanClassName
      */
     @Nullable
-    override fun getBeanClassName() = beanClass?.name
+    override fun getBeanClassName() = beanClass?.name ?: beanClassName
 
     /**
      * 设置当前BeanDefinition的beanClass

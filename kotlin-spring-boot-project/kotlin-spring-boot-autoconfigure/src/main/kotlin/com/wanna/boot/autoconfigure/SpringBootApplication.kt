@@ -12,6 +12,13 @@ import kotlin.reflect.KClass
 
 /**
  * 标识这是一个SpringBootApplication，它支持完成自动配置以及包的扫描
+ *
+ * @param proxyBeanMethods 是否要代理目标类？
+ * @param nameGenerator BeanNameGenerator
+ * @param scanBasePackages ComponentScan要去进行扫描的包
+ * @param scanBasePackageClasses ComponentScan要去进行扫描的包(以类的方式给出)
+ * @param excludeNames 要去排除的自动配置类的类名
+ * @param exclude 要去进行排除的自动配置类
  */
 @ComponentScan(
     excludeFilters = [Filter(CUSTOM, [TypeExcludeFilter::class]),
@@ -20,53 +27,27 @@ import kotlin.reflect.KClass
 @SpringBootConfiguration  // 标识这是一个SpringBoot的配置类
 @EnableAutoConfiguration  // 自动配置，使用DeferredImportSelector去完成
 annotation class SpringBootApplication(
-    /**
-     * 自动配置过程当中，需要排除哪些配置类？以KClass的方式给出
-     *
-     * @see EnableAutoConfiguration.exclude
-     */
-    @get:AliasFor(annotation = EnableAutoConfiguration::class, value = "exclude") val exclude: Array<KClass<*>> = [],
-    /**
-     * 自动配置过程中，需要排除哪些配置类？以类名的方式给出
-     *
-     * @see EnableAutoConfiguration.excludeNames
-     */
-    @get:AliasFor(
-        annotation = EnableAutoConfiguration::class,
-        value = "excludeNames"
-    ) val excludeNames: Array<String> = [],
+    @get:com.wanna.framework.core.annotation.AliasFor(annotation = EnableAutoConfiguration::class, value = "exclude")
+    @get:AliasFor(annotation = EnableAutoConfiguration::class, value = "exclude")
+    val exclude: Array<KClass<*>> = [],
 
-    /**
-     * ComponentScan要扫描的包
-     *
-     * @see ComponentScan.basePackages
-     */
-    @get:AliasFor(annotation = ComponentScan::class, value = "basePackages") val scanBasePackages: Array<String> = [],
+    @get:com.wanna.framework.core.annotation.AliasFor(annotation = EnableAutoConfiguration::class, value = "excludeNames")
+    @get:AliasFor(annotation = EnableAutoConfiguration::class, value = "excludeNames")
+    val excludeNames: Array<String> = [],
 
-    /**
-     * ComponentScan要扫描的包
-     *
-     * @see ComponentScan.basePackageClasses
-     */
-    @get:AliasFor(
-        annotation = ComponentScan::class,
-        value = "basePackageClasses"
-    ) val scanBasePackageClasses: Array<KClass<*>> = [],
+    @get:com.wanna.framework.core.annotation.AliasFor(annotation = ComponentScan::class, value = "basePackages")
+    @get:AliasFor(annotation = ComponentScan::class, value = "basePackages")
+    val scanBasePackages: Array<String> = [],
 
-    /**
-     * beanNameGenerator
-     *
-     * @see ComponentScan.nameGenerator
-     */
-    @get:AliasFor(
-        annotation = ComponentScan::class,
-        value = "nameGenerator"
-    ) val nameGenerator: KClass<out BeanNameGenerator> = BeanNameGenerator::class,
+    @get:com.wanna.framework.core.annotation.AliasFor(annotation = ComponentScan::class, value = "basePackageClasses")
+    @get:AliasFor(annotation = ComponentScan::class, value = "basePackageClasses")
+    val scanBasePackageClasses: Array<KClass<*>> = [],
 
-    /**
-     * 是否要代理目标类？
-     *
-     * @see Configuration.proxyBeanMethods
-     */
-    @get:AliasFor(annotation = Configuration::class, value = "proxyBeanMethods") val proxyBeanMethods: Boolean = true
+    @get:com.wanna.framework.core.annotation.AliasFor(annotation = ComponentScan::class, value = "nameGenerator")
+    @get:AliasFor(annotation = ComponentScan::class, value = "nameGenerator")
+    val nameGenerator: KClass<out BeanNameGenerator> = BeanNameGenerator::class,
+
+    @get:com.wanna.framework.core.annotation.AliasFor(annotation = Configuration::class, value = "proxyBeanMethods")
+    @get:AliasFor(annotation = Configuration::class, value = "proxyBeanMethods")
+    val proxyBeanMethods: Boolean = true
 )

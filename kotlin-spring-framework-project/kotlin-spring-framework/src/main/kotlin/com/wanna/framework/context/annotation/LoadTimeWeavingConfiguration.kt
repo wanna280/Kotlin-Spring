@@ -66,8 +66,8 @@ open class LoadTimeWeavingConfiguration : BeanClassLoaderAware, ImportAware {
         // 解析注解当中的AspectJWeaving的模式，AUTO-开启，AUTODETECT-探测aop配置文件来判断是否开启，DISABLE-关闭
         val metadata = this.annotationMetadata
         if (metadata != null) {
-            val aspectJWeaving = metadata.getAnnotationAttributes(EnableAspectJWeaving::class.java)
-            val mode = aspectJWeaving["aspectJWeaving"] as AspectJWeaving
+            val aspectJWeaving = metadata.getAnnotations().get(EnableAspectJWeaving::class.java)
+            val mode = aspectJWeaving.getEnum("aspectJWeaving", AspectJWeaving::class.java)
             if (mode == AspectJWeaving.ENABLED) {
                 AspectJWeavingEnabler.enableAspectJWeaving(loadTimeWeaverToUse, this.classLoader!!)
             } else if (mode == AspectJWeaving.AUTODETECT) {

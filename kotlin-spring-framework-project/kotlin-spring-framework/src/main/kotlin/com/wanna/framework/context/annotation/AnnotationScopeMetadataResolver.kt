@@ -19,10 +19,10 @@ open class AnnotationScopeMetadataResolver(val defaultProxyMode: ScopedProxyMode
 
     override fun resolveScopeMetadata(definition: BeanDefinition): ScopeMetadata {
         if (definition is AnnotatedBeanDefinition) {
-            val attributes = definition.getMetadata().getAnnotationAttributes(scopeAnnotationType)
-            if (attributes.isNotEmpty()) {
-                val scopeName = attributes["scopeName"].toString()
-                var proxyMode = attributes["proxyMode"] as ScopedProxyMode
+            val attributes = definition.getMetadata().getAnnotations().get(scopeAnnotationType)
+            if (attributes.present) {
+                val scopeName = attributes.getString("scopeName")
+                var proxyMode = attributes.getEnum("proxyMode", ScopedProxyMode::class.java)
                 if (proxyMode == ScopedProxyMode.DEFAULT) {
                     proxyMode = defaultProxyMode
                 }

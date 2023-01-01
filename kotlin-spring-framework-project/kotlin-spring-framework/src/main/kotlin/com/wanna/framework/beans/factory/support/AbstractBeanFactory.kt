@@ -395,7 +395,8 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
             throw IllegalArgumentException("给定的beanName=[$beanName]并不在一个具体的Scope内, 可能是Singleton/Prototype的")
         }
         val scopeName = mbd.getScope()
-        val scope = scopes[scopeName] ?: throw IllegalStateException("在BeanFactory当中并未注册有[$scopeName]这样的Scope")
+        val scope =
+            scopes[scopeName] ?: throw IllegalStateException("在BeanFactory当中并未注册有[$scopeName]这样的Scope")
         val bean = scope.remove(beanName) ?: return
 
         // 摧毁Scope内获取到的Bean
@@ -509,10 +510,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         val result = getBeanNamesForType(type).map { getBean(it, type) }
         if (result.isEmpty()) {
             throw NoSuchBeanDefinitionException(
-                "BeanFactory当中没有type=[${ClassUtils.getQualifiedName(type)}]的BeanDefinition",
-                null,
-                null,
-                type
+                "BeanFactory当中没有type=[${ClassUtils.getQualifiedName(type)}]的BeanDefinition", null, null, type
             )
         }
         return result.iterator().next()
@@ -618,9 +616,15 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         }
 
         // 如果有FactoryMethod的话，那么直接使用FactoryMethod的返回值类型去进行匹配
-        if (beanDefinition.getFactoryMethodName() != null) {
-            return ClassUtils.isAssignFrom(type, beanDefinition.getResolvedFactoryMethod()!!.returnType)
+        if (beanDefinition.getFactoryMethodName() != null && beanDefinition.getResolvedFactoryMethod() != null) {
+            return ClassUtils.isAssignFrom(type, beanDefinition.getResolvedFactoryMethod()?.returnType)
         }
+
+        val beanClassName = beanDefinition.getBeanClassName()
+        if (beanClassName != null) {
+            return ClassUtils.isAssignFrom(type, beanClassLoader.loadClass(beanClassName))
+        }
+
         return false
     }
 
@@ -849,8 +853,9 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
             return true
         }
         // 判断是否有DestructionAwareBeanPostProcessor可以应用给当前的Bean，如果有的话，return true
-        if (getBeanPostProcessorCache().hasDestructionAwareCache() &&
-            DisposableBeanAdapter.hasApplicableProcessors(bean, getBeanPostProcessorCache().destructionAwareCache)
+        if (getBeanPostProcessorCache().hasDestructionAwareCache() && DisposableBeanAdapter.hasApplicableProcessors(
+                bean, getBeanPostProcessorCache().destructionAwareCache
+            )
         ) {
             return true
         }

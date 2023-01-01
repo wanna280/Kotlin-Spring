@@ -13,18 +13,27 @@ import org.slf4j.LoggerFactory
 
 /**
  * 这是一个Spring的事件发布的运行监听器，它负责回调所有的监听器
+ *
+ * @param springApplication SpringApplication
+ * @param args Spring应用的启动参数
  */
 open class EventPublishingRunListener(
     private val springApplication: SpringApplication, private val args: Array<String>
 ) : SpringApplicationRunListener, Ordered {
 
     companion object {
+        /**
+         * Logger
+         */
+        @JvmStatic
         private val logger = LoggerFactory.getLogger(EventPublishingRunListener::class.java)
     }
 
     private var order: Int = 0
 
-    // 这是一个事件多拨器，可以完成ApplicationEvent的事件发布
+    /**
+     * 这是一个事件多拨器，可以完成ApplicationEvent的事件发布
+     */
     private val initialMulticaster: ApplicationEventMulticaster = SimpleApplicationEventMulticaster()
 
     init {
@@ -32,9 +41,7 @@ open class EventPublishingRunListener(
         springApplication.getListeners().forEach { initialMulticaster.addApplicationListener(it) }
     }
 
-    override fun getOrder(): Int {
-        return this.order
-    }
+    override fun getOrder(): Int = this.order
 
     open fun setOrder(order: Int) {
         this.order = order
@@ -117,10 +124,9 @@ open class EventPublishingRunListener(
      * SpringApplication启动失败，有可能ApplicationContext已经创建，也有可能ApplicationContext还没完成创建
      *
      * @see SpringApplication.run
-     * @see SpringApplication.handleRunException
      */
     override fun failed(context: ConfigurableApplicationContext?, ex: Throwable) {
-        logger.error("启动SpringApplication发生异常", ex)
+        logger.error("Start SpringApplication failed", ex)
         if (context == null) {
             this.initialMulticaster.multicastEvent(ApplicationFailedEvent(context, springApplication, args, ex))
         } else {

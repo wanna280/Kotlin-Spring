@@ -1,5 +1,7 @@
 package com.wanna.framework.core.type.filter
 
+import com.wanna.framework.core.type.classreading.MetadataReader
+import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 import java.util.regex.Pattern
 
 /**
@@ -12,6 +14,12 @@ import java.util.regex.Pattern
 open class RegexPatternTypeFilter(val pattern: Pattern) : TypeFilter {
     override fun matches(clazz: Class<*>?): Boolean {
         clazz ?: return false
-        return pattern.matcher(clazz.name).matches()
+        return isMatchPattern(clazz.name)
     }
+
+    override fun matches(metadataReader: MetadataReader, metadataReaderFactory: MetadataReaderFactory): Boolean {
+        return isMatchPattern(metadataReader.classMetadata.getClassName())
+    }
+
+    protected open fun isMatchPattern(className: String): Boolean = pattern.matcher(className).matches()
 }

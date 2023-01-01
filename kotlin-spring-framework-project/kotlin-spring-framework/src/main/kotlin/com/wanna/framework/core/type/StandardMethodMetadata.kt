@@ -2,6 +2,7 @@ package com.wanna.framework.core.type
 
 import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.util.ClassUtils
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
@@ -12,9 +13,13 @@ import java.lang.reflect.Modifier
  * @see AnnotatedTypeMetadata
  */
 open class StandardMethodMetadata(private val method: Method) : MethodMetadata {
-    override fun getAnnotations(): Array<Annotation> {
-        return method.annotations
-    }
+
+    /**
+     * MergedAnnotations
+     */
+    private val annotations = MergedAnnotations.from(method)
+
+    override fun getAnnotations() = annotations
 
     open fun getMethod(): Method {
         return method
@@ -25,7 +30,8 @@ open class StandardMethodMetadata(private val method: Method) : MethodMetadata {
     }
 
     override fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any> {
-        val mergedAnnotation = AnnotatedElementUtils.getMergedAnnotation(this.method, annotationClass) ?: return emptyMap()
+        val mergedAnnotation =
+            AnnotatedElementUtils.getMergedAnnotation(this.method, annotationClass) ?: return emptyMap()
         return AnnotationAttributesUtils.asAnnotationAttributes(mergedAnnotation) as Map<String, Any>
     }
 

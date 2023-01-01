@@ -17,8 +17,10 @@ import org.springframework.core.annotation.AliasFor
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 annotation class ConfigurationProperties(
+    @get:com.wanna.framework.core.annotation.AliasFor("value")
     @get:AliasFor("value")
     val prefix: String = "",
+    @get:com.wanna.framework.core.annotation.AliasFor("prefix")
     @get:AliasFor("prefix")
     val value: String = ""
 )

@@ -39,8 +39,7 @@ open class EnableConfigurationPropertiesRegistrar : ImportBeanDefinitionRegistra
      */
     @Suppress("UNCHECKED_CAST")
     private fun getTypes(metadata: AnnotationMetadata): Array<Class<*>> {
-        val attributes = metadata.getAnnotationAttributes(EnableConfigurationProperties::class.java)
-        return attributes["value"] as Array<Class<*>>
+        return metadata.getAnnotations().get(EnableConfigurationProperties::class.java).getClassArray("value")
     }
 
     companion object {

@@ -9,6 +9,7 @@ import org.springframework.core.annotation.AliasFor
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 @Configuration
 annotation class SpringBootConfiguration(
+    @get:com.wanna.framework.core.annotation.AliasFor(annotation = Configuration::class, value = "proxyBeanMethods")
     @get:AliasFor(annotation = Configuration::class, value = "proxyBeanMethods")
     val proxyBeanMethods: Boolean = false  // 是否代理@Bean方法？
 )

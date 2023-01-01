@@ -132,25 +132,25 @@ open class OnClassCondition : FilteringSpringBootCondition() {
         val message = ConditionMessage.empty()
         // 匹配@ConditionOnClass
         if (metadata.isAnnotated(ConditionalOnClass::class.java.name)) {
-            val onClassAttrs = metadata.getAnnotationAttributes(ConditionalOnClass::class.java.name)
+            val onClassAttrs = metadata.getAnnotations().get(ConditionalOnClass::class.java)
 
-            // 获取用户配置的所有classNames
-            val classNames = (onClassAttrs["name"] as Array<String>).toMutableList()
-            classNames += (onClassAttrs["value"] as Array<Class<*>>).map { it.name }.toList()
+            // 获取用户配置的所有classNames,
+            // Note: 这里对于value和name, 我们都使用getStringArray的方式去进行获取, 不然会出现NoClassDefError链接错误的情况
+            val classNames = onClassAttrs.getStringArray("name") + onClassAttrs.getStringArray("value")
 
             // 过滤出来所有的missing的className
-            val misssing = filter(classNames, ClassNameFilter.MISSING, context.getClassLoader())
+            val missing = filter(classNames.toList(), ClassNameFilter.MISSING, context.getClassLoader())
 
             // 如果missing不为空，那么说明，确实有missing的，但是需求应该是全部都得present，应该return false
-            if (misssing.isNotEmpty()) {
+            if (missing.isNotEmpty()) {
                 return ConditionOutcome.noMatch("ConditionOnClass不匹配")
             }
         }
         // 匹配@ConditionOnMissingClass
         if (metadata.isAnnotated(ConditionalOnMissingClass::class.java.name)) {
-            val onMissingClassAttrs = metadata.getAnnotationAttributes(ConditionalOnMissingClass::class.java.name)
+            val onMissingClassAttrs = metadata.getAnnotations().get(ConditionalOnMissingClass::class.java)
             // 获取用户配置的所有classNames
-            val classNames = (onMissingClassAttrs["value"] as Array<String>).toMutableList()
+            val classNames = onMissingClassAttrs.getStringArray("value").toMutableList()
 
             // 过滤出来所有的present的className
             val present = filter(classNames, ClassNameFilter.PRESENT, context.getClassLoader())

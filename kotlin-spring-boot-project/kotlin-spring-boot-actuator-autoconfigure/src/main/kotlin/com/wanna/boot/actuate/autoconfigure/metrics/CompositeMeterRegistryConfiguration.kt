@@ -22,7 +22,7 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry
  * @version v1.0
  * @date 2022/10/29
  */
-@ConditionalOnClass(name = ["io.micrometer.core.instrument.MeterRegistry"])
+@ConditionalOnClass(value = [io.micrometer.core.instrument.MeterRegistry::class])
 @ConditionalOnBean([MeterRegistry::class])
 @Configuration(proxyBeanMethods = false)
 open class CompositeMeterRegistryConfiguration {

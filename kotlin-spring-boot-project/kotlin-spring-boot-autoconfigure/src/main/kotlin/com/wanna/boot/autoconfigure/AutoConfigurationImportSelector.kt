@@ -38,7 +38,9 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
 
     private var order: Int = Ordered.ORDER_LOWEST - 1
 
-    // 自动配置类的导入Filter
+    /**
+     * 自动配置类的导入Filter
+     */
     private var configurationClassFilter: ConfigurationClassFilter? = null
 
     /**
@@ -175,7 +177,33 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
      */
     data class AutoConfigurationEntry(val configurations: List<String>, val excludes: Set<String>)
 
-    private class AutoConfigurationGroup : DeferredImportSelector.Group
+    private class AutoConfigurationGroup : DeferredImportSelector.Group {
+
+        /**
+         * 全部的DeferredImportSelector对应的自动配置类的信息
+         */
+        private val autoConfigurationEntries = ArrayList<AutoConfigurationEntry>()
+
+        /**
+         * Entries
+         */
+        private val entries = LinkedHashMap<String, AnnotationMetadata>()
+
+        override fun process(metadata: AnnotationMetadata, selector: DeferredImportSelector) {
+            val autoConfigurationEntry =
+                (selector as AutoConfigurationImportSelector).getAutoConfigurationEntry(metadata)
+            autoConfigurationEntries += autoConfigurationEntry
+
+            // 所有的自动配置类, 添加到entries当中
+            for (importClassName in autoConfigurationEntry.configurations) {
+                entries[importClassName] = metadata
+            }
+        }
+
+        override fun selectImports(): Iterable<DeferredImportSelector.Group.Entry> {
+            return entries.map { DeferredImportSelector.Group.Entry(it.value, it.key) }.toList()
+        }
+    }
 
     /**
      * 配置类的ClassFilter，对要排除的配置类去进行排除，内部组合了AutoConfigurationImportFilter的列表
@@ -186,7 +214,9 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     inner class ConfigurationClassFilter(
         classLoader: ClassLoader, private val filters: MutableList<AutoConfigurationImportFilter>
     ) {
-        // 从配置文件(META-INF/spring-autoconfigure-metadata.properties)当中加载AutoConfiguration的Metadata信息
+        /**
+         * 从配置文件(META-INF/spring-autoconfigure-metadata.properties)当中加载AutoConfiguration的Metadata信息
+         */
         private var autoConfigurationMetadata = AutoConfigurationMetadataLoader.loadMetadata(classLoader)
 
         /**

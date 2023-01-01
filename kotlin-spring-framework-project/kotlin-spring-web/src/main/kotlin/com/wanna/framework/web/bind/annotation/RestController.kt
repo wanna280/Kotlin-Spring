@@ -8,10 +8,13 @@ import org.springframework.core.annotation.AliasFor
  *
  * @see Controller
  * @see ResponseBody
+ *
+ * @param value beanName
  */
 @Controller
 @ResponseBody
 annotation class RestController(
+    @get:com.wanna.framework.core.annotation.AliasFor(annotation = Controller::class, value = "value")
     @get:AliasFor(annotation = Controller::class, value = "value")
     val value: String = ""  // beanName
 )

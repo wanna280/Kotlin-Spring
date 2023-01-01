@@ -74,10 +74,13 @@ object ConfigurationClassUtils {
             val beanClass = beanDefinition.getBeanClass()!!
 
             // 如果是一些Spring的基础设施的Bean，那么直接pass掉，它不应该去成为一个候选的配置类
-            if (ClassUtils.isAssignFrom(BeanFactoryPostProcessor::class.java, beanClass)
-                || ClassUtils.isAssignFrom(BeanPostProcessor::class.java, beanClass)
-                || ClassUtils.isAssignFrom(AopInfrastructureBean::class.java, beanClass)
-                || ClassUtils.isAssignFrom(EventListenerFactory::class.java, beanClass)
+            if (ClassUtils.isAssignFrom(BeanFactoryPostProcessor::class.java, beanClass) || ClassUtils.isAssignFrom(
+                    BeanPostProcessor::class.java,
+                    beanClass
+                ) || ClassUtils.isAssignFrom(AopInfrastructureBean::class.java, beanClass) || ClassUtils.isAssignFrom(
+                    EventListenerFactory::class.java,
+                    beanClass
+                )
             ) {
                 return false
             }
@@ -86,15 +89,14 @@ object ConfigurationClassUtils {
 
         // 检查类上的@Configuration注解，判断proxyBeanMethods是否为true
         if (metadata != null) {
-            val attributes = metadata.getAnnotationAttributes(Configuration::class.java)
-            val proxyBeanMethods = attributes["proxyBeanMethods"]
+            val attributes = metadata.getAnnotations().get(Configuration::class.java)
 
             // 如果有@Configuration注解，并且proxyBeanMethods=true，那么说明它是一个全配置类
-            if (attributes.isNotEmpty() && proxyBeanMethods == true) {
+            if (attributes.present && attributes.getBoolean("proxyBeanMethods")) {
                 beanDefinition.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_FULL)
 
                 // 如果它有@Import/@ImportResource/@Component/@Configuration/@PropertySource，说明它是一个半配置类
-            } else if (attributes.isNotEmpty() || isConfigurationCandidate(metadata)) {  // fixed: 条件应该使用&，而不是||
+            } else if (attributes.present || isConfigurationCandidate(metadata)) {  // fixed: 条件应该使用&，而不是||
                 beanDefinition.setAttribute(CONFIGURATION_CLASS_ATTRIBUTE, CONFIGURATION_CLASS_LITE)
             } else {
                 return false
@@ -155,7 +157,10 @@ object ConfigurationClassUtils {
     @JvmStatic
     @Nullable
     fun getOrder(metadata: AnnotationMetadata): Int? {
-        val attributes = metadata.getAnnotationAttributes(Order::class.java.name)
-        return attributes["value"] as Int?
+        val orderMergedAnnotation = metadata.getAnnotations().get(Order::class.java)
+        if (!orderMergedAnnotation.present) {
+            return null
+        }
+        return orderMergedAnnotation.getInt("value")
     }
 }

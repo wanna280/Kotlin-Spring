@@ -1,6 +1,8 @@
 package com.wanna.framework.core.type.filter
 
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.type.classreading.MetadataReader
+import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 
 
 /**
@@ -11,5 +13,9 @@ import com.wanna.framework.core.annotation.AnnotatedElementUtils
 open class AnnotationTypeFilter(private val annotationType: Class<out Annotation>) : TypeFilter {
     override fun matches(clazz: Class<*>?): Boolean {
         return clazz != null && AnnotatedElementUtils.getMergedAnnotation(clazz, annotationType) != null
+    }
+
+    override fun matches(metadataReader: MetadataReader, metadataReaderFactory: MetadataReaderFactory): Boolean {
+        return metadataReader.annotationMetadata.isAnnotated(annotationType.name)
     }
 }

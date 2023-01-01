@@ -15,9 +15,11 @@ import org.springframework.core.annotation.AliasFor
  */
 @Target(AnnotationTarget.TYPE_PARAMETER, AnnotationTarget.VALUE_PARAMETER)
 annotation class RequestParam(
+    @get:com.wanna.framework.core.annotation.AliasFor("value")
     @get:AliasFor("value")
     val name: String = "",
     @get:AliasFor("name")
+    @get:com.wanna.framework.core.annotation.AliasFor("name")
     val value: String = "",
     val required: Boolean = true,
     val defaultValue: String = ValueConstants.DEFAULT_NONE

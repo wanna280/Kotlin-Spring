@@ -12,12 +12,14 @@ import org.springframework.core.annotation.AliasFor
  * @param allowedHeaders 需要匹配的Header
  * @param originPatterns 使用正则表达式的方式去匹配Origin
  * @param exposedHeaders CORS请求当中要暴露给客户端的Header
- * @param maxAge CROS的存活时间("PreFlight"的有效时间)
+ * @param maxAge CORS的存活时间("PreFlight"的有效时间)
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 annotation class CrossOrigin(
+    @get:com.wanna.framework.core.annotation.AliasFor("origins")
     @get:AliasFor("origins")
     val value: Array<String> = [],
+    @get:com.wanna.framework.core.annotation.AliasFor("value")
     @get:AliasFor("value")
     val origins: Array<String> = [],
     val allowedHeaders: Array<String> = [],

@@ -16,4 +16,5 @@ class NacosConfigServer
 
 fun main(vararg args: String) {
     val applicationContext = runSpringApplication<NacosConfigServer>(*args)
+    println(applicationContext)
 }

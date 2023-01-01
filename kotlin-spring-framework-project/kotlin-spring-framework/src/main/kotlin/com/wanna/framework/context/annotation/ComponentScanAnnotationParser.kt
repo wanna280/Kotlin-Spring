@@ -55,7 +55,7 @@ open class ComponentScanAnnotationParser(
         val includeFilters = attributes["includeFilters"] as Array<ComponentScan.Filter>
         val excludeFilters = attributes["excludeFilters"] as Array<ComponentScan.Filter>
 
-        //添加所有的IncludFilter和ExcludeFilter
+        //添加所有的IncludeFilter和ExcludeFilter
         getTypeFilters(includeFilters).forEach(scanner::addIncludeFilter)
         getTypeFilters(excludeFilters).forEach(scanner::addExcludeFilter)
 
@@ -85,7 +85,7 @@ open class ComponentScanAnnotationParser(
                     FilterType.ANNOTATION -> typeFilters += AnnotationTypeFilter(it as Class<out Annotation>)
                     FilterType.ASSIGNABLE_TYPE -> typeFilters += AssignableTypeFilter(it)
                     FilterType.CUSTOM -> typeFilters += ParserStrategyUtils.instanceClass<TypeFilter>(
-                        it, environment, registry
+                        it, environment, registry,
                     )
                 }
             }

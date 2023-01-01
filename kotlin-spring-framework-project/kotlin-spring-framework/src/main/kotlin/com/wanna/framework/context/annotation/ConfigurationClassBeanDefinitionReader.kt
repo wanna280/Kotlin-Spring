@@ -7,6 +7,7 @@ import com.wanna.framework.beans.factory.support.definition.*
 import com.wanna.framework.beans.factory.xml.XmlBeanDefinitionReader
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase.REGISTER_BEAN
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.type.AnnotationMetadata
@@ -37,12 +38,20 @@ open class ConfigurationClassBeanDefinitionReader(
          */
         @JvmStatic
         private val logger = LoggerFactory.getLogger(ConfigurationClassBeanDefinitionReader::class.java)
+
+
+        /**
+         * Scope Metadata Resolver
+         */
+        @JvmStatic
+        private val scopeMetadataResolver = AnnotationScopeMetadataResolver()
     }
 
     /**
      * 这是一个条件计算器，去计算一个Bean是否应该被注册
      */
     private val conditionEvaluator = ConditionEvaluator(registry, environment, resourceLoader)
+
 
     /**
      * 从配置类当中加载BeanDefinition，例如@ImportResource/ImportBeanDefinitionRegistrar/@Bean方法
@@ -70,8 +79,7 @@ open class ConfigurationClassBeanDefinitionReader(
      * @param trackedConditionEvaluator 带轨迹追踪功能的条件计算器
      */
     protected open fun loadBeanDefinitionsForConfigurationClass(
-        configurationClass: ConfigurationClass,
-        trackedConditionEvaluator: TrackedConditionEvaluator
+        configurationClass: ConfigurationClass, trackedConditionEvaluator: TrackedConditionEvaluator
     ) {
         // 比较所有导入当前的配置类的配置类是否都已经被移除掉了？如果都已经被移除掉了，那么当前的配置类也应该被移除掉！
         // 如果该配置类应该被skip掉，那么它应该从BeanDefinitionRegistry当中移除掉
@@ -79,7 +87,7 @@ open class ConfigurationClassBeanDefinitionReader(
             if (configurationClass.beanName != null && configurationClass.beanName!!.isEmpty()) {
                 registry.removeBeanDefinition(configurationClass.beanName!!)
             }
-            this.importRegistry.removeImportingClass(configurationClass.configurationClass.name)
+            this.importRegistry.removeImportingClass(configurationClass.metadata.getClassName())
             return
         }
 
@@ -111,9 +119,7 @@ open class ConfigurationClassBeanDefinitionReader(
         }
 
         val configClass = beanMethod.configClass
-        val beanAnnotation = metadata.getAnnotations()
-            .filter { it.annotationClass.java.name == Bean::class.java.name }
-            .toList()[0] as Bean
+        val beanAnnotation = metadata.getAnnotations().get(Bean::class.java)
 
         // 从@Bean的注解上找到合适的beanName
         val beanName: String = findBeanNameFromBeanAnnotation(beanAnnotation, metadata)
@@ -140,7 +146,12 @@ open class ConfigurationClassBeanDefinitionReader(
         if (metadata is StandardMethodMetadata) {
             beanDefinition.setResolvedFactoryMethod(metadata.getMethod())
             beanDefinition.setBeanClass(metadata.getMethod().returnType)
+        } else {
+
+            // 如果不是StandardMethodMetadata的话, 那么也得设置beanClassName
+            beanDefinition.setBeanClassName(metadata.getReturnTypeName())
         }
+
 
         // 设置autowiredMode为构造器注入
         beanDefinition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_CONSTRUCTOR)
@@ -148,22 +159,22 @@ open class ConfigurationClassBeanDefinitionReader(
         // 处理@Bean方法上的@Role/@Primary/@DependsOn/@Lazy注解
         AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition, metadata)
 
-        // 根据@Bean注解当中的init方法和destory方法，去设置BeanDefinition的initMethod和destoryMethod
-        if (StringUtils.hasText(beanAnnotation.initMethod)) {
-            beanDefinition.setInitMethodName(beanAnnotation.initMethod)
+        // 根据@Bean注解当中的init方法和destory方法，去设置BeanDefinition的initMethod和destroyMethod
+        if (StringUtils.hasText(beanAnnotation.getString("initMethod"))) {
+            beanDefinition.setInitMethodName(beanAnnotation.getString("initMethod"))
         }
-        if (StringUtils.hasText(beanAnnotation.destroyMethod)) {
-            beanDefinition.setDestroyMethodName(beanAnnotation.destroyMethod)
+        if (StringUtils.hasText(beanAnnotation.getString("destroyMethod"))) {
+            beanDefinition.setDestroyMethodName(beanAnnotation.getString("destroyMethod"))
         }
 
         // 设置是否是AutowireCandidate以及AutowireMode
-        beanDefinition.setAutowireCandidate(beanAnnotation.autowireCandidate)
-        beanDefinition.setAutowireMode(beanAnnotation.autowireMode)
+        beanDefinition.setAutowireCandidate(beanAnnotation.getBoolean("autowireCandidate"))
+        beanDefinition.setAutowireMode(beanAnnotation.getInt("autowireMode"))
 
         // 解析scope
-        val scope = metadata.getAnnotationAttributes(Scope::class.java.name)
-        if (scope.isNotEmpty()) {
-            beanDefinition.setScope(scope["scopeName"]!!.toString())
+        val scope = metadata.getAnnotations().get(Scope::class.java)
+        if (scope.present) {
+            beanDefinition.setScope(scope.getString("value"))
         }
 
         // 注册beanDefinition到容器当中
@@ -213,8 +224,7 @@ open class ConfigurationClassBeanDefinitionReader(
         // 4.如果BeanFactory本身就不允许发生BeanDefinition的覆盖的话，那么需要丢出异常
         if (this.registry is DefaultListableBeanFactory && !this.registry.isAllowBeanDefinitionOverriding()) {
             throw BeanDefinitionStoreException(
-                beanName,
-                "@Bean方法的BeanDefinition尝试去替换掉之前的BeanDefinition $existBeanDef 的操作不合法"
+                beanName, "@Bean方法的BeanDefinition尝试去替换掉之前的BeanDefinition $existBeanDef 的操作不合法"
             )
         }
         if (logger.isDebugEnabled) {
@@ -262,21 +272,22 @@ open class ConfigurationClassBeanDefinitionReader(
      * Note: 通过Import导入的配置类会在这里被设置好name，为了方便后续@Import导入的配置类的@Bean方法的处理
      */
     private fun registerBeanDefinitionForImportedConfigurationClass(configurationClass: ConfigurationClass) {
-        val clazz = configurationClass.configurationClass
         val metadata = configurationClass.metadata
-        val beanDefinition = AnnotatedGenericBeanDefinition(clazz)  // 构建一个注解的BeanDefinition
+        val beanDefinition = AnnotatedGenericBeanDefinition(metadata)  // 构建一个注解的BeanDefinition
 
         // 处理@Role/@Primary/@DependsOn/@Lazy注解
         AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition, metadata)
-        val scope = AnnotatedElementUtils.getMergedAnnotation(clazz, Scope::class.java)
-        if (scope != null) {
-            beanDefinition.setScope(scope.scopeName)
-        }
+
+        // 处理@Scope注解
+        val scopeMetadata = scopeMetadataResolver.resolveScopeMetadata(beanDefinition)
+        beanDefinition.setScope(scopeMetadata.scopeName)
 
         // 生成beanName
         val beanName = importBeanNameGenerator.generateBeanName(beanDefinition, registry)
         registry.registerBeanDefinition(beanName, beanDefinition)
-        configurationClass.beanName = beanName  // set ConfigurationClass beanName
+
+        // set ConfigurationClass beanName
+        configurationClass.beanName = beanName
     }
 
     /**
@@ -331,13 +342,15 @@ open class ConfigurationClassBeanDefinitionReader(
      *
      * @return 解析到的beanName
      */
-    private fun findBeanNameFromBeanAnnotation(beanAnnotation: Bean, metadata: MethodMetadata): String {
+    private fun findBeanNameFromBeanAnnotation(
+        beanAnnotation: MergedAnnotation<Bean>, metadata: MethodMetadata
+    ): String {
         var beanName: String? = null
-        if (StringUtils.hasText(beanAnnotation.name)) {
-            beanName = beanAnnotation.name
+        if (StringUtils.hasText(beanAnnotation.getString("name"))) {
+            beanName = beanAnnotation.getString("name")
         }
-        if (!StringUtils.hasText(beanName) && StringUtils.hasText(beanAnnotation.value)) {
-            beanName = beanAnnotation.value
+        if (!StringUtils.hasText(beanName) && StringUtils.hasText(beanAnnotation.getString("value"))) {
+            beanName = beanAnnotation.getString("value")
         }
         if (!StringUtils.hasText(beanName)) {
             beanName = metadata.getMethodName()
@@ -353,8 +366,7 @@ open class ConfigurationClassBeanDefinitionReader(
      * @param methodMetadata 方法的MethodData
      */
     class ConfigurationClassBeanDefinition(
-        private val configurationClass: ConfigurationClass,
-        private val methodMetadata: MethodMetadata?
+        private val configurationClass: ConfigurationClass, private val methodMetadata: MethodMetadata?
     ) : RootBeanDefinition(), AnnotatedBeanDefinition {
         init {
             // 设置Resource

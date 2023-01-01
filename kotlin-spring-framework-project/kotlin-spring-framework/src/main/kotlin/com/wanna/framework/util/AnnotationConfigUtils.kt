@@ -86,14 +86,14 @@ object AnnotationConfigUtils {
         // 如果标注了Role注解，需要设置Bean的Role信息
         val role = metadata.isAnnotated(Role::class.java.name)
         if (role) {
-            val bdRole = metadata.getAnnotationAttributes(Role::class.java)["value"] as Int
+            val bdRole = metadata.getAnnotations().get(Role::class.java).getInt("value")
             abd.setRole(bdRole)
         }
 
         // 如果标注了DependsOn注解的话
         val dependsOn = metadata.isAnnotated(DependsOn::class.java.name)
         if (dependsOn) {
-            val bdDependsOn = metadata.getAnnotationAttributes(DependsOn::class.java)["value"] as Array<String>
+            val bdDependsOn = metadata.getAnnotations().get(DependsOn::class.java).getStringArray("value")
             abd.setDependsOn(bdDependsOn)
         }
     }

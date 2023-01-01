@@ -264,10 +264,10 @@ object ReflectionUtils {
      * 获取某个字段的值
      *
      * @param field 字段
-     * @param target 要获取的字段的目标对象
+     * @param target 要获取的字段的目标对象(当访问static字段时, 可以为null)
      */
     @JvmStatic
-    fun getField(field: Field, target: Any): Any? {
+    fun getField(field: Field, @Nullable target: Any?): Any? {
         return field[target]
     }
 
@@ -275,11 +275,11 @@ object ReflectionUtils {
      * 设置某个字段的值
      *
      * @param field 要进行设置的字段
-     * @param target 要设置的目标对象
+     * @param target 要设置的目标对象(当访问static字段时, 可以为null)
      * @param value 该字段即将要设置的值
      */
     @JvmStatic
-    fun setField(field: Field, target: Any, value: Any?) {
+    fun setField(field: Field, @Nullable target: Any?, value: Any?) {
         field[target] = value
     }
 
@@ -291,7 +291,7 @@ object ReflectionUtils {
      */
     @JvmStatic
     fun findMethod(clazz: Class<*>, name: String): Method? {
-        return findMethod(clazz, name, *EMPTY_CLASS_ARRAY)
+        return findMethod(clazz, name, parameterTypes = EMPTY_CLASS_ARRAY)
     }
 
     /**
@@ -579,5 +579,17 @@ object ReflectionUtils {
         val constructor = clazz.getConstructor(*parameterTypes)
         makeAccessible(constructor)
         return constructor
+    }
+
+    /**
+     * 清除ReflectionUtils当中的一些缓存
+     *
+     * @see declaredMethodsCache
+     * @see declaredFieldsCache
+     */
+    @JvmStatic
+    fun clearCache() {
+        this.declaredMethodsCache.clear()
+        this.declaredFieldsCache.clear()
     }
 }

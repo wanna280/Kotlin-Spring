@@ -72,6 +72,7 @@ object BeanUtils {
     fun <T> instantiateClass(clazz: Class<T>): T {
         try {
             val constructor = clazz.getDeclaredConstructor()
+            constructor.isAccessible = true  // set Accessible
             return constructor.newInstance()
         } catch (ex: Exception) {
             ReflectionUtils.handleReflectionException(ex)
@@ -98,6 +99,7 @@ object BeanUtils {
         }
         try {
             val constructor = clazz.getDeclaredConstructor()
+            constructor.isAccessible = true  // set Accessible
             return constructor.newInstance() as T
         } catch (ex: Exception) {
             ReflectionUtils.handleReflectionException(ex)
@@ -118,6 +120,7 @@ object BeanUtils {
         try {
             val constructor = clazz.getConstructor(*parameterTypes)
             return constructor.newInstance(*params)
+            constructor.isAccessible = true  // set Accessible
         } catch (ex: Exception) {
             ReflectionUtils.handleReflectionException(ex)
         }

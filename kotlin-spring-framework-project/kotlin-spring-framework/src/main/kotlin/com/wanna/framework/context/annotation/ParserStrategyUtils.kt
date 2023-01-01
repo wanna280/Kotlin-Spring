@@ -4,9 +4,11 @@ import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
+import com.wanna.framework.context.ResourceLoaderAware
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.EnvironmentAware
 import com.wanna.framework.core.environment.Environment
+import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 
@@ -15,6 +17,7 @@ import com.wanna.framework.util.ClassUtils
  */
 @Suppress("UNCHECKED_CAST")
 object ParserStrategyUtils {
+
     /**
      * 实例化BeanInstance，并完成Aware接口的回调
      */
@@ -22,13 +25,23 @@ object ParserStrategyUtils {
     fun <T> instanceClass(
         clazz: Class<*>, environment: Environment, registry: BeanDefinitionRegistry
     ): T {
+        return instanceClass(clazz, environment, registry, null)
+    }
+
+    /**
+     * 实例化BeanInstance，并完成Aware接口的回调
+     */
+    @JvmStatic
+    fun <T> instanceClass(
+        clazz: Class<*>, environment: Environment, registry: BeanDefinitionRegistry, resourceLoader: ResourceLoader?
+    ): T {
         // 获取classLoader
         val classLoader =
             if (registry is ConfigurableListableBeanFactory) registry.getBeanClassLoader() else ClassUtils.getDefaultClassLoader()
         // 使用BeanUtils去实例化对象
         val instance = createInstance(clazz, environment, registry, classLoader)
         // 执行Aware接口中的方法
-        invokeAwareMethods(instance, environment, registry, classLoader)
+        invokeAwareMethods(instance, environment, registry, classLoader, resourceLoader)
         return instance as T
     }
 
@@ -47,8 +60,15 @@ object ParserStrategyUtils {
      */
     @JvmStatic
     private fun invokeAwareMethods(
-        bean: Any, environment: Environment, registry: BeanDefinitionRegistry, classLoader: ClassLoader
+        bean: Any,
+        environment: Environment,
+        registry: BeanDefinitionRegistry,
+        classLoader: ClassLoader,
+        resourceLoader: ResourceLoader?
     ) {
+        if (bean is ResourceLoaderAware && resourceLoader != null) {
+            bean.setResourceLoader(resourceLoader)
+        }
         if (bean is EnvironmentAware) {
             bean.setEnvironment(environment)
         }

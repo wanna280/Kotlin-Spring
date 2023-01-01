@@ -4,6 +4,7 @@ import com.wanna.framework.context.annotation.AnnotationAttributes
 import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.ImportAware
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.transaction.TransactionManager
 
@@ -14,10 +15,14 @@ import com.wanna.framework.transaction.TransactionManager
  */
 abstract class AbstractTransactionManagementConfiguration : ImportAware {
 
-    // @EnableTransactionManagement的注解当中的各个属性
-    protected var enableTx: AnnotationAttributes? = null
+    /**
+     * 描述的是@EnableTransactionManagement的注解当中的各个属性
+     */
+    protected var enableTx: MergedAnnotation<*>? = null
 
-    // Spring事务的TransactionManager，可以没有，直接从BeanFactory当中去进行获取
+    /**
+     * Spring事务的TransactionManager，可以没有，直接从BeanFactory当中去进行获取
+     */
     protected var transactionManager: TransactionManager? = null
 
     /**
@@ -26,11 +31,11 @@ abstract class AbstractTransactionManagementConfiguration : ImportAware {
      * @param annotationMetadata 注解元信息
      */
     override fun setImportMetadata(annotationMetadata: AnnotationMetadata) {
-        val attributes = annotationMetadata.getAnnotationAttributes(EnableTransactionManagement::class.java)
-        if (attributes.isEmpty()) {
+        val attributes = annotationMetadata.getAnnotations().get(EnableTransactionManagement::class.java)
+        if (!attributes.present) {
             throw IllegalStateException("没有从目标类[${annotationMetadata.getClassName()}]上找到@EnableTransactionManagement注解信息")
         }
-        this.enableTx = AnnotationAttributesUtils.fromMap(attributes)
+        this.enableTx = attributes
     }
 
 

@@ -221,22 +221,22 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
 
         init {
             // 从metadata当中去解析到AnnotationAttributes信息
-            val attributes = metadata.getAnnotationAttributes(annotationType)
+            val attributes = metadata.getAnnotations().get(annotationType)
 
             // 1.解析要匹配的beanNames列表
-            this.names = (attributes["name"] as Array<String>).toSet()
+            this.names = attributes.getStringArray("name").toSet()
 
             // 2.解析要匹配的className类型列表(value属性当中是class，type属性当中是className，合并为className列表)
             val types = HashSet<String>()
-            types += (attributes["value"] as Array<Class<*>>).map { it.name }.toList()
-            types += (attributes["type"] as Array<String>)
+            types += attributes.getClassArray("value").map { it.name }.toList()
+            types += attributes.getStringArray("type")
             // 如果从name/value/type属性当中都没有匹配到要匹配的Bean？那么从@Bean方法去推断beanType作为匹配的Bean
             this.types =
                 if (types.isEmpty() && this.names!!.isEmpty()) this.deduceBeanType(context, metadata)
                 else types
 
             // 3.解析要匹配的annotations列表
-            this.annotations = (attributes["annotation"] as Array<Class<*>>).map { it.name }.toSet()
+            this.annotations = attributes.getClassArray("annotation").map { it.name }.toSet()
         }
 
         open fun getNames(): Set<String> = this.names!!

@@ -13,6 +13,10 @@ import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.ResourcePatternResolver
 import com.wanna.framework.core.io.support.ResourcePatternResolver.Companion.CLASSPATH_ALL_URL_PREFIX
 import com.wanna.framework.core.io.support.ResourcePatternUtils
+import com.wanna.framework.core.type.GlobalTypeSwitch
+import com.wanna.framework.core.type.classreading.CachingMetadataReaderFactory
+import com.wanna.framework.core.type.classreading.MetadataReader
+import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 import com.wanna.framework.core.type.filter.AnnotationTypeFilter
 import com.wanna.framework.core.type.filter.TypeFilter
 import com.wanna.framework.lang.Nullable
@@ -48,10 +52,14 @@ open class ClassPathScanningCandidateComponentProvider(
      */
     protected val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
-    // includeFilters
+    /**
+     * includeFilters
+     */
     private var includeFilters = ArrayList<TypeFilter>()
 
-    // excludeFilters
+    /**
+     * excludeFilters
+     */
     private var excludeFilters = ArrayList<TypeFilter>()
 
     /**
@@ -69,6 +77,12 @@ open class ClassPathScanningCandidateComponentProvider(
      */
     private var resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
 
+    /**
+     * MetadataReader Factory, 提供对于类的元信息的读取
+     */
+    @Nullable
+    private var metadataReaderFactory: MetadataReaderFactory? = null
+
     init {
         // 是否要应用默认的Filter？默认情况下，需要去匹配@Component的Bean
         if (useDefaultFilters) {
@@ -83,6 +97,10 @@ open class ClassPathScanningCandidateComponentProvider(
      * @return 该包下扫描得到的所有的候选BeanDefinition
      */
     open fun scanCandidateComponents(basePackage: String): Set<BeanDefinition> {
+        // 开关打开的话, 先走新的逻辑
+        if (GlobalTypeSwitch.isComponentScanOpen()) {
+            return scanCandidateComponentsNew(basePackage)
+        }
         val candidates = LinkedHashSet<BeanDefinition>()
         try {
             val packageSearchPath = CLASSPATH_ALL_URL_PREFIX + resolveBasePackage(basePackage) + '/' + resourcePattern
@@ -139,14 +157,72 @@ open class ClassPathScanningCandidateComponentProvider(
     }
 
     /**
+     * 给定一个候选的包，去扫描该包下的候选的组件
+     *
+     * @param basePackage 要扫描的包？(支持去进行占位符解析)
+     * @return 该包下扫描得到的所有的候选BeanDefinition
+     */
+    open fun scanCandidateComponentsNew(basePackage: String): Set<BeanDefinition> {
+        val candidates = LinkedHashSet<BeanDefinition>()
+        try {
+            val packageSearchPath = CLASSPATH_ALL_URL_PREFIX + resolveBasePackage(basePackage) + '/' + resourcePattern
+            val resources = getResourcePatternResolver().getResources(packageSearchPath)
+            resources.forEach {
+                if (logger.isTraceEnabled) {
+                    logger.trace("Scanning resource... [$it]")
+                }
+                if (it.isReadable()) {
+                    try {
+                        // 读取到当前资源对应的MetadataReader
+                        val metadataReader = getMetadataReaderFactory().getMetadataReader(it)
+
+                        // 如果它能够被TypeFilter所匹配上, 那么需要创建BeanDefinition并收集起来...
+                        if (isCandidateComponent(metadataReader)) {
+                            val beanDefinition = ScannedGenericBeanDefinition(metadataReader)
+                            beanDefinition.setSource(it)
+
+                            // 对BeanDefinition去进行检查，排除掉抽象类
+                            if (isCandidateComponent(beanDefinition)) {
+                                if (logger.isDebugEnabled) {
+                                    logger.debug("Resource [$it] will be a candidate BeanDefinition to register")
+                                }
+                                candidates += beanDefinition
+                            } else {
+                                if (logger.isDebugEnabled) {
+                                    logger.debug("Resource of abstract class $it has been filtered")
+                                }
+                            }
+                        } else {
+                            if (logger.isTraceEnabled) {
+                                logger.trace("Ignore cannot match by filter resource $it")
+                            }
+                        }
+                    } catch (ex: Throwable) {
+                        // temp ignore LinkageError
+                        if (ex !is NoClassDefFoundError) {
+                            throw IllegalStateException("Cannot read given resource [$it]", ex)
+                        }
+                    }
+                } else {
+                    if (logger.isTraceEnabled) {
+                        logger.debug("Ignore a cannot readable resource [$it]")
+                    }
+                }
+            }
+        } catch (ex: IOException) {
+            throw IllegalStateException("Read resource file Error", ex)
+        }
+        return candidates
+    }
+
+    /**
      * 排除掉所有的抽象的类的BeanDefinition
      *
      * @param definition BeanDefinition
      */
     protected open fun isCandidateComponent(definition: AnnotatedBeanDefinition): Boolean {
         val metadata = definition.getMetadata()
-        return !definition.isAbstract() ||
-                definition.isAbstract() && metadata.hasAnnotatedMethods(Lookup::class.java.name)
+        return !definition.isAbstract() || (definition.isAbstract() && metadata.hasAnnotatedMethods(Lookup::class.java.name))
     }
 
 
@@ -157,7 +233,26 @@ open class ClassPathScanningCandidateComponentProvider(
      */
     override fun setResourceLoader(resourceLoader: ResourceLoader) {
         this.resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
+
+        // 在设置ResourceLoader时, 也去创建一下MetadataReaderFactory, 去提供资源的加载
+        this.metadataReaderFactory = CachingMetadataReaderFactory(resourceLoader)
     }
+
+    /**
+     * 设置MetadataReaderFactory
+     *
+     * @param metadataReaderFactory MetadataReaderFactory
+     */
+    open fun setMetadataReaderFactory(metadataReaderFactory: MetadataReaderFactory) {
+        this.metadataReaderFactory
+    }
+
+    /**
+     * 获取MetadataReaderFactory
+     *
+     * @return MetadataReaderFactory(如果之前没有初始化的话, 那么创建一个默认的CachingMetadataReaderFactory)
+     */
+    fun getMetadataReaderFactory(): MetadataReaderFactory = this.metadataReaderFactory ?: CachingMetadataReaderFactory()
 
     open fun getResourcePatternResolver() = this.resourcePatternResolver
 
@@ -184,6 +279,28 @@ open class ClassPathScanningCandidateComponentProvider(
      */
     protected open fun registerDefaultFilters() {
         this.includeFilters += AnnotationTypeFilter(Component::class.java)
+    }
+
+    /**
+     * 检查是否是要去进行导入的组件? 使用includeFilter和excludeFilter去进行挨个匹配
+     *
+     * @param metadataReader 候选类的Metadata元信息
+     * @return 该类是否是一个候选Spring Component?
+     */
+    protected open fun isCandidateComponent(metadataReader: MetadataReader): Boolean {
+        // 如果被excludeFilter匹配，直接return false
+        this.excludeFilters.forEach {
+            if (it.matches(metadataReader, getMetadataReaderFactory())) {
+                return false
+            }
+        }
+        // 如果被includeFilter匹配，return true
+        this.includeFilters.forEach {
+            if (it.matches(metadataReader, getMetadataReaderFactory())) {
+                return true
+            }
+        }
+        return false
     }
 
     /**

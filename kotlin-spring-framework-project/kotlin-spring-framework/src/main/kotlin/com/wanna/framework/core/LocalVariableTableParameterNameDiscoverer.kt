@@ -2,6 +2,7 @@ package com.wanna.framework.core
 
 import com.wanna.framework.util.ClassUtils
 import org.objectweb.asm.*
+import org.springframework.asm.SpringAsmInfo
 import java.io.IOException
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
@@ -20,13 +21,15 @@ import java.util.concurrent.ConcurrentHashMap
  */
 open class LocalVariableTableParameterNameDiscoverer : ParameterNameDiscoverer {
     companion object {
-        // 标识没有任何的debug info的Flag，代码当中没有debug info，自然也就无法从局部变量表当中去进行参数的获取
+        /**
+         * 标识没有任何的debug info的Flag，代码当中没有debug info，自然也就无法从局部变量表当中去进行参数的获取
+         */
         private val NO_DEBUG_INFO_MAP = emptyMap<Executable, Array<String>>()
-        // ASM Version
-        private const val ASM_VERSION = Opcodes.ASM7
     }
 
-    // 参数名列表的缓存，K-Class，HK-方法/构造器，KV-方法/构造器的参数名列表，必须保证线程安全，因此采用ConcurrentHashMap
+    /**
+     * 参数名列表的缓存，K-Class，HK-方法/构造器，KV-方法/构造器的参数名列表，必须保证线程安全，因此采用ConcurrentHashMap
+     */
     private val parameterNamesCache = ConcurrentHashMap<Class<*>, Map<Executable, Array<String>>>()
 
     override fun getParameterNames(constructor: Constructor<*>) = doGetParameter(constructor)
@@ -72,7 +75,7 @@ open class LocalVariableTableParameterNameDiscoverer : ParameterNameDiscoverer {
     class ParameterNameDiscoveringVisitor(
         private val clazz: Class<*>,
         private val executableMap: MutableMap<Executable, Array<String>>
-    ) : ClassVisitor(ASM_VERSION) {
+    ) : ClassVisitor(SpringAsmInfo.ASM_VERSION) {
 
         companion object {
 
@@ -126,7 +129,7 @@ open class LocalVariableTableParameterNameDiscoverer : ParameterNameDiscoverer {
         private val name: String,
         private val descriptor: String?,
         private val isStatic: Boolean
-    ) : MethodVisitor(ASM_VERSION) {
+    ) : MethodVisitor(SpringAsmInfo.ASM_VERSION) {
 
         companion object {
             private const val CONSTRUCTOR_NAME = "<init>"

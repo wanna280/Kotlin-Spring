@@ -40,7 +40,7 @@ open class MappingsEndpointAutoConfiguration {
     }
 
     @ConditionalOnWebApplication(MVC)
-    @ConditionalOnClass(name = ["com.wanna.framework.web.DispatcherHandler"])
+    @ConditionalOnClass(value = [DispatcherHandler::class])
     @ConditionalOnBean(value = [DispatcherHandler::class])
     @Configuration(proxyBeanMethods = false)
     open class MvcWebConfiguration {
