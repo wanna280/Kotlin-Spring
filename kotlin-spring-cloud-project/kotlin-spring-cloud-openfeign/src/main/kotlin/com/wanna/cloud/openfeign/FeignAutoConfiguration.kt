@@ -33,7 +33,7 @@ open class FeignAutoConfiguration {
      * 如果存在有CircuitBreaker的话，那么使用SpringCloud的CircuitBreaker
      */
     @Configuration(proxyBeanMethods = false)
-    @ConditionalOnClass(name = ["com.wanna.cloud.client.circuitbreaker.CircuitBreaker"])
+    @ConditionalOnClass(value = [com.wanna.cloud.client.circuitbreaker.CircuitBreaker::class])
     open class CircuitBreakerPresentFeignTargeterConfiguration {
         @Bean
         @ConditionalOnMissingBean

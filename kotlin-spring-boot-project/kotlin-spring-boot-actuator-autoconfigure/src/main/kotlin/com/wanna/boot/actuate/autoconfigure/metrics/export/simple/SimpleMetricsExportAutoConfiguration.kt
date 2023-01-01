@@ -1,6 +1,7 @@
 package com.wanna.boot.actuate.autoconfigure.metrics.export.simple
 
 import com.wanna.boot.autoconfigure.condition.ConditionalOnBean
+import com.wanna.boot.autoconfigure.condition.ConditionalOnClass
 import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.boot.context.properties.EnableConfigurationProperties
 import com.wanna.framework.context.annotation.Bean
@@ -16,6 +17,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
  * @version v1.0
  * @date 2022/10/29
  */
+@ConditionalOnClass(value = [Clock::class])
 @EnableConfigurationProperties([SimpleProperties::class])
 @ConditionalOnBean([Clock::class])
 @Configuration(proxyBeanMethods = false)

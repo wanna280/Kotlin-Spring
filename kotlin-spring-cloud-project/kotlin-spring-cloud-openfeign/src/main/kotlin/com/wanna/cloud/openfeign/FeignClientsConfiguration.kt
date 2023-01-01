@@ -65,12 +65,12 @@ open class FeignClientsConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnClass(name = ["com.fasterxml.jackson.databind.ObjectMapper"])
+    @ConditionalOnClass(value = [com.fasterxml.jackson.databind.ObjectMapper::class])
     open fun messageConverters(): HttpMessageConverter<*> {
         return MappingJackson2HttpMessageConverter()
     }
 
-    @ConditionalOnClass(name = ["com.wanna.cloud.client.circuitbreaker.CircuitBreaker"])
+    @ConditionalOnClass(value = [com.wanna.cloud.client.circuitbreaker.CircuitBreaker::class])
     @Configuration(proxyBeanMethods = false)
     open class CircuitBreakerPresentFeignBuilderConfiguration {
 

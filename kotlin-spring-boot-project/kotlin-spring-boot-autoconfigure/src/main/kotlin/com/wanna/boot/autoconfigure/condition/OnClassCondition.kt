@@ -134,15 +134,15 @@ open class OnClassCondition : FilteringSpringBootCondition() {
         if (metadata.isAnnotated(ConditionalOnClass::class.java.name)) {
             val onClassAttrs = metadata.getAnnotations().get(ConditionalOnClass::class.java)
 
-            // 获取用户配置的所有classNames
-            val classNames = onClassAttrs.getStringArray("name").toMutableList()
-            classNames += onClassAttrs.getClassArray("value").map { it.name }.toList()
+            // 获取用户配置的所有classNames,
+            // Note: 这里对于value和name, 我们都使用getStringArray的方式去进行获取, 不然会出现NoClassDefError链接错误的情况
+            val classNames = onClassAttrs.getStringArray("name") + onClassAttrs.getStringArray("value")
 
             // 过滤出来所有的missing的className
-            val misssing = filter(classNames, ClassNameFilter.MISSING, context.getClassLoader())
+            val missing = filter(classNames.toList(), ClassNameFilter.MISSING, context.getClassLoader())
 
             // 如果missing不为空，那么说明，确实有missing的，但是需求应该是全部都得present，应该return false
-            if (misssing.isNotEmpty()) {
+            if (missing.isNotEmpty()) {
                 return ConditionOutcome.noMatch("ConditionOnClass不匹配")
             }
         }

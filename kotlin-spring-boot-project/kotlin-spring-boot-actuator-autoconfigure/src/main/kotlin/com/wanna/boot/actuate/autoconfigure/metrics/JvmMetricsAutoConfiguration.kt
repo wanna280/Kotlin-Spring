@@ -21,7 +21,7 @@ import io.micrometer.core.instrument.binder.jvm.*
  * @see MeterRegistryPostProcessor
  * @see MeterRegistryConfigurer
  */
-@ConditionalOnClass(name = ["io.micrometer.core.instrument.MeterRegistry"])
+@ConditionalOnClass(value = [io.micrometer.core.instrument.MeterRegistry::class])
 @ConditionalOnBean([MeterRegistry::class])
 @Configuration(proxyBeanMethods = false)
 open class JvmMetricsAutoConfiguration {

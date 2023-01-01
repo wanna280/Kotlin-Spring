@@ -1,5 +1,6 @@
 package com.wanna.boot.actuate.autoconfigure.metrics
 
+import com.wanna.boot.autoconfigure.condition.ConditionalOnClass
 import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.boot.context.properties.EnableConfigurationProperties
 import com.wanna.framework.context.ApplicationContext
@@ -17,6 +18,7 @@ import io.micrometer.core.instrument.config.MeterFilter
  * @version v1.0
  * @date 2022/10/29
  */
+@ConditionalOnClass(value = [io.micrometer.core.instrument.MeterRegistry::class])
 @EnableConfigurationProperties([MetricsProperties::class])
 @Configuration(proxyBeanMethods = false)
 open class MetricsAutoConfiguration {

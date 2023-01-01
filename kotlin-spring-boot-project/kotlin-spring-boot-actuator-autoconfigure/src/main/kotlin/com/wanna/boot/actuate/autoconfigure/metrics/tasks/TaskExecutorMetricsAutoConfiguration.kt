@@ -20,7 +20,7 @@ import java.util.concurrent.ThreadPoolExecutor
  *
  * @see MeterRegistry
  */
-@ConditionalOnClass(name = ["io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics"])
+@ConditionalOnClass(value = [io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics::class])
 @ConditionalOnBean(value = [Executor::class, MeterRegistry::class])  // 在SpringBeanFactory当中已经存在有MeterRegistry的情况下才生效
 @Configuration(proxyBeanMethods = false)
 open class TaskExecutorMetricsAutoConfiguration {

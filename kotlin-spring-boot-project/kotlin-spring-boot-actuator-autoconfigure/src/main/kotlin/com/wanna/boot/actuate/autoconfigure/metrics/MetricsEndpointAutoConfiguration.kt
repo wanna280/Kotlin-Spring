@@ -5,6 +5,7 @@ import com.wanna.boot.autoconfigure.condition.ConditionalOnBean
 import com.wanna.boot.autoconfigure.condition.ConditionalOnClass
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
+import io.micrometer.core.annotation.Timed
 import io.micrometer.core.instrument.MeterRegistry
 
 /**
@@ -14,7 +15,7 @@ import io.micrometer.core.instrument.MeterRegistry
  * @version v1.0
  * @date 2022/10/29
  */
-@ConditionalOnClass(name = ["io.micrometer.core.annotation.Timed"])
+@ConditionalOnClass(value = [Timed::class])
 @Configuration(proxyBeanMethods = false)
 open class MetricsEndpointAutoConfiguration {
 
