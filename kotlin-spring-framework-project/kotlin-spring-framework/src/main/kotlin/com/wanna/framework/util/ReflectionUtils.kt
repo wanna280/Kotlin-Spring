@@ -580,4 +580,16 @@ object ReflectionUtils {
         makeAccessible(constructor)
         return constructor
     }
+
+    /**
+     * 清除ReflectionUtils当中的一些缓存
+     *
+     * @see declaredMethodsCache
+     * @see declaredFieldsCache
+     */
+    @JvmStatic
+    fun clearCache() {
+        this.declaredMethodsCache.clear()
+        this.declaredFieldsCache.clear()
+    }
 }

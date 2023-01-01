@@ -16,9 +16,19 @@ object AnnotationUtils {
         rethrowAnnotationConfigurationException(ex)
     }
 
+    @JvmStatic
     private fun rethrowAnnotationConfigurationException(ex: Throwable) {
         if (ex is AnnotationConfigurationException) {
             throw ex
         }
+    }
+
+    /**
+     * 清除AnnotationUtils相关的缓存
+     */
+    @JvmStatic
+    fun clearCache() {
+        AnnotationTypeMappings.clearCache()
+        AnnotationsScanner.clearCache()
     }
 }

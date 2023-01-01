@@ -4,8 +4,10 @@ import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.annotation.MergedAnnotations.SearchStrategy.*
 import com.wanna.framework.lang.Nullable
 import java.lang.reflect.AnnotatedElement
+import java.lang.reflect.Member
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  *
@@ -20,6 +22,18 @@ object AnnotationsScanner {
      */
     @JvmStatic
     private val NO_METHODS = emptyArray<Method>()
+
+    /**
+     * 空Annotation数组
+     */
+    @JvmStatic
+    private val NO_ANNOTATIONS = emptyArray<Annotation>()
+
+    /**
+     * 目标元素上的注解列表的缓存
+     */
+    @JvmStatic
+    private val declaredAnnotationCache = ConcurrentHashMap<AnnotatedElement, Array<Annotation>>()
 
     @JvmStatic
     fun <C, R> scan(
@@ -246,15 +260,43 @@ object AnnotationsScanner {
     }
 
     /**
-     * 获取到目标元素身上的所有的直接定义的注解
+     * 获取到目标元素身上的所有的直接定义的注解(过滤掉了一些不需要的元注解)
      *
      * @param source source
-     * @param defensive 是否具有侵入性?
+     * @param defensive 是否具有侵入性? 如果具有侵入性的话, 那么需要clone一份去进行返回
      * @return declaredAnnotations
      */
     @JvmStatic
     fun getDeclaredAnnotations(source: AnnotatedElement, defensive: Boolean): Array<Annotation> {
-        return source.declaredAnnotations
+        var cached = false
+        var annotations = declaredAnnotationCache[source]
+        if (annotations != null) {
+            cached = true
+        } else {
+            annotations = source.declaredAnnotations
+            var allIgnored = true
+            if (annotations.isNotEmpty()) {
+                val validAnnotations = ArrayList<Annotation>()
+                annotations.forEach {
+                    // 如果这个注解可以被忽略(比如一些元注解), 那么pass掉
+                    if (isIgnorable(it.annotationClass.java)) {
+                        return@forEach
+                    }
+                    allIgnored = false
+                    validAnnotations.add(it)
+                }
+                // 如果全部注解都不是合法的注解的话, 那么我们直接去放入一个常量...
+                annotations = if (allIgnored) NO_ANNOTATIONS else validAnnotations.toTypedArray()
+                if (source is Class<*> || source is Member) {
+                    declaredAnnotationCache[source] = annotations
+                }
+            }
+        }
+
+        if (!defensive || annotations!!.isEmpty() || !cached) {
+            return annotations!!
+        }
+        return annotations.clone()
     }
 
     /**
@@ -289,5 +331,22 @@ object AnnotationsScanner {
     @JvmStatic
     private fun hasPlainJavaAnnotationsOnly(type: Class<*>): Boolean {
         return type.name.startsWith("java.") || type == Ordered::class.java
+    }
+
+    /**
+     * 检查这个注解是否可以被忽略掉
+     *
+     * @param annotationType annotationType
+     * @return 如果它被Plain的AnnotationFilter匹配上了, return true需要忽略掉; 否则return false不需要忽略掉
+     */
+    @JvmStatic
+    private fun isIgnorable(annotationType: Class<*>): Boolean = AnnotationFilter.PLAIN.matches(annotationType)
+
+    /**
+     * 清除缓存
+     */
+    @JvmStatic
+    fun clearCache() {
+        this.declaredAnnotationCache.clear()
     }
 }

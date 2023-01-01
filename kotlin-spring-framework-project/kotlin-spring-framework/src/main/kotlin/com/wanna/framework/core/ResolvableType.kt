@@ -346,10 +346,16 @@ open class ResolvableType() {
 
 
     companion object {
-        // 空的ResolvableType
+        /**
+         * 空的ResolvableType
+         */
+        @JvmField
         val NONE = ResolvableType()
 
-        // 空的类型(ResolvableType)数组
+        /**
+         * 空的类型(ResolvableType)数组
+         */
+        @JvmField
         val EMPTY_TYPES_ARRAY = emptyArray<ResolvableType>()
 
         /**
@@ -475,6 +481,14 @@ open class ResolvableType() {
                 resolvableType.generics = arrayOf(*generics)
             }
             return resolvableType
+        }
+
+        /**
+         * 清除缓存
+         */
+        @JvmStatic
+        fun clearCache() {
+
         }
     }
 
