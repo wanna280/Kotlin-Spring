@@ -26,7 +26,7 @@ open class TypeMappedAnnotations(
     @Nullable private val annotations: Array<Annotation>? = null,
     @Nullable private val element: AnnotatedElement? = null,
     @Nullable private val searchStrategy: MergedAnnotations.SearchStrategy? = null,
-    private val repeatableContainers: RepeatableContainers?
+    private val repeatableContainers: RepeatableContainers
 ) : MergedAnnotations {
 
     @Nullable
@@ -42,7 +42,7 @@ open class TypeMappedAnnotations(
      */
     override fun <A : Annotation> isPresent(annotationType: Class<A>): Boolean {
         return !this.annotationFilter.matches(annotationType) && true == scan(
-            annotationType, IsPresent.get(null, annotationFilter, false)
+            annotationType, IsPresent.get(repeatableContainers, annotationFilter, false)
         )
     }
 
@@ -54,7 +54,7 @@ open class TypeMappedAnnotations(
      */
     override fun isPresent(annotationName: String): Boolean {
         return !this.annotationFilter.matches(annotationName) && true == scan(
-            annotationName, IsPresent.get(null, annotationFilter, false)
+            annotationName, IsPresent.get(repeatableContainers, annotationFilter, false)
         )
     }
 
@@ -66,7 +66,7 @@ open class TypeMappedAnnotations(
      */
     override fun <A : Annotation> isDirectPresent(annotationType: Class<A>): Boolean {
         return !this.annotationFilter.matches(annotationType) && true == scan(
-            annotationType, IsPresent.get(null, annotationFilter, true)
+            annotationType, IsPresent.get(repeatableContainers, annotationFilter, true)
         )
     }
 
@@ -78,7 +78,7 @@ open class TypeMappedAnnotations(
      */
     override fun isDirectPresent(annotationName: String): Boolean {
         return !this.annotationFilter.matches(annotationName) && true == scan(
-            annotationName, IsPresent.get(null, annotationFilter, true)
+            annotationName, IsPresent.get(repeatableContainers, annotationFilter, true)
         )
     }
     //---------------------------------------检查注解是否存在的相关API结束-----------------------------------
@@ -414,7 +414,13 @@ open class TypeMappedAnnotations(
         ) {
             for (annotation in annotations) {
                 if (!annotationFilter.matches(annotation)) {
-                    aggregateAnnotations.add(annotation)
+                    // 如果有重复注解的话, 那么扫描出来进行递归处理
+                    val repeatedAnnotations = repeatableContainers.findRepeatedAnnotations(annotation)
+                    if (repeatedAnnotations != null) {
+                        addAggregateAnnotations(aggregateAnnotations, repeatedAnnotations)
+                    } else {
+                        aggregateAnnotations.add(annotation)
+                    }
                 }
             }
 
@@ -430,7 +436,7 @@ open class TypeMappedAnnotations(
      * @param directOnly 是否只检查直接标注的注解?
      */
     private class IsPresent(
-        private val repeatableContainers: RepeatableContainers?,
+        private val repeatableContainers: RepeatableContainers,
         private val annotationFilter: AnnotationFilter,
         private val directOnly: Boolean
     ) : AnnotationsProcessor<Any, Boolean> {
@@ -455,6 +461,15 @@ open class TypeMappedAnnotations(
                     // 如果context和AnnotationType匹配的话, return true
                     if (context == annotationType || context == annotationType.name) {
                         return true
+                    }
+
+                    // 检查一波@Repeatable的Container当中装了多个注解的情况, 让Container内部的注解和context去进行一波匹配
+                    val repeatedAnnotations = repeatableContainers.findRepeatedAnnotations(annotation)
+                    if (repeatedAnnotations != null) {
+                        val result = doWithAnnotations(context, aggregateIndex, source, repeatedAnnotations)
+                        if (result != null) {
+                            return result
+                        }
                     }
 
                     // 如果不只是简单检查直接标注的情况的话, 那么还需要去检查递归Meta注解
@@ -486,7 +501,7 @@ open class TypeMappedAnnotations(
              */
             @JvmStatic
             fun get(
-                repeatableContainers: RepeatableContainers?, annotationFilter: AnnotationFilter, directOnly: Boolean
+                repeatableContainers: RepeatableContainers, annotationFilter: AnnotationFilter, directOnly: Boolean
             ): IsPresent {
                 return IsPresent(repeatableContainers, annotationFilter, directOnly)
             }
@@ -538,6 +553,12 @@ open class TypeMappedAnnotations(
         private fun process(
             type: Any, aggregateIndex: Int, source: Any?, annotation: Annotation
         ): MergedAnnotation<A>? {
+            // 如果有@Repeatable重复注解的Container, 那么对重复注解去进行匹配
+            val repeatedAnnotations = repeatableContainers.findRepeatedAnnotations(annotation)
+            if (repeatedAnnotations != null) {
+                return doWithAnnotations(type, aggregateIndex, source, repeatedAnnotations)
+            }
+
             // 建立起来给定的注解的注解的映射关系
             val mappings = AnnotationTypeMappings.forAnnotationType(annotation.annotationClass.java, annotationFilter)
 
@@ -597,7 +618,7 @@ open class TypeMappedAnnotations(
         fun from(
             element: AnnotatedElement,
             searchStrategy: MergedAnnotations.SearchStrategy,
-            repeatableContainers: RepeatableContainers?,
+            repeatableContainers: RepeatableContainers,
             annotationFilter: AnnotationFilter
         ): MergedAnnotations {
             return TypeMappedAnnotations(annotationFilter, null, element, searchStrategy, repeatableContainers)
@@ -607,7 +628,7 @@ open class TypeMappedAnnotations(
         fun from(
             source: Any?,
             annotations: Array<Annotation>,
-            repeatableContainers: RepeatableContainers?,
+            repeatableContainers: RepeatableContainers,
             annotationFilter: AnnotationFilter
         ): MergedAnnotations {
             return TypeMappedAnnotations(annotationFilter, annotations, null, null, repeatableContainers)

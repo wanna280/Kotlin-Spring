@@ -2,6 +2,7 @@ package com.wanna.framework.simple.test.annotation
 
 import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.stereotype.Component
+import com.wanna.framework.context.stereotype.Service
 import com.wanna.framework.core.annotation.*
 import com.wanna.framework.core.type.GlobalTypeSwitch
 
@@ -86,6 +87,19 @@ fun testAnnotation5() {
     println(synthesize)
 }
 
+@Service("666")
+@Configuration("777")
+@Component("888")
+class AnnotationTest4 {
+
+}
+
+fun testAnnotation6() {
+    val allMergedAnnotations =
+        AnnotatedElementUtils.getAllMergedAnnotations(AnnotationTest4::class.java, Component::class.java)
+    println(allMergedAnnotations.size)
+}
+
 
 fun main() {
     GlobalTypeSwitch.annotatedElementUtilsOpen = true
@@ -95,6 +109,6 @@ fun main() {
     testAnnotation3()
     testAnnotation4()
     testAnnotation5()
-
+    testAnnotation6()
 
 }

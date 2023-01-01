@@ -180,12 +180,12 @@ interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
 
         @JvmStatic
         fun from(element: AnnotatedElement, searchStrategy: SearchStrategy): MergedAnnotations {
-            return from(element, searchStrategy, null)
+            return from(element, searchStrategy, RepeatableContainers.standardRepeatables())
         }
 
         @JvmStatic
         fun from(
-            element: AnnotatedElement, searchStrategy: SearchStrategy, repeatableContainers: RepeatableContainers?
+            element: AnnotatedElement, searchStrategy: SearchStrategy, repeatableContainers: RepeatableContainers
         ): MergedAnnotations {
             return from(element, searchStrategy, repeatableContainers, AnnotationFilter.PLAIN)
         }
@@ -194,7 +194,7 @@ interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
         fun from(
             element: AnnotatedElement,
             searchStrategy: SearchStrategy,
-            repeatableContainers: RepeatableContainers?,
+            repeatableContainers: RepeatableContainers,
             annotationFilter: AnnotationFilter
         ): MergedAnnotations {
             return TypeMappedAnnotations.from(element, searchStrategy, repeatableContainers, annotationFilter)
@@ -204,14 +204,14 @@ interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
         fun from(
             source: Any,
             annotations: Array<Annotation>,
-            repeatableContainers: RepeatableContainers?,
+            repeatableContainers: RepeatableContainers,
             annotationFilter: AnnotationFilter
         ): MergedAnnotations {
             return TypeMappedAnnotations.from(source, annotations, repeatableContainers, annotationFilter)
         }
 
         /**
-         * MergedAnnotations的构建的工厂方法
+         * 根据一个已经构建出来的[MergedAnnotation]列表去进行MergedAnnotations的构建的工厂方法
          *
          * @param mergedAnnotations MergedAnnotation列表
          * @return MergedAnnotations

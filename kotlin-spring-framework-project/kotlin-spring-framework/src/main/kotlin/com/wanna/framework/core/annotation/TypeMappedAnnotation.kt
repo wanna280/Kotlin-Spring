@@ -301,7 +301,13 @@ open class TypeMappedAnnotation<A : Annotation>(
      *
      * @return 合成的注解对象
      */
-    override fun createSynthesized(): A = SynthesizedMergedAnnotationInvocationHandler.createProxy(this, type)
+    @Suppress("UNCHECKED_CAST")
+    override fun createSynthesized(): A {
+        if (type.isInstance(rootAttributes)) {
+            return rootAttributes as A
+        }
+        return SynthesizedMergedAnnotationInvocationHandler.createProxy(this, type)
+    }
 
     companion object {
 

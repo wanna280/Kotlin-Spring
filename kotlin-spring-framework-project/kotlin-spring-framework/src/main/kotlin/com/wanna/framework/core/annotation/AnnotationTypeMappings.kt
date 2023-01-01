@@ -11,10 +11,12 @@ import kotlin.collections.ArrayList
  * @version v1.0
  * @date 2022/12/24
  *
+ * @param repeatableContainers 重复注解的Container
  * @param annotationType 要去进行描述的注解的类型
  * @param annotationFilter 对于该注解当中的MetaAnnotation来说, 哪些是需要被过滤的?
  */
 class AnnotationTypeMappings(
+    private val repeatableContainers: RepeatableContainers,
     private val annotationType: Class<out Annotation>,
     private val annotationFilter: AnnotationFilter,
 ) {
@@ -80,9 +82,20 @@ class AnnotationTypeMappings(
             if (!isMappable(source, it)) {
                 return@forEach
             }
-
-            // 如果该Meta注解符合AnnotationFilter的要求的话, 那么加入到队列当中
-            addIfPossible(queue, source, it)
+            // 如果存在有重复注解的Conatiner, 那么尝试处理重复注解的情况
+            val repeatedAnnotations = repeatableContainers.findRepeatedAnnotations(it)
+            if (repeatedAnnotations != null) {
+                for (index in repeatedAnnotations.indices) {
+                    val repeatAnnotation = repeatedAnnotations[index]
+                    if (!isMappable(source, repeatAnnotation)) {
+                        continue
+                    }
+                    addIfPossible(queue, source, repeatAnnotation)
+                }
+            } else {
+                // 如果该Meta注解符合AnnotationFilter的要求的话, 那么加入到队列当中
+                addIfPossible(queue, source, it)
+            }
         }
     }
 
@@ -94,15 +107,12 @@ class AnnotationTypeMappings(
      * @return 如果它能被AnnotationFilter匹配的话, 那么return true; 否则return false
      */
     private fun isMappable(source: AnnotationTypeMapping, @Nullable metaAnnotation: Annotation?): Boolean {
-        return metaAnnotation != null
-                && !this.annotationFilter.matches(metaAnnotation)  // check metaAnnotation
+        return metaAnnotation != null && !this.annotationFilter.matches(metaAnnotation)  // check metaAnnotation
                 && !AnnotationFilter.PLAIN.matches(source.annotationType)  // check source
     }
 
     private fun addIfPossible(
-        queue: Deque<AnnotationTypeMapping>,
-        @Nullable source: AnnotationTypeMapping?,
-        ann: Annotation
+        queue: Deque<AnnotationTypeMapping>, @Nullable source: AnnotationTypeMapping?, ann: Annotation
     ) {
         addIfPossible(queue, source, ann.annotationClass.java, ann)
     }
@@ -140,9 +150,26 @@ class AnnotationTypeMappings(
         @JvmStatic
         fun forAnnotationType(
             annotationType: Class<out Annotation>,
-            annotationFilter: AnnotationFilter
+            annotationFilter: AnnotationFilter,
         ): AnnotationTypeMappings {
-            return AnnotationTypeMappings(annotationType, annotationFilter)
+            return forAnnotationType(annotationType, annotationFilter, RepeatableContainers.standardRepeatables())
+        }
+
+        /**
+         * 根据一个注解类型, 去建立起来该注解对应的映射信息
+         *
+         * @param annotationType 注解类型
+         * @param annotationFilter 要去过滤注解的Filter
+         * @param repeatableContainers 重复注解的寻找的Container
+         * @return 注解的映射信息
+         */
+        @JvmStatic
+        fun forAnnotationType(
+            annotationType: Class<out Annotation>,
+            annotationFilter: AnnotationFilter,
+            repeatableContainers: RepeatableContainers
+        ): AnnotationTypeMappings {
+            return AnnotationTypeMappings(repeatableContainers, annotationType, annotationFilter)
         }
 
         @JvmStatic

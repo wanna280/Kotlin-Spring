@@ -4,7 +4,6 @@ import com.wanna.framework.core.type.GlobalTypeSwitch
 import com.wanna.framework.lang.Nullable
 import org.springframework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.AnnotatedElement
-import java.util.stream.Collectors
 
 /**
  * AnnotatedElement的工具类，负责桥接SpringCore包当中的AnnotatedElementUtils
@@ -69,7 +68,9 @@ object AnnotatedElementUtils {
     @JvmStatic
     fun <A : Annotation> getAllMergedAnnotations(element: AnnotatedElement, annotationType: Class<A>): Set<A> {
         if (GlobalTypeSwitch.isAnnotatedElementUtilsOpen()) {
-            return getAnnotations(element).stream(annotationType).map { it.synthesize() }.collect(Collectors.toSet())
+            return getAnnotations(element)
+                .stream(annotationType)
+                .collect(MergedAnnotationCollectors.toAnnotationSet<A>())
         }
         return AnnotatedElementUtils.getAllMergedAnnotations(element, annotationType)
     }
@@ -84,7 +85,9 @@ object AnnotatedElementUtils {
     @JvmStatic
     fun <A : Annotation> findAllMergedAnnotations(element: AnnotatedElement, annotationType: Class<A>): Set<A> {
         if (GlobalTypeSwitch.isAnnotatedElementUtilsOpen()) {
-            return findAnnotations(element).stream(annotationType).map { it.synthesize() }.collect(Collectors.toSet())
+            return findAnnotations(element)
+                .stream(annotationType)
+                .collect(MergedAnnotationCollectors.toAnnotationSet<A>())
         }
         return AnnotatedElementUtils.findAllMergedAnnotations(element, annotationType)
     }
@@ -106,10 +109,18 @@ object AnnotatedElementUtils {
 
     @JvmStatic
     private fun getAnnotations(annotatedElement: AnnotatedElement): MergedAnnotations {
-        return MergedAnnotations.from(annotatedElement, MergedAnnotations.SearchStrategy.INHERITED_ANNOTATIONS, null)
+        return MergedAnnotations.from(
+            annotatedElement,
+            MergedAnnotations.SearchStrategy.INHERITED_ANNOTATIONS,
+            RepeatableContainers.none()
+        )
     }
 
     private fun findAnnotations(annotatedElement: AnnotatedElement): MergedAnnotations {
-        return MergedAnnotations.from(annotatedElement, MergedAnnotations.SearchStrategy.TYPE_HIERARCHY, null)
+        return MergedAnnotations.from(
+            annotatedElement,
+            MergedAnnotations.SearchStrategy.TYPE_HIERARCHY,
+            RepeatableContainers.none()
+        )
     }
 }
