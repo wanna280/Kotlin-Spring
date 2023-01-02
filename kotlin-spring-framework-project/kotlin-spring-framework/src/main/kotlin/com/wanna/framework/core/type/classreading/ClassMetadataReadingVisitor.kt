@@ -146,7 +146,7 @@ open class ClassMetadataReadingVisitor : ClassVisitor(SpringAsmInfo.ASM_VERSION)
         return EmptyMethodVisitor()
     }
 
-    override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor {
+    override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor? {
         // no-op
         return EmptyAnnotationVisitor()
     }

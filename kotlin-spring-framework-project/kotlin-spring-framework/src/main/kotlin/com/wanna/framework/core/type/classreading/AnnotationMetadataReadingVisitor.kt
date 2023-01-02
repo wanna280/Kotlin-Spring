@@ -71,10 +71,11 @@ open class AnnotationMetadataReadingVisitor(protected val classLoader: ClassLoad
      * @param descriptor descriptor
      * @return 获取一个提供注解的访问的AnnotationVisitor
      */
-    override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor {
+    @Nullable
+    override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor? {
         val className = Type.getType(descriptor).className
         this.annotationSet += className
-        return MergedAnnotationReadingVisitor.get(classLoader, null, descriptor, this.mergedAnnotations)
+        return MergedAnnotationReadingVisitor.get(classLoader, null, descriptor, this.mergedAnnotations::add)
     }
 
     /**

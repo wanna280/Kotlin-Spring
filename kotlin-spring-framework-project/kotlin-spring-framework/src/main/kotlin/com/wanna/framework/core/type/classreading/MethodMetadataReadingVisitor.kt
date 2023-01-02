@@ -5,6 +5,7 @@ import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.core.asm.SpringAsmInfo
 import com.wanna.framework.core.type.MethodMetadata
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.LinkedMultiValueMap
 import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.MethodVisitor
@@ -44,8 +45,9 @@ open class MethodMetadataReadingVisitor(
      * @param descriptor 注解的描述信息(例如"Ljava.lang.String;"这样的格式)
      * @return 提供对于注解当中的属性读取的AnnotationVisitor
      */
+    @Nullable
     override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor? {
-        return MergedAnnotationReadingVisitor.get(classLoader, null, descriptor, this.annotations)
+        return MergedAnnotationReadingVisitor.get(classLoader, null, descriptor, this.annotations::add)
     }
 
     /**
