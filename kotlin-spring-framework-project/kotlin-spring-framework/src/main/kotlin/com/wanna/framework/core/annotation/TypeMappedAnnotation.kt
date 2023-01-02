@@ -258,19 +258,33 @@ open class TypeMappedAnnotation<A : Annotation>(
 
             // Class[]->String[]
         } else if (value is Array<*> && value.isArrayOf<Class<*>>() && targetType == STRING_ARRAY_TYPE) {
-            result = Array(value.size) { (value[it] as Class<*>).name }
+            // 为目标类型的componentType去创建数组, 并将value当中的元素copy&getName放入到result当中
+            result = java.lang.reflect.Array.newInstance(targetType.componentType, value.size)
+            for (index in value.indices) {
+                java.lang.reflect.Array.set(result, index, (value[index] as Class<*>).name)
+            }
 
             // String[]->Class[]
         } else if (value is Array<*> && value.isArrayOf<String>() && targetType == CLASS_ARRAY_TYPE) {
-            result = Array(value.size) { ClassUtils.resolveClassName(value[it] as String, getClassLoader()) }
+            // 为目标类型的componentType去创建数组, 并将value当中的元素copy并完成类加载并放入到result当中
+            result = java.lang.reflect.Array.newInstance(targetType.componentType, value.size)
+            for (index in value.indices) {
+                java.lang.reflect.Array.set(
+                    result, index, ClassUtils.resolveClassName(value[index] as String, getClassLoader())
+                )
+            }
 
-            // MergedAnnotation->Annotation
+            // MergedAnnotation->Annotation(因为MetadataReader读取出来的注解会是MergedAnnotation对象)
         } else if (value is MergedAnnotation<*> && targetType.isAnnotation) {
             result = value.synthesize()
 
-            // MergedAnnotation[]->Annotation[]
+            // MergedAnnotation[]->Annotation[](因为MetadataReader读取出来的注解会是MergedAnnotation对象)
         } else if (value is Array<*> && value.isArrayOf<MergedAnnotation<*>>() && targetType.isArray && targetType.componentType.isAnnotation) {
-            result = Array(value.size) { (value[it] as MergedAnnotation<*>).synthesize() }
+            // 为目标类型的componentType去创建数组, 并将value当中的元素copy&synthesize放入到result当中
+            result = java.lang.reflect.Array.newInstance(targetType.componentType, value.size)
+            for (index in value.indices) {
+                java.lang.reflect.Array.set(result, index, (value[index] as MergedAnnotation<*>).synthesize())
+            }
         }
 
         // 如果类型不匹配的话...那么丢出异常(Note: 这里要求type必须是包装类的类型)

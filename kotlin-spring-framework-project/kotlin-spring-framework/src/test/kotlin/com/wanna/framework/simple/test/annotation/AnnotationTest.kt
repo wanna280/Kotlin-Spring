@@ -117,7 +117,7 @@ fun testAnnotation7() {
     val metadataReaderFactory = SimpleMetadataReaderFactory()
     val metadataReader = metadataReaderFactory.getMetadataReader(AnnotationTest5::class.java.name)
     val ann2MergedAnnotation = metadataReader.annotationMetadata.getAnnotations().get(Ann2::class.java)
-    val value = ann2MergedAnnotation.getValue("value")
+    val value = ann2MergedAnnotation.getValue("value", Array<Ann1>::class.java)
     println("annotation7 is $value")
 }
 
