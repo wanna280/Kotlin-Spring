@@ -49,12 +49,13 @@ object PostProcessorRegistrationDelegate {
 
             // 1.1 需要调用通过API往容器中添加的BeanDefinitionRegistryPostProcessor，并保存常规的BeanFactoryPostProcessor
             // 它的优先级比自己放在容器中的BenFactoryPostProcessor拥有更高的优先级
-            postProcessors.forEach {
-                if (it is BeanDefinitionRegistryPostProcessor) {
-                    it.postProcessBeanDefinitionRegistry(beanFactory)
-                    registryPostProcessors.add(it)
+            // 最典型的使用@see com.wanna.boot.autoconfigure.SharedMetadataReaderFactoryContextInitializer
+            for (processor in postProcessors) {
+                if (processor is BeanDefinitionRegistryPostProcessor) {
+                    processor.postProcessBeanDefinitionRegistry(beanFactory)
+                    registryPostProcessors.add(processor)
                 } else {
-                    regularProcessors.add(it)
+                    regularProcessors.add(processor)
                 }
             }
 
@@ -65,13 +66,10 @@ object PostProcessorRegistrationDelegate {
                 beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor::class.java, true, false)
 
             // 1.2 从容器中的所有的BeanDefinitionRegistryPostProcessor中找到所有实现了PriorityOrdered接口的Bean进行排序执行
-            postProcessorNames.forEach { beanName ->
+            for (beanName in postProcessorNames) {
                 if (beanFactory.isTypeMatch(beanName, PriorityOrdered::class.java)) {
-                    currentRegistryPostProcessors.add(
-                        beanFactory.getBean(
-                            beanName, BeanDefinitionRegistryPostProcessor::class.java
-                        )
-                    )
+                    val processor = beanFactory.getBean(beanName, BeanDefinitionRegistryPostProcessor::class.java)
+                    currentRegistryPostProcessors.add(processor)
                     // 标识这个Bean已经被处理
                     processedBeans.add(beanName)
                 }
@@ -88,19 +86,18 @@ object PostProcessorRegistrationDelegate {
                 beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor::class.java, true, false)
 
             // 1.3 从容器中的所有的BeanDefinitionRegistryPostProcessor中找到所有实现了Ordered接口的Bean进行排序执行
-            postProcessorNames.forEach { beanName ->
-                if (!processedBeans.contains(beanName) && beanFactory.isTypeMatch(
-                        beanName, Ordered::class.java
-                    )
-                ) {
-                    currentRegistryPostProcessors.add(
-                        beanFactory.getBean(
-                            beanName, BeanDefinitionRegistryPostProcessor::class.java
-                        )
-                    )
+
+            for (beanName in postProcessorNames) {
+                if (!processedBeans.contains(beanName) && beanFactory.isTypeMatch(beanName, Ordered::class.java)) {
+                    val processor = beanFactory.getBean(beanName, BeanDefinitionRegistryPostProcessor::class.java)
+                    currentRegistryPostProcessors.add(processor)
                     // 标识这个Bean已经被处理
                     processedBeans.add(beanName)
                 }
+            }
+
+            postProcessorNames.forEach { beanName ->
+
             }
 
             // 排序并执行
@@ -113,14 +110,11 @@ object PostProcessorRegistrationDelegate {
             postProcessorNames =
                 beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor::class.java, true, false)
 
-            // 1.4  从容器中的所有的BeanDefinitionRegistryPostProcessor中找到不是Ordered也不是PriorityOrdered的Bean进行排序执行
-            postProcessorNames.forEach { beanName ->
+            // 1.4 从容器中的所有的BeanDefinitionRegistryPostProcessor中找到不是Ordered也不是PriorityOrdered的Bean进行排序执行
+            for (beanName in postProcessorNames) {
                 if (!processedBeans.contains(beanName)) {
-                    currentRegistryPostProcessors.add(
-                        beanFactory.getBean(
-                            beanName, BeanDefinitionRegistryPostProcessor::class.java
-                        )
-                    )
+                    val processor = beanFactory.getBean(beanName, BeanDefinitionRegistryPostProcessor::class.java)
+                    currentRegistryPostProcessors.add(processor)
                     // 标识这个Bean已经被处理
                     processedBeans.add(beanName)
                 }
@@ -147,9 +141,9 @@ object PostProcessorRegistrationDelegate {
         val nonOrderedProcessorNames = ArrayList<String>()
 
         // 2.1 排序并执行所有的PriorityOrdered的BeanFactoryPostProcessor
-        postProcessorNames.forEach { beanName ->
+        for (beanName in postProcessorNames) {
             if (processedBeans.contains(beanName)) {  // skip because it has been processed
-                return@forEach
+                continue
             }
             val postProcessor = beanFactory.getBean(beanName, BeanFactoryPostProcessor::class.java)
             if (beanFactory.isTypeMatch(beanName, PriorityOrdered::class.java)) {
@@ -166,16 +160,16 @@ object PostProcessorRegistrationDelegate {
 
         // 2.2 排序并执行所有的Ordered的BeanFactoryPostProcessor
         val orderedProcessors = ArrayList<BeanFactoryPostProcessor>()
-        orderedProcessorNames.forEach {
-            orderedProcessors += beanFactory.getBean(it, BeanFactoryPostProcessor::class.java)
+        for (beanName in orderedProcessorNames) {
+            orderedProcessors += beanFactory.getBean(beanName, BeanFactoryPostProcessor::class.java)
         }
         sortProcessors(orderedProcessors, beanFactory)
         invokeBeanFactoryPostProcessors(orderedProcessors, beanFactory)
 
         // 2.3 执行所有的普通(NonOrdered)的BeanFactoryPostProcessor
         val nonOrderedProcessors = ArrayList<BeanFactoryPostProcessor>()
-        nonOrderedProcessorNames.forEach {
-            nonOrderedProcessors += beanFactory.getBean(it, BeanFactoryPostProcessor::class.java)
+        for (beanName in nonOrderedProcessorNames) {
+            nonOrderedProcessors += beanFactory.getBean(beanName, BeanFactoryPostProcessor::class.java)
         }
         invokeBeanFactoryPostProcessors(nonOrderedProcessors, beanFactory)
     }
@@ -295,8 +289,7 @@ object PostProcessorRegistrationDelegate {
         applicationStartup: ApplicationStartup
     ) {
         postProcessors.forEach {
-            val postProcessBeanDefProcessor = applicationStartup
-                .start("spring.context.beandef-registry.post-process")
+            val postProcessBeanDefProcessor = applicationStartup.start("spring.context.beandef-registry.post-process")
                 .tag("postProcessor", it::toString)
             it.postProcessBeanDefinitionRegistry(registry)
             postProcessBeanDefProcessor.end()  // end
@@ -315,8 +308,7 @@ object PostProcessorRegistrationDelegate {
     ) {
         postProcessors.forEach {
             val postProcessBeanFactory =
-                beanFactory.getApplicationStartup()
-                    .start("spring.context.bean-factory.post-process")  // start and tag
+                beanFactory.getApplicationStartup().start("spring.context.bean-factory.post-process")  // start and tag
                     .tag("postProcessor", it::toString)
             it.postProcessBeanFactory(beanFactory)
             postProcessBeanFactory.end()  // end

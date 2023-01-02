@@ -39,16 +39,16 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
 
     companion object {
         /**
-         * ImportRegistry的beanName
-         */
-        @JvmStatic
-        private val IMPORT_REGISTRY_BEAN_NAME = ConfigurationClassPostProcessor::class.java.name + ".importRegistry"
-
-        /**
          * Logger
          */
         @JvmStatic
         private val logger = LoggerFactory.getLogger(ConfigurationClassPostProcessor::class.java)
+
+        /**
+         * ImportRegistry的beanName
+         */
+        @JvmStatic
+        private val IMPORT_REGISTRY_BEAN_NAME = ConfigurationClassPostProcessor::class.java.name + ".importRegistry"
     }
 
     /**
@@ -82,7 +82,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
     /**
      * MetadataReader Factory
      */
-    private val metadataReaderFactory: MetadataReaderFactory = CachingMetadataReaderFactory()
+    private var metadataReaderFactory: MetadataReaderFactory = CachingMetadataReaderFactory()
 
     /**
      * ComponentScan扫描出来的BeanDefinition, 需要使用到的BeanNameGenerator，默认使用simpleName作为生成方式
@@ -206,11 +206,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         // determine (Environment & ConfigurationClassParser)  to use
         val environment = this.environment ?: StandardEnvironment()
         val parser = this.parser ?: ConfigurationClassParser(
-            registry,
-            environment,
-            componentScanBeanNameGenerator,
-            resourceLoader,
-            metadataReaderFactory
+            registry, environment, componentScanBeanNameGenerator, resourceLoader, metadataReaderFactory
         )
 
         // 候选的，要交给parser去进行配置类解析的BeanDefinition列表(放在循环外，供每次循环所共享)
@@ -259,8 +255,9 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
                 newCandidateNames.forEach { beanName ->
                     val beanDefinition = registry.getBeanDefinition(beanName)
                     // 遍历所有的没有被处理过的配置类去进行检查，如果它是合格的配置类，但是还未被处理过，将其添加到candidates当中
-                    if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDefinition)
-                        && !alreadyParsedClasses.contains(beanDefinition.getBeanClassName()!!)
+                    if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDefinition) && !alreadyParsedClasses.contains(
+                            beanDefinition.getBeanClassName()!!
+                        )
                     ) {
                         candidates.add(BeanDefinitionHolder(beanDefinition, beanName))
                     }
@@ -337,6 +334,15 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
 
     @Nullable
     open fun getEnvironment(): Environment? = this.environment
+
+    /**
+     * 自定义MetadataReaderFactory
+     *
+     * @param metadataReaderFactory MetadataReader Factory
+     */
+    open fun setMetadataReaderFactory(metadataReaderFactory: MetadataReaderFactory) {
+        this.metadataReaderFactory = metadataReaderFactory
+    }
 
     override fun setEnvironment(environment: Environment) {
         this.environment = environment
