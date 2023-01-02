@@ -6,7 +6,7 @@ import java.util.function.Predicate
 import kotlin.jvm.Throws
 
 /**
- * 一个被合成的注解
+ * 一个被Merged之后得到的注解
  *
  * @author jianchao.jia
  * @version v1.0

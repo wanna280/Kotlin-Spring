@@ -277,6 +277,11 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         if (singletonBeanRegistry != null && !singletonBeanRegistry.containsSingleton(IMPORT_REGISTRY_BEAN_NAME)) {
             singletonBeanRegistry.registerSingleton(IMPORT_REGISTRY_BEAN_NAME, parser.getImportRegistry())
         }
+
+        // 如果它是Caching带缓存的话, 那么把缓存清空掉...
+        if (this.metadataReaderFactory is CachingMetadataReaderFactory) {
+            (this.metadataReaderFactory as CachingMetadataReaderFactory).clearCache()
+        }
     }
 
     /**

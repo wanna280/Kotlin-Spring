@@ -5,6 +5,7 @@ import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.context.stereotype.Service
 import com.wanna.framework.core.annotation.*
 import com.wanna.framework.core.type.GlobalTypeSwitch
+import com.wanna.framework.core.type.classreading.SimpleMetadataReaderFactory
 
 /**
  *
@@ -90,9 +91,7 @@ fun testAnnotation5() {
 @Service("666")
 @Configuration("777")
 @Component("888")
-class AnnotationTest4 {
-
-}
+class AnnotationTest4
 
 fun testAnnotation6() {
     val allMergedAnnotations =
@@ -102,6 +101,24 @@ fun testAnnotation6() {
     val mergedAnnotation = MergedAnnotations.from(AnnotationTest4::class.java).get(Component::class.java)
     val defaultValue = mergedAnnotation.getDefaultValue("value")
     println("annotation6 default value is ${defaultValue.get()}")
+}
+
+annotation class Ann1(val value: String)
+
+annotation class Ann2(val value: Array<Ann1>)
+
+@Ann2([Ann1("1"), Ann1("2")])
+class AnnotationTest5
+
+/**
+ * 验证MergedAnnotation内部的MergedAnnotation的读取
+ */
+fun testAnnotation7() {
+    val metadataReaderFactory = SimpleMetadataReaderFactory()
+    val metadataReader = metadataReaderFactory.getMetadataReader(AnnotationTest5::class.java.name)
+    val ann2MergedAnnotation = metadataReader.annotationMetadata.getAnnotations().get(Ann2::class.java)
+    val value = ann2MergedAnnotation.getValue("value", Array<Ann1>::class.java)
+    println("annotation7 is $value")
 }
 
 
@@ -114,5 +131,6 @@ fun main() {
     testAnnotation4()
     testAnnotation5()
     testAnnotation6()
+    testAnnotation7()
 
 }

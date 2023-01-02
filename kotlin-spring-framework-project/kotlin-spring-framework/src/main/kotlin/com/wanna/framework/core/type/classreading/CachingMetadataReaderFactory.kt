@@ -81,6 +81,19 @@ open class CachingMetadataReaderFactory(resourceLoader: ResourceLoader) : Simple
     }
 
     /**
+     * 清除MetadataReader缓存, 如果存在的话, 将所有的ClassMetadata全部情况
+     */
+    open fun clearCache() {
+        if (metadataReaderCache is LocalResourceCache) {
+            synchronized(metadataReaderCache!!) {
+                metadataReaderCache!!.clear()
+            }
+        } else if (metadataReaderCache != null) {
+            setCacheLimit(DEFAULT_CACHE_LIMIT)
+        }
+    }
+
+    /**
      * LocalResource的缓存, 采用LRU的方式去实现
      *
      * @param cacheLimit 缓存的大小限制
