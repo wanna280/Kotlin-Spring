@@ -114,6 +114,10 @@ open class DefaultConversionService : GenericConversionService() {
             // 添加UUID->String的Converter
             registry.addConverter(UUID::class.java, String::class.java, ObjectToStringConverter())
 
+            // 添加String->Enum的Converter
+            registry.addConverter(StringToEnumConverter())
+            // 添加Enum->String的Converter
+            registry.addConverter(Enum::class.java, String::class.java, ObjectToStringConverter())
         }
     }
 }

@@ -7,7 +7,16 @@ import com.wanna.framework.core.convert.support.DefaultConversionService
 import java.nio.charset.Charset
 import java.util.UUID
 
+
+enum class En {
+    VAL
+}
+
 fun main() {
+    val conversionService = DefaultConversionService.getSharedInstance()
+    println(conversionService.convert("VAL", En::class.java))
+    println(conversionService.convert(En.VAL, String::class.java))
+
     val typeConverter = SimpleTypeConverter()
     typeConverter.setConversionService(DefaultConversionService())
 
