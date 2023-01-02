@@ -3,6 +3,7 @@ package com.wanna.framework.context.annotation
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.core.environment.Environment
+import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.type.filter.AnnotationTypeFilter
 import com.wanna.framework.core.type.filter.AssignableTypeFilter
 import com.wanna.framework.core.type.filter.TypeFilter
@@ -19,7 +20,7 @@ import com.wanna.framework.util.ClassUtils
 open class ComponentScanAnnotationParser(
     private val registry: BeanDefinitionRegistry,
     private val environment: Environment,
-    private val classLoader: ClassLoader,
+    private val resourceLoader: ResourceLoader,
     private val componentScanBeanNameGenerator: BeanNameGenerator
 ) {
 
@@ -85,7 +86,7 @@ open class ComponentScanAnnotationParser(
                     FilterType.ANNOTATION -> typeFilters += AnnotationTypeFilter(it as Class<out Annotation>)
                     FilterType.ASSIGNABLE_TYPE -> typeFilters += AssignableTypeFilter(it)
                     FilterType.CUSTOM -> typeFilters += ParserStrategyUtils.instanceClass<TypeFilter>(
-                        it, environment, registry,
+                        it, this.environment, this.registry, this.resourceLoader
                     )
                 }
             }

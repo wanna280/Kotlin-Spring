@@ -41,7 +41,7 @@ object AutoConfigurationMetadataLoader {
      * @see AutoConfigurationMetadataLoader
      */
     private class PropertiesAutoConfigurationMetadata(private val properties: Properties) : AutoConfigurationMetadata {
-        override fun getSet(className: String, key: String, defaultValue: Set<String>?): Set<String>? {
+        override fun getSet(className: String, key: String, defaultValue: Set<String>): Set<String> {
             val metaStr = get(className, key) ?: return defaultValue
             return LinkedHashSet(StringUtils.commaDelimitedListToStringArray(metaStr).toList())
         }
@@ -53,6 +53,14 @@ object AutoConfigurationMetadataLoader {
 
         override fun get(className: String, key: String, defaultValue: String?): String? {
             return get(className, key) ?: defaultValue
+        }
+
+        override fun getInt(className: String, key: String, defaultValue: Int): Int {
+            return getInt(className, key) ?: defaultValue
+        }
+
+        override fun getInt(className: String, key: String): Int? {
+            return get(className, key)?.toInt()
         }
 
         override fun get(className: String, key: String): String? {
