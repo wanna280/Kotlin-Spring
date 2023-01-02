@@ -2,8 +2,8 @@ package com.wanna.framework.validation.beanvalidation
 
 import com.wanna.framework.aop.intercept.MethodInterceptor
 import com.wanna.framework.aop.intercept.MethodInvocation
-import com.wanna.framework.context.annotation.AnnotationAttributesUtils.asAnnotationAttributes
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.validation.annotation.Validated
 import javax.validation.ConstraintViolation
 import javax.validation.ConstraintViolationException
@@ -36,12 +36,10 @@ open class MethodValidationInterceptor(private val validator: Validator? = null)
         val target = invocation.getThis()
         val methodToValidate = invocation.getMethod()
 
-        // 交给ExecutableValidato去r检验目标方法当中的参数列表
-        var result: Set<ConstraintViolation<Any>> =
-            executableValidator.validateParameters(
-                target, methodToValidate,
-                invocation.getArguments(), *validationGroups
-            )
+        // 交给ExecutableValidator去检验目标方法当中的参数列表
+        var result: Set<ConstraintViolation<Any>> = executableValidator.validateParameters(
+            target, methodToValidate, invocation.getArguments(), *validationGroups
+        )
         if (result.isNotEmpty()) {
             throw ConstraintViolationException(result)
         }
@@ -64,12 +62,13 @@ open class MethodValidationInterceptor(private val validator: Validator? = null)
      */
     protected open fun determineValidationGroups(invocation: MethodInvocation): Array<Class<*>> {
         // 1.尝试从目标方法上去进行寻找
-        var validated = AnnotatedElementUtils.getMergedAnnotation(invocation.getMethod(), Validated::class.java)
+        var validated =
+            AnnotatedElementUtils.getMergedAnnotationAttributes(invocation.getMethod(), Validated::class.java)
         if (validated == null) {
-            val target = invocation.getThis() ?: throw IllegalStateException("target不能为空")
+            val target = invocation.getThis() ?: throw IllegalStateException("target cannot be null")
             // 2.尝试从目标类上去进行寻找
-            validated = AnnotatedElementUtils.getMergedAnnotation(target::class.java, Validated::class.java)
+            validated = AnnotatedElementUtils.getMergedAnnotationAttributes(target::class.java, Validated::class.java)
         }
-        return asAnnotationAttributes(validated)?.getClassArray("value") ?: emptyArray()
+        return validated?.getClassArray(MergedAnnotation.VALUE) ?: emptyArray()
     }
 }

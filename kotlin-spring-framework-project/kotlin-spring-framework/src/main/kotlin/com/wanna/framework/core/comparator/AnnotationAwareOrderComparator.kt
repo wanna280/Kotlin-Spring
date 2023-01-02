@@ -1,8 +1,8 @@
 package com.wanna.framework.core.comparator
 
-import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.core.Order
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.util.ClassUtils
 
 
@@ -48,16 +48,15 @@ open class AnnotationAwareOrderComparator : OrderComparator() {
      */
     private fun findOrderFromAnnotation(obj: Any): Int? {
         // first to check @Order
-        val orderAnnotation = AnnotatedElementUtils.getMergedAnnotation(obj::class.java, Order::class.java)
+        val orderAnnotation = AnnotatedElementUtils.getMergedAnnotationAttributes(obj::class.java, Order::class.java)
         if (orderAnnotation != null) {
-            return orderAnnotation.value
+            return orderAnnotation.getInt(MergedAnnotation.VALUE)
         }
         // second to check @Priority
         val priorityAnnotation =
-            AnnotatedElementUtils.getMergedAnnotation(obj::class.java, ClassUtils.forName(PRIORITY_ANNOTATION))
+            AnnotatedElementUtils.getMergedAnnotationAttributes(obj.javaClass, ClassUtils.forName(PRIORITY_ANNOTATION))
         if (priorityAnnotation != null) {
-            val attributes = AnnotationAttributesUtils.asAnnotationAttributes(priorityAnnotation)!!
-            return attributes.getInt("order")
+            return priorityAnnotation.getInt("order")
         }
         return null
     }

@@ -2,9 +2,11 @@ package com.wanna.cloud.netflix.ribbon
 
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.definition.GenericBeanDefinition
-import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.context.annotation.ImportBeanDefinitionRegistrar
+import com.wanna.framework.core.annotation.AnnotationFilter
 import com.wanna.framework.core.annotation.MergedAnnotation
+import com.wanna.framework.core.annotation.MergedAnnotations
+import com.wanna.framework.core.annotation.RepeatableContainers
 import com.wanna.framework.core.type.AnnotationMetadata
 
 /**
@@ -18,9 +20,9 @@ open class RibbonClientConfigurationRegistrar : ImportBeanDefinitionRegistrar {
             // 遍历RibbonClients当中的所有RibbonClient注解，去进行处理
             val ribbonClients = clientsAttributes.getAnnotationArray("value", Array<RibbonClient>::class.java)
             ribbonClients.forEach {
-                val annotation = MergedAnnotation.of(
-                    null, null, RibbonClient::class.java, AnnotationAttributesUtils.asNonNullAnnotationAttributes(it)
-                )
+                val annotation =
+                    MergedAnnotations.from(null, arrayOf(it), RepeatableContainers.none(), AnnotationFilter.PLAIN)
+                        .get(RibbonClient::class.java)
                 registerRibbonClient(registry, annotation)
             }
 

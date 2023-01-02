@@ -9,8 +9,7 @@ import com.wanna.framework.context.annotation.ConfigurationCondition.Configurati
 import com.wanna.framework.context.annotation.DeferredImportSelector.Group
 import com.wanna.framework.context.annotation.DeferredImportSelector.Group.Entry
 import com.wanna.framework.context.stereotype.Component
-import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import com.wanna.framework.core.annotation.MergedAnnotation
+import com.wanna.framework.core.annotation.*
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.environment.CompositePropertySource
 import com.wanna.framework.core.environment.ConfigurableEnvironment
@@ -568,7 +567,9 @@ open class ConfigurationClassParser(
             componentScans.forEach {
                 // 处理@ComponentScan注解, 将符合条件的BeanDefinition, 导入到容器当中
                 // 并且应该将@ComponentScan扫描进来的BeanDefinition, 通通当做一个配置类去进行解析, 递归
-                val attributes = AnnotationAttributesUtils.asNonNullAnnotationAttributes(it)
+                val attributes =
+                    MergedAnnotations.from(null, arrayOf(it), RepeatableContainers.none(), AnnotationFilter.PLAIN)
+                        .get(it.annotationClass.java).asAnnotationAttributes()
                 parse(parser.parse(attributes, sourceClass.metadata.getClassName()))
             }
         }

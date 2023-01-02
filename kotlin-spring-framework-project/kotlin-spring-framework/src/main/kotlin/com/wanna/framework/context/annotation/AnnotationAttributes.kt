@@ -1,6 +1,5 @@
 package com.wanna.framework.context.annotation
 
-import com.wanna.framework.context.annotation.AnnotationAttributesUtils.asAnnotationAttributesSet
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 
@@ -19,8 +18,12 @@ open class AnnotationAttributes(@Nullable val annotationType: Class<out Annotati
      * @param annotationName 注解的类名
      * @param classLoader 提供AnnotationName的类加载的ClassLoader
      */
-    constructor(annotationName: String, classLoader: ClassLoader)
-            : this(ClassUtils.forName(annotationName, classLoader))
+    constructor(annotationName: String, classLoader: ClassLoader) : this(
+        ClassUtils.forName(
+            annotationName,
+            classLoader
+        )
+    )
 
     /**
      * 提供一个无参数构造器
@@ -65,13 +68,12 @@ open class AnnotationAttributes(@Nullable val annotationType: Class<out Annotati
         return get(key) as Array<Any>
     }
 
-    open fun getAnnotationArray(key: String): Array<AnnotationAttributes> {
-        return getAnnotationSet(key).toTypedArray()
+    open fun getAnnotationArray(key: String): Array<Annotation> {
+        return get(key) as Array<Annotation>
     }
 
-    open fun getAnnotationSet(key: String): Set<AnnotationAttributes> {
-        val annotations = get(key) as Array<Annotation>
-        return asAnnotationAttributesSet(*annotations)
+    open fun getAnnotationSet(key: String): Set<Annotation> {
+        return getAnnotationArray(key).toSet()
     }
 
     open fun <T> getForType(key: String, type: Class<T>): T {
@@ -80,5 +82,25 @@ open class AnnotationAttributes(@Nullable val annotationType: Class<out Annotati
 
     open fun <T> getForTypeArray(key: String, type: Class<T>): Array<T> {
         return get(key) as Array<T>
+    }
+
+    companion object {
+        /**
+         * 从一个Map转换到Attributes对象
+         *
+         * @param map map
+         * @return AnnotationAttributes对象(如果map为null, return null)
+         */
+        @Nullable
+        @JvmStatic
+        fun fromMap(@Nullable map: Map<String, Any>?): AnnotationAttributes? {
+            map ?: return null
+            if (map is AnnotationAttributes) {
+                return map
+            }
+            val attributes = AnnotationAttributes()
+            attributes.putAll(map)
+            return attributes
+        }
     }
 }

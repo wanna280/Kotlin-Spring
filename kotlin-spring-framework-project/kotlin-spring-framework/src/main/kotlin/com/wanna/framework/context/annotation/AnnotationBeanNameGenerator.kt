@@ -4,6 +4,7 @@ import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinit
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
 import java.beans.Introspector
@@ -45,16 +46,13 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
      * 从注解当中去推断出来合适的BeanName
      */
     open fun determineBeanNameFromAnnotation(beanDefinition: AnnotatedBeanDefinition): String {
-        val beanClass = beanDefinition.getBeanClass() ?: throw IllegalStateException("beanClass不能为null")
+        val beanClass = beanDefinition.getBeanClass() ?: throw IllegalStateException("beanClass cannot be null")
         if (isCandidateAnnotation(beanClass)) {
             // 获取@Component注解的相关属性
-            val component = AnnotatedElementUtils.getMergedAnnotation(
-                beanClass,
-                ClassUtils.getAnnotationClassFromString(COMPONENT_ANNOTATION_CLASSNAME)
-            )
-            val componentAttr = AnnotationAttributesUtils.asAnnotationAttributes(component)
+            val componentClass = ClassUtils.getAnnotationClassFromString<Annotation>(COMPONENT_ANNOTATION_CLASSNAME)
+            val componentAttr = AnnotatedElementUtils.getMergedAnnotationAttributes(beanClass, componentClass)
             if (componentAttr != null) {
-                val name = componentAttr.getString("value")
+                val name = componentAttr.getString(MergedAnnotation.VALUE)
                 if (StringUtils.hasText(name)) {
                     return name
                 }
@@ -67,9 +65,11 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
      * 是否是候选注解？主要包括三个注解，@Component/@ManagedBean/@Named
      */
     private fun isCandidateAnnotation(clazz: Class<*>): Boolean {
-        return AnnotatedElementUtils.isAnnotated(clazz, COMPONENT_ANNOTATION_CLASSNAME) ||
-                AnnotatedElementUtils.isAnnotated(clazz, MANAGED_BEAN_ANNOTATION_CLASSNAME) ||
-                AnnotatedElementUtils.isAnnotated(clazz, NAMED_ANNOTATION_CLASSNAME)
+        return AnnotatedElementUtils.isAnnotated(
+            clazz, COMPONENT_ANNOTATION_CLASSNAME
+        ) || AnnotatedElementUtils.isAnnotated(
+            clazz, MANAGED_BEAN_ANNOTATION_CLASSNAME
+        ) || AnnotatedElementUtils.isAnnotated(clazz, NAMED_ANNOTATION_CLASSNAME)
     }
 
     /**

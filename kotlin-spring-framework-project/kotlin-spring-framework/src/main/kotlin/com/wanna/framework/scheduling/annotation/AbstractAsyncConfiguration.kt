@@ -1,8 +1,6 @@
 package com.wanna.framework.scheduling.annotation
 
 import com.wanna.framework.aop.interceptor.AsyncUncaughtExceptionHandler
-import com.wanna.framework.context.annotation.AnnotationAttributes
-import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.ImportAware
 import com.wanna.framework.core.annotation.MergedAnnotation
