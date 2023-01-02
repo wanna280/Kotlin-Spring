@@ -71,6 +71,11 @@ open class AnnotationConfigMvcWebServerApplicationContext(_beanFactory: DefaultL
         getBeanFactory().registerSingleton(AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR, beanNameGenerator)
     }
 
+    override fun prepareRefresh() {
+        this.scanner.clearCache()  // clearCache
+        super.prepareRefresh()
+    }
+
     /**
      * 注册很多个配置类到容器当中
      *

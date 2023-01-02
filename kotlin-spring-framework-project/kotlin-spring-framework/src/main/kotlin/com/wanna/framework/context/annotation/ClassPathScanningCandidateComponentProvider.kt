@@ -252,7 +252,12 @@ open class ClassPathScanningCandidateComponentProvider(
      *
      * @return MetadataReaderFactory(如果之前没有初始化的话, 那么创建一个默认的CachingMetadataReaderFactory)
      */
-    fun getMetadataReaderFactory(): MetadataReaderFactory = this.metadataReaderFactory ?: CachingMetadataReaderFactory()
+    fun getMetadataReaderFactory(): MetadataReaderFactory {
+        if (this.metadataReaderFactory == null) {
+            this.metadataReaderFactory = CachingMetadataReaderFactory()
+        }
+        return this.metadataReaderFactory!!
+    }
 
     open fun getResourcePatternResolver() = this.resourcePatternResolver
 
@@ -354,6 +359,16 @@ open class ClassPathScanningCandidateComponentProvider(
      */
     protected open fun resolveBasePackage(basePackage: String): String {
         return ClassUtils.convertClassNameToResourcePath(getEnvironment().resolvePlaceholders(basePackage)!!)
+    }
+
+    /**
+     * clearCache
+     */
+    open fun clearCache() {
+        // 对于外部提供的MetadataReaderFactory去进行清除, 对于共享的Cache将会被ApplicationContext自己去进行清理
+        if (this.metadataReaderFactory is CachingMetadataReaderFactory) {
+            (this.metadataReaderFactory as CachingMetadataReaderFactory).clearCache()
+        }
     }
 
 }

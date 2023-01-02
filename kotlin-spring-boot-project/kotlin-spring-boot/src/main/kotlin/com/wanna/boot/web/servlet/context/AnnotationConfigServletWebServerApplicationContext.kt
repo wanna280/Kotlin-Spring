@@ -49,6 +49,11 @@ open class AnnotationConfigServletWebServerApplicationContext(_beanFactory: Defa
         this.refresh()
     }
 
+    override fun prepareRefresh() {
+        this.scanner.clearCache()  // clearCache
+        super.prepareRefresh()
+    }
+
     /**
      * 设置ApplicationContext的Environment，给Scanner和Reader中的Environment都给替换掉了
      */
