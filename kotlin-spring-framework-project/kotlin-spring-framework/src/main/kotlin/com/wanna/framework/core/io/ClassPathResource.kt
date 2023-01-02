@@ -18,38 +18,33 @@ import java.nio.file.Files
  * @date 2022/10/1
  */
 open class ClassPathResource
-private constructor(_path: String, @Nullable _classLoader: ClassLoader?, @Nullable _clazz: Class<*>?) :
+private constructor(path: String, @Nullable classLoader: ClassLoader?, @Nullable private val clazz: Class<*>?) :
     AbstractFileResolvingResource(), WritableResource {
 
     /**
      * 提供一个基于clazz的构建方法
      */
-    constructor(_path: String, _clazz: Class<*>) : this(_path, null, _clazz)
+    constructor(path: String, clazz: Class<*>) : this(path, null, clazz)
 
     /**
      * 提供一个基于classLoader的构建方法
      */
-    constructor(_path: String, classLoader: ClassLoader?) : this(_path, classLoader, null)
+    constructor(path: String, @Nullable classLoader: ClassLoader?) : this(path, classLoader, null)
 
     /**
      * 提供一个只给定path的构造器
      */
-    constructor(_path: String) : this(_path, null)
-
-    /**
-     * 获取
-     */
-    private val clazz: Class<*>? = _clazz
+    constructor(path: String) : this(path, null)
 
     /**
      * 如果必要的话，需要把ClassPath后的第一个"/"去掉
      */
-    private val path: String = if (_path.startsWith("/")) _path.substring(1) else _path
+    private val path = if (path.startsWith("/")) path.substring(1) else path
 
     /**
      * 如果用户没有指定ClassLoader的话，那么我们使用默认的ClassLoader
      */
-    private val classLoader: ClassLoader = _classLoader ?: ClassUtils.getDefaultClassLoader()
+    private val classLoader = classLoader ?: ClassUtils.getDefaultClassLoader()
 
     override fun getInputStream(): InputStream {
         val stream = if (clazz != null) clazz.getResourceAsStream(path) else classLoader.getResourceAsStream(path)
@@ -102,4 +97,32 @@ private constructor(_path: String, @Nullable _classLoader: ClassLoader?, @Nullab
     open fun getPath(): String = this.path
 
     override fun getOutputStream(): OutputStream = Files.newOutputStream(getFile().toPath())
+
+    /**
+     * 采用clazz&path&classLoader去进行生成equals的比较
+     *
+     * @param other other
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as ClassPathResource
+
+        if (clazz != other.clazz) return false
+        if (path != other.path) return false
+        if (classLoader != other.classLoader) return false
+
+        return true
+    }
+
+    /**
+     * 采用clazz&path&classLoader去进行hashCode的生成
+     */
+    override fun hashCode(): Int {
+        var result = clazz?.hashCode() ?: 0
+        result = 31 * result + path.hashCode()
+        result = 31 * result + classLoader.hashCode()
+        return result
+    }
 }
