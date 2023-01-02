@@ -1,10 +1,11 @@
 package com.wanna.framework.core.type
 
-import com.wanna.framework.core.annotation.MergedAnnotation
-import com.wanna.framework.core.annotation.MergedAnnotationSelector
-import com.wanna.framework.core.annotation.MergedAnnotationSelectors
-import com.wanna.framework.core.annotation.MergedAnnotations
+import com.wanna.framework.core.annotation.*
+import com.wanna.framework.core.annotation.MergedAnnotation.Adapt.*
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.MultiValueMap
+import java.util.Collections
+import java.util.function.Function
 
 /**
  * 这是一个被注解标注的的类型的Metadata信息，支持去获取到注解的相关属性；
@@ -22,6 +23,13 @@ interface AnnotatedTypeMetadata {
      */
     fun getAnnotations(): MergedAnnotations
 
+    /**
+     * 判断该类型上是否标注了某个注解？(支持直接标注/以Meta注解的方式去进行标注)
+     *
+     * @param annotationName 注解的全类名
+     * @return 如果有标注的话，那么return true；否则return false
+     */
+    fun isAnnotated(annotationName: String): Boolean = getAnnotations().isPresent(annotationName)
 
     /**
      * 指定具体的注解类型的className，去寻找到合适的注解的对应属性(对于注解对象, 将会转换成为Map; 对于Class的属性值, 不会转换为String)
@@ -64,12 +72,35 @@ interface AnnotatedTypeMetadata {
         getAnnotationAttributes(annotationClass.name)
 
     /**
-     * 判断该类型上是否标注了某个注解？
+     * 指定具体的注解类型的className，去寻找到**所有**合适的注解的对应属性(对于注解对象, 将会转换成为Map; 对于Class的属性值, 不会转换为String)
      *
-     * @param annotationName 注解的全类名
-     * @return 如果标注了，那么return true；否则return false
+     * @param annotationName 注解类型的全类名
+     * @return 为该注解去解析到的注解属性Map; 如果不存在该注解的话, return null
      */
-    fun isAnnotated(annotationName: String): Boolean {
-        return !annotationName.startsWith("java.lang.annotation") && getAnnotations().isPresent(annotationName)
+    @Nullable
+    fun getAllAnnotationAttributes(annotationName: String): MultiValueMap<String, Any>? =
+        getAllAnnotationAttributes(annotationName, false)
+
+
+    /**
+     * 指定具体的注解类型的className，去寻找到**所有**合适的注解的对应属性(对于注解对象, 将会转换成为Map)
+     *
+     * @param annotationName 注解类型的全类名
+     * @param classValueAsString 是否需要将值为Class的属性值去转换为String?
+     * @return 为该注解去解析到的注解属性Map; 如果不存在该注解的话, return null
+     */
+    @Nullable
+    fun getAllAnnotationAttributes(annotationName: String, classValueAsString: Boolean): MultiValueMap<String, Any>? {
+        val adapts = MergedAnnotation.Adapt.values(classValueAsString, true)
+        return getAnnotations()
+            .stream<Annotation>(annotationName)
+            .map(MergedAnnotation<Annotation>::withNonMergedAttributes)
+            .collect(
+                MergedAnnotationCollectors.toMultiValueMap(
+                    Function<MultiValueMap<String, Any>, MultiValueMap<String, Any>> {
+                        return@Function if (it.isEmpty()) null else it
+                    }, *adapts
+                )
+            )
     }
 }
