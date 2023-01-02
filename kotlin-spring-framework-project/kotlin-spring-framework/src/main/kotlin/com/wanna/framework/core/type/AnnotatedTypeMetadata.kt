@@ -1,5 +1,8 @@
 package com.wanna.framework.core.type
 
+import com.wanna.framework.core.annotation.MergedAnnotation
+import com.wanna.framework.core.annotation.MergedAnnotationSelector
+import com.wanna.framework.core.annotation.MergedAnnotationSelectors
 import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.lang.Nullable
 
@@ -21,19 +24,40 @@ interface AnnotatedTypeMetadata {
 
 
     /**
-     * 指定具体的注解name，去寻找到合适的注解的对应属性
+     * 指定具体的注解类型的className，去寻找到合适的注解的对应属性(对于注解对象, 将会转换成为Map; 对于Class的属性值, 不会转换为String)
      *
-     * @param annotationName 注解的全类名
-     * @return 为该注解去解析到的注解属性; 如果该注解没有属性，那么return null
+     * @param annotationName 注解类型的全类名
+     * @return 为该注解去解析到的注解属性Map; 如果不存在该注解的话, return null
      */
     @Nullable
-    fun getAnnotationAttributes(annotationName: String): Map<String, Any>?
+    fun getAnnotationAttributes(annotationName: String): Map<String, Any>? =
+        getAnnotationAttributes(annotationName, false)
+
+    /**
+     * 获取指定的AnnotationType对应的注解的AnnotationAttributes(对于注解对象, 将会转换成为Map)
+     *
+     * @param annotationName 要去获取的注解ClassName
+     * @param classValueAsString 是否需要将值为Class的属性值去转换为String?
+     * @return 为该注解去解析到的注解属性Map; 如果不存在该注解的话, return null
+     */
+    @Nullable
+    fun getAnnotationAttributes(annotationName: String, classValueAsString: Boolean): Map<String, Any>? {
+        val mergedAnnotation =
+            getAnnotations().get(annotationName, null, MergedAnnotationSelectors.firstDirectlyDeclared())
+
+        // 如果注解不存在的话, return null
+        if (!mergedAnnotation.present) {
+            return null
+        }
+        // 如果存在的话, 将该注解去转换为字符串, 并且如果遇到了注解当中有注解的话, 那么注解对象将会被转换成为Map
+        return mergedAnnotation.asAnnotationAttributes(*MergedAnnotation.Adapt.values(classValueAsString, true))
+    }
 
     /**
      * 指定具体的注解clazz，去寻找到合适的注解的对应属性
      *
      * @param annotationClass 注解的类型
-     * @return 解析到的注解属性，如果该注解没有属性，那么return null
+     * @return 解析到的注解属性Map; 如果不存在该注解的话，那么return null
      */
     @Nullable
     fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any>? =

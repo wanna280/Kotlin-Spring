@@ -27,12 +27,6 @@ open class SimpleAnnotationMetadata(
 ) : AnnotationMetadata {
     override fun getAnnotations() = this.annotations
 
-    @Nullable
-    override fun getAnnotationAttributes(annotationName: String): Map<String, Any>? {
-        annotations.get<Annotation>(annotationName).synthesize()
-        return emptyMap()
-    }
-
     override fun getClassName(): String = this.className
 
     override fun getPackageName(): String = ClassUtils.getPackageName(className)

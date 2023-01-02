@@ -1,7 +1,10 @@
 package com.wanna.framework.core.annotation
 
+import com.wanna.framework.context.annotation.AnnotationAttributes
 import com.wanna.framework.lang.Nullable
+import java.util.EnumSet
 import java.util.Optional
+import java.util.function.Function
 import java.util.function.Predicate
 import kotlin.jvm.Throws
 
@@ -61,6 +64,21 @@ interface MergedAnnotation<A : Annotation> {
      * @return 如果有默认值, return true; 没有默认值return false
      */
     fun hasDefaultValue(attributeName: String): Boolean
+
+    /**
+     * 对MergedAnnotation当中的属性值去进行过滤, 得到一个新的MergedAnnotation
+     *
+     * @param predicate 对属性名去执行匹配的断言, 如果断言和属性名匹配了, 那么该属性将会被pass掉
+     * @return 只用于符合断言的属性名的MergedAnnotation
+     */
+    fun filterAttributes(predicate: Predicate<String>): MergedAnnotation<A>
+
+    /**
+     * 获取到不使用Merged的原始注解的属性的MergedAnnotation(对于@AliasFor将不会生效)
+     *
+     * @return 不含有Merged属性的MergedAnnotation
+     */
+    fun withNonMergedAttributes(): MergedAnnotation<A>
 
     /**
      * 获取到给定的属性名对应的字符串形式的属性值
@@ -269,6 +287,93 @@ interface MergedAnnotation<A : Annotation> {
      * @return 断言和当前MergedAnnotation匹配的话, return合成之后的注解; 否则return [Optional.empty]
      */
     fun synthesize(condition: Predicate<in MergedAnnotation<A>>): Optional<A>
+
+    /**
+     * 将当前的MergedAnnotation去转换成为AnnotationAttributes
+     *
+     * @param adapts 转换时需要用到的操作(是否需要将Class转String/是否需要将Annotation转Map)
+     * @return 转换之后得到的AnnotationAttributes
+     */
+    fun asAnnotationAttributes(vararg adapts: Adapt): AnnotationAttributes
+
+    /**
+     * 将当前的MergedAnnotation去转换成为Map
+     *
+     * @param adapts 转换时需要用到的操作(是否需要将Class转String/是否需要将Annotation转Map)
+     * @return 转换之后得到的Map
+     */
+    fun asMap(vararg adapts: Adapt): Map<String, Any>
+
+    /**
+     * 将当前的MergedAnnotation去转换成为Map
+     *
+     * @param factory 将MergedAnnotation转换为Map的Factory
+     * @param adapts 转换时需要用到的操作(是否需要将Class转String/是否需要将Annotation转Map)
+     * @param T 希望得到的目标Map的类型
+     * @return 转换之后得到的Map
+     */
+    fun <T : Map<String, Any>> asMap(factory: Function<MergedAnnotation<A>, T>, vararg adapts: Adapt): T
+
+    /**
+     * 当为一个注解的属性值去创建Map/AnnotationAttributes时, 需要执行的操作
+     */
+    enum class Adapt {
+        /**
+         * 是否需要去将一个Class的属性值去转换为字符串?
+         */
+        CLASS_TO_STRING,
+
+        /**
+         * 是否需要将一个注解的属性值去转换成为一个Map, 而不是使用合成注解?
+         */
+        ANNOTATION_TO_MAP;
+
+        /**
+         * 检查当前的Adapt, 是否在给定的adapts列表当中
+         *
+         * @param adapts 待检查的Adapt列表
+         * @return 如果this在adapts当中return true; 否则return false
+         */
+        fun isIn(vararg adapts: Adapt): Boolean {
+            for (adapt in adapts) {
+                if (this === adapt) {
+                    return true
+                }
+            }
+            return false
+        }
+
+        companion object {
+            /**
+             * 根据classToString和annotationsToMap的标志位, 创建出来对应的Adapt枚举值列表
+             *
+             * @param classToString 是否需要将Class去转换成为字符串
+             * @param annotationsToMap 是否需要将注解去转换成为Map
+             * @return 需要的Adapt对象列表
+             */
+            @JvmStatic
+            fun values(classToString: Boolean, annotationsToMap: Boolean): Array<Adapt> {
+                val enumSet = EnumSet.noneOf(Adapt::class.java)
+                addIfTrue(enumSet, CLASS_TO_STRING, classToString)
+                addIfTrue(enumSet, ANNOTATION_TO_MAP, annotationsToMap)
+                return enumSet.toArray(emptyArray<Adapt>())
+            }
+
+            /**
+             * 如果test条件满足的话, 将value添加到result当中
+             *
+             * @param result result
+             * @param value 要去添加的元素类型
+             * @param test 条件(为true时才添加)
+             */
+            private fun <E> addIfTrue(result: MutableSet<E>, value: E, test: Boolean) {
+                if (test) {
+                    result += value
+                }
+            }
+        }
+
+    }
 
     companion object {
 

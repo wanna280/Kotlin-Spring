@@ -22,18 +22,6 @@ open class StandardAnnotationMetadata(val introspectedClass: Class<*>) : Annotat
 
     override fun getAnnotations() = this.annotations
 
-    @Nullable
-    override fun getAnnotationAttributes(annotationName: String): Map<String, Any>? {
-        return getAnnotationAttributes(ClassUtils.forName(annotationName))
-    }
-
-    @Nullable
-    override fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any>? {
-        val mergedAnnotation =
-            AnnotatedElementUtils.getMergedAnnotation(introspectedClass, annotationClass) ?: return emptyMap()
-        return AnnotationAttributesUtils.asAnnotationAttributes(mergedAnnotation) ?: emptyMap()
-    }
-
     override fun isAnnotated(annotationName: String): Boolean {
         val annotationClass = ClassUtils.getAnnotationClassFromString<Annotation>(annotationName)
         return AnnotatedElementUtils.getMergedAnnotation(introspectedClass, annotationClass) != null

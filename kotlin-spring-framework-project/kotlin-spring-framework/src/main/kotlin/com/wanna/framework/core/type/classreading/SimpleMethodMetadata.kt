@@ -27,11 +27,6 @@ open class SimpleMethodMetadata(
 
     override fun getAnnotations() = this.annotations
 
-    @Nullable
-    override fun getAnnotationAttributes(annotationName: String): Map<String, Any>? {
-        return emptyMap()
-    }
-
     override fun getMethodName(): String = this.methodName
 
     override fun getDeclaringClassName(): String = this.declaringClassName

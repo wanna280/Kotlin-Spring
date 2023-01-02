@@ -2,12 +2,16 @@ package com.wanna.framework.core.annotation
 
 import com.wanna.framework.constants.CLASS_ARRAY_TYPE
 import com.wanna.framework.constants.STRING_ARRAY_TYPE
+import com.wanna.framework.core.annotation.MergedAnnotation.Adapt
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.Method
 import java.util.*
+import java.util.function.Function
+import java.util.function.Predicate
 import kotlin.NoSuchElementException
+import kotlin.collections.LinkedHashMap
 
 /**
  * TypeMapped MergedAnnotation
@@ -21,7 +25,8 @@ import kotlin.NoSuchElementException
  * @param source source
  * @param rootAttributes root属性(可能是Map, 可能是Annotation)
  * @param valueExtractor 从root属性当中去提取到对应的属性值的提取器Extractor
- * @param useMergedValues 是否要使用MergedValues?
+ * @param useMergedValues 是否要使用MergedValues? 决定了@AliasFor注解是否生效
+ * @param attributeFilter 属性值的过滤器, 提供对于属性名的过滤, 被该Filter匹配上的属性名将会被丢弃
  */
 open class TypeMappedAnnotation<A : Annotation>(
     private val mapping: AnnotationTypeMapping,
@@ -29,7 +34,8 @@ open class TypeMappedAnnotation<A : Annotation>(
     @Nullable private val source: Any?,
     @Nullable private val rootAttributes: Any?,
     private val valueExtractor: ValueExtractor,
-    private val useMergedValues: Boolean = true
+    private val useMergedValues: Boolean = true,
+    @Nullable private val attributeFilter: Predicate<String>? = null
 ) : AbstractMergedAnnotation<A>() {
 
     /**
@@ -42,6 +48,7 @@ open class TypeMappedAnnotation<A : Annotation>(
      */
     private val resolvedMirrors: IntArray = if (distance == 0) resolvedRootMirrors
     else mapping.mirrorSets.resolve(source, rootAttributes, this::getValueForMirrorResolution)
+
 
     /**
      * present?
@@ -97,6 +104,143 @@ open class TypeMappedAnnotation<A : Annotation>(
     }
 
     /**
+     * 对MergedAnnotation当中的属性值去进行过滤, 得到一个新的MergedAnnotation
+     *
+     * @param predicate 对属性名去执行匹配的断言, 如果断言和属性名匹配了, 那么该属性将会被pass掉
+     * @return 只用于符合断言的属性名的MergedAnnotation
+     */
+    override fun filterAttributes(predicate: Predicate<String>): MergedAnnotation<A> {
+        // 如果之前就有AttributeFilter, 去进行merge
+        val predicateToUse = if (this.attributeFilter != null) predicate.and(this.attributeFilter) else predicate
+        return TypeMappedAnnotation<A>(
+            mapping, classLoader, source, rootAttributes, valueExtractor, useMergedValues, predicateToUse
+        )
+    }
+
+    /**
+     * 获取到不使用Merged的原始注解的属性的MergedAnnotation(对于@AliasFor将不会生效)
+     *
+     * @return 不含有Merged属性的MergedAnnotation
+     */
+    override fun withNonMergedAttributes(): MergedAnnotation<A> {
+        return TypeMappedAnnotation(mapping, classLoader, source, rootAttributes, valueExtractor, false)
+    }
+
+    /**
+     * 对于转换为Map, 我们使用LinkedHashMap去进行创建
+     *
+     * @param adapts 转换时需要用到的操作(是否需要将Class转String/是否需要将Annotation转Map)
+     * @return 转换之后得到的Map
+     */
+    override fun asMap(vararg adapts: Adapt): Map<String, Any> {
+        return Collections.unmodifiableMap(asMap(Function { LinkedHashMap() }, adapts = adapts))
+    }
+
+    /**
+     * 执行真正的Map的转换, 将当前的MergedAnnotation去转换成为一个Map
+     *
+     * @param factory 创建Map的工厂方法
+     * @param adapts 转换时需要用到的操作(是否需要将Class转String/是否需要将Annotation转Map)
+     * @return 转换成功之后得到的目标Map
+     */
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : Map<String, Any>> asMap(
+        factory: Function<MergedAnnotation<A>, T>, vararg adapts: Adapt
+    ): T {
+        // apply func, 获取到Map对象
+        val map = factory.apply(this)
+        if (!ClassUtils.isAssignableValue(MutableMap::class.java, map)) {
+            throw IllegalStateException("Factory used to create MergedAnnotation Map must a mutable map")
+        }
+        map as MutableMap<String, Any>
+
+
+        // 针对当前注解当中的所有的属性方法, 去获取到属性值
+        val attributes = this.mapping.attributes
+        for (index in 0 until attributes.size) {
+            val attribute = attributes[index]
+
+            // 如果需要去执行classToString, 并且目标属性类型是Class/Class[]的话, 那么需要转换为String/String[]
+            val value = if (isFiltered(attribute.name)) null
+            else getValue(index, getTypeForMapOptions(attribute, adapts = adapts))
+            if (value != null) {
+                // 对该属性值去类型的转换, 并收集到map当中来
+                val adapted = adaptValueForMapOptions(attribute, value, map.javaClass, factory, arrayOf(*adapts))
+                map[attribute.name] = adapted
+            }
+        }
+        return map
+    }
+
+    /**
+     * 为属性值转换成为Map的方式, 去获取到应该Value应该使用的属性值类型
+     *
+     * @param attribute 目标注解属性方法
+     * @param adapts 转换时需要用到的操作(是否需要将Class转String/是否需要将Annotation转Map)
+     * @return 如果需要去执行classToString, 并且目标属性类型是Class/Class[]的话, 那么需要转换为String/String[]
+     */
+    private fun getTypeForMapOptions(attribute: Method, vararg adapts: Adapt): Class<*> {
+        val attributeType: Class<*> = attribute.returnType
+        // 获取到目标方法的属性的componentType
+        val componentType = attributeType.componentType ?: attributeType
+
+        // 如果注解当中的属性对应元素类型是Class, 并且需要classToString的话, 那么需要返回String/String[]
+        if (Adapt.CLASS_TO_STRING.isIn(*adapts) && componentType === Class::class.java) {
+            return if (attributeType.isArray) STRING_ARRAY_TYPE else String::class.java
+        }
+        // 返回Object, 交给后面的方法去进行自动类型推断
+        return Any::class.java
+    }
+
+    /**
+     * 将value去转换成为Map需要的目标类型, 这里主要针对MergedAnnotation/MergedAnnotation[]的情况, 检查是否需要转换成为Map...
+     *
+     * @param attribute 目标属性方法
+     * @param value 目标属性值
+     * @param mapType mapType
+     * @param factory 将MergedAnnotation转换为Map的Function
+     * @param adapts 转换时需要用到的操作(是否需要将Class转String/是否需要将Annotation转Map)
+     * @return 转换之后得到的结果
+     */
+    @Suppress("UNCHECKED_CAST")
+    private fun <T : Map<String, Any>, A : Annotation> adaptValueForMapOptions(
+        attribute: Method,
+        value: Any,
+        mapType: Class<*>,
+        factory: Function<MergedAnnotation<A>, T>,
+        adapts: Array<Adapt>
+    ): Any {
+
+        // 如果原始的Value是一个MergedAnnotation的话, 那么需要检查是否需要转换成为一个Map
+        if (value is MergedAnnotation<*>) {
+            return if (!Adapt.ANNOTATION_TO_MAP.isIn(*adapts)) value.synthesize()
+            else (value as MergedAnnotation<A>).asMap(factory, *adapts)
+
+            // 如果原始的Value是一个MergedAnnotation[]的话, 那么需要检查是否需要转换成为Map
+        } else if (value is Array<*> && value.isArrayOf<MergedAnnotation<A>>()) {
+            val result: Any
+            // 如果需要annotationToMap, 那么针对每个注解都去转换成为Map
+            if (Adapt.ANNOTATION_TO_MAP.isIn(*adapts)) {
+                result = java.lang.reflect.Array.newInstance(mapType, value.size)
+                for (index in 0 until value.size) {
+                    java.lang.reflect.Array.set(
+                        result, index, (value[index] as MergedAnnotation<A>).asMap(factory, *adapts)
+                    )
+                }
+                // 如果不需要annotationToMap的话, 那么针对每个MergedAnnotation去进行注解的合成...
+            } else {
+                result = java.lang.reflect.Array.newInstance(attribute.returnType.componentType, value.size)
+                for (index in 0 until value.size) {
+                    java.lang.reflect.Array.set(result, index, (value[index] as MergedAnnotation<A>).synthesize())
+                }
+            }
+            return result
+        }
+        // 如果不是MergedAnnotation/MergedAnnotation[]的话, 在之前已经做好类型转换了, 这里就不管了...
+        return value
+    }
+
+    /**
      * 针对Mirror解析的情况下, 去获取到Value
      *
      * @param attribute 目标属性方法
@@ -120,7 +264,7 @@ open class TypeMappedAnnotation<A : Annotation>(
      */
     private fun getAttributeIndex(name: String, required: Boolean): Int {
         // 检查该注解是否存在有这样的名字的属性方法?
-        val index = this.mapping.attributes.indexOf(name)
+        val index = if (isFiltered(name)) -1 else this.mapping.attributes.indexOf(name)
 
         // 如果不存在有这样的属性名方法, 但是require=true的话, 需要丢出来异常...
         if (index == -1 && required) {
@@ -234,6 +378,13 @@ open class TypeMappedAnnotation<A : Annotation>(
         }
         return this.valueExtractor
     }
+
+    /**
+     * 检查给定的属性名是否因为被AttributeFilter所过滤, 从而不需要?
+     *
+     * @return 如果被AttributeFilter所匹配上了, 那么该属性值将会被过滤掉
+     */
+    private fun isFiltered(name: String): Boolean = this.attributeFilter?.test(name) ?: false
 
 
     /**
