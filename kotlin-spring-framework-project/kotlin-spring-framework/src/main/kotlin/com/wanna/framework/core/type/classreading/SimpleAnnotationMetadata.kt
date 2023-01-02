@@ -3,6 +3,7 @@ package com.wanna.framework.core.type.classreading
 import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.MethodMetadata
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import org.objectweb.asm.Opcodes
 
@@ -26,7 +27,9 @@ open class SimpleAnnotationMetadata(
 ) : AnnotationMetadata {
     override fun getAnnotations() = this.annotations
 
-    override fun getAnnotationAttributes(annotationName: String): Map<String, Any> {
+    @Nullable
+    override fun getAnnotationAttributes(annotationName: String): Map<String, Any>? {
+        annotations.get<Annotation>(annotationName).synthesize()
         return emptyMap()
     }
 
@@ -48,10 +51,12 @@ open class SimpleAnnotationMetadata(
 
     override fun isIndependentInnerClass(): Boolean = this.independentInnerClass
 
+    @Nullable
     override fun getEnclosingClassName(): String? = this.enclosingClassName
 
     override fun hasSuperClass(): Boolean = this.superClassName != null
 
+    @Nullable
     override fun getSuperClassName(): String? = this.superClassName
 
     override fun getInterfaceNames(): Array<String> = this.interfaceNames

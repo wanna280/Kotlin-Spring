@@ -3,6 +3,7 @@ package com.wanna.framework.core.type
 import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.annotation.MergedAnnotations
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.Modifier
@@ -21,11 +22,13 @@ open class StandardAnnotationMetadata(val introspectedClass: Class<*>) : Annotat
 
     override fun getAnnotations() = this.annotations
 
-    override fun getAnnotationAttributes(annotationName: String): Map<String, Any> {
+    @Nullable
+    override fun getAnnotationAttributes(annotationName: String): Map<String, Any>? {
         return getAnnotationAttributes(ClassUtils.forName(annotationName))
     }
 
-    override fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any> {
+    @Nullable
+    override fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any>? {
         val mergedAnnotation =
             AnnotatedElementUtils.getMergedAnnotation(introspectedClass, annotationClass) ?: return emptyMap()
         return AnnotationAttributesUtils.asAnnotationAttributes(mergedAnnotation) ?: emptyMap()
@@ -64,10 +67,12 @@ open class StandardAnnotationMetadata(val introspectedClass: Class<*>) : Annotat
 
     override fun hasEnclosingClass(): Boolean = introspectedClass.enclosingClass != null
 
+    @Nullable
     override fun getEnclosingClassName(): String? = introspectedClass.enclosingClass.name
 
     override fun hasSuperClass(): Boolean = introspectedClass.superclass != null
 
+    @Nullable
     override fun getSuperClassName(): String? = introspectedClass.superclass.name
 
     override fun getInterfaceNames(): Array<String> = introspectedClass.interfaces.map { it.name }.toTypedArray()

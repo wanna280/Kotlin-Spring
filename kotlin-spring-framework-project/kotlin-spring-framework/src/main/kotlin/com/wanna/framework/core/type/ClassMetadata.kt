@@ -1,5 +1,7 @@
 package com.wanna.framework.core.type
 
+import com.wanna.framework.lang.Nullable
+
 /**
  * 这是维护一个类的元信息
  *
@@ -75,6 +77,7 @@ interface ClassMetadata {
      *
      * @return 外部类的类名(不存在有外部类的话, return null)
      */
+    @Nullable
     fun getEnclosingClassName(): String?
 
     /**
@@ -89,6 +92,7 @@ interface ClassMetadata {
      *
      * @return superClassName
      */
+    @Nullable
     fun getSuperClassName(): String?
 
     /**

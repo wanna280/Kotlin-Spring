@@ -1,6 +1,7 @@
 package com.wanna.framework.core.type
 
 import com.wanna.framework.core.annotation.MergedAnnotations
+import com.wanna.framework.lang.Nullable
 
 /**
  * 这是一个被注解标注的的类型的Metadata信息，支持去获取到注解的相关属性；
@@ -23,17 +24,19 @@ interface AnnotatedTypeMetadata {
      * 指定具体的注解name，去寻找到合适的注解的对应属性
      *
      * @param annotationName 注解的全类名
-     * @return 解析到的注解属性，如果该注解没有属性，那么return empty
+     * @return 为该注解去解析到的注解属性; 如果该注解没有属性，那么return null
      */
-    fun getAnnotationAttributes(annotationName: String): Map<String, Any>
+    @Nullable
+    fun getAnnotationAttributes(annotationName: String): Map<String, Any>?
 
     /**
      * 指定具体的注解clazz，去寻找到合适的注解的对应属性
      *
      * @param annotationClass 注解的类型
-     * @return 解析到的注解属性，如果该注解没有属性，那么return empty
+     * @return 解析到的注解属性，如果该注解没有属性，那么return null
      */
-    fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any> =
+    @Nullable
+    fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any>? =
         getAnnotationAttributes(annotationClass.name)
 
     /**

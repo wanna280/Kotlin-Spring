@@ -16,18 +16,16 @@ interface AnnotationMetadata : AnnotatedTypeMetadata, ClassMetadata {
      * @return 直接标注的注解列表
      */
     fun getAnnotationTypes(): Set<String> {
-        return getAnnotations().stream().filter { it.directPresent }.map { it.type.name }
-            .collect(Collectors.toSet())
+        return getAnnotations().stream().filter { it.directPresent }.map { it.type.name }.collect(Collectors.toSet())
     }
 
     /**
      * 该类上是否直接标注了这个注解？
      *
      * @param annotationName 注解的全类名
+     * @return 如果直接标注了该注解的话, 那么return true; 否则return false
      */
-    fun hasAnnotation(annotationName: String): Boolean {
-        return getAnnotationTypes().contains(annotationName)
-    }
+    fun hasAnnotation(annotationName: String): Boolean = getAnnotationTypes().contains(annotationName)
 
     /**
      * 该类当中是否有直接标注了某个注解的方法
@@ -41,16 +39,16 @@ interface AnnotationMetadata : AnnotatedTypeMetadata, ClassMetadata {
      * 获取该类当中标注了某个注解的方法的列表
      *
      * @param annotationName 要匹配的注解的全类名
-     * @return 解析到的所有的该注解的方法列表
+     * @return 解析到的所有的标注了该注解的方法列表
      */
     fun getAnnotatedMethods(annotationName: String): Set<MethodMetadata>
 
     companion object {
         /**
-         * 直接构建一个StandardAnnotationMetadata
+         * 直接根据给定的Class, 去为该类构建出来一个StandardAnnotationMetadata
          *
-         * @param clazz class
-         * @return 构建好的AnnotationMetadata
+         * @param clazz 要去进行描述注解信息的Class
+         * @return 为该类构建出来的AnnotationMetadata
          */
         @JvmStatic
         fun introspect(clazz: Class<*>): AnnotationMetadata = StandardAnnotationMetadata.from(clazz)
