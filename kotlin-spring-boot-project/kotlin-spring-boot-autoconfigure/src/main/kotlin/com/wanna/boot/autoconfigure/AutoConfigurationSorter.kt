@@ -197,7 +197,7 @@ open class AutoConfigurationSorter(
 
             // 检查还有哪些自动配置类的Before当中配置了该className?
             this.classes.forEach { (name, classes) ->
-                if (classes.getBefore().contains(name)) {
+                if (classes.getBefore().contains(className)) {
                     classesRequestedAfter += name
                 }
             }
