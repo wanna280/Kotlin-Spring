@@ -121,6 +121,16 @@ fun testAnnotation7() {
     println("annotation7 is $value")
 }
 
+fun testAnnotation8() {
+    val metadataReaderFactory = SimpleMetadataReaderFactory()
+    val metadataReader = metadataReaderFactory.getMetadataReader(AnnotationTest5::class.java.name)
+    val ann2MergedAnnotation = metadataReader.annotationMetadata.getAnnotations().get(Ann2::class.java)
+    val value = ann2MergedAnnotation.asAnnotationAttributes()
+    val toMapValue = ann2MergedAnnotation.asAnnotationAttributes(MergedAnnotation.Adapt.ANNOTATION_TO_MAP)
+    println("annotation8 origin attributes is $value")
+    println("annotation8 to map attributes is $toMapValue")
+}
+
 
 fun main() {
     GlobalTypeSwitch.annotatedElementUtilsOpen = true
@@ -132,5 +142,6 @@ fun main() {
     testAnnotation5()
     testAnnotation6()
     testAnnotation7()
+    testAnnotation8()
 
 }

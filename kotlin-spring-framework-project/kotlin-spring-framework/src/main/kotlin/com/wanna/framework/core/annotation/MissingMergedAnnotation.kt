@@ -2,6 +2,8 @@ package com.wanna.framework.core.annotation
 
 import com.wanna.framework.lang.Nullable
 import java.util.*
+import java.util.function.Function
+import java.util.function.Predicate
 import kotlin.NoSuchElementException
 
 /**
@@ -47,8 +49,18 @@ class MissingMergedAnnotation<A : Annotation> : AbstractMergedAnnotation<A>() {
      */
     override fun <T : Any> getDefaultValue(attributeName: String, type: Class<T>): Optional<T> = Optional.empty()
 
+    override fun filterAttributes(predicate: Predicate<String>) = this
+
+    override fun withNonMergedAttributes() = this
+
     override fun hasDefaultValue(attributeName: String) =
         throw NoSuchElementException("Unable to check default value for missing annotation")
+
+    override fun asMap(vararg adapts: MergedAnnotation.Adapt): Map<String, Any> = Collections.emptyMap()
+    override fun <T : Map<String, Any>> asMap(
+        factory: Function<MergedAnnotation<A>, T>,
+        vararg adapts: MergedAnnotation.Adapt
+    ): T = factory.apply(this)
 
     @Nullable
     override fun <T> getAttributeValue(attributeName: String, type: Class<T>) =

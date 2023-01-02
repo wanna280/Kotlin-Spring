@@ -2,8 +2,10 @@ package com.wanna.framework.core.annotation
 
 import com.wanna.framework.constants.CLASS_ARRAY_TYPE
 import com.wanna.framework.constants.STRING_ARRAY_TYPE
+import com.wanna.framework.context.annotation.AnnotationAttributes
 import com.wanna.framework.lang.Nullable
 import java.util.*
+import java.util.function.Function
 import java.util.function.Predicate
 import kotlin.NoSuchElementException
 import kotlin.jvm.Throws
@@ -66,6 +68,16 @@ abstract class AbstractMergedAnnotation<A : Annotation> : MergedAnnotation<A> {
      */
     override fun synthesize(condition: Predicate<in MergedAnnotation<A>>): Optional<A> {
         return if (condition.test(this)) Optional.ofNullable(synthesize()) else Optional.empty()
+    }
+
+    /**
+     * 转换成为AnnotationAttributes, AnnotationAttributes本质上也是一个Map, 因此我们直接自定义Factory并使用asMap即可
+     *
+     * @param adapts 转换时需要用到的操作(是否需要将Class转String/是否需要将Annotation转Map)
+     * @return 转换之后得到的AnnotationAttributes
+     */
+    override fun asAnnotationAttributes(vararg adapts: MergedAnnotation.Adapt): AnnotationAttributes {
+        return asMap(Function { AnnotationAttributes(it.type) }, adapts = adapts)
     }
 
     override fun getString(attributeName: String): String = getRequiredAttributeValue(attributeName, String::class.java)

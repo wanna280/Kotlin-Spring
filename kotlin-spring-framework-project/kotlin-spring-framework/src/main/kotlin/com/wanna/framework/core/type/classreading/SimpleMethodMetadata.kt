@@ -4,6 +4,7 @@ import com.wanna.framework.context.annotation.AnnotationAttributes
 import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.core.type.MethodMetadata
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.MultiValueMap
 import org.objectweb.asm.Opcodes
 
@@ -25,10 +26,6 @@ open class SimpleMethodMetadata(
 ) : MethodMetadata {
 
     override fun getAnnotations() = this.annotations
-
-    override fun getAnnotationAttributes(annotationName: String): Map<String, Any> {
-        return emptyMap()
-    }
 
     override fun getMethodName(): String = this.methodName
 
