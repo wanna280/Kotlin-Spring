@@ -14,17 +14,19 @@ import java.util.*
  */
 object AutoConfigurationMetadataLoader {
     /**
-     * 自动配置的元信息配置文件的路径(path)
+     * 自动配置的元信息配置文件的路径(class path)
      */
     private const val AUTOCONFIGURATION_METADATA_PATH: String = "META-INF/spring-autoconfigure-metadata.properties"
 
     /**
      * 使用SPI机制从配置文件当中加载自动配置的元信息，并包装成为一个AutoConfigurationMetadata去进行返回；
      * AutoConfigurationMetadata主要是提供自动配置类的信息对应Properties的快速读取
+     *
+     * @param classLoader 要去进行AutoConfigurationMetadata的加载的ClassLoader
+     * @return 加载得到的AutoConfigurationMetadata
      */
     @JvmStatic
     fun loadMetadata(classLoader: ClassLoader): AutoConfigurationMetadata {
-
         // 使用PropertiesLoaderUtils去加载META-INF/spring-autoconfigure-metadata.properties
         val properties = PropertiesLoaderUtils.loadAllProperties(AUTOCONFIGURATION_METADATA_PATH, classLoader)
 
@@ -41,6 +43,15 @@ object AutoConfigurationMetadataLoader {
      * @see AutoConfigurationMetadataLoader
      */
     private class PropertiesAutoConfigurationMetadata(private val properties: Properties) : AutoConfigurationMetadata {
+
+        /**
+         * 只要可以加载到Properties, 并且Properties当中存在有该className作为Key的话, 那么就说明是被处理过了
+         *
+         * @param className className
+         * @return 如果Properties当中包含该className, 说明被处理过了, return true; 否则return false
+         */
+        override fun wasProcessed(className: String): Boolean = properties.containsKey(className)
+
         override fun getSet(className: String, key: String, defaultValue: Set<String>): Set<String> {
             val metaStr = get(className, key) ?: return defaultValue
             return LinkedHashSet(StringUtils.commaDelimitedListToStringArray(metaStr).toList())

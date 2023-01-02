@@ -10,6 +10,14 @@ import com.wanna.framework.lang.Nullable
 interface AutoConfigurationMetadata {
 
     /**
+     * 检查给定的clasName的配置信息, 是否已经被AnnotationProcessor进行处理过了
+     *
+     * @param className className
+     * @return 如果已经处理过了, return true; 否则return false
+     */
+    fun wasProcessed(className: String): Boolean
+
+    /**
      * 根据className和key去获取到metadata信息，并利用得到的值去转换为Set；如果找不到时，返回默认值(defaultValue)
      *
      * @param className className

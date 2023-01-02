@@ -234,11 +234,13 @@ open class AutoConfigurationSorter(
          * @return 如果存在的话, return true; 不存在的话, return false
          */
         fun isAvailable(): Boolean {
-            try {
-                getAnnotationMetadata()
-                return true
+            return try {
+                if (!wasProcessed()) {
+                    getAnnotationMetadata()
+                }
+                true
             } catch (ex: Throwable) {
-                return false
+                false
             }
         }
 
@@ -294,9 +296,12 @@ open class AutoConfigurationSorter(
             return if (mergedAnnotation.present) mergedAnnotation.getInt("value") else AutoConfigureOrder.DEFAULT_ORDER
         }
 
-        private fun wasProcessed(): Boolean {
-            return false
-        }
+        /**
+         * 检查当前配置类的className是否已经被处理过了?
+         *
+         * @return 如果已经被处理过, return true, 不用去进行继续处理; 否则return false
+         */
+        private fun wasProcessed(): Boolean = this.autoConfigurationMetadata.wasProcessed(className)
 
         /**
          * 获取AnnotationMetadata当中给定的注解类型的属性值
