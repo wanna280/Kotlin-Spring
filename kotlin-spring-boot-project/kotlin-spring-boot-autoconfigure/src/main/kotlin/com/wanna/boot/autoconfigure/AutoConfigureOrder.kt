@@ -1,9 +1,9 @@
 package com.wanna.boot.autoconfigure
 
 /**
- * 自动配置的Order
+ * 指定自动配置的Order
  *
- * @param value order
+ * @param value order, 数字越小优先级越高
  *
  * @see AutoConfigurationSorter
  * @see AutoConfigureBefore

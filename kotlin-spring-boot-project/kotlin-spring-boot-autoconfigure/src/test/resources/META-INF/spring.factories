@@ -1,0 +1,6 @@
+com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
+  com.wanna.boot.autoconfigure.order.AutoConfig1,\
+  com.wanna.boot.autoconfigure.order.AutoConfig2,\
+  com.wanna.boot.autoconfigure.order.AutoConfig3
+
+
