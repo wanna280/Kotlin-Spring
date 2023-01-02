@@ -20,13 +20,6 @@ import java.net.URL
 open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoader = DefaultResourceLoader()) :
     ResourcePatternResolver {
 
-    /**
-     * 提供一个基于ClassLoader去进行构建的的构造器
-     *
-     * @param classLoader ClassLoader
-     */
-    constructor(classLoader: ClassLoader) : this(DefaultResourceLoader(classLoader))
-
     companion object {
         /**
          * Logger
@@ -34,6 +27,15 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
         @JvmStatic
         private val logger = LoggerFactory.getLogger(PathMatchingResourcePatternResolver::class.java)
     }
+
+
+    /**
+     * 提供一个基于ClassLoader去进行构建的的构造器
+     *
+     * @param classLoader ClassLoader
+     */
+    constructor(classLoader: ClassLoader) : this(DefaultResourceLoader(classLoader))
+
 
     override fun getResource(location: String) = resourceLoader.getResource(location)
 
@@ -47,8 +49,7 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
      * 目前不会做表达式的解析，因此我们目前使用的是基于Spring的实现
      */
     private fun getResources0(locationPattern: String): Array<Resource> {
-        val resolver =
-            org.springframework.core.io.support.PathMatchingResourcePatternResolver(getClassLoader())
+        val resolver = org.springframework.core.io.support.PathMatchingResourcePatternResolver(getClassLoader())
         return resolver.getResources(locationPattern).map { SpringBridgedResource(it) }.toTypedArray()
     }
 
@@ -69,5 +70,7 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
         override fun getFilename(): String? = resource.filename
         override fun getDescription(): String = resource.description
         override fun toString(): String = resource.toString()
+        override fun equals(other: Any?): Boolean = resource == other
+        override fun hashCode(): Int = resource.hashCode()
     }
 }

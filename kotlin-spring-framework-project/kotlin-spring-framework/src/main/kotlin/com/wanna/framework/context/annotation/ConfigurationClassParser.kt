@@ -6,6 +6,8 @@ import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefiniti
 import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase
+import com.wanna.framework.context.annotation.DeferredImportSelector.Group
+import com.wanna.framework.context.annotation.DeferredImportSelector.Group.Entry
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.annotation.MergedAnnotation
@@ -20,6 +22,7 @@ import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.StandardAnnotationMetadata
 import com.wanna.framework.core.type.classreading.MetadataReader
 import com.wanna.framework.core.type.classreading.MetadataReaderFactory
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
@@ -29,6 +32,7 @@ import java.net.SocketException
 import java.net.UnknownHostException
 import java.util.*
 import java.util.function.Predicate
+import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.LinkedHashSet
 
@@ -38,8 +42,7 @@ import kotlin.collections.LinkedHashSet
 open class ConfigurationClassParser(
     private val registry: BeanDefinitionRegistry,
     private val environment: Environment,
-    classLoader: ClassLoader,
-    componentScanBeanNameGenerator: BeanNameGenerator,
+    private val componentScanBeanNameGenerator: BeanNameGenerator,
     private val resourceLoader: ResourceLoader,
     private val metadataReaderFactory: MetadataReaderFactory
 ) {
@@ -76,8 +79,9 @@ open class ConfigurationClassParser(
     /**
      * ComponentScan注解的解析器
      */
-    private val parser: ComponentScanAnnotationParser =
-        ComponentScanAnnotationParser(registry, environment, classLoader, componentScanBeanNameGenerator)
+    private val parser: ComponentScanAnnotationParser = ComponentScanAnnotationParser(
+        this.registry, this.environment, this.resourceLoader, componentScanBeanNameGenerator
+    )
 
     /**
      * 条件计算器, 通过@Conditional注解去计算该Bean是否应该被导入到容器当中？
@@ -449,8 +453,9 @@ open class ConfigurationClassParser(
             importCandidates.forEach { candidate ->
                 // 如果它是一个ImportSelector(不会注册到容器当中)
                 if (candidate.isAssignable(ImportSelector::class.java)) {
-                    val selector =
-                        ParserStrategyUtils.instanceClass<ImportSelector>(candidate.clazz, environment, registry)
+                    val selector = ParserStrategyUtils.instanceClass<ImportSelector>(
+                        candidate.clazz, this.environment, this.registry, this.resourceLoader
+                    )
                     // 如果它是一个延时处理的ImportSelector, 那么需要缓存起来, 后续一起去进行处理
                     if (selector is DeferredImportSelector) {
                         deferredImportSelectorHandler.add(configClass, selector)
@@ -471,7 +476,7 @@ open class ConfigurationClassParser(
                 } else if (candidate.isAssignable(ImportBeanDefinitionRegistrar::class.java)) {
                     // 实例化, 并保存ImportBeanDefinitionRegistrar到configClass当中
                     val registrar = ParserStrategyUtils.instanceClass<ImportBeanDefinitionRegistrar>(
-                        candidate.clazz, environment, registry
+                        candidate.clazz, this.environment, this.registry, this.resourceLoader
                     )
                     // value为配置类中的相关的的注解信息, 在后续去回调ImportBeanDefinitionRegistrar时会以参数的形式传递给调用方
                     configClass.addRegistrar(registrar, currentSourceClass.metadata)
@@ -740,9 +745,13 @@ open class ConfigurationClassParser(
          * @param holder 包装了ConfigurationClass和DeferredImportSelector的Holder
          */
         fun register(holder: DeferredImportSelectorHolder) {
-            val groupClass = holder.deferredImportSelector.getGroup() ?: DeferredImportSelector.Group::class.java
-            groupings.putIfAbsent(groupClass, DeferredImportSelectorGrouping(createGroup(groupClass)))
-            groupings[groupClass]?.add(holder)
+            // 如果给定了Group, 那么使用你的Group, 否则将会使用默认的Group...
+            val groupClass = holder.deferredImportSelector.getGroup()
+
+            // key-GroupClass, Value-Grouping
+            groupings.computeIfAbsent(groupClass ?: holder) {
+                DeferredImportSelectorGrouping(createGroup(groupClass))
+            }.add(holder)
 
             // 建立起来Metadata->ConfigClass的缓存
             this.configurationClasses[holder.configClass.metadata] = holder.configClass
@@ -754,8 +763,9 @@ open class ConfigurationClassParser(
          * @param groupType groupType
          * @return Group
          */
-        private fun createGroup(groupType: Class<out DeferredImportSelector.Group>): DeferredImportSelector.Group {
-            return ParserStrategyUtils.instanceClass(groupType, environment, registry, resourceLoader)
+        private fun createGroup(@Nullable groupType: Class<out Group>?): Group {
+            val groupClass = groupType ?: DefaultDeferredImportSelectorGroup::class.java
+            return ParserStrategyUtils.instanceClass(groupClass, environment, registry, resourceLoader)
         }
 
         /**
@@ -776,9 +786,29 @@ open class ConfigurationClassParser(
     }
 
     /**
+     * 默认的DeferredImportSelectorGroup的实现
+     */
+    private class DefaultDeferredImportSelectorGroup : Group {
+
+        /**
+         * DeferredImportSelector要去进行导入的类
+         */
+        private val imports = ArrayList<Entry>()
+
+        override fun process(metadata: AnnotationMetadata, selector: DeferredImportSelector) {
+            val selectImports = selector.selectImports(metadata)
+            for (importClassName in selectImports) {
+                imports += Entry(metadata, importClassName)
+            }
+        }
+
+        override fun selectImports(): Iterable<Entry> = this.imports
+    }
+
+    /**
      * 这是一个DeferredImportSelector的分组的抽象, 在它的内部维护了该分组下的DeferredImportSelector列表
      */
-    private inner class DeferredImportSelectorGrouping(private val group: DeferredImportSelector.Group) {
+    private inner class DeferredImportSelectorGrouping(private val group: Group) {
 
         /**
          * DeferredSelectors
@@ -797,7 +827,7 @@ open class ConfigurationClassParser(
          *
          * @return 自动配置类的Entry列表
          */
-        fun getImports(): Iterable<DeferredImportSelector.Group.Entry> {
+        fun getImports(): Iterable<Entry> {
             for (selector in this.deferredImportSelectors) {
                 this.group.process(selector.configClass.metadata, selector.deferredImportSelector)
             }

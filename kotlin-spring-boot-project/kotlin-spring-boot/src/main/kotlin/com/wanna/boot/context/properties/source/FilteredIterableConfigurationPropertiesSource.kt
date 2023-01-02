@@ -27,7 +27,7 @@ open class FilteredIterableConfigurationPropertiesSource(
         if (source is IterableConfigurationPropertySource) {
             return source.filter { filter.test(it) }.iterator()
         }
-        throw IllegalStateException("给定的source=[$source], type=[${getQualifiedName(source::class.java)}], 类型不是IterableConfigurationPropertySource, 无法去进行迭代")
+        return emptyList<ConfigurationPropertyName>().iterator()
     }
 
     /**

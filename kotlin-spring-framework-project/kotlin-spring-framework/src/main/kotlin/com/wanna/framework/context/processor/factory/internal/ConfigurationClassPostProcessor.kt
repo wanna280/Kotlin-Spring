@@ -35,32 +35,26 @@ import org.slf4j.LoggerFactory
  * @see ConfigurationClassBeanDefinitionReader
  */
 open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor, PriorityOrdered, EnvironmentAware,
-    BeanClassLoaderAware, ApplicationStartupAware, ResourceLoaderAware {
+    ApplicationStartupAware, ResourceLoaderAware {
 
     companion object {
-        /**
-         * ImportRegistry的beanName
-         */
-        @JvmStatic
-        private val IMPORT_REGISTRY_BEAN_NAME = ConfigurationClassPostProcessor::class.java.name + ".importRegistry"
-
         /**
          * Logger
          */
         @JvmStatic
         private val logger = LoggerFactory.getLogger(ConfigurationClassPostProcessor::class.java)
+
+        /**
+         * ImportRegistry的beanName
+         */
+        @JvmStatic
+        private val IMPORT_REGISTRY_BEAN_NAME = ConfigurationClassPostProcessor::class.java.name + ".importRegistry"
     }
 
     /**
      * BeanDefinitionRegistryPostProcessor的优先级
      */
     private var order: Int = 0
-
-    /**
-     * beanClassLoader, 提供对于Spring的Bean的类加载功能
-     */
-    @Nullable
-    private var classLoader: ClassLoader? = ClassUtils.getDefaultClassLoader()
 
     /**
      * Spring Environment环境对象
@@ -88,7 +82,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
     /**
      * MetadataReader Factory
      */
-    private val metadataReaderFactory: MetadataReaderFactory = CachingMetadataReaderFactory()
+    private var metadataReaderFactory: MetadataReaderFactory = CachingMetadataReaderFactory()
 
     /**
      * ComponentScan扫描出来的BeanDefinition, 需要使用到的BeanNameGenerator，默认使用simpleName作为生成方式
@@ -209,16 +203,10 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
             }
         }
 
-        // determine (ClassLoader & Environment & ConfigurationClassParser)  to use
-        val classLoader = this.classLoader ?: ClassUtils.getDefaultClassLoader()
+        // determine (Environment & ConfigurationClassParser)  to use
         val environment = this.environment ?: StandardEnvironment()
         val parser = this.parser ?: ConfigurationClassParser(
-            registry,
-            environment,
-            classLoader,
-            componentScanBeanNameGenerator,
-            resourceLoader,
-            metadataReaderFactory
+            registry, environment, componentScanBeanNameGenerator, resourceLoader, metadataReaderFactory
         )
 
         // 候选的，要交给parser去进行配置类解析的BeanDefinition列表(放在循环外，供每次循环所共享)
@@ -267,8 +255,9 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
                 newCandidateNames.forEach { beanName ->
                     val beanDefinition = registry.getBeanDefinition(beanName)
                     // 遍历所有的没有被处理过的配置类去进行检查，如果它是合格的配置类，但是还未被处理过，将其添加到candidates当中
-                    if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDefinition)
-                        && !alreadyParsedClasses.contains(beanDefinition.getBeanClassName()!!)
+                    if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDefinition) && !alreadyParsedClasses.contains(
+                            beanDefinition.getBeanClassName()!!
+                        )
                     ) {
                         candidates.add(BeanDefinitionHolder(beanDefinition, beanName))
                     }
@@ -305,7 +294,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
             val configClassAttr = beanDefinition.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE)
             if (configClassAttr == ConfigurationClassUtils.CONFIGURATION_CLASS_FULL) {
                 if (beanDefinition !is AbstractBeanDefinition) {
-                    throw IllegalStateException("Given BeanDefinition is not a AbstractBeanDefinition, unsupport to enhance it")
+                    throw IllegalStateException("Given BeanDefinition is not a AbstractBeanDefinition, un support to enhance it")
                 } else if (logger.isInfoEnabled && beanFactory.containsSingleton(beanName)) {
                     logger.info("Cannot support enhance Bean because bean factory exists its singleton object, beanName=$beanName")
                 } else {
@@ -326,7 +315,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
         // 对所有的@Configuration & proxyBeanMethods的配置类去进行增强
         configBeanDefs.forEach { (beanName, beanDefinition) ->
             val beanClass = beanDefinition.getBeanClass()!!
-            val configClass = enhancer.enhance(beanClass, classLoader)
+            val configClass = enhancer.enhance(beanClass, getBeanClassLoader())
             if (configClass != beanClass) {
                 if (logger.isTraceEnabled) {
                     logger.trace("替换beanName=[$beanName]的BeanDefinition，从[$beanClass]替换成为了被增强的[$configClass]")
@@ -340,12 +329,19 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
 
     override fun getOrder() = this.order
 
-    open fun getBeanClassLoader(): ClassLoader? = this.classLoader
+    @Nullable
+    open fun getBeanClassLoader(): ClassLoader? = this.resourceLoader.getClassLoader()
 
+    @Nullable
     open fun getEnvironment(): Environment? = this.environment
 
-    override fun setBeanClassLoader(classLoader: ClassLoader) {
-        this.classLoader = classLoader
+    /**
+     * 自定义MetadataReaderFactory
+     *
+     * @param metadataReaderFactory MetadataReader Factory
+     */
+    open fun setMetadataReaderFactory(metadataReaderFactory: MetadataReaderFactory) {
+        this.metadataReaderFactory = metadataReaderFactory
     }
 
     override fun setEnvironment(environment: Environment) {

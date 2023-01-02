@@ -1,16 +1,24 @@
 package com.wanna.boot.autoconfigure
 
 import com.wanna.boot.autoconfigure.EnableAutoConfiguration.Companion.ENABLED_OVERRIDE_PROPERTY
+import com.wanna.boot.autoconfigure.SharedMetadataReaderFactoryContextInitializer.Companion.BEAN_NAME
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.context.ResourceLoaderAware
 import com.wanna.framework.context.annotation.AnnotationAttributes
 import com.wanna.framework.context.annotation.DeferredImportSelector
 import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.EnvironmentAware
+import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.environment.Environment
+import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.core.type.AnnotationMetadata
+import com.wanna.framework.core.type.classreading.CachingMetadataReaderFactory
+import com.wanna.framework.core.type.classreading.MetadataReaderFactory
+import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 
 /**
  * 这是一个完成自动配置的ImportSelector，作用是从SpringFactories当中去加载通过EnableAutoConfiguration导入的相关配置类，
@@ -41,17 +49,23 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     /**
      * 自动配置类的导入Filter
      */
+    @Nullable
     private var configurationClassFilter: ConfigurationClassFilter? = null
 
     /**
      * 设置当前的ImportSelector应该所在的分组
      */
-    override fun getGroup(): Class<out DeferredImportSelector.Group>? {
-        return AutoConfigurationGroup::class.java
-    }
+    @Nullable
+    override fun getGroup(): Class<out DeferredImportSelector.Group>? = AutoConfigurationGroup::class.java
 
+    /**
+     * select Imports
+     *
+     * @param metadata 标注@EnableAutoConfiguration注解的类的元信息
+     * @return 要去进行导入的自动配置类列表
+     */
     override fun selectImports(metadata: AnnotationMetadata): Array<String> {
-        return AutoConfigurationSorter().sort(getAutoConfigurationEntry(metadata).configurations).toTypedArray()
+        return getAutoConfigurationEntry(metadata).configurations.toTypedArray()
     }
 
     /**
@@ -177,7 +191,8 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
      */
     data class AutoConfigurationEntry(val configurations: List<String>, val excludes: Set<String>)
 
-    private class AutoConfigurationGroup : DeferredImportSelector.Group {
+    private class AutoConfigurationGroup : DeferredImportSelector.Group, ResourceLoaderAware, BeanFactoryAware,
+        BeanClassLoaderAware {
 
         /**
          * 全部的DeferredImportSelector对应的自动配置类的信息
@@ -188,6 +203,38 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
          * Entries
          */
         private val entries = LinkedHashMap<String, AnnotationMetadata>()
+
+        /**
+         * ResourceLoader
+         */
+        private var resourceLoader: ResourceLoader? = null
+
+        /**
+         * BeanFactory
+         */
+        private var beanFactory: BeanFactory? = null
+
+        /**
+         * BeanClassLoader
+         */
+        private var beanClassLoader: ClassLoader = ClassUtils.getDefaultClassLoader()
+
+        /**
+         * AutoConfigurationMetadata
+         */
+        private var autoConfigurationMetadata: AutoConfigurationMetadata? = null
+
+        override fun setResourceLoader(resourceLoader: ResourceLoader) {
+            this.resourceLoader
+        }
+
+        override fun setBeanFactory(beanFactory: BeanFactory) {
+            this.beanFactory = beanFactory
+        }
+
+        override fun setBeanClassLoader(classLoader: ClassLoader) {
+            this.beanClassLoader = classLoader
+        }
 
         override fun process(metadata: AnnotationMetadata, selector: DeferredImportSelector) {
             val autoConfigurationEntry =
@@ -200,8 +247,55 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
             }
         }
 
+        /**
+         * SelectImports
+         */
         override fun selectImports(): Iterable<DeferredImportSelector.Group.Entry> {
-            return entries.map { DeferredImportSelector.Group.Entry(it.value, it.key) }.toList()
+            val processedConfigurations = autoConfigurationEntries.map { it.configurations }.flatMap { it.toList() }
+
+            // 对于给定的配置类, 使用AutoConfigurationSorter去进行排序
+            return sortAutoConfigurations(processedConfigurations).map {
+                DeferredImportSelector.Group.Entry(
+                    entries[it]!!, it
+                )
+            }.toList()
+        }
+
+        /**
+         * 对给定的配置类, 使用AutoConfigurationSorter去进行排序
+         *
+         * @param configurations 候选自动配置类
+         * @return 使用AutoConfigurationSorter去进行排序, 并得到排序之后的自动配置类列表
+         */
+        private fun sortAutoConfigurations(configurations: List<String>): List<String> {
+            return AutoConfigurationSorter(
+                getAutoConfigurationMetadata(), getMetadataReaderFactory()
+            ).getInPriorityOrder(configurations)
+        }
+
+        /**
+         * 获取MetadataReaderFactory, 如果BeanFactory当中有的话, 从BeanFactory当中去获取, 不然就创建一个默认的
+         *
+         * @return MetadataReaderFactory
+         */
+        private fun getMetadataReaderFactory(): MetadataReaderFactory {
+            return try {
+                beanFactory!!.getBean(BEAN_NAME, MetadataReaderFactory::class.java)
+            } catch (ex: NoSuchBeanDefinitionException) {
+                CachingMetadataReaderFactory(this.resourceLoader!!)
+            }
+        }
+
+        /**
+         * 获取到自动配置的Metadata信息(META-INF/spring-autoconfigure-metadata.properties)
+         *
+         * @return AutoConfiguration Metadata
+         */
+        private fun getAutoConfigurationMetadata(): AutoConfigurationMetadata {
+            if (this.autoConfigurationMetadata == null) {
+                this.autoConfigurationMetadata = AutoConfigurationMetadataLoader.loadMetadata(beanClassLoader)
+            }
+            return this.autoConfigurationMetadata!!
         }
     }
 

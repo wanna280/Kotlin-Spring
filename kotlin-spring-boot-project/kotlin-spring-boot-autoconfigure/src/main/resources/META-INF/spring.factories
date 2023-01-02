@@ -1,9 +1,16 @@
+# ApplicationContext Initializer
+com.wanna.framework.context.ApplicationContextInitializer=\
+  com.wanna.boot.autoconfigure.SharedMetadataReaderFactoryContextInitializer
+
+# AutoConfiguration Import Filter
 com.wanna.boot.autoconfigure.AutoConfigurationImportFilter=\
   com.wanna.boot.autoconfigure.condition.OnBeanCondition,\
-  com.wanna.boot.autoconfigure.condition.OnClassCondition
+  com.wanna.boot.autoconfigure.condition.OnClassCondition,\
+  com.wanna.boot.autoconfigure.condition.OnWebApplicationCondition
+
+# Auto Configure
 com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
   com.wanna.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration,\
   com.wanna.boot.autoconfigure.validation.ValidationAutoConfiguration,\
   com.wanna.boot.autoconfigure.web.mvc.NettyMvcAutoConfiguration,\
   com.wanna.boot.autoconfigure.web.servlet.ServletMvcAutoConfiguration
-
