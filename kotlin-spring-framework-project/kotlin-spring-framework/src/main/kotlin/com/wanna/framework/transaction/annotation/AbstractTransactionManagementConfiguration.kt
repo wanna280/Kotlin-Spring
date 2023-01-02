@@ -1,7 +1,5 @@
 package com.wanna.framework.transaction.annotation
 
-import com.wanna.framework.context.annotation.AnnotationAttributes
-import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.ImportAware
 import com.wanna.framework.core.annotation.MergedAnnotation

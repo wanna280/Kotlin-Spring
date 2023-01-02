@@ -202,7 +202,7 @@ interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
 
         @JvmStatic
         fun from(
-            source: Any,
+            @Nullable source: Any?,
             annotations: Array<Annotation>,
             repeatableContainers: RepeatableContainers,
             annotationFilter: AnnotationFilter

@@ -1,12 +1,11 @@
 package com.wanna.boot.context.properties.bind
 
 import com.wanna.boot.context.properties.source.ConfigurationPropertyName
-import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
 import com.wanna.framework.core.KotlinDetector
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ResolvableType
-import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.annotation.*
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.BeanUtils
 import java.lang.reflect.Constructor
@@ -134,9 +133,7 @@ open class ValueObjectBinder(private val bindConstructorProvider: BindConstructo
             @Suppress("UNCHECKED_CAST")
             @JvmStatic
             fun <T : Any> get(
-                bindable: Bindable<T>,
-                constructorProvider: BindConstructorProvider,
-                context: Binder.Context
+                bindable: Bindable<T>, constructorProvider: BindConstructorProvider, context: Binder.Context
             ): ValueObject<T>? {
                 val type = bindable.type.resolve()
                 // 对于枚举/抽象类, 它不是一个ValueObject, 在这里直接去return false, pass掉
@@ -145,9 +142,8 @@ open class ValueObjectBinder(private val bindConstructorProvider: BindConstructo
                 }
 
                 // 使用Constructor去获取到ValueObject的实例化时需要使用到的构造器对象
-                val constructor =
-                    constructorProvider.getBindConstructor(bindable, context.isNestedConstructorBinding())
-                        ?: return null
+                val constructor = constructorProvider.getBindConstructor(bindable, context.isNestedConstructorBinding())
+                    ?: return null
 
                 // 如果它是一个KotlinType, 尝试使用KotlinValueObject; 如果不是的话, 那么仍旧尝试DefaultValueObject的实例化方式
                 if (KotlinDetector.isKotlinType(type)) {
@@ -187,8 +183,7 @@ open class ValueObjectBinder(private val bindConstructorProvider: BindConstructo
              */
             @JvmStatic
             private fun parseConstructorParameters(
-                constructor: Constructor<*>,
-                type: ResolvableType
+                constructor: Constructor<*>, type: ResolvableType
             ): List<ConstructorParameter> {
                 val names = PARAMETER_NAME_DISCOVERER.getParameterNames(constructor)
                     ?: throw IllegalStateException("Failed to extract parameter names for $constructor")
@@ -196,9 +191,8 @@ open class ValueObjectBinder(private val bindConstructorProvider: BindConstructo
                 val result = ArrayList<ConstructorParameter>()
                 parameters.indices.forEach { index ->
                     // 解析当前位置的构造器的参数名, 如果有@Name注解的话, 使用给定的注解去作为parameterName, 否则使用参数名发现器解析得到的parameterName
-                    val name =
-                        AnnotatedElementUtils.getMergedAnnotation(parameters[index], Name::class.java)?.value
-                            ?: names[index]
+                    val name = AnnotatedElementUtils.getMergedAnnotation(parameters[index], Name::class.java)?.value
+                        ?: names[index]
 
                     // 构建出来当前构造器参数的相关信息(基于Constructor&index去进行构建)
                     val resolvableType = ResolvableType.forMethodParameter(MethodParameter(constructor, index))
@@ -234,9 +228,7 @@ open class ValueObjectBinder(private val bindConstructorProvider: BindConstructo
      * @param type type
      */
     class KotlinValueObject<T : Any>(
-        constructor: Constructor<T>,
-        private val kotlinConstructor: KFunction<T>,
-        private val type: ResolvableType
+        constructor: Constructor<T>, private val kotlinConstructor: KFunction<T>, private val type: ResolvableType
     ) : ValueObject<T>(constructor) {
 
         /**
@@ -256,8 +248,7 @@ open class ValueObjectBinder(private val bindConstructorProvider: BindConstructo
             @OptIn(ExperimentalStdlibApi::class)
             @JvmStatic
             private fun <T : Any> parseConstructorParameters(
-                kotlinConstructor: KFunction<T>,
-                type: ResolvableType
+                kotlinConstructor: KFunction<T>, type: ResolvableType
             ): List<ConstructorParameter> {
                 val result = ArrayList<ConstructorParameter>()
                 kotlinConstructor.parameters.forEach {
@@ -277,12 +268,15 @@ open class ValueObjectBinder(private val bindConstructorProvider: BindConstructo
              */
             @JvmStatic
             private fun getParameterName(parameter: KParameter): String {
-                parameter.annotations.forEach {
-                    if (it.annotationClass == Name::class) {
-                        return AnnotationAttributesUtils.asAnnotationAttributes(it)!!.getString("value")
-                    }
+                val mergedAnnotation = MergedAnnotations.from(
+                    parameter, parameter.annotations.toTypedArray(), RepeatableContainers.none(), AnnotationFilter.PLAIN
+                ).get(Name::class.java)
+                if (!mergedAnnotation.present) {
+                    return parameter.name ?: ""
                 }
-                return parameter.name ?: ""
+                return mergedAnnotation
+                    .getValue(MergedAnnotation.VALUE, String::class.java)
+                    .orElse(parameter.name ?: "")
             }
 
             /**
@@ -315,9 +309,7 @@ open class ValueObjectBinder(private val bindConstructorProvider: BindConstructo
      * @param annotations Annotations
      */
     class ConstructorParameter(
-        _name: String,
-        val type: ResolvableType,
-        val annotations: Array<Annotation>
+        _name: String, val type: ResolvableType, val annotations: Array<Annotation>
     ) {
         /**
          * 将name转换成为dash风格
@@ -334,7 +326,6 @@ open class ValueObjectBinder(private val bindConstructorProvider: BindConstructo
             return binder.bindProperty(name, Bindable.of<Any>(type).withAnnotations(*annotations))
         }
 
-        override fun toString(): String =
-            "name=$name, type=$type, annotations=${annotations.contentToString()}"
+        override fun toString(): String = "name=$name, type=$type, annotations=${annotations.contentToString()}"
     }
 }

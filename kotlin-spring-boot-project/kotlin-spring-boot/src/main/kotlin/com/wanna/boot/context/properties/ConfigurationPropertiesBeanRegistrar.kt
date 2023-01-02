@@ -6,7 +6,7 @@ import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.GenericBeanDefinition
 import com.wanna.framework.context.annotation.AnnotationAttributes
-import com.wanna.framework.context.annotation.AnnotationAttributesUtils
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.lang.Nullable
 
 /**
@@ -73,8 +73,7 @@ open class ConfigurationPropertiesBeanRegistrar(private val registry: BeanDefini
      */
     @Nullable
     private fun getConfigurationPropertiesAnnotationAttributes(type: Class<*>): AnnotationAttributes? {
-        val annotation = type.getAnnotation(ConfigurationProperties::class.java)
-        return AnnotationAttributesUtils.asAnnotationAttributes(annotation)
+        return AnnotatedElementUtils.getMergedAnnotationAttributes(type, ConfigurationProperties::class.java)
     }
 
     /**

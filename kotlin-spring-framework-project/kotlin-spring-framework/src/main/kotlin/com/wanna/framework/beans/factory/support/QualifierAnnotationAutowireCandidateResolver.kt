@@ -4,10 +4,8 @@ import com.wanna.framework.beans.factory.annotation.Qualifier
 import com.wanna.framework.beans.factory.annotation.Value
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.annotation.AnnotationAttributes
-import com.wanna.framework.context.annotation.AnnotationAttributesUtils
 import com.wanna.framework.context.annotation.Autowired
-import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import com.wanna.framework.core.annotation.MergedAnnotation
+import com.wanna.framework.core.annotation.*
 import com.wanna.framework.util.ClassUtils
 
 /**
@@ -128,14 +126,19 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
             // 如果之前没有匹配Qualifier的话，尝试去二级注解上去找
             if (checkMeta) {
                 var found = false
-                annotationClass.annotations.forEach { meta ->
-                    val metaType = meta.annotationClass.java
+
+                // 从二级注解当中去进行寻找...
+                for (ann in MergedAnnotations.from(annotationClass)) {
+                    val attributes = ann.asAnnotationAttributes()
+                    val meta = ann.synthesize()
+                    val metaType = ann.type
                     if (isQualifier(metaType)) {
                         found = true
-                        val attributes = AnnotationAttributesUtils.asAnnotationAttributes(meta)
-
                         // 如果之前匹配Qualifier的时候失败了(Qualifier找到了，说明就是Qualifier不匹配的情况了)，这里还失败那么肯定失败...
-                        if (fallbackToMeta && attributes!![MergedAnnotation.VALUE] == "" && !checkQualifier(bdHolder, meta)) {
+                        if (fallbackToMeta && attributes[MergedAnnotation.VALUE] == "" && !checkQualifier(
+                                bdHolder, meta
+                            )
+                        ) {
                             return false
                         }
                     }
@@ -163,8 +166,8 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
         var targetAnnotation: Annotation? = null
         val beanClass = beanDefinition.getBeanClass()
         if (beanClass != null) {
-            targetAnnotation = AnnotatedElementUtils
-                .getMergedAnnotation(ClassUtils.getUserClass(beanClass), annotationClass)
+            targetAnnotation =
+                AnnotatedElementUtils.getMergedAnnotation(ClassUtils.getUserClass(beanClass), annotationClass)
         }
         if (beanDefinition.getFactoryMethodName() != null && targetAnnotation == null && beanDefinition.getResolvedFactoryMethod() != null) {
             val factoryMethod = beanDefinition.getResolvedFactoryMethod()!!
@@ -177,7 +180,9 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
         }
 
         // 如果没有成对匹配的话，那么需要fallback去匹配Qualifier注解与beanName的情况...
-        val attributes = AnnotationAttributesUtils.asNonNullAnnotationAttributes(annotation)
+        val attributes =
+            MergedAnnotations.from(null, arrayOf(annotation), RepeatableContainers.none(), AnnotationFilter.PLAIN)
+                .get(annotationClass).asAnnotationAttributes()
         attributes.forEach { (k, v) ->
             if (k == MergedAnnotation.VALUE && bdHolder.matchesName(v.toString())) {
                 return true
@@ -243,12 +248,13 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
      * @return 找到的@Value注解的value属性，如果找不到return null
      */
     private fun findValue(annotations: Array<Annotation>): Any? {
-        for (annotation in annotations) {
-            if (valueAnnotationType == annotation.annotationClass.java) {
-                return extractValue(AnnotationAttributesUtils.asNonNullAnnotationAttributes(annotation))
-            }
+        val mergedAnnotation =
+            MergedAnnotations.from(null, annotations, RepeatableContainers.none(), AnnotationFilter.PLAIN)
+                .get(valueAnnotationType)
+        if (!mergedAnnotation.present) {
+            return null
         }
-        return null
+        return extractValue(mergedAnnotation.asAnnotationAttributes())
     }
 
     /**
@@ -257,8 +263,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
      * @param annotationAttributes @Value注解信息
      * @return 在@Value注解上找到的value属性
      */
-    private fun extractValue(annotationAttributes: AnnotationAttributes?): Any {
-        return annotationAttributes?.getString(MergedAnnotation.VALUE)
-            ?: throw IllegalStateException("@Value注解上的value属性没有给出！")
+    private fun extractValue(annotationAttributes: AnnotationAttributes): Any? {
+        return annotationAttributes[MergedAnnotation.VALUE]
     }
 }

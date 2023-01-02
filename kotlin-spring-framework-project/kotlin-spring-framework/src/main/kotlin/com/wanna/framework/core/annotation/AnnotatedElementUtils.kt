@@ -1,5 +1,6 @@
 package com.wanna.framework.core.annotation
 
+import com.wanna.framework.context.annotation.AnnotationAttributes
 import com.wanna.framework.core.type.GlobalTypeSwitch
 import com.wanna.framework.lang.Nullable
 import org.springframework.core.annotation.AnnotatedElementUtils
@@ -68,8 +69,7 @@ object AnnotatedElementUtils {
     @JvmStatic
     fun <A : Annotation> getAllMergedAnnotations(element: AnnotatedElement, annotationType: Class<A>): Set<A> {
         if (GlobalTypeSwitch.isAnnotatedElementUtilsOpen()) {
-            return getAnnotations(element)
-                .stream(annotationType)
+            return getAnnotations(element).stream(annotationType)
                 .collect(MergedAnnotationCollectors.toAnnotationSet<A>())
         }
         return AnnotatedElementUtils.getAllMergedAnnotations(element, annotationType)
@@ -85,8 +85,7 @@ object AnnotatedElementUtils {
     @JvmStatic
     fun <A : Annotation> findAllMergedAnnotations(element: AnnotatedElement, annotationType: Class<A>): Set<A> {
         if (GlobalTypeSwitch.isAnnotatedElementUtilsOpen()) {
-            return findAnnotations(element)
-                .stream(annotationType)
+            return findAnnotations(element).stream(annotationType)
                 .collect(MergedAnnotationCollectors.toAnnotationSet<A>())
         }
         return AnnotatedElementUtils.findAllMergedAnnotations(element, annotationType)
@@ -107,20 +106,59 @@ object AnnotatedElementUtils {
         return AnnotatedElementUtils.hasAnnotation(element, annotationType)
     }
 
+    /**
+     * 从给定的目标AnnotatedElement上去寻找到指定类型(annotationType)的合并的注解属性信息
+     *
+     * @param element 要去进行寻找注解的目标AnnotatedElement
+     * @param annotationType 要去寻找的目标注解类型
+     * @return 获取到的目标注解的属性信息; 如果注解不存在的话, return null
+     */
+    @Nullable
+    @JvmStatic
+    fun getMergedAnnotationAttributes(
+        element: AnnotatedElement, annotationType: Class<out Annotation>
+    ): AnnotationAttributes? {
+        if (GlobalTypeSwitch.isAnnotatedElementUtilsOpen()) {
+            val mergedAnnotation = getAnnotations(annotationType).get(
+                annotationType, null, MergedAnnotationSelectors.firstDirectlyDeclared()
+            )
+            return getAnnotationAttributes(mergedAnnotation, false, true)
+        }
+        return AnnotationAttributes.fromMap(
+            AnnotatedElementUtils.getMergedAnnotationAttributes(element, annotationType)
+        )
+    }
+
     @JvmStatic
     private fun getAnnotations(annotatedElement: AnnotatedElement): MergedAnnotations {
         return MergedAnnotations.from(
-            annotatedElement,
-            MergedAnnotations.SearchStrategy.INHERITED_ANNOTATIONS,
-            RepeatableContainers.none()
+            annotatedElement, MergedAnnotations.SearchStrategy.INHERITED_ANNOTATIONS, RepeatableContainers.none()
         )
     }
 
     private fun findAnnotations(annotatedElement: AnnotatedElement): MergedAnnotations {
         return MergedAnnotations.from(
-            annotatedElement,
-            MergedAnnotations.SearchStrategy.TYPE_HIERARCHY,
-            RepeatableContainers.none()
+            annotatedElement, MergedAnnotations.SearchStrategy.TYPE_HIERARCHY, RepeatableContainers.none()
         )
+    }
+
+    /**
+     * 为给定的MergedAnnotation去获取到AnnotationAttributes
+     *
+     * @param mergedAnnotation MergedAnnotation
+     * @param classValueAsString 是否需要将Class转为String
+     * @param nestedAnnotationsAsMap 是否需要将注解转换为Map
+     * @return 如果该注解不存在return null; 存在的话, return该注解的属性值Map
+     */
+    @Nullable
+    @JvmStatic
+    private fun <A : Annotation> getAnnotationAttributes(
+        mergedAnnotation: MergedAnnotation<A>, classValueAsString: Boolean, nestedAnnotationsAsMap: Boolean
+    ): AnnotationAttributes? {
+        if (!mergedAnnotation.present) {
+            return null
+        }
+        val adapts = MergedAnnotation.Adapt.values(classValueAsString, nestedAnnotationsAsMap)
+        return mergedAnnotation.asAnnotationAttributes(*adapts)
     }
 }

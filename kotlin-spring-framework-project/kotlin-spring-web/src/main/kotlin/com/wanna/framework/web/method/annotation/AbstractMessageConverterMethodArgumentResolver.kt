@@ -1,14 +1,14 @@
 package com.wanna.framework.web.method.annotation
 
-import com.wanna.framework.context.annotation.AnnotationAttributesUtils.asAnnotationAttributes
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.validation.DataBinder
 import com.wanna.framework.validation.Errors
 import com.wanna.framework.validation.annotation.Validated
-import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.bind.annotation.RequestBody
+import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpInputMessage
@@ -141,12 +141,13 @@ abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArg
      */
     protected open fun validateIfApplicable(webDataBinder: DataBinder, parameter: MethodParameter) {
         parameter.getParameterAnnotations().forEach {
-            val validated = AnnotatedElementUtils.getMergedAnnotation(it.annotationClass.java, Validated::class.java)
+            val validated =
+                AnnotatedElementUtils.getMergedAnnotationAttributes(it.annotationClass.java, Validated::class.java)
             // 如果它标注了@Validated注解，或者是它是一个以Valid开头的注解，例如JSR303当中的@Valid注解
             if (validated != null || it.annotationClass.java.simpleName.startsWith("Valid")) {
 
                 // 从@Validated注解当中找到value属性去作为validationHints(ValidationGroups)
-                val hints = asAnnotationAttributes(it)!!["value"]
+                val hints = validated?.get(MergedAnnotation.VALUE) ?: emptyArray<String>()
 
                 @Suppress("UNCHECKED_CAST")
                 val validationHints = (if (hints is Array<*>) hints else arrayOf(hints)) as Array<Any>
