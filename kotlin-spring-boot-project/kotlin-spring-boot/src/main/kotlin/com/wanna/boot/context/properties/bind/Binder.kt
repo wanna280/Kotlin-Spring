@@ -16,10 +16,10 @@ import java.util.function.Supplier
  * @date 2022/12/3
  *
  * @param sources PropertySources, 提供数据绑定的属性来源, 以[ConfigurationPropertySource]的方式给出
- * @param _placeholdersResolver 提供占位符的解析的解析器(可以为null, 使用默认值, 不提供占位符的解析功能)
+ * @param placeholdersResolver 提供占位符的解析的解析器(可以为null, 使用默认值, 不提供占位符的解析功能)
  * @param conversionServices ConversionService列表, 提供属性的绑定时的类型转换功能的相关支持
- * @param _defaultBindHandler 默认的BindHandler(可以为null, 使用默认值)
- * @param _constructorProvider 提供需要去进行绑定的构造器的Provider(可以为null, 使用默认值), 主要是提供ValueObject的绑定
+ * @param bindHandler 默认的BindHandler(可以为null, 使用默认值)
+ * @param constructorProvider 提供需要去进行绑定的构造器的Provider(可以为null, 使用默认值), 主要是提供ValueObject的绑定
  *
  * @see ConfigurationPropertySource
  * @see ConfigurationPropertySources.from
@@ -28,32 +28,32 @@ import java.util.function.Supplier
  */
 class Binder(
     private val sources: Iterable<ConfigurationPropertySource>,
-    @Nullable _placeholdersResolver: PlaceholdersResolver?,
+    @Nullable placeholdersResolver: PlaceholdersResolver?,
     conversionServices: List<ConversionService>,
-    @Nullable _defaultBindHandler: BindHandler?,
-    @Nullable _constructorProvider: BindConstructorProvider?
+    @Nullable bindHandler: BindHandler?,
+    @Nullable constructorProvider: BindConstructorProvider?
 ) {
     /**
      * 默认的BindHandler
      */
-    private val defaultBindHandler: BindHandler = _defaultBindHandler ?: BindHandler.DEFAULT
+    private val defaultBindHandler: BindHandler = bindHandler ?: BindHandler.DEFAULT
 
     /**
      * 占位符的解析
      */
-    private val placeholdersResolver: PlaceholdersResolver = _placeholdersResolver ?: PlaceholdersResolver.NONE
+    private val placeholdersResolver: PlaceholdersResolver = placeholdersResolver ?: PlaceholdersResolver.NONE
 
     /**
      * 提供要去进行绑定的构造器的Provider
      */
-    private val constructorProvider: BindConstructorProvider = _constructorProvider ?: BindConstructorProvider.DEFAULT
+    private val constructorProvider: BindConstructorProvider = constructorProvider ?: BindConstructorProvider.DEFAULT
 
     /**
      * DataObject的绑定器, 提供对于一个Java对象的绑定, 主要包含两个DataObjectBinder:
      * * 1.ValueObject的Binder, 针对的那些不可变的元素的绑定, 采用构造器的方式去进行注入, 最终完成绑定, 和Kotlin当中的ValueObject的定义相同
      * * 2.JavaBean的Binder, 主要是针对那些可变元素的绑定 ,基于JavaBean的Getter/Setter的方式去进行实现并完成绑定
      */
-    private val dataObjectBinders = listOf(ValueObjectBinder(constructorProvider), JavaBeanBinder.INSTANCE)
+    private val dataObjectBinders = listOf(ValueObjectBinder(this.constructorProvider), JavaBeanBinder.INSTANCE)
 
     /**
      * 提供绑定属性的[BindConverter], 内部组合了一些[ConversionService]去协助完成绑定
@@ -413,8 +413,8 @@ class Binder(
 
         // 利用所有的DataObjectBinder, 尝试去对target去使用JavaBean的绑定方式进行绑定
         return context.withDataObject(type) {
-            this.dataObjectBinders.forEach {
-                val instance = it.bind(name, target, context, propertyBinder)
+            for (dataObjectBinder in this.dataObjectBinders) {
+                val instance = dataObjectBinder.bind(name, target, context, propertyBinder)
                 if (instance != null) {
                     return@withDataObject instance
                 }
@@ -481,7 +481,7 @@ class Binder(
     /**
      * 维护Binder对于属性值的绑定过程当中的上下文信息
      */
-    inner class Context : BindContext {
+    inner class Context constructor() : BindContext {
         /**
          * 正在去进行绑定的属性值, 对应的是配置文件的前缀, 比如"xxx.yyy.zzz"
          */

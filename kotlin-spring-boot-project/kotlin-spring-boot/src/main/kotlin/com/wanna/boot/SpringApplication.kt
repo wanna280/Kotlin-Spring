@@ -1,5 +1,7 @@
 package com.wanna.boot
 
+import com.wanna.boot.context.properties.bind.Bindable
+import com.wanna.boot.context.properties.bind.Binder
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContext
@@ -59,8 +61,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         /**
          * 用于创建默认的ApplicationContext的Class
          */
-        const val DEFAULT_CONTEXT_CLASS =
-            "com.wanna.framework.context.annotation.AnnotationConfigApplicationContext"
+        const val DEFAULT_CONTEXT_CLASS = "com.wanna.framework.context.annotation.AnnotationConfigApplicationContext"
 
         /**
          * 当中Runtime(JVM)关闭(Shutdown)时的回调钩子方法
@@ -95,14 +96,15 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         }
 
         /**
-         * 对外提供一个main方法，支持去直接启动SpringApplication；
-         * 直接不指定主启动类，适用于那些将启动类写到命令行参数("--spring.main.sources")当中的情况；
+         * 对外提供一个main方法，支持去直接启动SpringApplication;
+         * 直接不指定主启动类，适用于那些将启动类写到命令行参数("--spring.main.sources")当中的情况;
          *
          * 很多开发者可能会选择自定义一个main方法，然后自己去调用run方法去启动SpringApplication
          *
          * @param args 命令行参数
          * @throws Exception 如果启动Spring应用失败的话
          * @see run
+         * @see bindToSpringApplication
          */
         @JvmStatic
         @Throws(Exception::class)
@@ -111,7 +113,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         }
 
         /**
-         * 对外提供的一个static方法，用于去退出一个Spring应用，并生成ExitCode；
+         * 对外提供的一个static方法，用于去退出一个Spring应用，并生成ExitCode;
          * 退出一个Spring应用时，关闭ApplicationContext，发布ExitCodeEvent事件，并获取到ExitCode
          *
          * @param context 要关闭的ApplicationContext
@@ -157,14 +159,14 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     /**
      * 提供一个不用ResourceLoader的构造器，只去指定primarySources
      *
-     * @param _primarySources 主启动类
+     * @param primarySources 主启动类
      */
-    constructor(vararg _primarySources: Class<*>) : this(null as ResourceLoader?, *_primarySources)
+    constructor(vararg primarySources: Class<*>) : this(null as ResourceLoader?, *primarySources)
 
     /**
      * 提供一个无参数构造器
      */
-    constructor() : this(_primarySources = emptyArray())
+    constructor() : this(primarySources = emptyArray())
 
     /**
      * primarySources
@@ -346,7 +348,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 准备SpringApplication的ApplicationContext，将Environment设置到ApplicationContext当中，并完成ApplicationContext的初始化工作；
+     * 准备SpringApplication的ApplicationContext，将Environment设置到ApplicationContext当中，并完成ApplicationContext的初始化工作;
      * 将注册到SpringApplication当中的配置类注册到ApplicationContext当中
      *
      * @param bootstrapContext bootstrapContext
@@ -420,13 +422,13 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      * * 3.如果Mode=LOG, 将会使用Logger的方式去输出Banner
      *
      * @param environment Environment
-     * @return 如果BannerMode=NO，return null；否则return 创建好的Banner
+     * @return 如果BannerMode=NO，return null; 否则return 创建好的Banner
      */
     protected open fun printBanner(environment: ConfigurableEnvironment): Banner? {
         if (bannerMode == Banner.Mode.NO) {
             return null
         }
-        // 如果指定了ResourceLoader，那么使用给定的；否则使用默认的
+        // 如果指定了ResourceLoader，那么使用给定的; 否则使用默认的
         val resourceLoader = this.resourceLoader ?: DefaultResourceLoader(getClassLoader())
         val springBootBannerPrinter = SpringApplicationBannerPrinter(resourceLoader, banner)
         if (bannerMode == Banner.Mode.CONSOLE) {
@@ -444,7 +446,9 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      * @param reporters SpringBoot的异常报告器
      */
     protected open fun handleRunFailure(
-        applicationContext: ConfigurableApplicationContext?, ex: Throwable, listeners: SpringApplicationRunListeners?,
+        applicationContext: ConfigurableApplicationContext?,
+        ex: Throwable,
+        listeners: SpringApplicationRunListeners?,
         reporters: Collection<SpringBootExceptionReporter>
     ) {
         try {
@@ -588,18 +592,14 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      * @return 从SpringFactories当中加载到的对象列表
      */
     private fun <T> getSpringFactoriesInstances(
-        type: Class<T>,
-        parameterTypes: Array<Class<*>>,
-        vararg args: Any
+        type: Class<T>, parameterTypes: Array<Class<*>>, vararg args: Any
     ): MutableCollection<T> {
         val classLoader = getClassLoader()
-        val names: Set<String> =
-            java.util.LinkedHashSet(
-                SpringFactoriesLoader.loadFactoryNames(type, classLoader)
-            )
+        val names: Set<String> = java.util.LinkedHashSet(
+            SpringFactoriesLoader.loadFactoryNames(type, classLoader)
+        )
         val instances = SpringFactoriesLoader.createSpringFactoryInstances(
-            type, parameterTypes, classLoader,
-            arrayOf(*args), names
+            type, parameterTypes, classLoader, arrayOf(*args), names
         )
         AnnotationAwareOrderComparator.sort(instances)
         return instances
@@ -716,12 +716,17 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 将配置文件当中的内容，去绑定到SpringApplication对象当中来
+     * 将配置文件当中的"spring.main"作为前缀的Key，去绑定到当前的SpringApplication对象当中来
      *
      * @param environment Environment
      */
     protected open fun bindToSpringApplication(environment: Environment) {
-
+        try {
+            // 将"spring.main"作为前缀的配置信息绑定到当前的SpringApplication对象当中
+            Binder.get(environment).bind("spring.main", Bindable.ofInstance(this))
+        } catch (ex: Exception) {
+            throw IllegalStateException("Cannot bind to SpringApplication", ex)
+        }
     }
 
     /**
@@ -757,7 +762,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 如果SpringApplication配置了Environment，那么使用自定义的Environment；
+     * 如果SpringApplication配置了Environment，那么使用自定义的Environment;
      * 如果没有配置Environment，那么就根据applicationType去新创建一个Environment对象
      */
     private fun getOrCreateEnvironment(): ConfigurableEnvironment {
@@ -782,7 +787,8 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         val runListeners = getSpringFactoriesInstances(
             SpringApplicationRunListener::class.java,
             arrayOf(SpringApplication::class.java, Array<String>::class.java),
-            this, args
+            this,
+            args
         )
         // 构建成为SpringApplicationRunListeners对象并返回
         return SpringApplicationRunListeners(runListeners, applicationStartup, logger)
@@ -917,9 +923,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
             if (activeProfiles.isEmpty()) {
                 val defaultProfiles = quoteProfiles(context.getEnvironment().getDefaultProfiles())
                 val message = String.format(
-                    "%s default %s: ",
-                    defaultProfiles.size,
-                    if (defaultProfiles.size <= 1) "profile" else "profiles"
+                    "%s default %s: ", defaultProfiles.size, if (defaultProfiles.size <= 1) "profile" else "profiles"
                 )
                 applicationLogger.info(
                     "No active profile set, falling back to $message" + collectionToCommaDelimitedString(defaultProfiles)
@@ -941,12 +945,14 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     private fun quoteProfiles(profiles: Array<String>): List<String> = profiles.map { "\"$it\"" }.toList()
 
     /**
-     * 获取当前SpringApplication的Logger，如果有主启动类的话，那么使用该类作为loggerName去进行获取Logger；
+     * 获取当前SpringApplication的Logger，如果有主启动类的话，那么使用该类作为loggerName去进行获取Logger;
      * 如果没有的话，那么使用SpringApplication的Logger去作为Logger
+     *
+     * Note: 这里不能是public的, 不然会有Logger的递归绑定导致SOF的问题
      *
      * @return Application Logger
      */
-    open fun getApplicationLogger(): Logger {
+    protected open fun getApplicationLogger(): Logger {
         if (this.mainApplicationClass != null) {
             return LoggerFactory.getLogger(this.mainApplicationClass)
         }
@@ -960,7 +966,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     /**
      * 获取ClassLoader
      *
-     * @return 如果ResourceLoader当中可以获取到的话，那么就使用；否则使用默认的
+     * @return 如果ResourceLoader当中可以获取到的话，那么就使用; 否则使用默认的
      */
     open fun getClassLoader(): ClassLoader = this.resourceLoader?.getClassLoader() ?: ClassUtils.getDefaultClassLoader()
 
@@ -1052,7 +1058,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     /**
      * 设置是否允许BeanDefinition的覆盖？
      *
-     * @param allowBeanDefinitionOverriding 如果为true，允许覆盖；否则不允许
+     * @param allowBeanDefinitionOverriding 如果为true，允许覆盖; 否则不允许
      */
     open fun setAllowBeanDefinitionOverriding(allowBeanDefinitionOverriding: Boolean) {
         this.allowBeanDefinitionOverriding = allowBeanDefinitionOverriding
@@ -1061,7 +1067,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     /**
      * 是否允许BeanDefinition的覆盖？
      *
-     * @return 如果允许覆盖return true；否则return false
+     * @return 如果允许覆盖return true; 否则return false
      */
     open fun isAllowBeanDefinitionOverriding() = this.allowBeanDefinitionOverriding
 
