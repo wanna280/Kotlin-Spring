@@ -84,7 +84,7 @@ open class ClassPathMapperScanner(registry: BeanDefinitionRegistry) : ClassPathB
 
         // 如果接收所有的接口的话(不匹配父接口，也不匹配注解，就是接收所有接口)...在这里去注册一个匹配所有的接口的Filter
         if (acceptAllInterfaces) {
-            addIncludeFilter { true }
+            addIncludeFilter { _, _ -> true }
         }
     }
 
@@ -99,15 +99,6 @@ open class ClassPathMapperScanner(registry: BeanDefinitionRegistry) : ClassPathB
         val beanDefinitionHolders = super.doScan(*packages)
         processBeanDefinitions(beanDefinitionHolders)
         return beanDefinitionHolders
-    }
-
-    /**
-     * 需要自定义匹配的规则，只扫描接口，对于不是接口的BeanDefinition，我们直接忽略掉
-     *
-     * @param clazz 要匹配的目标类
-     */
-    override fun isCandidateComponent(clazz: Class<*>?): Boolean {
-        return super.isCandidateComponent(clazz) && clazz!!.isInterface
     }
 
     /**
