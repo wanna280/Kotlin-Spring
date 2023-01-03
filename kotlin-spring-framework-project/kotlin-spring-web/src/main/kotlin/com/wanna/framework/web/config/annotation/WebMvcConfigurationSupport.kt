@@ -46,6 +46,11 @@ import com.wanna.framework.web.mvc.support.DefaultHandlerExceptionResolver
 open class WebMvcConfigurationSupport : ApplicationContextAware {
 
     companion object {
+
+        /**
+         * Jackson是否存在的标识?
+         */
+        @JvmStatic
         private val jackson2Present = ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper")
     }
 
@@ -82,7 +87,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
 
     @Bean
     @Qualifier("mvcContentNegotiationManager")
-    open fun contentNegotiationManager(): ContentNegotiationManager {
+    open fun mvcContentNegotiationManager(): ContentNegotiationManager {
         var negotiationManager = this.contentNegotiationManager
         if (negotiationManager == null) {
             val contentNegotiationConfigurer = ContentNegotiationConfigurer()
@@ -118,7 +123,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
      */
     @Bean
     @Qualifier("mvcConversionService")
-    open fun formattingConversionService(): FormattingConversionService {
+    open fun mvcConversionService(): FormattingConversionService {
         val formattingConversionService = DefaultFormattingConversionService()
         // 扩展ConversionService当中的Formatter
         addFormatters(formattingConversionService)

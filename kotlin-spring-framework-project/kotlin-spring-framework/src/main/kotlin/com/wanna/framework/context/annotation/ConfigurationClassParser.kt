@@ -22,6 +22,7 @@ import com.wanna.framework.core.type.StandardAnnotationMetadata
 import com.wanna.framework.core.type.classreading.MetadataReader
 import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
@@ -34,6 +35,7 @@ import java.util.function.Predicate
 import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
 import kotlin.collections.LinkedHashSet
+import kotlin.math.log
 
 /**
  * 这是一个配置类的解析器, 用来扫描配置类相关的注解, 将其注册到容器当中
@@ -91,6 +93,11 @@ open class ConfigurationClassParser(
      * 维护了扫描出来的ConfigurationClass的集合
      */
     private val configClasses = LinkedHashMap<ConfigurationClass, ConfigurationClass>()
+
+    /**
+     * 已经知道的配置类(Key-ClassName, Value-ConfigurationClass)
+     */
+    private val knownClasses = LinkedHashMap<String, ConfigurationClass>()
 
     /**
      * 这是一个要进行延时处理的ImportSelector列表, 需要完成所有的配置类的解析之后, 才去进行处理；
@@ -273,11 +280,16 @@ open class ConfigurationClassParser(
         // 处理@Bean注解
         processBeanMethods(configClass, sourceClass)
 
-        val superclass: Class<*>? = sourceClass.clazz.superclass
-
-        // 如果还有superClass, 那么return superClass
-        if (superclass != null && !superclass.name.startsWith("java.")) {
-            return SourceClass(superclass)
+        // 如果还有superClass, 那么return superClass(并不一定是真的Class, 可能还是通过MetadataReader提供访问的SourceClass)
+        if (sourceClass.metadata.hasSuperClass()) {
+            val superClassName = sourceClass.metadata.getSuperClassName()
+            if (superClassName != null
+                && !superClassName.startsWith("java.")
+                && !knownClasses.containsKey(superClassName)
+            ) {
+                knownClasses[superClassName] = configClass
+                return sourceClass.getSuperClass()
+            }
         }
         return null
     }
@@ -292,30 +304,33 @@ open class ConfigurationClassParser(
     private fun processMemberClasses(
         configClass: ConfigurationClass, sourceClass: SourceClass, filter: Predicate<String>
     ) {
-        val clazz = sourceClass.clazz
-        val candidates = LinkedHashSet<SourceClass>()
-        // 遍历所有的内部类, 去进行匹配...
-        for (declaredClass in clazz.declaredClasses) {
 
-            // 如果它标注了@Import/@ImportResource/@PropertySource/@ComponentScan注解,
-            // 或者它的内部存在有@Bean方法, 那么它就是一个合格的候选配置类
-            if (ConfigurationClassUtils.isConfigurationCandidate(AnnotationMetadata.introspect(declaredClass))) {
-                candidates += SourceClass(declaredClass)
+        // 获取该类的所有的MemberClass
+        val memberClasses = sourceClass.getMemberClasses()
+        if (memberClasses.isNotEmpty()) {
+            val candidates = ArrayList<SourceClass>()
+            for (memberClass in memberClasses) {
+                // 如果它标注了@Import/@ImportResource/@PropertySource/@ComponentScan注解,
+                // 或者它的内部存在有@Bean方法, 那么它就是一个合格的候选配置类
+                if (ConfigurationClassUtils.isConfigurationCandidate(memberClass.metadata)
+                    && memberClass.metadata.getClassName() != configClass.metadata.getClassName()
+                ) {
+                    candidates += memberClass
+                }
             }
-        }
 
-
-        // 遍历所有的内部类, 去进行递归处理...设置ImportedBy, beanName将会在后期Reader当中去进行生成(内部类其实和@Import导入的完全等效啊...)
-        candidates.forEach {
-            if (importStack.contains(configClass)) {
-                logger.info("[${configClass}]出现了循环导入的情况...")
-            } else {
-                importStack.push(configClass)
-                try {
-                    // 根据内部类, 去构建一个ConfigurationClass, 设置importedBy为外部类...(它被外部类所导入)
-                    processConfigurationClass(it.asConfigClass(configClass), filter)  // 把成员类当做配置类去递归处理...
-                } finally {
-                    importStack.pop()
+            // 遍历所有的内部类, 去进行递归处理...设置ImportedBy, beanName将会在后期Reader当中去进行生成(内部类其实和@Import导入的完全等效啊...)
+            candidates.forEach {
+                if (importStack.contains(configClass)) {
+                    logger.info("[${configClass}]出现了循环导入的情况...")
+                } else {
+                    importStack.push(configClass)
+                    try {
+                        // 根据内部类, 去构建一个ConfigurationClass, 设置importedBy为外部类...(它被外部类所导入)
+                        processConfigurationClass(it.asConfigClass(configClass), filter)  // 把成员类当做配置类去递归处理...
+                    } finally {
+                        importStack.pop()
+                    }
                 }
             }
         }
@@ -328,25 +343,28 @@ open class ConfigurationClassParser(
      * @param sourceClass 源类
      */
     private fun processPropertySources(configClass: ConfigurationClass, sourceClass: SourceClass) {
-        val propertySources =
-            AnnotatedElementUtils.findAllMergedAnnotations(sourceClass.clazz, PropertySource::class.java)
-
-        propertySources.forEach { propertySource ->
-            // propertySource name
-            val name = if (!StringUtils.hasText(propertySource.name)) null else propertySource.name
+        // 获取到SourceClass当中的PropertySource注解的属性信息...
+        val propertySources = AnnotationConfigUtils.attributesForRepeatable(
+            sourceClass.metadata,
+            PropertySource::class.java,
+            PropertySource::class.java
+        )
+        for (propertySource in propertySources) {
+            val name =
+                if (!StringUtils.hasText(propertySource.getString("name"))) null else propertySource.getString("name")
             // 是否需要忽略未找到的资源？
-            val ignoreResourceNotFound = propertySource.ignoreResourceNotFound
-            val locations = propertySource.locations
+            val ignoreResourceNotFound = propertySource.getBoolean("ignoreResourceNotFound")
+            val locations = propertySource.getStringArray("locations")
             if (locations.isEmpty()) {
                 throw IllegalStateException("@PropertySource(value)必须配置至少一个资源路径")
             }
 
             // 创建PropertySourceFactory, 交给它去完成配置文件(Properties)的加载工作...
             // 如果有自定义PropertySourceFactory的话, 那么需要使用用户自定义的PropertySourceFactory
-            val factoryClass = propertySource.factory.java
+            val factoryClass = propertySource.getClass("factory")
             val propertySourceFactory =
                 if (factoryClass == PropertySourceFactory::class.java) DEFAULT_PROPERTY_SOURCE_FACTORY
-                else BeanUtils.instantiateClass(factoryClass)
+                else BeanUtils.instantiateClass(factoryClass) as PropertySourceFactory
 
             // 遍历给定的所有资源的位置(location), 使用PropertySourceFactory去进行加载
             locations.forEach {
@@ -417,13 +435,17 @@ open class ConfigurationClassParser(
      * @see ImportResource
      * @see BeanDefinitionReader 如何导入组件？通过自定义BeanDefinitionReader的方式去进行导入组件
      */
+    @Suppress("UNCHECKED_CAST")
     private fun processImportSources(configClass: ConfigurationClass, sourceClass: SourceClass) {
-        AnnotatedElementUtils.findAllMergedAnnotations(sourceClass.clazz, ImportResource::class.java)
-            .forEach { importSource ->
-                importSource.locations.forEach { location ->
-                    configClass.addImportSource(location, importSource.reader.java)
-                }
+        val importResource = AnnotationConfigUtils.attributesFor(sourceClass.metadata, ImportResource::class.java)
+        if (importResource != null) {
+            val locations = importResource.getStringArray("locations")
+            val reader = importResource.getClass("reader") as Class<BeanDefinitionReader>
+            for (location in locations) {
+                val resolvedLocation = environment.resolveRequiredPlaceholders(location)
+                configClass.addImportSource(resolvedLocation, reader)
             }
+        }
     }
 
     /**
@@ -452,8 +474,9 @@ open class ConfigurationClassParser(
             importCandidates.forEach { candidate ->
                 // 如果它是一个ImportSelector(不会注册到容器当中)
                 if (candidate.isAssignable(ImportSelector::class.java)) {
+                    val candidateClass = candidate.loadClass()
                     val selector = ParserStrategyUtils.instanceClass<ImportSelector>(
-                        candidate.clazz, this.environment, this.registry, this.resourceLoader
+                        candidateClass, this.environment, this.registry, this.resourceLoader
                     )
                     // 如果它是一个延时处理的ImportSelector, 那么需要缓存起来, 后续一起去进行处理
                     if (selector is DeferredImportSelector) {
@@ -473,16 +496,17 @@ open class ConfigurationClassParser(
                     }
                     // 如果它是一个ImportBeanDefinitionRegistrar(不会注册到容器当中)
                 } else if (candidate.isAssignable(ImportBeanDefinitionRegistrar::class.java)) {
+                    val candidateClass = candidate.loadClass()
                     // 实例化, 并保存ImportBeanDefinitionRegistrar到configClass当中
                     val registrar = ParserStrategyUtils.instanceClass<ImportBeanDefinitionRegistrar>(
-                        candidate.clazz, this.environment, this.registry, this.resourceLoader
+                        candidateClass, this.environment, this.registry, this.resourceLoader
                     )
                     // value为配置类中的相关的的注解信息, 在后续去回调ImportBeanDefinitionRegistrar时会以参数的形式传递给调用方
                     configClass.addRegistrar(registrar, currentSourceClass.metadata)
                     // 如果只是导入了一个普通组件, 需要把它当做一个配置类去进行递归处理
                 } else {
                     // 注册Import导入的配置类的信息(第一个参数是被导入的配置类名(key), 第二个参数是导入它的配置类的注解信息(value))
-                    importStack.registerImport(candidate.clazz.name, currentSourceClass.metadata)
+                    importStack.registerImport(candidate.metadata.getClassName(), currentSourceClass.metadata)
                     // 构建被导入的配置类信息, beanName等ConfigurationClassBeanDefinitionReader.registerBeanDefinitionForImportedConfigurationClass生成
                     processConfigurationClass(candidate.asConfigClass(configClass), exclusionFilter)  // 把当前类当做配置类去进行递归
                 }
@@ -556,18 +580,20 @@ open class ConfigurationClassParser(
      * @param sourceClass 要寻找@ComponentScan注解的源类
      */
     private fun processComponentScans(sourceClass: SourceClass) {
-        // 找到注解上的ComponentScan注解
-        val componentScans =
-            AnnotatedElementUtils.findAllMergedAnnotations(sourceClass.clazz, ComponentScan::class.java)
+        // 找到SourceClass上的ComponentScan注解列表
+        val componentScans = AnnotationConfigUtils.attributesForRepeatable(
+            sourceClass.metadata,
+            ComponentScan::class.java,
+            ComponentScan::class.java
+        )
         if (componentScans.isEmpty()) {
             return
         }
         // 如果有@ComponentScan注解, 并且条件计算器计算不应该跳过, 那么才需要遍历所有的ComponentScan注解去进行处理
         if (!this.conditionEvaluator.shouldSkip(sourceClass.metadata, ConfigurationPhase.REGISTER_BEAN)) {
-            componentScans.forEach {
+            componentScans.forEach { attributes ->
                 // 处理@ComponentScan注解, 将符合条件的BeanDefinition, 导入到容器当中
                 // 并且应该将@ComponentScan扫描进来的BeanDefinition, 通通当做一个配置类去进行解析, 递归
-                val attributes = AnnotationUtils.getAnnotationAttributes(it)
                 parse(parser.parse(attributes, sourceClass.metadata.getClassName()))
             }
         }
@@ -612,7 +638,7 @@ open class ConfigurationClassParser(
          */
         fun asConfigClass(importedBy: ConfigurationClass): ConfigurationClass {
             return if (source is Class<*>) {
-                ConfigurationClass(clazz, importedBy)
+                ConfigurationClass(source, importedBy)
             } else {
                 ConfigurationClass(source as MetadataReader, importedBy)
             }
@@ -626,6 +652,21 @@ open class ConfigurationClassParser(
          */
         fun isAssignable(parentClass: Class<*>): Boolean {
             return ClassUtils.isAssignFrom(parentClass, clazz)
+        }
+
+        /**
+         * 进行当前SourceClass的类加载(某些操作下, 我们确实没有办法没有类的情况下去进行操作, 还是得借助类加载来做)
+         *
+         * @return Class
+         */
+        fun loadClass(): Class<*> {
+            if (this.source is Class<*>) {
+                return this.source
+            }
+            return ClassUtils.forName<Any>(
+                (this.source as MetadataReader).classMetadata.getClassName(),
+                resourceLoader.getClassLoader()
+            )
         }
 
         /**
@@ -650,6 +691,81 @@ open class ConfigurationClassParser(
                 }
             }
 
+            return result
+        }
+
+        /**
+         * 返回当前SourceClass的SuperClass的描述信息的SourceClass
+         *
+         * @return SourceClass of SuperClass
+         */
+        fun getSuperClass(): SourceClass {
+            // 如果source就是Class的话, 那么我们直接使用superClass去构建SourceClass
+            if (this.source is Class<*>) {
+                return asSourceClass(this.source.superclass)
+            }
+
+            // 如果source是MetadataReader的话, 那么我们只有它的superClassName, 这里别去进行类加载
+            // 我们也采用MetadataReader的方式去暴露SourceClass
+            return asSourceClass((source as MetadataReader).classMetadata.getSuperClassName()!!)
+        }
+
+        /**
+         * 获取当前SourceClass的成员类列表
+         *
+         * @return SourceClass的成员类列表
+         */
+        fun getMemberClasses(): Collection<SourceClass> {
+            var sourceToProcess = this.source
+            if (sourceToProcess is Class<*>) {
+                val declaredClasses = sourceToProcess.declaredClasses
+                try {
+                    val members = ArrayList<SourceClass>(declaredClasses.size)
+                    for (declaredClass in declaredClasses) {
+                        members.add(asSourceClass(declaredClass))
+                    }
+                    return members // return members
+                } catch (ex: NoClassDefFoundError) {
+                    // 如果出现了成员类缺少依赖(链接)的情况, 我们尝试使用ASM去进行读取
+                    sourceToProcess = metadataReaderFactory.getMetadataReader(sourceToProcess.name)
+                }
+            }
+            sourceToProcess as MetadataReader
+
+            // 使用ASM的方式, 去读取成员类的信息
+            val memberClassNames = sourceToProcess.classMetadata.getMemberClassNames()
+            val members = ArrayList<SourceClass>(memberClassNames.size)
+            for (memberClassName in memberClassNames) {
+                try {
+                    members += asSourceClass(memberClassName)
+                } catch (ex: Exception) {
+                    // 如果连使用ASM都无法解析到该类的话, 那么log输出一下
+                    if (logger.isDebugEnabled) {
+                        logger.debug("Failed to resolve member class [$memberClassName] - not considering it as a configuration class candidate")
+                    }
+                }
+
+            }
+            return members
+        }
+
+        /**
+         * 获取当前SourceClass的接口列表
+         *
+         * @return 当前SourceClass的接口列表
+         */
+        fun getInterfaces(): Set<SourceClass> {
+            val result = LinkedHashSet<SourceClass>()
+            if (source is Class<*>) {
+                val interfaces = source.interfaces
+                for (clazz in interfaces) {
+                    result += asSourceClass(clazz)
+                }
+            } else {
+                for (interfaceName in metadata.getInterfaceNames()) {
+                    result += asSourceClass(interfaceName)
+                }
+            }
             return result
         }
 

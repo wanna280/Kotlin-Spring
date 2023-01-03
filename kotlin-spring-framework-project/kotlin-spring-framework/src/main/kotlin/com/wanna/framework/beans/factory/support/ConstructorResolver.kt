@@ -29,11 +29,13 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
         /**
          * 空参数的标识符
          */
+        @JvmStatic
         private val EMPTY_ARGS = emptyArray<Any>()
 
         /**
          * 当前正在注入的的InjectionPoint(字段/方法参数)
          */
+        @JvmStatic
         private val currentInjectionPoint = NamedThreadLocal<InjectionPoint>("Current Injection Point")
 
         /**
