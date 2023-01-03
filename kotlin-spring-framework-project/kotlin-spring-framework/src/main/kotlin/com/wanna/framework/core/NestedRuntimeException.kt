@@ -1,7 +1,6 @@
 package com.wanna.framework.core
 
 import com.wanna.framework.util.ClassUtils
-import org.springframework.core.NestedRuntimeException
 
 /**
  * 支持去进行嵌套的运行时异常，提供了原生的RuntimeException没有的关于cause的相关的功能的支持

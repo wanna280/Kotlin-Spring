@@ -1,8 +1,8 @@
 package com.wanna.framework.core
 
+import com.wanna.framework.core.asm.SpringAsmInfo
 import com.wanna.framework.util.ClassUtils
 import org.objectweb.asm.*
-import org.springframework.asm.SpringAsmInfo
 import java.io.IOException
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
@@ -79,7 +79,9 @@ open class LocalVariableTableParameterNameDiscoverer : ParameterNameDiscoverer {
 
         companion object {
 
-            // 类的初始化方法为<clinit>
+            /**
+             * 类的初始化方法为<clinit>
+             */
             private const val STATIC_CLASS_INIT = "<clinit>"
 
             /**
