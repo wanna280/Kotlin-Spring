@@ -129,6 +129,18 @@ fun testAnnotation8() {
     val toMapValue = ann2MergedAnnotation.asAnnotationAttributes(MergedAnnotation.Adapt.ANNOTATION_TO_MAP)
     println("annotation8 origin attributes is $value")
     println("annotation8 to map attributes is $toMapValue")
+
+}
+
+/**
+ * 测试AnnotationUtils
+ */
+fun testAnnotation9() {
+    val metadataReaderFactory = SimpleMetadataReaderFactory()
+    val metadataReader = metadataReaderFactory.getMetadataReader(AnnotationTest5::class.java.name)
+    val ann2MergedAnnotation = metadataReader.annotationMetadata.getAnnotations().get(Ann2::class.java)
+    val attributes = AnnotationUtils.getAnnotationAttributes(ann2MergedAnnotation.synthesize())
+    println("annotation9 is $attributes")
 }
 
 
@@ -143,5 +155,6 @@ fun main() {
     testAnnotation6()
     testAnnotation7()
     testAnnotation8()
+    testAnnotation9()
 
 }

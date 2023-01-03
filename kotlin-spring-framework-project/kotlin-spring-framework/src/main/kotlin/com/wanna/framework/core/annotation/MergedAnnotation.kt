@@ -289,7 +289,7 @@ interface MergedAnnotation<A : Annotation> {
     fun synthesize(condition: Predicate<in MergedAnnotation<A>>): Optional<A>
 
     /**
-     * 将当前的MergedAnnotation去转换成为AnnotationAttributes
+     * 将当前的MergedAnnotation去转换成为AnnotationAttributes(mutable, 可变)
      *
      * @param adapts 转换时需要用到的操作(是否需要将Class转String/是否需要将Annotation转Map)
      * @return 转换之后得到的AnnotationAttributes
@@ -297,7 +297,7 @@ interface MergedAnnotation<A : Annotation> {
     fun asAnnotationAttributes(vararg adapts: Adapt): AnnotationAttributes
 
     /**
-     * 将当前的MergedAnnotation去转换成为Map
+     * 将当前的MergedAnnotation去转换成为Map(immutable, 不可变)
      *
      * @param adapts 转换时需要用到的操作(是否需要将Class转String/是否需要将Annotation转Map)
      * @return 转换之后得到的Map
@@ -382,16 +382,70 @@ interface MergedAnnotation<A : Annotation> {
          */
         const val VALUE: String = "value"
 
+        /**
+         * 没有标注这个注解的MergedAnnotation的标识常量
+         *
+         * @return missing
+         */
         @JvmStatic
         fun <A : Annotation> missing(): MergedAnnotation<A> = MissingMergedAnnotation.getInstance()
 
         /**
-         * 快速构建起来一个MergedAnnotation的静态工厂方法
+         * 根据一个给定的注解实例, 去构建出来MergedAnnotation
+         *
+         * @param annotation Annotation
+         * @return MergedAnnotation for given Annotation
+         */
+        @JvmStatic
+        fun <A : Annotation> from(annotation: A): MergedAnnotation<A> {
+            return from(null, annotation)
+        }
+
+        /**
+         * 根据一个给定的注解实例, 去构建出来MergedAnnotation
+         *
+         * @param source source
+         * @param annotation Annotation
+         * @return MergedAnnotation for given Annotation
+         */
+        @JvmStatic
+        fun <A : Annotation> from(@Nullable source: Any?, annotation: A): MergedAnnotation<A> {
+            return TypeMappedAnnotation.from(source, annotation)
+        }
+
+        /**
+         * 根据注解的Attributes去快速构建起来一个MergedAnnotation的静态工厂方法
+         *
+         * @param annotationType annotationType
+         * @param attributes attributes
+         * @return MergedAnnotation for given Annotation
+         */
+        @JvmStatic
+        fun <A : Annotation> of(
+            annotationType: Class<A>, attributes: Map<String, Any>
+        ): MergedAnnotation<A> = of(null, annotationType, attributes)
+
+        /**
+         * 根据注解的Attributes去快速构建起来一个MergedAnnotation的静态工厂方法
+         *
+         * @param source source
+         * @param annotationType annotationType
+         * @param attributes attributes
+         * @return MergedAnnotation for given Annotation
+         */
+        @JvmStatic
+        fun <A : Annotation> of(
+            @Nullable source: Any?, annotationType: Class<A>, attributes: Map<String, Any>
+        ): MergedAnnotation<A> = of(null, source, annotationType, attributes)
+
+        /**
+         * 根据注解的Attributes去快速构建起来一个MergedAnnotation的静态工厂方法
          *
          * @param classLoader ClassLoader
          * @param source source
          * @param annotationType annotationType
          * @param attributes attributes
+         * @return MergedAnnotation for given Annotation
          */
         @JvmStatic
         fun <A : Annotation> of(

@@ -3,6 +3,7 @@ package com.wanna.framework.context.annotation
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.core.annotation.AnnotationFilter
+import com.wanna.framework.core.annotation.AnnotationUtils
 import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.core.annotation.RepeatableContainers
 import com.wanna.framework.core.environment.Environment
@@ -82,9 +83,7 @@ open class ComponentScanAnnotationParser(
     private fun getTypeFilters(filters: Array<ComponentScan.Filter>): List<TypeFilter> {
         val typeFilters = ArrayList<TypeFilter>()
         for (filter in filters) {
-            val attr =
-                MergedAnnotations.from(null, arrayOf(filter), RepeatableContainers.none(), AnnotationFilter.PLAIN)
-                    .get(ComponentScan.Filter::class.java).asAnnotationAttributes()
+            val attr = AnnotationUtils.getAnnotationAttributes(filter)
 
             val filterType = attr["filterType"] as FilterType
             val classArray = attr.getClassArray("classes")

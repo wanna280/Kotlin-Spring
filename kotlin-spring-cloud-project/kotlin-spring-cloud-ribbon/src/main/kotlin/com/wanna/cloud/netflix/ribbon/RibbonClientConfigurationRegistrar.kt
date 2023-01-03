@@ -3,10 +3,7 @@ package com.wanna.cloud.netflix.ribbon
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.definition.GenericBeanDefinition
 import com.wanna.framework.context.annotation.ImportBeanDefinitionRegistrar
-import com.wanna.framework.core.annotation.AnnotationFilter
-import com.wanna.framework.core.annotation.MergedAnnotation
-import com.wanna.framework.core.annotation.MergedAnnotations
-import com.wanna.framework.core.annotation.RepeatableContainers
+import com.wanna.framework.core.annotation.*
 import com.wanna.framework.core.type.AnnotationMetadata
 
 /**

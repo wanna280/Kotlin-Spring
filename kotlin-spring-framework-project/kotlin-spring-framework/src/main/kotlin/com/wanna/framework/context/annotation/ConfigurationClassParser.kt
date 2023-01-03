@@ -567,9 +567,7 @@ open class ConfigurationClassParser(
             componentScans.forEach {
                 // 处理@ComponentScan注解, 将符合条件的BeanDefinition, 导入到容器当中
                 // 并且应该将@ComponentScan扫描进来的BeanDefinition, 通通当做一个配置类去进行解析, 递归
-                val attributes =
-                    MergedAnnotations.from(null, arrayOf(it), RepeatableContainers.none(), AnnotationFilter.PLAIN)
-                        .get(it.annotationClass.java).asAnnotationAttributes()
+                val attributes = AnnotationUtils.getAnnotationAttributes(it)
                 parse(parser.parse(attributes, sourceClass.metadata.getClassName()))
             }
         }
