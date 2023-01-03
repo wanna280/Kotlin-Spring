@@ -366,6 +366,7 @@ interface MergedAnnotation<A : Annotation> {
              * @param value 要去添加的元素类型
              * @param test 条件(为true时才添加)
              */
+            @JvmStatic
             private fun <E> addIfTrue(result: MutableSet<E>, value: E, test: Boolean) {
                 if (test) {
                     result += value

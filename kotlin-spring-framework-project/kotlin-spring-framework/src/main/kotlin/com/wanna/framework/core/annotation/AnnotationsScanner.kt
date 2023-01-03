@@ -328,6 +328,12 @@ object AnnotationsScanner {
         return emptyArray()
     }
 
+    /**
+     * 检查给定的类上是否只有一些简单(plain)的Java注解?
+     *
+     * @param type 待检查的类
+     * @return 如果类名以java开头/@Ordered, 那么都只有简单注解, return true; 否则return false
+     */
     @JvmStatic
     private fun hasPlainJavaAnnotationsOnly(type: Class<*>): Boolean {
         return type.name.startsWith("java.") || type == Ordered::class.java
@@ -341,6 +347,22 @@ object AnnotationsScanner {
      */
     @JvmStatic
     private fun isIgnorable(annotationType: Class<*>): Boolean = AnnotationFilter.PLAIN.matches(annotationType)
+
+    /**
+     * 检查给定的元素是否是只是含有一些简单(plain)的Java注解?
+     *
+     * @param element 待检查的元素(方法/字段/类/构造器等)
+     * @return 如果该元素只要一些简单的Java注解的话, return true; 否则return false
+     */
+    @JvmStatic
+    fun hasPlainJavaAnnotationsOnly(@Nullable element: AnnotatedElement?): Boolean {
+        if (element is Class<*>) {
+            return hasPlainJavaAnnotationsOnly(element)
+        } else if (element is Member) {
+            return hasPlainJavaAnnotationsOnly(element.declaringClass)
+        }
+        return false
+    }
 
     /**
      * 清除缓存
