@@ -1,9 +1,7 @@
 package com.wanna.framework.core.annotation
 
 import com.wanna.framework.context.annotation.AnnotationAttributes
-import com.wanna.framework.core.type.GlobalTypeSwitch
 import com.wanna.framework.lang.Nullable
-import org.springframework.core.annotation.AnnotatedElementUtils
 import java.lang.reflect.AnnotatedElement
 
 /**
@@ -21,10 +19,8 @@ object AnnotatedElementUtils {
 
     @JvmStatic
     fun isAnnotated(element: AnnotatedElement, annotationType: Class<out Annotation>): Boolean {
-        if (GlobalTypeSwitch.isAnnotatedElementUtilsOpen()) {
-            return getAnnotations(element).isPresent(annotationType)
-        }
-        return AnnotatedElementUtils.isAnnotated(element, annotationType)
+        return getAnnotations(element)
+            .isPresent(annotationType)
     }
 
     /**
@@ -36,10 +32,8 @@ object AnnotatedElementUtils {
      */
     @JvmStatic
     fun isAnnotated(element: AnnotatedElement, annotationClassName: String): Boolean {
-        if (GlobalTypeSwitch.isAnnotatedElementUtilsOpen()) {
-            return getAnnotations(element).isPresent(annotationClassName)
-        }
-        return AnnotatedElementUtils.isAnnotated(element, annotationClassName)
+        return getAnnotations(element)
+            .isPresent(annotationClassName)
     }
 
     /**
@@ -52,11 +46,10 @@ object AnnotatedElementUtils {
     @Nullable
     @JvmStatic
     fun <A : Annotation> getMergedAnnotation(element: AnnotatedElement, annotationType: Class<A>): A? {
-        if (GlobalTypeSwitch.isAnnotatedElementUtilsOpen()) {
-            return getAnnotations(element).get(annotationType, null, MergedAnnotationSelectors.firstDirectlyDeclared())
-                .synthesize(MergedAnnotation<A>::present).orElse(null)
-        }
-        return AnnotatedElementUtils.getMergedAnnotation(element, annotationType)
+        return getAnnotations(element)
+            .get(annotationType, null, MergedAnnotationSelectors.firstDirectlyDeclared())
+            .synthesize(MergedAnnotation<A>::present)
+            .orElse(null)
     }
 
     /**
@@ -68,11 +61,9 @@ object AnnotatedElementUtils {
      */
     @JvmStatic
     fun <A : Annotation> getAllMergedAnnotations(element: AnnotatedElement, annotationType: Class<A>): Set<A> {
-        if (GlobalTypeSwitch.isAnnotatedElementUtilsOpen()) {
-            return getAnnotations(element).stream(annotationType)
-                .collect(MergedAnnotationCollectors.toAnnotationSet<A>())
-        }
-        return AnnotatedElementUtils.getAllMergedAnnotations(element, annotationType)
+        return getAnnotations(element)
+            .stream(annotationType)
+            .collect(MergedAnnotationCollectors.toAnnotationSet<A>())
     }
 
     /**
@@ -84,11 +75,9 @@ object AnnotatedElementUtils {
      */
     @JvmStatic
     fun <A : Annotation> findAllMergedAnnotations(element: AnnotatedElement, annotationType: Class<A>): Set<A> {
-        if (GlobalTypeSwitch.isAnnotatedElementUtilsOpen()) {
-            return findAnnotations(element).stream(annotationType)
-                .collect(MergedAnnotationCollectors.toAnnotationSet<A>())
-        }
-        return AnnotatedElementUtils.findAllMergedAnnotations(element, annotationType)
+        return findAnnotations(element)
+            .stream(annotationType)
+            .collect(MergedAnnotationCollectors.toAnnotationSet<A>())
     }
 
     /**
@@ -100,10 +89,8 @@ object AnnotatedElementUtils {
      */
     @JvmStatic
     fun hasAnnotation(element: AnnotatedElement, annotationType: Class<out Annotation>): Boolean {
-        if (GlobalTypeSwitch.isAnnotatedElementUtilsOpen()) {
-            return findAnnotations(element).isPresent(annotationType)
-        }
-        return AnnotatedElementUtils.hasAnnotation(element, annotationType)
+        return findAnnotations(element)
+            .isPresent(annotationType)
     }
 
     /**
@@ -118,15 +105,10 @@ object AnnotatedElementUtils {
     fun getMergedAnnotationAttributes(
         element: AnnotatedElement, annotationType: Class<out Annotation>
     ): AnnotationAttributes? {
-        if (GlobalTypeSwitch.isAnnotatedElementUtilsOpen()) {
-            val mergedAnnotation = getAnnotations(annotationType).get(
-                annotationType, null, MergedAnnotationSelectors.firstDirectlyDeclared()
-            )
-            return getAnnotationAttributes(mergedAnnotation, false, true)
-        }
-        return AnnotationAttributes.fromMap(
-            AnnotatedElementUtils.getMergedAnnotationAttributes(element, annotationType)
+        val mergedAnnotation = getAnnotations(annotationType).get(
+            annotationType, null, MergedAnnotationSelectors.firstDirectlyDeclared()
         )
+        return getAnnotationAttributes(mergedAnnotation, false, true)
     }
 
     @JvmStatic

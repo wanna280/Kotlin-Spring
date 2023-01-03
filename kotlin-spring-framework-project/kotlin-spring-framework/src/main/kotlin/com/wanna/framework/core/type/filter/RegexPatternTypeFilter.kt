@@ -11,12 +11,7 @@ import java.util.regex.Pattern
  * @version v1.0
  * @date 2022/10/21
  */
-open class RegexPatternTypeFilter(val pattern: Pattern) : TypeFilter {
-    override fun matches(clazz: Class<*>?): Boolean {
-        clazz ?: return false
-        return isMatchPattern(clazz.name)
-    }
-
+open class RegexPatternTypeFilter(private val pattern: Pattern) : TypeFilter {
     override fun matches(metadataReader: MetadataReader, metadataReaderFactory: MetadataReaderFactory): Boolean {
         return isMatchPattern(metadataReader.classMetadata.getClassName())
     }

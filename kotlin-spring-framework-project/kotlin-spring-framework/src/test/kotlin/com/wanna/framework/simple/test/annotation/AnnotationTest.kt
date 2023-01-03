@@ -4,7 +4,6 @@ import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.context.stereotype.Service
 import com.wanna.framework.core.annotation.*
-import com.wanna.framework.core.type.GlobalTypeSwitch
 import com.wanna.framework.core.type.classreading.SimpleMetadataReaderFactory
 
 /**
@@ -145,8 +144,6 @@ fun testAnnotation9() {
 
 
 fun main() {
-    GlobalTypeSwitch.annotatedElementUtilsOpen = true
-
     testAnnotation1()
     testAnnotation2()
     testAnnotation3()

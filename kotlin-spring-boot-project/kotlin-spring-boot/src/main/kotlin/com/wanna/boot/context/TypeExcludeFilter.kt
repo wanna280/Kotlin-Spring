@@ -31,23 +31,6 @@ open class TypeExcludeFilter : TypeFilter, BeanFactoryAware {
         this.beanFactory = beanFactory
     }
 
-    /**
-     * 获取出BeanFactory当中的所有的TypeExcludeFilter, 对给定的clazz去进行匹配
-     *
-     * @param clazz 待匹配的clazz
-     * @return 如果匹配成功(return true), 那么该Bean就需要从BeanFactory当中remove掉
-     */
-    override fun matches(clazz: Class<*>?): Boolean {
-        if (beanFactory is ListableBeanFactory && javaClass == TypeExcludeFilter::class.java) {
-            getDelegates(beanFactory as ListableBeanFactory).forEach {
-                if (it.matches(clazz)) {
-                    return true
-                }
-            }
-        }
-        return false
-    }
-
     override fun matches(metadataReader: MetadataReader, metadataReaderFactory: MetadataReaderFactory): Boolean {
         // TODO
         return false

@@ -10,13 +10,11 @@ import com.wanna.framework.core.type.classreading.MetadataReaderFactory
  * @see AnnotationTypeFilter
  */
 fun interface TypeFilter {
-    fun matches(clazz: Class<*>?): Boolean
-
     /**
      * 基于MetadataReader的方式, 去执行匹配
      *
      * @param metadataReader MetadataReader
      * @param metadataReaderFactory MetadataReaderFactory
      */
-    fun matches(metadataReader: MetadataReader, metadataReaderFactory: MetadataReaderFactory): Boolean = true
+    fun matches(metadataReader: MetadataReader, metadataReaderFactory: MetadataReaderFactory): Boolean
 }
