@@ -1,8 +1,5 @@
 package com.wanna.framework.simple.test.reader
 
-import com.wanna.framework.context.annotation.Configuration
-import com.wanna.framework.core.annotation.AnnotationTypeMapping
-import com.wanna.framework.core.annotation.AnnotationTypeMappings
 import com.wanna.framework.core.type.classreading.SimpleMetadataReaderFactory
 import com.wanna.framework.transaction.annotation.Isolation
 import com.wanna.framework.transaction.annotation.Transactional
@@ -32,14 +29,4 @@ fun main() {
     val simpleMetadataReaderFactory = SimpleMetadataReaderFactory()
     val metadataReader =
         simpleMetadataReaderFactory.getMetadataReader("com.wanna.framework.simple.test.reader.MetadataReaderTest")
-
-    val annotationMetadata = metadataReader.annotationMetadata
-
-
-    val simpleMetadataReaderFactory1 = org.springframework.core.type.classreading.SimpleMetadataReaderFactory()
-    val metadataReader1 =
-        simpleMetadataReaderFactory1.getMetadataReader("com.wanna.framework.simple.test.reader.MetadataReaderTest")
-    val annotationMetadata1 = metadataReader1.annotationMetadata
-
-    println()
 }

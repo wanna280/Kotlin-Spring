@@ -1,6 +1,6 @@
 package com.wanna.boot.actuate.endpoint.web
 
-import org.springframework.util.StringUtils
+import com.wanna.framework.util.StringUtils
 
 /**
  * Endpoint的Mapping，主要负责完成路径的配置工作
