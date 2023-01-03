@@ -1,6 +1,6 @@
 package com.wanna.framework.context.annotation
 
-import org.springframework.core.annotation.AliasFor
+import com.wanna.framework.core.annotation.AliasFor
 import kotlin.reflect.KClass
 
 /**

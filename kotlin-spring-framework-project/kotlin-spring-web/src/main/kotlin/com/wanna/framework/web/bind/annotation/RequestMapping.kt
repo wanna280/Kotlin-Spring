@@ -1,6 +1,7 @@
 package com.wanna.framework.web.bind.annotation
 
-import org.springframework.core.annotation.AliasFor
+import com.wanna.framework.core.annotation.AliasFor
+
 
 /**
  * RequestMapping，负责处理指定的映射下的请求，并将它交给指定的方法去进行处理

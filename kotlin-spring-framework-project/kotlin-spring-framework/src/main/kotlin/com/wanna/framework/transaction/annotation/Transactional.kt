@@ -1,7 +1,7 @@
 package com.wanna.framework.transaction.annotation
 
+import com.wanna.framework.core.annotation.AliasFor
 import com.wanna.framework.transaction.TransactionDefinition
-import org.springframework.core.annotation.AliasFor
 import kotlin.reflect.KClass
 
 /**
@@ -30,10 +30,8 @@ import kotlin.reflect.KClass
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 annotation class Transactional(
-    @get:com.wanna.framework.core.annotation.AliasFor("transactionManager")
     @get:AliasFor("transactionManager")
     val value: String = "",
-    @get:com.wanna.framework.core.annotation.AliasFor("value")
     @get:AliasFor("value")
     val transactionManager: String = "",
     val timeout: Int = TransactionDefinition.TIMEOUT_DEFAULT,
