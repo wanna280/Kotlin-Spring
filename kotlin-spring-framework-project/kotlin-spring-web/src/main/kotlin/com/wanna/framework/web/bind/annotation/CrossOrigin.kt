@@ -1,6 +1,6 @@
 package com.wanna.framework.web.bind.annotation
 
-import org.springframework.core.annotation.AliasFor
+import com.wanna.framework.core.annotation.AliasFor
 
 /**
  * 通过这个注解，可以实现类级别，或者是方法级别的跨域的配置
@@ -16,10 +16,8 @@ import org.springframework.core.annotation.AliasFor
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 annotation class CrossOrigin(
-    @get:com.wanna.framework.core.annotation.AliasFor("origins")
     @get:AliasFor("origins")
     val value: Array<String> = [],
-    @get:com.wanna.framework.core.annotation.AliasFor("value")
     @get:AliasFor("value")
     val origins: Array<String> = [],
     val allowedHeaders: Array<String> = [],

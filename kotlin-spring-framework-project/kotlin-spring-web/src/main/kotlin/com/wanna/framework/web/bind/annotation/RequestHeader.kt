@@ -1,7 +1,6 @@
 package com.wanna.framework.web.bind.annotation
 
 import com.wanna.framework.web.method.annotation.RequestHeaderMethodArgumentResolver
-import org.springframework.core.annotation.AliasFor
 
 /**
  * 标注当前方法参数需要根据headerName获取到requestHeader当中的值来去进行设置，它会被RequestHeaderMethodArgumentResolver所处理
@@ -17,10 +16,8 @@ import org.springframework.core.annotation.AliasFor
 @Target(AnnotationTarget.TYPE_PARAMETER, AnnotationTarget.VALUE_PARAMETER)
 annotation class RequestHeader(
     @get:com.wanna.framework.core.annotation.AliasFor("name")
-    @get:AliasFor("name")
     val value: String = "",
     @get:com.wanna.framework.core.annotation.AliasFor("name")
-    @get:AliasFor("value")
     val name: String = "",
     val required: Boolean = true,
     val defaultValue: String = ValueConstants.DEFAULT_NONE

@@ -7,7 +7,7 @@ import com.wanna.framework.context.annotation.ComponentScan
 import com.wanna.framework.context.annotation.ComponentScan.Filter
 import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.annotation.FilterType.*
-import org.springframework.core.annotation.AliasFor
+import com.wanna.framework.core.annotation.AliasFor
 import kotlin.reflect.KClass
 
 /**
@@ -27,27 +27,21 @@ import kotlin.reflect.KClass
 @SpringBootConfiguration  // 标识这是一个SpringBoot的配置类
 @EnableAutoConfiguration  // 自动配置，使用DeferredImportSelector去完成
 annotation class SpringBootApplication(
-    @get:com.wanna.framework.core.annotation.AliasFor(annotation = EnableAutoConfiguration::class, value = "exclude")
     @get:AliasFor(annotation = EnableAutoConfiguration::class, value = "exclude")
     val exclude: Array<KClass<*>> = [],
 
-    @get:com.wanna.framework.core.annotation.AliasFor(annotation = EnableAutoConfiguration::class, value = "excludeNames")
     @get:AliasFor(annotation = EnableAutoConfiguration::class, value = "excludeNames")
     val excludeNames: Array<String> = [],
 
-    @get:com.wanna.framework.core.annotation.AliasFor(annotation = ComponentScan::class, value = "basePackages")
     @get:AliasFor(annotation = ComponentScan::class, value = "basePackages")
     val scanBasePackages: Array<String> = [],
 
-    @get:com.wanna.framework.core.annotation.AliasFor(annotation = ComponentScan::class, value = "basePackageClasses")
     @get:AliasFor(annotation = ComponentScan::class, value = "basePackageClasses")
     val scanBasePackageClasses: Array<KClass<*>> = [],
 
-    @get:com.wanna.framework.core.annotation.AliasFor(annotation = ComponentScan::class, value = "nameGenerator")
     @get:AliasFor(annotation = ComponentScan::class, value = "nameGenerator")
     val nameGenerator: KClass<out BeanNameGenerator> = BeanNameGenerator::class,
 
-    @get:com.wanna.framework.core.annotation.AliasFor(annotation = Configuration::class, value = "proxyBeanMethods")
     @get:AliasFor(annotation = Configuration::class, value = "proxyBeanMethods")
     val proxyBeanMethods: Boolean = true
 )

@@ -2,10 +2,10 @@ package com.wanna.framework.test.context.junit.jupiter
 
 import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.framework.context.ConfigurableApplicationContext
+import com.wanna.framework.core.annotation.AliasFor
 import com.wanna.framework.test.context.ContextConfiguration
 import com.wanna.framework.test.context.ContextLoader
 import org.junit.jupiter.api.extension.ExtendWith
-import org.springframework.core.annotation.AliasFor
 import java.lang.annotation.Inherited
 import kotlin.reflect.KClass
 
@@ -26,19 +26,14 @@ import kotlin.reflect.KClass
 @ContextConfiguration
 @ExtendWith(SpringExtension::class)
 annotation class SpringJUnitConfig(
-    @get:com.wanna.framework.core.annotation.AliasFor("value", annotation = ContextConfiguration::class)
     @get:AliasFor("value", annotation = ContextConfiguration::class)
     val value: Array<String> = [],
-    @get:com.wanna.framework.core.annotation.AliasFor("locations", annotation = ContextConfiguration::class)
     @get:AliasFor("locations", annotation = ContextConfiguration::class)
     val locations: Array<String> = [],
-    @get:com.wanna.framework.core.annotation.AliasFor("classes", annotation = ContextConfiguration::class)
     @get:AliasFor("classes", annotation = ContextConfiguration::class)
     val classes: Array<KClass<*>> = [],
-    @get:com.wanna.framework.core.annotation.AliasFor("initializers", annotation = ContextConfiguration::class)
     @get:AliasFor("initializers", annotation = ContextConfiguration::class)
     val initializers: Array<KClass<out ApplicationContextInitializer<out ConfigurableApplicationContext>>> = [],
-    @get:com.wanna.framework.core.annotation.AliasFor("loader", annotation = ContextConfiguration::class)
     @get:AliasFor("loader", annotation = ContextConfiguration::class)
     val loader: KClass<out ContextLoader> = ContextLoader::class
 )

@@ -1,6 +1,6 @@
 package com.wanna.boot.context.properties
 
-import org.springframework.core.annotation.AliasFor
+import com.wanna.framework.core.annotation.AliasFor
 import kotlin.reflect.KClass
 
 /**
@@ -8,11 +8,9 @@ import kotlin.reflect.KClass
  */
 @EnableConfigurationProperties
 annotation class ConfigurationPropertiesScan(
-    @get:com.wanna.framework.core.annotation.AliasFor("value")
     @get:AliasFor("value")
     val basePackages: Array<String> = [],
-    @get:com.wanna.framework.core.annotation.AliasFor("value")
-    @get:AliasFor("basePackages")
+    @get:AliasFor("value")
     val value: Array<String> = [],
     val basePackageNames: Array<KClass<*>> = []
 )
