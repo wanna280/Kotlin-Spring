@@ -21,6 +21,7 @@ import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.StandardAnnotationMetadata
 import com.wanna.framework.core.type.classreading.MetadataReader
 import com.wanna.framework.core.type.classreading.MetadataReaderFactory
+import com.wanna.framework.core.type.filter.AssignableTypeFilter
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.util.BeanUtils
@@ -601,34 +602,19 @@ open class ConfigurationClassParser(
 
     /**
      * 描述了要去进行解析的一个配置类的相关信息, 对于一个配置类来说, 可能会存在有多个父类,
-     * 对于它以及它的所有的父类, 都应该当做一个SourceClass去进行处理
+     * 对于它以及它的所有的父类, 都应该当做一个SourceClass去进行处理.
+     * 正常来讲, source是应该放一个Class的, 但是很可惜的是, 我们做不到,
+     * 我们不应该这么早的去进行类加载, 我们需要尽可能采用MetadataReader去进行读取类的相关信息,
+     * 对于MetadataReader将会尽可能采用读取Class文件的方式去完成实现, 可以实现不进行类的加载
      *
      * @param source source
      */
     private inner class SourceClass(val source: Any) {
-
         /**
-         * Class, TODO, 后续完善之后这个Class不应该继续存在...
+         * 该类的AnnotationMetadata信息
          */
-        val clazz: Class<*>
-
-        /**
-         * AnnotationMetadata
-         */
-        val metadata: AnnotationMetadata
-
-        init {
-            if (source is Class<*>) {
-                metadata = AnnotationMetadata.introspect(source)
-            } else {
-                metadata = (source as MetadataReader).annotationMetadata
-            }
-            if (source is Class<*>) {
-                this.clazz = source
-            } else {
-                this.clazz = ClassUtils.forName<Any>(metadata.getClassName(), resourceLoader.getClassLoader())
-            }
-        }
+        val metadata =
+            if (source is Class<*>) AnnotationMetadata.introspect(source) else (source as MetadataReader).annotationMetadata
 
         /**
          * 将SourceClass转换为ConfigurationClass(配置类对象)
@@ -651,7 +637,10 @@ open class ConfigurationClassParser(
          * @return 当前clazz是否是parentClass的子类
          */
         fun isAssignable(parentClass: Class<*>): Boolean {
-            return ClassUtils.isAssignFrom(parentClass, clazz)
+            if (source is MetadataReader) {
+                return AssignableTypeFilter(parentClass).matches(this.source, metadataReaderFactory)
+            }
+            return ClassUtils.isAssignFrom(parentClass, source as Class<*>)
         }
 
         /**
