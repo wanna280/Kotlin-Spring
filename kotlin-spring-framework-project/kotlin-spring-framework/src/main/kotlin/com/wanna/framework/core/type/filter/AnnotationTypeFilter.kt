@@ -11,10 +11,6 @@ import com.wanna.framework.core.type.classreading.MetadataReaderFactory
  * @param annotationType 要去匹配的注解类型
  */
 open class AnnotationTypeFilter(private val annotationType: Class<out Annotation>) : TypeFilter {
-    override fun matches(clazz: Class<*>?): Boolean {
-        return clazz != null && AnnotatedElementUtils.getMergedAnnotation(clazz, annotationType) != null
-    }
-
     override fun matches(metadataReader: MetadataReader, metadataReaderFactory: MetadataReaderFactory): Boolean {
         return metadataReader.annotationMetadata.isAnnotated(annotationType.name)
     }

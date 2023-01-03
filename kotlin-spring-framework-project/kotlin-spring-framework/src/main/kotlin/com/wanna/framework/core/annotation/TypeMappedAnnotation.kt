@@ -525,22 +525,47 @@ open class TypeMappedAnnotation<A : Annotation>(
         }
 
         /**
-         * 快速构建MergedAnnotation的工厂方法
+         * 根据注解的Attributes信息的Map 去快速构建MergedAnnotation的工厂方法
          *
          * @param classLoader ClassLoader
          * @param source source
-         * @param attributes attributes
+         * @param attributes attributes(注解的属性信息)
          * @return MergedAnnotation
          */
         @JvmStatic
         fun <A : Annotation> of(
             mapping: AnnotationTypeMapping,
             @Nullable classLoader: ClassLoader?,
-            source: Any?,
+            @Nullable source: Any?,
             attributes: Map<String, Any>,
             valueExtractor: ValueExtractor
         ): MergedAnnotation<A> {
             return TypeMappedAnnotation(mapping, classLoader, source, attributes, valueExtractor)
+        }
+
+        /**
+         * 根据给定的注解, 去构建出来MergedAnnotation
+         *
+         * @param A 注解类型
+         * @param annotation Annotation
+         * @return MergedAnnotation for given Annotation
+         */
+        @JvmStatic
+        fun <A : Annotation> from(annotation: A): MergedAnnotation<A> = from(null, annotation)
+
+        /**
+         * 根据给定的注解, 去构建出来MergedAnnotation
+         *
+         * @param A 注解类型
+         * @param source source
+         * @param annotation Annotation
+         * @return MergedAnnotation for given Annotation
+         */
+        @JvmStatic
+        fun <A : Annotation> from(@Nullable source: Any?, annotation: A): MergedAnnotation<A> {
+            // 为该注解去构建出来注解的Meta注解的映射信息
+            val mappings = AnnotationTypeMappings.forAnnotationType(annotation.annotationClass.java)
+            return TypeMappedAnnotation(mappings[0], null, source, annotation, ReflectionUtils::invokeMethod)
         }
 
         @Suppress("UNCHECKED_CAST")

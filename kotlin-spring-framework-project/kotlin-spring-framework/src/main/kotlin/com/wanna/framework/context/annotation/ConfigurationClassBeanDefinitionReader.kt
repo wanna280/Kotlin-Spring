@@ -120,7 +120,7 @@ open class ConfigurationClassBeanDefinitionReader(
         }
 
         val configClass = beanMethod.configClass
-        val beanAnnotation = metadata.getAnnotations().get(Bean::class.java)
+        val beanAnnotation = AnnotationConfigUtils.attributesFor(metadata, Bean::class.java) ?: return
 
         // 从@Bean的注解上找到合适的beanName
         val beanName = findBeanNameFromBeanAnnotation(beanAnnotation, metadata)
@@ -173,8 +173,8 @@ open class ConfigurationClassBeanDefinitionReader(
         beanDefinition.setAutowireMode(beanAnnotation.getInt("autowireMode"))
 
         // 解析scope
-        val scope = metadata.getAnnotations().get(Scope::class.java)
-        if (scope.present) {
+        val scope = AnnotationConfigUtils.attributesFor(metadata, Scope::class.java)
+        if (scope != null) {
             beanDefinition.setScope(scope.getString("value"))
         }
 
@@ -347,7 +347,7 @@ open class ConfigurationClassBeanDefinitionReader(
      * @return 解析到的beanName
      */
     private fun findBeanNameFromBeanAnnotation(
-        beanAnnotation: MergedAnnotation<Bean>, metadata: MethodMetadata
+        beanAnnotation: AnnotationAttributes, metadata: MethodMetadata
     ): String {
         var beanName: String? = null
         if (StringUtils.hasText(beanAnnotation.getString("name"))) {

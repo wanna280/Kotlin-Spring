@@ -692,6 +692,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     private fun doResolveBeanClass(mbd: RootBeanDefinition, vararg typeToMatch: Class<*>): Class<*>? {
         val beanClassName = mbd.getBeanClassName()
         val beanClassLoader = getBeanClassLoader()
+        // TODO
         if (beanClassName != null) {
             return beanClassLoader.loadClass(beanClassName)
         }

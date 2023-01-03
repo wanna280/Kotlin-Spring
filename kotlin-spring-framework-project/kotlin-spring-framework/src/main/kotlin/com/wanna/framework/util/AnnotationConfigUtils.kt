@@ -7,10 +7,7 @@ import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import com.wanna.framework.context.annotation.DependsOn
-import com.wanna.framework.context.annotation.Lazy
-import com.wanna.framework.context.annotation.Primary
-import com.wanna.framework.context.annotation.Role
+import com.wanna.framework.context.annotation.*
 import com.wanna.framework.context.event.DefaultEventListenerFactory
 import com.wanna.framework.context.processor.beans.internal.AutowiredAnnotationPostProcessor
 import com.wanna.framework.context.processor.beans.internal.CommonAnnotationPostProcessor
@@ -20,6 +17,8 @@ import com.wanna.framework.context.support.GenericApplicationContext
 import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
+import com.wanna.framework.core.type.AnnotationMetadata
+import com.wanna.framework.lang.Nullable
 
 object AnnotationConfigUtils {
 
@@ -186,5 +185,55 @@ object AnnotationConfigUtils {
         registry.registerBeanDefinition(beanName, beanDefinition)
 
         return BeanDefinitionHolder(beanDefinition, beanName)
+    }
+
+    @Nullable
+    @JvmStatic
+    fun attributesFor(metadata: AnnotatedTypeMetadata, annotationClass: Class<*>): AnnotationAttributes? {
+        return attributesFor(metadata, annotationClass.name)
+    }
+
+    @Nullable
+    @JvmStatic
+    fun attributesFor(metadata: AnnotatedTypeMetadata, annotationClassName: String): AnnotationAttributes? {
+        return AnnotationAttributes.fromMap(metadata.getAnnotationAttributes(annotationClassName, false))
+    }
+
+    @JvmStatic
+    fun attributesForRepeatable(
+        metadata: AnnotationMetadata,
+        containerClass: Class<*>,
+        annotationClass: Class<*>
+    ): Set<AnnotationAttributes> {
+        return attributesForRepeatable(metadata, containerClass.name, annotationClass.name)
+    }
+
+    @JvmStatic
+    fun attributesForRepeatable(
+        metadata: AnnotationMetadata,
+        containerClassName: String,
+        annotationClassName: String
+    ): Set<AnnotationAttributes> {
+
+        val result = LinkedHashSet<AnnotationAttributes>()
+        val attributes = metadata.getAnnotationAttributes(annotationClassName, false)
+        addAttributesIfNonNull(result, attributes)
+
+        // container TODO
+        return result
+    }
+
+    /**
+     * 如果给定的Attributes不为空的话, 把它加入到result当中去
+     *
+     * @param result result
+     * @param attributes attributes(可以为null)
+     */
+    private fun addAttributesIfNonNull(
+        result: MutableSet<AnnotationAttributes>,
+        @Nullable attributes: Map<String, Any>?
+    ) {
+        attributes ?: return
+        result.add(AnnotationAttributes.fromMap(attributes)!!)
     }
 }

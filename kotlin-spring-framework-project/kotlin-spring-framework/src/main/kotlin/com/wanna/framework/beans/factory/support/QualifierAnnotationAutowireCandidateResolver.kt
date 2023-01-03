@@ -180,9 +180,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
         }
 
         // 如果没有成对匹配的话，那么需要fallback去匹配Qualifier注解与beanName的情况...
-        val attributes =
-            MergedAnnotations.from(null, arrayOf(annotation), RepeatableContainers.none(), AnnotationFilter.PLAIN)
-                .get(annotationClass).asAnnotationAttributes()
+        val attributes = AnnotationUtils.getAnnotationAttributes(annotation)
         attributes.forEach { (k, v) ->
             if (k == MergedAnnotation.VALUE && bdHolder.matchesName(v.toString())) {
                 return true

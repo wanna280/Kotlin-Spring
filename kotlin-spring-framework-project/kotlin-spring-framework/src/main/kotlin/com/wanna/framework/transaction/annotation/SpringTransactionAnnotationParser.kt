@@ -1,10 +1,7 @@
 package com.wanna.framework.transaction.annotation
 
 import com.wanna.framework.context.annotation.AnnotationAttributes
-import com.wanna.framework.core.annotation.AnnotatedElementUtils
-import com.wanna.framework.core.annotation.AnnotationFilter
-import com.wanna.framework.core.annotation.MergedAnnotations
-import com.wanna.framework.core.annotation.RepeatableContainers
+import com.wanna.framework.core.annotation.*
 import com.wanna.framework.transaction.interceptor.*
 import java.lang.reflect.AnnotatedElement
 
@@ -35,9 +32,7 @@ open class SpringTransactionAnnotationParser : TransactionAnnotationParser {
      * @return 事务相关的属性信息
      */
     protected open fun parseTransactionAnnotation(transactional: Transactional): TransactionAttribute {
-        val attributes =
-            MergedAnnotations.from(null, arrayOf(transactional), RepeatableContainers.none(), AnnotationFilter.PLAIN)
-                .get(transactional.annotationClass.java).asAnnotationAttributes()
+        val attributes = AnnotationUtils.getAnnotationAttributes(transactional)
         return parseTransactionAnnotation(attributes)
     }
 
