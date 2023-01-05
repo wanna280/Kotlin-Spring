@@ -7,11 +7,13 @@ import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.format.FormatterRegistry
 import com.wanna.framework.context.format.support.DefaultFormattingConversionService
 import com.wanna.framework.context.format.support.FormattingConversionService
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.validation.Errors
 import com.wanna.framework.validation.Validator
 import com.wanna.framework.web.HandlerMapping
+import com.wanna.framework.web.HttpRequestHandler
 import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.cors.CorsConfiguration
 import com.wanna.framework.web.handler.HandlerExceptionResolver
@@ -31,6 +33,7 @@ import com.wanna.framework.web.method.support.HandlerMethodArgumentResolver
 import com.wanna.framework.web.method.support.HandlerMethodReturnValueHandler
 import com.wanna.framework.web.method.view.BeanNameViewResolver
 import com.wanna.framework.web.method.view.TemplateViewResolver
+import com.wanna.framework.web.mvc.Controller
 import com.wanna.framework.web.mvc.HttpRequestHandlerAdapter
 import com.wanna.framework.web.mvc.SimpleControllerHandlerAdapter
 import com.wanna.framework.web.mvc.annotation.ResponseStatusExceptionResolver
@@ -54,24 +57,64 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         private val jackson2Present = ClassUtils.isPresent("com.fasterxml.jackson.databind.ObjectMapper")
     }
 
-    private lateinit var applicationContext: ApplicationContext
+    /**
+     * ApplicationContext
+     */
+    @Nullable
+    private var applicationContext: ApplicationContext? = null
 
+    /**
+     * 要去注册给SpringMVC的拦截器列表
+     */
+    @Nullable
     private var interceptors: MutableList<Any>? = null
 
+    /**
+     * 提供SpringMVC的HandlerMethod的参数解析的参数解析器
+     */
+    @Nullable
     private var argumentResolvers: MutableList<HandlerMethodArgumentResolver>? = null
 
+    /**
+     * 提供SpringMVC的HandlerMethod的返回解析的返回解析器
+     */
+    @Nullable
     private var returnValueHandlers: MutableList<HandlerMethodReturnValueHandler>? = null
 
+    /**
+     * 内容协商管理器, 负责去解析用户的请求想要返回什么格式的报文
+     */
+    @Nullable
     private var contentNegotiationManager: ContentNegotiationManager? = null
 
+    /**
+     * 提供对于消息转换的MessageConverter
+     */
+    @Nullable
     private var messageConverters: MutableList<HttpMessageConverter<*>>? = null
 
+    /**
+     * CORS跨域的配置信息, Key-PathPattern, Value-该Pattern下的CORS配置信息
+     */
+    @Nullable
     private var corsConfigurations: Map<String, CorsConfiguration>? = null
 
+    /**
+     * 设置ApplicationContext
+     *
+     * @param applicationContext ApplicationContext
+     */
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext
     }
 
+    /**
+     * 为SpringMVC去注册一个处理RequestMapping的请求的HandlerMapping
+     *
+     * @param contentNegotiationManager SpringMVC需要用到的内容协商管理器
+     * @param conversionService SpringMVC需要使用到的ConversionService
+     * @return RequestMappingHandlerMapping
+     */
     @Bean
     @Qualifier("requestMappingHandlerMapping")
     open fun requestMappingHandlerMapping(
@@ -119,7 +162,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     /**
      * 给容器当中去注册一个ConversionService，去支持进行WebMvc当中的类型转换工作
      *
-     * Note: 整个SpringMvc当中的各个组件，都将会采用这个ConversionService去完成类型的转换工作
+     * Note: 整个SpringMVC当中的各个组件，都将会采用这个ConversionService去完成类型的转换工作
      */
     @Bean
     @Qualifier("mvcConversionService")
@@ -130,6 +173,13 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         return formattingConversionService
     }
 
+    /**
+     * 提供SpringMVC当中的异常解解析的HandlerExceptionResolver
+     *
+     * @param contentNegotiationManager ContentNegotiationManager
+     * @return HandlerExceptionResolver
+     * @see ExceptionHandlerExceptionResolver
+     */
     @Bean
     @Qualifier("handlerExceptionResolver")
     open fun handlerExceptionResolver(@Qualifier("mvcContentNegotiationManager") contentNegotiationManager: ContentNegotiationManager): HandlerExceptionResolver {
@@ -148,7 +198,9 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     }
 
     /**
-     * 给容器中注册一个BeanName的ViewResolver
+     * 给容器中注册一个BeanName的ViewResolver, 基于BeanName去找到对应的View视图对象, 从而进行视图的渲染
+     *
+     * @return ViewResolver
      */
     @Bean
     @Qualifier("beanNameViewResolver")
@@ -176,12 +228,24 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         return urlHandlerMapping
     }
 
+    /**
+     * HttpRequestHandler的HandlerAdapter, 负责基于HttpRequestHandler的方式去进行请求的处理
+     *
+     * @see HttpRequestHandler
+     * @return Handler for HttpRequestHandler
+     */
     @Bean("httpRequestHandlerAdapter")
     @Qualifier("httpRequestHandlerAdapter")
     open fun httpRequestHandlerAdapter(): HttpRequestHandlerAdapter {
         return HttpRequestHandlerAdapter()
     }
 
+    /**
+     * 利用Controller去处理请求的HandlerAdapter
+     *
+     * @return HandlerAdapter for Controller
+     * @see Controller
+     */
     @Bean("simpleControllerHandlerAdapter")
     @Qualifier("simpleControllerHandlerAdapter")
     open fun simpleControllerHandlerAdapter(): SimpleControllerHandlerAdapter {
@@ -189,8 +253,9 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     }
 
     /**
-     * 为Spring BeanFactory当中去导入一个Spring的Validator，为
-     * `@ModelAttribute`和`@RequestBody`的参数检验提供支持
+     * 为SpringMVC导入一个Spring的Validator，为`@ModelAttribute`和`@RequestBody`的参数检验提供支持
+     *
+     * @return 提供SpringMVC的参数检验的Validator
      */
     @Bean("mvcValidator")
     @Qualifier("mvcValidator")
@@ -203,8 +268,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
 
             // 检查JDK的Validator是否在我们的依赖当中？
             if (ClassUtils.isPresent(
-                    "javax.validation.Validator",
-                    WebMvcConfigurationSupport::class.java.classLoader
+                    "javax.validation.Validator", WebMvcConfigurationSupport::class.java.classLoader
                 )
             ) {
                 // 实例化出来一个OptionalValidatorFactoryBean对象，支持去探测本地的javax.validation.Validator作为delegate
@@ -215,9 +279,9 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
                     validator = BeanUtils.instantiateClass(clazz)
                     // 如果该类找不到的话...那么直接丢出来异常
                 } catch (ex: ClassNotFoundException) {
-                    throw RuntimeException(ex)
+                    throw IllegalStateException(ex)
                 } catch (ex: LinkageError) {
-                    throw RuntimeException(ex)
+                    throw IllegalStateException(ex)
                 }
                 // 如果依赖当中都没有javax.validation.Validator，那么说明没有合适的Validator可以去进行使用
                 // 我们直接尝试去使用NoOpValidator...
@@ -233,6 +297,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
      *
      * @return 你需要使用的Validator
      */
+    @Nullable
     protected open fun getValidator(): Validator? {
         return null
     }
@@ -353,7 +418,9 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         exceptionHandlerExceptionResolver.setHandlerMethodReturnValueHandlers(getReturnValueResolvers())
         // 手动设置ApplicationContext，并完成初始化工作...
         // 因为它不是一个SpringBean，无法自动初始化...我们尝试去进行手动初始化
-        exceptionHandlerExceptionResolver.setApplicationContext(this.applicationContext)
+        if (this.applicationContext != null) {
+            exceptionHandlerExceptionResolver.setApplicationContext(this.applicationContext!!)
+        }
         exceptionHandlerExceptionResolver.afterPropertiesSet()
 
         // 添加一个处理@ExceptionHandler注解的HandlerExceptionResolver

@@ -1,5 +1,6 @@
 package com.wanna.framework.web.mvc
 
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.handler.HandlerAdapter
 import com.wanna.framework.web.handler.ModelAndView
 import com.wanna.framework.web.server.HttpServerRequest
@@ -15,7 +16,24 @@ import com.wanna.framework.web.server.HttpServerResponse
  * @see HttpRequestHandlerAdapter
  */
 open class SimpleControllerHandlerAdapter : HandlerAdapter {
+
+    /**
+     * 支持去进行处理的Handler类型是Controller类型
+     *
+     * @see Controller
+     * @return 如果handle is Controller, return true; 否则return false
+     */
     override fun supports(handler: Any) = handler is Controller
+
+    /**
+     * 使用该Controller去处理请求
+     *
+     * @param request request
+     * @param response response
+     * @param handler handler
+     * @return ModelAndView
+     */
+    @Nullable
     override fun handle(request: HttpServerRequest, response: HttpServerResponse, handler: Any): ModelAndView? {
         return (handler as Controller).handleRequest(request, response)
     }

@@ -9,10 +9,10 @@ import com.wanna.framework.lang.Nullable
 import java.util.function.Supplier
 
 /**
- * 提供对Bean的相关信息的管理，它提供的属性的访问功能，以及Source的访问的相关功能
+ * 提供对Bean的相关信息的管理, 它提供的属性的访问功能, 以及Source的访问的相关功能
  *
- * * 1.属性的访问，可以提供一个上下文的环境，因为Spring当中，无论在哪都能获取BeanDefinition，
- * 因此将属性设置到BeanDefinition当中，可以当做全局变量去进行访问
+ * * 1.属性的访问, 可以提供一个上下文的环境, 因为Spring当中, 无论在哪都能获取BeanDefinition,
+ * 因此将属性设置到BeanDefinition当中, 可以当做全局变量去进行访问
  *
  * @see AbstractBeanDefinition
  * @see RootBeanDefinition
@@ -21,14 +21,22 @@ import java.util.function.Supplier
  */
 interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
     companion object {
-        // Bean的作用域
-        const val SCOPE_SINGLETON = "singleton"  // 单例的scope名称
-        const val SCOPE_PROTOTYPE = "prototype"  // 原型的scope名称
+        /**
+         * 单例的scope名称, 对于单例Bean, 会被Spring放入到缓存当中, 全局访问唯一对象
+         */
+        const val SCOPE_SINGLETON = "singleton"
 
-        // Bean的角色，包括Application(默认)、Support和Infrastructure(基础设施)
+        /**
+         * 原型的scope名称, 对于原型Bean, 不会被Spring放入到缓存当中, 每次getBean都会创建一个新的对象
+         */
+        const val SCOPE_PROTOTYPE = "prototype"
+
+        /**
+         *  Bean的角色, 包括Application(默认)、Support和Infrastructure(基础设施)
+         */
         const val ROLE_APPLICATION = 0  // 正常的用户使用的Bean
         const val ROLE_SUPPORT = 1
-        const val ROLE_INFRASTRUCTURE = 2  // 基础设施Bean，不用被使用者所知道的Bean
+        const val ROLE_INFRASTRUCTURE = 2  // 基础设施Bean, 不用被使用者所知道的Bean
     }
 
     /**
@@ -97,7 +105,7 @@ interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
     fun setAutowireCandidate(candidate: Boolean)
 
     /**
-     * 设置创建Bean的工厂方法，也就是@Bean的方法
+     * 设置创建Bean的工厂方法, 也就是@Bean的方法
      *
      * @param factoryMethodName factoryMethodName
      */
@@ -157,7 +165,7 @@ interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
     fun getDestroyMethodName(): String?
 
     /**
-     * Bean的作用域，包括单例(singleton)/原型(prototype)等
+     * Bean的作用域, 包括单例(singleton)/原型(prototype)等
      *
      * @param scopeName scopeName
      */
@@ -278,9 +286,9 @@ interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
     fun getResourceDescription(): String?
 
     /**
-     * 创建一个Bean时，它需要依赖的Bean的列表
+     * 创建一个Bean时, 它需要依赖的Bean的beanName列表
      *
-     * @param dependsOn 需要依赖的Bean的列表
+     * @param dependsOn 需要依赖的Bean的beanName的列表
      */
     fun setDependsOn(dependsOn: Array<String>)
 

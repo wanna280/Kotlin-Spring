@@ -15,6 +15,10 @@ import java.util.function.Supplier
 
 /**
  * 这是一个抽象的BeanDefinition，它继承了BeanMetadataAttributeAccessor，支持进行属性的设置和获取
+ *
+ * @see GenericBeanDefinition
+ * @see AbstractBeanDefinition
+ * @see RootBeanDefinition
  */
 abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAccessor() {
     companion object {
@@ -419,19 +423,21 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
      * @return beanClass
      */
     @Nullable
-    override fun getBeanClass() = beanClass
+    override fun getBeanClass(): Class<*>? = beanClass
 
     /**
      * 设置beanClassName
      *
      * @param beanClassName beanClassName
      */
-    open fun setBeanClassName(beanClassName: String?) {
+    open fun setBeanClassName(@Nullable beanClassName: String?) {
         this.beanClassName = beanClassName
     }
 
     /**
-     * 获取beanClassName，有可能为null
+     * 获取beanClassName，有可能为null;
+     * * 1.如果有beanClass的话, 那么直接使用beanClass去进行返回;
+     * * 2.如果没有beanClass的话, 那么尝试使用beanClassName去进行返回
      *
      * @return beanClassName
      */

@@ -15,6 +15,8 @@ import java.beans.ConstructorProperties
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
 import java.lang.reflect.Method
+import java.lang.reflect.Modifier
+import java.util.Arrays
 
 /**
  * 这是一个构造器的解析器，负责完成Bean的构造器的解析，并使用构造器去完成Bean的创建，并支持对构造器/方法的参数这两种方式去进行Autowire
@@ -265,5 +267,45 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
             beanFactory.resolveDependency(DependencyDescriptor(methodParameter, true, true), beanName)  // return
         }
         return params
+    }
+
+    /**
+     * 如果必要的话, 为给定的目标RootBeanDefinition解析FactoryMethod
+     *
+     * @param mbd MergedBeanDefinition
+     */
+    open fun resolveFactoryMethodIfPossible(mbd: RootBeanDefinition) {
+        var factoryClass: Class<*>?
+        val isStatic: Boolean
+        if (mbd.getFactoryBeanName() != null) {
+            factoryClass = this.beanFactory.getType(mbd.getFactoryBeanName()!!)
+            isStatic = false;
+        } else {
+            factoryClass = mbd.getBeanClass()
+            isStatic = true;
+        }
+        factoryClass ?: throw IllegalStateException("Unresolvable factory class")
+        factoryClass = ClassUtils.getUserClass(factoryClass)
+
+        val candidates = ReflectionUtils.getAllDeclaredMethods(factoryClass)
+        var uniqueCandidate: Method? = null
+
+        // 根据所有的方法, 去进行方法的匹配, 找到一个合适的FactoryMethod
+        for (candidate in candidates) {
+            if (Modifier.isStatic(candidate.modifiers) == isStatic && mbd.isFactoryMethod(candidate.name)) {
+                if (uniqueCandidate == null) {
+                    uniqueCandidate = candidate
+
+                    // 如果遇到了两个重名, 但是方法参数数量不同的方法的话...那么uniqueCandidate=false
+                } else if (uniqueCandidate.parameterCount != candidate.parameterCount
+                    && Arrays.equals(uniqueCandidate.parameterTypes, candidate.parameterTypes)
+                ) {
+                    uniqueCandidate = null
+                    break
+                }
+            }
+        }
+        // 如果可以解析到合适的FactoryMethod的话, 那么设置已经解析好的FactoryMethod到BeanDefinition当中...
+        mbd.setResolvedFactoryMethod(uniqueCandidate)
     }
 }

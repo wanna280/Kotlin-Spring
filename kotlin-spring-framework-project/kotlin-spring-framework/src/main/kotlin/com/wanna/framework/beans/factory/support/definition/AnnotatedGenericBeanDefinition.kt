@@ -30,8 +30,7 @@ open class AnnotatedGenericBeanDefinition protected constructor() : AnnotatedBea
      */
     constructor(metadata: AnnotationMetadata) : this() {
         this.metadata = metadata
-        this.setBeanClassName(metadata.getClassName())
-        this.setBeanClass(ClassUtils.forName<Any>(metadata.getClassName()))
+        this.setBeanClassName(metadata.getClassName())  // set beanClassName
     }
 
     override fun getMetadata() = metadata ?: throw IllegalStateException("Metadata is null")

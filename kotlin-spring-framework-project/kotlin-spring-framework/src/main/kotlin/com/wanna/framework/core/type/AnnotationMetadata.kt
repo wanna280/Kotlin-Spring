@@ -1,5 +1,8 @@
 package com.wanna.framework.core.type
 
+import com.wanna.framework.core.annotation.MergedAnnotation
+import com.wanna.framework.core.annotation.MergedAnnotations
+import java.util.Collections
 import java.util.stream.Collectors
 
 /**
@@ -17,6 +20,21 @@ interface AnnotationMetadata : AnnotatedTypeMetadata, ClassMetadata {
      */
     fun getAnnotationTypes(): Set<String> {
         return getAnnotations().stream().filter { it.directPresent }.map { it.type.name }.collect(Collectors.toSet())
+    }
+
+    /**
+     * 获取给定的注解的Meta注解列表, 比如A注解上标注了B注解, 那么A注解上去寻找Meta注解就会找到B...
+     *
+     * @param annotationName 待寻找的注解类名annotationName
+     * @return 寻找到的所有的直接标注的Meta注解(找不到返回空的集合)
+     */
+    fun getMetaAnnotationTypes(annotationName: String): Set<String> {
+        val mergedAnnotation = getAnnotations().get(annotationName, MergedAnnotation<Annotation>::directPresent)
+        if (!mergedAnnotation.present) {
+            return Collections.emptySet()
+        }
+        return MergedAnnotations.from(mergedAnnotation.type, MergedAnnotations.SearchStrategy.INHERITED_ANNOTATIONS)
+            .map { it.type.name }.toSet()
     }
 
     /**
