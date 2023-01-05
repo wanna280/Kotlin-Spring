@@ -15,7 +15,7 @@ import java.lang.reflect.Method
  * @see GenericBeanDefinition
  */
 open class RootBeanDefinition() : AbstractBeanDefinition() {
-    constructor(beanClass: Class<*>?) : this() {
+    constructor(@Nullable beanClass: Class<*>?) : this() {
         this.setBeanClass(beanClass)
     }
 
@@ -38,6 +38,7 @@ open class RootBeanDefinition() : AbstractBeanDefinition() {
     /**
      * factoryMethod(@Bean方法标注的方法)
      */
+    @Nullable
     private var factoryMethodToIntrospect: Method? = null
 
     /**
@@ -107,21 +108,39 @@ open class RootBeanDefinition() : AbstractBeanDefinition() {
     private var isFactoryBean: Boolean? = null
 
     open fun isFactoryBean(): Boolean? = isFactoryBean
-    open fun setFactoryBean(isFactoryBean: Boolean?) {
+    open fun setFactoryBean(@Nullable isFactoryBean: Boolean?) {
         this.isFactoryBean = isFactoryBean
     }
 
     /**
-     * 获取/设置已经解析完成的FactoryMethod
+     * 检查给定的方法名和factoryMethodName是否匹配
+     *
+     * @param methodName methodName
+     * @return 如果和factoryMethodName匹配的话, return true; 否则return false
      */
+    open fun isFactoryMethod(methodName: String): Boolean {
+        return this.getFactoryMethodName() == methodName
+    }
+
+    /**
+     * 获取已经解析完成的FactoryMethod
+     */
+    @Nullable
     open fun getResolvedFactoryMethod(): Method? = this.factoryMethodToIntrospect
-    open fun setResolvedFactoryMethod(method: Method?) {
+
+    /**
+     * 设置已经解析完成的FactoryMethod
+     */
+    open fun setResolvedFactoryMethod(@Nullable method: Method?) {
         this.factoryMethodToIntrospect = method
     }
 
     /**
      * 获取FactoryMethod的Metadata信息
+     *
+     * @return Method Metadata
      */
+    @Nullable
     open fun getFactoryMethodMetadata(): MethodMetadata? = null
 
 }

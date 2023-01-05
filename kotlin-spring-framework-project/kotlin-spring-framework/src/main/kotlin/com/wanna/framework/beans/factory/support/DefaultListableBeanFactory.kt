@@ -244,12 +244,30 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         return true
     }
 
+    /**
+     * 检查给定的这个BeanDefinition, 是否是一个和给定的DependencyDescriptor的是一个匹配的依赖
+     *
+     * @param beanName 正在检查是否是候选Bean的beanName
+     * @param mbd 正在检查的MergedBeanDefinition
+     * @param descriptor 请求注入的元素的依赖描述符
+     * @param resolver 检查是否DependencyDescriptor和给定的BeanDefinition是否匹配的解析器
+     * @return 如果它是一个候选的可以去支持注入的元素, return true; 否则return false
+     */
     protected open fun isAutowireCandidate(
         beanName: String, mbd: RootBeanDefinition, descriptor: DependencyDescriptor, resolver: AutowireCandidateResolver
     ): Boolean {
         val beanNameToUse = BeanFactoryUtils.transformBeanName(beanName)
-        // 先解析beanClass
+
+        // Note: 这里尤其重要, 因为在检查是否需要注入时, 会根据beanClass/FactoryMethod去进行匹配
+        // 如果这里不去进行先解析, 会存在有解析不到依赖Bean的情况, 比如@Bean方法上的@Qualifier注解, 因此这里必须去进行解析
+
+        // 1.先解析beanClass
         resolveBeanClass(mbd, beanNameToUse)
+        // 2.尝试解析FactoryMethod
+        if (mbd.getFactoryMethodName() != null && mbd.getResolvedFactoryMethod() == null) {
+            ConstructorResolver(this).resolveFactoryMethodIfPossible(mbd)
+        }
+
         return resolver.isAutowireCandidate(BeanDefinitionHolder(mbd, beanNameToUse), descriptor)
     }
 

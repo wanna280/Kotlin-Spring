@@ -1,10 +1,7 @@
 package com.wanna.framework.beans.factory.support
 
 import com.wanna.framework.beans.*
-import com.wanna.framework.beans.factory.BeanFactory
-import com.wanna.framework.beans.factory.FactoryBean
-import com.wanna.framework.beans.factory.InitializingBean
-import com.wanna.framework.beans.factory.ObjectFactory
+import com.wanna.framework.beans.factory.*
 import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
@@ -26,6 +23,7 @@ import org.slf4j.LoggerFactory
 import java.beans.Introspector
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 import java.util.function.Supplier
 import kotlin.jvm.Throws
 
@@ -130,14 +128,15 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
 
         // 判断有没有可能在初始化之前解析到Bean？最初被初始化为true, 如果第一次解析的时候为bean=null, 那么设为false, 后续就不用再去进行解析了
         if (!mbd.beforeInstantiationResolved) {
-
+            // 如果该mbd不是被合成的, 并且拥有InstantiationAwareBeanPostProcessor的话, 那么需要解析出来targetType去进行真正的解析
+            // Note: 在这里需要确保使用到真实的目标targetType去进行解析
             if (!mbd.isSynthetic() && getBeanPostProcessorCache().hasInstantiationAware()) {
-                val beanClass = mbd.getBeanClass()
-                if (beanClass != null) {
+                val targetType = determineTargetType(beanName, mbd)
+                if (targetType != null) {
                     // 如果实例之前的BeanPostProcessor已经return 非空, 产生出来一个对象了, 那么需要完成初始化工作...
                     // 如果必要的话, 会完成动态代理, 如果创建出来Bean, 那么直接return, 就不走doCreateBean的创建Bean的逻辑了...
                     for (postProcessor in getBeanPostProcessorCache().instantiationAwareCache) {
-                        bean = postProcessor.postProcessBeforeInstantiation(beanName, beanClass)
+                        bean = postProcessor.postProcessBeforeInstantiation(beanName, targetType)
                         if (bean != null) {
                             bean = applyBeanPostProcessorsAfterInitialization(bean, beanName)
                         }
@@ -311,6 +310,65 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
         val beanWrapper = BeanWrapperImpl(instance)
         initBeanWrapper(beanWrapper)
         return beanWrapper
+    }
+
+    @Nullable
+    protected open fun determineTargetType(
+        beanName: String,
+        mbd: RootBeanDefinition,
+        vararg typesToMatch: Class<*>
+    ): Class<*>? {
+        val targetType = if (mbd.getFactoryMethodName() != null) getTypeForFactoryMethod(beanName, mbd, *typesToMatch)
+        else resolveBeanClass(mbd, beanName, *typesToMatch)
+        return targetType
+    }
+
+    /**
+     * 从FactoryMethod当中去获取到BeanDefinition当中的FactoryMethod
+     */
+    @Nullable
+    protected open fun getTypeForFactoryMethod(
+        beanName: String,
+        mbd: RootBeanDefinition,
+        vararg typesToMatch: Class<*>
+    ): Class<*>? {
+        var uniqueCandidate = mbd.getResolvedFactoryMethod()
+
+        // 如果之前还没解析过FactoryMethod的话, 那么我们需要在这里去解析FactoryMethod
+        if (uniqueCandidate == null) {
+            var isStatic = true
+            var factoryClass: Class<*>?
+
+            // 如果指定了factoryBeanName, 那么根据该factoryBeanName去寻找到factoryBeanClass
+            val factoryBeanName = mbd.getFactoryBeanName()
+            if (factoryBeanName != null) {
+                // 检查是否存在有FactoryMethod的beanName指向了自己的情况?
+                if (factoryBeanName == beanName) {
+                    throw BeanDefinitionStoreException(
+                        beanName,
+                        "factory-bean reference points back to the same bean definition"
+                    )
+                }
+                factoryClass = getType(factoryBeanName)
+                isStatic = false
+
+                // 如果没有指定FactoryBeanName的话, 那么尝试解析在beanClass上去找
+            } else {
+                factoryClass = resolveBeanClass(mbd, beanName, *typesToMatch)
+            }
+            // 如果没有解析到factoryClass, return null
+            factoryClass ?: return null
+
+            // 如果解析到了factoryClass的话, 检查该类当中的方法, 去找到一个合适的FactoryMethod
+            factoryClass = ClassUtils.getUserClass(factoryClass)
+            for (method in ReflectionUtils.getAllDeclaredMethods(factoryClass)) {
+                if (Modifier.isStatic(method.modifiers) == isStatic && mbd.isFactoryMethod(method.name)) {
+                    uniqueCandidate = method
+                }
+            }
+            mbd.setResolvedFactoryMethod(uniqueCandidate)
+        }
+        return uniqueCandidate?.returnType
     }
 
     /**
