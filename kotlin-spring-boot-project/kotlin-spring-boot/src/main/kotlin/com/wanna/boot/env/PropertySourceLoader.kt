@@ -22,15 +22,6 @@ interface PropertySourceLoader {
      * 加载配置文件成为PropertySource
      *
      * @param name name
-     * @param resource 资源路径
-     * @return 加载得到的的PropertySource列表
-     */
-    fun load(name: String, resource: String): List<PropertySource<*>>
-
-    /**
-     * 加载配置文件成为PropertySource
-     *
-     * @param name name
      * @param resource 资源Resource对象
      * @return 加载得到的的PropertySource列表
      */

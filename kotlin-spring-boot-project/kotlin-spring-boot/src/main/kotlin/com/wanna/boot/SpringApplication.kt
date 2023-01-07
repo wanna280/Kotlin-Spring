@@ -18,6 +18,7 @@ import com.wanna.framework.core.io.DefaultResourceLoader
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
@@ -26,6 +27,7 @@ import com.wanna.framework.util.StringUtils.collectionToCommaDelimitedString
 import com.wanna.framework.web.context.support.StandardServletEnvironment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.Collections
 
 /**
  * 这是一个SpringApplication的启动类，交由它去进行引导整个SpringApplication的启动
@@ -261,6 +263,11 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      * 是否需要去注册ShutdownHook？默认为true
      */
     private var registerShutdownHook = true
+
+    /**
+     * 额外要使用的Profiles
+     */
+    private var additionalProfiles: MutableSet<String> = Collections.emptySet()
 
     /**
      * 获取SpringApplication当中的监听器列表，并完成好排序工作
@@ -796,7 +803,10 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
 
     /**
      * 探测SpringApplication的启动类
+     *
+     * @return 探测到的mainApplicationClass(如果没有探测到, return null)
      */
+    @Nullable
     private fun deduceMainApplicationClass(): Class<*>? {
         java.lang.RuntimeException().stackTrace.forEach {
             if (it.methodName == "main") {
@@ -959,10 +969,6 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         return this.logger
     }
 
-    open fun getMainApplicationClass(): Class<*>? {
-        return this.mainApplicationClass
-    }
-
     /**
      * 获取ClassLoader
      *
@@ -975,7 +981,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      *
      * @param resourceLoader 你想要使用的ResourceLoader
      */
-    open fun setResourceLoader(resourceLoader: ResourceLoader?) {
+    open fun setResourceLoader(@Nullable resourceLoader: ResourceLoader?) {
         this.resourceLoader = resourceLoader
     }
 
@@ -984,6 +990,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      *
      * @return ResourceLoader
      */
+    @Nullable
     open fun getResourceLoader(): ResourceLoader? = this.resourceLoader
 
     open fun setLogStartupInfo(logStartupInfo: Boolean) {
@@ -995,8 +1002,13 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      *
      * @param mainApplicationClass 主启动类
      */
-    open fun setMainApplicationClass(mainApplicationClass: Class<*>?) {
+    open fun setMainApplicationClass(@Nullable mainApplicationClass: Class<*>?) {
         this.mainApplicationClass = mainApplicationClass
+    }
+
+    @Nullable
+    open fun getMainApplicationClass(): Class<*>? {
+        return this.mainApplicationClass
     }
 
     /**
@@ -1108,7 +1120,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      *
      * @param beanNameGenerator BeanNameGenerator
      */
-    fun setBeanNameGenerator(beanNameGenerator: BeanNameGenerator?) {
+    open fun setBeanNameGenerator(@Nullable beanNameGenerator: BeanNameGenerator?) {
         this.beanNameGenerator = beanNameGenerator
     }
 
@@ -1117,5 +1129,22 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      *
      * @return BeanNameGenerator(如果不存在的话, return null)
      */
-    fun getBeanNameGenerator(): BeanNameGenerator? = this.beanNameGenerator
+    @Nullable
+    open fun getBeanNameGenerator(): BeanNameGenerator? = this.beanNameGenerator
+
+    /**
+     * 设置SpringApplication额外要使用的Profiles
+     *
+     * @param additionalProfiles 额外的Profiles
+     */
+    open fun setAdditionalProfiles(additionalProfiles: Array<String>) {
+        this.additionalProfiles = Collections.unmodifiableSet(LinkedHashSet(additionalProfiles.toList()))
+    }
+
+    /**
+     * 获取要额外使用的Profile列表
+     *
+     * @return additional profiles
+     */
+    open fun getAdditionalProfiles(): Set<String> = this.additionalProfiles
 }

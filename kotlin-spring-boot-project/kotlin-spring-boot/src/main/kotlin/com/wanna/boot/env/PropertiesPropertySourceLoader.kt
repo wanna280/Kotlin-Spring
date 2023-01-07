@@ -3,9 +3,10 @@ package com.wanna.boot.env
 import com.wanna.framework.core.environment.PropertySource
 import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.io.support.PropertiesLoaderUtils
+import java.util.Collections
 
 /**
- * 这是一个Properties的PropertySourceLoader，负责去使用Jdk提供的Properties去加载Properties配置文件信息
+ * 这是一个Properties的PropertySourceLoader, 主要负责去使用Jdk提供的Properties去加载".properties"配置文件信息
  *
  * @see PropertySourceLoader
  * @see PropertiesLoaderUtils
@@ -21,18 +22,30 @@ open class PropertiesPropertySourceLoader : PropertySourceLoader {
     override fun getFileExtensions() = arrayOf("properties", "xml")
 
     @Suppress("UNCHECKED_CAST")
-    override fun load(name: String, resource: String): List<PropertySource<*>> {
+    override fun load(name: String, resource: Resource): List<PropertySource<*>> {
+        val properties = loadProperties(resource)
+        if (properties.isEmpty()) {
+            return Collections.emptyList()
+        }
         val propertySources = ArrayList<PropertySource<*>>()
-        val properties = PropertiesLoaderUtils.loadAllProperties(resource)
-        propertySources += OriginTrackedMapPropertySource(name, properties as Map<String, Any>)
+        for (index in properties.indices) {
+            val documentNumber = if (properties.size == 1) "" else "(document #$index)"
+            propertySources += OriginTrackedMapPropertySource(name + documentNumber, properties[index])
+        }
         return propertySources
     }
 
+    /**
+     * 根据给定的Resource, 去加载到属性配置列表
+     *
+     * @param resource Resource
+     * @return 加载到的属性列表
+     */
     @Suppress("UNCHECKED_CAST")
-    override fun load(name: String, resource: Resource): List<PropertySource<*>> {
-        val propertySources = ArrayList<PropertySource<*>>()
+    private fun loadProperties(resource: Resource): List<Map<String, Any>> {
+        val result = ArrayList<Map<String, Any>>()
         val properties = PropertiesLoaderUtils.loadProperties(resource)
-        propertySources += OriginTrackedMapPropertySource(name, properties as Map<String, Any>)
-        return propertySources
+        result.add(properties as Map<String, Any>)
+        return result
     }
 }
