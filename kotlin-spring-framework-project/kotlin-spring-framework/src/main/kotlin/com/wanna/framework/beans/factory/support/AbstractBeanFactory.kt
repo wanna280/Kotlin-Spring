@@ -646,22 +646,6 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     }
 
     /**
-     * 预测Bean的类型
-     *
-     * @param beanName beanName
-     * @param mbd MergedBeanDefinition
-     */
-    protected open fun predictBeanType(beanName: String, mbd: RootBeanDefinition): Class<*>? {
-        if (mbd.getBeanClass() != null) {
-            return mbd.getBeanClass()
-        }
-        if (mbd.getFactoryMethodName() != null) {
-            return null
-        }
-        return null
-    }
-
-    /**
      * 根据BeanDefinition, 去解析出来合适的beanClass
      *
      * @param mbd BeanDefinition
@@ -692,16 +676,12 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     private fun doResolveBeanClass(mbd: RootBeanDefinition, vararg typeToMatch: Class<*>): Class<*>? {
         val beanClassName = mbd.getBeanClassName()
         val beanClassLoader = getBeanClassLoader()
-        // TODO
-        if (beanClassName != null) {
-            return beanClassLoader.loadClass(beanClassName)
-        }
         return mbd.resolveBeanClass(beanClassLoader)
     }
 
 
     /**
-     * 根据beanName获取到该Bean在容器中的类型
+     * 根据beanName获取到该Bean在SpringBeanFactory中的类型
      */
     override fun getType(beanName: String): Class<*>? {
         // 1.从SingletonBean中去进行获取Bean的类型
@@ -718,7 +698,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         // 获取到MergedBeanDefinition
         val mbd = getMergedLocalBeanDefinition(beanName)
 
-        val beanClass = mbd.getBeanClass()
+        val beanClass = predictBeanType(beanName, mbd)
         if (beanClass != null && ClassUtils.isAssignFrom(FactoryBean::class.java, beanClass)) {
             // 如果从名字来看，它不是一个FactoryBean，那么就获取到FactoryBean包装的Object的类型
             if (!BeanFactoryUtils.isFactoryDereference(beanName)) {
@@ -729,6 +709,21 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         } else {
             return beanClass  // fixed: use beanClass to return
         }
+    }
+
+    @Nullable
+    protected open fun predictBeanType(
+        beanName: String,
+        mbd: RootBeanDefinition,
+        vararg typeToMatch: Class<*>
+    ): Class<*>? {
+        if (mbd.hasBeanClass()) {
+            return mbd.getBeanClass()
+        }
+        if (mbd.getFactoryMethodName() != null) {
+            return null
+        }
+        return resolveBeanClass(mbd, beanName, *typeToMatch)
     }
 
     /**

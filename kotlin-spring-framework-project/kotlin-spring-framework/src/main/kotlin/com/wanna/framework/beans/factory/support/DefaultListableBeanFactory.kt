@@ -234,6 +234,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     protected open fun isAutowireCandidate(
         beanName: String, descriptor: DependencyDescriptor, resolver: AutowireCandidateResolver
     ): Boolean {
+        // 1.首先检查当前的BeanFactory当中是否存在有这样的Bean? 如果有的话, checkCandidate
+
         // 如果包含单实例BeanDefinition的话, 那么我们拿它的BeanDefinition去进行匹配
         if (containsBeanDefinition(beanName)) {
             return isAutowireCandidate(beanName, getMergedLocalBeanDefinition(beanName), descriptor, resolver)
@@ -241,6 +243,16 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         } else if (containsSingleton(beanName)) {
             return isAutowireCandidate(beanName, RootBeanDefinition(getType(beanName)), descriptor, resolver)
         }
+
+        // 2.接着去检查parentBeanFactory当中是否存在有这样的Bean? 如果有的话, 那么checkCandidate
+        val parentBeanFactory = getParentBeanFactory()
+        if (parentBeanFactory is DefaultListableBeanFactory) {
+            return parentBeanFactory.isAutowireCandidate(beanName, descriptor, resolver)
+        } else if (parentBeanFactory is ConfigurableListableBeanFactory) {
+            return parentBeanFactory.isAutowireCandidate(beanName, descriptor)
+        }
+
+        // 3. 如果parentBeanFactory不包含的话, 那么return true...
         return true
     }
 
@@ -690,14 +702,15 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         }
 
         // 2.遍历容器中的所有的类型匹配的Bean, 去进行挨个地匹配...为了AutowireCandidate的Bean
-        candidateNames.forEach {
+        for (candidateName in candidateNames) {
             // 从DependencyDescriptor当中解析到合适的依赖, 判断该Bean, 是否是一个Autowire候选Bean？
             // 比较类型和Qualifier(beanName)是否匹配？
             // Note: 这里我们必须需要去排除自引用的情况
-            if (!isSelfReference(beanName, it) && isAutowireCandidate(it, descriptor)) {
-                addCandidateEntry(result, it, descriptor, requiredType)
+            if (!isSelfReference(beanName, candidateName) && isAutowireCandidate(candidateName, descriptor)) {
+                addCandidateEntry(result, candidateName, descriptor, requiredType)
             }
         }
+
 
         // 如果还没搜索结果的话...尝试换个手段, 去进行匹配
         if (result.isEmpty()) {

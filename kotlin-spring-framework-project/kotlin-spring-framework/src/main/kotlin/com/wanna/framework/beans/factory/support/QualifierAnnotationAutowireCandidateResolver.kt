@@ -112,12 +112,12 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
         if (annotationsToMatch.isEmpty()) {
             return true
         }
-        annotationsToMatch.forEach {
+        for (annotation in annotationsToMatch) {
             var checkMeta = true
             var fallbackToMeta = false
-            val annotationClass = it.annotationClass.java
+            val annotationClass = annotation.annotationClass.java
             if (isQualifier(annotationClass)) {
-                if (!checkQualifier(bdHolder, it)) {
+                if (!checkQualifier(bdHolder, annotation)) {
                     fallbackToMeta = true  // 匹配失败，要去检查元信息的情况
                 } else {
                     checkMeta = false  // 匹配成功，那么就不去检查元信息了

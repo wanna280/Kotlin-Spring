@@ -6,6 +6,7 @@ import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingClass
 import com.wanna.cloud.openfeign.support.SpringDecoder
 import com.wanna.cloud.openfeign.support.SpringEncoder
 import com.wanna.cloud.openfeign.support.SpringMvcContract
+import com.wanna.framework.beans.factory.annotation.Qualifier
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.Bean
@@ -28,7 +29,8 @@ import feign.codec.Encoder
 open class FeignClientsConfiguration {
 
     @Bean
-    open fun formattingConversionService(): FormattingConversionService {
+    @Qualifier("feignConversionService")
+    open fun feignConversionService(): FormattingConversionService {
         return DefaultFormattingConversionService()
     }
 
@@ -58,9 +60,9 @@ open class FeignClientsConfiguration {
     @ConditionalOnMissingBean
     open fun springMvcContract(
         @Autowired(required = false) processors: MutableList<AnnotatedParameterProcessor>,
-        conversionService: FormattingConversionService
+        @Qualifier("feignConversionService") feignConversionService: FormattingConversionService
     ): Contract {
-        return SpringMvcContract(processors, conversionService)
+        return SpringMvcContract(processors, feignConversionService)
     }
 
     @Bean
