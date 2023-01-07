@@ -11,8 +11,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
- * 它是一个配置文件的环境处理器，它负责去处理SpringApplication当中的配置文件的加载；
- * 不管是对于普通的application配置文件，bootstrap配置文件，甚至是待profile的配置文件，都会被它处理
+ * 它是一个配置文件的环境处理器, 它负责去处理SpringApplication当中的配置文件的加载；
+ * 不管是对于普通的application配置文件, bootstrap配置文件, 甚至是一些额外的profile的配置文件, 都会被它处理
+ *
+ * @see EnvironmentPostProcessor
  */
 open class ConfigDataEnvironmentPostProcessor : EnvironmentPostProcessor, Ordered {
 
@@ -39,7 +41,7 @@ open class ConfigDataEnvironmentPostProcessor : EnvironmentPostProcessor, Ordere
     }
 
     /**
-     * 对SpringApplication的环境去进行后置处理，主要就是加载SpringBoot相关的配置文件到环境当中
+     * 对SpringApplication的环境去进行后置处理, 主要就是加载SpringBoot相关的配置文件到环境当中
      *
      * @param environment 环境对象
      * @param application SpringApplication
