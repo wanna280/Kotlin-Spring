@@ -3,6 +3,8 @@ package com.wanna.boot.env
 import com.wanna.framework.core.environment.PropertySource
 import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.io.support.PropertiesLoaderUtils
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.util.Collections
 
 /**
@@ -13,6 +15,13 @@ import java.util.Collections
  * @see OriginTrackedMapPropertySource
  */
 open class PropertiesPropertySourceLoader : PropertySourceLoader {
+    companion object {
+        /**
+         * Logger
+         */
+        @JvmStatic
+        private val logger: Logger = LoggerFactory.getLogger(PropertiesPropertySourceLoader::class.java)
+    }
 
     /**
      * 支持去处理properties和xml的文件扩展名
@@ -44,8 +53,14 @@ open class PropertiesPropertySourceLoader : PropertySourceLoader {
     @Suppress("UNCHECKED_CAST")
     private fun loadProperties(resource: Resource): List<Map<String, Any>> {
         val result = ArrayList<Map<String, Any>>()
-        val properties = PropertiesLoaderUtils.loadProperties(resource)
-        result.add(properties as Map<String, Any>)
+        try {
+            val properties = PropertiesLoaderUtils.loadProperties(resource)
+            result.add(properties as Map<String, Any>)
+        } catch (ex: Exception) {
+            if (logger.isTraceEnabled) {
+                logger.trace("cannot load resource $resource", ex)
+            }
+        }
         return result
     }
 }
