@@ -250,28 +250,28 @@ object ClassUtils {
     /**
      * 判断childClass是否是parentClass的子类？如果其中一个返回为空，那么return true；只有两者均不为空时，才会去进行判断
      *
-     * @param parentClass parentClass
-     * @param childClass childClass
+     * @param lhsType parentClass
+     * @param rhsType childClass
      * @return 如果childClass可以转换为parentClass, 那么return true; 否则return false
      */
     @Nullable
-    fun isAssignable(@Nullable parentClass: Class<*>?, @Nullable childClass: Class<*>?): Boolean {
-        if (parentClass == null || childClass == null) {
+    fun isAssignable(@Nullable lhsType: Class<*>?, @Nullable rhsType: Class<*>?): Boolean {
+        if (lhsType == null || rhsType == null) {
             return false
         }
         // 如果类型直接就能去进行转换的话, 那么return true
-        if (parentClass.isAssignableFrom(childClass)) {
+        if (lhsType.isAssignableFrom(rhsType)) {
             return true
         }
         // 如果parent是基础数据类型的话
-        if (parentClass.isPrimitive) {
+        if (lhsType.isPrimitive) {
             // 如果parentClass是基础类型的话, 那么看childClass是否是它的包装类?
-            return primitiveWrapperTypeMap[childClass] == childClass
+            return primitiveWrapperTypeMap[rhsType] == lhsType
         }
         // 如果parentClass不是基础数据类型, 但是childClass为基础数据类型的话, 那么拿出来childClass的包装类, 和parentClass去匹配...
         // 例如parentClass=Number.class, childClass是Int.class这种情况, 是该return true的
-        val wrapper = primitiveTypeToWrapperMap[childClass]
-        return wrapper != null && parentClass.isAssignableFrom(wrapper)
+        val wrapper = primitiveTypeToWrapperMap[rhsType]
+        return wrapper != null && lhsType.isAssignableFrom(wrapper)
     }
 
     /**

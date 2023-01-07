@@ -77,16 +77,23 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
         for (annotationType in annotationTypes) {
             val attributes = AnnotationConfigUtils.attributesFor(metadata, annotationType)
             if (attributes != null) {
+
+                // 获取该注解的MetaAnnotation类型列表
                 val metaAnnotationTypes = metadata.getMetaAnnotationTypes(annotationType)
+
+                // 检查是否标注了@Component注解...
                 if (isStereotypeWithNameValue(annotationType, metaAnnotationTypes, attributes)) {
                     // 获取到该注解的value属性...
-                    val strVal = attributes.getString(MergedAnnotation.VALUE)
+                    val strVal = attributes[MergedAnnotation.VALUE]
 
-                    // 如果解析到了多个beanName的话...return false
-                    if (beanName != null && strVal == beanName) {
-                        throw IllegalStateException("Stereotype annotations suggest inconsistent '$beanName' versus '$strVal'")
+                    // 如果是String, 才需要去进行收集起来...不是String直接跳过...
+                    if (strVal is String) {
+                        // 如果解析到了多个beanName的话...return false
+                        if (beanName != null && strVal == beanName) {
+                            throw IllegalStateException("Stereotype annotations suggest inconsistent '$beanName' versus '$strVal'")
+                        }
+                        beanName = strVal
                     }
-                    beanName = strVal
                 }
             }
         }
