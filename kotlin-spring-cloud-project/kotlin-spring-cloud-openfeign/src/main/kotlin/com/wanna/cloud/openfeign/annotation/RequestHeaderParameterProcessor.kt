@@ -30,7 +30,7 @@ open class RequestHeaderParameterProcessor : AnnotatedParameterProcessor {
             return true
         }
         val requestHeader = ANNOTATION.cast(annotation)
-        val name = requestHeader.name
+        val name = requestHeader.value
         // 设置paramName(添加到indexToName当中)
         context.setParameterName(name)
 
