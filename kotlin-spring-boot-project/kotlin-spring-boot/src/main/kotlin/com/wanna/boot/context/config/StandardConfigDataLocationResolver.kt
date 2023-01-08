@@ -1,5 +1,6 @@
 package com.wanna.boot.context.config
 
+import com.wanna.boot.context.config.LocationResourceLoader.ResourceType.FILE
 import com.wanna.boot.context.properties.bind.Bindable
 import com.wanna.boot.context.properties.bind.Binder
 import com.wanna.boot.env.PropertiesPropertySourceLoader
@@ -9,6 +10,7 @@ import com.wanna.framework.constants.STRING_ARRAY_TYPE
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.StandardEnvironment
+import com.wanna.framework.core.io.DefaultResourceLoader
 import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.io.support.PathMatchingResourcePatternResolver
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
@@ -73,7 +75,7 @@ open class StandardConfigDataLocationResolver() : Ordered,
     /**
      * ResourceLoader
      */
-    private val resourceLoader = LocationResourceLoader(PathMatchingResourcePatternResolver())
+    private val resourceLoader = LocationResourceLoader(DefaultResourceLoader())
 
     /**
      * 配置文件name列表(默认为application)
@@ -83,17 +85,39 @@ open class StandardConfigDataLocationResolver() : Ordered,
     /**
      * 获取SprigBoot配置文件名, 尝试从"spring.config.name"当中去进行获取, 如果获取不到, 那么使用"application"作为默认的配置文件名
      *
-     * @param binder Binder
-     * @return ConfigNames
+     * @param binder Binder, 用于提供SpringBoot的配置文件名("spring.config.name")的获取(默认为"application")
+     * @return 要使用的SpringBoot的配置文件名ConfigNames
      */
     open fun getConfigNames(binder: Binder): Array<String> {
-        return binder.bind(CONFIG_NAME_PROPERTY, Bindable.of(STRING_ARRAY_TYPE)).orElse(DEFAULT_CONFIG_NAMES)
+        val configNames = binder.bind(CONFIG_NAME_PROPERTY, Bindable.of(STRING_ARRAY_TYPE)).orElse(DEFAULT_CONFIG_NAMES)
+        // 检查所有的configName当中, 都不含有"*"...
+        for (configName in configNames) {
+            validateConfigName(configName)
+        }
+        return configNames
     }
 
+    /**
+     * 对于给定的配置文件名configName不能含有"*"
+     *
+     * @param configName configName
+     * @throws IllegalStateException 如果configName当中含有"*"
+     */
+    private fun validateConfigName(configName: String) {
+        if (configName.contains("*")) {
+            throw IllegalStateException("Config name '$configName' cannot contains '*'")
+        }
+    }
+
+    /**
+     * Order
+     *
+     * @return order
+     */
     override fun getOrder(): Int = this.order
 
     /**
-     * 是否支持去解析? 我们一律支持去进行解析
+     * 是否支持去解析? 对于标准的ConfigDataLocationResolver, 我们一律支持去进行解析
      */
     override fun isResolvable(
         @Nullable context: ConfigDataLocationResolverContext?,
@@ -104,7 +128,8 @@ open class StandardConfigDataLocationResolver() : Ordered,
      * 执行真正的解析, 将给定的ConfigDataLocation去解析成为ConfigDataResource
      *
      * @param context context
-     * @param location location
+     * @param location 待进行解析的ConfigDataLocation
+     * @return 解析得到的Resource列表
      */
     override fun resolve(
         @Nullable context: ConfigDataLocationResolverContext?,
@@ -179,7 +204,7 @@ open class StandardConfigDataLocationResolver() : Ordered,
     private fun getReferencesForDirectory(
         location: ConfigDataLocation,
         directory: String,
-        profile: String?
+        @Nullable profile: String?
     ): Set<StandardConfigDataReference> {
         val references = LinkedHashSet<StandardConfigDataReference>()
         for (configName in configNames) {
@@ -276,13 +301,16 @@ open class StandardConfigDataLocationResolver() : Ordered,
      * 根据解析到的Reference, 去解析到对应的Resource
      *
      * @param references 待解析的Reference列表
-     * @return 解析到的Resource列表
+     * @return 根据Reference列表去解析到的Resource列表
      */
     private fun resolve(references: Set<StandardConfigDataReference>): List<StandardConfigDataResource> {
         val resolved = ArrayList<StandardConfigDataResource>()
+        // 根据所有的Reference, 尝试去进行解析...
         for (reference in references) {
             resolved += resolve(reference)
         }
+
+        // 如果所有的Reference都没有解析得到合适的Resource的话, 那么尝试使用空文件夹的方式去进行解析
         if (resolved.isEmpty()) {
             resolved += resolveEmptyDirectories(references)
         }
@@ -291,32 +319,64 @@ open class StandardConfigDataLocationResolver() : Ordered,
 
     /**
      * 解析给定的Reference成为Resource
+     *
+     * @param reference 待解析的资源的Reference
+     * @return 根据给定的Reference解析得到的资源Resource
      */
     private fun resolve(reference: StandardConfigDataReference): List<StandardConfigDataResource> {
+        // 如果resourceLocation当中不含有"*"的话, 那么直接去进行Resource的加载
         if (!resourceLoader.isPattern(reference.resourceLocation)) {
             return resolveNonPattern(reference)
         }
+
+        // 如果ResourceLocation当中含有"*"的话, 那么需要去进行Pattern的解析...
         return resolvePattern(reference)
     }
 
     /**
-     * 在没有表达式的情况下, 我们直接根据资源路径去获取到对应的资源文件
+     * 在没有表达式的情况下, 我们直接根据资源路径使用[LocationResourceLoader]去获取到对应的资源文件
      *
-     * @param reference reference
-     * @return 解析得到的Resource
+     * @param reference 待进行Resource的解析的Reference
+     * @return 根据给定的Reference去解析得到的Resource
      */
     private fun resolveNonPattern(reference: StandardConfigDataReference): List<StandardConfigDataResource> {
+        // 使用ResourceLoader加载到Resource
         val resource = resourceLoader.getResource(reference.resourceLocation)
+
+        // 如果该文件不存在, 并且允许被跳过(optional)的话, return empty list
         if (!resource.exists() && reference.skippable) {
             return emptyList()
         }
         return listOf(createConfigResourceLocation(reference, resource))
     }
 
+    /**
+     * 在有表达式的情况下, 我们使用[LocationResourceLoader]去进行资源路径的解析
+     *
+     * @param reference 待解析的Reference
+     * @return 根据给Reference的ResourceLocation, 去进行解析最终得到的Resource列表
+     */
     private fun resolvePattern(reference: StandardConfigDataReference): List<StandardConfigDataResource> {
-        return emptyList()
+        val resolved = ArrayList<StandardConfigDataResource>()
+
+        // 使用ResourceLoader, 去解析给定的ResourceLocation, 成为一个资源列表
+        for (resource in this.resourceLoader.getResources(reference.resourceLocation, FILE)) {
+            if (!resource.exists() && reference.skippable) {
+                continue
+            } else {
+                resolved += createConfigResourceLocation(reference, resource)
+            }
+        }
+        return resolved
     }
 
+    /**
+     * 创建一个StandardConfigDataResource
+     *
+     * @param reference Reference
+     * @param resource Resource
+     * @return StandardConfigDataResource wrapped with Reference and Resource
+     */
     private fun createConfigResourceLocation(
         reference: StandardConfigDataReference,
         resource: Resource
@@ -324,12 +384,15 @@ open class StandardConfigDataLocationResolver() : Ordered,
         return StandardConfigDataResource(reference, resource)
     }
 
+    /**
+     * // TODO
+     */
     private fun resolveEmptyDirectories(references: Set<StandardConfigDataReference>): Collection<StandardConfigDataResource> {
         return emptyList()
     }
 
     /**
-     * 执行给定的Profiles的解析
+     * 执行给定的Profiles的解析, TODO
      */
     override fun resolveProfileSpecific(
         @Nullable context: ConfigDataLocationResolverContext?,

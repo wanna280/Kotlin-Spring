@@ -4,7 +4,7 @@ import com.wanna.boot.origin.Origin
 import com.wanna.boot.origin.OriginTrackedResource
 
 /**
- * 标注的ConfigDataLoader的实现
+ * 标注的ConfigDataLoader的实现, 提供对于SpringBoot配置文件的加载
  *
  * @author jianchao.jia
  * @version v1.0

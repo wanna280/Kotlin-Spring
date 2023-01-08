@@ -54,7 +54,10 @@ open class ConfigDataEnvironment(
          */
         @JvmStatic
         private val DEFAULT_SEARCH_LOCATIONS: Array<ConfigDataLocation> = arrayOf(
+            // location of "classpath:/", "classpath:/config/", !!!!!! non "classpath:/config/*/"
             ConfigDataLocation.of("optional:classpath:/;optional:classpath:/config/")!!,
+
+            // location of "file:./", "file:./config/", "file:config/*/"
             ConfigDataLocation.of("optional:file:./;optional:file:./config/;optional:file:./config/*/")!!
         )
     }
