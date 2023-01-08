@@ -105,6 +105,9 @@ open class MutablePropertySources() : PropertySources {
     open fun addBefore(beforeName: String, propertySource: PropertySource<*>) {
         synchronized(this.propertySourceList) {
             val beforeIndex = getIndex(beforeName)
+            if (beforeIndex == -1) {
+                throw IllegalStateException("Cannot get property source by name $beforeName")
+            }
             addAtIndex(beforeIndex, propertySource)
         }
     }
@@ -118,6 +121,9 @@ open class MutablePropertySources() : PropertySources {
     open fun addAfter(afterName: String, propertySource: PropertySource<*>) {
         synchronized(this.propertySourceList) {
             val afterIndex = getIndex(afterName)
+            if (afterIndex == -1) {
+                throw IllegalStateException("Cannot get property source by name $afterName")
+            }
             addAtIndex(afterIndex + 1, propertySource)
         }
     }
@@ -128,6 +134,9 @@ open class MutablePropertySources() : PropertySources {
     open fun remove(name: String): PropertySource<*>? {
         synchronized(this.propertySourceList) {
             val index = getIndex(name)
+            if (index == -1) {
+                return null
+            }
             val propertySource = propertySourceList[index]
             removeIfPresent(propertySource)
             return propertySource
@@ -140,6 +149,6 @@ open class MutablePropertySources() : PropertySources {
                 return index
             }
         }
-        throw IllegalStateException("无法根据propertySourceName去找到合适的PropertySource")
+        return -1
     }
 }

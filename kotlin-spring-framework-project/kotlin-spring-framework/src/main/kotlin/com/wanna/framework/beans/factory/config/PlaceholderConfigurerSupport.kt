@@ -4,6 +4,7 @@ import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.util.StringValueResolver
 import com.wanna.framework.context.aware.BeanNameAware
+import com.wanna.framework.util.SystemPropertyUtils
 import java.util.*
 
 /**
@@ -20,17 +21,17 @@ abstract class PlaceholderConfigurerSupport : PropertyResourceConfigurer(), Bean
         /**
          * 默认的占位符的前缀
          */
-        const val DEFAULT_PLACEHOLDER_PREFIX = "%{"
+        const val DEFAULT_PLACEHOLDER_PREFIX = SystemPropertyUtils.PLACEHOLDER_PREFIX
 
         /**
          * 默认的占位符的后缀
          */
-        const val DEFAULT_PLACEHOLDER_SUFFIX = "}"
+        const val DEFAULT_PLACEHOLDER_SUFFIX = SystemPropertyUtils.PLACEHOLDER_SUFFIX
 
         /**
          * 默认值的分隔符
          */
-        const val DEFAULT_VALUE_SEPARATOR = ":"
+        const val DEFAULT_VALUE_SEPARATOR = SystemPropertyUtils.VALUE_SEPARATOR
     }
 
     /**

@@ -1,5 +1,7 @@
 package com.wanna.boot.context.config
 
+import com.wanna.boot.BootstrapContext
+import com.wanna.boot.DefaultBootstrapContext
 import com.wanna.boot.SpringApplication
 import com.wanna.boot.env.EnvironmentPostProcessor
 import com.wanna.framework.core.Ordered
@@ -31,6 +33,8 @@ open class ConfigDataEnvironmentPostProcessor : EnvironmentPostProcessor, Ordere
 
     override fun getOrder(): Int = this.order
 
+    private val bootstrapContext = DefaultBootstrapContext()
+
     /**
      * 设置当前EnvironmentPostProcessor的优先级
      *
@@ -50,7 +54,13 @@ open class ConfigDataEnvironmentPostProcessor : EnvironmentPostProcessor, Ordere
         postProcessEnvironment(environment, application.getResourceLoader(), application.getAdditionalProfiles())
     }
 
-
+    /**
+     * 利用ConfigDataEnvironment当中的Contributor去对Environment去进行后置处理
+     *
+     * @param environment Environment
+     * @param resourceLoader ResourceLoader
+     * @param additionalProfiles 额外要使用的Profiles
+     */
     private fun postProcessEnvironment(
         environment: ConfigurableEnvironment,
         @Nullable resourceLoader: ResourceLoader?,
@@ -59,14 +69,23 @@ open class ConfigDataEnvironmentPostProcessor : EnvironmentPostProcessor, Ordere
         // 执行对于Environment的postProcess
         logger.trace("Post-processing environment to add config data")
         val resourceLoaderToUse = resourceLoader ?: DefaultResourceLoader()
+        // 让所有的Contributor去对Environment去进行后置处理...并应用到Environment当中去...
         getConfigDataEnvironment(environment, resourceLoaderToUse, additionalProfiles).processAndApply()
     }
 
+    /**
+     * 创建出来一个ConfigDataEnvironment
+     *
+     * @param environment Environment
+     * @param resourceLoader ResourceLoader
+     * @param additionalProfiles 额外要使用的Profiles
+     * @return ConfigDataEnvironment
+     */
     open fun getConfigDataEnvironment(
         environment: ConfigurableEnvironment,
         resourceLoader: ResourceLoader,
         additionalProfiles: Collection<String>
     ): ConfigDataEnvironment {
-        return ConfigDataEnvironment(environment, resourceLoader, additionalProfiles)
+        return ConfigDataEnvironment(environment, resourceLoader, additionalProfiles, bootstrapContext, null)
     }
 }

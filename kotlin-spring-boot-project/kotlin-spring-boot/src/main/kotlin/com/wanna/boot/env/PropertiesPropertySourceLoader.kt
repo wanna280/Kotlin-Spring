@@ -30,6 +30,13 @@ open class PropertiesPropertySourceLoader : PropertySourceLoader {
      */
     override fun getFileExtensions() = arrayOf("properties", "xml")
 
+    /**
+     * 执行对于".properties"配置文件的加载, 并将配置文件去加载得到PropertySource列表
+     *
+     * @param name name
+     * @param resource 要去进行加载的Resource资源
+     * @return 加载Resource得到的PropertySource列表
+     */
     @Suppress("UNCHECKED_CAST")
     override fun load(name: String, resource: Resource): List<PropertySource<*>> {
         val properties = loadProperties(resource)

@@ -66,7 +66,7 @@ object SpringFactoriesLoader {
                 instances += BeanUtils.instantiateClass(constructor, *args)
             }
         } catch (ex: Exception) {
-            throw IllegalArgumentException("通过构造器实例化FactoryInstance失败，原因是[ex=$ex]")
+            throw IllegalArgumentException("Instantiate factory instance error", ex)
         }
         return instances
     }

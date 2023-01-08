@@ -10,7 +10,8 @@ import javax.annotation.meta.When
     AnnotationTarget.FUNCTION,
     AnnotationTarget.FIELD,
     AnnotationTarget.TYPE_PARAMETER,
-    AnnotationTarget.VALUE_PARAMETER
+    AnnotationTarget.VALUE_PARAMETER,
+    AnnotationTarget.PROPERTY
 )
 @Nonnull(`when` = When.MAYBE)
 annotation class Nullable

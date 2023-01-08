@@ -25,6 +25,10 @@ class MyReactiveNettyWebServerFactoryFactory : com.wanna.boot.web.mvc.server.Net
             override fun getPort(): Int {
                 return 8080
             }
+
+            override fun setPort(port: Int) {
+
+            }
         }
     }
 }

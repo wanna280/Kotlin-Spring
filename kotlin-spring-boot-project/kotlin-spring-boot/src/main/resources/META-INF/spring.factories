@@ -12,8 +12,19 @@ com.wanna.boot.env.EnvironmentPostProcessor=\
 
 # PropertySourceLoader
 com.wanna.boot.env.PropertySourceLoader=\
-  com.wanna.boot.env.PropertiesPropertySourceLoader
+  com.wanna.boot.env.PropertiesPropertySourceLoader,\
+  com.wanna.boot.env.YamlPropertySourceLoader
 
 # FailureAnalyzers
 com.wanna.boot.SpringBootExceptionReporter=\
   com.wanna.boot.diagnostics.FailureAnalyzers
+
+# ConfigData LocationResolver
+com.wanna.boot.context.config.ConfigDataLocationResolver=\
+  com.wanna.boot.context.config.StandardConfigDataLocationResolver,\
+  com.wanna.boot.context.config.ConfigTreeConfigDataLocationResolver
+
+# ConfigFile DataLoader
+com.wanna.boot.context.config.ConfigDataLoader=\
+  com.wanna.boot.context.config.StandardConfigDataLoader,\
+  com.wanna.boot.context.config.ConfigTreeConfigDataLoader

@@ -1,5 +1,6 @@
 package com.wanna.framework.core.io
 
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ResourceUtils
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -73,6 +74,7 @@ abstract class AbstractResource : Resource {
         throw FileNotFoundException("无法根据给定的relativePath[$relativePath]去解析到基于[${getDescription()}]的资源")
     }
 
+    @Nullable
     override fun getFilename(): String? = null
 
     override fun toString() = getDescription() ?: ""

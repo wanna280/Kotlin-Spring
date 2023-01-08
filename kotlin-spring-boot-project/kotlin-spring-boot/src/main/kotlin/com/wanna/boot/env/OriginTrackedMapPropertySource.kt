@@ -7,7 +7,7 @@ import com.wanna.framework.core.environment.MapPropertySource
 import com.wanna.framework.lang.Nullable
 
 /**
- * 正常具有Origin的追踪的PropertySource
+ * 具有Origin的追踪的PropertySource
  *
  * @author jianchao.jia
  * @version v1.0

@@ -3,6 +3,7 @@ package com.wanna.framework.core.io.support
 import com.wanna.framework.core.io.DefaultResourceLoader
 import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.io.ResourceLoader
+import com.wanna.framework.lang.Nullable
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.InputStream
@@ -39,6 +40,7 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
 
     override fun getResource(location: String) = resourceLoader.getResource(location)
 
+    @Nullable
     override fun getClassLoader(): ClassLoader? = resourceLoader.getClassLoader()
 
     override fun getResources(locationPattern: String): Array<Resource> {

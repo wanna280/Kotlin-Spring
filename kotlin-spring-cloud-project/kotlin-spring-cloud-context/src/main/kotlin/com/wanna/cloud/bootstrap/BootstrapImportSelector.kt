@@ -31,7 +31,7 @@ open class BootstrapImportSelector : DeferredImportSelector, EnvironmentAware {
         val bootstrapConfigurations =
             SpringFactoriesLoader.loadFactoryNames(BootstrapConfiguration::class.java).toMutableList()
         // 从Environment当中去解析Bootstrap的sources...
-        val sources = this.environment!!.getProperty("spring.cloud.bootstrap.sources", "")!!
+        val sources = this.environment!!.getProperty("spring.cloud.bootstrap.sources", "")
         bootstrapConfigurations += StringUtils.commaDelimitedListToStringArray(sources)
         return bootstrapConfigurations.toTypedArray()
     }

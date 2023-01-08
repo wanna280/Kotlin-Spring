@@ -1,6 +1,7 @@
 package com.wanna.framework.core.environment
 
 import com.wanna.framework.core.convert.ConversionService
+import com.wanna.framework.lang.Nullable
 
 /**
  * 这是一个支持进行配置的PropertyResolver
@@ -20,7 +21,7 @@ interface ConfigurablePropertyResolver : PropertyResolver {
     /**
      * 设置默认值的分割符
      */
-    fun setValueSeparator(separator: String?)
+    fun setValueSeparator(@Nullable separator: String?)
 
     /**
      * 获取类型转换服务

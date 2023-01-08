@@ -8,4 +8,21 @@ package com.wanna.boot.origin
  */
 interface Origin {
 
+
+    companion object {
+
+        @JvmStatic
+        fun from(source: Any): Origin? {
+            if (source is Origin) {
+                return source
+            }
+            if (source is OriginProvider) {
+                return source.getOrigin()
+            }
+            if (source is Throwable) {
+                return from(source)
+            }
+            return null
+        }
+    }
 }
