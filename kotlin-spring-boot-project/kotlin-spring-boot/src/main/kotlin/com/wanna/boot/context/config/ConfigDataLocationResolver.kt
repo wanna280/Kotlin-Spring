@@ -9,6 +9,8 @@ import java.util.Collections
  * @author jianchao.jia
  * @version v1.0
  * @date 2023/1/8
+ *
+ * @param T 支持去处理的ConfigDataResource的类型
  */
 interface ConfigDataLocationResolver<R : ConfigDataResource> {
 
@@ -26,7 +28,7 @@ interface ConfigDataLocationResolver<R : ConfigDataResource> {
      *
      * @param context context
      * @param location location
-     * @return 执行解析的结果, 得到的ConfigDataResource
+     * @return 执行解析的结果, 得到的ConfigDataResource列表
      */
     fun resolve(@Nullable context: ConfigDataLocationResolverContext?, location: ConfigDataLocation): List<R>
 

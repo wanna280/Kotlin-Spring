@@ -43,6 +43,15 @@ class ConfigDataLocationResolvers {
         throw UnsupportedConfigDataLocationException(location)
     }
 
+    /**
+     * 利用Resolver去对ConfigDataLocation去执行解析
+     *
+     * @param resolver ConfigData LocationResolver
+     * @param context context
+     * @param profiles Profiles
+     * @param location ConfigDataLocation
+     * @return 根据给定的ConfigDataLocation去解析得到的配置文件资源列表
+     */
     private fun resolve(
         resolver: ConfigDataLocationResolver<*>,
         context: ConfigDataLocationResolverContext,

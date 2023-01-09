@@ -19,6 +19,7 @@ import java.io.File
 import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
+import kotlin.collections.LinkedHashSet
 
 /**
  * 标准的ConfigDataLocation的Resolver实现
@@ -300,7 +301,7 @@ open class StandardConfigDataLocationResolver() : Ordered,
     /**
      * 根据解析到的Reference, 去解析到对应的Resource
      *
-     * @param references 待解析的Reference列表
+     * @param references 待解析的ConfigData的Reference列表
      * @return 根据Reference列表去解析到的Resource列表
      */
     private fun resolve(references: Set<StandardConfigDataReference>): List<StandardConfigDataResource> {
@@ -318,7 +319,7 @@ open class StandardConfigDataLocationResolver() : Ordered,
     }
 
     /**
-     * 解析给定的Reference成为Resource
+     * 使用ResourceLoader, 去将给定的Reference去解析成为Resource
      *
      * @param reference 待解析的资源的Reference
      * @return 根据给定的Reference解析得到的资源Resource
@@ -371,6 +372,72 @@ open class StandardConfigDataLocationResolver() : Ordered,
     }
 
     /**
+     * // TODO
+     */
+    private fun resolveEmptyDirectories(references: Set<StandardConfigDataReference>): Collection<StandardConfigDataResource> {
+        return emptyList()
+    }
+
+    /**
+     * 执行给定的Profiles的解析
+     *
+     * @param context context
+     * @param location location
+     * @param profiles Profiles
+     * @return 根据Location和Profiles去加载得到的Resource列表
+     */
+    override fun resolveProfileSpecific(
+        @Nullable context: ConfigDataLocationResolverContext?,
+        location: ConfigDataLocation,
+        profiles: Profiles
+    ): List<StandardConfigDataResource> {
+        // 在存在有Profiles的情况下, 去进行ConfigDataLocation的加载
+        return resolve(getProfileSpecificReferences(context, location.split(), profiles))
+    }
+
+    /**
+     * 为给定了Profiles的情况下, 去对给定的ConfigDataLocations去执行解析成为Reference
+     *
+     * @param context context
+     * @param locations 待进行配置文件的解析的路径列表
+     * @param profiles 需要应用的Profiles
+     * @return 根据这些Locations以及Profiles, 去加载得到ConfigData的Reference列表
+     */
+    private fun getProfileSpecificReferences(
+        @Nullable context: ConfigDataLocationResolverContext?,
+        locations: Array<ConfigDataLocation>,
+        profiles: Profiles
+    ): Set<StandardConfigDataReference> {
+        val references = LinkedHashSet<StandardConfigDataReference>()
+        for (profile in profiles) {
+            for (location in locations) {
+                val resourceLocation = getResourceLocation(context, location)
+                references += getReferences(location, resourceLocation, profile)
+            }
+        }
+        return references
+    }
+
+    /**
+     * 在有Profiles的情况下, 根据文件/文件夹, 使用不同的方式去进行解析成为Resource
+     *
+     * @param location location
+     * @param resourceLocation resourceLocation
+     * @param profile 正在解析的profile
+     * @return 解析得到的ConfigData的Reference列表
+     */
+    private fun getReferences(
+        location: ConfigDataLocation,
+        resourceLocation: String,
+        profile: String
+    ): Set<StandardConfigDataReference> {
+        if (isDirectory(resourceLocation)) {
+            return getReferencesForDirectory(location, resourceLocation, profile)
+        }
+        return getReferencesForFile(location, resourceLocation, profile)
+    }
+
+    /**
      * 创建一个StandardConfigDataResource
      *
      * @param reference Reference
@@ -382,23 +449,5 @@ open class StandardConfigDataLocationResolver() : Ordered,
         resource: Resource
     ): StandardConfigDataResource {
         return StandardConfigDataResource(reference, resource)
-    }
-
-    /**
-     * // TODO
-     */
-    private fun resolveEmptyDirectories(references: Set<StandardConfigDataReference>): Collection<StandardConfigDataResource> {
-        return emptyList()
-    }
-
-    /**
-     * 执行给定的Profiles的解析, TODO
-     */
-    override fun resolveProfileSpecific(
-        @Nullable context: ConfigDataLocationResolverContext?,
-        location: ConfigDataLocation,
-        profiles: Profiles
-    ): List<StandardConfigDataResource> {
-        return super.resolveProfileSpecific(context, location, profiles)
     }
 }
