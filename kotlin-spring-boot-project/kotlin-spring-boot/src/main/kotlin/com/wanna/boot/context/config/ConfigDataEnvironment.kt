@@ -7,11 +7,29 @@ import com.wanna.boot.context.properties.bind.Binder
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.MutablePropertySources
+import com.wanna.framework.core.environment.PropertySource
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.lang.Nullable
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+/**
+ * 通过包装一个[ConfigurableEnvironment]去进行实现, 它可以被用作导入/应用[ConfigData];
+ * 通过[ConfigurableEnvironment]当中的[PropertySource]和一些初始化的位置, 去包装成为一个[ConfigDataEnvironmentContributors]对象;
+ *
+ * 对于配置文件的初始位置, 可以通过[LOCATION_PROPERTY]/[ADDITIONAL_LOCATION_PROPERTY]/[IMPORT_PROPERTY]这些属性值去进行导入,
+ * 如果没有明确给定这些属性值, 那么将会默认使用[DEFAULT_SEARCH_LOCATIONS]去作为默认的搜索路径
+ *
+ * @param environment Environment
+ * @param resourceLoader ResourceLoader
+ * @param bootstrapContext BootstrapContext
+ * @param additionalProfiles 要额外应用的Profiles
+ * @param environmentUpdateListener 监听[Environment]当中的PropertySource/Profiles的变更的Listener
+ *
+ * @author jianchao.jia
+ * @version v1.0
+ * @date 2023/1/7
+ */
 open class ConfigDataEnvironment(
     private val environment: ConfigurableEnvironment,
     private val resourceLoader: ResourceLoader,
@@ -80,12 +98,12 @@ open class ConfigDataEnvironment(
     /**
      * 从SpringFactories当中去获取到所有的ConfigDataLoader, 去提供配置文件的加载
      */
-    private val loaders = ConfigDataLoaders()
+    private val loaders = ConfigDataLoaders(bootstrapContext)
 
     /**
-     * 从SpringFactories当中去获取到所有的ConfigDataLocationResolver, 去提供配置文件的路径的解析
+     * 从SpringFactories当中去获取到所有的[ConfigDataLocationResolver], 去提供配置文件的Location的解析
      */
-    private val resolvers = ConfigDataLocationResolvers()
+    private val resolvers = this.createConfigDataLocationResolvers(bootstrapContext, binder, resourceLoader)
 
     /**
      * Environment发生变更的Listener, 如果没有指定的话, 那么使用NONE, 不做任何的处理
@@ -149,6 +167,21 @@ open class ConfigDataEnvironment(
 
         // 根据这些Contributor, 去创建出来root Contributor并封装成为Contributors
         return createContributors(contributors)
+    }
+
+    /**
+     * 创建[ConfigDataLocationResolvers], 去扫描所有的[ConfigDataLocationResolver]去提供对于location的解析
+     *
+     * @param binder Binder
+     * @param bootstrapContext BootstrapContext
+     * @param resourceLoader ResourceLoader
+     */
+    protected open fun createConfigDataLocationResolvers(
+        bootstrapContext: ConfigurableBootstrapContext,
+        binder: Binder,
+        resourceLoader: ResourceLoader
+    ): ConfigDataLocationResolvers {
+        return ConfigDataLocationResolvers(bootstrapContext, binder, resourceLoader)
     }
 
     /**
@@ -248,13 +281,34 @@ open class ConfigDataEnvironment(
     }
 
 
+    /**
+     * 构建出来一个新的携带有Profiles的ActivationContext
+     *
+     * @param contributors contributors
+     * @param activationContext 原先的没有Profiles的ActivationContext
+     * @return 新的携带有Profiles的ActivationContext
+     */
     private fun withProfiles(
         contributors: ConfigDataEnvironmentContributors,
         activationContext: ConfigDataActivationContext
     ): ConfigDataActivationContext {
         val binder = contributors.getBinder(activationContext)
-        val profiles = Profiles(this.environment, binder, this.additionalProfiles)
+
+        val additionalProfiles = LinkedHashSet(this.additionalProfiles)
+
+        // 从"spring.profiles.include"当中去获取到要去进行额外导入的Profiles...
+        additionalProfiles += getIncludedProfiles(contributors, activationContext)
+
+        val profiles = Profiles(this.environment, binder, additionalProfiles)
         return activationContext.withProfiles(profiles)
+    }
+
+    private fun getIncludedProfiles(
+        contributors: ConfigDataEnvironmentContributors,
+        activationContext: ConfigDataActivationContext
+    ): Collection<String> {
+        // TODO
+        return emptyList()
     }
 
     /**

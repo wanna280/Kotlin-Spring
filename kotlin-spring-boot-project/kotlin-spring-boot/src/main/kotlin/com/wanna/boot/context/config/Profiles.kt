@@ -32,7 +32,7 @@ open class Profiles(
 ) : Iterable<String> {
     companion object {
         /**
-         * 需要包含的Profiles的属性名
+         * 需要额外去进行导入的Profiles的属性名, 通过这个属性值可以去是实现额外导入Profiles的功能
          */
         const val INCLUDE_PROFILES_PROPERTY_NAME = "spring.profiles.include"
 

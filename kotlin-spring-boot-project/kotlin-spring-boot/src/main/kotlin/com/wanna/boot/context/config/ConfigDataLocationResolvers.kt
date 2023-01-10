@@ -1,11 +1,14 @@
 package com.wanna.boot.context.config
 
+import com.wanna.boot.ConfigurableBootstrapContext
+import com.wanna.boot.context.properties.bind.Binder
+import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.lang.Nullable
 import java.util.function.Supplier
 
 /**
- * 组合了多个ConfigDataLocationResolver, 提供了ConfigDataLocation的加载
+ * 通过读取SpringFactories的方式, 去组合了多个[ConfigDataLocationResolver], 提供了[ConfigDataLocation]的加载
  *
  * @author jianchao.jia
  * @version v1.0
@@ -13,7 +16,11 @@ import java.util.function.Supplier
  *
  * @see ConfigDataLocationResolver
  */
-class ConfigDataLocationResolvers {
+class ConfigDataLocationResolvers(
+    private val bootstrapContext: ConfigurableBootstrapContext,
+    private val binder: Binder,
+    private val resourceLoader: ResourceLoader
+) {
 
     /**
      * ConfigDataLocation Resolvers

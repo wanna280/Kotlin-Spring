@@ -1,9 +1,8 @@
 package com.wanna.boot.properties
 
-import com.wanna.boot.SpringApplication
 import com.wanna.boot.context.properties.bind.Bindable
 import com.wanna.boot.context.properties.bind.Binder
-import com.wanna.boot.context.properties.source.ConfigurationPropertyName
+import com.wanna.framework.core.environment.MapPropertySource
 import com.wanna.framework.core.environment.PropertiesPropertySource
 import com.wanna.framework.core.environment.StandardEnvironment
 

@@ -1,6 +1,7 @@
 package com.wanna.boot.context.properties.bind
 
 import com.wanna.framework.lang.Nullable
+import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
 import kotlin.jvm.Throws
@@ -55,6 +56,17 @@ class BindResult<T : Any>(@Nullable val value: T?) {
      */
     fun <U : Any> map(mapper: Function<T, U>): BindResult<U> {
         return of(if (this.value != null) mapper.apply(this.value) else null)
+    }
+
+    /**
+     * 如果绑定完成, 那么执行给定的consumer
+     *
+     * @param consumer consumer to execute
+     */
+    fun ifBound(consumer: Consumer<T>) {
+        if (value != null) {
+            consumer.accept(this.value)
+        }
     }
 
     companion object {
