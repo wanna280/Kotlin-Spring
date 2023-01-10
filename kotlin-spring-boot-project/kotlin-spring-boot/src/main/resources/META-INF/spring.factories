@@ -4,6 +4,7 @@ com.wanna.boot.SpringApplicationRunListener=\
 
 # ApplicationListener
 com.wanna.framework.context.event.ApplicationListener=\
+  com.wanna.boot.context.config.DelegatingApplicationListener,\
   com.wanna.boot.env.EnvironmentPostProcessorApplicationListener
 
 # Environment Processor
@@ -28,3 +29,7 @@ com.wanna.boot.context.config.ConfigDataLocationResolver=\
 com.wanna.boot.context.config.ConfigDataLoader=\
   com.wanna.boot.context.config.StandardConfigDataLoader,\
   com.wanna.boot.context.config.ConfigTreeConfigDataLoader
+
+# ApplicationContext Initializers
+com.wanna.framework.context.ApplicationContextInitializer=\
+  com.wanna.boot.context.config.DelegatingApplicationContextInitializer
