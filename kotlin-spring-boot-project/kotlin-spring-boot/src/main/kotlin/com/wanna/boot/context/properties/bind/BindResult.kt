@@ -37,7 +37,8 @@ class BindResult<T : Any>(@Nullable val value: T?) {
      *
      * @return bind result value or other
      */
-    fun orElse(other: T): T = value ?: other
+    @Nullable
+    fun orElse(@Nullable other: T?): T? = value ?: other
 
     /**
      * 是否已经完成了绑定

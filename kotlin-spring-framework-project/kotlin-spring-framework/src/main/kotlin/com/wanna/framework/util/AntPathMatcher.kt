@@ -13,6 +13,11 @@ open class AntPathMatcher : PathMatcher {
     }
 
     private val antMatcher = AntPathMatcher()
+
+    override fun isPattern(location: String): Boolean {
+        return antMatcher.isPattern(location)
+    }
+
     override fun match(pattern: String, path: String): Boolean {
         return antMatcher.match(pattern, path)
     }

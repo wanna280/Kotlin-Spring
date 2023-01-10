@@ -207,7 +207,7 @@ open class ConfigDataEnvironment(
         propertyName: String,
         other: Array<ConfigDataLocation>
     ): Array<ConfigDataLocation> {
-        return binder.bind(propertyName, CONFIG_DATA_LOCATION_ARRAY).orElse(other)
+        return binder.bind(propertyName, CONFIG_DATA_LOCATION_ARRAY).orElse(other)!!
     }
 
     private fun createInitialImportContributor(location: ConfigDataLocation): ConfigDataEnvironmentContributor {
@@ -337,10 +337,14 @@ open class ConfigDataEnvironment(
         for (contributor in contributors) {
             val propertySource = contributor.getPropertySource()
             if (contributor.kind == ConfigDataEnvironmentContributor.Kind.BOUND_IMPORT && propertySource != null) {
+
+                // 如果该Profile没有被激活, 那么...
                 if (!contributor.isActive(activationContext)) {
                     if (logger.isTraceEnabled) {
                         logger.trace(String.format("Skipping inactive property source '%s'", propertySource.name))
                     }
+
+                    // 如果该Profile需要被激活, 那么需要添加到Environment的PropertySources当中去
                 } else {
                     if (logger.isTraceEnabled) {
                         logger.trace(String.format("Adding imported property source '%s'", propertySource.name))

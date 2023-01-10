@@ -1,5 +1,6 @@
 package com.wanna.boot.context.config
 
+import com.wanna.boot.context.properties.bind.Binder
 import com.wanna.boot.context.properties.source.ConfigurationPropertySource
 import com.wanna.framework.core.environment.PropertySource
 import com.wanna.framework.lang.Nullable
@@ -8,10 +9,14 @@ import java.util.stream.Stream
 import java.util.stream.StreamSupport
 
 /**
+ * 对于ConfigData的Environment的贡献者, 负责尽自己的努力, 去加载配置文件并生成[PropertySource],
+ * 并且最终将自己收集得到的[PropertySource]去贡献到[ConfigDataEnvironment]当中, 从而实现配置文件的加载
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2023/1/8
+ *
+ * @param kind 当前这个Contributor所处的状态
  */
 open class ConfigDataEnvironmentContributor private constructor(val kind: Kind) :
     Iterable<ConfigDataEnvironmentContributor> {
@@ -23,11 +28,14 @@ open class ConfigDataEnvironmentContributor private constructor(val kind: Kind) 
     private var propertySource: PropertySource<*>? = null
 
     /**
-     * 已经存在的PropertySource
+     * 已经存在的PropertySource(封装成为ConfigurationPropertySource, 主要是方便Binder去进行使用)
      */
     @Nullable
     private var configurationPropertySource: ConfigurationPropertySource? = null
 
+    /**
+     * ConfigData Properties, 计算当前的Contributor是否还有要去进行额外导入的ConfigDataLocation?
+     */
     @Nullable
     private var configDataProperties: ConfigDataProperties? = null
 
@@ -43,7 +51,7 @@ open class ConfigDataEnvironmentContributor private constructor(val kind: Kind) 
     private var profileSpecific: Boolean = false
 
     /**
-     * children
+     * children, Key-导入阶段(Profiles激活之前/Profiles激活之后), Value该导入阶段要进行处理的Contributor列表
      */
     private var children: Map<ImportPhase, List<ConfigDataEnvironmentContributor>> = mapOf()
 
@@ -114,6 +122,7 @@ open class ConfigDataEnvironmentContributor private constructor(val kind: Kind) 
      * @return 如果还有未进行处理的ConfigDataLocation, 那么return true; 否则return false
      */
     open fun hasUnprocessedImports(importPhase: ImportPhase): Boolean {
+        // 检查当前Contributor是否还有要去进行导入的ConfigDataLocation
         if (getImports().isEmpty()) {
             return false
         }
@@ -150,8 +159,8 @@ open class ConfigDataEnvironmentContributor private constructor(val kind: Kind) 
      * 基于给定ImportPhase阶段的Children Contributors, 去构建一个新的Contributor
      *
      * @param importPhase 当前所处的阶段(激活Profile之前/之后)
-     * @param children 该阶段的Children Contributors
-     * @return 根据新的children, 去构建出来的新的Contributor对象
+     * @param children 该阶段需要使用的Children Contributors
+     * @return 根据新的children, 去构建出来的新的Contributor对象(kind不变, 只是变化children)
      */
     open fun withChildren(
         importPhase: ImportPhase,
@@ -228,19 +237,30 @@ open class ConfigDataEnvironmentContributor private constructor(val kind: Kind) 
     }
 
     /**
-     * 创建一个新的ConfigDataEnvironmentContributor
+     * 创建一个新的[ConfigDataEnvironmentContributor],
+     * 并使用[Binder]去对[ConfigDataProperties]去完成绑定, 从而计算它要去进行导入的配置文件信息以及Profiles信息
      *
      * @param contributors Contributors
      * @param activationContext ActivationContext
-     * @return 新的Contributor(kind=BOUND_IMPORT)
+     * @return 创建出来的新的Contributor对象(kind=BOUND_IMPORT), 对于ConfigDataProperties已经完成了绑定
      */
     open fun withBoundProperties(
         contributors: Iterable<ConfigDataEnvironmentContributor>,
         @Nullable activationContext: ConfigDataActivationContext?
     ): ConfigDataEnvironmentContributor {
+        val sources = listOf(getConfigurationPropertySource()!!)
+        val placeholdersResolver =
+            ConfigDataEnvironmentContributorPlaceholdersResolver(contributors, activationContext, this, true)
+
+        val binder = Binder(sources, placeholdersResolver, emptyList(), null, null)
+
+        // 构建出来一个绑定完成的ConfigDataProperties
+        // 从PropertySource当中探测出来, 针对当前Contributor(PropertySource), 要去进行激活的配置文件
+        val dataProperties = ConfigDataProperties.get(binder)
+
         val contributor = ConfigDataEnvironmentContributor(Kind.BOUND_IMPORT)
         contributor.profileSpecific = this.profileSpecific
-        contributor.configDataProperties = this.configDataProperties
+        contributor.configDataProperties = dataProperties
         contributor.resource = this.resource
         contributor.location = this.location
         contributor.propertySource = this.propertySource
@@ -314,21 +334,27 @@ open class ConfigDataEnvironmentContributor private constructor(val kind: Kind) 
     }
 
     /**
-     * 配置文件导入的枚举值
+     * 配置文件导入阶段的枚举值(当前正处于激活Profiles之前, 还是出于激活Profiles之后的阶段?)
      */
     enum class ImportPhase {
-
         /**
-         * 在profiles导入之前的阶段
+         * 在profiles导入之前, 出于未激活的阶段
          */
         BEFORE_PROFILE_ACTIVATION,
 
         /**
-         * 在profiles已经导入完成的阶段
+         * 在profiles导入之后, 已经出于激活的阶段
          */
         AFTER_PROFILE_ACTIVATION;
 
         companion object {
+
+            /**
+             * 根据ActivationContext去检查当前所处的阶段
+             *
+             * @param activationContext ActivationContext(or null)
+             * @return 如果ActivationContext内部的Profiles为null, 说明Profiles还没激活, return BEFORE_PROFILE_ACTIVATION; 否则return AFTER_PROFILE_ACTIVATION
+             */
             @JvmStatic
             fun get(@Nullable activationContext: ConfigDataActivationContext?): ImportPhase {
                 if (activationContext?.profiles != null) {
@@ -340,14 +366,39 @@ open class ConfigDataEnvironmentContributor private constructor(val kind: Kind) 
     }
 
     /**
-     * Contributor的类型
+     * Contributor的类型, 描述当前的Contributor的状态信息
      */
     enum class Kind {
+        /**
+         * Root Contributor, 是所有的Contributor的根节点
+         */
         ROOT,
+
+        /**
+         * 通过明确给定了配置文件的ConfigDataLocation, 从而完成了初始化, 等待后续去进行配置文件的加载
+         */
         INITIAL,
+
+        /**
+         * 已经存在有PropertySource的状态
+         */
         EXISTING,
+
+        /**
+         * 通过Contributor去加载进来的配置文件, 会间接成为一个Contributor, 此时就会出于这个状态
+         */
         UNBOUND_IMPORT,
+
+        /**
+         * 对于UNBOUND_IMPORT状态的Contributor, 正处于配置文件新导入状态, 需要检查它导入的配置文件
+         * 的ConfigDataLocation和Profiles, 从而去实现递归导入配置文件的方式
+         *
+         */
         BOUND_IMPORT,
+
+        /**
+         * 对于已经根据ConfigDataLocation去进行配置文件的导入, 但是最终去导入配置文件的PropertySource结果为空的状态
+         */
         EMPTY_LOCATION
     }
 

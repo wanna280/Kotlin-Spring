@@ -66,9 +66,15 @@ class ConfigDataEnvironmentContributors(
                 return result
             }
 
-            // 如果kind=UNBOUND_IMPORT, 那么需要将rootContributor当中的, 当前的Contributor去替换成为bound Contributor
+            // 如果kind=UNBOUND_IMPORT, 说明是一个新导入进来的配置文件所产生的Contributor, 它需要完成绑定...
+            // 那么需要将rootContributor当中的, 当前的Contributor(kind=UNBOUND_IMPORT)去替换成为bound Contributor(kind=BOUND_IMPORT)
             if (contributor.kind == UNBOUND_IMPORT) {
+
+                // 利用当前Contributor的PropertySource构建Binder, 并对ConfigDataProperties去完成绑定
+                // 主要就是计算得到当前Contributor要去进行递归导入的ConfigDataLocation, 以及要去进行激活的Profiles
                 val bound = contributor.withBoundProperties(result, activationContext)
+
+                // 将kind=UNBOUND_IMPORT状态的Contributor去替换成为已经绑定之后kind=BOUND_IMPORT的Contributor
                 result = ConfigDataEnvironmentContributors(
                     this.bootstrapContext, result.root.withReplacement(contributor, bound)
                 )
@@ -86,7 +92,8 @@ class ConfigDataEnvironmentContributors(
             // 执行加载和解析配置文件...
             val imported = importer.resolveAndLoad(activationContext, resolverContext, configDataLoaderContext, imports)
 
-            // 将导入进来的配置文件的PropertySource, 并转换成为Contributor作为children, 并替换掉当前Contributor当中的Children...
+            // 将该Contributor导入进来的配置文件的PropertySource, 去进行分别转换成为Contributor, 并放入到当前Contributor的children当中...
+            // 这样下次迭代的时候, 就能找到该kind=UNBOUND_IMPORT的那些Contributor, 去处理绑定, 从而递归计算导入的配置文件...
             val contributorAndChildren = contributor.withChildren(importPhase, asContributors(imported))
 
             // 将rootContributor的children当中的Contributor去替换成为contributorAndChildren...
@@ -98,10 +105,10 @@ class ConfigDataEnvironmentContributors(
     }
 
     /**
-     * 将给定的配置文件的导出结果, 去转换成为Contributor
+     * 将给定的配置文件的导出结果, 去转换成为Contributor, 对于新导入进来的配置文件, 状态都是UNBOUND_IMPORT
      *
      * @param imported 使用DataImporter去执行导入配置文件的结果
-     * @return list of Contributor
+     * @return list of Contributor(type=UNBOUND_IMPORT)
      */
     private fun asContributors(imported: Map<ConfigDataResolutionResult, ConfigData>): List<ConfigDataEnvironmentContributor> {
         val contributors = ArrayList<ConfigDataEnvironmentContributor>(imported.size * 5)
@@ -143,6 +150,9 @@ class ConfigDataEnvironmentContributors(
 
         // 遍历root当中的当前所有children Contributor
         for (contributor in contributors.root) {
+
+            // 1.如果kind=UNBOUND_IMPORT, 那么该Contributor一定需要去进行处理, 因为它是一个新导入进来的配置文件...
+            // 2.如果kind不是UNBOUND_IMPORT的话, 那么需要检查它是否还有未处理的导入的情况? (ConfigDataProperties.imports不为空)
             if (contributor.kind == UNBOUND_IMPORT
                 || isActiveWithUnprocessedImports(activationContext, importPhase, contributor)
             ) {

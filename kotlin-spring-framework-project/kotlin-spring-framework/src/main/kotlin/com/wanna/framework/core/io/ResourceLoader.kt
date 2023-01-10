@@ -29,9 +29,9 @@ interface ResourceLoader {
     fun getResource(location: String): Resource
 
     /**
-     * 暴露该资源加载器所使用到的ClassLoader
+     * 获取到该资源加载器进行资源加载时所使用到的ClassLoader
      *
-     * @return ClassLoader(有可能为空)
+     * @return ClassLoader(or null)
      */
     @Nullable
     fun getClassLoader(): ClassLoader?

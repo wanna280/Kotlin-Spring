@@ -68,7 +68,18 @@ class Binder(
      * @return 属性绑定完成的结果BindResult
      */
     fun <T : Any> bind(name: String, target: Bindable<T>): BindResult<T> {
-        val bind = bind(ConfigurationPropertyName.of(name), target, defaultBindHandler, false)
+        return bind(ConfigurationPropertyName.of(name), target)
+    }
+
+    /**
+     * 将给定的属性值的前缀的所有属性值去绑定到目标对象上(如果之前还没有实例对象的话, 那么绑定失败)
+     *
+     * @param name 需要绑定的配置文件的属性名的前缀
+     * @param target 待绑定的目标对象相关信息的Bindable(将会把name作为的前缀信息的配置信息, 全部都绑定到这个Bindable当中)
+     * @return 属性绑定完成的结果BindResult
+     */
+    fun <T : Any> bind(name: ConfigurationPropertyName, target: Bindable<T>): BindResult<T> {
+        val bind = bind(name, target, defaultBindHandler, false)
         return BindResult.of(bind)
     }
 

@@ -90,7 +90,8 @@ open class StandardConfigDataLocationResolver() : Ordered,
      * @return 要使用的SpringBoot的配置文件名ConfigNames
      */
     open fun getConfigNames(binder: Binder): Array<String> {
-        val configNames = binder.bind(CONFIG_NAME_PROPERTY, Bindable.of(STRING_ARRAY_TYPE)).orElse(DEFAULT_CONFIG_NAMES)
+        val configNames =
+            binder.bind(CONFIG_NAME_PROPERTY, Bindable.of(STRING_ARRAY_TYPE)).orElse(DEFAULT_CONFIG_NAMES)!!
         // 检查所有的configName当中, 都不含有"*"...
         for (configName in configNames) {
             validateConfigName(configName)
@@ -162,6 +163,7 @@ open class StandardConfigDataLocationResolver() : Ordered,
      *
      * @param context context
      * @param location location
+     * @return 从该Location去加载到的配置文件的ConfigData Reference
      */
     private fun getReferences(
         @Nullable context: ConfigDataLocationResolverContext?,
@@ -208,7 +210,7 @@ open class StandardConfigDataLocationResolver() : Ordered,
         @Nullable profile: String?
     ): Set<StandardConfigDataReference> {
         val references = LinkedHashSet<StandardConfigDataReference>()
-        for (configName in configNames) {
+        for (configName in this.configNames) {
             val deque = getReferencesForConfigName(configName, location, directory, profile)
             references += deque
         }
@@ -256,7 +258,6 @@ open class StandardConfigDataLocationResolver() : Ordered,
         file: String,
         @Nullable profile: String?
     ): Set<StandardConfigDataReference> {
-
         var fileName: String = file
         val extensionHintMatcher = EXTENSION_HINT_PATTERN.matcher(file)
         val extensionHintLocation = extensionHintMatcher.matches()
