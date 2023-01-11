@@ -269,6 +269,15 @@ open class Profiles(
     open fun getDefault(): List<String> = this.defaultProfiles
 
     /**
+     * Profiles的toString生成
+     *
+     * @return toString
+     */
+    override fun toString(): String =
+        "Profiles(groups=$groups, activeProfiles=$activeProfiles, defaultProfiles=$defaultProfiles)"
+
+
+    /**
      * profile的类型枚举值
      *
      * @param prefix 该类型的Profile要去绑定的属性前缀
