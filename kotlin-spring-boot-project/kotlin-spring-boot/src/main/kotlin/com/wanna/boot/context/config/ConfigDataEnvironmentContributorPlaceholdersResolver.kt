@@ -1,12 +1,14 @@
 package com.wanna.boot.context.config
 
 import com.wanna.boot.context.properties.bind.PlaceholdersResolver
+import com.wanna.framework.core.environment.PropertySource
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.PropertyPlaceholderHelper
 import com.wanna.framework.util.SystemPropertyUtils
 
 /**
- * Contributor的PlaceholderResolver
+ * 基于[ConfigDataEnvironmentContributor]去实现的[PlaceholdersResolver],
+ * 利用[ConfigDataEnvironmentContributor]当中的[PropertySource]去提供占位符的解析
  *
  * @author jianchao.jia
  * @version v1.0
@@ -43,11 +45,12 @@ class ConfigDataEnvironmentContributorPlaceholdersResolver(
     }
 
     /**
-     * 提供占位符的解析
+     * 利用[ConfigDataEnvironmentContributor]当中的[PropertySource]去提供占位符的解析
      *
      * @param placeholder 待解析的占位符
-     * @return 解析给定的占位符的结果
+     * @return 根据[PropertySource]去解析给定的占位符的最终结果
      */
+    @Nullable
     private fun resolvePlaceholder(placeholder: String): String? {
         var result: Any? = null
 
