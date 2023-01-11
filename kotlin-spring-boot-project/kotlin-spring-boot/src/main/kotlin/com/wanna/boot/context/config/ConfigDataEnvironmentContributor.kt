@@ -106,6 +106,11 @@ open class ConfigDataEnvironmentContributor private constructor(val kind: Kind) 
      */
     open fun stream(): Stream<ConfigDataEnvironmentContributor> = StreamSupport.stream(spliterator(), false)
 
+    /**
+     * 获取当前的Contributor的迭代器
+     *
+     * @return Contributor的迭代器
+     */
     override fun iterator(): Iterator<ConfigDataEnvironmentContributor> = ContributorIterator()
 
     open fun isActive(@Nullable activationContext: ConfigDataActivationContext?): Boolean {
@@ -272,18 +277,21 @@ open class ConfigDataEnvironmentContributor private constructor(val kind: Kind) 
 
 
     /**
-     * Contributor的迭代器
+     * Contributor的迭代器, 负责去按照顺序去进行迭代维护的[ConfigDataEnvironmentContributor];
+     * 对于迭代器的整体的迭代顺序为"根-左-右"的逆序, 也就是"右-左-根",
+     * (对于左也就是BEFORE_PROFILE_ACTIVATION的元素, 对于右也就是AFTER_PROFILE_ACTIVATION的元素);
+     * 采用"右-左-根"的方式去进行遍历, 可以实现有Profiles的Contributor的优先级比没有Profiles的优先级更高,
+     * 在最终去进行结果的收集时, 只需要使用addLast, 就可以保证Contributor的优先级不会有问题
      */
     private inner class ContributorIterator : Iterator<ConfigDataEnvironmentContributor> {
-
         /**
-         * 导入阶段
+         * Profiles所处的导入阶段, 当前是处于Profiles激活之前, 还是出于Profiles激活之后?
          */
         @Nullable
         private var phase: ImportPhase? = ImportPhase.AFTER_PROFILE_ACTIVATION
 
         /**
-         * 该阶段的Children Contributor
+         * 该阶段的Children Contributor, 初始化为Profiles激活的情况
          */
         private var children = getChildren(phase!!).iterator()
 
@@ -306,6 +314,11 @@ open class ConfigDataEnvironmentContributor private constructor(val kind: Kind) 
             return next
         }
 
+        /**
+         * 执行对于[ConfigDataEnvironmentContributor]的迭代, 最终的迭代顺序是采用"右-左-根"的迭代顺序
+         *
+         * @return 当前正在迭代的[ConfigDataEnvironmentContributor]; 如果迭代完成了, return null
+         */
         @Nullable
         private fun fetchIfNecessary(): ConfigDataEnvironmentContributor? {
             if (this.next != null) {
@@ -334,16 +347,16 @@ open class ConfigDataEnvironmentContributor private constructor(val kind: Kind) 
     }
 
     /**
-     * 配置文件导入阶段的枚举值(当前正处于激活Profiles之前, 还是出于激活Profiles之后的阶段?)
+     * 配置文件导入阶段的枚举值(当前正处于激活Profiles之前, 还是处于激活Profiles之后的阶段?)
      */
     enum class ImportPhase {
         /**
-         * 在profiles导入之前, 出于未激活的阶段
+         * 在profiles导入之前, 出于Profiles未激活的阶段
          */
         BEFORE_PROFILE_ACTIVATION,
 
         /**
-         * 在profiles导入之后, 已经出于激活的阶段
+         * 在profiles导入之后, 已经处于Profiles激活的阶段
          */
         AFTER_PROFILE_ACTIVATION;
 
@@ -353,7 +366,8 @@ open class ConfigDataEnvironmentContributor private constructor(val kind: Kind) 
              * 根据ActivationContext去检查当前所处的阶段
              *
              * @param activationContext ActivationContext(or null)
-             * @return 如果ActivationContext内部的Profiles为null, 说明Profiles还没激活, return BEFORE_PROFILE_ACTIVATION; 否则return AFTER_PROFILE_ACTIVATION
+             * @return 如果ActivationContext内部的Profiles为null, 说明Profiles还没激活, return BEFORE_PROFILE_ACTIVATION;
+             * 如果ActivationContext内部的Profiles不为null, 说明Profiles已经被激活了, 此时需要return AFTER_PROFILE_ACTIVATION
              */
             @JvmStatic
             fun get(@Nullable activationContext: ConfigDataActivationContext?): ImportPhase {

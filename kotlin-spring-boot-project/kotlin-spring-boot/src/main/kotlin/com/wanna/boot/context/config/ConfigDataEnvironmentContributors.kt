@@ -4,12 +4,14 @@ import com.wanna.boot.ConfigurableBootstrapContext
 import com.wanna.boot.context.config.ConfigDataEnvironmentContributor.Kind.UNBOUND_IMPORT
 import com.wanna.boot.context.properties.bind.Binder
 import com.wanna.boot.context.properties.source.ConfigurationPropertySource
+import com.wanna.framework.core.environment.PropertySource
 import com.wanna.framework.lang.Nullable
 import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.stream.Collectors
 
 /**
+ * 封装一系列的[ConfigDataEnvironmentContributor], 让其可以对[ConfigDataEnvironment]去进行贡献[PropertySource]
  *
  * @author jianchao.jia
  * @version v1.0
@@ -179,7 +181,7 @@ class ConfigDataEnvironmentContributors(
     }
 
     /**
-     * 获取迭代Contributor的迭代器
+     * 获取迭代Contributor的迭代器, 对于迭代[ConfigDataEnvironmentContributor]的方式, 就直接采用rootContributor的方式去进行迭代
      *
      * @return Iterator of Contributor
      */

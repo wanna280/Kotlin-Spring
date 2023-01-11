@@ -391,8 +391,12 @@ open class ConfigDataEnvironment(
         activationContext: ConfigDataActivationContext,
         propertySources: MutablePropertySources
     ) {
+        // toList, 方便展示遍历过程, 无特殊用法, 用迭代器的方式去查看太麻烦了
+        // 这里迭代的时候, 似乎就已经做到了, 将有Profiles的情况排在了前面, 直接addLast就行, 无需调整位置了...
+        val contributorList = contributors.toList()
+
         // 遍历所有的Contributor, 将它们处理的结果PropertySource应用给PropertySources当中
-        for (contributor in contributors) {
+        for (contributor in contributorList) {
             val propertySource = contributor.getPropertySource()
             if (contributor.kind == ConfigDataEnvironmentContributor.Kind.BOUND_IMPORT && propertySource != null) {
 

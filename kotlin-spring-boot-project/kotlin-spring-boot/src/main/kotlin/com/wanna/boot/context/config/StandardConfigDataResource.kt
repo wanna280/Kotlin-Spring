@@ -51,4 +51,11 @@ class StandardConfigDataResource(
      * hashCode, 直接使用Resource的hashCode去进行生成
      */
     override fun hashCode(): Int = this.resource.hashCode()
+
+    /**
+     * toString, 采用Resource的toString去进行生成
+     *
+     * @return toString
+     */
+    override fun toString(): String = resource.toString()
 }

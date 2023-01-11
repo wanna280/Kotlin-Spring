@@ -29,7 +29,7 @@ class StandardConfigDataReference(
      * 生成资源路径, 格式是"root-profile.extension", 例如"application-dev.properties", 如果profile为空的话, 那么"-"也将会被自动去掉
      */
     val resourceLocation: String =
-        root + if (StringUtils.hasText(profile)) "-$profile" else "" + (if (StringUtils.hasText(extension)) ".$extension" else "")
+        root + (if (StringUtils.hasText(profile)) "-$profile" else "") + (if (StringUtils.hasText(extension)) ".$extension" else "")
 
     val skippable: Boolean
         get() = configDataLocation.optional || this.directory != null || this.profile != null

@@ -1,6 +1,6 @@
 package com.wanna.boot.context.config
 
-import com.wanna.boot.BootstrapContext
+import com.wanna.boot.ConfigurableBootstrapContext
 import com.wanna.boot.DefaultBootstrapContext
 import com.wanna.boot.SpringApplication
 import com.wanna.boot.env.EnvironmentPostProcessor
@@ -18,36 +18,31 @@ import org.slf4j.LoggerFactory
  *
  * @see EnvironmentPostProcessor
  */
-open class ConfigDataEnvironmentPostProcessor : EnvironmentPostProcessor, Ordered {
+open class ConfigDataEnvironmentPostProcessor(
+    private var bootstrapContext: ConfigurableBootstrapContext,
+    @Nullable private var environmentUpdateListener: ConfigDataEnvironmentUpdateListener? = null
+) : EnvironmentPostProcessor, Ordered {
 
     /**
      * Logger
      */
     private val logger: Logger = LoggerFactory.getLogger(ConfigDataEnvironmentPostProcessor::class.java)
 
-
     /**
      * Order很高...一般它会被第一个执行
      */
     private var order = Ordered.ORDER_HIGHEST + 10
 
-    override fun getOrder(): Int = this.order
-
-    private val bootstrapContext = DefaultBootstrapContext()
 
     /**
-     * 设置当前EnvironmentPostProcessor的优先级
-     *
-     * @param order 优先级数值(数值越小, 优先级越高)
+     * 暂时提供一个无参数构造器, 后面需要干掉, 使用SpringApplication当中的配置 TODO
      */
-    open fun setOrder(order: Int) {
-        this.order = order
-    }
+    constructor() : this(DefaultBootstrapContext(), null)
 
     /**
      * 对SpringApplication的环境去进行后置处理, 主要就是加载SpringBoot相关的配置文件到环境当中
      *
-     * @param environment 环境对象
+     * @param environment Spring的Environment环境对象
      * @param application SpringApplication
      */
     override fun postProcessEnvironment(environment: ConfigurableEnvironment, application: SpringApplication) {
@@ -59,7 +54,7 @@ open class ConfigDataEnvironmentPostProcessor : EnvironmentPostProcessor, Ordere
      *
      * @param environment Environment
      * @param resourceLoader ResourceLoader
-     * @param additionalProfiles 额外要使用的Profiles
+     * @param additionalProfiles SpringApplication额外要使用的Profiles
      */
     private fun postProcessEnvironment(
         environment: ConfigurableEnvironment,
@@ -74,11 +69,11 @@ open class ConfigDataEnvironmentPostProcessor : EnvironmentPostProcessor, Ordere
     }
 
     /**
-     * 创建出来一个ConfigDataEnvironment
+     * 创建出来一个新的ConfigDataEnvironment实例
      *
      * @param environment Environment
      * @param resourceLoader ResourceLoader
-     * @param additionalProfiles 额外要使用的Profiles
+     * @param additionalProfiles SpringApplication当中指定的额外要使用的Profiles
      * @return ConfigDataEnvironment
      */
     open fun getConfigDataEnvironment(
@@ -86,6 +81,25 @@ open class ConfigDataEnvironmentPostProcessor : EnvironmentPostProcessor, Ordere
         resourceLoader: ResourceLoader,
         additionalProfiles: Collection<String>
     ): ConfigDataEnvironment {
-        return ConfigDataEnvironment(environment, resourceLoader, additionalProfiles, bootstrapContext, null)
+        return ConfigDataEnvironment(
+            environment, resourceLoader, additionalProfiles,
+            this.bootstrapContext, this.environmentUpdateListener
+        )
+    }
+
+    /**
+     * 获取到当前[EnvironmentPostProcessor]的优先级
+     *
+     * @return order
+     */
+    override fun getOrder(): Int = this.order
+
+    /**
+     * 设置当前EnvironmentPostProcessor的优先级
+     *
+     * @param order 优先级数值(数值越小, 优先级越高)
+     */
+    open fun setOrder(order: Int) {
+        this.order = order
     }
 }
