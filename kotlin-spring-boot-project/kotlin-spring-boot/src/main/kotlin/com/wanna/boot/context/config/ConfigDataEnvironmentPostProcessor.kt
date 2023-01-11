@@ -17,10 +17,17 @@ import org.slf4j.LoggerFactory
  * 不管是对于普通的application配置文件, bootstrap配置文件, 甚至是一些额外的profile的配置文件, 都会被它处理
  *
  * @see EnvironmentPostProcessor
+ *
+ * @author jianchao.jia
+ * @version v1.0
+ * @date 2022/11/12
+ *
+ * @param bootstrapContext BootstrapContext
+ * @param environmentUpdateListener 监听Environment发生变更的Listener
  */
 open class ConfigDataEnvironmentPostProcessor(
-    private var bootstrapContext: ConfigurableBootstrapContext,
-    @Nullable private var environmentUpdateListener: ConfigDataEnvironmentUpdateListener? = null
+    private val bootstrapContext: ConfigurableBootstrapContext = DefaultBootstrapContext(),
+    @Nullable private val environmentUpdateListener: ConfigDataEnvironmentUpdateListener? = null
 ) : EnvironmentPostProcessor, Ordered {
 
     /**
@@ -32,7 +39,6 @@ open class ConfigDataEnvironmentPostProcessor(
      * Order很高...一般它会被第一个执行
      */
     private var order = Ordered.ORDER_HIGHEST + 10
-
 
     /**
      * 暂时提供一个无参数构造器, 后面需要干掉, 使用SpringApplication当中的配置 TODO
@@ -101,5 +107,59 @@ open class ConfigDataEnvironmentPostProcessor(
      */
     open fun setOrder(order: Int) {
         this.order = order
+    }
+
+
+    companion object {
+
+        /**
+         * 对外提供静态工厂方法, 去将配置文件信息应用到给定的[ConfigurableEnvironment]当中来
+         *
+         * @param environment 要去进行应用的Environment
+         */
+        @JvmStatic
+        fun applyTo(environment: ConfigurableEnvironment) {
+            applyTo(environment, null, null)
+        }
+
+        /**
+         * 对外提供静态工厂方法, 去将配置文件信息应用到给定的[ConfigurableEnvironment]当中来
+         *
+         * @param environment 要去进行应用的Environment
+         * @param bootstrapContext BootstrapContext(可以为null)
+         * @param resourceLoader ResourceLoader(可以为null)
+         * @param additionalProfiles 额外要去进行应用的Profiles
+         */
+        @JvmStatic
+        fun applyTo(
+            environment: ConfigurableEnvironment,
+            @Nullable bootstrapContext: ConfigurableBootstrapContext?,
+            @Nullable resourceLoader: ResourceLoader?,
+            vararg additionalProfiles: String
+        ) {
+            applyTo(environment, bootstrapContext, resourceLoader, additionalProfiles.toList(), null)
+        }
+
+        /**
+         * 对外提供静态工厂方法, 去将配置文件信息应用到给定的[ConfigurableEnvironment]当中来
+         *
+         * @param environment 要去进行应用的Environment
+         * @param bootstrapContext BootstrapContext(可以为null)
+         * @param resourceLoader ResourceLoader(可以为null)
+         * @param additionalProfiles 额外要去进行应用的Profiles
+         * @param environmentUpdateListener 监听Environment发生变更的Listener(可以为null)
+         */
+        @JvmStatic
+        fun applyTo(
+            environment: ConfigurableEnvironment,
+            @Nullable bootstrapContext: ConfigurableBootstrapContext?,
+            @Nullable resourceLoader: ResourceLoader?,
+            additionalProfiles: Collection<String>,
+            @Nullable environmentUpdateListener: ConfigDataEnvironmentUpdateListener?
+        ) {
+            val bootstrapContextToUse = bootstrapContext ?: DefaultBootstrapContext()
+            val postProcessor = ConfigDataEnvironmentPostProcessor(bootstrapContextToUse, environmentUpdateListener)
+            postProcessor.postProcessEnvironment(environment, resourceLoader, additionalProfiles)
+        }
     }
 }
