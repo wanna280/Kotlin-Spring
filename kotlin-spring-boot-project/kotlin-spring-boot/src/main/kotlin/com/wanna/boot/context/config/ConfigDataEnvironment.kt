@@ -121,15 +121,19 @@ open class ConfigDataEnvironment(
         // ConfigData Importer, 封装ConfigDataLoaders&ConfigDataLocationResolvers执行真正的配置文件的解析加载
         val importer = ConfigDataImporter(loaders, resolvers)
 
-        // 利用Contributors去进行初始化的处理
+        // 1.利用Contributors去进行初始化的处理(初始化一些配置文件的导入)
         var contributors = processInitial(this.contributors, importer)
 
-        // 在没有Profiles的情况下, 去进行处理...
+        // 创建ActivationContext
         var activationContext = createActivationContext(contributors.getBinder(null))
+
+        // 2.在没有Profiles的情况下, 去进行处理...(这块主要是进行CloudPlatform的检查, 第二次处理, 在正常情况下不会有任何的作用)
         contributors = processWithoutProfiles(contributors, importer, activationContext)
 
-        // 在有profiles的情况下, 去进行处理
+        // 给ActivationContext去补充上Profiles
         activationContext = withProfiles(contributors, activationContext)
+
+        // 3.在有Profiles的情况下, 再次去进行处理(这块就是主要处理Profiles的配置文件的导入的...)
         contributors = processWithProfiles(contributors, importer, activationContext)
 
         // 将Contributors当中的结果应用给Environment当中...

@@ -22,8 +22,14 @@ class ConfigDataImporter(
      */
     val loadedLocations = LinkedHashSet<ConfigDataLocation>()
 
+    /**
+     * 可选的ConfigDataLocations
+     */
     val optionalLocations = LinkedHashSet<ConfigDataLocation>()
 
+    /**
+     * 已经加载过的ConfigDataResource
+     */
     private val loaded = LinkedHashSet<ConfigDataResource>()
 
     /**
@@ -33,7 +39,7 @@ class ConfigDataImporter(
      * @param resolverContext ConfigDataLocationResolver解析配置文件需要用到的上下文信息
      * @param loaderContext ConfigDataLoader去加载配置文件需要用到的上下文信息
      * @param imports 待进行解析和加载的ConfigDataLocations
-     * @return 解析和加载完成得到的结果
+     * @return 解析和加载完成得到的结果(Key-Resolver去解析ConfigDataLocation的结果, Value-Loader加载配置文件的ConfigData结果)
      */
     fun resolveAndLoad(
         @Nullable activationContext: ConfigDataActivationContext?,
@@ -44,9 +50,11 @@ class ConfigDataImporter(
         val profiles = activationContext?.profiles
 
         // 利用ConfigDataLocationResolvers去解析给定的这些位置的配置文件...
+        // 这里会分别去尝试, 在有Profiles/没有Profiles这两种情况下去进行加载
         val resolved = resolve(resolverContext, profiles, imports)
 
         // 利用ConfigDataLoaders对给定的这些ConfigDataResolutionResult去进行加载
+        // 对于同一个文件有可能会加载多次(多个阶段都加载了无Profiles的配置文件, 这里会基于hashCode&equals去实现去重...)
         return load(loaderContext, resolved)
     }
 
@@ -72,7 +80,11 @@ class ConfigDataImporter(
     }
 
     /**
-     * 对单个ConfigLocation去进行解析
+     * 对单个ConfigDataLocation去进行解析, 解析成为合适的Resource
+     *
+     * @param profiles Profiles(为null代表不带Profiles的解析)
+     * @param location 待进行解析的配置文件的位置
+     * @return 从Location位置去找到的合适的资源列表
      */
     private fun resolve(
         locationResolverContext: ConfigDataLocationResolverContext,
@@ -87,7 +99,7 @@ class ConfigDataImporter(
      *
      * @param loaderContext LoaderContext
      * @param candidates 候选的要去进行加载的资源信息
-     * @return 加载得到的结果
+     * @return 加载得到[ConfigData]的结果
      */
     private fun load(
         loaderContext: ConfigDataLoaderContext,
@@ -101,8 +113,14 @@ class ConfigDataImporter(
             if (resource.optional) {
                 this.optionalLocations.add(location)
             }
+
+            // 如果之前已经收集过这个Resource, 那么无需去进行重复的收集...
+            // 基于hashCode&equals方法去实现去重...
             if (loaded.contains(resource)) {
                 this.loadedLocations.add(location)
+
+
+                // 如果之前还没收集过这个Resource的话, 那么我们才需要去进行收集起来...
             } else {
                 val configData = this.loaders.load(loaderContext, resource)
                 this.loaded += resource
