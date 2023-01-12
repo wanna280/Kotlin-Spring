@@ -18,7 +18,7 @@ import java.nio.file.Files
  * @see UrlResource
  * @param path 文件的路径
  */
-open class FileUrlResource(_path: String) : UrlResource(ResourceUtils.URL_PROTOCOL_FILE, _path),
+open class FileUrlResource(path: String) : UrlResource(ResourceUtils.URL_PROTOCOL_FILE, path),
     WritableResource {
     constructor(url: URL) : this(url.path)
 

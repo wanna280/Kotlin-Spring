@@ -1,5 +1,6 @@
 package com.wanna.framework.core.io
 
+import com.wanna.framework.lang.Nullable
 import java.io.File
 import java.io.IOException
 import java.net.URI
@@ -113,6 +114,7 @@ interface Resource : InputStreamSource {
      *
      * @return 资源文件名(如果该资源无文件名return null)
      */
+    @Nullable
     fun getFilename(): String?
 
     /**
@@ -120,5 +122,6 @@ interface Resource : InputStreamSource {
      *
      * @return 资源的描述信息(可以为null)
      */
+    @Nullable
     fun getDescription(): String?
 }

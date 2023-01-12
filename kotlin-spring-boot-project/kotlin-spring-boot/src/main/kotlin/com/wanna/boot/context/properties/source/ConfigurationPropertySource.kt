@@ -1,5 +1,6 @@
 package com.wanna.boot.context.properties.source
 
+import com.wanna.framework.core.environment.PropertySource
 import com.wanna.framework.lang.Nullable
 import java.util.function.Predicate
 
@@ -41,5 +42,12 @@ interface ConfigurationPropertySource {
      */
     fun containsDescendantOf(name: ConfigurationPropertyName): ConfigurationPropertyState =
         ConfigurationPropertyState.UNKNOWN
+
+    companion object {
+        @JvmStatic
+        fun from(propertySource: PropertySource<*>): ConfigurationPropertySource? {
+            return SpringConfigurationPropertySource.from(propertySource)
+        }
+    }
 
 }

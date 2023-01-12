@@ -1,5 +1,6 @@
 package com.wanna.framework.core.io
 
+import com.wanna.framework.lang.Nullable
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -39,8 +40,8 @@ open class UrlResource(private var url: URL?, private var uri: URI?) : AbstractF
      * @throws MalformedURLException 如果给定的path不合法
      */
     @Throws(MalformedURLException::class)
-    constructor(protocol: String, path: String, fragment: String?) : this(
-        URL(protocol, path, fragment),
+    constructor(protocol: String, path: String, @Nullable fragment: String?) : this(
+        URI(protocol, path, fragment).toURL(),  // 不能直接使用URL构造器, 会有NPE
         URI(protocol, path, fragment)
     )
 

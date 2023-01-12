@@ -44,17 +44,54 @@ private constructor(path: String, @Nullable classLoader: ClassLoader?, @Nullable
     /**
      * 如果用户没有指定ClassLoader的话，那么我们使用默认的ClassLoader
      */
-    private val classLoader = classLoader ?: ClassUtils.getDefaultClassLoader()
+    @Nullable
+    private var classLoader: ClassLoader? = classLoader ?: ClassUtils.getDefaultClassLoader()
 
     override fun getInputStream(): InputStream {
-        val stream = if (clazz != null) clazz.getResourceAsStream(path) else classLoader.getResourceAsStream(path)
+        val stream =
+            if (clazz != null) {
+                clazz.getResourceAsStream(path)
+            } else if (classLoader != null) {
+                classLoader!!.getResourceAsStream(path)
+            } else {
+                ClassLoader.getSystemResourceAsStream(path)
+            }
         return stream
             ?: throw FileNotFoundException("[${getDescription()}]资源无法解析成为InputStream，因为该资源并不存在")
     }
 
+    /**
+     * 对于exists的判断, 不能沿用File的判断, 这里去进行override, 只要resolveURL的结果不为空计算是存在
+     *
+     * @return 如果可以解析到URL, return true; 否则return false
+     */
+    override fun exists(): Boolean = resolveURL() != null
+
+    /**
+     * 获取到URL
+     *
+     * @return URL of ClassPathResource
+     * @throws FileNotFoundException 如果该ClassPath的资源不存在
+     */
     override fun getURL(): URL {
-        val url = if (clazz != null) clazz.getResource(path) else classLoader.getResource(path)
+        val url = resolveURL()
         return url ?: throw FileNotFoundException("[${getDescription()}]资源无法被解析成为URL，因为该资源并不存在")
+    }
+
+    /**
+     * 根据ClassLoader去resolveURL
+     *
+     * @return URL(如果无法解析的话, return null)
+     */
+    @Nullable
+    private fun resolveURL(): URL? {
+        if (this.clazz != null) {
+            return clazz.getResource(path)
+        } else if (classLoader != null) {
+            return classLoader!!.getResource(path)
+        } else {
+            return ClassLoader.getSystemResource(path)
+        }
     }
 
     /**
@@ -75,7 +112,7 @@ private constructor(path: String, @Nullable classLoader: ClassLoader?, @Nullable
      * @return 当前ClassPath的资源的描述信息
      */
     override fun getDescription(): String {
-        val builder = StringBuilder("Class Path Resource [")
+        val builder = StringBuilder("class path resource [")
         if (clazz != null) {
             builder.append(clazz.name).append(".class")
         } else {

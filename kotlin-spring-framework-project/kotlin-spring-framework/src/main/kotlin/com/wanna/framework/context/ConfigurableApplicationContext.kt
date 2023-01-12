@@ -59,6 +59,13 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable, Lifecy
     }
 
     /**
+     * 设置当前ApplicationContext的Id
+     *
+     * @param id application id
+     */
+    fun setId(id: String)
+
+    /**
      * 获取当前ApplicationContext需要使用到的ApplicationStartup
      *
      * @return ApplicationStartup

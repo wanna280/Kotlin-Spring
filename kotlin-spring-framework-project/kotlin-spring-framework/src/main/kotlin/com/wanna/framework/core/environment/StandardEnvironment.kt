@@ -6,10 +6,23 @@ package com.wanna.framework.core.environment
 open class StandardEnvironment : AbstractEnvironment() {
 
     companion object {
-        const val SYSTEM_PROPERTY_PROPERTY_SOURCE_NAME = "systemProperties"  // 系统属性的PropertySourceName
-        const val SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME = "systemEnvironment"  // 系统环境的PropertySourceName
+
+        /**
+         * 系统属性的PropertySourceName
+         */
+        const val SYSTEM_PROPERTY_PROPERTY_SOURCE_NAME = "systemProperties"
+
+        /**
+         * 系统环境的PropertySourceName
+         */
+        const val SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME = "systemEnvironment"
     }
 
+    /**
+     * 执行PropertySource的自定义时, 将系统属性和系统环境变量信息添加到PropertySources列表当中
+     *
+     * @param propertySources 待进行自定义的PropertySources
+     */
     override fun customizePropertySources(propertySources: MutablePropertySources) {
         propertySources.addLast(PropertiesPropertySource(SYSTEM_PROPERTY_PROPERTY_SOURCE_NAME, getSystemProperties()))
         propertySources.addLast(MapPropertySource(SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME, getSystemEnvironment()))

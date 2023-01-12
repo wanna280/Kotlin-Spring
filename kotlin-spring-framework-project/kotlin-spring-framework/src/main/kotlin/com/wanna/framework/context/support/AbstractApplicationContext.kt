@@ -100,7 +100,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     private var parent: ApplicationContext? = null
 
     /**
-     * 当前ApplicationContext的id
+     * 当前ApplicationContext的id, 默认为采用Java的默认方式去生成, 支持去进行自定义设置
      */
     private var id: String = javaClass.name + "@" + System.identityHashCode(this).toString(16)
 
@@ -1071,4 +1071,13 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
      * @return 如果[LifecycleProcessor]正在运行当中return true; 否则return false
      */
     override fun isRunning(): Boolean = this.lifecycleProcessor != null && getLifecycleProcessor().isRunning()
+
+    /**
+     * 设置当前ApplicationContext的Id
+     *
+     * @param id ApplicationId
+     */
+    override fun setId(id: String) {
+        this.id = id
+    }
 }

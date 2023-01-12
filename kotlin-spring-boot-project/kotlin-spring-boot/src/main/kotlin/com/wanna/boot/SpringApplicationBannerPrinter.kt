@@ -197,7 +197,7 @@ open class SpringApplicationBannerPrinter(
      */
     private fun getTextBanner(environment: Environment): Banner? {
         // 获取BannerLocation
-        val bannerLocation = environment.getProperty(BANNER_LOCATION_PROPERTY, DEFAULT_BANNER_LOCATION) ?: return null
+        val bannerLocation = environment.getProperty(BANNER_LOCATION_PROPERTY, DEFAULT_BANNER_LOCATION)
         val resource = resourceLoader.getResource(bannerLocation)
         try {
             if (resource.exists()) {

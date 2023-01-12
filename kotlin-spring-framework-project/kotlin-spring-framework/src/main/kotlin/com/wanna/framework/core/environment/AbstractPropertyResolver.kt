@@ -2,7 +2,9 @@ package com.wanna.framework.core.environment
 
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.support.DefaultConversionService
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.PropertyPlaceholderHelper
+import com.wanna.framework.util.SystemPropertyUtils
 
 /**
  * 这是一个抽象的值解析器，对于大多数的公共部分的方式，通过调用子类必须实现的模板方法去进行实现
@@ -14,20 +16,37 @@ import com.wanna.framework.util.PropertyPlaceholderHelper
  */
 abstract class AbstractPropertyResolver : ConfigurablePropertyResolver {
 
-    // 占位符的前缀(本来应该使用${，但是Kotlin当中有自己的${，这里改用%{去进行替代)
-    private var placeholderPredix = "%{"
+    /**
+     * 占位符的前缀(本来应该使用${，但是Kotlin当中有自己的${，这里改用%{去进行替代)
+     */
+    private var placeholderPredix = SystemPropertyUtils.PLACEHOLDER_PREFIX
 
-    // 占位符的后缀
-    private var placeholderSuffix = "}"
+    /**
+     * 占位符的后缀
+     */
+    private var placeholderSuffix = SystemPropertyUtils.PLACEHOLDER_SUFFIX
 
-    // 值分割器，分割默认值
-    private var valueSeparator: String? = ":"
+    /**
+     * 值分割器，分割默认值
+     */
+    private var valueSeparator: String? = SystemPropertyUtils.VALUE_SEPARATOR
 
+    /**
+     * 提供类型转换的ConversionService
+     */
+    @Nullable
     private var conversionService: ConversionService? = null
 
-    // 占位符解析的工具类
+    /**
+     * 占位符解析的工具类
+     */
     private val placeholderHelper = PropertyPlaceholderHelper(placeholderPredix, placeholderSuffix, valueSeparator)
 
+    /**
+     * 获取ConversionService
+     *
+     * @return ConversionService(如果不存在的话, 那么返回一个默认的ConversionService)
+     */
     override fun getConversionService(): ConversionService {
         var conversionService = this.conversionService
         if (conversionService == null) {
@@ -62,7 +81,7 @@ abstract class AbstractPropertyResolver : ConfigurablePropertyResolver {
 
     override fun getProperty(key: String): String? = getProperty(key, String::class.java)
 
-    override fun getProperty(key: String, defaultValue: String?): String? = getProperty(key) ?: defaultValue
+    override fun getProperty(key: String, defaultValue: String): String = getProperty(key) ?: defaultValue
 
     override fun <T : Any> getProperty(key: String, requiredType: Class<T>, defaultValue: T): T =
         getProperty(key, requiredType) ?: defaultValue

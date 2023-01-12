@@ -1,6 +1,7 @@
 package com.wanna.framework.util
 
 import com.wanna.framework.lang.Nullable
+import org.springframework.util.StringUtils
 
 /**
  * 这是一个String的工具类
@@ -46,6 +47,17 @@ object StringUtils {
             }
         }
         return true
+    }
+
+    /**
+     * 获取干净的path
+     *
+     * @param path
+     * @return clean path
+     */
+    @JvmStatic
+    fun cleanPath(path: String): String {
+        return StringUtils.cleanPath(path)
     }
 
     @JvmStatic
