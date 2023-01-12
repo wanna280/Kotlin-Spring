@@ -5,6 +5,7 @@ import com.wanna.framework.core.annotation.MergedAnnotations.SearchStrategy
 import com.wanna.framework.core.annotation.MergedAnnotations.SearchStrategy.*
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ReflectionUtils
+import java.lang.annotation.Inherited
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Member
 import java.lang.reflect.Method
@@ -46,13 +47,13 @@ object AnnotationsScanner {
     private val baseTypeMethodsCache = ConcurrentHashMap<Class<*>, Array<Method?>>()
 
     /**
-     * 从给定的[AnnotatedElement]上, 去进行注解的搜索和处理
+     * 从给定的[AnnotatedElement]上, 利用给定的[AnnotationsProcessor]去进行注解的搜索和处理
      *
      * @param context context
      * @param source source AnnotatedElement(Field/Method/Other)
      * @param searchStrategy 注解的搜索策略
      * @param processor 对注解去进行处理和收集的Processor
-     * @return 利用Processor去进行处理注解的结果
+     * @return 利用Processor去进行处理注解的结果(or null)
      */
     @Nullable
     @JvmStatic
@@ -71,7 +72,7 @@ object AnnotationsScanner {
     }
 
     /**
-     * 对于给定的[AnnotatedElement], 去进行注解的搜索和处理
+     * 对于给定的[AnnotatedElement], 利用给定的[AnnotationsProcessor]去进行注解的搜索和处理
      *
      * @param context context
      * @param source source AnnotatedElement(Field/Method/Other)
@@ -90,7 +91,7 @@ object AnnotationsScanner {
         return when (source) {
             is Class<*> -> processClass(context, source, searchStrategy, processor)
             is Method -> processMethod(context, source, searchStrategy, processor)
-            else -> processElement(context, source, searchStrategy, processor)
+            else -> processElement(context, source, processor)
         }
     }
 
@@ -115,7 +116,7 @@ object AnnotationsScanner {
 
             // 如果SearchStrategy=DIRECT, 那么只处理给定的类上的注解, 直接使用AnnotatedElement的处理方式即可
             DIRECT ->
-                processElement(context, source, searchStrategy, processor)
+                processElement(context, source, processor)
 
             // 如果SearchStrategy=INHERITED_ANNOTATIONS, 需要处理继承的注解
             INHERITED_ANNOTATIONS ->
@@ -167,8 +168,19 @@ object AnnotationsScanner {
     }
 
     /**
-     * 带注解的继承关系地去处理一个类
+     * 带注解的继承关系地去处理一个类, 支持去处理[Inherited]注解这种注解的继承方式(JDK原生支持去处理[Inherited]注解, 无需我们额外处理),
+     * 支持找到目标类上的所有的(直接/继承)注解, 从它以及它的所有父类当中去找到原始的注解, 并交给[AnnotationsProcessor]去进行注解的处理
+     *
+     * Note: [AnnotatedElement.getAnnotations]支持去获取到使用[Inherited]去进行继承父类的注解,
+     * 而对于[AnnotatedElement.getDeclaredAnnotations]这个方法来说, 只能获取到自己这个类去定义的那些注解
+     *
+     * @param context context
+     * @param source sourceClass
+     * @param searchStrategy 注解的搜索策略(应该为INHERITED_ANNOTATIONS)
+     * @param processor 对注解去进行处理和收集的Processor
+     * @return Processor去处理的结果, 如果没有处理出来结果, 那么return null
      */
+    @Suppress("UNCHECKED_CAST")
     @Nullable
     @JvmStatic
     private fun <C, R> processClassInheritedAnnotations(
@@ -177,7 +189,117 @@ object AnnotationsScanner {
         searchStrategy: SearchStrategy,
         processor: AnnotationsProcessor<C, R>
     ): R? {
-        return processElement(context, source, DIRECT, processor)
+        try {
+            // 如果确定source一定没有继承关系了, 那么直接使用Element的方式去进行处理即可
+            if (isWithoutHierarchy(source, searchStrategy)) {
+                return processElement(context, source, processor)
+            }
+            // 记录的是source当中的注解, 包含有一些很基础的注解
+            var relevant: Array<Annotation?>? = null
+
+            // 统计剩下的还需要去进行处理的注解的数量...
+            var remaining = Int.MAX_VALUE
+            var aggregateIndex = 0
+
+            // 获取到sourceClass当中的所有的(直接/继承)注解, 从它的parentClass当中, 去找到类型一样的注解...
+            // 并交给Processor去进行处理...
+            var clazz: Class<*>? = source
+            while (clazz != null && clazz != Any::class.java  // 如果没有父类了, pass
+                && remaining > 0             // 如果没有注解都找到了匹配的, 那么直接pass
+                && !hasPlainJavaAnnotationsOnly(clazz)  // 如果parentClass只有简单注解了, pass
+            ) {
+                var result = processor.doWithAggregate(context, aggregateIndex)
+                if (result != null) {
+                    return result
+                }
+
+                // 获取的是当前这个父类当中定义的所有的自己直接定义的注解
+                val declaredAnnotations = getDeclaredAnnotations(clazz, true) as Array<Annotation?>
+
+                // 初始化relevant为source的Annotations列表, remaining为relevant.size, 代表要去进行处理的剩下的注解个数
+                if (relevant == null && declaredAnnotations.isNotEmpty()) {
+                    // Note: getAnnotations, 获取得到的是所有的, 包含使用@Inherited去继承的父类的注解...
+                    relevant = source.annotations
+                    remaining = relevant!!.size
+                }
+
+                // 一层遍历, 遍历当前source的当前父类当中的所有的定义的注解
+                for (index in declaredAnnotations.indices) {
+                    var isRelevant = false
+
+                    // 二层遍历, 遍历source的所有定义的注解
+                    for (relevantIndex in 0 until relevant!!.size) {
+
+                        // 如果source和source的当前父类的注解类型相同, 那么说明匹配成功, 对于父类当中的这个注解就需要去进行处理
+                        if (relevant[relevantIndex] != null && declaredAnnotations[index] != null
+                            && declaredAnnotations[index]!!.annotationClass.java == relevant[relevantIndex]!!.annotationClass.java
+                        ) {
+                            isRelevant = true
+                            relevant[relevantIndex] = null
+
+                            // 剩余要去进行处理的注解数量--
+                            remaining--
+                            break
+                        }
+                    }
+
+                    // 如果当前父类, 和子类一个都匹不上, 那么这个注解没必要留着了, 设置为null直接干掉...
+                    if (!isRelevant) {
+                        declaredAnnotations[index] = null
+                    }
+                }
+
+                // 从parentClass当中确实是有找到类型匹配的注解的话, 那么将此时对应的parentClass/parentAnnotations
+                // 去交给给定的AnnotationsProcessor去进行处理
+                result = processor.doWithAnnotations(
+                    context, aggregateIndex, clazz,
+                    declaredAnnotations.filterNotNull().toTypedArray()  // filter nonNull
+                )
+                if (result != null) {
+                    return result
+                }
+                aggregateIndex++
+                clazz = clazz.superclass
+            }
+        } catch (ex: Throwable) {
+            AnnotationUtils.handleIntrospectionFailure(source, ex)
+        }
+        return null
+    }
+
+    /**
+     * 检查给定的[AnnotatedElement]是否没有继承关系可以去进行处理?
+     *
+     * @param source source AnnotatedElement
+     * @param searchStrategy 注解的搜索策略
+     * @return 如果它一定没有继承关系了, return true; 只要可能存在有继承关系, return false
+     */
+    @JvmStatic
+    private fun isWithoutHierarchy(source: AnnotatedElement, searchStrategy: SearchStrategy): Boolean {
+        if (source == Any::class.java) {
+            return true
+        }
+
+        // 如果source是Class的话, 那么检查一些父类/接口的情况
+        if (source is Class<*>) {
+            // 检查这个类是否一定没有父接口/父类了...(如果父类为Object, 并且它还没有接口, 那么说明一定没有superTypes了)
+            val noSuperTypes = source.superclass == Any::class.java && source.interfaces.isEmpty()
+
+            // 如果是TYPE_HIERARCHY_AND_ENCLOSING_CLASSES, 并且这个类一定没有父接口/父类的话,
+            // 那么需要检查外部类, 如果enclosingClass=null的话, return true
+            if (searchStrategy == TYPE_HIERARCHY_AND_ENCLOSING_CLASSES) {
+                return noSuperTypes && source.enclosingClass == null
+            }
+
+            // 如果不是TYPE_HIERARCHY_AND_ENCLOSING_CLASSES的话, 那么直接检查noSuperTypes即可
+            return noSuperTypes
+        }
+
+        // 如果source是Method的话, 那么检查declaringClass和Modifier
+        if (source is Method) {
+            return Modifier.isPrivate(source.modifiers) || isWithoutHierarchy(source.declaringClass, searchStrategy)
+        }
+        return true
     }
 
     /**
@@ -458,7 +580,6 @@ object AnnotationsScanner {
     private fun <C, R> processElement(
         context: C,
         source: AnnotatedElement,
-        searchStrategy: SearchStrategy,
         processor: AnnotationsProcessor<C, R>
     ): R? {
         return processor.doWithAggregate(context, 0) ?: processor.doWithAnnotations(
@@ -471,7 +592,7 @@ object AnnotationsScanner {
      *
      * @param source source
      * @param defensive 是否具有侵入性? 如果具有侵入性的话, 那么需要clone一份去进行返回
-     * @return declaredAnnotations
+     * @return declaredAnnotations(去掉了不需要的那些Meta注解)
      */
     @JvmStatic
     fun getDeclaredAnnotations(source: AnnotatedElement, defensive: Boolean): Array<Annotation> {
@@ -607,6 +728,9 @@ object AnnotationsScanner {
 
     /**
      * 清除缓存
+     *
+     * @see declaredAnnotationCache
+     * @see baseTypeMethodsCache
      */
     @JvmStatic
     fun clearCache() {

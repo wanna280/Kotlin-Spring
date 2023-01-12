@@ -206,20 +206,27 @@ open class TypeMappedAnnotations(
     }
 
     /**
-     * 利用AnnotationsProcessor, 去执行处理
+     * 利用给定的AnnotationsProcessor, 去执行注解的处理与收集
+     *
+     * * 1.如果有直接给定注解的话, 去对给定的注解去进行处理
+     * * 2.如果没有直接给定注解, 给定的是一个[AnnotatedElement]的话, 需要先去进行扫描再处理
      *
      * @param criteria AnnotationType(AnnotationClassName)
-     * @param processor AnnotationsProcessor
+     * @param processor 需要对注解去进行处理和收集的AnnotationsProcessor回调方法
+     * @return AnnotationsProcessor针对注解去进行处理的结果(or null)
      */
     @Nullable
     private fun <C, R> scan(criteria: C, processor: AnnotationsProcessor<C, R>): R? {
         // 如果存在有直接给定的注解的话, 那么直接根据AnnotationProcessor从注解上去进行搜索即可
         if (this.annotations != null) {
+            // 利用AnnotationsProcessor直接对给定的注解去进行处理
             val result = processor.doWithAnnotations(criteria, 0, null, this.annotations)
+
+            // 使用AnnotationsProcessor的finish方法, 去对结果去进行后置收尾处理工作
             return processor.finish(result)
         }
 
-        // 如果没有直接给定的注解的话, 那么需要根据AnnotatedElement去进行搜索
+        // 如果没有直接给定的注解的话, 那么需要使用给定的AnnotationsProcessor, 在AnnotatedElement上去进行搜索
         if (this.element != null && this.searchStrategy != null) {
             return AnnotationsScanner.scan(criteria, element, searchStrategy, processor)
         }
@@ -338,9 +345,9 @@ open class TypeMappedAnnotations(
 
     /**
      * 一个Aggregate维护了许多个注解的相关映射信息, 可以通过annotationIndex去获取到该注解的相关信息,
-     * 对于每个注解, 将会通过AnnotationTypeMappings的方式, 去维护该注解以及它的所有的Meta注解的相关信息,
+     * 对于每个注解, 将会通过[AnnotationTypeMappings]的方式, 去维护该注解以及它的所有的Meta注解的相关信息,
      * 因此想要获取到该注解的映射信息, 或者是它的Meta注解的相关信息, 还需要提供一个mappingIndex, 对应的也就是
-     * AnnotationTypeMappings当中的AnnotationTypeMapping的数组index
+     * [AnnotationTypeMappings]当中的[AnnotationTypeMapping]的数组index
      *
      * @param aggregateIndex AggregateIndex
      * @param source source
@@ -359,8 +366,7 @@ open class TypeMappedAnnotations(
         }
 
         /**
-         *
-         * Annotation Size
+         * 计算当前这个Aggregate当中维护的注解的数量
          */
         val size: Int
             get() = this.annotations.size
@@ -416,11 +422,13 @@ open class TypeMappedAnnotations(
         private val aggregates = ArrayList<Aggregate>()
 
         /**
-         * 处理给定的这些注解列表
+         * 处理给定的这些注解列表, 这个方法我们直接去return null, 对于return null的效果是,
+         * 将会一直往后去进行遍历, 因此实现我们需要去实现的功能, 收集起来所有的注解并完成聚合
          *
          * @param context context
          * @param aggregateIndex aggregateIndex
          * @param source source
+         * @param annotations 需要去进行处理的注解, 这里我们将它去聚合起来成为一个Aggregate
          * @return null(无需返回, 对于最终的结果通过finish方法去进行汇总)
          */
         @Nullable

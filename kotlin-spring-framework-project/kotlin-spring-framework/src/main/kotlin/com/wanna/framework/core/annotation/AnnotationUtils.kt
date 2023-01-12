@@ -3,6 +3,8 @@ package com.wanna.framework.core.annotation
 import com.wanna.framework.context.annotation.AnnotationAttributes
 import com.wanna.framework.core.annotation.MergedAnnotations.SearchStrategy
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
+import org.slf4j.LoggerFactory
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Method
 
@@ -14,6 +16,13 @@ import java.lang.reflect.Method
  * @date 2023/1/1
  */
 object AnnotationUtils {
+
+    /**
+     * Logger
+     */
+    @JvmStatic
+    private val logger = LoggerFactory.getLogger(AnnotationUtils::class.java)
+
 
     /**
      * 获取给定的注解实例的AnnotationAttributes
@@ -224,6 +233,18 @@ object AnnotationUtils {
     @JvmStatic
     fun handleIntrospectionFailure(@Nullable element: AnnotatedElement?, ex: Throwable) {
         rethrowAnnotationConfigurationException(ex)
+
+        var meta = false
+        if (element is Class<*> && ClassUtils.isAssignFrom(Annotation::class.java, element)) {
+            meta = true
+        }
+        if (logger.isInfoEnabled) {
+            if (meta) {
+                logger.info("Failed to meta-introspect annotation $element : $ex")
+            } else {
+                logger.info("Failed to introspect annotations on $element : $ex")
+            }
+        }
     }
 
     @JvmStatic
