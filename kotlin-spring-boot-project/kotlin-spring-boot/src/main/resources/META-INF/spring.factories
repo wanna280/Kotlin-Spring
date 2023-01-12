@@ -32,4 +32,5 @@ com.wanna.boot.context.config.ConfigDataLoader=\
 
 # ApplicationContext Initializers
 com.wanna.framework.context.ApplicationContextInitializer=\
-  com.wanna.boot.context.config.DelegatingApplicationContextInitializer
+  com.wanna.boot.context.config.DelegatingApplicationContextInitializer,\
+  com.wanna.boot.context.ContextIdApplicationContextInitializer
