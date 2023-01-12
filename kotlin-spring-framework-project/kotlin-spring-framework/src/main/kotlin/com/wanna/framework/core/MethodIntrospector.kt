@@ -8,6 +8,7 @@ import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 
 /**
+ * 执行对于目标类以及它的父类、接口当中的方法的匹配的Introspector工具类
  *
  * @author jianchao.jia
  * @version v1.0
@@ -59,8 +60,19 @@ object MethodIntrospector {
     }
 
 
+    /**
+     * 选取类当中的合适方法的Callback回调
+     *
+     * @see MethodMatcher
+     */
     fun interface MetadataLookup<T> {
 
+        /**
+         * 执行检查对于给定的目标方法, 是否是我们需要的?
+         *
+         * @param method 要去进行匹配的方法
+         * @return 如果该方法我们确实需要, 那么借助这个方法实现map的效果; 如果不需要的话, 那么return null
+         */
         @Nullable
         fun inspect(method: Method): T?
     }
