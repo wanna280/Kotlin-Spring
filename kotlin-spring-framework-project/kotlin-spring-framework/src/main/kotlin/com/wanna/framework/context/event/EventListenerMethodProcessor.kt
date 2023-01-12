@@ -83,9 +83,9 @@ open class EventListenerMethodProcessor : BeanFactoryPostProcessor, SmartInitial
     private fun processBean(beanName: String, beanType: Class<*>) {
         if (!nonAnnotatedClasses.contains(beanType)) {
             // 选取出来该类当中所有的标注了@EventListener注解的方法...
-            val annotatedMethods = MethodIntrospector.selectMethods(beanType) {
+            val annotatedMethods = MethodIntrospector.selectMethods(beanType, MethodIntrospector.MetadataLookup {
                 AnnotatedElementUtils.getMergedAnnotation(it, EventListener::class.java)
-            }
+            })
             // 如果没有找到合适的@EventListener注解的方法
             if (annotatedMethods.isEmpty()) {
                 nonAnnotatedClasses += beanType

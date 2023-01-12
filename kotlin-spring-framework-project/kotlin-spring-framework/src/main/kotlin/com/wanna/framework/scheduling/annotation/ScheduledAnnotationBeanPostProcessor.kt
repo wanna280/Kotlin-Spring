@@ -250,9 +250,9 @@ open class ScheduledAnnotationBeanPostProcessor : ApplicationListener<ContextRef
         }
 
         // 统计出来类上的所有的@Scheduled注解, 扫描所有的@Scheduled注解，注册为定时任务
-        val annotatedMethods = MethodIntrospector.selectMethods(clazz) {
+        val annotatedMethods = MethodIntrospector.selectMethods(clazz, MethodIntrospector.MetadataLookup {
             AnnotatedElementUtils.getAllMergedAnnotations(it, Scheduled::class.java).toSet()
-        }
+        })
 
         if (annotatedMethods.isEmpty()) {
             nonAnnotatedClasses.add(clazz)

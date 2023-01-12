@@ -123,9 +123,9 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
         val userType = ClassUtils.getUserClass(handlerType)
 
         // 交给子类去告诉我，当前的方法是否是一个HandlerMethod? 如果是的话, 那么需要去收集起来该方法
-        val methods = MethodIntrospector.selectMethods(userType) {
+        val methods = MethodIntrospector.selectMethods(userType, MethodIntrospector.MetadataLookup {
             getMappingForMethod(it, userType)
-        }
+        })
 
         // 对于所有的HandlerMethod去执行注册
         methods.map { registerHandlerMethod(handler, it.key, it.value) }
