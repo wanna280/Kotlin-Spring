@@ -140,7 +140,7 @@ interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
      */
     enum class SearchStrategy {
         /**
-         * 只去处理直接注解
+         * 只去处理直接注解, 别的一律不处理
          */
         DIRECT,
 
@@ -150,17 +150,17 @@ interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
         INHERITED_ANNOTATIONS,
 
         /**
-         * 不仅去处理直接注解, 还得处理它的父类
+         * 不仅去处理直接注解, 还得处理它的父类的注解
          */
         SUPERCLASS,
 
         /**
-         * 不仅去处理直接注解, 还得处理父类/接口
+         * 不仅去处理直接注解, 还得处理父类/接口上标注的注解
          */
         TYPE_HIERARCHY,
 
         /**
-         * 不仅处理直接注解, 还去处理父类/接口/外部类
+         * 不仅处理直接注解, 还去处理父类/接口/外部类上标注的注解
          */
         TYPE_HIERARCHY_AND_ENCLOSING_CLASSES
     }

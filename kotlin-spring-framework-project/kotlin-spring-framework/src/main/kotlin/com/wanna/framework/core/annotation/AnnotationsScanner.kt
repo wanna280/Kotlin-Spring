@@ -40,11 +40,21 @@ object AnnotationsScanner {
     private val declaredAnnotationCache = ConcurrentHashMap<AnnotatedElement, Array<Annotation>>()
 
     /**
-     * BaseType的Methods缓存, Key-Class, Value-该类上的所有的有标注注解的方法
+     * BaseType的Methods缓存, Key-Class, Value-该类上的所有的有标注注解的方法(没有注解的不考虑, 该位置的元素将会设置为null)
      */
     @JvmStatic
     private val baseTypeMethodsCache = ConcurrentHashMap<Class<*>, Array<Method?>>()
 
+    /**
+     * 从给定的[AnnotatedElement]上, 去进行注解的搜索和处理
+     *
+     * @param context context
+     * @param source source AnnotatedElement(Field/Method/Other)
+     * @param searchStrategy 注解的搜索策略
+     * @param processor 对注解去进行处理和收集的Processor
+     * @return 利用Processor去进行处理注解的结果
+     */
+    @Nullable
     @JvmStatic
     fun <C, R> scan(
         context: C,
@@ -52,10 +62,24 @@ object AnnotationsScanner {
         searchStrategy: SearchStrategy,
         processor: AnnotationsProcessor<C, R>
     ): R? {
+
+        // 先对AnnotatedElement去进行分类型(类/方法/其他)处理
         val result = process(context, source, searchStrategy, processor)
+
+        // 在处理完成之后, 使用finish方法去进行收尾工作的处理
         return processor.finish(result)
     }
 
+    /**
+     * 对于给定的[AnnotatedElement], 去进行注解的搜索和处理
+     *
+     * @param context context
+     * @param source source AnnotatedElement(Field/Method/Other)
+     * @param searchStrategy 注解的搜索策略
+     * @param processor 对注解去进行处理的Processor
+     * @return 使用Processor去对注解去进行处理的结果
+     */
+    @Nullable
     @JvmStatic
     private fun <C, R> process(
         context: C,
@@ -71,8 +95,15 @@ object AnnotationsScanner {
     }
 
     /**
-     * 处理类
+     * 根据[SearchStrategy]的不同, 选用合适的方式去处理类, 检查是否有标注该注解?
+     *
+     * @param context context
+     * @param source sourceClass(要去进行处理的类)
+     * @param searchStrategy 注解的搜索策略
+     * @param processor 对注解去进行处理的Processor
+     * @return 根据Processor去进行处理的搜索结果
      */
+    @Nullable
     @JvmStatic
     private fun <C, R> processClass(
         context: C,
@@ -81,17 +112,39 @@ object AnnotationsScanner {
         processor: AnnotationsProcessor<C, R>
     ): R? {
         return when (searchStrategy) {
-            DIRECT -> processElement(context, source, searchStrategy, processor)
-            INHERITED_ANNOTATIONS -> processClassInheritedAnnotations(context, source, searchStrategy, processor)
-            SUPERCLASS -> processClassHierarchy(context, source, processor, false, false)
-            TYPE_HIERARCHY -> processClassHierarchy(context, source, processor, true, false)
-            TYPE_HIERARCHY_AND_ENCLOSING_CLASSES -> processClassHierarchy(context, source, processor, true, true)
+
+            // 如果SearchStrategy=DIRECT, 那么只处理给定的类上的注解, 直接使用AnnotatedElement的处理方式即可
+            DIRECT ->
+                processElement(context, source, searchStrategy, processor)
+
+            // 如果SearchStrategy=INHERITED_ANNOTATIONS, 需要处理继承的注解
+            INHERITED_ANNOTATIONS ->
+                processClassInheritedAnnotations(context, source, searchStrategy, processor)
+
+            // 如果SearchStrategy=SUPERCLASS, 那么需要处理目标类, 以及它的所有父类上的注解
+            SUPERCLASS ->
+                processClassHierarchy(context, IntArray(1), source, processor, false, false)
+
+            // 如果SearchStrategy=TYPE_HIERARCHY, 那么需要处理目标类, 以及它的所有父类/所有接口上的注解
+            TYPE_HIERARCHY ->
+                processClassHierarchy(context, IntArray(1), source, processor, true, false)
+
+            // 如果SearchStrategy=TYPE_HIERARCHY_AND_ENCLOSING_CLASSES, 需要在TYPE_HIERARCHY的基础上, 新增去去处理外部类上的注解...
+            TYPE_HIERARCHY_AND_ENCLOSING_CLASSES ->
+                processClassHierarchy(context, IntArray(1), source, processor, true, true)
         }
     }
 
     /**
-     * 处理方法
+     * 按照不同的SearchStrategy, 采用不同的方式对给定的方法去进行注解的搜索处理
+     *
+     * @param context context
+     * @param source 要去进行搜索的方法
+     * @param searchStrategy 注解的搜索策略
+     * @param processor 对注解去进行处理和收集的Processor
+     * @return 处理注解的Processor对于注解的的处理结果
      */
+    @Nullable
     @JvmStatic
     private fun <C, R> processMethod(
         context: C,
@@ -128,18 +181,97 @@ object AnnotationsScanner {
     }
 
     /**
-     * 带继承关系地去处理一个类
+     * 带继承关系地去处理一个类, 根据给定的[AnnotationsProcessor]这个Callback方法去检查是否给定的这些注解是否符合需要
+     *
+     * * 1.先检查类本身是否有标注该注解?
+     * * 2.再检查父类上是否有标注该注解?
+     * * 3.接着检查接口上是否有标注该注解?
+     * * 4.最后检查外部类上是否有标注该注解?
+     * * 5.重复往上, 对于每个类都是递归去进行处理的...因此对于所有的父类/所有的接口/所有外部类, 都能被处理到
+     *
+     * @param context context
+     * @param aggregateIndex aggregateIndex
+     * @param processor 处理注解的Processor
+     * @param includeEnclosing 是否要处理外部类?
+     * @param includeInterfaces 是否要处理接口？
+     * @return 使用给定的AnnotationsProcessor去处理注解的结果...
      */
     @Nullable
     @JvmStatic
     private fun <C, R> processClassHierarchy(
         context: C,
+        aggregateIndex: IntArray,
         source: Class<*>,
         processor: AnnotationsProcessor<C, R>,
         includeInterfaces: Boolean,
         includeEnclosing: Boolean
     ): R? {
-        return processElement(context, source, DIRECT, processor)
+        try {
+            var result = processor.doWithAggregate(context, aggregateIndex[0])
+            if (result != null) {
+                return result
+            }
+
+            // 如果只要简单的Java注解, return null
+            if (hasPlainJavaAnnotationsOnly(source)) {
+                return null
+            }
+
+            // 1.检查类上是否直接定义了该注解? 如果有的话, 直接return ...
+            val declaredAnnotations = getDeclaredAnnotations(source, false)
+            result = processor.doWithAnnotations(context, aggregateIndex[0], source, declaredAnnotations)
+            if (result != null) {
+                return result
+            }
+            aggregateIndex[0]++
+
+            // 如果类上没有直接定义该注解, 那么得尝试从父类/接口当中去进行搜索
+
+            // 2.先检查接口...
+            if (includeInterfaces) {
+                for (itf in source.interfaces) {
+                    val interfaceResult = processClassHierarchy(
+                        context, aggregateIndex, itf,
+                        processor, includeInterfaces, includeEnclosing
+                    )
+                    if (interfaceResult != null) {
+                        return interfaceResult
+                    }
+                }
+            }
+            // 3.再检查父类(递归对象Source=SuperClass)
+            val superclass = source.superclass
+            if (superclass != null && superclass != Any::class.java) {
+                val superClassResult = processClassHierarchy(
+                    context, aggregateIndex, superclass,
+                    processor, includeInterfaces, includeEnclosing
+                )
+                if (superClassResult != null) {
+                    return superClassResult
+                }
+            }
+
+            // 4.最后检查外部类(EnclosingClass)
+            if (includeEnclosing) {
+                val enclosingClass = source.enclosingClass
+                if (enclosingClass != null) {
+                    try {
+                        val enclosingResult = processClassHierarchy(
+                            context, aggregateIndex, enclosingClass,
+                            processor, includeInterfaces, includeEnclosing
+                        )
+                        if (enclosingResult != null) {
+                            return enclosingResult
+                        }
+                    } catch (ex: Throwable) {
+                        AnnotationUtils.handleIntrospectionFailure(source, ex)
+                    }
+                }
+            }
+        } catch (ex: Throwable) {
+            AnnotationUtils.handleIntrospectionFailure(source, ex)
+        }
+        return null
     }
 
     /**
@@ -279,6 +411,7 @@ object AnnotationsScanner {
      * @param source 要去进行处理的目标方法
      * @param processor AnnotationsProcessor
      */
+    @JvmStatic
     @Nullable
     private fun <C, R> processMethodInheritedAnnotations(
         context: C, source: Method, processor: AnnotationsProcessor<C, R>
@@ -301,6 +434,7 @@ object AnnotationsScanner {
      * @param processor 对注解去进行处理(例如收集)的Processor, 是一个Callback方法
      * @return 如果AnnotationsProcessor找到了合适的注解, return result; 否则return null
      */
+    @JvmStatic
     @Nullable
     private fun <C, R> processMethodAnnotations(
         context: C, source: Method, aggregateIndex: Int, processor: AnnotationsProcessor<C, R>
