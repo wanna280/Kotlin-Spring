@@ -10,6 +10,23 @@ import java.util.concurrent.ConcurrentHashMap
 object ReflectionUtils {
 
     /**
+     * 检查目标方法是否是一个用户自定义的方法的[MethodMatcher], 对于非合成/非桥接, 以及该方法不是在Object当中定义的情况才算是用户自定义的方法
+     */
+    @JvmField
+    val USER_DECLARED_METHODS = MethodMatcher { method ->
+        !method.isSynthetic && !method.isBridge && method.declaringClass != Any::class.java
+    }
+
+    /**
+     * 提供对于非static、非final的方法的匹配
+     */
+    @JvmField
+    val COPYABLE_FIELDS = MethodMatcher { method ->
+        !Modifier.isStatic(method.modifiers) && Modifier.isFinal(method.modifiers)
+    }
+
+
+    /**
      * 空的方法数组常量
      */
     @JvmStatic
@@ -180,7 +197,7 @@ object ReflectionUtils {
      * @param action 对方法要执行的操作
      */
     @JvmStatic
-    fun doWithFields(clazz: Class<*>, action: (Field) -> Unit) {
+    fun doWithFields(clazz: Class<*>, action: FieldCallback) {
         doWithFields(clazz, action) { true }
     }
 
@@ -192,7 +209,7 @@ object ReflectionUtils {
      * @param filter 哪些方法需要进行操作？使用Filter去进行过滤出来
      */
     @JvmStatic
-    fun doWithFields(clazz: Class<*>, action: (Field) -> Unit, filter: (Field) -> Boolean) {
+    fun doWithFields(clazz: Class<*>, action: FieldCallback, filter: (Field) -> Boolean) {
         var targetClass: Class<*>? = clazz
         do {
             doWithLocalFields(targetClass!!, action, filter)  // 执行当前的类中的所有字段
@@ -207,7 +224,7 @@ object ReflectionUtils {
      * @param action 对方法要执行的操作
      */
     @JvmStatic
-    fun doWithLocalFields(clazz: Class<*>, action: (Field) -> Unit) {
+    fun doWithLocalFields(clazz: Class<*>, action: FieldCallback) {
         doWithLocalFields(clazz, action) { true }
     }
 
@@ -219,11 +236,11 @@ object ReflectionUtils {
      * @param filter 哪些方法需要进行操作？
      */
     @JvmStatic
-    fun doWithLocalFields(clazz: Class<*>, action: (Field) -> Unit, filter: (Field) -> Boolean) {
+    fun doWithLocalFields(clazz: Class<*>, action: FieldCallback, filter: FieldMatcher) {
         val declaredFields = getDeclaredFields(clazz, false)
-        declaredFields.filter(filter).forEach {
+        declaredFields.filter(filter::matches).forEach {
             try {
-                action.invoke(it)
+                action.doWith(it)
             } catch (ex: IllegalAccessException) {
                 throw IllegalStateException("无法访问给定的字段[${it.name}]")
             }
@@ -287,8 +304,10 @@ object ReflectionUtils {
      * 根据name去指定类当中找到无参数的方法，有可能没找到，return null
      *
      * @param clazz 目标类
-     * @param name 方法name
+     * @param name 方法名
+     * @return 根据方法名去寻找到的无参数方法, 寻找失败return null
      */
+    @Nullable
     @JvmStatic
     fun findMethod(clazz: Class<*>, name: String): Method? {
         return findMethod(clazz, name, parameterTypes = EMPTY_CLASS_ARRAY)
@@ -299,9 +318,10 @@ object ReflectionUtils {
      * 会尝试去搜索所有的父类当中的所有方法，去进行匹配，直到，方法名和参数列表都完全匹配时，return
      *
      * @param clazz 目标类
-     * @param name 方法name
-     * @param parameterTypes 方法的参数类型
+     * @param name 要去进行寻找的方法名
+     * @param parameterTypes 需要匹配方法的参数类型
      */
+    @Nullable
     @JvmStatic
     fun findMethod(clazz: Class<*>, name: String, vararg parameterTypes: Class<*>): Method? {
         var searchType: Class<*>? = clazz
@@ -358,13 +378,13 @@ object ReflectionUtils {
     @JvmStatic
     fun handleReflectionException(ex: Exception) {
         if (ex is NoSuchMethodException) {
-            throw IllegalStateException("要执行的目标方法没有找到:[${ex.message}]")
+            throw IllegalStateException("要执行的目标方法没有找到:[${ex.message}]", ex)
         }
         if (ex is InvocationTargetException) {
             handleInvocationTargetException(ex)
         }
         if (ex is IllegalAccessException) {
-            throw IllegalStateException("不合法的访问一个方法/字段:[${ex.message}]")
+            throw IllegalStateException("不合法的访问一个方法/字段:[${ex.message}]", ex)
         }
         if (ex is RuntimeException) {
             throw ex
@@ -434,7 +454,7 @@ object ReflectionUtils {
      * @param action 要根据Method去进行执行的操作
      */
     @JvmStatic
-    fun doWithLocalMethods(clazz: Class<*>, action: (Method) -> Unit) {
+    fun doWithLocalMethods(clazz: Class<*>, action: MethodCallback) {
         doWithLocalMethods(clazz, action) { true }
     }
 
@@ -446,11 +466,11 @@ object ReflectionUtils {
      * @param filter 该方法是否要执行的Filter？return true->执行，else->不执行
      */
     @JvmStatic
-    fun doWithLocalMethods(clazz: Class<*>, action: (Method) -> Unit, filter: (Method) -> Boolean) {
+    fun doWithLocalMethods(clazz: Class<*>, action: MethodCallback, filter: MethodMatcher) {
         val declaredMethods = getDeclaredMethods(clazz, false)
-        declaredMethods.filter(filter).forEach {
+        declaredMethods.filter(filter::matches).forEach {
             try {
-                action.invoke(it)
+                action.doWith(it)
             } catch (ex: IllegalAccessException) {
                 throw IllegalStateException("无法访问给定的方法[${it.name}]")
             }
@@ -464,7 +484,7 @@ object ReflectionUtils {
      * @param action 要根据Method去进行执行的操作
      */
     @JvmStatic
-    fun doWithMethods(clazz: Class<*>, action: (Method) -> Unit) {
+    fun doWithMethods(clazz: Class<*>, action: MethodCallback) {
         doWithMethods(clazz, action) { true }
     }
 
@@ -476,13 +496,17 @@ object ReflectionUtils {
      * @param filter 该方法是否要执行的Filter？return true->执行，else->不执行
      */
     @JvmStatic
-    fun doWithMethods(clazz: Class<*>, action: (Method) -> Unit, filter: (Method) -> Boolean) {
+    fun doWithMethods(clazz: Class<*>, action: MethodCallback, filter: MethodMatcher) {
+        if (clazz == Any::class.java) {
+            return
+        }
+
         val declaredMethods = getDeclaredMethods(clazz, false)
-        declaredMethods.filter(filter).forEach {
+        declaredMethods.filter(filter::matches).forEach {
             try {
-                action.invoke(it)
+                action.doWith(it)
             } catch (ex: IllegalAccessException) {
-                throw IllegalStateException("无法访问给定的方法[${it.name}]")
+                throw IllegalStateException("cannot access target method [${it.name}]", ex)
             }
         }
 
@@ -591,5 +615,79 @@ object ReflectionUtils {
     fun clearCache() {
         this.declaredMethodsCache.clear()
         this.declaredFieldsCache.clear()
+    }
+
+    /**
+     * 对于方法的匹配的Matcher匹配器
+     */
+    fun interface MethodMatcher {
+
+        /**
+         * 对于给定的方法去进行匹配
+         *
+         * @param method 待匹配的方法
+         * @return 如果该方法匹配, return true; 否则return false
+         */
+        fun matches(method: Method): Boolean
+
+        /**
+         * 执行对于Matcher的"and"操作, 只有在当前[MethodMatcher]和other的[MethodMatcher]都完全匹配的情况下才算匹配
+         *
+         * @param other 另外一个[MethodMatcher]
+         * @return 使用and去进行组合的新的[MethodMatcher]
+         */
+        fun and(other: MethodMatcher): MethodMatcher {
+            return MethodMatcher { this.matches(it) && other.matches(it) }
+        }
+    }
+
+    /**
+     * 对于字段的匹配的Matcher匹配器
+     */
+    fun interface FieldMatcher {
+
+        /**
+         * 对于给定的字段去进行匹配
+         *
+         * @param field 待匹配的字段
+         * @return 如果该字段匹配, return true; 否则return false
+         */
+        fun matches(field: Field): Boolean
+
+        /**
+         * 执行对于Matcher的"and"操作, 只有在当前[FieldMatcher]和other的[FieldMatcher]都完全匹配的情况下才算匹配
+         *
+         * @param other 另外一个[FieldMatcher]
+         * @return 使用and去进行组合的新的[FieldMatcher]
+         */
+        fun and(other: FieldMatcher): FieldMatcher {
+            return FieldMatcher { this.matches(it) && other.matches(it) }
+        }
+    }
+
+    /**
+     * 对于一个给定的Field, 要去执行的相关操作的Callback回调方法
+     */
+    fun interface FieldCallback {
+
+        /**
+         * 利用给定的Field, 需要去执行的操作
+         *
+         * @param field 要去处理的字段
+         */
+        fun doWith(field: Field)
+    }
+
+    /**
+     * 对于一个给定的Method, 要去执行的相关操作的Callback回调方法
+     */
+    fun interface MethodCallback {
+
+        /**
+         * 利用给定的Method, 需要去执行的操作
+         *
+         * @param method 要去处理的方法
+         */
+        fun doWith(method: Method)
     }
 }
