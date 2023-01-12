@@ -1,15 +1,19 @@
 package com.wanna.framework.core.annotation
 
 import com.wanna.framework.core.Ordered
+import com.wanna.framework.core.annotation.MergedAnnotations.SearchStrategy
 import com.wanna.framework.core.annotation.MergedAnnotations.SearchStrategy.*
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Member
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import java.util.Arrays
 import java.util.concurrent.ConcurrentHashMap
 
 /**
+ * 注解扫描的Scanner工具类, 用于提供[AnnotatedElement]的继承关系的相关扫描功能
  *
  * @author jianchao.jia
  * @version v1.0
@@ -35,11 +39,17 @@ object AnnotationsScanner {
     @JvmStatic
     private val declaredAnnotationCache = ConcurrentHashMap<AnnotatedElement, Array<Annotation>>()
 
+    /**
+     * BaseType的Methods缓存, Key-Class, Value-该类上的所有的有标注注解的方法
+     */
+    @JvmStatic
+    private val baseTypeMethodsCache = ConcurrentHashMap<Class<*>, Array<Method?>>()
+
     @JvmStatic
     fun <C, R> scan(
         context: C,
         source: AnnotatedElement,
-        searchStrategy: MergedAnnotations.SearchStrategy,
+        searchStrategy: SearchStrategy,
         processor: AnnotationsProcessor<C, R>
     ): R? {
         val result = process(context, source, searchStrategy, processor)
@@ -50,7 +60,7 @@ object AnnotationsScanner {
     private fun <C, R> process(
         context: C,
         source: AnnotatedElement,
-        searchStrategy: MergedAnnotations.SearchStrategy,
+        searchStrategy: SearchStrategy,
         processor: AnnotationsProcessor<C, R>
     ): R? {
         return when (source) {
@@ -67,7 +77,7 @@ object AnnotationsScanner {
     private fun <C, R> processClass(
         context: C,
         source: Class<*>,
-        searchStrategy: MergedAnnotations.SearchStrategy,
+        searchStrategy: SearchStrategy,
         processor: AnnotationsProcessor<C, R>
     ): R? {
         return when (searchStrategy) {
@@ -86,16 +96,17 @@ object AnnotationsScanner {
     private fun <C, R> processMethod(
         context: C,
         source: Method,
-        searchStrategy: MergedAnnotations.SearchStrategy,
+        searchStrategy: SearchStrategy,
         processor: AnnotationsProcessor<C, R>
     ): R? {
         return when (searchStrategy) {
+            // 如果是SearchStrategy=DIRECT/INHERITED_ANNOTATIONS的话, 那么处理方法继承的注解...
             DIRECT, INHERITED_ANNOTATIONS -> processMethodInheritedAnnotations(context, source, processor)
 
-            // 只处理SuperClass的话includeInterfaces=false
+            // 如果是SearchStrategy=SUPERCLASS的话, 那么只处理SuperClass, includeInterfaces=false
             SUPERCLASS -> processMethodHierarchy(context, IntArray(1), source.declaringClass, processor, source, false)
 
-            // 处理类型继承(TYPE_HIERARCHY)的话includeInterfaces=false
+            // 如果SearchStrategy=TYPE_HIERARCHY的话, 需要处理类型继承(TYPE_HIERARCHY)情况, 因此includeInterfaces=false
             TYPE_HIERARCHY, TYPE_HIERARCHY_AND_ENCLOSING_CLASSES -> processMethodHierarchy(
                 context, IntArray(1), source.declaringClass, processor, source, true
             )
@@ -110,7 +121,7 @@ object AnnotationsScanner {
     private fun <C, R> processClassInheritedAnnotations(
         context: C,
         source: Class<*>,
-        searchStrategy: MergedAnnotations.SearchStrategy,
+        searchStrategy: SearchStrategy,
         processor: AnnotationsProcessor<C, R>
     ): R? {
         return processElement(context, source, DIRECT, processor)
@@ -132,10 +143,15 @@ object AnnotationsScanner {
     }
 
     /**
-     * 带继承关系地去处理一个方法
+     * 带继承关系地去处理一个方法, 如果一个方法存在有Override重写的情况的话,
+     * 那么需要从sourceClass所有的父类/接口当中尝试去寻找到相同签名的方法, 去进行注解的寻找...
      *
      * @param context context(requiredType)
+     * @param aggregateIndex aggregateIndex
+     * @param sourceClass 正在处理的方法的源类, 将会从它的parentClass/interfaces当中去进行寻找注解
      * @param includeInterfaces 是否需要处理接口方法?
+     * @param processor 需要对注解去进行收集的Processor Callback方法
+     * @param rootMethod 正在处理的方法
      */
     @Nullable
     private fun <C, R> processMethodHierarchy(
@@ -152,6 +168,8 @@ object AnnotationsScanner {
             if (result != null) {
                 return result
             }
+
+            // 如果该类只存在有一些简单的Java注解, return null...
             if (hasPlainJavaAnnotationsOnly(sourceClass)) {
                 return null
             }
@@ -159,19 +177,31 @@ object AnnotationsScanner {
             // 是否已经call了processor的标志位
             var calledProcessor = false
 
-            // 如果sourceClass==rootMethod.declaringClass, 说明是第一次处理, 以目标方法优先的方式去进行醋栗
+            // 如果sourceClass==rootMethod.declaringClass, 说明是这个类当中定义的该方法, 那么优先去进行处理, 那么在这里去执行该方法上的处理...
             if (sourceClass == rootMethod.declaringClass) {
                 result = processMethodAnnotations(context, rootMethod, aggregateIndex[0], processor)
                 calledProcessor = true
+
+                // 如果从该方法上去寻找到了合适的注解的话, 那么return...没有找到的话, 继续递归寻找
                 if (result != null) {
                     return result
                 }
+
+                // 如果sourceClass不是rootMethod.declaringClass, 那么尝试获取sourceClass当中的所有的方法,
+                // 去进行检查两者之间是否是Override的关系? (方法名&方法参数类型都相同)
+                // Spring对于继承的方法的寻找, 这种实现方法, 属实是比较奇妙...
             } else {
-                for (method in getBaseTypeMethods(context, sourceClass)) {
-                    result = processMethodAnnotations(context, method, aggregateIndex[0], processor)
-                    calledProcessor = true
-                    if (result != null) {
-                        return result
+                for (candidateMethod in getBaseTypeMethods(context, sourceClass)) {
+
+                    // 如果candidate方法和rootMethod的签名完全相同...那么尝试对该方法去进行处理
+                    if (candidateMethod != null && isOverride(rootMethod, candidateMethod)) {
+                        result = processMethodAnnotations(context, candidateMethod, aggregateIndex[0], processor)
+                        calledProcessor = true
+
+                        // 如果从该方法上去寻找到了合适的注解的话, 那么return...没有找到的话, 继续递归寻找
+                        if (result != null) {
+                            return result
+                        }
                     }
                 }
             }
@@ -180,6 +210,8 @@ object AnnotationsScanner {
             if (Modifier.isPrivate(rootMethod.modifiers)) {
                 return null
             }
+
+            // 如果已经交给AnnotationsProcessor处理过, 但是还是没有结果的话...
             if (calledProcessor) {
                 aggregateIndex[0]++
             }
@@ -198,8 +230,9 @@ object AnnotationsScanner {
             // 处理superClass
             val superclass = sourceClass.superclass
             if (superclass != null && superclass != Any::class.java) {
+                // 利用父类去进行递归处理, 因此能够支持处理间接父类的情况...也能处理间接接口的情况...
                 val superClassResult = processMethodHierarchy(
-                    context, aggregateIndex, sourceClass, processor, rootMethod, includeInterfaces
+                    context, aggregateIndex, superclass, processor, rootMethod, includeInterfaces
                 )
                 if (superClassResult != null) {
                     return superClassResult
@@ -209,6 +242,34 @@ object AnnotationsScanner {
             AnnotationUtils.handleIntrospectionFailure(rootMethod, ex)
         }
         return null
+    }
+
+    /**
+     * 检查rootMethod和candidateMethod之间是否是可以去进行覆盖的?
+     *
+     * @param rootMethod rootMethod
+     * @param candidateMethod candidateMethod
+     */
+    @JvmStatic
+    private fun isOverride(rootMethod: Method, candidateMethod: Method): Boolean {
+        return !Modifier.isPrivate(candidateMethod.modifiers)
+                && candidateMethod.name == rootMethod.name
+                && hasSameParameterTypes(rootMethod, candidateMethod)
+    }
+
+    /**
+     * 检查给定的两个方法是否有相同的方法参数?
+     *
+     * @param rootMethod rootMethod
+     * @param candidateMethod candidateMethod
+     */
+    @JvmStatic
+    private fun hasSameParameterTypes(rootMethod: Method, candidateMethod: Method): Boolean {
+        if (rootMethod.parameterCount != candidateMethod.parameterCount) {
+            return false
+        }
+        // 这里理论上应该检查泛型的, 这里暂时不检查...
+        return Arrays.equals(rootMethod.parameterTypes, candidateMethod.parameterTypes)
     }
 
     /**
@@ -231,11 +292,23 @@ object AnnotationsScanner {
         return null
     }
 
+    /**
+     * 处理给定的目标方法身上的注解, 利用[AnnotationsProcessor]去进行处理得到结果...
+     *
+     * @param context context
+     * @param source source
+     * @param aggregateIndex aggregateIndex
+     * @param processor 对注解去进行处理(例如收集)的Processor, 是一个Callback方法
+     * @return 如果AnnotationsProcessor找到了合适的注解, return result; 否则return null
+     */
     @Nullable
     private fun <C, R> processMethodAnnotations(
         context: C, source: Method, aggregateIndex: Int, processor: AnnotationsProcessor<C, R>
     ): R? {
+        // 获取目标方法上定义的直接注解列表
         val annotations = getDeclaredAnnotations(source, false)
+
+        // 利用该方法身上的注解, 利用AnnotationsProcessor去进行处理
         val result = processor.doWithAnnotations(context, aggregateIndex, source, annotations)
         if (result != null) {
             return result
@@ -251,7 +324,7 @@ object AnnotationsScanner {
     private fun <C, R> processElement(
         context: C,
         source: AnnotatedElement,
-        searchStrategy: MergedAnnotations.SearchStrategy,
+        searchStrategy: SearchStrategy,
         processor: AnnotationsProcessor<C, R>
     ): R? {
         return processor.doWithAggregate(context, 0) ?: processor.doWithAnnotations(
@@ -320,12 +393,46 @@ object AnnotationsScanner {
         return null
     }
 
+    /**
+     * 获取给定的目标的类(baseType)上的全部有标注注解的方法(没有注解的方法我们不需要...)
+     *
+     * @param context context
+     * @param baseType baseType, 要去进行寻找方法的类
+     * @return baseType类上的全部有注解的方法(如果数组当中遇到了没有注解标注的方法的话, 会被设为null)
+     */
+    @Suppress("UNCHECKED_CAST")
     @JvmStatic
-    private fun <C> getBaseTypeMethods(context: C, baseType: Class<*>): Array<Method> {
+    private fun <C> getBaseTypeMethods(context: C, baseType: Class<*>): Array<Method?> {
+        // 如果给定的baseType为Object, 或者baseType上只有一些简单Java注解的话, 那么return empty
         if (baseType == Any::class.java || hasPlainJavaAnnotationsOnly(baseType)) {
-            return NO_METHODS
+            return NO_METHODS as Array<Method?>
         }
-        return emptyArray()
+        var methods = baseTypeMethodsCache[baseType]
+        if (methods === null) {
+            val isInterface = baseType.isInterface
+            // 如果是接口直接getMethods, 如果是类的话, 获取它定义的所有方法(declaredMethods+defaultMethods)
+            methods =
+                if (isInterface) baseType.methods else ReflectionUtils.getDeclaredMethods(baseType) as Array<Method?>
+
+            var cleared = 0
+
+            // 1.如果它是一个类上的Private方法, 那么该方法不要
+            // 2.如果该类上只有简单的Java注解, 或者没有注解, 那么不要...
+            methods!!.indices.forEach {
+                if ((!isInterface && Modifier.isPrivate(methods[it]!!.modifiers))
+                    || hasPlainJavaAnnotationsOnly(methods[it])
+                    || getDeclaredAnnotations(methods[it]!!, false).isEmpty()
+                ) {
+                    methods[it] = null
+                    cleared++
+                }
+            }
+            if (cleared == methods.size) {
+                return NO_METHODS as Array<Method?>
+            }
+            baseTypeMethodsCache[baseType] = methods
+        }
+        return methods
     }
 
     /**
@@ -370,5 +477,6 @@ object AnnotationsScanner {
     @JvmStatic
     fun clearCache() {
         this.declaredAnnotationCache.clear()
+        this.baseTypeMethodsCache.clear()
     }
 }

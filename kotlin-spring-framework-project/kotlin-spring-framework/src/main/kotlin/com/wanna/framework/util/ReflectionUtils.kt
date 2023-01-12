@@ -522,11 +522,11 @@ object ReflectionUtils {
     }
 
     /**
-     * 获取一个类定义的所有方法
+     * 获取一个类定义的所有方法(包含declaredMethods, 以及直接接口上的defaultMethods)
      *
      * @param clazz 要获取方法的类
      * @param defensive 这个方法是否具有侵入性？也就是需不需要将数据clone一份出来返回？true代表需要，反之不需要
-     * @return 从给定的类上去解析完成的方法数组
+     * @return 从给定的类上去解析完成的方法数组(包含declaredMethods, 以及直接接口上的defaultMethods)
      */
     @JvmStatic
     fun getDeclaredMethods(clazz: Class<*>, defensive: Boolean): Array<Method> {
