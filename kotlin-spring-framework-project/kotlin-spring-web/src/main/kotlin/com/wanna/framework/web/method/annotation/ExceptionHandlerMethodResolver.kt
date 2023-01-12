@@ -1,5 +1,8 @@
 package com.wanna.framework.web.method.annotation
 
+import com.wanna.framework.core.MethodIntrospector
+import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.web.bind.annotation.ExceptionHandler
 import java.lang.reflect.Method
@@ -13,23 +16,50 @@ import java.lang.reflect.Method
 open class ExceptionHandlerMethodResolver(private val beanType: Class<*>) {
     companion object {
 
-        // ExceptionHandler的Filter
-        private val EXCEPTION_HANDLER_METHODS_FILTER: (Method) -> Boolean = {
-            it.isAnnotationPresent(ExceptionHandler::class.java)
+        /**
+         * 对于@ExceptionHandler方法的寻找的Filter
+         */
+        @JvmStatic
+        private val EXCEPTION_HANDLER_METHODS_FILTER = ReflectionUtils.MethodMatcher {
+            AnnotatedElementUtils.hasAnnotation(it, ExceptionHandler::class.java)
         }
     }
 
     // ExceptionHandler的列表，key-ExceptionType，value-Method
     private val mappedMethods = HashMap<Class<out Throwable>, Method>()
 
-    // 获取该类上的全部@ExceptionHandler方法，去完成Mapping的注册
+
     init {
-        ReflectionUtils.doWithMethods(beanType, { method ->
-            val exceptionHandler = method.getAnnotation(ExceptionHandler::class.java)
-            exceptionHandler.value.forEach { klass ->
-                mappedMethods[klass.java] = method
+        // 获取该类上的全部@ExceptionHandler方法，去完成Mapping的注册
+        val selectMethods = MethodIntrospector.selectMethods(beanType, EXCEPTION_HANDLER_METHODS_FILTER)
+        for (method in selectMethods) {
+            val exceptionMappings = detectExceptionMappings(method)
+            for (exceptionMapping in exceptionMappings) {
+                addExceptionMapping(method, exceptionMapping)
             }
-        }, EXCEPTION_HANDLER_METHODS_FILTER)
+        }
+    }
+
+    /**
+     * 将给定的ExceptionType和方法之间的映射关系建立起来
+     *
+     * @param method Method
+     * @param exceptionType ExceptionType
+     */
+    private fun addExceptionMapping(method: Method, exceptionType: Class<out Throwable>) {
+        this.mappedMethods[exceptionType] = method
+    }
+
+    /**
+     * 从给定的类上去探测[ExceptionHandler]注解当中配置的支持去处理的异常类型
+     *
+     * @param method 要去进行探测的目标方法
+     * @return 探测到的要去进行处理的异常类型
+     */
+    private fun detectExceptionMappings(method: Method): List<Class<out Throwable>> {
+        val exceptionHandler =
+            AnnotatedElementUtils.getMergedAnnotation(method, ExceptionHandler::class.java) ?: return emptyList()
+        return exceptionHandler.value.map { it.java }.toList()
     }
 
     /**
@@ -45,6 +75,7 @@ open class ExceptionHandlerMethodResolver(private val beanType: Class<*>) {
      * @param exception 具体产生的异常
      * @return 该异常对应的HandlerMethod(找不到return null)
      */
+    @Nullable
     open fun resolveMethod(exception: Throwable): Method? {
         return this.mappedMethods[exception::class.java]
     }

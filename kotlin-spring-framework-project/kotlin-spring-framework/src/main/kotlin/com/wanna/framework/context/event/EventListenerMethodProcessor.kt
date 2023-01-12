@@ -6,6 +6,7 @@ import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.processor.factory.BeanFactoryPostProcessor
+import com.wanna.framework.core.MethodIntrospector
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.lang.Nullable
@@ -81,12 +82,9 @@ open class EventListenerMethodProcessor : BeanFactoryPostProcessor, SmartInitial
      */
     private fun processBean(beanName: String, beanType: Class<*>) {
         if (!nonAnnotatedClasses.contains(beanType)) {
-            val annotatedMethods = LinkedHashMap<Method, EventListener>()
-            ReflectionUtils.doWithMethods(beanType) {
-                val listener = AnnotatedElementUtils.getMergedAnnotation(it, EventListener::class.java)
-                if (listener != null) {
-                    annotatedMethods[it] = listener
-                }
+            // 选取出来该类当中所有的标注了@EventListener注解的方法...
+            val annotatedMethods = MethodIntrospector.selectMethods(beanType) {
+                AnnotatedElementUtils.getMergedAnnotation(it, EventListener::class.java)
             }
             // 如果没有找到合适的@EventListener注解的方法
             if (annotatedMethods.isEmpty()) {

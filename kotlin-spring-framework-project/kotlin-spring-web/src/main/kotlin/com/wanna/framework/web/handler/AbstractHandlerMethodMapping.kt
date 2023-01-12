@@ -1,6 +1,7 @@
 package com.wanna.framework.web.handler
 
 import com.wanna.framework.beans.factory.InitializingBean
+import com.wanna.framework.core.MethodIntrospector
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.LinkedMultiValueMap
@@ -120,11 +121,14 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
 
         // 获取到userClass(因为handlerType有可能被CGLIB代理过, 这里获取到原始的类)
         val userType = ClassUtils.getUserClass(handlerType)
-        ReflectionUtils.doWithMethods(userType) {
-            // 交给子类去告诉我，当前的方法是否是一个HandlerMethod？如果return null，则不是；return not null，则是
-            val mapping = getMappingForMethod(it, userType) ?: return@doWithMethods
-            registerHandlerMethod(handler, it, mapping)
+
+        // 交给子类去告诉我，当前的方法是否是一个HandlerMethod? 如果是的话, 那么需要去收集起来该方法
+        val methods = MethodIntrospector.selectMethods(userType) {
+            getMappingForMethod(it, userType)
         }
+
+        // 对于所有的HandlerMethod去执行注册
+        methods.map { registerHandlerMethod(handler, it.key, it.value) }
     }
 
     /**

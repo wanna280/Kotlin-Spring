@@ -15,6 +15,7 @@ import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
 import com.wanna.framework.context.processor.beans.DestructionAwareBeanPostProcessor
 import com.wanna.framework.context.processor.beans.MergedBeanDefinitionPostProcessor
+import com.wanna.framework.core.MethodIntrospector
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.scheduling.TaskScheduler
 import com.wanna.framework.scheduling.config.*
@@ -243,20 +244,16 @@ open class ScheduledAnnotationBeanPostProcessor : ApplicationListener<ContextRef
     override fun postProcessAfterInitialization(beanName: String, bean: Any): Any? {
         val clazz = bean::class.java
 
-        // 统计出来类上的所有的@Scheduled注解
-        val annotatedMethods = LinkedHashMap<Method, Set<Scheduled>>()
-
         // 如果之前已经确定为没有标注@Scheduled的类，那么直接pass掉
         if (nonAnnotatedClasses.contains(clazz)) {
             return bean
         }
 
-        // 扫描所有的@Scheduled注解，注册为定时任务
-        ReflectionUtils.doWithMethods(clazz) {
-            if (AnnotatedElementUtils.hasAnnotation(it, Scheduled::class.java)) {
-                annotatedMethods[it] = AnnotatedElementUtils.getAllMergedAnnotations(it, Scheduled::class.java).toSet()
-            }
+        // 统计出来类上的所有的@Scheduled注解, 扫描所有的@Scheduled注解，注册为定时任务
+        val annotatedMethods = MethodIntrospector.selectMethods(clazz) {
+            AnnotatedElementUtils.getAllMergedAnnotations(it, Scheduled::class.java).toSet()
         }
+
         if (annotatedMethods.isEmpty()) {
             nonAnnotatedClasses.add(clazz)
         } else {
