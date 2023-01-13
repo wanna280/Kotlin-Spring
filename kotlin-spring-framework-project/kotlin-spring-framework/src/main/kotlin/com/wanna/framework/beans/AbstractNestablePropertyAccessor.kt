@@ -154,7 +154,7 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
             if (autoGrowNestedPaths) {
                 value = setDefaultValue(tokens)
             } else {
-                throw NullValueInNestedPathException(this.javaClass, this.nestedPath + canonicalName)
+                throw NullValueInNestedPathException(getRootClass(), this.nestedPath + canonicalName)
             }
         }
 
