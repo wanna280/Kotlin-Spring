@@ -1,5 +1,7 @@
 package com.wanna.framework.beans
 
+import com.wanna.framework.core.convert.ConversionService
+
 /**
  * 这是一个抽象的属性访问器，它组合了TypeConverter和PropertyAccessor，可以去进行属性的设置工作；
  *
@@ -13,6 +15,10 @@ abstract class AbstractPropertyAccessor : TypeConverterSupport(), ConfigurablePr
     init {
         this.delegate = TypeConverterDelegate(this)
     }
+
+    private var conversionService: ConversionService? = null
+
+    override var autoGrowNestedPaths: Boolean = false
 
     /**
      * 设置PropertyValue，对指定的Property的值去进行设置

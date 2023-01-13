@@ -12,19 +12,23 @@ import com.wanna.framework.lang.Nullable
  * @see PropertyEditorRegistry
  */
 interface ConfigurablePropertyAccessor : PropertyAccessor, PropertyEditorRegistry, TypeConverter {
-
     /**
-     * 设置ConversionService，为提供类型的转换提供支持
-     *
-     * @param conversionService ConversionService
+     * 对于当前的[PropertyAccessor], 是否需自增内部嵌套的路径?
      */
-    fun setConversionService(@Nullable conversionService: ConversionService?)
+    var autoGrowNestedPaths: Boolean
 
     /**
      * 获取ConversionService
      *
-     * @return ConversionService
+     * @return ConversionService, if any
      */
     @Nullable
     fun getConversionService(): ConversionService?
+
+    /**
+     * 设置ConversionService
+     *
+     * @param conversionService ConversionService
+     */
+    fun setConversionService(@Nullable conversionService: ConversionService?)
 }

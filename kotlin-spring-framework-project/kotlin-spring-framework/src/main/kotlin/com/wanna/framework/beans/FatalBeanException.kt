@@ -8,6 +8,7 @@ import com.wanna.framework.lang.Nullable
  * @version v1.0
  * @date 2023/1/13
  */
-class FatalBeanException(@Nullable message: String?, @Nullable cause: Throwable?) : BeansException(message, cause) {
+open class FatalBeanException(@Nullable message: String?, @Nullable cause: Throwable?) :
+    BeansException(message, cause) {
     constructor(message: String) : this(message, null)
 }
