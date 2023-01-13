@@ -4,12 +4,16 @@ import com.wanna.framework.beans.BeansException
 import com.wanna.framework.beans.CachedIntrospectionResults
 import com.wanna.framework.beans.FatalBeanException
 import com.wanna.framework.core.DefaultParameterNameDiscoverer
+import com.wanna.framework.core.KotlinDetector
 import com.wanna.framework.lang.Nullable
 import java.beans.ConstructorProperties
 import java.beans.PropertyDescriptor
+import java.lang.UnsupportedOperationException
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.javaConstructor
 
 object BeanUtils {
 
@@ -365,6 +369,51 @@ object BeanUtils {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    /**
+     * 为给定的Class去获取到该类对应的Kotlin的主构造器
+     *
+     * @param clazz clazz
+     * @return 在目标类上去找到的Kotlin主构造器(没有找到主构造器的话, return null)
+     */
+    @Nullable
+    @JvmStatic
+    fun <T> findPrimaryConstructor(clazz: Class<T>): Constructor<T>? {
+        if (KotlinDetector.isKotlinPresent() && KotlinDetector.isKotlinType(clazz)) {
+            val primaryConstructor = KotlinDelegate.findPrimaryConstructor<T>(clazz)
+            if (primaryConstructor != null) {
+                return primaryConstructor
+            }
+        }
+        return null
+    }
+
+
+    /**
+     * 基于内部类的方式, 去实现懒加载, 避免出现缺依赖导致链接错误的情况
+     */
+    private object KotlinDelegate {
+
+        /**
+         * 为给定的Class去获取到Kotlin的主构造器
+         *
+         * @param clazz clazz
+         * @return 在目标类上去找到的Kotlin主构造器(没有找到主构造器的话, return null)
+         */
+        @JvmStatic
+        @Nullable
+        @Suppress("UNCHECKED_CAST")
+        fun <T> findPrimaryConstructor(clazz: Class<*>): Constructor<T>? {
+            try {
+                val primaryConstructor = clazz.kotlin.primaryConstructor ?: return null
+                val constructor = primaryConstructor.javaConstructor
+                    ?: throw IllegalStateException("Failed to find Java constructor for Kotlin primary constructor: ${clazz.name}")
+                return constructor as Constructor<T>
+            } catch (ex: UnsupportedOperationException) {
+                return null
             }
         }
     }
