@@ -201,6 +201,7 @@ open class DataBinder(private val target: Any?, private val objectName: String =
         this.bindingResult?.initConversion(conversionService)
     }
 
+    @Nullable
     open fun getConversionService(): ConversionService? = this.conversionService
 
     /**
@@ -208,6 +209,7 @@ open class DataBinder(private val target: Any?, private val objectName: String =
      *
      * @return 待绑定的目标对象
      */
+    @Nullable
     open fun getTarget(): Any? = this.target
 
     /**

@@ -9,10 +9,7 @@ import com.wanna.framework.context.aware.BeanClassLoaderAware
 import com.wanna.framework.context.aware.BeanNameAware
 import com.wanna.framework.context.exception.BeanCreationException
 import com.wanna.framework.context.processor.beans.internal.ApplicationContextAwareProcessor
-import com.wanna.framework.core.DefaultParameterNameDiscoverer
-import com.wanna.framework.core.MethodParameter
-import com.wanna.framework.core.ParameterNameDiscoverer
-import com.wanna.framework.core.ResolvableType
+import com.wanna.framework.core.*
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
@@ -20,12 +17,10 @@ import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.util.StringUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.beans.Introspector
 import java.lang.reflect.Constructor
-import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import java.util.*
 import java.util.function.Supplier
-import kotlin.jvm.Throws
 
 /**
  * 这是一个拥有Autowire自动装配能力的BeanFactory, 不仅提供了普通的BeanFactory的能力,
@@ -554,9 +549,12 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
     protected open fun autowireByName(
         name: String, mbd: RootBeanDefinition, beanWrapper: BeanWrapper, pvs: MutablePropertyValues
     ) {
+        // 获取所有的非简单属性
         val propertyNames = unsatisfiedNonSimpleProperties(mbd, beanWrapper)
-        propertyNames.forEach { (propertyName, _) ->
-            if (containsBeanDefinition(propertyName)) {
+
+        // 对于所有的属性名, 尝试去进行getBean, 并添加到PropertyValues当中
+        for (propertyName in propertyNames) {
+            if (containsBean(propertyName)) {
                 val bean = getBean(propertyName)
                 pvs.addPropertyValue(propertyName, bean)
             }
@@ -579,9 +577,29 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
     protected open fun autowireByType(
         beanName: String, mbd: RootBeanDefinition, beanWrapper: BeanWrapper, pvs: MutablePropertyValues
     ) {
+        var typeConverter: TypeConverter? = getCustomTypeConverter()
+        if (typeConverter == null) {
+            typeConverter = beanWrapper
+        }
+
+        // 获取所有的非简单属性
         val propertyNames = unsatisfiedNonSimpleProperties(mbd, beanWrapper)
-        propertyNames.forEach { (propertyName, method) ->
-            val dependency = resolveDependency(DependencyDescriptor(MethodParameter(method, 0), false, true), beanName)
+        val autowireBeanNames = LinkedHashSet<String>()
+
+        for (propertyName in propertyNames) {
+            val pd = beanWrapper.getPropertyDescriptor(propertyName)
+            // 为writeMethod, 去构建出来MethodParameter
+            val writeMethod = pd.writeMethod
+            val methodParameter = MethodParameter(writeMethod, 0)
+
+            // Do not allow eager init for type matching in case of a prioritized post-processor.
+            val eager = beanWrapper.getWrappedInstance() !is PriorityOrdered
+            val dependency = resolveDependency(
+                DependencyDescriptor(methodParameter, false, eager),
+                beanName,
+                autowireBeanNames,
+                typeConverter
+            )
             if (dependency != null) {
                 pvs.addPropertyValue(propertyName, dependency)
             }
@@ -660,26 +678,23 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
         return factoryBeanObject
     }
 
+
     /**
      * 获取非简单属性的列表
      *
      * @param mbd BeanDefinition
      * @param bw BeanWrapper
      */
-    protected open fun unsatisfiedNonSimpleProperties(
-        mbd: AbstractBeanDefinition, bw: BeanWrapper
-    ): Map<String, Method> {
-        val result = HashMap<String, Method>()
-        val propertyValues = mbd.getPropertyValues()
-        ReflectionUtils.doWithMethods(bw.getWrappedClass()) {
-            if (it.name.startsWith("set") && it.parameterCount == 1 && !BeanUtils.isSimpleProperty(it.parameterTypes[0])) {
-                val propertyName = Introspector.decapitalize(it.name.substring(3))
-                if (!propertyValues.containsProperty(propertyName)) {
-                    result += propertyName to it
-                }
+    protected open fun unsatisfiedNonSimpleProperties(mbd: AbstractBeanDefinition, bw: BeanWrapper): Array<String> {
+        val result = TreeSet<String>()
+        val pvs = mbd.getPropertyValues()
+        val pds = bw.getPropertyDescriptors()
+        for (pd in pds) {
+            if (pd.writeMethod != null && pvs.containsProperty(pd.name) && BeanUtils.isSimpleProperty(pd.propertyType)) {
+                result += pd.name
             }
         }
-        return result
+        return result.toTypedArray()
     }
 
     /**
