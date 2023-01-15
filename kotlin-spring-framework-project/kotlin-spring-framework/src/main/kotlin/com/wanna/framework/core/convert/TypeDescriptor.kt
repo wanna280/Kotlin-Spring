@@ -2,6 +2,8 @@ package com.wanna.framework.core.convert
 
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ResolvableType
+import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 import java.io.Serializable
 import java.lang.reflect.Field
 
@@ -19,6 +21,21 @@ open class TypeDescriptor(val resolvableType: ResolvableType) :
     constructor(property: Property) : this(ResolvableType.forClass(property.type))
 
     val type: Class<*> = resolvableType.resolve(Any::class.java)
+
+    /**
+     * 获取集合/数组元素类型的描述符
+     *
+     * @return 元素类型的[TypeDescriptor]
+     */
+    @Nullable
+    open fun getElementTypeDescriptor(): TypeDescriptor? {
+        if (type.isArray) {
+            return TypeDescriptor(ResolvableType.forClass(type.componentType))
+        } else if (ClassUtils.isAssignFrom(Collection::class.java, type)) {
+            return TypeDescriptor(resolvableType.asCollection().getGenerics()[0])
+        }
+        return null
+    }
 
     companion object {
         @JvmStatic

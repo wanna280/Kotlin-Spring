@@ -5,7 +5,7 @@ import com.wanna.framework.util.ClassUtils
 import java.lang.reflect.*
 
 /**
- * 这是一个可以被解析的类型, 是Spring对于一个Class的顶层的封装, 功能很强大; 
+ * 这是一个可以被解析的类型, 是Spring对于一个Class的顶层的封装, 功能很强大;
  * 它支持去获取到泛型的类型, 以及获取到它的接口当中的泛型等情况
  */
 open class ResolvableType() {
@@ -77,6 +77,10 @@ open class ResolvableType() {
         } else if (this.type is GenericArrayType) {
             val genericComponentType = (this.type as GenericArrayType).genericComponentType
             if (genericComponentType != null) {
+                // TODO
+                if (genericComponentType is ParameterizedType) {
+                    return java.lang.reflect.Array.newInstance(genericComponentType.rawType as Class<*>, 0).javaClass
+                }
                 return java.lang.reflect.Array.newInstance(genericComponentType as Class<*>, 0).javaClass
             }
 
@@ -202,7 +206,7 @@ open class ResolvableType() {
     /**
      * 解析类型; (type类型可能为Class/ParameterizedType/WildcardType/GenericArrayType/TypeVariable)
      * (1)如果是Class的话, 直接去进行构建就行了...
-     * (2)如果是ParameterizedType的话, 应该使用rawType作为真正的类型; 
+     * (2)如果是ParameterizedType的话, 应该使用rawType作为真正的类型;
      * (3)如果是野生的泛型类型的话(java里的? extends, 或者是Kotlin里的*等情况), 需要去解析向上/向下转型
      * (4)如果是TypeVariable... 这种情况, 就是在解析接口当中的泛型的时候, 遇到了E/T这种不知道的类型,
      * 需要向最外层的类型当中去进行寻找(VariableResolver就负责包装外层的类型)
@@ -242,7 +246,7 @@ open class ResolvableType() {
     }
 
     /**
-     * 解析野生类型的向上转型和向下转型(比如"<out UserService>"/"<in UserService>")这种情况; 
+     * 解析野生类型的向上转型和向下转型(比如"<out UserService>"/"<in UserService>")这种情况;
      * 内层的类型, 机会被封装到Bound数组当中, 可以通过upperBounds/lowerBounds等方式去进行获取
      *
      * @param bounds BoundTypes, 有可能是向上转型/向上转型的来的BoundTypes
@@ -263,7 +267,7 @@ open class ResolvableType() {
     }
 
     /**
-     * 根据type, 去获取该type对应的泛型类型; 
+     * 根据type, 去获取该type对应的泛型类型;
      * (1)如果该类型是Class, 那么获取它的typeParameters作为泛型类型(直接在类上写死的类型, 比如<User>, 没有T/E这类的)
      * (2)如果该类型是ParameterizedType, 那么获取它的actualTypeArguments作为泛型类型
      * (3)如果是别的几种类型的话, resolveType().getGenerics()

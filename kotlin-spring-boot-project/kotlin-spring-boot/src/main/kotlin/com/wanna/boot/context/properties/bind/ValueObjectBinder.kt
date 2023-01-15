@@ -11,7 +11,6 @@ import com.wanna.framework.util.BeanUtils
 import java.lang.reflect.Constructor
 import java.lang.reflect.Modifier
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.reflect.KFunction
 import kotlin.reflect.KParameter
 import kotlin.reflect.javaType
