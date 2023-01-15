@@ -7,7 +7,7 @@ package com.wanna.framework.core.environment
  * @see PropertySources
  * @see MutablePropertySources
  *
- * @param propertySources PropertySources，提供解析属性时的属性来源
+ * @param propertySources PropertySources, 提供解析属性时的属性来源
  */
 open class PropertySourcesPropertyResolver(private val propertySources: PropertySources) : AbstractPropertyResolver() {
 
@@ -18,7 +18,7 @@ open class PropertySourcesPropertyResolver(private val propertySources: Property
                 val value = it.getProperty(key)
                 val conversionService = getConversionService()
 
-                // 如果类型转换能对该类型去进行转换的话，那么...
+                // 如果类型转换能对该类型去进行转换的话, 那么...
                 if (conversionService.canConvert(value!!::class.java, requiredType)) {
                     return conversionService.convert(value, requiredType)
                 }
@@ -29,7 +29,7 @@ open class PropertySourcesPropertyResolver(private val propertySources: Property
     }
 
     /**
-     * 获取属性的原始值的String，如果找不到的话，直接return key
+     * 获取属性的原始值的String, 如果找不到的话, 直接return key
      */
     override fun getPropertyAsRawString(key: String): String? {
         propertySources.forEach {

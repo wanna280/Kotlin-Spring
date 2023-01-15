@@ -5,7 +5,7 @@ import com.wanna.framework.lang.Nullable
 import java.lang.reflect.AnnotatedElement
 
 /**
- * AnnotatedElement的工具类，负责桥接SpringCore包当中的AnnotatedElementUtils
+ * AnnotatedElement的工具类, 负责桥接SpringCore包当中的AnnotatedElementUtils
  */
 object AnnotatedElementUtils {
 
@@ -85,7 +85,7 @@ object AnnotatedElementUtils {
      *
      * @param element 目标元素(方法/字段等)
      * @param annotationType 要去进行匹配的注解
-     * @return 如果存在有目标注解的户，return true；否则return false
+     * @return 如果存在有目标注解的户, return true; 否则return false
      */
     @JvmStatic
     fun hasAnnotation(element: AnnotatedElement, annotationType: Class<out Annotation>): Boolean {

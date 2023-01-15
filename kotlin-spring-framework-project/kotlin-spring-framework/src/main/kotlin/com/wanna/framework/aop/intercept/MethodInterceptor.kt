@@ -1,7 +1,7 @@
 package com.wanna.framework.aop.intercept
 
 /**
- * 标识这是一个MethodInterceptor，拦截目标方法的执行
+ * 标识这是一个MethodInterceptor, 拦截目标方法的执行
  *
  * @see com.wanna.framework.aop.Advice
  * @author jianchao.jia
@@ -9,7 +9,7 @@ package com.wanna.framework.aop.intercept
 interface MethodInterceptor : Interceptor {
 
     /**
-     * 拦截目标方法执行的拦截器的Callback方法，如果需要放行到下一个MethodInterceptor，
+     * 拦截目标方法执行的拦截器的Callback方法, 如果需要放行到下一个MethodInterceptor,
      * 可以使用[MethodInvocation.proceed]这个方法去进行放行
      *
      * @param invocation 方法执行的上下文

@@ -11,8 +11,8 @@ import kotlin.reflect.KClass
  * @param contextId childContextName
  * @param path 所有方法级别的映射(路径)的前缀
  * @param configuration 该context当中的配置类列表
- * @param url 请求的url(如果没有url，将会使用FeignClientName作为serviceName)
- * @param fallback 指定FeignClient的Fallback，指定的Class必须是一个合法的SpringBean，并且实现标注这个注解的FeignClient接口
+ * @param url 请求的url(如果没有url, 将会使用FeignClientName作为serviceName)
+ * @param fallback 指定FeignClient的Fallback, 指定的Class必须是一个合法的SpringBean, 并且实现标注这个注解的FeignClient接口
  * @param fallbackFactory 创建fallback的Factory
  */
 annotation class FeignClient(

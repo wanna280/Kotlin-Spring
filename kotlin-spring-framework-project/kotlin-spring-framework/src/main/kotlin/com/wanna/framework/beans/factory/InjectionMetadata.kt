@@ -12,7 +12,7 @@ import java.lang.reflect.Method
 open class InjectionMetadata(val targetClass: Class<*>, private val elements: Collection<InjectedElement>) {
 
     /**
-     * 遍历所有要进行注入的元素，去进行依赖的注入
+     * 遍历所有要进行注入的元素, 去进行依赖的注入
      */
     open fun inject(bean: Any, beanName: String, pvs: PropertyValues?) {
         elements.forEach { element ->
@@ -22,7 +22,7 @@ open class InjectionMetadata(val targetClass: Class<*>, private val elements: Co
 
     companion object {
         /**
-         * 静态工厂方法，提供构建InjectMetadata的方式
+         * 静态工厂方法, 提供构建InjectMetadata的方式
          */
         @JvmStatic
         fun forElements(targetClass: Class<*>, elements: Collection<InjectedElement>): InjectionMetadata {
@@ -37,12 +37,12 @@ open class InjectionMetadata(val targetClass: Class<*>, private val elements: Co
 
 
     /**
-     * 它描述了一个要去进行自动注入(Autowire)的元素，可以是一个方法/字段
+     * 它描述了一个要去进行自动注入(Autowire)的元素, 可以是一个方法/字段
      *
      * @param _member 方法/字段
      */
     abstract class InjectedElement(_member: Member) {
-        // 要进行注入的成员，方法/字段/构造器都是Member的子类
+        // 要进行注入的成员, 方法/字段/构造器都是Member的子类
         val member: Member = _member
         // 元素是否是字段？
         val isField = _member is Field

@@ -19,12 +19,12 @@ abstract class AbstractTransactionManagementConfiguration : ImportAware {
     protected var enableTx: MergedAnnotation<*>? = null
 
     /**
-     * Spring事务的TransactionManager，可以没有，直接从BeanFactory当中去进行获取
+     * Spring事务的TransactionManager, 可以没有, 直接从BeanFactory当中去进行获取
      */
     protected var transactionManager: TransactionManager? = null
 
     /**
-     * 自动注入导入这个配置类的注解信息，去获取到@EnableTransactionManagement的注解当中的各个属性去进行保存
+     * 自动注入导入这个配置类的注解信息, 去获取到@EnableTransactionManagement的注解当中的各个属性去进行保存
      *
      * @param annotationMetadata 注解元信息
      */
@@ -38,7 +38,7 @@ abstract class AbstractTransactionManagementConfiguration : ImportAware {
 
 
     /**
-     * 自动注入容器中所有的TransactionManagementConfigurer，对transactionManager去进行自定义
+     * 自动注入容器中所有的TransactionManagementConfigurer, 对transactionManager去进行自定义
      *
      * @throws IllegalStateException 如果容器中的TransactionManagementConfigurer数量不止一个
      */
@@ -48,7 +48,7 @@ abstract class AbstractTransactionManagementConfiguration : ImportAware {
             return
         }
         if (configurers.size > 1) {
-            throw IllegalStateException("Spring BeanFactory当中的TransactionManagementConfigurer不止1个，但是只允许有一个")
+            throw IllegalStateException("Spring BeanFactory当中的TransactionManagementConfigurer不止1个, 但是只允许有一个")
         }
         val configurer = configurers.iterator().next()
         this.transactionManager = configurer.annotationDrivenTransactionManager()

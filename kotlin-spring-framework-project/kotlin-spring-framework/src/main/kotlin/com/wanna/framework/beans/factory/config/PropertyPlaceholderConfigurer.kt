@@ -38,7 +38,7 @@ open class PropertyPlaceholderConfigurer : PlaceholderConfigurerSupport() {
     var systemPropertiesMode = SYSTEM_PROPERTIES_MODE_FALLBACK
 
     /**
-     * 实现父类的processProperties方法，在postProcessBeanFactory时，会被自动回调到
+     * 实现父类的processProperties方法, 在postProcessBeanFactory时, 会被自动回调到
      *
      * @param beanFactory BeanFactory
      * @param properties Properties
@@ -57,7 +57,7 @@ open class PropertyPlaceholderConfigurer : PlaceholderConfigurerSupport() {
      *
      * @param placeholder 占位符的属性名
      * @param properties Properties
-     * @param systemPropertiesMode 对于SystemProperties，应该怎么去进行使用？override/fallback/never
+     * @param systemPropertiesMode 对于SystemProperties, 应该怎么去进行使用？override/fallback/never
      * @return 占位符解析到的属性值
      */
     protected open fun resolvePlaceholder(
@@ -82,7 +82,7 @@ open class PropertyPlaceholderConfigurer : PlaceholderConfigurerSupport() {
     }
 
     /**
-     * 从给定的Properties当中去提供属性值，供解析占位符使用
+     * 从给定的Properties当中去提供属性值, 供解析占位符使用
      *
      * @param placeholder 占位符的属性名
      * @param properties 提供占位符的属性值获取的Map
@@ -132,13 +132,13 @@ open class PropertyPlaceholderConfigurer : PlaceholderConfigurerSupport() {
             if (trimValues) {
                 resolved = resolved?.trim()
             }
-            // 如果它的值和配置的默认的nullValue一致，那么就得return null
+            // 如果它的值和配置的默认的nullValue一致, 那么就得return null
             return if (nullValue == resolved) null else resolved
         }
     }
 
     /**
-     * PlaceholderResolver，提供对于获取属性的Callback方法，供[PropertyPlaceholderHelper]使用
+     * PlaceholderResolver, 提供对于获取属性的Callback方法, 供[PropertyPlaceholderHelper]使用
      */
     private inner class PropertyPlaceholderConfigurerResolver(private val properties: Properties) :
         PropertyPlaceholderHelper.PlaceholderResolver {

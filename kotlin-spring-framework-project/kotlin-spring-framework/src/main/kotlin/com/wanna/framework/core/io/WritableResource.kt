@@ -19,7 +19,7 @@ interface WritableResource : Resource {
     fun isWritable(): Boolean
 
     /**
-     * 如果该资源可以写的话，那么应该可以去获取到OutputStream
+     * 如果该资源可以写的话, 那么应该可以去获取到OutputStream
      *
      * @return OutputStream
      */

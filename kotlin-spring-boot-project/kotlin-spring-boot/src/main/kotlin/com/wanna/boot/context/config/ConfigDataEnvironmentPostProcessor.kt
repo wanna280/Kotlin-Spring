@@ -13,7 +13,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
- * 它是一个配置文件的环境处理器, 它负责去处理SpringApplication当中的配置文件的加载；
+ * 它是一个配置文件的环境处理器, 它负责去处理SpringApplication当中的配置文件的加载;
  * 不管是对于普通的application配置文件, bootstrap配置文件, 甚至是一些额外的profile的配置文件, 都会被它处理
  *
  * @see EnvironmentPostProcessor

@@ -127,7 +127,7 @@ abstract class AbstractGenericContextLoader : SmartContextLoader {
     protected abstract fun createBeanDefinitionReader(context: GenericApplicationContext): BeanDefinitionReader
 
     /**
-     * 准备[ApplicationContext]，给子类一个机会去进行自定义
+     * 准备[ApplicationContext], 给子类一个机会去进行自定义
      *
      * @param applicationContext ApplicationContext
      */
@@ -136,7 +136,7 @@ abstract class AbstractGenericContextLoader : SmartContextLoader {
     }
 
     /**
-     * 给子类一个机会，去对[DefaultListableBeanFactory]去进行自定义
+     * 给子类一个机会, 去对[DefaultListableBeanFactory]去进行自定义
      *
      * @param beanFactory BeanFactory
      */
@@ -145,7 +145,7 @@ abstract class AbstractGenericContextLoader : SmartContextLoader {
     }
 
     /**
-     * 给子类一个机会，对于[ApplicationContext]去进行自定义
+     * 给子类一个机会, 对于[ApplicationContext]去进行自定义
      *
      * @param context context
      */

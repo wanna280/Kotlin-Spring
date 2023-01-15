@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory
 import java.io.IOException
 
 /**
- * 提供ClassPath下的候选组件的扫描的相关功能，负责将给定的包下的资源去全部加载成为BeanDefinition
+ * 提供ClassPath下的候选组件的扫描的相关功能, 负责将给定的包下的资源去全部加载成为BeanDefinition
  *
  * @author jianchao.jia
  * @version v1.0
@@ -40,7 +40,7 @@ open class ClassPathScanningCandidateComponentProvider(
 ) : ResourceLoaderAware, EnvironmentCapable {
     companion object {
         /**
-         * 默认的资源的表达式的路径，表示通配
+         * 默认的资源的表达式的路径, 表示通配
          */
         private const val DEFAULT_RESOURCE_PATTERN = "**/*.class"
     }
@@ -61,17 +61,17 @@ open class ClassPathScanningCandidateComponentProvider(
     private var excludeFilters = ArrayList<TypeFilter>()
 
     /**
-     * 解析资源的表达式，默认为通配
+     * 解析资源的表达式, 默认为通配
      */
     private var resourcePattern: String = DEFAULT_RESOURCE_PATTERN
 
     /**
-     * Environment，Spring容器去进行自动注入
+     * Environment, Spring容器去进行自动注入
      */
     private var environment: Environment? = null
 
     /**
-     * 资源的解析器，根据ResourceLoader去进行包装
+     * 资源的解析器, 根据ResourceLoader去进行包装
      */
     private var resourcePatternResolver = ResourcePatternUtils.getResourcePatternResolver(resourceLoader)
 
@@ -82,14 +82,14 @@ open class ClassPathScanningCandidateComponentProvider(
     private var metadataReaderFactory: MetadataReaderFactory? = null
 
     init {
-        // 是否要应用默认的Filter？默认情况下，需要去匹配@Component的Bean
+        // 是否要应用默认的Filter？默认情况下, 需要去匹配@Component的Bean
         if (useDefaultFilters) {
             this.registerDefaultFilters()
         }
     }
 
     /**
-     * 给定一个候选的包，去扫描该包下的候选的组件
+     * 给定一个候选的包, 去扫描该包下的候选的组件
      *
      * @param basePackage 要扫描的包？(支持去进行占位符解析)
      * @return 该包下扫描得到的所有的候选BeanDefinition
@@ -113,7 +113,7 @@ open class ClassPathScanningCandidateComponentProvider(
                             val beanDefinition = ScannedGenericBeanDefinition(metadataReader)
                             beanDefinition.setSource(it)
 
-                            // 对BeanDefinition去进行检查，排除掉抽象类
+                            // 对BeanDefinition去进行检查, 排除掉抽象类
                             if (isCandidateComponent(beanDefinition)) {
                                 if (logger.isDebugEnabled) {
                                     logger.debug("Resource [$it] will be a candidate BeanDefinition to register")
@@ -225,13 +225,13 @@ open class ClassPathScanningCandidateComponentProvider(
      * @return 该类是否是一个候选Spring Component?
      */
     protected open fun isCandidateComponent(metadataReader: MetadataReader): Boolean {
-        // 如果被excludeFilter匹配，直接return false
+        // 如果被excludeFilter匹配, 直接return false
         this.excludeFilters.forEach {
             if (it.matches(metadataReader, getMetadataReaderFactory())) {
                 return false
             }
         }
-        // 如果被includeFilter匹配，return true
+        // 如果被includeFilter匹配, return true
         this.includeFilters.forEach {
             if (it.matches(metadataReader, getMetadataReaderFactory())) {
                 return true
@@ -249,7 +249,7 @@ open class ClassPathScanningCandidateComponentProvider(
     }
 
     /**
-     * 重设所有的Filter，如果必要的话，还需要去应用默认的Filter
+     * 重设所有的Filter, 如果必要的话, 还需要去应用默认的Filter
      *
      * @param useDefaultFilters 是否需要应用默认的Filter？
      */
@@ -262,7 +262,7 @@ open class ClassPathScanningCandidateComponentProvider(
     }
 
     /**
-     * 将basePackage去进行占位符解析，并得到资源路径
+     * 将basePackage去进行占位符解析, 并得到资源路径
      *
      * @param basePackage basePackage
      * @return 该包名最终解析得到的资源路径名

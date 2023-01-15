@@ -5,7 +5,7 @@ import com.wanna.framework.context.ApplicationContext
 import org.slf4j.LoggerFactory
 
 /**
- * 这是一个WebServerManager，负责去启动和关闭WebServer
+ * 这是一个WebServerManager, 负责去启动和关闭WebServer
  *
  * @param applicationContext ApplicationContext
  * @param webServer WebServer
@@ -22,7 +22,7 @@ open class WebServerManager(private val applicationContext: ApplicationContext, 
     }
 
     /**
-     * 启动WebServer，并发布WebServer已经初始化完成的事件
+     * 启动WebServer, 并发布WebServer已经初始化完成的事件
      *
      * @see MvcWebServerInitializedEvent
      */

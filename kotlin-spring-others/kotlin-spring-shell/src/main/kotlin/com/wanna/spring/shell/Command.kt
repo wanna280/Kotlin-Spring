@@ -6,7 +6,7 @@ interface Command {
      * 该命令的帮助信息
      *
      * @param description 帮助信息
-     * @param group 所在的group，可以为null
+     * @param group 所在的group, 可以为null
      */
     open class Help(val description: String, val group: String? = null) {
         override fun equals(other: Any?): Boolean {

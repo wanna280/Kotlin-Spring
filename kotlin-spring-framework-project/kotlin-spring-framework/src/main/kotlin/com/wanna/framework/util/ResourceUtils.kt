@@ -61,7 +61,7 @@ object ResourceUtils {
      * 判断给定的资源路径是否是一个URL
      *
      * @param resourceLocation 资源路径
-     * @return 如果该资源路径是一个URL的话，那么return true；否则return false
+     * @return 如果该资源路径是一个URL的话, 那么return true; 否则return false
      */
     @JvmStatic
     fun isUrl(resourceLocation: String?): Boolean {

@@ -23,7 +23,7 @@ import java.util.Properties
 import javax.sql.DataSource
 
 /**
- * SqlSessionFactoryBean，负责给容器当中去导入SqlSessionFactory
+ * SqlSessionFactoryBean, 负责给容器当中去导入SqlSessionFactory
  *
  * @see SqlSessionFactory
  */
@@ -31,13 +31,13 @@ open class SqlSessionFactoryBean : FactoryBean<SqlSessionFactory>, InitializingB
 
     private val patternResolver = PathMatchingResourcePatternResolver()
 
-    // 事务工厂(如果不设置，默认将会采用SpringManagedTransactionFactory)
+    // 事务工厂(如果不设置, 默认将会采用SpringManagedTransactionFactory)
     var transactionFactory: TransactionFactory? = null
 
     // Configuration
     var configuration: Configuration? = null
 
-    // MyBatis的拦截器，也就是要应用的插件
+    // MyBatis的拦截器, 也就是要应用的插件
     var plugins: Array<Interceptor>? = null
 
     // 自定义的配置属性
@@ -67,7 +67,7 @@ open class SqlSessionFactoryBean : FactoryBean<SqlSessionFactory>, InitializingB
     // MapperLocations
     var mapperLocations: Array<String>? = null
 
-    // 要使用的数据源，提供MyBatis事务的连接的获取
+    // 要使用的数据源, 提供MyBatis事务的连接的获取
     var dataSource: DataSource? = null
 
     // 获取SqlSessionFactory的类型
@@ -109,7 +109,7 @@ open class SqlSessionFactoryBean : FactoryBean<SqlSessionFactory>, InitializingB
         targetConfiguration.environment =
             Environment(environment, this.transactionFactory ?: SpringManagedTransactionFactory(), this.dataSource)
 
-        // 处理给定的MapperLocations，解析Xml的Mapper配置文件
+        // 处理给定的MapperLocations, 解析Xml的Mapper配置文件
         Optional.ofNullable(this.mapperLocations).ifPresent {
             it.forEach { location ->
                 XMLMapperBuilder(
@@ -128,7 +128,7 @@ open class SqlSessionFactoryBean : FactoryBean<SqlSessionFactory>, InitializingB
     }
 
     /**
-     * 给定资源路径，获取该资源的输入流
+     * 给定资源路径, 获取该资源的输入流
      *
      * @param location 资源路径
      * @throws FileNotFoundException 如果给定的文件没有找到

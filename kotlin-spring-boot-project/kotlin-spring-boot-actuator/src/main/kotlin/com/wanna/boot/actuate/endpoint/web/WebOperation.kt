@@ -16,7 +16,7 @@ interface WebOperation : Operation {
     fun getId(): String
 
     /**
-     * 获取请求断言，去对请求去进行匹配，使用时，需要转换为SpringMVC的RequestCondition
+     * 获取请求断言, 去对请求去进行匹配, 使用时, 需要转换为SpringMVC的RequestCondition
      *
      * @return WebOperationRequestPredicate
      * @see com.wanna.framework.web.mvc.condition.RequestCondition

@@ -8,10 +8,10 @@ import java.util.concurrent.Executor
 import java.util.function.Supplier
 
 /**
- * 提供异步执行的Execution的MethodInterceptor，负责拦截目标@Async方法的执行；
- * 在父类当中都已经提供了模板方法了，在这个类当中，主要是提供@Async的qualifier的获取方式
+ * 提供异步执行的Execution的MethodInterceptor, 负责拦截目标@Async方法的执行; 
+ * 在父类当中都已经提供了模板方法了, 在这个类当中, 主要是提供@Async的qualifier的获取方式
  *
- * @param executor 想要使用的默认线程池，在@Async当中配置的和beanFactory当中都找不到默认线程池时去进行使用
+ * @param executor 想要使用的默认线程池, 在@Async当中配置的和beanFactory当中都找不到默认线程池时去进行使用
  * @param exceptionHandler ExceptionHandler
  */
 open class AnnotationAsyncExecutionInterceptor(

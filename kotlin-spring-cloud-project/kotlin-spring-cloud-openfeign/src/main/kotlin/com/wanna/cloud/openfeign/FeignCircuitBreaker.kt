@@ -10,7 +10,7 @@ object FeignCircuitBreaker {
     }
 
     /**
-     * 扩展FeignBuilder，提供自定义逻辑的Builder，为Fallback和FallbackFactory提供支持
+     * 扩展FeignBuilder, 提供自定义逻辑的Builder, 为Fallback和FallbackFactory提供支持
      */
     class Builder : Feign.Builder() {
         override fun <T : Any?> target(target: Target<T>?): T {
@@ -26,7 +26,7 @@ object FeignCircuitBreaker {
         }
 
         /**
-         * 根据FallbackFactory，去替换掉原来的默认的InvocationHandler
+         * 根据FallbackFactory, 去替换掉原来的默认的InvocationHandler
          *
          * @param fallbackFactory fallbackFactory
          */

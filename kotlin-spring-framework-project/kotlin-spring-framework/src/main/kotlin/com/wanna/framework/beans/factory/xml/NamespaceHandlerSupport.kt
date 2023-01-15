@@ -23,7 +23,7 @@ abstract class NamespaceHandlerSupport : NamespaceHandler {
 
 
     /**
-     * BeanDefinitionParser列表，Key是标签名，Value是解析该标签所使用到的BeanDefinitionParser
+     * BeanDefinitionParser列表, Key是标签名, Value是解析该标签所使用到的BeanDefinitionParser
      */
     private val parsers = HashMap<String, BeanDefinitionParser>()
 
@@ -70,7 +70,7 @@ abstract class NamespaceHandlerSupport : NamespaceHandler {
      * @param node Node
      * @param definition 原始BeanDefinition
      * @param parserContext ParserContext
-     * @return 包装之后的BeanDefinitionHolder(如果return null，将会沿用原始的BeanDefinitionHolder)
+     * @return 包装之后的BeanDefinitionHolder(如果return null, 将会沿用原始的BeanDefinitionHolder)
      */
     override fun decorate(
         node: Node,

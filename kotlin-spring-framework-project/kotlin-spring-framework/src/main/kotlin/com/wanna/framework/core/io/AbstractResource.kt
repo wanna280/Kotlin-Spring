@@ -11,7 +11,7 @@ import java.net.URISyntaxException
 import java.net.URL
 
 /**
- * 抽象的Resource的实现，实现了一些Resource的典型行为
+ * 抽象的Resource的实现, 实现了一些Resource的典型行为
  *
  * @author jianchao.jia
  * @version v1.0
@@ -29,7 +29,7 @@ abstract class AbstractResource : Resource {
 
 
     override fun exists(): Boolean {
-        // 1.如果是文件的话，那么使用文件的exists方法去进行判断
+        // 1.如果是文件的话, 那么使用文件的exists方法去进行判断
         if (isFile()) {
             try {
                 return getFile().exists()

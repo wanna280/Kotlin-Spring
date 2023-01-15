@@ -26,7 +26,7 @@ interface ClassMetadata {
     /**
      * 判断该类是否是一个接口?
      *
-     * @return 如果是一个接口，return true; 否则return false
+     * @return 如果是一个接口, return true; 否则return false
      */
     fun isInterface(): Boolean
 

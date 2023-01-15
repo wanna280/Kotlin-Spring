@@ -4,7 +4,7 @@ import com.wanna.framework.core.environment.PropertySource
 import com.wanna.framework.core.io.Resource
 
 /**
- * 这是一个PropertySource的Loader，负责去加载配置文件成为PropertySource
+ * 这是一个PropertySource的Loader, 负责去加载配置文件成为PropertySource
  *
  * @see YamlPropertySourceLoader
  * @see PropertiesPropertySourceLoader
@@ -12,7 +12,7 @@ import com.wanna.framework.core.io.Resource
 interface PropertySourceLoader {
 
     /**
-     * 获取支持去进行处理的配置文件的后缀名列表，相当于策略接口当中的"supports"方法
+     * 获取支持去进行处理的配置文件的后缀名列表, 相当于策略接口当中的"supports"方法
      *
      * @return 支持去进行处理的配置文件后缀名列表
      */

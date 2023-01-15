@@ -1,22 +1,17 @@
 package com.wanna.framework.beans.factory.support
 
+import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.beans.method.LookupOverride
 import com.wanna.framework.beans.method.ReplaceOverride
-import com.wanna.framework.beans.factory.BeanFactory
-import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.util.BeanUtils
-import net.sf.cglib.proxy.CallbackFilter
-import net.sf.cglib.proxy.Enhancer
-import net.sf.cglib.proxy.Factory
-import net.sf.cglib.proxy.MethodInterceptor
-import net.sf.cglib.proxy.MethodProxy
-import net.sf.cglib.proxy.NoOp
+import net.sf.cglib.proxy.*
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 
 /**
- * 基于Cglib的子类生成策略，主要针对于某些需要进行某些运行时的Bean，使用CGLIB去生成子类并去完成实例化，
+ * 基于Cglib的子类生成策略, 主要针对于某些需要进行某些运行时的Bean, 使用CGLIB去生成子类并去完成实例化,
  * 主要针对于MethodOverride和ReplaceOverride这两种情况去进行处理
  */
 open class CglibSubclassingInstantiationStrategy : SimpleInstantiationStrategy() {
@@ -34,13 +29,13 @@ open class CglibSubclassingInstantiationStrategy : SimpleInstantiationStrategy()
     override fun instantiateWithMethodInjection(
         bd: RootBeanDefinition, beanName: String?, owner: BeanFactory, ctor: Constructor<*>?, vararg args: Any?
     ): Any {
-        // 创建一个Cglib的子类生成器，去提供子类生成的支持
+        // 创建一个Cglib的子类生成器, 去提供子类生成的支持
         val cglibSubClassCreator = CglibSubClassCreator(bd, owner)
         return cglibSubClassCreator.instantiate(ctor, *args)
     }
 
     /**
-     * 这是一个Cglib的子类创建器，完成对BeanClass的子类的创建
+     * 这是一个Cglib的子类创建器, 完成对BeanClass的子类的创建
      */
     private class CglibSubClassCreator(private val beanDefinition: RootBeanDefinition, private val owner: BeanFactory) {
 
@@ -72,14 +67,14 @@ open class CglibSubclassingInstantiationStrategy : SimpleInstantiationStrategy()
             // 使用CGLIB生成子类
             val subClass = createEnhancedSubClass(beanDefinition)
 
-            // 如果没有给定构造器的话，那么将会根据clazz去使用无参数构造器去创建对象
+            // 如果没有给定构造器的话, 那么将会根据clazz去使用无参数构造器去创建对象
             val instance = if (ctor == null) {
                 BeanUtils.instantiateClass(subClass)
             } else {
-                // 从子类当中去找到相同的构造器参数的构造器，并进行实例化
+                // 从子类当中去找到相同的构造器参数的构造器, 并进行实例化
                 subClass.getDeclaredConstructor(*ctor.parameterTypes).newInstance(*args)
             }
-            // 之前创建子类时，没有设置callback(设置的callbackTypes)，这里需要设置callback给实例
+            // 之前创建子类时, 没有设置callback(设置的callbackTypes), 这里需要设置callback给实例
             return setCallbacks(instance)
         }
 
@@ -132,7 +127,7 @@ open class CglibSubclassingInstantiationStrategy : SimpleInstantiationStrategy()
     }
 
     /**
-     * 这是一个针对于Replacer的运行时方法重写的CGLIB，按照你指定的要进行重写的方式，去替代现有的方法
+     * 这是一个针对于Replacer的运行时方法重写的CGLIB, 按照你指定的要进行重写的方式, 去替代现有的方法
      */
     private class ReplaceOverrideMethodInterceptor(
         private val beanDefinition: RootBeanDefinition, private val owner: BeanFactory

@@ -6,9 +6,9 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
- * 这是对拦截器链的封装，内部组合了拦截器链以及处理本次请求的Handler，对于每个HandlerMapping应该返回的就是一个HandlerExecutionChain
+ * 这是对拦截器链的封装, 内部组合了拦截器链以及处理本次请求的Handler, 对于每个HandlerMapping应该返回的就是一个HandlerExecutionChain
  *
- * @param handler 处理请求的Handler(例如HandlerMethod)，具体是什么类型，交给HandlerMapping自己去决定，这里使用的是Any(Object)类型
+ * @param handler 处理请求的Handler(例如HandlerMethod), 具体是什么类型, 交给HandlerMapping自己去决定, 这里使用的是Any(Object)类型
  * @param interceptors 要使用的拦截器列表
  *
  * @see HandlerInterceptor
@@ -21,7 +21,7 @@ open class HandlerExecutionChain(private val handler: Any, interceptors: Collect
     // 拦截器链的列表
     private val interceptorList = ArrayList<HandlerInterceptor>()
 
-    // 拦截器链的索引，控制拦截器链的链式调用
+    // 拦截器链的索引, 控制拦截器链的链式调用
     private var interceptorIndex = -1
 
     init {
@@ -33,13 +33,13 @@ open class HandlerExecutionChain(private val handler: Any, interceptors: Collect
 
 
     /**
-     * 应用拦截器的preHandle方法，一旦其中一个HandlerInterceptor在preHandle当中return false，那么请求将会结束处理；
-     * 直接将之前执行过的拦截器链，去进行逆方向执行，回调afterCompletion方法，去进行请求处理过程当中的收尾工作
+     * 应用拦截器的preHandle方法, 一旦其中一个HandlerInterceptor在preHandle当中return false, 那么请求将会结束处理;
+     * 直接将之前执行过的拦截器链, 去进行逆方向执行, 回调afterCompletion方法, 去进行请求处理过程当中的收尾工作
      */
     open fun applyPreHandle(request: HttpServerRequest, response: HttpServerResponse): Boolean {
         interceptorList.indices.forEach {
             val interceptor = interceptorList[it]
-            // 如果在处理请求之后，拦截器return false，说明本次请求不应该交给Handler去进行处理，直接return
+            // 如果在处理请求之后, 拦截器return false, 说明本次请求不应该交给Handler去进行处理, 直接return
             if (!interceptor.preHandle(request, response, this.handler)) {
                 triggerAfterCompletion(request, response, null)
                 return false
@@ -50,7 +50,7 @@ open class HandlerExecutionChain(private val handler: Any, interceptors: Collect
     }
 
     /**
-     * 应用拦截器的postHandle方法，因为到达这里请求已经处理完，应该逆方向去应用所有的HandlerInterceptor
+     * 应用拦截器的postHandle方法, 因为到达这里请求已经处理完, 应该逆方向去应用所有的HandlerInterceptor
      *
      * @param request request
      * @param response response
@@ -63,8 +63,8 @@ open class HandlerExecutionChain(private val handler: Any, interceptors: Collect
     }
 
     /**
-     * 在请求的处理完成之后，需要执行afterCompletion方法去完成请求收尾工作；
-     * 直接从interceptorIndex..0，逆方向去执行所有的HandlerInterceptor的afterCompletion方法
+     * 在请求的处理完成之后, 需要执行afterCompletion方法去完成请求收尾工作;
+     * 直接从interceptorIndex..0, 逆方向去执行所有的HandlerInterceptor的afterCompletion方法
      *
      * @param request request
      * @param response response

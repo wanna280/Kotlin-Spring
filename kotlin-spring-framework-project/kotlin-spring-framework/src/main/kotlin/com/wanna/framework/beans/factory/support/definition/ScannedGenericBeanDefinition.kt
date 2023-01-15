@@ -5,8 +5,8 @@ import com.wanna.framework.core.type.classreading.MetadataReader
 import com.wanna.framework.core.type.classreading.SimpleMetadataReader
 
 /**
- * 这是在扫描的过程中创建的beanDefinition，扫描过程中拿到的BeanDefinition，
- * 本身一定是因为标注了注解被扫描进来的，因此它一定是AnnotatedBeanDefinition
+ * 这是在扫描的过程中创建的beanDefinition, 扫描过程中拿到的BeanDefinition,
+ * 本身一定是因为标注了注解被扫描进来的, 因此它一定是AnnotatedBeanDefinition
  *
  * @see GenericBeanDefinition
  * @see AnnotatedBeanDefinition

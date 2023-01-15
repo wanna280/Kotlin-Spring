@@ -15,7 +15,7 @@ import javax.sql.DataSource
 open class SpringManagedTransactionFactory : TransactionFactory {
 
     /**
-     * 使用Connection去创建事务，不支持这种方式
+     * 使用Connection去创建事务, 不支持这种方式
      *
      * @param conn Connection
      */
@@ -23,7 +23,7 @@ open class SpringManagedTransactionFactory : TransactionFactory {
         throw UnsupportedOperationException("不支持使用Connection去创建事务")
 
     /**
-     * 使用数据源去创建事务，可以从Spring的事务同步管理器当中去获取到Connection
+     * 使用数据源去创建事务, 可以从Spring的事务同步管理器当中去获取到Connection
      *
      * @param dataSource dataSource
      */

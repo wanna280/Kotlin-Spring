@@ -10,7 +10,7 @@ import java.net.URL
 import java.nio.file.Files
 
 /**
- * 基于File的UrlResource，是一类特殊的UrlResource(protocol=file)
+ * 基于File的UrlResource, 是一类特殊的UrlResource(protocol=file)
  *
  * @author jianchao.jia
  * @version v1.0

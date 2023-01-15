@@ -1,7 +1,7 @@
 package com.wanna.framework.transaction
 
 /**
- * 维护一个事务的一些属性信息，比如超时时间、是否只读，隔离级别、传播行为
+ * 维护一个事务的一些属性信息, 比如超时时间、是否只读, 隔离级别、传播行为
  */
 interface TransactionDefinition {
     companion object {

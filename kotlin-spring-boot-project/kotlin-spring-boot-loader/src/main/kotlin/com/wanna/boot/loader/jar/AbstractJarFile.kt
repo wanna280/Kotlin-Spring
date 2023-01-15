@@ -9,8 +9,8 @@ import java.security.Permission
 
 /**
  *
- * 这是一个抽象的JarFile的实现，它描述了一个Jar包的更多的相关细节功能；
- * 直接去继承[java.util.jar.JarFile]为了扩展JarFile的相关功能，
+ * 这是一个抽象的JarFile的实现, 它描述了一个Jar包的更多的相关细节功能;
+ * 直接去继承[java.util.jar.JarFile]为了扩展JarFile的相关功能,
  * 为SpringBootLoader当中的JarFile的实现提供基础
  *
  * @author jianchao.jia

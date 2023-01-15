@@ -13,7 +13,7 @@ package com.wanna.boot.loader
 class MainMethodRunner(private val mainClassName: String, private val args: Array<String>) {
 
     /**
-     * 执行main方法，去进行启动应用(使用的是ContextClassLoader去进行的类加载)
+     * 执行main方法, 去进行启动应用(使用的是ContextClassLoader去进行的类加载)
      *
      * @throws Exception 如果启动应用应用过程当中发生了异常
      */

@@ -5,11 +5,11 @@ import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 提供了基于顺序(index)的一种快速访问注解的属性方法的方式(quick way)，
+ * 提供了基于顺序(index)的一种快速访问注解的属性方法的方式(quick way),
  * 同时也提供了很多关于操作注解属性的相关的工具方法
  *
- * 因为注解本质上其实是一个接口，注解的相关的属性本质上是一个接口方法调用，
- * 注解的真正的方法执行，是使用的JDK动态代理的方式去生成的代理，保证我们可以
+ * 因为注解本质上其实是一个接口, 注解的相关的属性本质上是一个接口方法调用,
+ * 注解的真正的方法执行, 是使用的JDK动态代理的方式去生成的代理, 保证我们可以
  * 去正常访问注解当中去进行配置的属性信息
  *
  * @author jianchao.jia
@@ -67,7 +67,7 @@ class AttributeMethods(
         }
 
         /**
-         * 提供一个基于给定一个注解，去构建出来的AttributeMethods对象的工厂方法
+         * 提供一个基于给定一个注解, 去构建出来的AttributeMethods对象的工厂方法
          *
          * @param annotationType 想要为哪个注解去构建AttributeMethods？
          * @return 构建出来的AttributesMethods(如果给定的annotationType为null, 那么return null)
@@ -97,7 +97,7 @@ class AttributeMethods(
          * 判断给定的方法是否是一个注解的属性方法？
          *
          * @param method 待进行判断的方法
-         * @return 如果它是一个属性方法，那么return true；否则return false
+         * @return 如果它是一个属性方法, 那么return true; 否则return false
          */
         @JvmStatic
         private fun isAttributeMethod(method: Method): Boolean =
@@ -108,7 +108,7 @@ class AttributeMethods(
      * 从AttributeMethods当中根据name去找到合适的属性对应的index
      *
      * @param name 属性名
-     * @return 如果存在有这样的属性，那么返回该属性所在的index；如果不存在，那么return -1
+     * @return 如果存在有这样的属性, 那么返回该属性所在的index; 如果不存在, 那么return -1
      */
     fun indexOf(name: String): Int {
         attributeMethods.indices.forEach {

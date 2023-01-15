@@ -50,7 +50,7 @@ interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
      * 从MergedAnnotations当中, 去根据AnnotationType去获取到该注解对应的合并之后的结果MergedAnnotation
      *
      * @param annotationType annotationType
-     * @return MergedAnnotation(如果不存在的话，返回 [MergedAnnotation.missing])
+     * @return MergedAnnotation(如果不存在的话, 返回 [MergedAnnotation.missing])
      */
     fun <A : Annotation> get(annotationType: Class<A>): MergedAnnotation<A>
 
@@ -59,7 +59,7 @@ interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
      *
      * @param annotationType annotationType
      * @param predicate 支持去对要去进行返回的目标注解进行过滤, 只有在断言匹配的情况下才返回
-     * @return MergedAnnotation(如果不存在的话，返回 [MergedAnnotation.missing])
+     * @return MergedAnnotation(如果不存在的话, 返回 [MergedAnnotation.missing])
      */
     fun <A : Annotation> get(
         annotationType: Class<A>, @Nullable predicate: Predicate<in MergedAnnotation<A>>?
@@ -71,7 +71,7 @@ interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
      * @param annotationType annotationType
      * @param predicate 支持去对要去进行返回的目标注解进行过滤, 只有在断言匹配的情况下才返回
      * @param selector 当遇到了多个匹配的注解的情况下, 应该要选取哪个去作为最终的注解?(默认是采用距离最近的一个)
-     * @return MergedAnnotation(如果不存在的话，返回 [MergedAnnotation.missing])
+     * @return MergedAnnotation(如果不存在的话, 返回 [MergedAnnotation.missing])
      */
     fun <A : Annotation> get(
         annotationType: Class<A>,
@@ -83,7 +83,7 @@ interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
      * 从MergedAnnotations当中, 根据AnnotationName去获取到该注解对应的合并之后的结果MergedAnnotation
      *
      * @param annotationName AnnotationName
-     * @return MergedAnnotation(如果不存在的话，返回 [MergedAnnotation.missing])
+     * @return MergedAnnotation(如果不存在的话, 返回 [MergedAnnotation.missing])
      */
     fun <A : Annotation> get(annotationName: String): MergedAnnotation<A>
 
@@ -92,7 +92,7 @@ interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
      *
      * @param annotationName AnnotationName
      * @param predicate 支持去对要去进行返回的目标注解进行过滤, 只有在断言匹配的情况下才返回
-     * @return MergedAnnotation(如果不存在的话，返回 [MergedAnnotation.missing])
+     * @return MergedAnnotation(如果不存在的话, 返回 [MergedAnnotation.missing])
      */
     fun <A : Annotation> get(
         annotationName: String, @Nullable predicate: Predicate<in MergedAnnotation<A>>?
@@ -104,7 +104,7 @@ interface MergedAnnotations : Iterable<MergedAnnotation<Annotation>> {
      * @param annotationName AnnotationName
      * @param predicate 支持去对要去进行返回的目标注解进行过滤, 只有在断言匹配的情况下才返回
      * @param selector 当遇到了多个匹配的注解的情况下, 应该要选取哪个去作为最终的注解?(默认是采用距离最近的一个)
-     * @return MergedAnnotation(如果不存在的话，返回 [MergedAnnotation.missing])
+     * @return MergedAnnotation(如果不存在的话, 返回 [MergedAnnotation.missing])
      */
     fun <A : Annotation> get(
         annotationName: String,

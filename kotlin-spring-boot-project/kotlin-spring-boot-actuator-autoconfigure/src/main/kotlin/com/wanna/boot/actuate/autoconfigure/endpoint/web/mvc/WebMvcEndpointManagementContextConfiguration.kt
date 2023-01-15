@@ -18,9 +18,9 @@ import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.web.HandlerMapping
 
 /**
- * WebMvc的Endpoint的自动配置类，提供了对于Actuator当中对于@Endpoint的解析和监控的暴露
- * 1.提供了[WebMvcEndpointHandlerMapping]这个[HandlerMapping]自动装配，对外提供HTTP接口
- * 2.提供了[ControllerEndpointHandlerMapping]这个[HandlerMapping]的自动装配，对外提供HTTP接口
+ * WebMvc的Endpoint的自动配置类, 提供了对于Actuator当中对于@Endpoint的解析和监控的暴露
+ * 1.提供了[WebMvcEndpointHandlerMapping]这个[HandlerMapping]自动装配, 对外提供HTTP接口
+ * 2.提供了[ControllerEndpointHandlerMapping]这个[HandlerMapping]的自动装配, 对外提供HTTP接口
  *
  * @see WebEndpointAutoConfiguration
  * @see WebEndpointsSupplier
@@ -32,7 +32,7 @@ import com.wanna.framework.web.HandlerMapping
 open class WebMvcEndpointManagementContextConfiguration {
 
     /**
-     * WebMvc的Endpoint的HandlerMapping，负责提供Endpoint的请求的处理
+     * WebMvc的Endpoint的HandlerMapping, 负责提供Endpoint的请求的处理
      *
      * @param properties Endpoint的配置信息
      * @param webEndpointsSupplier WebEndpoint的Supplier
@@ -62,7 +62,7 @@ open class WebMvcEndpointManagementContextConfiguration {
     }
 
     /**
-     * Controller的Endpoint的HandlerMapping，支持使用Controller的方式去进行配置Endpoint
+     * Controller的Endpoint的HandlerMapping, 支持使用Controller的方式去进行配置Endpoint
      *
      * @param controllerEndpointsSupplier ControllerEndpoint的Supplier
      * @param webEndpointProperties  WebEndpointProperties

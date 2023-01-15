@@ -9,8 +9,8 @@ import kotlin.reflect.KClass
  * @version v1.0
  * @date 2022/11/6
  *
- * @param value 需要使用的TestExecutionListener的类，同listeners属性
- * @param listeners 需要使用的TestExecutionListener的类，同value属性
+ * @param value 需要使用的TestExecutionListener的类, 同listeners属性
+ * @param listeners 需要使用的TestExecutionListener的类, 同value属性
  */
 annotation class TestExecutionListeners(
     val value: Array<KClass<out TestExecutionListener>> = [],

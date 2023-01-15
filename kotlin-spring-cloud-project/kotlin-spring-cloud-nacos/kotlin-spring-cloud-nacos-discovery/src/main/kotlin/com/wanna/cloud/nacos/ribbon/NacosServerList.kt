@@ -8,7 +8,7 @@ import com.wanna.cloud.nacos.NacosDiscoveryProperties
 import com.wanna.cloud.nacos.NacosServiceManager
 
 /**
- * 这是Nacos针对于Ribbon去进行实现的ServerList，主要是为Ribbon的负载均衡去提供Server的选择来源；
+ * 这是Nacos针对于Ribbon去进行实现的ServerList, 主要是为Ribbon的负载均衡去提供Server的选择来源; 
  *
  * @see AbstractServerList
  */
@@ -29,7 +29,7 @@ open class NacosServerList(
     }
 
     /**
-     * 获取Nacos注册中心当中的所有NacosServer实例，需要使用group+serviceId，联合去进行查询
+     * 获取Nacos注册中心当中的所有NacosServer实例, 需要使用group+serviceId, 联合去进行查询
      *
      * @return 从NacosServer当中获取到的所有的NacosServer(Nacos Instance)列表
      */
@@ -40,7 +40,7 @@ open class NacosServerList(
     }
 
     /**
-     * 将NacosInstance列表，转换为Ribbon的ServerList
+     * 将NacosInstance列表, 转换为Ribbon的ServerList
      *
      * @param instances nacos实例列表
      */
@@ -49,7 +49,7 @@ open class NacosServerList(
     }
 
     /**
-     * 初始化相关的配置，这里主要是初始化serviceId(clientName)，Ribbon会自动自动把相关的信息保存到IClientConfig当中
+     * 初始化相关的配置, 这里主要是初始化serviceId(clientName), Ribbon会自动自动把相关的信息保存到IClientConfig当中
      *
      * @param clientConfig ClientConfig相关信息
      */

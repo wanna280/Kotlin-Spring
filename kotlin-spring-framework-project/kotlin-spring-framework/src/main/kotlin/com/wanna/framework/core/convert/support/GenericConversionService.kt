@@ -12,9 +12,9 @@ import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.CopyOnWriteArraySet
 
 /**
- * 这是一个通用(带泛型)的ConversionService，它为Converter的注册中心以及可以被配置的ConversionService提供了模板的实现；
- * 它已经可以支持去进行类型的转换，但是它内部并没有添加默认的Converter，也就是说，它本身并不能工作，需要往内部加入Converter，才能完成
- * 类型的转换工作，在DefaultConversionService当中，就添加了一些默认的Converter去完成类型转换的处理
+ * 这是一个通用(带泛型)的ConversionService, 它为Converter的注册中心以及可以被配置的ConversionService提供了模板的实现; 
+ * 它已经可以支持去进行类型的转换, 但是它内部并没有添加默认的Converter, 也就是说, 它本身并不能工作, 需要往内部加入Converter, 才能完成
+ * 类型的转换工作, 在DefaultConversionService当中, 就添加了一些默认的Converter去完成类型转换的处理
  *
  * @see DefaultConversionService
  * @see ConfigurableConversionService
@@ -22,7 +22,7 @@ import java.util.concurrent.CopyOnWriteArraySet
 open class GenericConversionService : ConfigurableConversionService {
 
     /**
-     * Converter的注册中心，内部维护了全部的Converter的列表
+     * Converter的注册中心, 内部维护了全部的Converter的列表
      */
     private val converters = Converters()
 
@@ -36,7 +36,7 @@ open class GenericConversionService : ConfigurableConversionService {
     }
 
     /**
-     * 判断Converter注册中心当中，是否存在有这样的Converter，能去完成从sourceType->targetType的类型转换？
+     * 判断Converter注册中心当中, 是否存在有这样的Converter, 能去完成从sourceType->targetType的类型转换？
      *
      * @param sourceType sourceType
      * @param targetType targetType
@@ -46,7 +46,7 @@ open class GenericConversionService : ConfigurableConversionService {
         converters.getConverter(sourceType, targetType).hasConverter()
 
     /**
-     * 判断Converter注册中心当中，是否存在有这样的Converter，能去完成从sourceType->targetType的类型转换？
+     * 判断Converter注册中心当中, 是否存在有这样的Converter, 能去完成从sourceType->targetType的类型转换？
      *
      * @param sourceType sourceType
      * @param targetType targetType
@@ -60,7 +60,7 @@ open class GenericConversionService : ConfigurableConversionService {
      *
      * @param targetType 要将source对象转换成什么类型
      * @param source 要去进行转换的对象
-     * @return 转换完成的对象(如果无法完成转换，那么return null)
+     * @return 转换完成的对象(如果无法完成转换, 那么return null)
      */
     @Suppress("UNCHECKED_CAST")
     override fun <T : Any> convert(source: Any?, targetType: Class<T>) =
@@ -71,7 +71,7 @@ open class GenericConversionService : ConfigurableConversionService {
      *
      * @param targetType 要将source对象转换成什么类型
      * @param source 要去进行转换的对象
-     * @return 转换完成的对象(如果无法完成转换，那么return null)
+     * @return 转换完成的对象(如果无法完成转换, 那么return null)
      */
     override fun convert(source: Any?, targetType: TypeDescriptor): Any? {
         source ?: return null  // if null, return null
@@ -81,7 +81,7 @@ open class GenericConversionService : ConfigurableConversionService {
     }
 
     /**
-     * 添加一个自定义的Converter，自动去解析Converter的泛型类型去进行注册
+     * 添加一个自定义的Converter, 自动去解析Converter的泛型类型去进行注册
      *
      * @param converter 你想要添加的Converter
      * @throws IllegalStateException 如果无法解析出来Converter的泛型类型
@@ -92,13 +92,13 @@ open class GenericConversionService : ConfigurableConversionService {
         if (generics.isEmpty()) {
             throw IllegalStateException("无法解析添加的Converter的泛型类型[$converter]")
         }
-        // 将Converter包装成为GenericConverter，并添加该Converter能处理的映射类型...
+        // 将Converter包装成为GenericConverter, 并添加该Converter能处理的映射类型...
         addConverter(ConverterAdapter(converter).addConvertibleType(generics[0].resolve()!!, generics[1].resolve()!!))
     }
 
     /**
-     * 往"sourceType-->targetType"的映射当中去添加一个Converter，
-     * 因为Converter本身并不包含泛型信息，因此，我们应该尝试去进行converter的父类当中的泛型的类型去进行解析
+     * 往"sourceType-->targetType"的映射当中去添加一个Converter,
+     * 因为Converter本身并不包含泛型信息, 因此, 我们应该尝试去进行converter的父类当中的泛型的类型去进行解析
      *
      * @param sourceType sourceType
      * @param targetType targetType
@@ -122,7 +122,7 @@ open class GenericConversionService : ConfigurableConversionService {
     }
 
     /**
-     * 根据"sourceType-->targetType"的映射关系，去移除该映射下的Converter列表
+     * 根据"sourceType-->targetType"的映射关系, 去移除该映射下的Converter列表
      *
      * @param sourceType sourceType
      * @param targetType targetType
@@ -149,8 +149,8 @@ open class GenericConversionService : ConfigurableConversionService {
         val converters = ConcurrentHashMap<ConvertiblePair, ConvertersForPair>()
 
         /**
-         * 注册Converter，key是ConvertibleType，value是GenericConverter；
-         * 将GenericConverter可以转换的类型拿出来作为Key，去完成Mapping->Converters的映射关系注册
+         * 注册Converter, key是ConvertibleType, value是GenericConverter; 
+         * 将GenericConverter可以转换的类型拿出来作为Key, 去完成Mapping->Converters的映射关系注册
          *
          * @param converter GenericConverter
          */
@@ -184,17 +184,17 @@ open class GenericConversionService : ConfigurableConversionService {
         }
 
         /**
-         * 根据(sourceType->targetType)的Pair，去获取到支持处理该种映射方式的Converter；
-         * 如果此时注册中心当中还没有这种类型的映射，那么需要新创建一个
+         * 根据(sourceType->targetType)的Pair, 去获取到支持处理该种映射方式的Converter; 
+         * 如果此时注册中心当中还没有这种类型的映射, 那么需要新创建一个
          *
-         * @return ConvertersForPair，也就是支持处理(sourceType->targetType)这种映射关系的Converter列表
+         * @return ConvertersForPair, 也就是支持处理(sourceType->targetType)这种映射关系的Converter列表
          */
         fun getConverter(type: ConvertiblePair): ConvertersForPair {
             var convertersForPair = this.converters[type]
             if (convertersForPair != null) {
                 return convertersForPair
             }
-            // 遍历所有的Converter，根据继承关系去进行寻找...
+            // 遍历所有的Converter, 根据继承关系去进行寻找...
             convertersForPair = find(type)
 
             // 如果还找不到的话, 那么尝试一下使用默认的Converter(啥都不做的Converter)
@@ -206,8 +206,8 @@ open class GenericConversionService : ConfigurableConversionService {
         }
 
         /**
-         * 遍历所有的Converter去进行继承关系的匹配，因为有可能给出的是它的子类...
-         * 我们需要检查类型是否匹配，从而去进行找到合适的Converter
+         * 遍历所有的Converter去进行继承关系的匹配, 因为有可能给出的是它的子类...
+         * 我们需要检查类型是否匹配, 从而去进行找到合适的Converter
          *
          * @param type 要去进行匹配的sourceType和targetType
          * @return 寻找到的Converters(如果没有找到return null)
@@ -225,7 +225,7 @@ open class GenericConversionService : ConfigurableConversionService {
         }
 
         /**
-         * 根据(sourceType->targetType)的映射Mapping，去移除掉该Mapping相应的Converter列表
+         * 根据(sourceType->targetType)的映射Mapping, 去移除掉该Mapping相应的Converter列表
          *
          * @param sourceType sourceType
          * @param targetType targetType
@@ -236,7 +236,7 @@ open class GenericConversionService : ConfigurableConversionService {
     }
 
     /**
-     * 这是一个映射(Pair,sourceType->targetType的映射)对应的Converter列表的注册中心；
+     * 这是一个映射(Pair,sourceType->targetType的映射)对应的Converter列表的注册中心; 
      * 比如一个Integer->String的映射可能会存在有多个Converter都能去进行转换...这里就注册负责维护多个Converter的列表
      *
      * @see ConvertiblePair
@@ -288,14 +288,14 @@ open class GenericConversionService : ConfigurableConversionService {
     }
 
     /**
-     * 这是一个Converter的Adapter，它可以将普通的Converter转换为GenericConverter去进行包装
+     * 这是一个Converter的Adapter, 它可以将普通的Converter转换为GenericConverter去进行包装
      *
      * @param converter 想要去进行包装的Converter
      */
     @Suppress("UNCHECKED_CAST")
     private class ConverterAdapter(private val converter: Converter<*, *>) : GenericConverter {
         /**
-         * 包装的普通的Converter，可以支持的转换的类型映射
+         * 包装的普通的Converter, 可以支持的转换的类型映射
          */
         private val convertibleTypes = HashSet<ConvertiblePair>()
 

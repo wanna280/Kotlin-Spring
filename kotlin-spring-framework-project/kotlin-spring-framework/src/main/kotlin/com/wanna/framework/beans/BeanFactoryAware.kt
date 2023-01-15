@@ -11,7 +11,7 @@ import com.wanna.framework.context.aware.Aware
 fun interface BeanFactoryAware : Aware {
 
     /**
-     * 自动回调，给Bean去进行设置BeanFactory
+     * 自动回调, 给Bean去进行设置BeanFactory
      *
      * @param beanFactory BeanFactory
      */

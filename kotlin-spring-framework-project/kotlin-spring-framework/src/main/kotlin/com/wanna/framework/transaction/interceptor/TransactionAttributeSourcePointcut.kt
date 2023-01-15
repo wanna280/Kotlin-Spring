@@ -16,14 +16,14 @@ abstract class TransactionAttributeSourcePointcut : StaticMethodMatcherPointcut(
     }
 
     /**
-     * 提供TransactionAttributeSource，去对事务方法去进行匹配，交给子类去进行实现
+     * 提供TransactionAttributeSource, 去对事务方法去进行匹配, 交给子类去进行实现
      *
      * @see TransactionAttributeSource
      */
     abstract fun getTransactionAttributeSource(): TransactionAttributeSource?
 
     /**
-     * 匹配目标方法，只要目标方法/类上有@Transactional注解就算匹配
+     * 匹配目标方法, 只要目标方法/类上有@Transactional注解就算匹配
      *
      * @param method 目标方法
      * @param targetClass 目标类
@@ -43,7 +43,7 @@ abstract class TransactionAttributeSourcePointcut : StaticMethodMatcherPointcut(
     override fun hashCode(): Int = TransactionAttributeSourcePointcut::class.java.hashCode()
 
     /**
-     * 事务属性的ClassFilter，匹配类是否符合一个注解类的要求，委托TransactionAttributeSource去进行完成
+     * 事务属性的ClassFilter, 匹配类是否符合一个注解类的要求, 委托TransactionAttributeSource去进行完成
      */
     private inner class TransactionAttributeSourceClassFilter : ClassFilter {
         override fun matches(clazz: Class<*>): Boolean {

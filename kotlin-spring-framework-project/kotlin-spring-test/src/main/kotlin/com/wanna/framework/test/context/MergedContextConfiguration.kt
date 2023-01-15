@@ -4,8 +4,8 @@ import com.wanna.framework.context.ApplicationContextInitializer
 import java.io.Serializable
 
 /**
- * 经过Merge之后的TestContext的配置信息，由[ContextConfigurationAttributes]所Merge而来；
- * 并添加了更多相关的配置信息，去进行合并
+ * 经过Merge之后的TestContext的配置信息, 由[ContextConfigurationAttributes]所Merge而来;
+ * 并添加了更多相关的配置信息, 去进行合并
  *
  * @author jianchao.jia
  * @version v1.0

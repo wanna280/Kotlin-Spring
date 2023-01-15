@@ -11,7 +11,7 @@ import com.wanna.framework.transaction.interceptor.TransactionInterceptor
 import java.util.Optional
 
 /**
- * Spring事务需要用到的配置类，负责给SpringBeanFactory当中导入Spring事务需要用到的Advisor/Advice，以及@Transactional的注解属性匹配
+ * Spring事务需要用到的配置类, 负责给SpringBeanFactory当中导入Spring事务需要用到的Advisor/Advice, 以及@Transactional的注解属性匹配
  *
  * @see AbstractTransactionManagementConfiguration
  * @see BeanFactoryTransactionAttributeSourceAdvisor
@@ -23,8 +23,8 @@ import java.util.Optional
 open class ProxyTransactionManagementConfiguration : AbstractTransactionManagementConfiguration() {
 
     /**
-     * SpringTransaction的Advisor，负责去匹配@Transactional注解生成Advisor，
-     * 并使用TransactionInterceptor作为拦截的callback基于SpringAop去生成代理；
+     * SpringTransaction的Advisor, 负责去匹配@Transactional注解生成Advisor, 
+     * 并使用TransactionInterceptor作为拦截的callback基于SpringAop去生成代理; 
      *
      * @see TransactionInterceptor
      */
@@ -41,8 +41,8 @@ open class ProxyTransactionManagementConfiguration : AbstractTransactionManageme
     }
 
     /**
-     * SpringTransaction的事务属性源，提供事务属性的匹配功能，使用各个策略，从@Transactional注解当中去获取相关的信息；
-     * 不管是启动时匹配一个目标类是否要生成事务代理，还是运行时获取事务属性信息，都都需要获取到该组件从@Transactional当中去获取到事务属性信息
+     * SpringTransaction的事务属性源, 提供事务属性的匹配功能, 使用各个策略, 从@Transactional注解当中去获取相关的信息; 
+     * 不管是启动时匹配一个目标类是否要生成事务代理, 还是运行时获取事务属性信息, 都都需要获取到该组件从@Transactional当中去获取到事务属性信息
      *
      * @see AnnotationTransactionAttributeSource
      */
@@ -53,10 +53,10 @@ open class ProxyTransactionManagementConfiguration : AbstractTransactionManageme
     }
 
     /**
-     * 给SpringBeanFactory当中导入一个TransactionInterceptor，负责去处理目标方法
+     * 给SpringBeanFactory当中导入一个TransactionInterceptor, 负责去处理目标方法
      *
-     * * 1.设置TransactionManager，整个事务想要使用的事务同步管理器
-     * * 2.设置TransactionAttributeSource，负责获取到@Transactional注解当中的属性信息
+     * * 1.设置TransactionManager, 整个事务想要使用的事务同步管理器
+     * * 2.设置TransactionAttributeSource, 负责获取到@Transactional注解当中的属性信息
      */
     @Bean
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE)

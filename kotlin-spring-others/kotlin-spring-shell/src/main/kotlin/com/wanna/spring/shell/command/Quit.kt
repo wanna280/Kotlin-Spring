@@ -11,7 +11,7 @@ import com.wanna.spring.shell.annotation.ShellMethod
 class Quit {
 
     /**
-     * 支持去处理quit和exit命令，直接抛出ExistRequest异常退出应用程序
+     * 支持去处理quit和exit命令, 直接抛出ExistRequest异常退出应用程序
      *
      * @throws ExitRequest
      */

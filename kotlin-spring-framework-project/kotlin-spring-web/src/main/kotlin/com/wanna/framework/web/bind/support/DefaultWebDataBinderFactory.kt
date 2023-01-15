@@ -10,7 +10,7 @@ import com.wanna.framework.web.context.request.NativeWebRequest
 open class DefaultWebDataBinderFactory : WebDataBinderFactory {
 
     /**
-     * 创建WebDataBinder，并完成Binder的初始化
+     * 创建WebDataBinder, 并完成Binder的初始化
      *
      * @param webRequest NativeWebRequest
      * @param target 要去进行创建绑定的目标JavaBean

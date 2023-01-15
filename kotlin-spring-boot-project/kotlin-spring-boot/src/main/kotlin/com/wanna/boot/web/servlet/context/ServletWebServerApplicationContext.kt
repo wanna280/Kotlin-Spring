@@ -112,7 +112,7 @@ open class ServletWebServerApplicationContext(
     }
 
     /**
-     * 重写父类的refresh方法，当刷新SpringBeanFactory出现异常时，我们需要去关闭WebServer
+     * 重写父类的refresh方法, 当刷新SpringBeanFactory出现异常时, 我们需要去关闭WebServer
      *
      * @see WebServerManager.webServer
      * @see WebServer.stop
@@ -127,7 +127,7 @@ open class ServletWebServerApplicationContext(
     }
 
     /**
-     * 创建ServletWebServer，并发布ServletWebServerInitializedEvent事件...
+     * 创建ServletWebServer, 并发布ServletWebServerInitializedEvent事件...
      *
      * @see com.wanna.boot.web.server.WebServerInitializedEvent
      * @see ServletWebServerInitializedEvent
@@ -263,7 +263,7 @@ open class ServletWebServerApplicationContext(
 
     /**
      * 从Spring BeanFactory当中去探测ServletWebServerFactory.
-     * 如果探测到一个，直接返回；如果探测到多个/没有探测到WebServerFactory，都需要抛出异常。
+     * 如果探测到一个, 直接返回; 如果探测到多个/没有探测到WebServerFactory, 都需要抛出异常.
      *
      * @return 探测到的WebServerFactory(不会为null, 万一出现了什么情况, 都是直接就丢出去异常)
      * @throws ApplicationContextException 如果BeanFactory当中没有合适的ServletWebServerFactory/存在有超过一个ServletWebServerFactory

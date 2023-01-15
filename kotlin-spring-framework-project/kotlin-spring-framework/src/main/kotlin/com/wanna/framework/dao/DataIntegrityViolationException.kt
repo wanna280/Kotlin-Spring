@@ -1,7 +1,7 @@
 package com.wanna.framework.dao
 
 /**
- * 违反数据库的约束条件异常，例如主键重复的[DuplicateKeyException]
+ * 违反数据库的约束条件异常, 例如主键重复的[DuplicateKeyException]
  *
  * @author jianchao.jia
  * @version v1.0

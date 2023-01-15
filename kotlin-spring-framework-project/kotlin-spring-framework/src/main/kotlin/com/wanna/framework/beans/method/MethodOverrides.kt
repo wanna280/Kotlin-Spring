@@ -3,7 +3,7 @@ package com.wanna.framework.beans.method
 import java.lang.reflect.Method
 
 /**
- * 这里维护了一个MethodOverride的列表，也就是要进行运行时方法重写的方法列表
+ * 这里维护了一个MethodOverride的列表, 也就是要进行运行时方法重写的方法列表
  *
  * @see MethodOverride
  * @see ReplaceOverride
@@ -33,8 +33,8 @@ open class MethodOverrides() {
     }
 
     /**
-     * 根据方法，去匹配MethodOverride；
-     * 如果匹配到，return匹配到的MethodOverride；不然return null
+     * 根据方法, 去匹配MethodOverride; 
+     * 如果匹配到, return匹配到的MethodOverride; 不然return null
      */
     open fun getMethodOverride(method: Method): MethodOverride? {
         for (methodOverride in methodOverrides) {

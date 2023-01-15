@@ -7,7 +7,7 @@ import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 
 /**
- * 这是一个抽象的HandlerMethod的HandlerAdapter，它负责去处理Handler类型为HandlerMethod类型的请求
+ * 这是一个抽象的HandlerMethod的HandlerAdapter, 它负责去处理Handler类型为HandlerMethod类型的请求
  *
  * @see HandlerAdapter
  */
@@ -22,15 +22,15 @@ abstract class AbstractHandlerMethodAdapter : HandlerAdapter, Ordered {
     }
 
     /**
-     * 只要handler是HandlerMethod，那么就支持去进行处理本次请求
+     * 只要handler是HandlerMethod, 那么就支持去进行处理本次请求
      *
      * @param handler handler
-     * @return 如果handler是HandlerMethod类型，return true；不然return false
+     * @return 如果handler是HandlerMethod类型, return true; 不然return false
      */
     override fun supports(handler: Any) = handler is HandlerMethod && supportInternal(handler)
 
     /**
-     * 处理目标请求，将handler限制为HandlerMethod这种类型，对于具体的处理逻辑，完全地交给子类去进行实现
+     * 处理目标请求, 将handler限制为HandlerMethod这种类型, 对于具体的处理逻辑, 完全地交给子类去进行实现
      *
      * @param request request
      * @param response response
@@ -42,7 +42,7 @@ abstract class AbstractHandlerMethodAdapter : HandlerAdapter, Ordered {
     }
 
     /**
-     * 使用HandlerMethod去处理目标请求的具体实现逻辑，交给子类去进行实现
+     * 使用HandlerMethod去处理目标请求的具体实现逻辑, 交给子类去进行实现
      *
      * @param handler HandlerMethod
      * @param request request

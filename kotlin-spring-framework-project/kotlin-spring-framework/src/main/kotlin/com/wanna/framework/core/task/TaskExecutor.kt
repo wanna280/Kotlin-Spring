@@ -3,7 +3,7 @@ package com.wanna.framework.core.task
 import java.util.concurrent.Executor
 
 /**
- * 执行任务的一个`Executor`线程池，对应于JDK的juc包当中的`Executor`
+ * 执行任务的一个`Executor`线程池, 对应于JDK的juc包当中的`Executor`
  *
  * @see Executor
  */

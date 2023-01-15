@@ -1,8 +1,8 @@
 package com.wanna.framework.core.environment
 
 /**
- * 这是针对于命令行的PropertySource的一个简单实现，可以使用命令行参数的解析器，去将命令行参数列表解析成为一个CommandLineArgs对象；
- * 在CommandLineArgs对象当中存放了所以的nonOptionArgs以及optionArgs列表，可以通过getSource获取到CommandLineArgs对象
+ * 这是针对于命令行的PropertySource的一个简单实现, 可以使用命令行参数的解析器, 去将命令行参数列表解析成为一个CommandLineArgs对象;
+ * 在CommandLineArgs对象当中存放了所以的nonOptionArgs以及optionArgs列表, 可以通过getSource获取到CommandLineArgs对象
  *
  * @see CommandLinePropertySource
  * @see SimpleCommandLineArgsParser.parse

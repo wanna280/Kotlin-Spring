@@ -5,12 +5,12 @@ import com.wanna.framework.context.annotation.ConditionContext
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
 
 /**
- * 标识这是一个SpringBoot的Condition，也是SpringBoot当中的所有的Condition的基类，它基于Condition并提供了日志的输出功能；
- * 提供了日志的输出，目的是为了去告诉用户哪些配置类已经被自动装配进容器当中，哪些配置类没有被装配进容器当中
+ * 标识这是一个SpringBoot的Condition, 也是SpringBoot当中的所有的Condition的基类, 它基于Condition并提供了日志的输出功能;
+ * 提供了日志的输出, 目的是为了去告诉用户哪些配置类已经被自动装配进容器当中, 哪些配置类没有被装配进容器当中
  */
 abstract class SpringBootCondition : Condition {
     /**
-     * 实现Condition，去完成配置类的匹配
+     * 实现Condition, 去完成配置类的匹配
      *
      * @param context BeanDefinition/Environment/BeanFactory/ClassLoader
      */
@@ -22,7 +22,7 @@ abstract class SpringBootCondition : Condition {
     }
 
     /**
-     * 获取Condition的匹配结果，是一个抽象的模板方法，交给子类去进行实现
+     * 获取Condition的匹配结果, 是一个抽象的模板方法, 交给子类去进行实现
      *
      * @param context ConditionContext
      * @param metadata 配置类的Metadata

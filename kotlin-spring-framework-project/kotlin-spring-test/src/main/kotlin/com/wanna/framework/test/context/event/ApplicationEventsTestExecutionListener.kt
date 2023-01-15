@@ -11,7 +11,7 @@ import com.wanna.framework.test.context.support.DependencyInjectionTestExecution
 import java.io.Serializable
 
 /**
- * [ApplicationEvents]的[TestExecutionListener]，监听Test方法的执行流程，
+ * [ApplicationEvents]的[TestExecutionListener], 监听Test方法的执行流程,
  * 往[ApplicationContext]当中去注册[ApplicationEventsApplicationListener]
  *
  * @author jianchao.jia
@@ -36,12 +36,12 @@ open class ApplicationEventsTestExecutionListener : AbstractTestExecutionListene
     /**
      * Order
      *
-     * @return 1800，Note: 需要比[DependencyInjectionTestExecutionListener]的优先级高，不然处理@Autowired自动注入时会出现依赖找不到的情况
+     * @return 1800, Note: 需要比[DependencyInjectionTestExecutionListener]的优先级高, 不然处理@Autowired自动注入时会出现依赖找不到的情况
      */
     override fun getOrder(): Int = 1800
 
     /**
-     * 在准备testInstance时，先去往[ApplicationEventsHolder]当中去注册一个[ApplicationEvents]
+     * 在准备testInstance时, 先去往[ApplicationEventsHolder]当中去注册一个[ApplicationEvents]
      *
      * @param testContext TestContext
      */
@@ -53,7 +53,7 @@ open class ApplicationEventsTestExecutionListener : AbstractTestExecutionListene
     }
 
     /**
-     * 在Test方法执行之前，如果必要的话，先去注册一下[ApplicationEvents]到[ApplicationEventsHolder]当中
+     * 在Test方法执行之前, 如果必要的话, 先去注册一下[ApplicationEvents]到[ApplicationEventsHolder]当中
      *
      * @param testContext TestContext
      */
@@ -64,7 +64,7 @@ open class ApplicationEventsTestExecutionListener : AbstractTestExecutionListene
     }
 
     /**
-     * 在Test方法执行之后，需要清理[ApplicationEventsHolder]当中的[ApplicationEvents]
+     * 在Test方法执行之后, 需要清理[ApplicationEventsHolder]当中的[ApplicationEvents]
      */
     override fun afterTestExecution(testContext: TestContext) {
         if (recordApplicationEvents(testContext)) {
@@ -90,12 +90,12 @@ open class ApplicationEventsTestExecutionListener : AbstractTestExecutionListene
                     .map { it::class.java }
                     .noneMatch { it == ApplicationEventsApplicationListener::class.java }
 
-            // 如果之前还没注册过的话，那么我们需要去注册ApplicationEventsApplicationListener
+            // 如果之前还没注册过的话, 那么我们需要去注册ApplicationEventsApplicationListener
             if (notAlreadyRegistered) {
                 // 添加一个ApplicationEventsApplicationListener
                 applicationContext.addApplicationListener(ApplicationEventsApplicationListener())
 
-                // 注册一个[ResolvableDependency]，提供@Autowired的自动注入
+                // 注册一个[ResolvableDependency], 提供@Autowired的自动注入
                 applicationContext.getBeanFactory()
                     .registerResolvableDependency(ApplicationEvents::class.java, ApplicationEventsObjectFactory())
             }
@@ -106,7 +106,7 @@ open class ApplicationEventsTestExecutionListener : AbstractTestExecutionListene
      * 检查一下是否需要记录[ApplicationEvents]？
      *
      * @param testContext TestContext
-     * @return 如果testClass上标注空[RecordApplicationEvents]注解，那么return true；否则return false
+     * @return 如果testClass上标注空[RecordApplicationEvents]注解, 那么return true; 否则return false
      */
     private fun recordApplicationEvents(testContext: TestContext): Boolean {
         return AnnotatedElementUtils.getMergedAnnotation(

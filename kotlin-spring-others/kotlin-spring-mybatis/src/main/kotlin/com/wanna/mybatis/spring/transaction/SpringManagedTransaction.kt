@@ -8,14 +8,14 @@ import java.sql.Connection
 import javax.sql.DataSource
 
 /**
- * 受Spring管理的MyBatis事务，支持直接从Spring的事务同步管理器当中去获取Connection
+ * 受Spring管理的MyBatis事务, 支持直接从Spring的事务同步管理器当中去获取Connection
  *
  * @param dataSource dataSource
  */
 open class SpringManagedTransaction(private val dataSource: DataSource) : Transaction {
     companion object {
         /**
-         * 默认的超时时间，单位为秒
+         * 默认的超时时间, 单位为秒
          */
         const val DEFAULT_TIME_OUT_SECONDS = 5
     }
@@ -32,12 +32,12 @@ open class SpringManagedTransaction(private val dataSource: DataSource) : Transa
     private var autoCommit = true
 
     /**
-     * 判断当前连接是否是一个事务连接？如果TransactionSynchronizationManager当中就是当前连接的话，那么为true
+     * 判断当前连接是否是一个事务连接？如果TransactionSynchronizationManager当中就是当前连接的话, 那么为true
      */
     private var isTransactionConnection = false
 
     /**
-     * 获取JDBC的Connection，如果之前没有初始化过的话，在这里去完成初始化工作
+     * 获取JDBC的Connection, 如果之前没有初始化过的话, 在这里去完成初始化工作
      *
      * @return JDBC连接
      */
@@ -59,7 +59,7 @@ open class SpringManagedTransaction(private val dataSource: DataSource) : Transa
     }
 
     /**
-     * 提交，只有当前连接不是一个Spring事务连接的情况下，才允许提交
+     * 提交, 只有当前连接不是一个Spring事务连接的情况下, 才允许提交
      */
     override fun commit() {
         if (!isTransactionConnection) {
@@ -68,7 +68,7 @@ open class SpringManagedTransaction(private val dataSource: DataSource) : Transa
     }
 
     /**
-     * 回滚，只有当前连接不是一个Spring事务连接的情况下，才允许回滚
+     * 回滚, 只有当前连接不是一个Spring事务连接的情况下, 才允许回滚
      */
     override fun rollback() {
         if (!isTransactionConnection) {
@@ -83,7 +83,7 @@ open class SpringManagedTransaction(private val dataSource: DataSource) : Transa
     /**
      * 获取当前事务的超时时间(单位为秒)
      *
-     * @return 连接超时时间，默认为5s
+     * @return 连接超时时间, 默认为5s
      */
     override fun getTimeout(): Int {
         val connectionHolder = TransactionSynchronizationManager.getResource(dataSource) as ConnectionHolder

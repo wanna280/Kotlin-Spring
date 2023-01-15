@@ -31,11 +31,11 @@ open class StringToCollectionConverter(private val conversionService: Conversion
         val sourceList = StringUtils.commaDelimitedListToStringArray(source as String)
         val resolvedGeneric = generic.resolve()
 
-        // bugfix: 如果解析不到泛型，那么直接把原始的字符串数组去转为Collection返回
+        // bugfix: 如果解析不到泛型, 那么直接把原始的字符串数组去转为Collection返回
         if (resolvedGeneric == null) {
             sourceList.toCollection(collection)
 
-            // 如果可以解析到泛型的话，那么才使用ConversionService去进行转换
+            // 如果可以解析到泛型的话, 那么才使用ConversionService去进行转换
         } else {
             sourceList.map { conversionService.convert(it, resolvedGeneric) }.toCollection(collection)
         }

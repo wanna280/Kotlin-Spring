@@ -10,7 +10,7 @@ import java.lang.reflect.Constructor
 import kotlin.jvm.Throws
 
 /**
- * 它主要是解析@ConfigurationProperties注解的Bean当中的@ConstructorBinding注解，去判断一个ConfigurationPropertiesBean
+ * 它主要是解析@ConfigurationProperties注解的Bean当中的@ConstructorBinding注解, 去判断一个ConfigurationPropertiesBean
  * 应该使用构造器的方式去进行绑定？还是应该使用JavaBean的setter的方式去进行绑定
  *
  * @see ConfigurationPropertiesBean
@@ -38,7 +38,7 @@ open class ConfigurationPropertiesBindConstructorProvider : BindConstructorProvi
     /**
      * 从给定的类上去寻找标注有[ConstructorBinding]注解的构造器
      *
-     * @return 获取@ConstructorBinding标注的的构造器; 找不到的话，return null
+     * @return 获取@ConstructorBinding标注的的构造器; 找不到的话, return null
      */
     @Nullable
     open fun getBindConstructor(type: Class<*>): Constructor<*>? {
@@ -46,7 +46,7 @@ open class ConfigurationPropertiesBindConstructorProvider : BindConstructorProvi
         // 1.首先去寻找标注了@ConstructorBinding的构造器
         val constructor = findConstructorBindingAnnotatedConstructor(type)
 
-        // 2.如果没有找到合适的@ConstructorBinding注解的构造器，但是在类上标注了@ConstructorBinding注解，那么去匹配一个合适的构造器
+        // 2.如果没有找到合适的@ConstructorBinding注解的构造器, 但是在类上标注了@ConstructorBinding注解, 那么去匹配一个合适的构造器
         if (constructor == null || isConstructorBindingAnnotatedType(type)) {
             return deduceBindConstructor(type)
         }
@@ -69,7 +69,7 @@ open class ConfigurationPropertiesBindConstructorProvider : BindConstructorProvi
      *
      * @param type 类型
      * @param candidates 要去检查@ConstructorBinding注解的候选的构造器列表
-     * @return 如果找到了，那么return 匹配的构造器; 不然return null
+     * @return 如果找到了, 那么return 匹配的构造器; 不然return null
      * @throws IllegalStateException 注解标注在无参数构造器上/找到了多个标注了注解的构造器
      */
     @Nullable
@@ -110,7 +110,7 @@ open class ConfigurationPropertiesBindConstructorProvider : BindConstructorProvi
     private fun deduceBindConstructor(type: Class<*>): Constructor<*>? {
         // TODO Kotlin的类型匹配
 
-        // 如果是个Java类，并且只要一个有参数构造器的话，return; 不然return null
+        // 如果是个Java类, 并且只要一个有参数构造器的话, return; 不然return null
         if (type.declaredConstructors.size == 1 && type.declaredConstructors[0].parameterCount > 0) {
             return type.declaredConstructors[0]
         }

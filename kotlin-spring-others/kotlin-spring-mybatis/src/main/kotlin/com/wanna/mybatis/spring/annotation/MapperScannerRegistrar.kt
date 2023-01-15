@@ -14,7 +14,7 @@ import com.wanna.mybatis.spring.mapper.MapperFactoryBean
 import com.wanna.mybatis.spring.mapper.MapperScannerConfigurer
 
 /**
- * MapperScan的注册器，负责处理@MapperScan注解，将一个MapperScan的相关信息注册成为一个MapperScanConfigurer，交给它去完成@MapperScan的处理
+ * MapperScan的注册器, 负责处理@MapperScan注解, 将一个MapperScan的相关信息注册成为一个MapperScanConfigurer, 交给它去完成@MapperScan的处理
  *
  * @see MapperScan
  */
@@ -31,9 +31,9 @@ open class MapperScannerRegistrar : ImportBeanDefinitionRegistrar {
 
 
     /**
-     * 将全部的属性信息封装成为MapperScannerConfigurer的BeanDefinition，相关的属性配置到BeanDefinition的PropertyValues当中，
-     * 并将其BeanDefinition注册到BeanDefinitionRegistry当中(MapperScannerConfigurer是一个BeanDefinitionRegistryPostProcessor)；
-     * 在对MapperScannerConfigurer去进行创建对象时，会自动将这些属性值注入到MapperScannerConfigurer的各个属性当中
+     * 将全部的属性信息封装成为MapperScannerConfigurer的BeanDefinition, 相关的属性配置到BeanDefinition的PropertyValues当中,
+     * 并将其BeanDefinition注册到BeanDefinitionRegistry当中(MapperScannerConfigurer是一个BeanDefinitionRegistryPostProcessor); 
+     * 在对MapperScannerConfigurer去进行创建对象时, 会自动将这些属性值注入到MapperScannerConfigurer的各个属性当中
      *
      * @param importClassMetadata MapperScan注解的导入类的元信息
      * @param registry BeanDefinitionRegistry
@@ -93,7 +93,7 @@ open class MapperScannerRegistrar : ImportBeanDefinitionRegistrar {
         attributes.getStringArray(MergedAnnotation.VALUE).filter(StringUtils::hasText).forEach(basePackages::add)
         attributes.getStringArray("basePackages").filter(StringUtils::hasText).forEach(basePackages::add)
         attributes.getClassArray("basePackageClasses").map(Class<*>::getPackageName).forEach(basePackages::add)
-        if (basePackages.isEmpty()) {  // 如果必要的话，需要获取默认的basePackages
+        if (basePackages.isEmpty()) {  // 如果必要的话, 需要获取默认的basePackages
             basePackages.add(getDefaultBasePackage(importClassMetadata))
         }
         propertyValues.addPropertyValue("basePackages", StringUtils.collectionToCommaDelimitedString(basePackages))
@@ -104,7 +104,7 @@ open class MapperScannerRegistrar : ImportBeanDefinitionRegistrar {
             propertyValues.addPropertyValue("lazyInitialization", lazyInitialization)
         }
 
-        // 如果必要的话，设置scope
+        // 如果必要的话, 设置scope
         val defaultScope = attributes.getString("defaultScope")
         if (StringUtils.hasText(defaultScope)) {
             propertyValues.addPropertyValue("defaultScope", defaultScope)

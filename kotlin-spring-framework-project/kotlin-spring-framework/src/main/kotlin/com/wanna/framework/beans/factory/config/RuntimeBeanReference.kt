@@ -6,7 +6,7 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.AbstractAutowireCapableBeanFactory
 
 /**
- * 运行时去进行解析的Bean的引用，暂时设置为beanName，后期支持交给BeanFactory去进行自动解析
+ * 运行时去进行解析的Bean的引用, 暂时设置为beanName, 后期支持交给BeanFactory去进行自动解析
  *
  * @param beanName beanName
  * @see AbstractAutowireCapableBeanFactory.applyPropertyValues

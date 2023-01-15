@@ -26,11 +26,11 @@ object AutowireUtils {
     @JvmStatic
     fun resolveAutowiringValue(autowireValue: Any, requiredType: Class<*>): Any {
 
-        // 如果autowireValue是一个ObjectFactory，但是想要的又不是一个ObjectFactory
+        // 如果autowireValue是一个ObjectFactory, 但是想要的又不是一个ObjectFactory
         // 那么我们需要使用ObjectFactory.getObject去转换成为目标类型去进行注入
         if (autowireValue is ObjectFactory<*> && !requiredType.isInstance(autowireValue)) {
 
-            // 如果autowireValue是Serializable的，但是requiredType是一个接口的话
+            // 如果autowireValue是Serializable的, 但是requiredType是一个接口的话
             // 那么我们需要使用JDK动态代理去生成一个代理对象去委托一层...
             if (autowireValue is Serializable && requiredType.isInterface) {
                 return Proxy.newProxyInstance(
@@ -40,7 +40,7 @@ object AutowireUtils {
                 )
             }
 
-            // 如果是比较普通的ObjectFactory的话，那么我们直接ObjectFactory.getObject
+            // 如果是比较普通的ObjectFactory的话, 那么我们直接ObjectFactory.getObject
             return autowireValue.getObject()!!
         }
         return autowireValue

@@ -26,7 +26,7 @@ open class SpringBootTestContextBootstrapper : DefaultTestContextBootstrapper() 
     }
 
     /**
-     * 获取默认的[ContextLoader]，我们使用[SpringBootContextLoader]去作为[ContextLoader]
+     * 获取默认的[ContextLoader], 我们使用[SpringBootContextLoader]去作为[ContextLoader]
      *
      * @param testClass testClass
      * @return SpringBootContextLoader
@@ -64,8 +64,8 @@ open class SpringBootTestContextBootstrapper : DefaultTestContextBootstrapper() 
     protected open fun getOrFindConfigurationClasses(mergedConfig: MergedContextConfiguration): Array<Class<*>> {
         val classes = mergedConfig.getClasses()
 
-        // 如果给定的全部类当中都标注了@TestConfiguration，并且没有locations的话
-        // 默认情况下，因为classes为空，因此会进入到这个if代码块当中...
+        // 如果给定的全部类当中都标注了@TestConfiguration, 并且没有locations的话
+        // 默认情况下, 因为classes为空, 因此会进入到这个if代码块当中...
         if (!containsNonTestComponent(classes) && mergedConfig.getLocations().isEmpty()) {
             // 那么从testClass所在的包上去检查@SpringBootConfiguration
             val clazz = AnnotatedClassFinder(SpringBootConfiguration::class.java)
@@ -86,7 +86,7 @@ open class SpringBootTestContextBootstrapper : DefaultTestContextBootstrapper() 
      * 检查给定的这些配置类当中是否有不是[TestConfiguration]的类？
      *
      * @param classes 待检查的配置类列表
-     * @return 如果存在未标注[TestConfiguration]的类，那么return true；如果给定的这些类全部都标注了[TestConfiguration]注解的话，return false
+     * @return 如果存在未标注[TestConfiguration]的类, 那么return true; 如果给定的这些类全部都标注了[TestConfiguration]注解的话, return false
      */
     private fun containsNonTestComponent(classes: Array<Class<*>>): Boolean {
         classes.forEach {

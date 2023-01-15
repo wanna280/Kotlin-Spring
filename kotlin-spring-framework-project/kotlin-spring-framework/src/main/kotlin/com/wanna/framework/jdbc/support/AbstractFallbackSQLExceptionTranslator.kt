@@ -36,7 +36,7 @@ abstract class AbstractFallbackSQLExceptionTranslator : SQLExceptionTranslator {
     }
 
     /**
-     * 执行真正的翻译(将[SQLException]翻译成为[DataAccessException])，具体逻辑交给子类去进行实现
+     * 执行真正的翻译(将[SQLException]翻译成为[DataAccessException]), 具体逻辑交给子类去进行实现
      *
      * @param task task
      * @param sql sql

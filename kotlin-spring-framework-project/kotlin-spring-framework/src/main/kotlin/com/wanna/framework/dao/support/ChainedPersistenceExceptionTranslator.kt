@@ -30,11 +30,11 @@ open class ChainedPersistenceExceptionTranslator : PersistenceExceptionTranslato
     fun getDelegates(): Array<PersistenceExceptionTranslator> = delegates.toTypedArray()
 
     /**
-     * 遍历内部维护的所有的[PersistenceExceptionTranslator]尝试去进行翻译，
-     * 直到最终找到一个可以去进行翻译的，并交由它去完成真正的异常的翻译
+     * 遍历内部维护的所有的[PersistenceExceptionTranslator]尝试去进行翻译,
+     * 直到最终找到一个可以去进行翻译的, 并交由它去完成真正的异常的翻译
      *
      * @param ex 待去进行翻译的异常
-     * @return 翻译得到的DataAccessException，翻译失败return null
+     * @return 翻译得到的DataAccessException, 翻译失败return null
      */
     override fun translateExceptionIfPossible(ex: RuntimeException): DataAccessException? =
         delegates.map { it.translateExceptionIfPossible(ex) }.firstOrNull { !Objects.isNull(it) }

@@ -39,7 +39,7 @@ open class RequestHeaderMethodArgumentResolver : AbstractNamedValueMethodArgumen
      * 创建@RequestHeader的NamedValueInfo
      *
      * @param parameter 方法参数
-     * @return 根据@RequestHeader注解，解析出来的NamedValueInfo对象
+     * @return 根据@RequestHeader注解, 解析出来的NamedValueInfo对象
      */
     override fun createNamedValueInfo(parameter: MethodParameter): NamedValueInfo {
         val requestHeader = parameter.getAnnotation(RequestHeader::class.java)!!
@@ -51,7 +51,7 @@ open class RequestHeaderMethodArgumentResolver : AbstractNamedValueMethodArgumen
     }
 
     /**
-     * 这是基于@RequestHeader的NamedValueInfo，维护name/required/defaultValue等信息
+     * 这是基于@RequestHeader的NamedValueInfo, 维护name/required/defaultValue等信息
      */
     private class RequestHeaderNamedValueInfo(name: String, required: Boolean, defaultValue: String) :
         NamedValueInfo(name, required, defaultValue)

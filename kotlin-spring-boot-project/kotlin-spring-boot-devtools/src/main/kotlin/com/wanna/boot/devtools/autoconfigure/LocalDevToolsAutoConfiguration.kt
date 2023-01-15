@@ -19,7 +19,7 @@ import com.wanna.framework.util.StringUtils
 import java.io.File
 
 /**
- * 本地的DevTools的自动配置类，提供本地的热部署的实现
+ * 本地的DevTools的自动配置类, 提供本地的热部署的实现
  */
 @ConditionalOnInitializedRestarter  // Conditional On Restarter has been initialized
 @Configuration(proxyBeanMethods = false)
@@ -32,7 +32,7 @@ open class LocalDevToolsAutoConfiguration {
         private lateinit var properties: DevToolsProperties
 
         /**
-         * 给Spring BeanFactory添加一个处理ClassPathChangedEvent的监听器，
+         * 给Spring BeanFactory添加一个处理ClassPathChangedEvent的监听器,
          * 负责在ClassPath下的文件发生变化时提供去重启整个SpringApplication
          *
          * @return 处理ClassPathChangedEvent的ApplicationListener
@@ -63,13 +63,13 @@ open class LocalDevToolsAutoConfiguration {
             val classPathFileSystemWatcher =
                 ClassPathFileSystemWatcher(factory.getFileSystemWatcher(), urls, pathRestartStrategy)
 
-            // 对于LocalDevTools来说，当ClassPathChangedEvent发布时，需要去重启Watcher
+            // 对于LocalDevTools来说, 当ClassPathChangedEvent发布时, 需要去重启Watcher
             classPathFileSystemWatcher.stopWatcherOnRestart = true
             return classPathFileSystemWatcher
         }
 
         /**
-         * FileSystemWatcher的Factory，负责提供FileSystemWatcher
+         * FileSystemWatcher的Factory, 负责提供FileSystemWatcher
          *
          * @see FileSystemWatcher
          * @see FileSystemWatcherFactory
@@ -90,7 +90,7 @@ open class LocalDevToolsAutoConfiguration {
                     properties.restart.additionalPaths.forEach {
                         fileSystemWatcher.addSourceDirectory(File(it))
                     }
-                    // 如果配置文件当中，指定了触发的Restart文件的话，需要添加TriggerFileFilter
+                    // 如果配置文件当中, 指定了触发的Restart文件的话, 需要添加TriggerFileFilter
                     val triggerFile = properties.restart.triggerFile
                     if (StringUtils.hasText(triggerFile)) {
                         fileSystemWatcher.setTriggerFilter(TriggerFileFilter(triggerFile!!))

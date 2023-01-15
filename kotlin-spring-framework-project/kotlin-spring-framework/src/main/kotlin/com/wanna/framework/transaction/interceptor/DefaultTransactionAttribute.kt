@@ -19,10 +19,10 @@ open class DefaultTransactionAttribute : TransactionAttribute, DefaultTransactio
     }
 
     /**
-     * 默认的回滚条件是，当异常是运行时异常，或者是Error的情况下去进行回滚，允许子类去进行扩展
+     * 默认的回滚条件是, 当异常是运行时异常, 或者是Error的情况下去进行回滚, 允许子类去进行扩展
      *
      * @param ex 要去进行匹配是否需要回滚事务的异常
-     * @return 如果该异常是RuntimeException/Error时需要去进行回滚 return true；否则return false
+     * @return 如果该异常是RuntimeException/Error时需要去进行回滚 return true; 否则return false
      */
     override fun rollbackOn(ex: Throwable) = ex is RuntimeException || ex is java.lang.Error
 }

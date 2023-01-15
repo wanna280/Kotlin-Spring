@@ -8,31 +8,31 @@ import java.util.function.Predicate
 import java.util.regex.Pattern
 
 /**
- * 暴露Spring的Environment的描述信息作为一个Endpoint，供外界调用和查看
+ * 暴露Spring的Environment的描述信息作为一个Endpoint, 供外界调用和查看
  *
- * @param environment Spring的Environment对象，维护各种配置信息
+ * @param environment Spring的Environment对象, 维护各种配置信息
  */
 @Endpoint("env")
 open class EnvironmentEndpoint(private val environment: ConfigurableEnvironment) {
 
     /**
-     * 暴露环境信息给外界去进行查看，将环境当中的各个属性源的信息都去进行暴露
+     * 暴露环境信息给外界去进行查看, 将环境当中的各个属性源的信息都去进行暴露
      *
      * @param pattern 要去进行匹配的正则表达式
      * @return EnvironmentDescriptor(环境描述符)
      */
     @ReadOperation
     open fun environment(@Nullable pattern: String?): EnvironmentDescriptor {
-        // 如果没有指定pattern的话，那么Predicate=true
+        // 如果没有指定pattern的话, 那么Predicate=true
         pattern ?: return getEnvironmentDescriptor { true }
-        // 如果指定了Predicate的话，使用正则表达式作为Predicate
+        // 如果指定了Predicate的话, 使用正则表达式作为Predicate
         return getEnvironmentDescriptor(Pattern.compile(pattern).asPredicate())
     }
 
     /**
-     * 获取Environment的描述信息，遍历所有的EnumerablePropertySource，去进行描述
+     * 获取Environment的描述信息, 遍历所有的EnumerablePropertySource, 去进行描述
      *
-     * @param namePredicate 匹配propertyName的Predicate，只有匹配的情况下，才会去进行return
+     * @param namePredicate 匹配propertyName的Predicate, 只有匹配的情况下, 才会去进行return
      * @return EnvironmentDescriptor
      */
     private fun getEnvironmentDescriptor(namePredicate: Predicate<String>): EnvironmentDescriptor {
@@ -64,7 +64,7 @@ open class EnvironmentEndpoint(private val environment: ConfigurableEnvironment)
     }
 
     /**
-     * 描述一个具体的属性值，如果必要的话，需要将属性值去进行占位符解析
+     * 描述一个具体的属性值, 如果必要的话, 需要将属性值去进行占位符解析
      *
      * @param name propertyName
      * @param propertySource PropertySource
@@ -81,7 +81,7 @@ open class EnvironmentEndpoint(private val environment: ConfigurableEnvironment)
     }
 
     /**
-     * 环境信息的描述符，对Environment中维护的activeProfiles列表和PropertySource列表去进行详细的描述
+     * 环境信息的描述符, 对Environment中维护的activeProfiles列表和PropertySource列表去进行详细的描述
      *
      * @param activeProfiles activeProfiles
      * @param propertySources PropertySources

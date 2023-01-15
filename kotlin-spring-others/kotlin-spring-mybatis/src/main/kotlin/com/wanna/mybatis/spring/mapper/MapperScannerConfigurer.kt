@@ -11,7 +11,7 @@ import org.apache.ibatis.session.SqlSessionFactory
 import java.util.Optional
 
 /**
- * MapperScan的Configurer，负责真正地对@MapperScan去进行处理
+ * MapperScan的Configurer, 负责真正地对@MapperScan去进行处理
  */
 open class MapperScannerConfigurer : BeanDefinitionRegistryPostProcessor {
     var basePackages: String? = null

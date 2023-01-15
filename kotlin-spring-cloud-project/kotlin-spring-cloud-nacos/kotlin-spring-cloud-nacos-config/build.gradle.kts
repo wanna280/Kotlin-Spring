@@ -9,7 +9,7 @@ dependencies {
     implementation("com.alibaba.nacos:nacos-client:$nacosClientVersion")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // jackson
 
-    // 添加这些依赖，在test时才能正常启动
+    // 添加这些依赖, 在test时才能正常启动
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
     testImplementation(project(":kotlin-spring-cloud-project:kotlin-spring-cloud-ribbon"))
 }

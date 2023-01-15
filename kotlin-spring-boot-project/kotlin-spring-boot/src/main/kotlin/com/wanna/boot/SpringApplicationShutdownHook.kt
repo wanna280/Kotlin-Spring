@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 open class SpringApplicationShutdownHook : Runnable {
 
     /**
-     * ShutdownHook是否已经被添加的标识位，可能存在有并发问题，因此采用AtomicBoolean
+     * ShutdownHook是否已经被添加的标识位, 可能存在有并发问题, 因此采用AtomicBoolean
      */
     private val shutdownHookAdded = AtomicBoolean()
 
@@ -35,7 +35,7 @@ open class SpringApplicationShutdownHook : Runnable {
     }
 
     /**
-     * 如果必要的话，需要去添加一个Runtime的ShutdownHook
+     * 如果必要的话, 需要去添加一个Runtime的ShutdownHook
      */
     private fun addRuntimeShutdownHookIfNecessary() {
         if (shutdownHookAdded.compareAndSet(false, true)) {

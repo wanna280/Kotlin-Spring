@@ -9,7 +9,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.binder.jvm.*
 
 /**
- * 提供一些对于JVM的指标监控的自动配置类，对于这些Metrics对象，最终会被SpringBeanFactory
+ * 提供一些对于JVM的指标监控的自动配置类, 对于这些Metrics对象, 最终会被SpringBeanFactory
  * 去收集到[io.micrometer.core.instrument.MeterRegistry]当中
  *
  * Note: 只有在SpringBeanFactory当中存在有[io.micrometer.core.instrument.MeterRegistry]的情况下才需要去进行装配

@@ -15,7 +15,7 @@ import com.wanna.framework.web.server.HttpServerResponse
 interface DispatcherHandler : ApplicationContextAware {
 
     /**
-     * 获取所有处理请求映射的[HandlerMapping]，负责将一个Http请求去找到对应的Handler去进行处理
+     * 获取所有处理请求映射的[HandlerMapping], 负责将一个Http请求去找到对应的Handler去进行处理
      *
      * @return HandlerMappings
      */

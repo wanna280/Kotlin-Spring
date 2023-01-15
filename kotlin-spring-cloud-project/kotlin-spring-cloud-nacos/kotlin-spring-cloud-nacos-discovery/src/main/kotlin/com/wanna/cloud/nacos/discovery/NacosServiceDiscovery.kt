@@ -27,7 +27,7 @@ open class NacosServiceDiscovery(
     }
 
     /**
-     * 给定一个serviceId，去获取到该Service对应的所有的实例
+     * 给定一个serviceId, 去获取到该Service对应的所有的实例
      *
      * @param serviceId
      * @return 该serviceId对应的ServiceInstance列表
@@ -47,7 +47,7 @@ open class NacosServiceDiscovery(
 
     companion object {
         /**
-         * 将Nacos的Instance列表，转换为适配SpringCloud的ServiceInstance列表
+         * 将Nacos的Instance列表, 转换为适配SpringCloud的ServiceInstance列表
          *
          * @param instances Nacos的Instance列表
          * @param serviceId serviceId
@@ -59,7 +59,7 @@ open class NacosServiceDiscovery(
         }
 
         /**
-         * 将Nacos的Instance对象，转换为适配SpringCloud的ServiceInstance对象
+         * 将Nacos的Instance对象, 转换为适配SpringCloud的ServiceInstance对象
          *
          * @param instance Nacos的Instance列表
          * @param serviceId serviceId

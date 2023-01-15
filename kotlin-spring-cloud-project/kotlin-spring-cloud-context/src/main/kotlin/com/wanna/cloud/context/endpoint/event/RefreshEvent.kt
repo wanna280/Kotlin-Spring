@@ -3,7 +3,7 @@ package com.wanna.cloud.context.endpoint.event
 import com.wanna.framework.context.event.ApplicationEvent
 
 /**
- * RefreshEvent，当环境发生刷新时会被自动发布
+ * RefreshEvent, 当环境发生刷新时会被自动发布
  *
  * @param source eventSource
  */

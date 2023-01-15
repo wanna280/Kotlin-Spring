@@ -5,8 +5,8 @@ import com.wanna.framework.test.context.TestContext
 import com.wanna.framework.test.context.TestExecutionListener
 
 /**
- * 抽象的[TestExecutionListener]的实现，将所有的方法去进行了实现，子类只需要重写需要的方法即可；
- * 也为[TestExecutionListener]引入了优先级的概念，借助Spring的[Ordered]去进行实现，默认为最低优先级。
+ * 抽象的[TestExecutionListener]的实现, 将所有的方法去进行了实现, 子类只需要重写需要的方法即可;
+ * 也为[TestExecutionListener]引入了优先级的概念, 借助Spring的[Ordered]去进行实现, 默认为最低优先级.
  *
  * @author jianchao.jia
  * @version v1.0

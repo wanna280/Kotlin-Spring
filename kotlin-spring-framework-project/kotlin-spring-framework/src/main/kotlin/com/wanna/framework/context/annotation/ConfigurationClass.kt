@@ -8,7 +8,7 @@ import com.wanna.framework.core.type.classreading.MetadataReader
 import com.wanna.framework.lang.Nullable
 
 /**
- * 这是对一个配置类的封装，一个配置类当中，往往会记录它导入的ImportSource、BeanMethod、ImportBeanDefinitionRegistrar等信息
+ * 这是对一个配置类的封装, 一个配置类当中, 往往会记录它导入的ImportSource、BeanMethod、ImportBeanDefinitionRegistrar等信息
  *
  * @param metadata 配置类的注解元信息
  * @param resource 配置类的资源
@@ -115,14 +115,14 @@ open class ConfigurationClass(val metadata: AnnotationMetadata, var resource: Re
     /**
      * 当前配置类当中是否有@Bean标注的方法？
      *
-     * @return 如果有@Bean方法，return true；否则return false
+     * @return 如果有@Bean方法, return true; 否则return false
      */
     open fun hasBeanMethod(): Boolean = beanMethods.isNotEmpty()
 
     /**
      * 当前配置类是否有导入ImportBeanDefinitionRegistrar
      *
-     * @return 如果存在有ImportBeanDefinitionRegistrar的话，那么return true；否则return false
+     * @return 如果存在有ImportBeanDefinitionRegistrar的话, 那么return true; 否则return false
      */
     open fun hasRegistrar(): Boolean = this.importBeanDefinitionRegistrars.isNotEmpty()
 
@@ -153,12 +153,12 @@ open class ConfigurationClass(val metadata: AnnotationMetadata, var resource: Re
     /**
      * 是否被Import进来的？
      *
-     * @return 如果当前的配置类是被导入的，return true；不然return false
+     * @return 如果当前的配置类是被导入的, return true; 不然return false
      */
     open fun isImportedBy(): Boolean = importedBy.isNotEmpty()
 
     /**
-     * 添加ImportSource，通过@ImportSource注解导入的resource，并将其使用的BeanDefinitionReader去进行注册和保存
+     * 添加ImportSource, 通过@ImportSource注解导入的resource, 并将其使用的BeanDefinitionReader去进行注册和保存
      *
      * @param reader readerClass
      * @param resource resourceLocation
@@ -170,7 +170,7 @@ open class ConfigurationClass(val metadata: AnnotationMetadata, var resource: Re
     override fun hashCode() = metadata.getClassName().hashCode()
 
     override fun equals(other: Any?): Boolean {
-        // 如果configurationClassName匹配的话，那么return true
+        // 如果configurationClassName匹配的话, 那么return true
         return if (other != null && other is ConfigurationClass) other.metadata.getClassName() == metadata.getClassName() else false
     }
 

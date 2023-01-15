@@ -6,8 +6,8 @@ import java.nio.charset.Charset
 import java.util.*
 
 /**
- * 这是一个默认的ConversionService的实现，它是一个支持泛型的ConversionService，
- * 并且添加了很多默认的Converter，去提供基础的类型转换功能
+ * 这是一个默认的ConversionService的实现, 它是一个支持泛型的ConversionService,
+ * 并且添加了很多默认的Converter, 去提供基础的类型转换功能
  *
  * @see GenericConversionService
  * @see ConfigurableConversionService
@@ -27,7 +27,7 @@ open class DefaultConversionService : GenericConversionService() {
         private var sharedInstance: DefaultConversionService? = null
 
         /**
-         * 获取共享的ConversionService，使用DCL完成获取
+         * 获取共享的ConversionService, 使用DCL完成获取
          *
          * @return 共享的DefaultConversionService
          */

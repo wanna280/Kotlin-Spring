@@ -4,7 +4,7 @@ import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import org.w3c.dom.Node
 
 /**
- * BeanDefinition的包装器，提供对于原始的BeanDefinition去进行包装的公民
+ * BeanDefinition的包装器, 提供对于原始的BeanDefinition去进行包装的公民
  *
  * @author jianchao.jia
  * @version v1.0

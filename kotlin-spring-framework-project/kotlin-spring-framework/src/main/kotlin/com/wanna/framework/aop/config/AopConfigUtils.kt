@@ -10,7 +10,7 @@ import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 
 /**
- * 这是一个AopConfig的工具类，可以对AopProxyCreator去进行注册
+ * 这是一个AopConfig的工具类, 可以对AopProxyCreator去进行注册
  */
 object AopConfigUtils {
 
@@ -152,9 +152,9 @@ object AopConfigUtils {
     }
 
     /**
-     * 如果必要的话，注册或者升级一个AopProxyCreator；
-     * (1)如果之前容器当中没有AopProxyCreator的话，注册一个新的AopProxyCreator到容器当中
-     * (2)如果现在要进行注册的优先级比已经有的优先级更高，那么替换掉之前的AopProxyCreator的beanClass
+     * 如果必要的话, 注册或者升级一个AopProxyCreator;
+     * (1)如果之前容器当中没有AopProxyCreator的话, 注册一个新的AopProxyCreator到容器当中
+     * (2)如果现在要进行注册的优先级比已经有的优先级更高, 那么替换掉之前的AopProxyCreator的beanClass
      *
      * @see InfrastructureAdvisorAutoProxyCreator 优先级最低
      * @see AspectJAwareAdvisorAutoProxyCreator 优先级其次
@@ -171,7 +171,7 @@ object AopConfigUtils {
             if (apcDefinition.getBeanClass() != clazz) {
                 val oldPriority = findPriorityForClass(apcDefinition.getBeanClass()!!)
                 val newPriority = findPriorityForClass(clazz)
-                // 如果要注册的新的类的优先级更高，那么需要替换beanClass；如果要注册的新的类的优先级反而更低，就保留原来的
+                // 如果要注册的新的类的优先级更高, 那么需要替换beanClass; 如果要注册的新的类的优先级反而更低, 就保留原来的
                 if (newPriority > oldPriority) {
                     apcDefinition.setBeanClass(clazz)
                 }

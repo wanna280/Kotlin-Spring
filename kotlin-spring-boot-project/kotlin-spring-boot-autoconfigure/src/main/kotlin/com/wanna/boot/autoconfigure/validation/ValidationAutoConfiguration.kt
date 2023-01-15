@@ -17,7 +17,7 @@ import javax.validation.Validator
 
 
 /**
- * Bean Validation的自动配置类，提供对于JSR303的参数校验的支持
+ * Bean Validation的自动配置类, 提供对于JSR303的参数校验的支持
  *
  * @see Validator
  * @see MethodValidationPostProcessor
@@ -30,7 +30,7 @@ import javax.validation.Validator
 open class ValidationAutoConfiguration {
 
     /**
-     * 注册一个LocalValidatorFactoryBean，提供Spring的Validator和javax.validation的Validator的Bean的支持
+     * 注册一个LocalValidatorFactoryBean, 提供Spring的Validator和javax.validation的Validator的Bean的支持
      *
      * @return LocalValidatorFactoryBean
      */

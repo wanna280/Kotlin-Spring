@@ -10,7 +10,7 @@ import javax.validation.ConstraintViolationException
 import javax.validation.Validator
 
 /**
- * 方法的Validation的MethodInterceptor，负责使用AOP切面的方式去实现对参数的检验
+ * 方法的Validation的MethodInterceptor, 负责使用AOP切面的方式去实现对参数的检验
  *
  * @see MethodInterceptor
  * @see MethodValidationPostProcessor
@@ -20,7 +20,7 @@ import javax.validation.Validator
 open class MethodValidationInterceptor(private val validator: Validator? = null) : MethodInterceptor {
 
     /**
-     * 拦截目标方法，应该执行的增强的Callback逻辑
+     * 拦截目标方法, 应该执行的增强的Callback逻辑
      *
      * @param invocation MethodInvocation
      * @return 执行目标方法的返回值
@@ -29,7 +29,7 @@ open class MethodValidationInterceptor(private val validator: Validator? = null)
     @Throws(Throwable::class)
     override fun invoke(invocation: MethodInvocation): Any? {
         val validator = this.validator ?: throw IllegalStateException("Validator不能为空")
-        // Bean Validation 1.1的标准API，提供对方法参数以及方法返回值的参数检验
+        // Bean Validation 1.1的标准API, 提供对方法参数以及方法返回值的参数检验
         val executableValidator = validator.forExecutables()
 
         val validationGroups = determineValidationGroups(invocation)
@@ -43,7 +43,7 @@ open class MethodValidationInterceptor(private val validator: Validator? = null)
         if (result.isNotEmpty()) {
             throw ConstraintViolationException(result)
         }
-        // proceed，放行目标方法
+        // proceed, 放行目标方法
         val returnValue = invocation.proceed()
 
         // 检验方法的返回值

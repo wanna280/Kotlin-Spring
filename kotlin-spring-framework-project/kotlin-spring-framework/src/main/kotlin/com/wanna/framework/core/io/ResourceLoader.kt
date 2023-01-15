@@ -19,7 +19,7 @@ interface ResourceLoader {
     }
 
     /**
-     * 根据给定的资源的位置，去加载Resource
+     * 根据给定的资源的位置, 去加载Resource
      *
      * @param location location
      * @return Resource

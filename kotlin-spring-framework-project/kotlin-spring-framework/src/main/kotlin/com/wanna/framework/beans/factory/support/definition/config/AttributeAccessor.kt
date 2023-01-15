@@ -3,7 +3,7 @@ package com.wanna.framework.beans.factory.support.definition.config
 import com.wanna.framework.lang.Nullable
 
 /**
- * 这是一个属性的访问器，实现这个接口的子类，可以支持属性的访问
+ * 这是一个属性的访问器, 实现这个接口的子类, 可以支持属性的访问
  */
 interface AttributeAccessor {
 

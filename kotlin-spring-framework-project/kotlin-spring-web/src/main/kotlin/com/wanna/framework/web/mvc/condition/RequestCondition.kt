@@ -8,8 +8,8 @@ import com.wanna.framework.web.server.HttpServerRequest
 interface RequestCondition<T> {
 
     /**
-     * combine，需要联合别的RequestCondition；
-     * 比如，方法上有RequestMapping，类上也有RequestCondition，就需要去进行combine
+     * combine, 需要联合别的RequestCondition; 
+     * 比如, 方法上有RequestMapping, 类上也有RequestCondition, 就需要去进行combine
      *
      * @param other 别的RequestCondition
      */
@@ -19,7 +19,7 @@ interface RequestCondition<T> {
      * 获取匹配结果
      *
      * @param request request
-     * @return 如果匹配，return RequestCondition，如果不匹配；return null
+     * @return 如果匹配, return RequestCondition, 如果不匹配; return null
      */
     fun getMatchingCondition(request: HttpServerRequest): T?
 }

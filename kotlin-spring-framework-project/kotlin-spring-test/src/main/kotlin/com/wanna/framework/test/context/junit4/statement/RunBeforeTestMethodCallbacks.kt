@@ -6,7 +6,7 @@ import org.junit.runners.model.Statement
 import java.lang.reflect.Method
 
 /**
- * 在`@Before`方法执行之前，需要执行的Callback回调方法
+ * 在`@Before`方法执行之前, 需要执行的Callback回调方法
  *
  * @author jianchao.jia
  * @version v1.0

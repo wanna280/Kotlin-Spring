@@ -8,7 +8,7 @@ import org.slf4j.Logger
 import java.util.function.Consumer
 
 /**
- * 这是一个SpringApplication的运行的Listener的注册中心，维护了ApplicationListener列表，它负责在特定的时期去回调所有的监听器完成处理
+ * 这是一个SpringApplication的运行的Listener的注册中心, 维护了ApplicationListener列表, 它负责在特定的时期去回调所有的监听器完成处理
  *
  * @see SpringApplicationRunListener
  *
@@ -35,7 +35,7 @@ open class SpringApplicationRunListeners(
     }
 
     /**
-     * SpringApplication的环境已经准备好，可以对环境去进行后置处理
+     * SpringApplication的环境已经准备好, 可以对环境去进行后置处理
      *
      * @param bootstrapContext BootstrapContext
      * @param configurableEnvironment Environment
@@ -121,7 +121,7 @@ open class SpringApplicationRunListeners(
     }
 
     /**
-     * 遍历所有的SpringApplicationRunListener，去完成监听器的回调
+     * 遍历所有的SpringApplicationRunListener, 去完成监听器的回调
      *
      * @param stepName stepName
      * @param listenerAction Listener要去执行的Callback
@@ -130,7 +130,7 @@ open class SpringApplicationRunListeners(
         doWithListeners(stepName, listenerAction, null)
 
     /**
-     * 1.遍历所有的SpringApplicationRunListener，去完成监听器的回调；
+     * 1.遍历所有的SpringApplicationRunListener, 去完成监听器的回调;
      * 2.使用ApplicationStartup去打出来一个Step
      *
      * @param stepName stepName

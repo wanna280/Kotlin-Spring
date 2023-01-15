@@ -4,7 +4,7 @@ import com.wanna.framework.core.annotation.AliasFor
 import kotlin.reflect.KClass
 
 /**
- * ConfigurationPropertiesScan，扫描指定的包下的所有的ConfigurationProperties
+ * ConfigurationPropertiesScan, 扫描指定的包下的所有的ConfigurationProperties
  */
 @EnableConfigurationProperties
 annotation class ConfigurationPropertiesScan(

@@ -1,7 +1,7 @@
 package com.wanna.boot.devtools.filewatch
 
 /**
- * FileSystemWatcher的Factory，负责提供FileSystemWatcher的生产
+ * FileSystemWatcher的Factory, 负责提供FileSystemWatcher的生产
  *
  * @see FileSystemWatcher
  */

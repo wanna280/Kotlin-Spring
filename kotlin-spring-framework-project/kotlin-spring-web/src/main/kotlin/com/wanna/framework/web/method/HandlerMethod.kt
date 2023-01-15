@@ -34,7 +34,7 @@ open class HandlerMethod() {
     var handlerMethod: HandlerMethod? = null
 
     /**
-     * 获取当前的HandlerMethod的解析之前的HandlerMethod(有可能现在变成了BeanObject，而之前是beanName)
+     * 获取当前的HandlerMethod的解析之前的HandlerMethod(有可能现在变成了BeanObject, 而之前是beanName)
      */
     @Nullable
     var resolvedFromHandlerMethod: HandlerMethod? = null
@@ -104,7 +104,7 @@ open class HandlerMethod() {
         get() = initDescription(beanType!!, method!!)
 
     /**
-     * 解析bean，如果bean还是beanName的话，需要从容器当中getBean
+     * 解析bean, 如果bean还是beanName的话, 需要从容器当中getBean
      *
      * @return 将beanName替换为Bean之后的新的HandlerMethod
      */
@@ -132,7 +132,7 @@ open class HandlerMethod() {
     /**
      * 获取方法上的注解
      *
-     * @return 获取到的该方法上的注解，如果该方法上获取不到该注解，那么return null
+     * @return 获取到的该方法上的注解, 如果该方法上获取不到该注解, 那么return null
      */
     open fun <T : Annotation> getMethodAnnotation(annotationType: Class<T>): T? {
         return AnnotatedElementUtils.getMergedAnnotation(this.method!!, annotationType)
@@ -142,7 +142,7 @@ open class HandlerMethod() {
      * 判断方法上是否存在某种类型的注解？
      *
      * @param annotationClass 要去进行匹配的注解类型
-     * @return 如果该方法上有该注解，那么return true；否则return false
+     * @return 如果该方法上有该注解, 那么return true; 否则return false
      */
     open fun hasMethodAnnotation(annotationClass: Class<out Annotation>): Boolean {
         return AnnotatedElementUtils.isAnnotated(this.method!!, annotationClass)
@@ -182,9 +182,9 @@ open class HandlerMethod() {
 
 
     /**
-     * 对于一个HandlerMethod的一个方法参数的封装，因为使用的是内部类的方式，它完全可以获取到外部类当中的HandlerMethod对象
+     * 对于一个HandlerMethod的一个方法参数的封装, 因为使用的是内部类的方式, 它完全可以获取到外部类当中的HandlerMethod对象
      *
-     * @param index 该参数位于方法当中的位置(对于返回值类型，那么index=-1)
+     * @param index 该参数位于方法当中的位置(对于返回值类型, 那么index=-1)
      */
     open inner class HandlerMethodParameter(index: Int) : MethodParameter(this@HandlerMethod.method!!, index) {
         override fun getMethodAnnotations(): Array<Annotation> {
@@ -205,8 +205,8 @@ open class HandlerMethod() {
     }
 
     /**
-     * 这是对HandlerMethod的返回值的参数封装，让它能够适配到MethodParameter，
-     * 并且匹配注解时，应该采用原始的HandlerMethod上的注解去进行匹配
+     * 这是对HandlerMethod的返回值的参数封装, 让它能够适配到MethodParameter,
+     * 并且匹配注解时, 应该采用原始的HandlerMethod上的注解去进行匹配
      *
      * @param returnValue 方法的返回值
      */
@@ -215,7 +215,7 @@ open class HandlerMethod() {
             AnnotatedElementUtils.getMergedAnnotation(method!!, annotationClass)
 
         /**
-         * 获取方法的返回值，如果返回值不为空，那么使用返回值的类型；如果返回值为空，那么直接使用"method.returnType"
+         * 获取方法的返回值, 如果返回值不为空, 那么使用返回值的类型; 如果返回值为空, 那么直接使用"method.returnType"
          *
          * @return 方法的返回值类型
          */

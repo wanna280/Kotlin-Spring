@@ -7,7 +7,7 @@ import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 
 /**
- * Nacos的服务注册发现的自动配置类，提供Nacos的服务发现功能的自动配置
+ * Nacos的服务注册发现的自动配置类, 提供Nacos的服务发现功能的自动配置
  */
 @Configuration(proxyBeanMethods = false)
 open class NacosDiscoveryAutoConfiguration {

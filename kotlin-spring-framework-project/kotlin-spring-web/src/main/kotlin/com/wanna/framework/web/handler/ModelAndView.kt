@@ -42,14 +42,14 @@ class ModelAndView {
     /**
      * 当前ModelAndView是否为空
      *
-     * @return 当view和viewName都为空时，return true；不然return false
+     * @return 当view和viewName都为空时, return true; 不然return false
      */
     fun isEmpty(): Boolean = this.view == null && this.modelMap == null
 
     /**
      * 存在的视图是否是一个视图引用？
      *
-     * @return 如果是String说明是视图引用，不然说明不是
+     * @return 如果是String说明是视图引用, 不然说明不是
      */
     fun isReference(): Boolean = this.view is String
 

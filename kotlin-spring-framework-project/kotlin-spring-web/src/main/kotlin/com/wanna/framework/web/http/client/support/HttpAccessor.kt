@@ -8,13 +8,13 @@ import com.wanna.framework.web.client.RestTemplate
 import com.wanna.framework.web.http.client.HttpComponentsClientHttpRequestFactory
 
 /**
- * 它是一个基础的HttpAccessor，提供Http访问的入口，不要直接使用，具体的使用见RestTemplate
+ * 它是一个基础的HttpAccessor, 提供Http访问的入口, 不要直接使用, 具体的使用见RestTemplate
  *
  * @see RestTemplate
  */
 abstract class HttpAccessor {
 
-    // ClientHttpRequestFactory，默认为Apache的HttpClientFactory，去创建一个Apache的HttpClient的RequestFactory
+    // ClientHttpRequestFactory, 默认为Apache的HttpClientFactory, 去创建一个Apache的HttpClient的RequestFactory
     private var requestFactory: ClientHttpRequestFactory = HttpComponentsClientHttpRequestFactory()
 
     open fun getRequestFactory(): ClientHttpRequestFactory {

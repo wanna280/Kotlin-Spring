@@ -3,7 +3,7 @@ package com.wanna.framework.util
 import org.springframework.util.AntPathMatcher
 
 /**
- * AntPathMatcher，这里我们直接使用Spring提供的工具类即可
+ * AntPathMatcher, 这里我们直接使用Spring提供的工具类即可
  *
  * @see AntPathMatcher
  */

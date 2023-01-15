@@ -8,7 +8,7 @@ import java.util.stream.Stream
 import java.util.zip.ZipEntry
 
 /**
- * JarFile的Wrapper，通过包装一个JarFile去委托执行相关的方法
+ * JarFile的Wrapper, 通过包装一个JarFile去委托执行相关的方法
  *
  * @author jianchao.jia
  * @version v1.0

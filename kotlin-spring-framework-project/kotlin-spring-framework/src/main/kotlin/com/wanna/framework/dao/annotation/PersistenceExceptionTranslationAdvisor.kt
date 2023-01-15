@@ -18,12 +18,12 @@ open class PersistenceExceptionTranslationAdvisor(
 ) : AbstractPointcutAdvisor() {
 
     /**
-     * Advice，提供使用SpringAOP的方式对于目标方法的拦截功能
+     * Advice, 提供使用SpringAOP的方式对于目标方法的拦截功能
      */
     private var advice = PersistenceExceptionTranslationInterceptor(beanFactory)
 
     /**
-     * Pointcut，提供对于@Repository注解的匹配
+     * Pointcut, 提供对于@Repository注解的匹配
      */
     private var pointcut = AnnotationMatchingPointcut(repositoryAnnotationType)
 
@@ -33,7 +33,7 @@ open class PersistenceExceptionTranslationAdvisor(
     override fun getAdvice() = this.advice
 
     /**
-     * 为父类提供Pointcut，提供对于注解的匹配
+     * 为父类提供Pointcut, 提供对于注解的匹配
      */
     override fun getPointcut() = this.pointcut
 }

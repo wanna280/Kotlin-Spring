@@ -3,7 +3,7 @@ package com.wanna.framework.beans.factory.config
 import com.wanna.framework.beans.util.StringValueResolver
 
 /**
- * 这是一个嵌入式的值解析器，支持去进行占位符的解析
+ * 这是一个嵌入式的值解析器, 支持去进行占位符的解析
  *
  * @see StringValueResolver
  */

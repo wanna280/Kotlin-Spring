@@ -4,7 +4,7 @@ import com.wanna.boot.web.mvc.server.NettyWebServerFactory
 import io.netty.channel.ChannelHandler
 
 /**
- * Netty的WebServerFactory，负责导入一个Netty的WebServer到SpringBeanFactory当中
+ * Netty的WebServerFactory, 负责导入一个Netty的WebServer到SpringBeanFactory当中
  *
  * @see NettyWebServer
  */

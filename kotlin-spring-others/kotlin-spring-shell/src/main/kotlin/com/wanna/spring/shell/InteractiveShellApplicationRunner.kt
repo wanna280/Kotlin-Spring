@@ -6,7 +6,7 @@ import com.wanna.framework.context.annotation.Autowired
 import java.util.Scanner
 
 /**
- * 这是一个交互式的Shell的Runner，在SpringApplication启动完成时自动回调
+ * 这是一个交互式的Shell的Runner, 在SpringApplication启动完成时自动回调
  *
  * @see Shell
  * @see ApplicationRunner

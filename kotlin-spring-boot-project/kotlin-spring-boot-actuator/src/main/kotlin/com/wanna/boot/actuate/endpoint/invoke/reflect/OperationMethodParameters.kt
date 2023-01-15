@@ -7,10 +7,10 @@ import java.lang.reflect.Method
 import java.util.stream.Stream
 
 /**
- * OperationParameters的默认实现，组合了OperationParameter的列表
+ * OperationParameters的默认实现, 组合了OperationParameter的列表
  *
  * @param method 要维护的Operation方法
- * @param parameterNameDiscoverer 参数名发现器，提供Operation方法的参数名的列表的获取
+ * @param parameterNameDiscoverer 参数名发现器, 提供Operation方法的参数名的列表的获取
  *
  * @see OperationParameter
  */

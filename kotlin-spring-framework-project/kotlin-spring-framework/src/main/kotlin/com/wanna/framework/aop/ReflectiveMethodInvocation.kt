@@ -6,7 +6,7 @@ import com.wanna.framework.aop.support.AopUtils
 import java.lang.reflect.Method
 
 /**
- * 这是一个反射执行目标方法的MethodInvocation，可以完成MethodInterceptor的链式调用，完成AOP的代理逻辑
+ * 这是一个反射执行目标方法的MethodInvocation, 可以完成MethodInterceptor的链式调用, 完成AOP的代理逻辑
  */
 open class ReflectiveMethodInvocation(
     private val proxy: Any,
@@ -17,10 +17,10 @@ open class ReflectiveMethodInvocation(
     private val interceptorsAndDynamicMethodMatchers: List<Any>
 ) : ProxyMethodInvocation {
 
-    // 用户自定义属性，为了减少不必要的内存占用，不进行初始化
+    // 用户自定义属性, 为了减少不必要的内存占用, 不进行初始化
     private var userAttributes: MutableMap<String, Any>? = null
 
-    // 当前的拦截器索引index，初始化为-1，每执行一次，index++
+    // 当前的拦截器索引index, 初始化为-1, 每执行一次, index++
     private var currentInterceptorIndex = -1
 
     override fun getProxy(): Any {
@@ -40,13 +40,13 @@ open class ReflectiveMethodInvocation(
     }
 
     override fun proceed(): Any? {
-        // 如果执行到拦截器的最后了，那么需要执行目标方法
+        // 如果执行到拦截器的最后了, 那么需要执行目标方法
         if (this.currentInterceptorIndex == this.interceptorsAndDynamicMethodMatchers.size - 1) {
             return invokeJoinpoint()
         }
         val interceptorOrInterceptionAdvice = interceptorsAndDynamicMethodMatchers[++currentInterceptorIndex]
 
-        // 如果需要进行动态的方法匹配，那么在这里完成匹配之后，再进行执行
+        // 如果需要进行动态的方法匹配, 那么在这里完成匹配之后, 再进行执行
         return if (interceptorOrInterceptionAdvice is InterceptorAndDynamicMethodMatcher) {
             val targetClass = this.targetClass ?: method.declaringClass
             if (interceptorOrInterceptionAdvice.methodMatcher.matches(this.method, targetClass, args)) {
@@ -55,7 +55,7 @@ open class ReflectiveMethodInvocation(
                 proceed()
             }
 
-            // 如果不需要进行动态方法匹配，那么向下传递，让下一个MethodInterceptor去处理
+            // 如果不需要进行动态方法匹配, 那么向下传递, 让下一个MethodInterceptor去处理
         } else {
             (interceptorOrInterceptionAdvice as MethodInterceptor).invoke(this)
         }
@@ -85,7 +85,7 @@ open class ReflectiveMethodInvocation(
     override fun getUserAttribute(key: String): Any? = this.userAttributes?.get(key)
 
     /**
-     * 执行Joinpoint，也就是执行目标方法
+     * 执行Joinpoint, 也就是执行目标方法
      */
     protected open fun invokeJoinpoint(): Any? {
         val argsToUse = if (args == null) emptyArray() else args!!

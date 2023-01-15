@@ -1,7 +1,7 @@
 package com.wanna.boot.devtools.autoconfigure
 
 /**
- * "RemoteServer"的"DevTools"的配置信息，用于需要去进行重启的服务端去进行配置
+ * "RemoteServer"的"DevTools"的配置信息, 用于需要去进行重启的服务端去进行配置
  *
  * @see DevToolsProperties
  */

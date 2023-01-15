@@ -8,7 +8,7 @@ import com.wanna.framework.core.type.AnnotatedTypeMetadata
 fun interface Condition {
 
     /**
-     * @param context 条件的上下文信息，内部保存了BeanDefinitionRegistry/BeanFactory/Environment/ClassLoader等信息
+     * @param context 条件的上下文信息, 内部保存了BeanDefinitionRegistry/BeanFactory/Environment/ClassLoader等信息
      * @param metadata 注解的元信息
      */
     fun matches(context: ConditionContext, metadata: AnnotatedTypeMetadata): Boolean

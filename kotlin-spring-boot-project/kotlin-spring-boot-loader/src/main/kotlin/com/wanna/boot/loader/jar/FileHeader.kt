@@ -3,7 +3,7 @@ package com.wanna.boot.loader.jar
 import java.util.zip.ZipEntry
 
 /**
- * ZipFile(JarFile)的文件头部信息，不管是ZipFile当中[CentralDirectoryFileHeader]
+ * ZipFile(JarFile)的文件头部信息, 不管是ZipFile当中[CentralDirectoryFileHeader]
  * 还是[JarEntry]都共有的一部分属性属性的抽象出来的接口
  *
  * @author jianchao.jia
@@ -16,8 +16,8 @@ interface FileHeader {
 
 
     /**
-     * 返回ZIP归档当中，当前数据的压缩数据的方式(DEFLATED/STORED)
-     * STORED(0)代表该文件没有被压缩，DEFLATED(8)代表该文件被压缩过
+     * 返回ZIP归档当中, 当前数据的压缩数据的方式(DEFLATED/STORED)
+     * STORED(0)代表该文件没有被压缩, DEFLATED(8)代表该文件被压缩过
      *
      * @see ZipEntry.DEFLATED
      * @see ZipEntry.STORED
@@ -30,7 +30,7 @@ interface FileHeader {
      *
      * @param name headerName
      * @param suffix 额外的后缀(或者是0)
-     * @return 如果包含了，那么return true；否则return false
+     * @return 如果包含了, 那么return true; 否则return false
      */
     fun hasName(name: CharSequence, suffix: Char): Boolean
 

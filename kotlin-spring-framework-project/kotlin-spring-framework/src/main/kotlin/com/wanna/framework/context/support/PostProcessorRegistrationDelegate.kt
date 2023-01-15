@@ -14,13 +14,13 @@ import com.wanna.framework.core.comparator.OrderComparator
 import com.wanna.framework.core.metrics.ApplicationStartup
 
 /**
- * 这是一个执行PostProcessor的委托类，可以委托去完成BeanFactoryPostProcessor和BeanPostProcessor的执行；
+ * 这是一个执行PostProcessor的委托类, 可以委托去完成BeanFactoryPostProcessor和BeanPostProcessor的执行;
  *
- * Note: 在注册阶段当中必须分开去进行getBean，最开始只能统计beanName列表(至于为什么PriorityOrdered可以提前getBean？因为它是第一个getBean的阶段，
- * 这样，PriorityOrdered的Bean就不必经历存放beanName的阶段，直接就经历了getBean阶段即可)
- * 后面才能去进行getBean，至于为什么？因为在getBean时，会导致该Bean提前完成初始化工作，但是该Bean很可能需要应用之前的一些
- * PostProcessor，但是如果你提前getBean了，那么很明显，是不能做到的！
- * 因为PriorityOrdered/Ordered/NonOrdered是分步注册的，必须保证前一个阶段的PostProcessor全部注册之后后一个阶段的Bean才能去进行注册
+ * Note: 在注册阶段当中必须分开去进行getBean, 最开始只能统计beanName列表(至于为什么PriorityOrdered可以提前getBean？因为它是第一个getBean的阶段,
+ * 这样, PriorityOrdered的Bean就不必经历存放beanName的阶段, 直接就经历了getBean阶段即可)
+ * 后面才能去进行getBean, 至于为什么？因为在getBean时, 会导致该Bean提前完成初始化工作, 但是该Bean很可能需要应用之前的一些
+ * PostProcessor, 但是如果你提前getBean了, 那么很明显, 是不能做到的！
+ * 因为PriorityOrdered/Ordered/NonOrdered是分步注册的, 必须保证前一个阶段的PostProcessor全部注册之后后一个阶段的Bean才能去进行注册
  *
  * @see BeanPostProcessor
  * @see BeanFactoryPostProcessor
@@ -47,7 +47,7 @@ object PostProcessorRegistrationDelegate {
             // BeanDefinitionRegistryPostProcessor列表
             val registryPostProcessors = ArrayList<BeanDefinitionRegistryPostProcessor>()
 
-            // 1.1 需要调用通过API往容器中添加的BeanDefinitionRegistryPostProcessor，并保存常规的BeanFactoryPostProcessor
+            // 1.1 需要调用通过API往容器中添加的BeanDefinitionRegistryPostProcessor, 并保存常规的BeanFactoryPostProcessor
             // 它的优先级比自己放在容器中的BenFactoryPostProcessor拥有更高的优先级
             // 最典型的使用@see com.wanna.boot.autoconfigure.SharedMetadataReaderFactoryContextInitializer
             for (processor in postProcessors) {
@@ -81,7 +81,7 @@ object PostProcessorRegistrationDelegate {
             registryPostProcessors.addAll(currentRegistryPostProcessors)
             currentRegistryPostProcessors.clear()  // clear掉
 
-            // 在执行之前，必须再次去进行getBeanForType，因为有可能有扫描出来了BeanDefinitionRegistryPostProcessor
+            // 在执行之前, 必须再次去进行getBeanForType, 因为有可能有扫描出来了BeanDefinitionRegistryPostProcessor
             postProcessorNames =
                 beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor::class.java, true, false)
 
@@ -106,7 +106,7 @@ object PostProcessorRegistrationDelegate {
             registryPostProcessors.addAll(currentRegistryPostProcessors)
             currentRegistryPostProcessors.clear()  // clear掉
 
-            // 在执行之前，必须再次去进行getBeanForType，因为有可能有扫描出来了BeanDefinitionRegistryPostProcessor
+            // 在执行之前, 必须再次去进行getBeanForType, 因为有可能有扫描出来了BeanDefinitionRegistryPostProcessor
             postProcessorNames =
                 beanFactory.getBeanNamesForType(BeanDefinitionRegistryPostProcessor::class.java, true, false)
 
@@ -120,7 +120,7 @@ object PostProcessorRegistrationDelegate {
                 }
             }
 
-            // 执行(没有Ordered，不用进行排序)所有的普通的BeanDefinitionRegistryPostProcessor
+            // 执行(没有Ordered, 不用进行排序)所有的普通的BeanDefinitionRegistryPostProcessor
             invokeBeanDefinitionRegistryPostProcessors(currentRegistryPostProcessors, beanFactory, applicationStartup)
             registryPostProcessors.addAll(currentRegistryPostProcessors)
             currentRegistryPostProcessors.clear()  // clear掉
@@ -132,10 +132,10 @@ object PostProcessorRegistrationDelegate {
             invokeBeanFactoryPostProcessors(regularProcessors, beanFactory)
         }
 
-        // 2.完成BeanRegistryDefinitionPostProcessor的处理之后，需要完成普通的BeanFactoryPostProcessor的执行
+        // 2.完成BeanRegistryDefinitionPostProcessor的处理之后, 需要完成普通的BeanFactoryPostProcessor的执行
         val postProcessorNames = beanFactory.getBeanNamesForType(BeanFactoryPostProcessor::class.java, true, false)
 
-        // 分别找出PriorityOrdered，Ordered，以及NonOrdered的BeanFactoryPostProcessor并进行分开
+        // 分别找出PriorityOrdered, Ordered, 以及NonOrdered的BeanFactoryPostProcessor并进行分开
         val priorityOrderedProcessors = ArrayList<BeanFactoryPostProcessor>()
         val orderedProcessorNames = ArrayList<String>()
         val nonOrderedProcessorNames = ArrayList<String>()
@@ -232,11 +232,11 @@ object PostProcessorRegistrationDelegate {
         }
         registerBeanPostProcessors(nonOrderedProcessors, beanFactory)
 
-        // 4.注册所有的internalBeanPostProcessor，最后注册的，可以保证它一定是最后被执行的...
+        // 4.注册所有的internalBeanPostProcessor, 最后注册的, 可以保证它一定是最后被执行的...
         sortProcessors(internalProcessors, beanFactory)
         registerBeanPostProcessors(internalProcessors, beanFactory)
 
-        // end: 添加ApplicationListenerDetector，完成ApplicationListener的检测并注册到容器当中
+        // end: 添加ApplicationListenerDetector, 完成ApplicationListener的检测并注册到容器当中
         beanFactory.addBeanPostProcessor(ApplicationListenerDetector(applicationContext))
     }
 
@@ -252,8 +252,8 @@ object PostProcessorRegistrationDelegate {
             return
         }
         var comparatorToUse: Comparator<Any?>? = null
-        // 如果在beanFactory当中指定了自定义的依赖比较器，那么采用容器中给定的
-        // 如果beanFactory当中没有指定自定义的依赖比较器，那么采用默认的(OrderComparator)
+        // 如果在beanFactory当中指定了自定义的依赖比较器, 那么采用容器中给定的
+        // 如果beanFactory当中没有指定自定义的依赖比较器, 那么采用默认的(OrderComparator)
         if (beanFactory is DefaultListableBeanFactory) {
             comparatorToUse = beanFactory.getDependencyComparator()
         }
@@ -262,7 +262,7 @@ object PostProcessorRegistrationDelegate {
     }
 
     /**
-     * 将给定的BeanPostProcessor列表，全部注册到BeanFactory当中
+     * 将给定的BeanPostProcessor列表, 全部注册到BeanFactory当中
      *
      * @see AbstractApplicationContext.registerBeanPostProcessors
      * @see BeanPostProcessor
@@ -277,7 +277,7 @@ object PostProcessorRegistrationDelegate {
     }
 
     /**
-     * 执行给定的所有给定的BeanDefinitionRegistryPostProcessor，去完成BeanDefinition的加载工作
+     * 执行给定的所有给定的BeanDefinitionRegistryPostProcessor, 去完成BeanDefinition的加载工作
      *
      * @see AbstractApplicationContext.invokeBeanFactoryPostProcessors
      * @see BeanDefinitionRegistryPostProcessor.postProcessBeanDefinitionRegistry
@@ -297,7 +297,7 @@ object PostProcessorRegistrationDelegate {
     }
 
     /**
-     * 执行给定的所有的BeanFactoryPostProcessor，去完成对BeanFactory的后置处理工作
+     * 执行给定的所有的BeanFactoryPostProcessor, 去完成对BeanFactory的后置处理工作
      *
      * @see AbstractApplicationContext.invokeBeanFactoryPostProcessors
      * @see BeanFactoryPostProcessor.postProcessBeanFactory

@@ -7,14 +7,14 @@ import com.wanna.framework.test.context.TestExecutionListeners
 import java.util.stream.Stream
 
 /**
- * 记录在执行单个Test方法时触发的[ApplicationEvent]事件列表。
+ * 记录在执行单个Test方法时触发的[ApplicationEvent]事件列表.
  *
- * 要想将[ApplicationEvents]应用给你的Test应用，需要做如下的这些事情：
+ * 要想将[ApplicationEvents]应用给你的Test应用, 需要做如下的这些事情：
  * * 1.确保你的TestClass标注(或者间接通过meta标注)了[RecordApplicationEvents]注解
- * * 2.确保[ApplicationEventsTestExecutionListener]被注册。(Note: 虽然默认情况下是已经被默认注册了，
- * 但是如果你使用了[TestExecutionListeners]注解去自定义[TestExecutionListener]的话，默认的就会失效，
- * 这时就需要你去进行手动注册[ApplicationEventsTestExecutionListener]，不然不会生效)。
- * * 3.通过[Autowired]注解标注在TestClass的一个类型为[ApplicationEvents]的字段上去进行自动注入，
+ * * 2.确保[ApplicationEventsTestExecutionListener]被注册.(Note: 虽然默认情况下是已经被默认注册了,
+ * 但是如果你使用了[TestExecutionListeners]注解去自定义[TestExecutionListener]的话, 默认的就会失效,
+ * 这时就需要你去进行手动注册[ApplicationEventsTestExecutionListener], 不然不会生效).
+ * * 3.通过[Autowired]注解标注在TestClass的一个类型为[ApplicationEvents]的字段上去进行自动注入,
  * 并且在你的Test方法或者是生命周期方法当中去使用[ApplicationEvents]
  *
  *

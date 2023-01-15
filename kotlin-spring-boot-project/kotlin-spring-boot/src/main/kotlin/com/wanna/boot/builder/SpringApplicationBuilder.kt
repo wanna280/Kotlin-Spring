@@ -11,7 +11,7 @@ import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.lang.Nullable
 
 /**
- * 这是一个[SpringApplication]的Builder，支持以Builder的方式去进行[SpringApplication]的构建
+ * 这是一个[SpringApplication]的Builder, 支持以Builder的方式去进行[SpringApplication]的构建
  *
  * @see SpringApplication
  *
@@ -76,7 +76,7 @@ open class SpringApplicationBuilder(vararg sources: Class<*>) {
     }
 
     /**
-     * 设置parentBuilder，为parentApplicationContext的构建提供支持
+     * 设置parentBuilder, 为parentApplicationContext的构建提供支持
      *
      * @param builder parent Builder
      */
@@ -95,7 +95,7 @@ open class SpringApplicationBuilder(vararg sources: Class<*>) {
 
     /**
      * 执行run SpringApplication
-     * 添加一个[ApplicationContextInitializer]到[SpringApplication]当中，支持去对parentApplicationContext去进行设置
+     * 添加一个[ApplicationContextInitializer]到[SpringApplication]当中, 支持去对parentApplicationContext去进行设置
      *
      * @see ParentContextApplicationContextInitializer.initialize
      * @see ConfigurableApplicationContext.setParent

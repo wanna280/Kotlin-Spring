@@ -12,11 +12,11 @@ import kotlin.reflect.KClass
 /**
  * 标识这是一个Spring的JUnit配置类
  *
- * @param value 需要导入的XML配置文件，同locations属性
- * @param locations 需要导入的XML配置文件，同value属性
+ * @param value 需要导入的XML配置文件, 同locations属性
+ * @param locations 需要导入的XML配置文件, 同value属性
  * @param classes 需要导入的SpringComponent的类
  * @param initializers ApplicationContext的Initializer
- * @param loader ContextLoader，提供对于ApplicationContext的加载
+ * @param loader ContextLoader, 提供对于ApplicationContext的加载
  *
  * @see ContextConfiguration
  * @see SpringExtension

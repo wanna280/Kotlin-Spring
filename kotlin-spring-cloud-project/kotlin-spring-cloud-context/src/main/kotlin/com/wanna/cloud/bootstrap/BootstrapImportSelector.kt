@@ -8,7 +8,7 @@ import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.util.StringUtils
 
 /**
- * 这是一个Bootstrap的ImportSelector，负责给Spring的Bootstrap容器当中导入组件
+ * 这是一个Bootstrap的ImportSelector, 负责给Spring的Bootstrap容器当中导入组件
  *
  * @see BootstrapImportSelectorConfiguration
  * @see BootstrapApplicationListener
@@ -22,10 +22,10 @@ open class BootstrapImportSelector : DeferredImportSelector, EnvironmentAware {
     }
 
     /**
-     * 从SpringFactories当中去加载到通过BootstrapConfiguration去配置的配置类，导入到容器当中
+     * 从SpringFactories当中去加载到通过BootstrapConfiguration去配置的配置类, 导入到容器当中
      *
      * @param metadata metadata
-     * @return BootstrapConfiguration导入的相关配置类，会被自动导入到Bootstrap容器当中
+     * @return BootstrapConfiguration导入的相关配置类, 会被自动导入到Bootstrap容器当中
      */
     override fun selectImports(metadata: AnnotationMetadata): Array<String> {
         val bootstrapConfigurations =

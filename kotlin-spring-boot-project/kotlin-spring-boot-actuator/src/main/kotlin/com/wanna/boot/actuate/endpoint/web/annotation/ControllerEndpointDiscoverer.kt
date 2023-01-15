@@ -19,7 +19,7 @@ open class ControllerEndpointDiscoverer(applicationContext: ApplicationContext) 
      * 只去暴露标注了@ControllerEndpoint/@RestControllerEndpoint注解的Endpoint
      *
      * @param beanType beanType
-     * @return 如果标注了@ControllerEndpoint/@RestControllerEndpoint，return true；否则return false
+     * @return 如果标注了@ControllerEndpoint/@RestControllerEndpoint, return true; 否则return false
      */
     override fun isEndpointTypeExposed(beanType: Class<*>): Boolean {
         return AnnotatedElementUtils.hasAnnotation(beanType, ControllerEndpoint::class.java)
@@ -27,7 +27,7 @@ open class ControllerEndpointDiscoverer(applicationContext: ApplicationContext) 
     }
 
     /**
-     * 创建Endpoint，我们需要返回一个ControllerEndpoint，并且没有任何的Operation
+     * 创建Endpoint, 我们需要返回一个ControllerEndpoint, 并且没有任何的Operation
      */
     override fun createEndpoint(
         id: EndpointId,
@@ -38,7 +38,7 @@ open class ControllerEndpointDiscoverer(applicationContext: ApplicationContext) 
     }
 
     /**
-     * 创建一个OperationOperation？对于ControllerEndpoint，不应该存在有Endpoint
+     * 创建一个OperationOperation？对于ControllerEndpoint, 不应该存在有Endpoint
      */
     override fun createOperation(
         endpointId: EndpointId,

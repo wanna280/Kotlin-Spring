@@ -60,7 +60,7 @@ open class TaskExecutorMetricsAutoConfiguration {
      * 安全地从给定的Spring实现的[ThreadPoolTaskExecutor]当中去获取到内部的[ThreadPoolExecutor]
      *
      * @param executor ThreadPoolTaskExecutor
-     * @return 如果获取到了ThreadPoolExecutor，那么return true; 如果无法获取到，那么return null
+     * @return 如果获取到了ThreadPoolExecutor, 那么return true; 如果无法获取到, 那么return null
      */
     @Nullable
     private fun safeGetThreadPoolExecutor(executor: ThreadPoolTaskExecutor): ThreadPoolExecutor? {

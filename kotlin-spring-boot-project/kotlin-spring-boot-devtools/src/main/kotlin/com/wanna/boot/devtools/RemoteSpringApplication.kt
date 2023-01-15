@@ -9,7 +9,7 @@ import com.wanna.boot.env.EnvironmentPostProcessorApplicationListener
 import com.wanna.framework.context.event.ApplicationListener
 
 /**
- * Remote的SpringApplication，支持去将本地的配置文件的变更情况，直接上传给RemoteServer
+ * Remote的SpringApplication, 支持去将本地的配置文件的变更情况, 直接上传给RemoteServer
  *
  * @see RemoteUrlPropertyExtractor
  * @see RemoteClientConfiguration

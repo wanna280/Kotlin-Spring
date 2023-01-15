@@ -11,7 +11,7 @@ import java.net.URL
 import java.nio.file.Files
 
 /**
- * ClassPath的资源，基于类加载器去加载资源
+ * ClassPath的资源, 基于类加载器去加载资源
  *
  * @author jianchao.jia
  * @version v1.0
@@ -37,12 +37,12 @@ private constructor(path: String, @Nullable classLoader: ClassLoader?, @Nullable
     constructor(path: String) : this(path, null)
 
     /**
-     * 如果必要的话，需要把ClassPath后的第一个"/"去掉
+     * 如果必要的话, 需要把ClassPath后的第一个"/"去掉
      */
     private val path = if (path.startsWith("/")) path.substring(1) else path
 
     /**
-     * 如果用户没有指定ClassLoader的话，那么我们使用默认的ClassLoader
+     * 如果用户没有指定ClassLoader的话, 那么我们使用默认的ClassLoader
      */
     @Nullable
     private var classLoader: ClassLoader? = classLoader ?: ClassUtils.getDefaultClassLoader()
@@ -57,7 +57,7 @@ private constructor(path: String, @Nullable classLoader: ClassLoader?, @Nullable
                 ClassLoader.getSystemResourceAsStream(path)
             }
         return stream
-            ?: throw FileNotFoundException("[${getDescription()}]资源无法解析成为InputStream，因为该资源并不存在")
+            ?: throw FileNotFoundException("[${getDescription()}]资源无法解析成为InputStream, 因为该资源并不存在")
     }
 
     /**
@@ -75,7 +75,7 @@ private constructor(path: String, @Nullable classLoader: ClassLoader?, @Nullable
      */
     override fun getURL(): URL {
         val url = resolveURL()
-        return url ?: throw FileNotFoundException("[${getDescription()}]资源无法被解析成为URL，因为该资源并不存在")
+        return url ?: throw FileNotFoundException("[${getDescription()}]资源无法被解析成为URL, 因为该资源并不存在")
     }
 
     /**

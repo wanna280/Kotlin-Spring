@@ -4,7 +4,7 @@ import com.wanna.framework.core.annotation.AliasFor
 import kotlin.reflect.KClass
 
 /**
- * 扫描指定的包下的所有类下匹配的注解(不一定只扫描某个类型的组件，也可以自己去通过Filter去自己指定类型)
+ * 扫描指定的包下的所有类下匹配的注解(不一定只扫描某个类型的组件, 也可以自己去通过Filter去自己指定类型)
  *
  * @see ComponentScanAnnotationParser
  * @see ClassPathBeanDefinitionScanner
@@ -35,18 +35,18 @@ annotation class ComponentScan(
     val nameGenerator: KClass<out BeanNameGenerator> = BeanNameGenerator::class,
 
     /**
-     * ScopeResolver，提供对于Bean的Scope的解析工作，默认实现为找到@Scope注解去进行使用；
+     * ScopeResolver, 提供对于Bean的Scope的解析工作, 默认实现为找到@Scope注解去进行使用;
      * Note: 只有在ScopeProxyMode没有自定义的情况下才会生效
      */
     val scopeResolver: KClass<out ScopeMetadataResolver> = AnnotationScopeMetadataResolver::class,
 
     /**
-     * 自定义ScopeProxy，对于@ComponentScan扫描进来的全部Bean(在没有特殊配置@Scope的情况下)的作用域都将会被设置成为它
+     * 自定义ScopeProxy, 对于@ComponentScan扫描进来的全部Bean(在没有特殊配置@Scope的情况下)的作用域都将会被设置成为它
      */
     val scopeProxy: ScopedProxyMode = ScopedProxyMode.DEFAULT,
 
     /**
-     * 需要匹配的条件才能导入进来的Filter，只要匹配其中一个条件，就支持被扫描进来
+     * 需要匹配的条件才能导入进来的Filter, 只要匹配其中一个条件, 就支持被扫描进来
      */
     val includeFilters: Array<Filter> = [],
 
@@ -56,7 +56,7 @@ annotation class ComponentScan(
     val excludeFilters: Array<Filter> = [],
 
     /**
-     * 是否需要使用默认的Filter来匹配@Component相关注解，默认为true
+     * 是否需要使用默认的Filter来匹配@Component相关注解, 默认为true
      */
     val useDefaultFilters: Boolean = true,
 
@@ -67,10 +67,10 @@ annotation class ComponentScan(
 ) {
 
     /**
-     * ComponentScan匹配BeanDefinition过程当中使用到的Filter；
-     * (1)当FilterType=ANNOTATION时，value指定的是注解类型
-     * (2)当FilterType=ASSIGNABLE_TYPE时，value指定的是要匹配的clazz类型
-     * (3)当FilterType=CUSTOM时，value指定的是自定义的TypeFilter的类型
+     * ComponentScan匹配BeanDefinition过程当中使用到的Filter;
+     * (1)当FilterType=ANNOTATION时, value指定的是注解类型
+     * (2)当FilterType=ASSIGNABLE_TYPE时, value指定的是要匹配的clazz类型
+     * (3)当FilterType=CUSTOM时, value指定的是自定义的TypeFilter的类型
      *
      * @see com.wanna.framework.core.type.filter.TypeFilter
      * @see com.wanna.framework.core.type.filter.AnnotationTypeFilter

@@ -11,10 +11,10 @@ import com.wanna.framework.core.annotation.AnnotatedElementUtils
 open class AnnotationClassFilter(val annotationClass: Class<out Annotation>) : ClassFilter {
 
     /**
-     * 执行匹配逻辑，检查给定的类上是否有标志指定的注解(annotationClass)
+     * 执行匹配逻辑, 检查给定的类上是否有标志指定的注解(annotationClass)
      *
      * @param clazz 待去进行检查的目标类
-     * @return 如果clazz上有目标注解，return true；否则return false
+     * @return 如果clazz上有目标注解, return true; 否则return false
      */
     override fun matches(clazz: Class<*>): Boolean = AnnotatedElementUtils.isAnnotated(clazz, annotationClass)
 }

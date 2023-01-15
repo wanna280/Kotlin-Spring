@@ -144,7 +144,7 @@ class MapBinder(context: Binder.Context) : AggregateBinder<Map<Any?, Any?>>(cont
 
         /**
          * 获取EntryName:
-         * * 1.如果是Value是一个数组, 那么需要往后找到第一个类似"[0]"这样的index标志， 返回它之前的元素
+         * * 1.如果是Value是一个数组, 那么需要往后找到第一个类似"[0]"这样的index标志,  返回它之前的元素
          * * 2.如果Value是一个Object/Map, 那么需要从name当中切取, 相比root多一级去作为Key
          * * 3.如果Value是一个普通的值的话, 那么直接返回name
          *

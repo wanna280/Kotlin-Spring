@@ -12,7 +12,7 @@ import java.nio.charset.Charset
 import java.util.*
 
 /**
- * 提供PropertyEditorRegistry的模板方法实现，通过组合PropertyEditor和ConversionService，去提供类型的转换工作
+ * 提供PropertyEditorRegistry的模板方法实现, 通过组合PropertyEditor和ConversionService, 去提供类型的转换工作
  */
 open class PropertyEditorRegistrySupport : PropertyEditorRegistry {
 

@@ -4,7 +4,7 @@ import com.wanna.framework.beans.TypeMismatchException
 import com.wanna.framework.core.MethodParameter
 
 /**
- * 方法参数类型不匹配的异常，在SpringMVC当中针对一个Controller的方法的参数的类型不匹配的情况
+ * 方法参数类型不匹配的异常, 在SpringMVC当中针对一个Controller的方法的参数的类型不匹配的情况
  *
  * @author jianchao.jia
  * @version v1.0

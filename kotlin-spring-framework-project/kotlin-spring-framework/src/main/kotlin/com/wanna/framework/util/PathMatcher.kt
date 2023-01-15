@@ -1,7 +1,7 @@
 package com.wanna.framework.util
 
 /**
- * 路径的匹配器，默认实现为AntMatcher
+ * 路径的匹配器, 默认实现为AntMatcher
  */
 interface PathMatcher {
 

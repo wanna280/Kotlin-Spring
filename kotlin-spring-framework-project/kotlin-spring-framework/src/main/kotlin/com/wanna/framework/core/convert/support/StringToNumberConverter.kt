@@ -5,7 +5,7 @@ import com.wanna.framework.core.convert.converter.GenericConverter
 import com.wanna.framework.core.convert.converter.GenericConverter.ConvertiblePair
 
 /**
- * 这是一个可以将String转换为Number类型的Converter，支持转为基础类型，也支持转换成为包装类型
+ * 这是一个可以将String转换为Number类型的Converter, 支持转为基础类型, 也支持转换成为包装类型
  *
  * @see GenericConverter
  */
@@ -25,7 +25,7 @@ open class StringToNumberConverter : GenericConverter {
         convertiblePairs.add(ConvertiblePair(String::class.java, Long::class.java))
         convertiblePairs.add(ConvertiblePair(String::class.java, Boolean::class.java))
 
-        // 2.(fixed:)初始化它转换为包装类型的映射列表(Note: XXX::class.javaObjectType，可以获取到包装类型...)
+        // 2.(fixed:)初始化它转换为包装类型的映射列表(Note: XXX::class.javaObjectType, 可以获取到包装类型...)
         convertiblePairs.add(ConvertiblePair(String::class.java, Int::class.javaObjectType))
         convertiblePairs.add(ConvertiblePair(String::class.java, Byte::class.javaObjectType))
         convertiblePairs.add(ConvertiblePair(String::class.java, Double::class.javaObjectType))

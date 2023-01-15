@@ -24,7 +24,7 @@ open class ListenableFutureTask<T>(callable: Callable<T>) : FutureTask<T>(callab
     }
 
     /**
-     * 在任务执行完成之后，需要回调所有的ListenableCallback，结果已经产生了
+     * 在任务执行完成之后, 需要回调所有的ListenableCallback, 结果已经产生了
      *
      * @see FutureTask.isDone
      * @see FutureTask.done

@@ -14,7 +14,7 @@ import com.wanna.framework.util.ClassUtils
 import java.util.function.Supplier
 
 /**
- * 这是一个抽象的BeanDefinition，它继承了BeanMetadataAttributeAccessor，支持进行属性的设置和获取
+ * 这是一个抽象的BeanDefinition, 它继承了BeanMetadataAttributeAccessor, 支持进行属性的设置和获取
  *
  * @see GenericBeanDefinition
  * @see AbstractBeanDefinition
@@ -77,7 +77,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     private var beanClass: Class<*>? = null
 
     /**
-     * 在进行autowire时，它是否是优先注入的Bean？
+     * 在进行autowire时, 它是否是优先注入的Bean？
      */
     private var primary = false
 
@@ -99,12 +99,12 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     private var destroyMethodName: String? = null
 
     /**
-     * Bean所处的作用域，比如singleton/prototype
+     * Bean所处的作用域, 比如singleton/prototype
      */
     private var scope = DEFAULT_SCOPE
 
     /**
-     * Bean所处的角色，Application(0)、Support(1)和Infrastructure(2)
+     * Bean所处的角色, Application(0)、Support(1)和Infrastructure(2)
      */
     private var role = ROLE_APPLICATION
 
@@ -132,7 +132,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     private var factoryBeanName: String? = null
 
     /**
-     * autowire的模式，BY_TYPE/BY_NAME/CONSTRUCTOR
+     * autowire的模式, BY_TYPE/BY_NAME/CONSTRUCTOR
      */
     private var autowireMode = AUTOWIRE_NO
 
@@ -142,7 +142,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     private var autowireCandidate = true
 
     /**
-     * 是否懒加载，默认为false
+     * 是否懒加载, 默认为false
      */
     private var lazyInit = false
 
@@ -181,21 +181,21 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     /**
      * 判断当前BeanDefinition是否是单例的？
      *
-     * @return 如果是单例的，return true；否则return false
+     * @return 如果是单例的, return true; 否则return false
      */
     override fun isSingleton() = scope == DEFAULT_SCOPE || scope == SCOPE_SINGLETON
 
     /**
      * 判断当前BeanDefinition是否是原型Bean？
      *
-     * @return 如果是原型的return true，如果不是原型的，return false
+     * @return 如果是原型的return true, 如果不是原型的, return false
      */
     override fun isPrototype() = scope == SCOPE_PROTOTYPE
 
     /**
      * 判断当前BeanDefinition是否是一个PrimaryBean？
      *
-     * @return 如果它是primary的，return true，否则return false
+     * @return 如果它是primary的, return true, 否则return false
      */
     override fun isPrimary() = this.primary
 
@@ -209,7 +209,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     }
 
     /**
-     * 获取该BeanDefinition要去进行自动注入的模式，BY_TYPE/BY_NAME ...
+     * 获取该BeanDefinition要去进行自动注入的模式, BY_TYPE/BY_NAME ...
      */
     open fun getAutowireMode(): Int = this.autowireMode
 
@@ -303,9 +303,9 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
 
     /**
      * 获取当前BeanDefinition是否是Autowire的候选Bean
-     * 如果不是一个Autowire候选Bean，在进行Autowire时，不考虑它去进行注入
+     * 如果不是一个Autowire候选Bean, 在进行Autowire时, 不考虑它去进行注入
      *
-     * @return 如果是Autowire候选Bean，return true；否则return false
+     * @return 如果是Autowire候选Bean, return true; 否则return false
      */
     override fun isAutowireCandidate() = this.autowireCandidate
 
@@ -330,7 +330,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     /**
      * 判断该BeanDefinition是否是抽象的？
      *
-     * @return 如果beanClass是抽象的，return true；否则return false
+     * @return 如果beanClass是抽象的, return true; 否则return false
      */
     override fun isAbstract() = abstractFlag
 
@@ -344,8 +344,8 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     }
 
     /**
-     * 获取该BeanDefinition的实例化Supplier，如果Supplier不为空，那么将会使用给定的Supplier去完成实例化，
-     * 就不使用Spring的创建Bean的方式对它去进行实例化了，直接使用你给定的实例化策略去进行实例化
+     * 获取该BeanDefinition的实例化Supplier, 如果Supplier不为空, 那么将会使用给定的Supplier去完成实例化,
+     * 就不使用Spring的创建Bean的方式对它去进行实例化了, 直接使用你给定的实例化策略去进行实例化
      *
      * @return 实例化Supplier(可能为null)
      */
@@ -360,15 +360,15 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     override fun getMethodOverrides() = this.methodOverrides
 
     /**
-     * 当前的BeanDefinition当中，是否有需要去进行运行时进行重写的方法？
-     * 如果有需要去进行运行时重写的方法，那么会使用CGLIB完成代理的方式去进行重写
+     * 当前的BeanDefinition当中, 是否有需要去进行运行时进行重写的方法？
+     * 如果有需要去进行运行时重写的方法, 那么会使用CGLIB完成代理的方式去进行重写
      *
-     * @return 如果有运行时进行重写的方法，return true；否则return false
+     * @return 如果有运行时进行重写的方法, return true; 否则return false
      */
     override fun hasMethodOverrides() = methodOverrides.getMethodOverrides().isNotEmpty()
 
     /**
-     * 获取当前的BeanDefinition当中的PropertyValue列表，返回的是origin对象，可以进行增删改操作
+     * 获取当前的BeanDefinition当中的PropertyValue列表, 返回的是origin对象, 可以进行增删改操作
      *
      * @return PropertyValue列表(MutablePropertyValues)
      */
@@ -377,7 +377,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     /**
      * 判断当前BeanDefinition当中是否有PropertyValue？
      *
-     * @return 如果已经添加了PropertyValue，那么return true；否则return false
+     * @return 如果已经添加了PropertyValue, 那么return true; 否则return false
      */
     override fun hasPropertyValues() = propertyValues.getPropertyValues().isNotEmpty()
 
@@ -391,13 +391,13 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     /**
      * 是否存在有构造器参数？
      *
-     * @return 如果存在有，return true；否则return false
+     * @return 如果存在有, return true; 否则return false
      */
     override fun hasConstructorArgumentValues(): Boolean = !constructorArgumentValues.isEmpty()
 
     /**
-     * 是否是懒加载的？如果是非懒加载的，那么在SpringBeanFactory启动时，就会完成实例化和初始化工作；
-     * 如果设置为懒加载，那么只有在你第一次去进行getBean时，才会完成该Bean的初始化工作
+     * 是否是懒加载的？如果是非懒加载的, 那么在SpringBeanFactory启动时, 就会完成实例化和初始化工作; 
+     * 如果设置为懒加载, 那么只有在你第一次去进行getBean时, 才会完成该Bean的初始化工作
      */
     override fun isLazyInit() = lazyInit
 
@@ -410,15 +410,15 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     }
 
     /**
-     * 在创建当前Bean时，需要依赖哪些Bean才能去完成创建，在对当前的Bean去进行实例化之前，
-     * SpringBeanFactory需要先去对所有依赖的Bean去进行实例化，再完成当前的Bean的实例化
+     * 在创建当前Bean时, 需要依赖哪些Bean才能去完成创建, 在对当前的Bean去进行实例化之前,
+     * SpringBeanFactory需要先去对所有依赖的Bean去进行实例化, 再完成当前的Bean的实例化
      *
      * @return dependsOn的beanName列表
      */
     override fun getDependsOn() = dependsOn
 
     /**
-     * 获取当前BeanDefinition当中的beanClass，有可能为null
+     * 获取当前BeanDefinition当中的beanClass, 有可能为null
      *
      * @return beanClass
      */
@@ -435,7 +435,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     }
 
     /**
-     * 获取beanClassName，有可能为null;
+     * 获取beanClassName, 有可能为null;
      * * 1.如果有beanClass的话, 那么直接使用beanClass去进行返回;
      * * 2.如果没有beanClass的话, 那么尝试使用beanClassName去进行返回
      *
@@ -456,7 +456,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     /**
      * 判断是否有beanClass
      *
-     * @return 如果当前BeanDefinition当中已经有beanClass了，return true；否则return false
+     * @return 如果当前BeanDefinition当中已经有beanClass了, return true; 否则return false
      */
     open fun hasBeanClass(): Boolean = beanClass != null
 
@@ -527,7 +527,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     /**
      * 当前BeanDefinition的资源的描述信息
      *
-     * @return 资源描述信息(如果不存在的话，那么return null)
+     * @return 资源描述信息(如果不存在的话, 那么return null)
      */
     @Nullable
     override fun getResourceDescription(): String? = resource?.getDescription()

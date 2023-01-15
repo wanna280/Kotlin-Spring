@@ -7,7 +7,7 @@ import java.io.InputStream
 import java.util.*
 
 /**
- * 这是一个Properties的Loader的工具类，可以完成Properties的加载
+ * 这是一个Properties的Loader的工具类, 可以完成Properties的加载
  *
  * @see SpringFactoriesLoader
  */
@@ -41,10 +41,10 @@ object PropertiesLoaderUtils {
     }
 
     /**
-     * 填充Properties，将给定的Resource当中的内容填充到Properties当中
+     * 填充Properties, 将给定的Resource当中的内容填充到Properties当中
      *
      * @param properties 待填充的Properties
-     * @param resource 资源(可以是XML文件，也可以是Properties文件)
+     * @param resource 资源(可以是XML文件, 也可以是Properties文件)
      * @throws IOException 当出现IO错误的情况
      */
     @Throws(IOException::class)
@@ -65,7 +65,7 @@ object PropertiesLoaderUtils {
      * 使用指定指定的ClassLoader去完成Properties的属性信息的加载
      *
      * @param classpath 需要去进行加载属性的资源类路径
-     * @param classLoader classLoader(如果为空，使用默认的classLoader)
+     * @param classLoader classLoader(如果为空, 使用默认的classLoader)
      */
     @JvmStatic
     @Deprecated("使用loadAllProperties代替", replaceWith = ReplaceWith("loadAllProperties"))
@@ -87,7 +87,7 @@ object PropertiesLoaderUtils {
      * 使用指定指定的ClassLoader去完成Properties的属性信息的加载
      *
      * @param classpath 需要去进行加载属性的资源类路径
-     * @param classLoader classLoader(如果为空，使用默认的classLoader)
+     * @param classLoader classLoader(如果为空, 使用默认的classLoader)
      * @return 加载到的Properties
      */
     @JvmStatic
@@ -107,7 +107,7 @@ object PropertiesLoaderUtils {
                 }
             }
         } catch (ex: IOException) {
-            throw FileNotFoundException("无法加载Properties资源文件，路径为[$classpath]")
+            throw FileNotFoundException("无法加载Properties资源文件, 路径为[$classpath]")
         }
         return properties
     }

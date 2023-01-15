@@ -5,7 +5,7 @@ import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
 
 /**
- * 提供Java版本的匹配功能，只有当版本匹配时才需要去进行自动装配
+ * 提供Java版本的匹配功能, 只有当版本匹配时才需要去进行自动装配
  *
  * @author jianchao.jia
  * @version v1.0

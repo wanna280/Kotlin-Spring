@@ -4,7 +4,7 @@ import com.wanna.framework.util.concurrent.ListenableFuture
 import java.util.concurrent.Callable
 
 /**
- * 在AsyncTaskExecutor提供的基础功能上，新增支持提交一个异步任务，并且返回一个ListenableFuture的方法
+ * 在AsyncTaskExecutor提供的基础功能上, 新增支持提交一个异步任务, 并且返回一个ListenableFuture的方法
  *
  * @author jianchao.jia
  * @version v1.0

@@ -31,7 +31,7 @@ open class ConfigurationPropertiesBean(
 ) {
 
     /**
-     * 决定当前ConfigurationPropertiesBean的属性绑定方式，是采用Setter的方式去进行注入还是使用构造器的方式去进行注入
+     * 决定当前ConfigurationPropertiesBean的属性绑定方式, 是采用Setter的方式去进行注入还是使用构造器的方式去进行注入
      */
     private val bindMethod = BindMethod.forType(bindTarget.type.resolve(Any::class.java))
 
@@ -48,7 +48,7 @@ open class ConfigurationPropertiesBean(
     open fun asTarget(): Bindable<Any> = this.bindTarget
 
     /**
-     * 获取包装的Bean，可以为null；表示运行时在去进行实例化(构造器绑定方式)
+     * 获取包装的Bean, 可以为null; 表示运行时在去进行实例化(构造器绑定方式)
      */
     open fun getInstance(): Any? = instance
 
@@ -60,7 +60,7 @@ open class ConfigurationPropertiesBean(
     open fun getAnnotation() = annotation
 
     /**
-     * 获取绑定方式，是采用JavaBean的Setter还是构造器的方式去完成绑定？
+     * 获取绑定方式, 是采用JavaBean的Setter还是构造器的方式去完成绑定？
      *
      * @return BindMethod(Setter/Constructor)
      */
@@ -78,12 +78,12 @@ open class ConfigurationPropertiesBean(
      */
     companion object {
         /**
-         * 根据该Bean的相关信息，从FactoryMethod或者是beanClass上去寻找@ConfigurationProperties注解
+         * 根据该Bean的相关信息, 从FactoryMethod或者是beanClass上去寻找@ConfigurationProperties注解
          *
          * @param applicationContext ApplicationContext
          * @param bean bean实例对象
          * @param beanName beanName
-         * @return 如果从FactoryMethod/beanClass上去找到了@ConfigurationProperties注解的话, 那么返回[ConfigurationPropertiesBean]；如果没有找到的话，那么return null
+         * @return 如果从FactoryMethod/beanClass上去找到了@ConfigurationProperties注解的话, 那么返回[ConfigurationPropertiesBean]; 如果没有找到的话, 那么return null
          */
         @Nullable
         @JvmStatic
@@ -93,8 +93,8 @@ open class ConfigurationPropertiesBean(
         }
 
         /**
-         * 为给定的ValueObject去创建[ConfigurationPropertiesBean]，主要是去解析给定的beanClass当中的@ConfigurationProperties注解；
-         * 对于ValueObject，不可能从@Bean的FactoryMethod当中创建，因此FactoryMethod=null; 对于ValueObject因为运行时才创建对象，因此bean=null;
+         * 为给定的ValueObject去创建[ConfigurationPropertiesBean], 主要是去解析给定的beanClass当中的@ConfigurationProperties注解;
+         * 对于ValueObject, 不可能从@Bean的FactoryMethod当中创建, 因此FactoryMethod=null; 对于ValueObject因为运行时才创建对象, 因此bean=null;
          *
          * @param beanClass beanClass
          * @param beanName beanName
@@ -112,7 +112,7 @@ open class ConfigurationPropertiesBean(
          *
          * @param beanName beanName
          * @param applicationContext ApplicationContext
-         * @return 如果是被FactoryMethod(@Bean方法)导入进来的，那么return FactoryMethod；否则，return null
+         * @return 如果是被FactoryMethod(@Bean方法)导入进来的, 那么return FactoryMethod; 否则, return null
          */
         @Nullable
         @JvmStatic
@@ -129,12 +129,12 @@ open class ConfigurationPropertiesBean(
         }
 
         /**
-         * 寻找@ConfigurationProperties注解，如果必要的话创建ConfigurationPropertiesBean
+         * 寻找@ConfigurationProperties注解, 如果必要的话创建ConfigurationPropertiesBean
          *
          * @param bean bean
          * @param beanName beanName
          * @param factory factoryMethod(@Bean方法注解标注的方法)
-         * @return 如果找到了@ConfigurationProperties注解，那么return ConfigurationPropertiesBean；否则return null
+         * @return 如果找到了@ConfigurationProperties注解, 那么return ConfigurationPropertiesBean; 否则return null
          */
         @Nullable
         @JvmStatic
@@ -174,7 +174,7 @@ open class ConfigurationPropertiesBean(
          * @param instance 实例对象
          * @param type 要去进行寻找注解的类
          * @param factory 要去进行寻找注解的工厂方法
-         * @return 从factory/method上去找到了给定的注解的话, 就返回注解对象；没有找到return null
+         * @return 从factory/method上去找到了给定的注解的话, 就返回注解对象; 没有找到return null
          */
         @Nullable
         @JvmStatic
@@ -199,11 +199,11 @@ open class ConfigurationPropertiesBean(
      */
     enum class BindMethod {
         JAVA_BEAN,  // setter for JavaBean
-        VALUE_OBJECT;  // Constructor for Value Object(值对象，Kotlin当中就有这个概念)
+        VALUE_OBJECT;  // Constructor for Value Object(值对象, Kotlin当中就有这个概念)
 
         companion object {
             /**
-             * 如果能从指定的Class当中去找到@ConstructorBinding标注的构造器，那么采用VALUE_OBJECT的方式去绑定；否则采用JAVA_BEAN的setter的方式去进行绑定
+             * 如果能从指定的Class当中去找到@ConstructorBinding标注的构造器, 那么采用VALUE_OBJECT的方式去绑定; 否则采用JAVA_BEAN的setter的方式去进行绑定
              *
              * @return 匹配到的要去进行绑定的方式, 如果有@ConstructorBinding注解, 那么return VALUE_OBJECT; 如果没有的话, 那么return JAVA_BEAN
              */

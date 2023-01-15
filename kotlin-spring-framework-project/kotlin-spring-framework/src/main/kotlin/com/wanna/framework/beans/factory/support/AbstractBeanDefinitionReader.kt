@@ -100,7 +100,7 @@ abstract class AbstractBeanDefinitionReader(private val registry: BeanDefinition
      * 根据location去加载BeanDefinition
      *
      * @param location 资源路径
-     * @param actualResources 真正的资源列表，对于加载到的资源将会存放到这个列表当中
+     * @param actualResources 真正的资源列表, 对于加载到的资源将会存放到这个列表当中
      * @return 加载到的BeanDefinition的数量
      */
     open fun loadBeanDefinitions(location: String, actualResources: MutableSet<Resource>?): Int {

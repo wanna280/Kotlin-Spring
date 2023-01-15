@@ -23,7 +23,7 @@ open class CustomizableThreadFactory() : CustomizableThreadCreator(), ThreadFact
 
 
     /**
-     * 来自ThreadFactory的方法，用于为线程池去创建一个Thread线程对象的工厂方法
+     * 来自ThreadFactory的方法, 用于为线程池去创建一个Thread线程对象的工厂方法
      *
      * @param r 线程要去进行执行的任务
      * @return 创建好的Thread线程对象

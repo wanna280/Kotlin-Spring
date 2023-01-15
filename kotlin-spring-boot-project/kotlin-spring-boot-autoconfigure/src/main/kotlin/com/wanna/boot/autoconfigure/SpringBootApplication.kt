@@ -11,7 +11,7 @@ import com.wanna.framework.core.annotation.AliasFor
 import kotlin.reflect.KClass
 
 /**
- * 标识这是一个SpringBootApplication，它支持完成自动配置以及包的扫描
+ * 标识这是一个SpringBootApplication, 它支持完成自动配置以及包的扫描
  *
  * @param proxyBeanMethods 是否要代理目标类？
  * @param nameGenerator BeanNameGenerator
@@ -23,9 +23,9 @@ import kotlin.reflect.KClass
 @ComponentScan(
     excludeFilters = [Filter(CUSTOM, [TypeExcludeFilter::class]),
         Filter(CUSTOM, [AutoConfigurationExcludeFilter::class])]
-)  // ComponentScan，完成包的扫描，并排除掉所有的自动配置类，避免自动配置类被扫描到
+)  // ComponentScan, 完成包的扫描, 并排除掉所有的自动配置类, 避免自动配置类被扫描到
 @SpringBootConfiguration  // 标识这是一个SpringBoot的配置类
-@EnableAutoConfiguration  // 自动配置，使用DeferredImportSelector去完成
+@EnableAutoConfiguration  // 自动配置, 使用DeferredImportSelector去完成
 annotation class SpringBootApplication(
     @get:AliasFor(annotation = EnableAutoConfiguration::class, value = "exclude")
     val exclude: Array<KClass<*>> = [],

@@ -1,7 +1,7 @@
 package com.wanna.framework.transaction.interceptor
 
 /**
- * 委托的TransactionAttribute，方便使用者只取重写某些方法
+ * 委托的TransactionAttribute, 方便使用者只取重写某些方法
  *
  * @param txAttr 受委托的TransactionAttribute
  */

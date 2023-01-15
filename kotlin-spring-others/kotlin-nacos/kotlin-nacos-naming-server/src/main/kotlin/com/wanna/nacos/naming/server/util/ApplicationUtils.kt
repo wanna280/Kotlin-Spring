@@ -5,8 +5,8 @@ import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.framework.context.ConfigurableApplicationContext
 
 /**
- * [ApplicationContext]的工具类，它实现了[ApplicationContextInitializer];
- * 在Spring的[ApplicationContext]创建完成时，会自动保存下来[ApplicationContext], 供外部作为工具类去进行使用
+ * [ApplicationContext]的工具类, 它实现了[ApplicationContextInitializer];
+ * 在Spring的[ApplicationContext]创建完成时, 会自动保存下来[ApplicationContext], 供外部作为工具类去进行使用
  *
  * @see ApplicationContextInitializer
  */

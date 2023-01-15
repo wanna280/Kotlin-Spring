@@ -40,8 +40,8 @@ import com.wanna.framework.web.mvc.annotation.ResponseStatusExceptionResolver
 import com.wanna.framework.web.mvc.support.DefaultHandlerExceptionResolver
 
 /**
- * 为WebMvc提供支持的配置类，它为WebMvc的正常运行提供的一些默认的相关组件，并配置到容器当中...
- * 在它的子类DelegatingWebMvcConfiguration当中，基于这个类当中的一些模板方法，支持使用WebMvcConfigurer去对相关的组件去进行自定义工作；
+ * 为WebMvc提供支持的配置类, 它为WebMvc的正常运行提供的一些默认的相关组件, 并配置到容器当中...
+ * 在它的子类DelegatingWebMvcConfiguration当中, 基于这个类当中的一些模板方法, 支持使用WebMvcConfigurer去对相关的组件去进行自定义工作;
  * 比如自定义参数解析器、返回值处理器、MessageConverter、内容协商管理器等组件去进行配置/扩展
  *
  * @see DelegatingWebMvcConfiguration
@@ -150,19 +150,19 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         handlerAdapter.setHttpMessageConverters(getMessageConverters())
         handlerAdapter.setContentNegotiationManager(contentNegotiationManager)
 
-        // 设置自定义的参数解析器，不会替换默认的，沿用默认的并进行扩展
+        // 设置自定义的参数解析器, 不会替换默认的, 沿用默认的并进行扩展
         handlerAdapter.setCustomArgumentResolvers(getArgumentResolvers())
 
-        // 设置定义的返回值解析器，不会替换默认的，沿用默认的并扩展
+        // 设置定义的返回值解析器, 不会替换默认的, 沿用默认的并扩展
         handlerAdapter.setCustomReturnValueHandlers(getReturnValueResolvers())
 
         return handlerAdapter
     }
 
     /**
-     * 给容器当中去注册一个ConversionService，去支持进行WebMvc当中的类型转换工作
+     * 给容器当中去注册一个ConversionService, 去支持进行WebMvc当中的类型转换工作
      *
-     * Note: 整个SpringMVC当中的各个组件，都将会采用这个ConversionService去完成类型的转换工作
+     * Note: 整个SpringMVC当中的各个组件, 都将会采用这个ConversionService去完成类型的转换工作
      */
     @Bean
     @Qualifier("mvcConversionService")
@@ -190,7 +190,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         }
         extendsHandlerExceptionResolver(exceptionResolvers)  // extends
 
-        // 创建一个HandlerExceptionResolverComposite，把全部的异常解析器全部去进行包装
+        // 创建一个HandlerExceptionResolverComposite, 把全部的异常解析器全部去进行包装
         val composite = HandlerExceptionResolverComposite()
         composite.setOrder(0)
         composite.setHandlerExceptionResolver(exceptionResolvers)
@@ -253,7 +253,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     }
 
     /**
-     * 为SpringMVC导入一个Spring的Validator，为`@ModelAttribute`和`@RequestBody`的参数检验提供支持
+     * 为SpringMVC导入一个Spring的Validator, 为`@ModelAttribute`和`@RequestBody`的参数检验提供支持
      *
      * @return 提供SpringMVC的参数检验的Validator
      */
@@ -263,7 +263,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         // 1.首先尝试获取子类去进行自定义的Validator
         var validator = getValidator()
 
-        // 2.如果没有自定义Validator的话，那么我们直接去进行推断...
+        // 2.如果没有自定义Validator的话, 那么我们直接去进行推断...
         if (validator == null) {
 
             // 检查JDK的Validator是否在我们的依赖当中？
@@ -271,7 +271,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
                     "javax.validation.Validator", WebMvcConfigurationSupport::class.java.classLoader
                 )
             ) {
-                // 实例化出来一个OptionalValidatorFactoryBean对象，支持去探测本地的javax.validation.Validator作为delegate
+                // 实例化出来一个OptionalValidatorFactoryBean对象, 支持去探测本地的javax.validation.Validator作为delegate
                 val className = "com.wanna.framework.validation.beanvalidation.OptionalValidatorFactoryBean"
                 try {
                     val clazz =
@@ -283,7 +283,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
                 } catch (ex: LinkageError) {
                     throw IllegalStateException(ex)
                 }
-                // 如果依赖当中都没有javax.validation.Validator，那么说明没有合适的Validator可以去进行使用
+                // 如果依赖当中都没有javax.validation.Validator, 那么说明没有合适的Validator可以去进行使用
                 // 我们直接尝试去使用NoOpValidator...
             } else {
                 validator = NoOpValidator()
@@ -293,7 +293,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     }
 
     /**
-     * 交给子类去进行重写，提供自定义的Validator
+     * 交给子类去进行重写, 提供自定义的Validator
      *
      * @return 你需要使用的Validator
      */
@@ -324,11 +324,11 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
 
 
     /**
-     * 获取应该要去进行应用的MessageConverter列表；
-     * 1.交给用户去自定义MessageConverter列表，如果你没有应用，那么我给你应用默认的；如果你有了，就不使用默认的了！
+     * 获取应该要去进行应用的MessageConverter列表;
+     * 1.交给用户去自定义MessageConverter列表, 如果你没有应用, 那么我给你应用默认的; 如果你有了, 就不使用默认的了！
      * 2.交给用户去自定义的扩展MessageConverter列表
      *
-     * Note: configure是直接替换默认的，extends是在默认的基础上去进行扩展
+     * Note: configure是直接替换默认的, extends是在默认的基础上去进行扩展
      */
     protected open fun getMessageConverters(): MutableList<HttpMessageConverter<*>> {
         var messageConverters = this.messageConverters
@@ -367,13 +367,13 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     }
 
     /**
-     * 获取Interceptor列表，交给子类去进行扩展
+     * 获取Interceptor列表, 交给子类去进行扩展
      */
     protected open fun getInterceptors(conversionService: FormattingConversionService): Array<Any> {
         var interceptors = this.interceptors
         if (interceptors == null) {
             val registry = InterceptorRegistry()
-            // 模板方法，交给子类去进行扩展
+            // 模板方法, 交给子类去进行扩展
             addInterceptors(registry)
             interceptors = ArrayList(registry.getInterceptors())
             this.interceptors = interceptors
@@ -382,9 +382,9 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     }
 
     /**
-     * 获取Cors的配置信息，它将会apply给所有的HandlerMapping当中
+     * 获取Cors的配置信息, 它将会apply给所有的HandlerMapping当中
      *
-     * @return Cors配置信息，key-pathPattern，value-CorsConfiguration
+     * @return Cors配置信息, key-pathPattern, value-CorsConfiguration
      */
     protected fun getCorsConfigurations(): Map<String, CorsConfiguration> {
         var corsConfigurations = this.corsConfigurations
@@ -409,15 +409,15 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     protected open fun applyDefaultHandlerExceptionResolver(
         resolvers: MutableList<HandlerExceptionResolver>, contentNegotiationManager: ContentNegotiationManager
     ) {
-        // 创建一个ExceptionHandler的ExceptionResolver(它需要的组件，和HandlerAdapter完全类似)
-        // 并配置内容协商管理器，参数解析器、返回值处理器、消息转换器
+        // 创建一个ExceptionHandler的ExceptionResolver(它需要的组件, 和HandlerAdapter完全类似)
+        // 并配置内容协商管理器, 参数解析器、返回值处理器、消息转换器
         val exceptionHandlerExceptionResolver = ExceptionHandlerExceptionResolver()
         exceptionHandlerExceptionResolver.setContentNegotiationManager(contentNegotiationManager)
         exceptionHandlerExceptionResolver.setHandlerMethodArgumentResolvers(getArgumentResolvers())
         exceptionHandlerExceptionResolver.setHttpMessageConverters(getMessageConverters())
         exceptionHandlerExceptionResolver.setHandlerMethodReturnValueHandlers(getReturnValueResolvers())
-        // 手动设置ApplicationContext，并完成初始化工作...
-        // 因为它不是一个SpringBean，无法自动初始化...我们尝试去进行手动初始化
+        // 手动设置ApplicationContext, 并完成初始化工作...
+        // 因为它不是一个SpringBean, 无法自动初始化...我们尝试去进行手动初始化
         if (this.applicationContext != null) {
             exceptionHandlerExceptionResolver.setApplicationContext(this.applicationContext!!)
         }
@@ -434,33 +434,33 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     }
 
     /**
-     * 自定义的添加Interceptor的逻辑，模板方法，交给子类去进行实现
+     * 自定义的添加Interceptor的逻辑, 模板方法, 交给子类去进行实现
      *
-     * @param registry 拦截器的注册中心，可以通过往其中添加拦截器实现拦截器的注册
+     * @param registry 拦截器的注册中心, 可以通过往其中添加拦截器实现拦截器的注册
      */
     protected open fun addInterceptors(registry: InterceptorRegistry) {}
 
     /**
-     * 自定义默认的默认的异常解析器(模板方法，交给子类去进行实现)
+     * 自定义默认的默认的异常解析器(模板方法, 交给子类去进行实现)
      */
     protected open fun configureHandlerExceptionResolver(resolvers: MutableList<HandlerExceptionResolver>) {}
 
     /**
-     * 扩展自定义的异常解析器(模板方法，交给子类去进行实现)
+     * 扩展自定义的异常解析器(模板方法, 交给子类去进行实现)
      */
     protected open fun extendsHandlerExceptionResolver(resolvers: MutableList<HandlerExceptionResolver>) {}
 
     protected open fun addFormatters(formatterRegistry: FormatterRegistry) {}
 
     /**
-     * 自定义MessageConverter列表，交给子类去进行自定义
+     * 自定义MessageConverter列表, 交给子类去进行自定义
      *
      * @param converters 将要应用的MessageConverter列表
      */
     protected open fun configureMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {}
 
     /**
-     * 扩展MessageConverter列表，交给子类去扩展
+     * 扩展MessageConverter列表, 交给子类去扩展
      *
      * @param converters 将要应用的MessageConverter列表
      */
@@ -468,22 +468,22 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
 
 
     /**
-     * 扩展参数解析器，交给子类去进行扩展(模板方法)
+     * 扩展参数解析器, 交给子类去进行扩展(模板方法)
      */
     protected open fun extendsArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {}
 
     /**
-     * 扩展返回值处理器，交给子类去进行扩展(模板方法)
+     * 扩展返回值处理器, 交给子类去进行扩展(模板方法)
      */
     protected open fun extendsReturnValueHandlers(handlers: MutableList<HandlerMethodReturnValueHandler>) {}
 
     /**
-     * 自定义内容协商策略，交给子类去进行扩展(模板方法)
+     * 自定义内容协商策略, 交给子类去进行扩展(模板方法)
      */
     protected open fun configureContentNegotiation(contentNegotiationConfigurer: ContentNegotiationConfigurer) {}
 
     /**
-     * 交给子类去扩展CorsMapping，可以自行往其中去添加Cors的配置信息
+     * 交给子类去扩展CorsMapping, 可以自行往其中去添加Cors的配置信息
      *
      * @param registry CorsRegistry
      */

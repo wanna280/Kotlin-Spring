@@ -7,7 +7,7 @@ import com.wanna.framework.util.ClassUtils
 
 
 /**
- * 这是一个支持处理注解版的Order的比较器，不仅支持了Ordered/PriorityOrdered，也对@Order注解提供了支持
+ * 这是一个支持处理注解版的Order的比较器, 不仅支持了Ordered/PriorityOrdered, 也对@Order注解提供了支持
  */
 open class AnnotationAwareOrderComparator : OrderComparator() {
     companion object {
@@ -26,7 +26,7 @@ open class AnnotationAwareOrderComparator : OrderComparator() {
     }
 
     /**
-     * 自定义寻找Order的方式，先检查Ordered，再去检查@Order注解
+     * 自定义寻找Order的方式, 先检查Ordered, 再去检查@Order注解
      *
      * @param obj 要寻找Order的目标对象
      */
@@ -34,17 +34,17 @@ open class AnnotationAwareOrderComparator : OrderComparator() {
         if (obj == null) {
             return null
         }
-        // 利用父类的提供的方式，去检查Ordered的情况
+        // 利用父类的提供的方式, 去检查Ordered的情况
         val order = super.findOrder(obj)
         if (order != null) {
             return order
         }
-        // 新增从注解的支持，去检查@Order/@Priority注解
+        // 新增从注解的支持, 去检查@Order/@Priority注解
         return findOrderFromAnnotation(obj)
     }
 
     /**
-     * 从注解当中寻找Order，如果没有找到，那么return null
+     * 从注解当中寻找Order, 如果没有找到, 那么return null
      */
     private fun findOrderFromAnnotation(obj: Any): Int? {
         // first to check @Order

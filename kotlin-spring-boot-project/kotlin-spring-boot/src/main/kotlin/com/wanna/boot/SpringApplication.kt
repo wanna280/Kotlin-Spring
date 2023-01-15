@@ -30,16 +30,16 @@ import org.slf4j.LoggerFactory
 import java.util.Collections
 
 /**
- * 这是一个SpringApplication的启动类，交由它去进行引导整个SpringApplication的启动
+ * 这是一个SpringApplication的启动类, 交由它去进行引导整个SpringApplication的启动
  *
- * @param resourceLoader 资源加载器，提供资源的加载
+ * @param resourceLoader 资源加载器, 提供资源的加载
  * @param _primarySources 启动类列表
  */
 open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg _primarySources: Class<*>) {
     companion object {
 
         /**
-         * SpringBoot的Banner的属性值，可以在配置文件/命令行参数当中去通过这个属性值去配置Banner的位置
+         * SpringBoot的Banner的属性值, 可以在配置文件/命令行参数当中去通过这个属性值去配置Banner的位置
          */
         const val BANNER_LOCATION_PROPERTY = SpringApplicationBannerPrinter.BANNER_LOCATION_PROPERTY
 
@@ -74,7 +74,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         val shutdownHook = SpringApplicationShutdownHook()
 
         /**
-         * 提供静态方法，去运行SpringApplication
+         * 提供静态方法, 去运行SpringApplication
          *
          * @param primarySource 配置类
          * @param args 命令行参数
@@ -86,7 +86,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         }
 
         /**
-         * 提供静态方法，去运行SpringApplication
+         * 提供静态方法, 去运行SpringApplication
          *
          * @param primarySources 配置类列表
          * @param args 命令行参数
@@ -98,10 +98,10 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         }
 
         /**
-         * 对外提供一个main方法，支持去直接启动SpringApplication;
-         * 直接不指定主启动类，适用于那些将启动类写到命令行参数("--spring.main.sources")当中的情况;
+         * 对外提供一个main方法, 支持去直接启动SpringApplication;
+         * 直接不指定主启动类, 适用于那些将启动类写到命令行参数("--spring.main.sources")当中的情况;
          *
-         * 很多开发者可能会选择自定义一个main方法，然后自己去调用run方法去启动SpringApplication
+         * 很多开发者可能会选择自定义一个main方法, 然后自己去调用run方法去启动SpringApplication
          *
          * @param args 命令行参数
          * @throws Exception 如果启动Spring应用失败的话
@@ -115,8 +115,8 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         }
 
         /**
-         * 对外提供的一个static方法，用于去退出一个Spring应用，并生成ExitCode;
-         * 退出一个Spring应用时，关闭ApplicationContext，发布ExitCodeEvent事件，并获取到ExitCode
+         * 对外提供的一个static方法, 用于去退出一个Spring应用, 并生成ExitCode;
+         * 退出一个Spring应用时, 关闭ApplicationContext, 发布ExitCodeEvent事件, 并获取到ExitCode
          *
          * @param context 要关闭的ApplicationContext
          * @param exitCodeGenerators ExitCodeGenerator列表
@@ -159,7 +159,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 提供一个不用ResourceLoader的构造器，只去指定primarySources
+     * 提供一个不用ResourceLoader的构造器, 只去指定primarySources
      *
      * @param primarySources 主启动类
      */
@@ -187,7 +187,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         SpringFactoriesLoader.loadFactories(ApplicationListener::class.java)
 
     /**
-     * Spring的ApplicationType，自动从类路径当中的依赖去进行推断
+     * Spring的ApplicationType, 自动从类路径当中的依赖去进行推断
      */
     private var applicationType = ApplicationType.deduceFromClassPath()
 
@@ -197,7 +197,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     private var beanNameGenerator: BeanNameGenerator? = null
 
     /**
-     * 用来创建ApplicationContext的类，如果不指定的话，将会根据ApplicationType去进行自动推断
+     * 用来创建ApplicationContext的类, 如果不指定的话, 将会根据ApplicationType去进行自动推断
      *
      * @see applicationType
      */
@@ -209,12 +209,12 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     private var environment: ConfigurableEnvironment? = null
 
     /**
-     * 这种一个Bootstrapper注册中心，用来完成对BootstrapContext去进行初始化
+     * 这种一个Bootstrapper注册中心, 用来完成对BootstrapContext去进行初始化
      */
     private var bootstrappers: MutableCollection<Bootstrapper> = getSpringFactoriesInstances(Bootstrapper::class.java)
 
     /**
-     * SpringApplication的ApplicationContext的初始化器，在ApplicationContext完成创建和初始化工作时，会自动完成回调
+     * SpringApplication的ApplicationContext的初始化器, 在ApplicationContext完成创建和初始化工作时, 会自动完成回调
      */
     private var initializers: MutableCollection<ApplicationContextInitializer<*>> =
         getSpringFactoriesInstances(ApplicationContextInitializer::class.java)
@@ -235,12 +235,12 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     private var addConversionService = true
 
     /**
-     * ApplicationStartup，支持对SpringApplication启动过程中的各个阶段去进行记录，支持去进行自定义，从而完成自定义的功能
+     * ApplicationStartup, 支持对SpringApplication启动过程中的各个阶段去进行记录, 支持去进行自定义, 从而完成自定义的功能
      */
     private var applicationStartup = ApplicationStartup.DEFAULT
 
     /**
-     * 打印Banner的模式，NO/CONSOLE/LOG
+     * 打印Banner的模式, NO/CONSOLE/LOG
      */
     private var bannerMode: Banner.Mode = Banner.Mode.CONSOLE
 
@@ -270,7 +270,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     private var additionalProfiles: MutableSet<String> = Collections.emptySet()
 
     /**
-     * 获取SpringApplication当中的监听器列表，并完成好排序工作
+     * 获取SpringApplication当中的监听器列表, 并完成好排序工作
      *
      * @return 排好序的ApplicationListener列表
      */
@@ -283,7 +283,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      * @return 完成刷新工作的ApplicationContext
      */
     open fun run(vararg args: String): ConfigurableApplicationContext {
-        // 开启秒表的计时，方便去统计整个应用启动过程当中的占用的时间
+        // 开启秒表的计时, 方便去统计整个应用启动过程当中的占用的时间
         val stopWatch = StopWatch()
         stopWatch.start()
 
@@ -298,7 +298,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
 
         // 获取SpringApplicationRunListeners
         val listeners: SpringApplicationRunListeners = getRunListeners(arrayOf(*args))
-        // 通知所有的监听器，当前SpringApplication已经正在启动当中了...
+        // 通知所有的监听器, 当前SpringApplication已经正在启动当中了...
         listeners.starting(bootstrapContext, this.mainApplicationClass)
 
         try {
@@ -307,7 +307,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
             // 准备好SpringApplication环境
             val environment = prepareEnvironment(listeners, bootstrapContext, applicationArguments)
 
-            // 环境已经准备好了，可以去打印SpringBoot的Banner了，并将创建的Banner去进行返回
+            // 环境已经准备好了, 可以去打印SpringBoot的Banner了, 并将创建的Banner去进行返回
             val banner = printBanner(environment)
             // 创建ApplicationContext并且设置ApplicationStartup对象到ApplicationContext当中
             applicationContext = createApplicationContext()
@@ -324,7 +324,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
             // 刷新SpringApplication的ApplicationContext
             refreshContext(applicationContext)
 
-            // 在SpringApplication的ApplicationContext完成刷新之后的回调，是一个钩子函数，交给子类去完成
+            // 在SpringApplication的ApplicationContext完成刷新之后的回调, 是一个钩子函数, 交给子类去完成
             afterRefresh(applicationContext, applicationArguments)
 
             // 结束秒表的计时
@@ -335,17 +335,17 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
                 StartupInfoLogger(mainApplicationClass).logStarted(getApplicationLogger(), stopWatch)
             }
 
-            // 通知所有的监听器，SpringApplication的已经启动完成，可以去进行后置处理工作了
+            // 通知所有的监听器, SpringApplication的已经启动完成, 可以去进行后置处理工作了
             listeners.started(applicationContext)
 
-            // 拿出容器当中的所有的ApplicationRunner和CommandLineRunner，去进行回调，处理命令行参数
+            // 拿出容器当中的所有的ApplicationRunner和CommandLineRunner, 去进行回调, 处理命令行参数
             callRunners(applicationContext, applicationArguments)
         } catch (ex: Throwable) {
             handleRunFailure(applicationContext, ex, listeners, exceptionReporters)
             throw IllegalStateException(ex)
         }
         try {
-            // 通知所有的监听器，SpringApplication已经正在运行当中了，可以去进行后置处理工作了
+            // 通知所有的监听器, SpringApplication已经正在运行当中了, 可以去进行后置处理工作了
             listeners.running(applicationContext)
         } catch (ex: Throwable) {
             handleRunFailure(applicationContext, ex, null, exceptionReporters)
@@ -355,7 +355,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 准备SpringApplication的ApplicationContext，将Environment设置到ApplicationContext当中，并完成ApplicationContext的初始化工作;
+     * 准备SpringApplication的ApplicationContext, 将Environment设置到ApplicationContext当中, 并完成ApplicationContext的初始化工作;
      * 将注册到SpringApplication当中的配置类注册到ApplicationContext当中
      *
      * @param bootstrapContext bootstrapContext
@@ -374,24 +374,24 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         banner: Banner?
     ) {
 
-        // 将准备好的环境对象，设置到ApplicationContext当中去
+        // 将准备好的环境对象, 设置到ApplicationContext当中去
         context.setEnvironment(environment)
 
-        // 完成ApplicationContext的后置处理工作，给容器中注册beanNameGenerator和conversionService
+        // 完成ApplicationContext的后置处理工作, 给容器中注册beanNameGenerator和conversionService
         postProcessApplicationContext(context)
 
         // 调用所有的ApplicationContextInitializer去完成ApplicationContext的初始化
         applyInitializers(context)
 
-        // 通知监听器，ApplicationContext已经准备好了，可以完成后置处理了
+        // 通知监听器, ApplicationContext已经准备好了, 可以完成后置处理了
         listeners.contextPrepared(context)
 
-        // 当ApplicationContext已经准备好了，可以去关闭BootstrapContext了
+        // 当ApplicationContext已经准备好了, 可以去关闭BootstrapContext了
         // 回调BootstrapContext当中所有处理BootstrapContextClosed事件的监听器
         bootstrapContext.close(context)
 
-        // SpringApplication的整个ApplicationContext已经准备好了，可以去进行打印相关的日志信息了
-        // 是否需要打印SpringApplication启动过程当中的相关信息，如果需要的话，需要在这里去打印SpringApplication的相关环境信息
+        // SpringApplication的整个ApplicationContext已经准备好了, 可以去进行打印相关的日志信息了
+        // 是否需要打印SpringApplication启动过程当中的相关信息, 如果需要的话, 需要在这里去打印SpringApplication的相关环境信息
         if (this.logStartupInfo) {
             // 只要root容器才打印启动的相关信息
             logStartingInfo(context.getParent() == null)
@@ -408,7 +408,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         // 把ApplicationArguments注册到beanFactory当中
         beanFactory.registerSingleton("applicationArguments", arguments)
 
-        // 如果使用到了Banner的话，将Banner也注册到beanFactory当中
+        // 如果使用到了Banner的话, 将Banner也注册到beanFactory当中
         if (banner != null) {
             // 将Banner对象注册到容器当中
             beanFactory.registerSingleton("springBootBanner", banner)
@@ -417,25 +417,25 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         // 把注册到SpringApplication当中的source去完成BeanDefinition的加载
         load(context, getAllSources().toTypedArray())
 
-        // 通知监听器ApplicationContext已经启动完成了，可以完成后置处理工作了
+        // 通知监听器ApplicationContext已经启动完成了, 可以完成后置处理工作了
         listeners.contextLoaded(context)
     }
 
     /**
-     * 根据设置的BannerNode的不同，使用不同的方式去完成SpringApplication的Banner的打印
+     * 根据设置的BannerNode的不同, 使用不同的方式去完成SpringApplication的Banner的打印
      *
      * * 1.如果Mode=No, 那么不输出Banner
      * * 2.如果Mode=CONSOLE, 将会才控制台输出Banner
      * * 3.如果Mode=LOG, 将会使用Logger的方式去输出Banner
      *
      * @param environment Environment
-     * @return 如果BannerMode=NO，return null; 否则return 创建好的Banner
+     * @return 如果BannerMode=NO, return null; 否则return 创建好的Banner
      */
     protected open fun printBanner(environment: ConfigurableEnvironment): Banner? {
         if (bannerMode == Banner.Mode.NO) {
             return null
         }
-        // 如果指定了ResourceLoader，那么使用给定的; 否则使用默认的
+        // 如果指定了ResourceLoader, 那么使用给定的; 否则使用默认的
         val resourceLoader = this.resourceLoader ?: DefaultResourceLoader(getClassLoader())
         val springBootBannerPrinter = SpringApplicationBannerPrinter(resourceLoader, banner)
         if (bannerMode == Banner.Mode.CONSOLE) {
@@ -487,7 +487,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 创建BootstrapContext，并回调所有的Bootstrapper去完成初始化
+     * 创建BootstrapContext, 并回调所有的Bootstrapper去完成初始化
      *
      * @return 创建好的BootstrapContext
      */
@@ -498,17 +498,17 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 对ApplicationContext去进行后置处理工作，可以注册BeanNameGenerator、添加ConversionService等
+     * 对ApplicationContext去进行后置处理工作, 可以注册BeanNameGenerator、添加ConversionService等
      *
      * @param context ApplicationContext
      */
     protected open fun postProcessApplicationContext(context: ConfigurableApplicationContext) {
-        // 如果设置了beanNameGenerator的话，那么需要将它注册到容器当中
+        // 如果设置了beanNameGenerator的话, 那么需要将它注册到容器当中
         if (this.beanNameGenerator != null) {
             context.getBeanFactory()
                 .registerSingleton(AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR, this.beanNameGenerator!!)
         }
-        // 如果设置了ResourceLoader，那么将它设置给ApplicationContext
+        // 如果设置了ResourceLoader, 那么将它设置给ApplicationContext
         if (this.resourceLoader != null) {
             if (context is GenericApplicationContext) {
                 context.setResourceLoader(this.resourceLoader!!)
@@ -518,14 +518,14 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
             }
         }
 
-        // 如果要添加ConversionService的话，设置到BeanFactory当中
+        // 如果要添加ConversionService的话, 设置到BeanFactory当中
         if (this.addConversionService) {
             context.getBeanFactory().setConversionService(DefaultConversionService.getSharedInstance())
         }
     }
 
     /**
-     * 回调所有的Runner，拿出容器当中所有的ApplicationRunner和CommandLineRunner，去进行排序，并进行执行
+     * 回调所有的Runner, 拿出容器当中所有的ApplicationRunner和CommandLineRunner, 去进行排序, 并进行执行
      *
      * @see ApplicationRunner
      * @see CommandLineRunner
@@ -535,11 +535,11 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      */
     protected open fun callRunners(applicationContext: ApplicationContext, applicationArguments: ApplicationArguments) {
         val runners = ArrayList<Any>()
-        // fixed:要添加的只是Value而已，而不是Map<String,T>
+        // fixed:要添加的只是Value而已, 而不是Map<String,T>
         runners.addAll(applicationContext.getBeansForType(ApplicationRunner::class.java).values)
         runners.addAll(applicationContext.getBeansForType(CommandLineRunner::class.java).values)
         AnnotationAwareOrderComparator.sort(runners)  // sort
-        // 去重，并回调所有的Runner
+        // 去重, 并回调所有的Runner
         LinkedHashSet(runners).forEach {
             if (it is ApplicationRunner) {
                 it.run(applicationArguments)
@@ -558,7 +558,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 遍历所有的ApplicationContext的Initializer，去完成ApplicationContext的应用
+     * 遍历所有的ApplicationContext的Initializer, 去完成ApplicationContext的应用
      */
     @Suppress("UNCHECKED_CAST")
     protected open fun applyInitializers(context: ConfigurableApplicationContext) {
@@ -572,7 +572,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      * 将一个列表当中的元素转换为有序的Set(LinkedHashSet)
      *
      * @param elements 要进行排序的集合
-     * @return 排好序的集合，并转换为Set去进行return
+     * @return 排好序的集合, 并转换为Set去进行return
      */
     private fun <T> asOrderSet(elements: Collection<T>): Set<T> {
         val list = ArrayList(elements)
@@ -619,7 +619,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      * @param sources 注册到SpringApplication当中的source信息
      */
     private fun load(context: ApplicationContext, sources: Array<*>) {
-        // 从ApplicationContext当中去获取BeanDefinitionRegistry，并创建BeanDefinitionLoader去完成BeanDefinition的加载
+        // 从ApplicationContext当中去获取BeanDefinitionRegistry, 并创建BeanDefinitionLoader去完成BeanDefinition的加载
         val registry = getBeanDefinitionRegistry(context)
         val beanDefinitionLoader = BeanDefinitionLoader(registry, sources)
         if (this.beanNameGenerator != null) {
@@ -646,7 +646,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 在完成ApplicationContext之后的回调函数，交给子类去完成
+     * 在完成ApplicationContext之后的回调函数, 交给子类去完成
      */
     protected open fun afterRefresh(
         context: ConfigurableApplicationContext, applicationArguments: ApplicationArguments
@@ -660,7 +660,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      * @param context 要去进行刷新的ApplicationContext
      */
     private fun refreshContext(context: ConfigurableApplicationContext) {
-        // 如果需要注册ShutdownHook的话，那么把当前ApplicationContext去进行注册到ShutdownHook当中
+        // 如果需要注册ShutdownHook的话, 那么把当前ApplicationContext去进行注册到ShutdownHook当中
         if (registerShutdownHook) {
             shutdownHook.registerApplicationContext(context)
         }
@@ -677,14 +677,14 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 根据ApplicationType，去创建对应类型的Spring应用的ApplicationContext
+     * 根据ApplicationType, 去创建对应类型的Spring应用的ApplicationContext
      *
      * @return 创建好的ApplicationContext对象
      */
     protected open fun createApplicationContext(): ConfigurableApplicationContext {
-        // 如果指定了ApplicationContextClass，那么使用给定的ApplicationContextClass去创建对象
+        // 如果指定了ApplicationContextClass, 那么使用给定的ApplicationContextClass去创建对象
         var applicationContextClass = this.applicationContextClass
-        // 如果没有指定ApplicationContextClass，那么将会根据ApplicationType去进行推断
+        // 如果没有指定ApplicationContextClass, 那么将会根据ApplicationType去进行推断
         if (applicationContextClass == null) {
             try {
                 applicationContextClass = when (this.applicationType) {
@@ -693,7 +693,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
                     ApplicationType.MVC -> ClassUtils.forName(DEFAULT_MVC_WEB_CONTEXT_CLASS)
                 }
             } catch (ex: ClassNotFoundException) {
-                throw IllegalStateException("无法根据给定的ApplicationType去推断出来合适的ApplicationContext的类名，请先指定ApplicationContextClass")
+                throw IllegalStateException("无法根据给定的ApplicationType去推断出来合适的ApplicationContext的类名, 请先指定ApplicationContextClass")
             }
         }
         return BeanUtils.instantiateClass(applicationContextClass)
@@ -713,9 +713,9 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     ): ConfigurableEnvironment {
         val environment = getOrCreateEnvironment()
 
-        // 配置环境，添加ConversionService以及命令行参数的PropertySource
+        // 配置环境, 添加ConversionService以及命令行参数的PropertySource
         configureEnvironment(environment, applicationArguments.getSourceArgs())
-        // 通知所有的监听器，环境已经准备好了，可以去完成后置处理了...
+        // 通知所有的监听器, 环境已经准备好了, 可以去完成后置处理了...
         listeners.environmentPrepared(bootstrapContext, environment)
         bindToSpringApplication(environment)
 
@@ -723,7 +723,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 将配置文件当中的"spring.main"作为前缀的Key，去绑定到当前的SpringApplication对象当中来
+     * 将配置文件当中的"spring.main"作为前缀的Key, 去绑定到当前的SpringApplication对象当中来
      *
      * @param environment Environment
      */
@@ -769,8 +769,8 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 如果SpringApplication配置了Environment，那么使用自定义的Environment;
-     * 如果没有配置Environment，那么就根据applicationType去新创建一个Environment对象
+     * 如果SpringApplication配置了Environment, 那么使用自定义的Environment;
+     * 如果没有配置Environment, 那么就根据applicationType去新创建一个Environment对象
      */
     private fun getOrCreateEnvironment(): ConfigurableEnvironment {
         if (this.environment != null) {
@@ -817,7 +817,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 设置SpringApplication的Initializers，完成SpringApplication的ApplicationContext的初始化
+     * 设置SpringApplication的Initializers, 完成SpringApplication的ApplicationContext的初始化
      */
     open fun setInitializers(initializers: Collection<ApplicationContextInitializer<*>>) {
         this.initializers = ArrayList(initializers)
@@ -868,9 +868,9 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 提供SpringApplication的[ApplicationStartup]的设置，在SpringApplication启动过程当中，会自动将
-     * [ApplicationStartup]对象设置到SpringApplication的[ApplicationContext]当中，可以替换自定义的[ApplicationStartup]，
-     * 去实现更多相关的自定义功能，比如可以替换一个进行日志的输出的[ApplicationStartup], 这样就可以去记录整个Spring应用的启动信息
+     * 提供SpringApplication的[ApplicationStartup]的设置, 在SpringApplication启动过程当中, 会自动将
+     * [ApplicationStartup]对象设置到SpringApplication的[ApplicationContext]当中, 可以替换自定义的[ApplicationStartup],
+     * 去实现更多相关的自定义功能, 比如可以替换一个进行日志的输出的[ApplicationStartup], 这样就可以去记录整个Spring应用的启动信息
      *
      * @param applicationStartup ApplicationStartup
      */
@@ -886,7 +886,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     open fun getApplicationStartup(): ApplicationStartup = this.applicationStartup
 
     /**
-     * 设置Banner打印模式，Console/Log/No
+     * 设置Banner打印模式, Console/Log/No
      *
      * @param mode bannerMode
      */
@@ -911,7 +911,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 打印SpringApplication启动过程当中的相关环境信息，只要当前容器是root容器时才需要去进行打印
+     * 打印SpringApplication启动过程当中的相关环境信息, 只要当前容器是root容器时才需要去进行打印
      *
      * @param isRoot 当前是否是root容器? 只有root容器才会输出
      */
@@ -955,8 +955,8 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     private fun quoteProfiles(profiles: Array<String>): List<String> = profiles.map { "\"$it\"" }.toList()
 
     /**
-     * 获取当前SpringApplication的Logger，如果有主启动类的话，那么使用该类作为loggerName去进行获取Logger;
-     * 如果没有的话，那么使用SpringApplication的Logger去作为Logger
+     * 获取当前SpringApplication的Logger, 如果有主启动类的话, 那么使用该类作为loggerName去进行获取Logger;
+     * 如果没有的话, 那么使用SpringApplication的Logger去作为Logger
      *
      * Note: 这里不能是public的, 不然会有Logger的递归绑定导致SOF的问题
      *
@@ -972,7 +972,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     /**
      * 获取ClassLoader
      *
-     * @return 如果ResourceLoader当中可以获取到的话，那么就使用; 否则使用默认的
+     * @return 如果ResourceLoader当中可以获取到的话, 那么就使用; 否则使用默认的
      */
     open fun getClassLoader(): ClassLoader = this.resourceLoader?.getClassLoader() ?: ClassUtils.getDefaultClassLoader()
 
@@ -998,7 +998,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 设置SpringApplication的mainClass，不设置的话，可以自动从StackTrace当中去进行推断
+     * 设置SpringApplication的mainClass, 不设置的话, 可以自动从StackTrace当中去进行推断
      *
      * @param mainApplicationClass 主启动类
      */
@@ -1012,7 +1012,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 自定义SpringApplication的Environment，不自定义的话，支持去进行自动推断
+     * 自定义SpringApplication的Environment, 不自定义的话, 支持去进行自动推断
      *
      * @param environment Environment
      */
@@ -1039,7 +1039,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 添加一个primarySource，它将会作为Spring容器的根启动类
+     * 添加一个primarySource, 它将会作为Spring容器的根启动类
      *
      * @param clazz primarySource
      */
@@ -1057,7 +1057,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 获取所有的Source列表，包含primarySources和普通的source
+     * 获取所有的Source列表, 包含primarySources和普通的source
      *
      * @return primarySource & source
      */
@@ -1070,7 +1070,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     /**
      * 设置是否允许BeanDefinition的覆盖？
      *
-     * @param allowBeanDefinitionOverriding 如果为true，允许覆盖; 否则不允许
+     * @param allowBeanDefinitionOverriding 如果为true, 允许覆盖; 否则不允许
      */
     open fun setAllowBeanDefinitionOverriding(allowBeanDefinitionOverriding: Boolean) {
         this.allowBeanDefinitionOverriding = allowBeanDefinitionOverriding
@@ -1095,7 +1095,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     /**
      * 获取用来创建ApplicationContext的类
      *
-     * @return 用来创建ApplicationContext的类(没有设置的话，为null)
+     * @return 用来创建ApplicationContext的类(没有设置的话, 为null)
      */
     open fun getApplicationContextClass(): Class<out ConfigurableApplicationContext>? = this.applicationContextClass
 

@@ -7,7 +7,7 @@ import java.util.jar.Manifest
 import com.wanna.boot.loader.Launcher
 
 /**
- * 用于描述一个Java的归档文件(比如Jar包/Zip包)，它能支持被Launcher去进行启动
+ * 用于描述一个Java的归档文件(比如Jar包/Zip包), 它能支持被Launcher去进行启动
  *
  * @author jianchao.jia
  * @version v1.0
@@ -37,12 +37,12 @@ interface Archive : Iterable<Archive.Entry> {
     /**
      * 当前的归档文件是否已经被解压(unpack-解压)了？默认为false
      *
-     * @return 如果已经被解压，那么return true；如果没有被解压，那么return false
+     * @return 如果已经被解压, 那么return true; 如果没有被解压, 那么return false
      */
     fun isExploded(): Boolean = false
 
     /**
-     * 如果必要的话，需要去释放当前归档文件相关的资源
+     * 如果必要的话, 需要去释放当前归档文件相关的资源
      */
     fun close() {
         // do something...
@@ -62,7 +62,7 @@ interface Archive : Iterable<Archive.Entry> {
         /**
          * 判断当前的Entry是否是一个目录？
          *
-         * @return 如果当前Entry是一个目录，那么return true；否则return false
+         * @return 如果当前Entry是一个目录, 那么return true; 否则return false
          */
         fun isDirectory(): Boolean
 
@@ -83,7 +83,7 @@ interface Archive : Iterable<Archive.Entry> {
          * 对ArchiveEntry去进行过滤
          *
          * @param entry ArchiveEntry
-         * @return 如果当前Entry匹配的话，那么return true；否则return false
+         * @return 如果当前Entry匹配的话, 那么return true; 否则return false
          */
         fun matches(entry: Entry): Boolean
     }

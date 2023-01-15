@@ -1,7 +1,7 @@
 package com.wanna.cloud.nacos.registry
 
 /**
- * NacosRegistration的自定义化器，支持去对NacosRegistration去完成自定义
+ * NacosRegistration的自定义化器, 支持去对NacosRegistration去完成自定义
  *
  * @author wanna
  */

@@ -101,7 +101,7 @@ open class ConfigurationClassParser(
     private val knownClasses = LinkedHashMap<String, ConfigurationClass>()
 
     /**
-     * 这是一个要进行延时处理的ImportSelector列表, 需要完成所有的配置类的解析之后, 才去进行处理；
+     * 这是一个要进行延时处理的ImportSelector列表, 需要完成所有的配置类的解析之后, 才去进行处理;
      * **SpringBoot完成自动配置, 就是通过DeferredImportSelector去完成的**
      */
     private val deferredImportSelectorHandler = DeferredImportSelectorHandler()
@@ -122,7 +122,7 @@ open class ConfigurationClassParser(
     open fun getConfigurationClasses(): Set<ConfigurationClass> = this.configClasses.keys
 
     /**
-     * 解析容器中已经有的BeanDefinition当中的相关导入组件的配置类；
+     * 解析容器中已经有的BeanDefinition当中的相关导入组件的配置类;
      * 一个BeanDefinitionHolder当中维护了beanDefinition和beanName信息
      *
      * @param candidates 候选的BeanDefinitionHolder
@@ -256,7 +256,7 @@ open class ConfigurationClassParser(
      * @param configClass 目标配置类(用于存放BeanMethod/ImportResource/ImportBeanDefinitionRegistrar/PropertySource等), 不会进行匹配的操作
      * @param sourceClass 源类(有可能它目标配置类的父类的情况...), 用来完成所有的匹配工作
      * @param filter 用来去进行排除的Filter, 符合filter的要求(filter.test==true)的将会被排除掉
-     * @return 如果有父类的话, return 父类；如果没有父类的话, return null
+     * @return 如果有父类的话, return 父类; 如果没有父类的话, return null
      */
     private fun doProcessConfigurationClass(
         configClass: ConfigurationClass, sourceClass: SourceClass, filter: Predicate<String>
@@ -431,7 +431,7 @@ open class ConfigurationClassParser(
     }
 
     /**
-     * 处理@ImportSource注解, 这个注解的作用是为别的方式导入Bean提供支持；比如在注解版的IOC容器当中, 去提供对XML配置文件的处理
+     * 处理@ImportSource注解, 这个注解的作用是为别的方式导入Bean提供支持; 比如在注解版的IOC容器当中, 去提供对XML配置文件的处理
      *
      * @see ImportResource
      * @see BeanDefinitionReader 如何导入组件？通过自定义BeanDefinitionReader的方式去进行导入组件
@@ -768,7 +768,7 @@ open class ConfigurationClassParser(
 
 
     /**
-     * ImportStack, 它是一个Import配置类的注册中心, 它维护了Import和被Import之间的配置类的关系；
+     * ImportStack, 它是一个Import配置类的注册中心, 它维护了Import和被Import之间的配置类的关系;
      *
      * 同时, 它也是一个处理导入的栈(ArrayDeque), 如果出现了循环导入的情况, 通过它也可以去进行检测
      *
@@ -804,7 +804,7 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 给定importingClass, 去移除掉它导入的所有的信息, 因为key-importedClass, value-importedClassMetadata；
+         * 给定importingClass, 去移除掉它导入的所有的信息, 因为key-importedClass, value-importedClassMetadata;
          * 因此需要遍历所有的value, 去进行挨个检查className是否匹配importingClass, 如果匹配的话, 就remove掉
          *
          * @param importingClass Import配置类
@@ -940,7 +940,7 @@ open class ConfigurationClassParser(
     }
 
     /**
-     * 这是一个延时执行的的ImportSelector的处理器, 负责处理容器当中注册的DeferredImportSelector；
+     * 这是一个延时执行的的ImportSelector的处理器, 负责处理容器当中注册的DeferredImportSelector;
      * 它负责将一个DeferredImportSelector注册到DeferredImportSelectorGroupingHandler当中, 而DeferredImportSelectorGroupingHandler则对
      * 不同的DeferredImportSelectorGroupingHandler去进行分组(分组依据为DeferredImportSelector.getGroup)
      *
@@ -965,7 +965,7 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 处理已经注册的所有DeferredImportSelector, 将它转交给DeferredImportSelectorGroupingHandler去进行分组和处理；
+         * 处理已经注册的所有DeferredImportSelector, 将它转交给DeferredImportSelectorGroupingHandler去进行分组和处理;
          * 这里会处理所有的分组下的所有的DeferredImportSelector, 去完成将组件去进行批量导入到Spring容器当中
          *
          * @see DeferredImportSelectorGroupingHandler

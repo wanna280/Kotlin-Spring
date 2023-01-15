@@ -14,7 +14,7 @@ import java.util.jar.JarEntry
 import java.util.jar.Manifest
 
 /**
- * Jar包格式的Java归档文件，通过内部组合一个JarFile去完成功能的实现
+ * Jar包格式的Java归档文件, 通过内部组合一个JarFile去完成功能的实现
  *
  * @author jianchao.jia
  * @version v1.0
@@ -64,7 +64,7 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
     override fun iterator(): Iterator<Archive.Entry> = EntryIterator(jarFile.iterator(), null, null)
 
     /**
-     * 在关闭的方法当中，需要去关闭JarFile
+     * 在关闭的方法当中, 需要去关闭JarFile
      *
      * @see JarFile.close
      */
@@ -73,7 +73,7 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
     /**
      * 获取当前JarFile归档文件的URL
      *
-     * @return 如果指定了URL那么直接返回URL；如果没有指定URL，那么使用JarFile去获取URL
+     * @return 如果指定了URL那么直接返回URL; 如果没有指定URL, 那么使用JarFile去获取URL
      */
     override fun getUrl() = url ?: jarFile.getUrl()
 
@@ -217,12 +217,12 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
         /**
          * 是否还有下一个元素？(根据current是否为null去进行判断)
          *
-         * @return 如果还有下一个元素，那么return true；否则return false
+         * @return 如果还有下一个元素, 那么return true; 否则return false
          */
         override fun hasNext() = this.current != null
 
         override fun next(): T {
-            current ?: throw IllegalStateException("迭代器已经遍历完成了，不允许继续使用next去获取元素")
+            current ?: throw IllegalStateException("迭代器已经遍历完成了, 不允许继续使用next去获取元素")
 
             // 交给子类去进行类型转换
             val adapt = adapt(current!!)
@@ -233,10 +233,10 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
         }
 
         /**
-         * 从迭代器当去取出来下一个元素，去进行匹配；
-         * 直到找到一个既符合searchFilter，又符合includeFilter的Entry
+         * 从迭代器当去取出来下一个元素, 去进行匹配;
+         * 直到找到一个既符合searchFilter, 又符合includeFilter的Entry
          *
-         * @return 如果找到了符合条件的元素，那么return Entry；否则return null
+         * @return 如果找到了符合条件的元素, 那么return Entry; 否则return null
          */
         private fun poll(): Archive.Entry? {
             while (iterator.hasNext()) {

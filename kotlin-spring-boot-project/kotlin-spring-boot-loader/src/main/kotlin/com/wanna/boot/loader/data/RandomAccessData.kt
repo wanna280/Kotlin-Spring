@@ -6,7 +6,7 @@ import java.lang.IndexOutOfBoundsException
 import kotlin.jvm.Throws
 
 /**
- * 支持去通过随机访问的Data，也就是支持去把整个数据当做数组的方式去进行读取；
+ * 支持去通过随机访问的Data, 也就是支持去把整个数据当做数组的方式去进行读取;
  * 只需要根据offset/length就可以去读取到一定区间的范围内的数据
  *
  * @author jianchao.jia
@@ -42,7 +42,7 @@ interface RandomAccessData {
     fun read(offset: Long, length: Long): ByteArray
 
     /**
-     * 获取数据的一部分，并封装成为RandomAccessData对象
+     * 获取数据的一部分, 并封装成为RandomAccessData对象
      *
      * @param offset 数据开始读取的偏移量
      * @param length 要读取的数据的长度

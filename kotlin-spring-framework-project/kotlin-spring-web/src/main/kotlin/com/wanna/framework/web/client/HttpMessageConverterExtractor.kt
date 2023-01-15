@@ -5,7 +5,7 @@ import com.wanna.framework.web.http.client.ClientHttpResponse
 import com.wanna.framework.web.http.converter.HttpMessageConverter
 
 /**
- * 基于HttpMessageConverter去进行请求的提取，将ResponseBody提取成为JavaBean
+ * 基于HttpMessageConverter去进行请求的提取, 将ResponseBody提取成为JavaBean
  *
  * @param messageConverters 要去进行读取数据的HttpMessageConverter列表
  * @param responseType 想要使用响应类型

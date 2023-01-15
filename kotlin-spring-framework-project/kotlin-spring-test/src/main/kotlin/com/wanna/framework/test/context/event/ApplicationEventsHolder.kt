@@ -18,7 +18,7 @@ object ApplicationEventsHolder {
     /**
      * 从当前线程的[ApplicationEventsHolder]当中去获取[ApplicationEvents]
      *
-     * @return ApplicationEvents(如果不存在的话，return null)
+     * @return ApplicationEvents(如果不存在的话, return null)
      */
     @JvmStatic
     fun getApplicationEvents(): ApplicationEvents? {
@@ -26,7 +26,7 @@ object ApplicationEventsHolder {
     }
 
     /**
-     * 从当前线程的[ApplicationEventsHolder]当中去获取[ApplicationEvents]，如果不存在的话，丢出[IllegalStateException]异常
+     * 从当前线程的[ApplicationEventsHolder]当中去获取[ApplicationEvents], 如果不存在的话, 丢出[IllegalStateException]异常
      *
      * @return ApplicationEvents(never null)
      * @throws IllegalStateException 如果ApplicationEvents为null
@@ -39,7 +39,7 @@ object ApplicationEventsHolder {
     }
 
     /**
-     * 如果必要的话(如果之前还不存在有[ApplicationEvents]的话)，
+     * 如果必要的话(如果之前还不存在有[ApplicationEvents]的话),
      * 往当前线程的[ApplicationEventsHolder]当中去注册一个[ApplicationEvents]
      */
     @JvmStatic

@@ -11,11 +11,11 @@ package com.wanna.framework.dao.support
 object DataAccessUtils {
 
     /**
-     * 如果必要的话，使用给定的[PersistenceExceptionTranslator]去将异常翻译成为[com.wanna.framework.dao.DataAccessException]
+     * 如果必要的话, 使用给定的[PersistenceExceptionTranslator]去将异常翻译成为[com.wanna.framework.dao.DataAccessException]
      *
      * @param rawException 原本的RuntimeException
      * @param exceptionTranslator PersistenceExceptionTranslator
-     * @return 如果翻译成功，那么返回DataAccessException；翻译失败，返回rawException
+     * @return 如果翻译成功, 那么返回DataAccessException; 翻译失败, 返回rawException
      */
     @JvmStatic
     fun translateIfNecessary(

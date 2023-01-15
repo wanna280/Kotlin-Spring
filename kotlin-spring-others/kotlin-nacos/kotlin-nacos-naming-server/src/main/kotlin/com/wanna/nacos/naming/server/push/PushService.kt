@@ -8,7 +8,7 @@ import com.wanna.framework.context.stereotype.Component
 
 /**
  * 用于完成推送的Service, 是一个SpringApplication的[ApplicationListener],
- * 当[ServiceChangeEvent]事件触发时需要告知所有的客户端，服务的状态已经发生了改变
+ * 当[ServiceChangeEvent]事件触发时需要告知所有的客户端, 服务的状态已经发生了改变
  *
  * @see ServiceChangeEvent
  */

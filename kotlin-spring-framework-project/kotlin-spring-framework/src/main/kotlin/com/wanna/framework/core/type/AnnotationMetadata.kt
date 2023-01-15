@@ -6,7 +6,7 @@ import java.util.Collections
 import java.util.stream.Collectors
 
 /**
- * 这是一个AnnotationMetadata，维护了一个类上的注解的相关信息，是Spring当中对于一个类上标注的相关注解的描述
+ * 这是一个AnnotationMetadata, 维护了一个类上的注解的相关信息, 是Spring当中对于一个类上标注的相关注解的描述
  *
  * @see AnnotatedTypeMetadata
  * @see StandardAnnotationMetadata
@@ -49,7 +49,7 @@ interface AnnotationMetadata : AnnotatedTypeMetadata, ClassMetadata {
      * 该类当中是否有直接标注了某个注解的方法
      *
      * @param annotationName 注解全类名
-     * @return 如果找到了标注给注解的方法，return true；否则，return false
+     * @return 如果找到了标注给注解的方法, return true; 否则, return false
      */
     fun hasAnnotatedMethods(annotationName: String) = getAnnotatedMethods(annotationName).isNotEmpty()
 

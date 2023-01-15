@@ -15,8 +15,8 @@ open class RequestMappingInfoHandlerMethodMappingNamingStrategy :
     }
 
     /**
-     * 生成name，设置为handlerBeanType的当中的大写字母#handlerMethodName，
-     * 例如HandlerBeanType为UserController，handlerMethodName=getUser，那么return UC#getUser
+     * 生成name, 设置为handlerBeanType的当中的大写字母#handlerMethodName, 
+     * 例如HandlerBeanType为UserController, handlerMethodName=getUser, 那么return UC#getUser
      *
      * @param handlerMethod HandlerMethod
      * @param mapping RequestMappingInfo

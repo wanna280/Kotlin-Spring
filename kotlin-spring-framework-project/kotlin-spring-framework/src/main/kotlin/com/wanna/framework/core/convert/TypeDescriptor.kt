@@ -6,15 +6,17 @@ import java.io.Serializable
 import java.lang.reflect.Field
 
 /**
- * Spring针对于转换工作，去封装的一个类型描述符，主要新增泛型的支持；
- * 如果使用Class的方式去进行解析，那么无法获取到泛型的类型，但是如果使用ResolvableType，则支持去进行泛型解析；
+ * Spring针对于转换工作, 去封装的一个类型描述符, 主要新增泛型的支持;
+ * 如果使用Class的方式去进行解析, 那么无法获取到泛型的类型, 但是如果使用ResolvableType, 则支持去进行泛型解析;
  *
- * 比如解析"Collection<String> --> List<String>"，就需要用到泛型的相关的支持
+ * 比如解析"Collection<String> --> List<String>", 就需要用到泛型的相关的支持
  *
  * @param resolvableType ResolvableType(with Generics if Necessary)
  */
 open class TypeDescriptor(val resolvableType: ResolvableType) :
     Serializable {
+
+    constructor(property: Property) : this(ResolvableType.forClass(property.type))
 
     val type: Class<*> = resolvableType.resolve(Any::class.java)
 

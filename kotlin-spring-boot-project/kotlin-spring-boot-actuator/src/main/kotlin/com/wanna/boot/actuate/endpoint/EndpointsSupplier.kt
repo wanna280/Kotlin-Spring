@@ -1,7 +1,7 @@
 package com.wanna.boot.actuate.endpoint
 
 /**
- * Endpoint的Supplier，负责提供Endpoint的获取工作
+ * Endpoint的Supplier, 负责提供Endpoint的获取工作
  *
  * @param E 要获取的Endpoint的类型
  */

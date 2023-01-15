@@ -11,8 +11,8 @@ import com.wanna.framework.util.ClassUtils
 import java.util.function.Supplier
 
 /**
- * 这是一个给SpringBoot当中去进行自动配置包的类，这个类的主要作用是，往容器当中注册一个BasePackages组件，供第三方的整合所使用
- * 后期可以从容器当中获取到这个组件从而获取到自动配置的包的列表，比如MyBatis的Starter，就使用了自动配置包去进行@Mapper注解的扫描
+ * 这是一个给SpringBoot当中去进行自动配置包的类, 这个类的主要作用是, 往容器当中注册一个BasePackages组件, 供第三方的整合所使用
+ * 后期可以从容器当中获取到这个组件从而获取到自动配置的包的列表, 比如MyBatis的Starter, 就使用了自动配置包去进行@Mapper注解的扫描
  *
  * @see AutoConfigurationPackage
  * @see get
@@ -40,7 +40,7 @@ class AutoConfigurationPackages {
         }
 
         /**
-         * 获取SpringBoot自动配置的包的列表，供外部去进行使用，去提供自动装配的功能
+         * 获取SpringBoot自动配置的包的列表, 供外部去进行使用, 去提供自动装配的功能
          *
          * @param beanFactory beanFactory
          * @return 获取SpringBoot自动配置的包的列表
@@ -71,7 +71,7 @@ class AutoConfigurationPackages {
 
 
     /**
-     * 这是一个BeanDefinitionRegistrar，负责给容器中导入BasePackagesBeanDefinition，从而实现往容器当中注册一个BasePackages对象；
+     * 这是一个BeanDefinitionRegistrar, 负责给容器中导入BasePackagesBeanDefinition, 从而实现往容器当中注册一个BasePackages对象;
      * 在BasePackages对象当中维护了当前SpringApplication要进行自动配置的包的列表
      *
      * @see BasePackagesBeanDefinition
@@ -84,7 +84,7 @@ class AutoConfigurationPackages {
     }
 
     /**
-     * BasePackages的Bean，会被SpringBoot注册到容器当中，方便外部去获取到SpringBoot自动配置的包的列表
+     * BasePackages的Bean, 会被SpringBoot注册到容器当中, 方便外部去获取到SpringBoot自动配置的包的列表
      *
      * @see BasePackagesBeanDefinition
      */
@@ -93,7 +93,7 @@ class AutoConfigurationPackages {
     }
 
     /**
-     * 这是一个维护BasePackages的自定义BeanDefinition，它负责使用InstanceSupplier的方式将BasePackages对象注册到容器当中
+     * 这是一个维护BasePackages的自定义BeanDefinition, 它负责使用InstanceSupplier的方式将BasePackages对象注册到容器当中
      *
      * @see BasePackages
      */
@@ -111,7 +111,7 @@ class AutoConfigurationPackages {
         }
 
         /**
-         * 获取实例化对象的Supplier，BasePackages对象，在Spring容器启动的过程当中，会被自动使用Supplier的方式去完成实例化
+         * 获取实例化对象的Supplier, BasePackages对象, 在Spring容器启动的过程当中, 会被自动使用Supplier的方式去完成实例化
          *
          * @see BeanDefinition.getInstanceSupplier
          */

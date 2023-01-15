@@ -1,7 +1,7 @@
 package com.wanna.framework.test.context
 
 /**
- * Test任务执行的监听器，在JUnit的测试任务的各个周期，去对[TestContext]去进行自定义
+ * Test任务执行的监听器, 在JUnit的测试任务的各个周期, 去对[TestContext]去进行自定义
  *
  * @author jianchao.jia
  * @version v1.0

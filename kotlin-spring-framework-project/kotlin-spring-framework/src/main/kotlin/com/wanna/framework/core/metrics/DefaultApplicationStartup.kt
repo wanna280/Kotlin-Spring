@@ -15,7 +15,7 @@ open class DefaultApplicationStartup : ApplicationStartup {
     }
 
     /**
-     * 这是一个默认的Step的实现，什么都为空
+     * 这是一个默认的Step的实现, 什么都为空
      *
      * @see StartupStep
      */
@@ -39,14 +39,14 @@ open class DefaultApplicationStartup : ApplicationStartup {
 
         override fun tag(key: String, value: String): StartupStep {
             if (this.recorded) {
-                throw IllegalArgumentException("当前步骤已经结束了，不能继续执行tag")
+                throw IllegalArgumentException("当前步骤已经结束了, 不能继续执行tag")
             }
             return this
         }
 
         override fun tag(key: String, value: Supplier<String>): StartupStep {
             if (this.recorded) {
-                throw IllegalArgumentException("当前步骤已经结束了，不能继续执行tag")
+                throw IllegalArgumentException("当前步骤已经结束了, 不能继续执行tag")
             }
             return this
         }

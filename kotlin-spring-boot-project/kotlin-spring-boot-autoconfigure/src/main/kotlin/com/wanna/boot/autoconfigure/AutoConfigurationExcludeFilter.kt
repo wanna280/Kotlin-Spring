@@ -9,7 +9,7 @@ import com.wanna.framework.core.type.filter.TypeFilter
 import com.wanna.framework.lang.Nullable
 
 /**
- * 自动配置包的排除过滤器，避免ComponentScan过程当中扫描到了自动配置的类
+ * 自动配置包的排除过滤器, 避免ComponentScan过程当中扫描到了自动配置的类
  */
 open class AutoConfigurationExcludeFilter : TypeFilter {
 

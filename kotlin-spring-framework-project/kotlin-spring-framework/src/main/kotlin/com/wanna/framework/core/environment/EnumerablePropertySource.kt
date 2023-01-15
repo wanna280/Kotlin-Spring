@@ -1,7 +1,7 @@
 package com.wanna.framework.core.environment
 
 /**
- * 这是一个属性名可以被枚举的[PropertySource]，主要提供[getPropertyNames]方法去获取所有的属性值的name列表
+ * 这是一个属性名可以被枚举的[PropertySource], 主要提供[getPropertyNames]方法去获取所有的属性值的name列表
  *
  * @see PropertySource
  * @see MapPropertySource

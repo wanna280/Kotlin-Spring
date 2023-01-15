@@ -5,9 +5,9 @@ import com.wanna.framework.util.StringUtils
 import com.wanna.framework.util.AntPathMatcher
 
 /**
- * 基于Ant表达式的方式，去比较当中一个文件发生变更时，是否应该去进行重启
+ * 基于Ant表达式的方式, 去比较当中一个文件发生变更时, 是否应该去进行重启
  *
- * @param excludePatterns 要去进行排除的表达式，这些表达式的路径，将会不被重启
+ * @param excludePatterns 要去进行排除的表达式, 这些表达式的路径, 将会不被重启
  */
 class PatternClassPathRestartStrategy(private val excludePatterns: Array<String>) : ClassPathRestartStrategy {
 

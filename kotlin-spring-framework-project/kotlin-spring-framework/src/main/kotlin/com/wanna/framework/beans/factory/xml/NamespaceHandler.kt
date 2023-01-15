@@ -7,7 +7,7 @@ import org.w3c.dom.Element
 import org.w3c.dom.Node
 
 /**
- * NamespaceHandler，提供对于XML标签的解析成为一个Spring的BeanDefinition
+ * NamespaceHandler, 提供对于XML标签的解析成为一个Spring的BeanDefinition
  *
  * @author jianchao.jia
  * @version v1.0
@@ -36,7 +36,7 @@ interface NamespaceHandler {
      * @param node Node
      * @param definition 原始的BeanDefinition
      * @param parserContext ParserContext
-     * @return 包装之后的BeanDefinitionHolder(如果包装失败return null，将会使用原始的BeanDefinitionHolder去进行使用)
+     * @return 包装之后的BeanDefinitionHolder(如果包装失败return null, 将会使用原始的BeanDefinitionHolder去进行使用)
      */
     @Nullable
     fun decorate(node: Node, definition: BeanDefinitionHolder, parserContext: ParserContext): BeanDefinitionHolder?

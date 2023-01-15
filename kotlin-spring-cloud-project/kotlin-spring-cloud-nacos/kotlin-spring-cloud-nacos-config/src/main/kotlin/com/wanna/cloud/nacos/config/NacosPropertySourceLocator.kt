@@ -6,7 +6,7 @@ import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.PropertySource
 
 /**
- * Nacos的PropertySourceLocator，它负责去实现从远程拉取配置文件到本地，并配置到Environment当中
+ * Nacos的PropertySourceLocator, 它负责去实现从远程拉取配置文件到本地, 并配置到Environment当中
  *
  * @param nacosConfigManager NacosConfigManager
  */
@@ -55,7 +55,7 @@ open class NacosPropertySourceLocator(private val nacosConfigManager: NacosConfi
     }
 
     /**
-     * 如果必要的话，去加载Nacos的Properties，并将结果添加到CompositePropertySource当中
+     * 如果必要的话, 去加载Nacos的Properties, 并将结果添加到CompositePropertySource当中
      *
      * @param composite CompositePropertySource(输出参数)
      * @param dataId dataId

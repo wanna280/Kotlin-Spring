@@ -11,7 +11,7 @@ import java.lang.instrument.ClassFileTransformer
 import java.security.ProtectionDomain
 
 /**
- * 完成AspectJ的依赖编制的启动器，它会被@EnableAspectJWeaving注解所导入，去开启AspectJ的运行时编织
+ * 完成AspectJ的依赖编制的启动器, 它会被@EnableAspectJWeaving注解所导入, 去开启AspectJ的运行时编织
  *
  * @see com.wanna.framework.instrument.classloading.InstrumentationLoadTimeWeaver
  * @see com.wanna.framework.instrument.classloading.LoadTimeWeaver
@@ -23,7 +23,7 @@ open class AspectJWeavingEnabler : BeanFactoryPostProcessor, Ordered, BeanClassL
         const val ASPECTJ_AOP_XML_RESOURCE = "META-INF/aop.xml"
 
         /**
-         * 开启AspectJ的编织的支持，往InstrumentationLoadTimeWeaver当中添加AspectJ的Transformer
+         * 开启AspectJ的编织的支持, 往InstrumentationLoadTimeWeaver当中添加AspectJ的Transformer
          *
          * @param loadTimeWeaver 要使用的LoadTimeWeaver
          * @param classLoader LoadTimeWeaver要使用的classLoader
@@ -32,7 +32,7 @@ open class AspectJWeavingEnabler : BeanFactoryPostProcessor, Ordered, BeanClassL
         fun enableAspectJWeaving(loadTimeWeaver: LoadTimeWeaver?, classLoader: ClassLoader?) {
             var weaverToUse = loadTimeWeaver
 
-            // 如果没有指定LoadTimeWeaver，那么需要按照情况创建默认的LoadTimeAware，classLoader则使用给定的classLoader
+            // 如果没有指定LoadTimeWeaver, 那么需要按照情况创建默认的LoadTimeAware, classLoader则使用给定的classLoader
             if (weaverToUse == null) {
                 if (InstrumentationLoadTimeWeaver.isInstrumentationAvailable()) {
                     weaverToUse = InstrumentationLoadTimeWeaver(classLoader!!)
@@ -58,7 +58,7 @@ open class AspectJWeavingEnabler : BeanFactoryPostProcessor, Ordered, BeanClassL
     }
 
     /**
-     * 在完成BeanFactoryPostProcessor的后置处理工作时，去开启AspectJ的加载时编织
+     * 在完成BeanFactoryPostProcessor的后置处理工作时, 去开启AspectJ的加载时编织
      */
     override fun postProcessBeanFactory(beanFactory: ConfigurableListableBeanFactory) {
         enableAspectJWeaving(this.loadTimeWeaver, this.beanClassLoader)
@@ -73,7 +73,7 @@ open class AspectJWeavingEnabler : BeanFactoryPostProcessor, Ordered, BeanClassL
     }
 
     /**
-     * 对AspectJ的Transformer再进行包装一层，避免因为依赖当中没有AspectJ的依赖而产生潜在的AspectJ的LinkageError(NoClassDefFoundError)
+     * 对AspectJ的Transformer再进行包装一层, 避免因为依赖当中没有AspectJ的依赖而产生潜在的AspectJ的LinkageError(NoClassDefFoundError)
      */
     private class AspectJClassBypassingClassFileTransformer(private val delegate: ClassFileTransformer) :
         ClassFileTransformer {
@@ -84,11 +84,11 @@ open class AspectJWeavingEnabler : BeanFactoryPostProcessor, Ordered, BeanClassL
             protectionDomain: ProtectionDomain?,
             classfileBuffer: ByteArray?
         ): ByteArray? {
-            // 如果AspectJ相关的类(org.aspectj.*)，那么直接去进行跳过处理，pass掉...
+            // 如果AspectJ相关的类(org.aspectj.*), 那么直接去进行跳过处理, pass掉...
             if (className.startsWith("org.aspectj") || className.startsWith("org/aspectj")) {
                 return classfileBuffer
             }
-            // 如果类名不是AspectJ相关的类，那么直接使用AspectJ的Transformer作为委托去进行transform
+            // 如果类名不是AspectJ相关的类, 那么直接使用AspectJ的Transformer作为委托去进行transform
             return delegate.transform(loader, className, classBeingRedefined, protectionDomain, classfileBuffer)
         }
     }

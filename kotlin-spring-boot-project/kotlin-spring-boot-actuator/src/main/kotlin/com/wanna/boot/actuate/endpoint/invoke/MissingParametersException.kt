@@ -19,9 +19,9 @@ open class MissingParametersException(
 ) : InvalidEndpointRequestException(message, reason, cause) {
     constructor(missedParameters: List<OperationParameter>) : this(
         missedParameters,
-        "执行目标Operation方法失败，原因是下面这些参数[${
+        "执行目标Operation方法失败, 原因是下面这些参数[${
             StringUtils.collectionToCommaDelimitedString(missedParameters.map { it.toString() }.toList())
-        }]都确实必须存在，但是实际上没有传递",
+        }]都确实必须存在, 但是实际上没有传递",
         "缺少参数列表[${missedParameters.map { it.getName() }.toList().joinToString(",")}]",
         null
     )

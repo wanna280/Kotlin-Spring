@@ -4,7 +4,7 @@ import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinit
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 
 /**
- * 注解版的Scope的解析器，解析@Scope注解当中的相关环境，并封装成为ScopeMetadata
+ * 注解版的Scope的解析器, 解析@Scope注解当中的相关环境, 并封装成为ScopeMetadata
  *
  * @see Scope
  * @see ScopeMetadataResolver

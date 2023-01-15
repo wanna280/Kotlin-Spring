@@ -10,7 +10,7 @@ import java.beans.PropertyEditor
 import java.util.*
 
 /**
- * 数据绑定器，组合了TypeConverter，支持去进行类型的转换工作，并支持参数的检验工作
+ * 数据绑定器, 组合了TypeConverter, 支持去进行类型的转换工作, 并支持参数的检验工作
  *
  * @param target 要去进行绑定的目标对象
  * @param objectName objectName
@@ -47,7 +47,7 @@ open class DataBinder(private val target: Any?, private val objectName: String =
     @Nullable
     private var bindingResult: AbstractPropertyBindingResult? = null
 
-    // Validator列表，用来提供参数的检验
+    // Validator列表, 用来提供参数的检验
     private val validators = ArrayList<Validator>()
 
     init {
@@ -62,7 +62,7 @@ open class DataBinder(private val target: Any?, private val objectName: String =
     open fun getBindingResult(): BindingResult = getInternalBindingResult()
 
     /**
-     * 获取BindingResult，如果没有的话，需要提前完成创建
+     * 获取BindingResult, 如果没有的话, 需要提前完成创建
      *
      * @return 创建好的BindingResult
      */
@@ -83,7 +83,7 @@ open class DataBinder(private val target: Any?, private val objectName: String =
     }
 
     /**
-     * 使用内部的Validator，对内部的目标对象去进行检验
+     * 使用内部的Validator, 对内部的目标对象去进行检验
      */
     open fun validate() {
         val target = getTarget() ?: throw IllegalStateException("要去进行绑定的目标对象不能为空")
@@ -92,7 +92,7 @@ open class DataBinder(private val target: Any?, private val objectName: String =
     }
 
     /**
-     * 使用内部的Spring实现的Validator，对内部的目标对象去进行检验，这个方法当中新增对于Hints的支持
+     * 使用内部的Spring实现的Validator, 对内部的目标对象去进行检验, 这个方法当中新增对于Hints的支持
      *
      * @param validationHints JSR303的Validation的Hints
      */
@@ -109,7 +109,7 @@ open class DataBinder(private val target: Any?, private val objectName: String =
     }
 
     /**
-     * 设置Validator，把之前的Validator全清空掉
+     * 设置Validator, 把之前的Validator全清空掉
      *
      * @param validator 要使用的Validator
      */
@@ -191,7 +191,7 @@ open class DataBinder(private val target: Any?, private val objectName: String =
     }
 
     /**
-     * set ConversionService，不仅需要去设置TypeConverter的Conversion，还需要去设置BindingResult的ConversionService
+     * set ConversionService, 不仅需要去设置TypeConverter的Conversion, 还需要去设置BindingResult的ConversionService
      *
      * @param conversionService ConversionService
      */
@@ -201,6 +201,7 @@ open class DataBinder(private val target: Any?, private val objectName: String =
         this.bindingResult?.initConversion(conversionService)
     }
 
+    @Nullable
     open fun getConversionService(): ConversionService? = this.conversionService
 
     /**
@@ -208,6 +209,7 @@ open class DataBinder(private val target: Any?, private val objectName: String =
      *
      * @return 待绑定的目标对象
      */
+    @Nullable
     open fun getTarget(): Any? = this.target
 
     /**

@@ -60,7 +60,7 @@ open class UrlResource(private var url: URL?, private var uri: URI?) : AbstractF
     }
 
     /**
-     * 父类没有实现获取URL逻辑，我们这里需要提供
+     * 父类没有实现获取URL逻辑, 我们这里需要提供
      *
      * @return URL
      * @throws IllegalStateException 如果URL为空
@@ -68,7 +68,7 @@ open class UrlResource(private var url: URL?, private var uri: URI?) : AbstractF
     override fun getURL() = this.url ?: throw IllegalStateException("URL不能为空")
 
     /**
-     * 重写父类逻辑，优先使用子类的URI作为URL，子类没有再沿用父类的逻辑
+     * 重写父类逻辑, 优先使用子类的URI作为URL, 子类没有再沿用父类的逻辑
      *
      * @return URI
      */

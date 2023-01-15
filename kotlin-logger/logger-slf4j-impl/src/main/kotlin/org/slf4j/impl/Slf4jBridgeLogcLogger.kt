@@ -4,8 +4,8 @@ import org.slf4j.Logger
 import org.slf4j.Marker
 
 /**
- * 这是一个Slf4j的桥接Logger，将自己实现的Logger桥接给Slf4j，让Slf4j可以调用我自己实现的Logger；
- * 更多的相关功能都沿用自己的Logger，让Slf4j的API尽可能配合我的Logger去进行实现和使用
+ * 这是一个Slf4j的桥接Logger, 将自己实现的Logger桥接给Slf4j, 让Slf4j可以调用我自己实现的Logger;
+ * 更多的相关功能都沿用自己的Logger, 让Slf4j的API尽可能配合我的Logger去进行实现和使用
  *
  * @see Logger
  */

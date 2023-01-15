@@ -5,7 +5,7 @@ import java.io.IOException
 import java.util.zip.ZipEntry
 
 /**
- * 描述一个ZIP文件的中央文件夹的FileHeader，也就是"Central directory file header record"
+ * 描述一个ZIP文件的中央文件夹的FileHeader, 也就是"Central directory file header record"
  *
  * @author jianchao.jia
  * @version v1.0
@@ -21,7 +21,7 @@ class CentralDirectoryFileHeader(
 ) : FileHeader {
 
     /**
-     * 提供一个内部使用的无参数构造器，方便完成构建
+     * 提供一个内部使用的无参数构造器, 方便完成构建
      */
     constructor() : this(ByteArray(0), -1, AsciiBytes(""), ByteArray(0), AsciiBytes(""), -1)
 
@@ -49,7 +49,7 @@ class CentralDirectoryFileHeader(
             jarEntryFilter: JarEntryFilter?
         ): CentralDirectoryFileHeader {
             val fileHeader = CentralDirectoryFileHeader()
-            // 从文件当中，根据偏移量offset，去读取46个字节的长度，并解析到CentralDirectoryFileHeader当中
+            // 从文件当中, 根据偏移量offset, 去读取46个字节的长度, 并解析到CentralDirectoryFileHeader当中
             val bytes = randomAccessData.read(offset, CENTRAL_DIRECTORY_HEADER_MINIMUM_LENGTH)
             fileHeader.load(bytes, 0, randomAccessData, offset, jarEntryFilter)
             return fileHeader
@@ -129,8 +129,8 @@ class CentralDirectoryFileHeader(
     }
 
     /**
-     * 返回ZIP归档当中，当前数据的压缩数据的方式(DEFLATED/STORED)
-     * STORED(0)代表该文件没有被压缩，DEFLATED(8)代表该文件被压缩过
+     * 返回ZIP归档当中, 当前数据的压缩数据的方式(DEFLATED/STORED)
+     * STORED(0)代表该文件没有被压缩, DEFLATED(8)代表该文件被压缩过
      *
      * @see ZipEntry.DEFLATED
      * @see ZipEntry.STORED

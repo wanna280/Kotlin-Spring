@@ -10,7 +10,7 @@ import com.wanna.framework.web.server.HttpServerResponse
 import java.io.OutputStream
 
 /**
- * HttpServerResponse的参数解析器，负责处理HandlerMethod的参数当中，跟HttpServerResponse相关的参数
+ * HttpServerResponse的参数解析器, 负责处理HandlerMethod的参数当中, 跟HttpServerResponse相关的参数
  */
 open class ServerResponseMethodArgumentResolver : HandlerMethodArgumentResolver {
     override fun supportsParameter(parameter: MethodParameter): Boolean {

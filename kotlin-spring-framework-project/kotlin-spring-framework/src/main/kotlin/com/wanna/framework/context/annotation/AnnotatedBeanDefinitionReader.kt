@@ -8,7 +8,7 @@ import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.util.AnnotationConfigUtils
 
 /**
- * 这是一个注解的BeanDefinitionReader，负责给定clazz作为一个Spring的配置类，
+ * 这是一个注解的BeanDefinitionReader, 负责给定clazz作为一个Spring的配置类, 
  * 将其封装一个[AnnotatedGenericBeanDefinition]并注册到给定的[BeanDefinitionRegistry]当中
  *
  * @param registry BeanDefinitionRegistry(需要将BeanDefinition去注册的地方)
@@ -17,12 +17,12 @@ import com.wanna.framework.util.AnnotationConfigUtils
 open class AnnotatedBeanDefinitionReader(private val registry: BeanDefinitionRegistry) {
 
     /**
-     * 默认的beanNameGenerator为注解版本的的BeanNameGenerator，可以进行自定义
+     * 默认的beanNameGenerator为注解版本的的BeanNameGenerator, 可以进行自定义
      */
     private var beanNameGenerator: BeanNameGenerator? = AnnotationBeanNameGenerator.INSTANCE
 
     /**
-     * 从registry当中获取到Environment，如果没有，那么就先去创建出来一个默认的Environment对象
+     * 从registry当中获取到Environment, 如果没有, 那么就先去创建出来一个默认的Environment对象
      */
     private var environment: Environment = getOrDefaultEnvironment(registry)
 
@@ -55,7 +55,7 @@ open class AnnotatedBeanDefinitionReader(private val registry: BeanDefinitionReg
     }
 
     /**
-     * 注册一个Bean到容器中，将给定的clazz包装成为BeanDefinition注册到容器当中；
+     * 注册一个Bean到容器中, 将给定的clazz包装成为BeanDefinition注册到容器当中; 
      * beanName将会采用默认的BeanNameGenerator进行生成
      *
      * @param clazz 要进行注册的clazz
@@ -74,9 +74,9 @@ open class AnnotatedBeanDefinitionReader(private val registry: BeanDefinitionReg
     }
 
     /**
-     * 注册一个Bean到容器中，将给定的clazz包装成为BeanDefinition注册到容器当中
+     * 注册一个Bean到容器中, 将给定的clazz包装成为BeanDefinition注册到容器当中
      *
-     * @param name 要指定的beanName(如果为空时，将会使用BeanNameGenerator进行生成)
+     * @param name 要指定的beanName(如果为空时, 将会使用BeanNameGenerator进行生成)
      * @param clazz 要注册的类Class
      */
     open fun registerBean(clazz: Class<*>, name: String?) {
@@ -89,15 +89,15 @@ open class AnnotatedBeanDefinitionReader(private val registry: BeanDefinitionReg
 
         // 处理@Lazy/@Role/@DependsOn/@Primary注解
         AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition)
-        // 生成BeanDefinition，注册到容器当中，如果给定了beanName，采用给定的beanName，如果没有给定，那么使用BeanNameGenerator去进行生成
+        // 生成BeanDefinition, 注册到容器当中, 如果给定了beanName, 采用给定的beanName, 如果没有给定, 那么使用BeanNameGenerator去进行生成
         val beanName = name ?: beanNameGenerator!!.generateBeanName(beanDefinition, registry)
         registry.registerBeanDefinition(beanName, beanDefinition)
     }
 
     /**
-     * 获取或者是创建一个默认的Environment，
-     * (1)如果Registry可以获取到Environment，那么直接从Registry当中去获取到Environment对象;
-     * (2)如果获取不到，那么就创建一个默认的Environment
+     * 获取或者是创建一个默认的Environment, 
+     * (1)如果Registry可以获取到Environment, 那么直接从Registry当中去获取到Environment对象;
+     * (2)如果获取不到, 那么就创建一个默认的Environment
      *
      * @param registry BeanDefinitionRegistry
      * @return Environment

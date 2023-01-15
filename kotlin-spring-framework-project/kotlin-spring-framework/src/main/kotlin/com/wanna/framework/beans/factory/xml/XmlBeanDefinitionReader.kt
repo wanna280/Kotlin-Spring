@@ -30,12 +30,12 @@ open class XmlBeanDefinitionReader(registry: BeanDefinitionRegistry) : AbstractB
         DefaultBeanDefinitionDocumentReader::class.java
 
     /**
-     * DocumentLoader，提供将资源文件加载成为W3C的Document
+     * DocumentLoader, 提供将资源文件加载成为W3C的Document
      */
     private var documentLoader: DocumentLoader = DefaultDocumentLoader()
 
     /**
-     * ErrorHandler，为Document的加载准备的
+     * ErrorHandler, 为Document的加载准备的
      */
     private var errorHandler = SimpleSaxErrorHandler(logger)
 
@@ -54,7 +54,7 @@ open class XmlBeanDefinitionReader(registry: BeanDefinitionRegistry) : AbstractB
         resource.getInputStream().use { return doLoadBeanDefinitions(InputSource(it), resource) }
 
     /**
-     * 将给定的资源还有DocumentLoader去解析成为W3C的Document对象，
+     * 将给定的资源还有DocumentLoader去解析成为W3C的Document对象,
      * 并交给BeanDefinitionDocumentReader去进行BeanDefinition的解析
      *
      * @param inputSource InputSource
@@ -81,12 +81,12 @@ open class XmlBeanDefinitionReader(registry: BeanDefinitionRegistry) : AbstractB
         // 3.利用BeanDefinitionDocumentReader去注册BeanDefinition
         beanDefinitionDocumentReader.registerBeanDefinitions(document, createReaderContext(resource))
 
-        // 4.利用加载之后的BeanDefinition和加载之前的BeanDefinition的数量做对比，得到本次加载的BeanDefinition的数量
+        // 4.利用加载之后的BeanDefinition和加载之前的BeanDefinition的数量做对比, 得到本次加载的BeanDefinition的数量
         return getRegistry().getBeanDefinitionCount() - beanDefinitionCount
     }
 
     /**
-     * 创建ReaderContext，将一些需要用到的对象去包装到XmlReaderContext当中
+     * 创建ReaderContext, 将一些需要用到的对象去包装到XmlReaderContext当中
      *
      * @param resource 资源对象
      * @return 创建号的XmlReaderContext
@@ -126,7 +126,7 @@ open class XmlBeanDefinitionReader(registry: BeanDefinitionRegistry) : AbstractB
     }
 
     /**
-     * 获取NamespaceHandlerResolver，如果没有指定的话，那么我们去创建默认的
+     * 获取NamespaceHandlerResolver, 如果没有指定的话, 那么我们去创建默认的
      *
      * @return NamespaceHandlerResolver
      */
@@ -168,7 +168,7 @@ open class XmlBeanDefinitionReader(registry: BeanDefinitionRegistry) : AbstractB
     }
 
     /**
-     * 设置DocumentLoader，提供W3C的Document的加载功能
+     * 设置DocumentLoader, 提供W3C的Document的加载功能
      *
      * @param documentLoader 你想要使用的DocumentLoader
      */

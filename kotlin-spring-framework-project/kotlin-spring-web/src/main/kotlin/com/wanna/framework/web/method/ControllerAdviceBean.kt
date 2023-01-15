@@ -8,7 +8,7 @@ import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.web.bind.annotation.ControllerAdvice
 
 /**
- * ControllerAdviceBean，它描述的是一个标注了@ControllerAdvice的Bean
+ * ControllerAdviceBean, 它描述的是一个标注了@ControllerAdvice的Bean
  *
  * @see ControllerAdvice
  */
@@ -16,7 +16,7 @@ open class ControllerAdviceBean() {
 
     companion object {
         /**
-         * 从容器当中找到所有标注了@ControllerAdvice的Bean，封装成为ControllerAdviceBean
+         * 从容器当中找到所有标注了@ControllerAdvice的Bean, 封装成为ControllerAdviceBean
          *
          * @param applicationContext 待寻找候选的Bean的ApplicationContext
          * @return 从给定的ApplicationContext寻找到的ControllerAdviceBean
@@ -79,7 +79,7 @@ open class ControllerAdviceBean() {
     open fun getBeanType(): Class<*> = this.beanType!!
 
     /**
-     * 解析Bean(如果之前是一个字符串的话，那么我们需要把它当做beanName，从BeanFactory当中获取)
+     * 解析Bean(如果之前是一个字符串的话, 那么我们需要把它当做beanName, 从BeanFactory当中获取)
      *
      * @return 解析到的BeanObject
      */

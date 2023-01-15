@@ -1,7 +1,7 @@
 package com.wanna.framework.transaction.support
 
 /**
- * 为ResourceHolder提供支持的类，为ResourceHolder各个方法的实现提供了模板实现
+ * 为ResourceHolder提供支持的类, 为ResourceHolder各个方法的实现提供了模板实现
  *
  * @see ResourceHolder
  */

@@ -4,7 +4,7 @@ import com.wanna.framework.aop.ClassFilter
 import com.wanna.framework.aop.Pointcut
 
 /**
- * 静态方法的匹配的Pointcut，默认的ClassFilter的实现为直接放行
+ * 静态方法的匹配的Pointcut, 默认的ClassFilter的实现为直接放行
  *
  * @see StaticMethodMatcher
  */

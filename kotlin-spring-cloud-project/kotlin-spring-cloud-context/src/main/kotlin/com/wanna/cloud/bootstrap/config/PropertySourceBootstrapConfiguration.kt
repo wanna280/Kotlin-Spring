@@ -9,11 +9,11 @@ import com.wanna.framework.core.environment.EnumerablePropertySource
 import com.wanna.framework.core.environment.PropertySource
 
 /**
- * 这是一个PropertySource的Bootstrap配置类，能够自动注入Bootstrap当中的所有的PropertySourceLocator，并进行保存；
+ * 这是一个PropertySource的Bootstrap配置类, 能够自动注入Bootstrap当中的所有的PropertySourceLocator, 并进行保存;
  *
  * ## Note
- * 因为它是一个Bootstrap当中的ApplicationContextInitializer，因此它会被转移到Root Application当中去进行apply...
- * 它并不会在Bootstrap当中生效，因为Bootstrap当中ApplicationContextInitializer生效时，这个组件都还没被扫描到容器当中呢！
+ * 因为它是一个Bootstrap当中的ApplicationContextInitializer, 因此它会被转移到Root Application当中去进行apply...
+ * 它并不会在Bootstrap当中生效, 因为Bootstrap当中ApplicationContextInitializer生效时, 这个组件都还没被扫描到容器当中呢！
  */
 @Configuration(proxyBeanMethods = false)
 open class PropertySourceBootstrapConfiguration : ApplicationContextInitializer<ConfigurableApplicationContext>,

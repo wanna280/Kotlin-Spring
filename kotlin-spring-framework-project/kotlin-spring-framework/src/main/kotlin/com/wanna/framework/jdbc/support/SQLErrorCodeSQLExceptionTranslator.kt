@@ -5,7 +5,7 @@ import java.sql.SQLException
 import javax.sql.DataSource
 
 /**
- * SQL的ErrorCode的翻译器，将SQL的ErrorCode去翻译成为正确的[DataAccessException]
+ * SQL的ErrorCode的翻译器, 将SQL的ErrorCode去翻译成为正确的[DataAccessException]
  *
  * @author jianchao.jia
  * @version v1.0

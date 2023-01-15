@@ -21,11 +21,11 @@ abstract class AbstractAsyncConfiguration : ImportAware {
     // 执行异步方法的默认Executor
     protected var executor: Supplier<Executor>? = null
 
-    // 执行异步方法过程中遇到没有捕获的异常，应该怎么去处理？
+    // 执行异步方法过程中遇到没有捕获的异常, 应该怎么去处理？
     protected var exceptionHandler: Supplier<AsyncUncaughtExceptionHandler>? = null
 
     /**
-     * Spring自动注入标注@EnableAsync注解的类的元信息，方便去获取到@EnableAsync注解的相关属性
+     * Spring自动注入标注@EnableAsync注解的类的元信息, 方便去获取到@EnableAsync注解的相关属性
      *
      * @param annotationMetadata 注解元信息
      */
@@ -38,7 +38,7 @@ abstract class AbstractAsyncConfiguration : ImportAware {
     }
 
     /**
-     * 自动注入容器当中的AsyncConfigurer，对支持异步的Executor和ExceptionHandler去进行配置
+     * 自动注入容器当中的AsyncConfigurer, 对支持异步的Executor和ExceptionHandler去进行配置
      *
      * @param configurers 容器中的AsyncConfigurer列表
      */

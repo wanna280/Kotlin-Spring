@@ -71,7 +71,7 @@ open class StandardAnnotationMetadata(val introspectedClass: Class<*>) : Annotat
 
     companion object {
         /**
-         * 给定一个clazz，去进行构建
+         * 给定一个clazz, 去进行构建
          */
         @JvmStatic
         fun from(clazz: Class<*>): StandardAnnotationMetadata {

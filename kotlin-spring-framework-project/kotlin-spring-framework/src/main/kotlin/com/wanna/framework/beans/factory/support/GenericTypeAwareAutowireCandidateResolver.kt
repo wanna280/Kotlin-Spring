@@ -46,7 +46,7 @@ open class GenericTypeAwareAutowireCandidateResolver : BeanFactoryAware, SimpleA
         } else if (ClassUtils.isAssignFrom(Collection::class.java, dependencyType)) {
             val resolvableType = descriptor.getResolvableType().asCollection()
 
-            // 如果两种都是Collection的话，那么直接比较泛型类型是否相等！需要注意的是，不能比较继承，
+            // 如果两种都是Collection的话, 那么直接比较泛型类型是否相等！需要注意的是, 不能比较继承, 
             // 比如List<String>并不是List<CharSequence>的子类...
             if (ClassUtils.isAssignFrom(Collection::class.java, dependencyType)) {
                 val beanResolveType = ResolvableType.forClass(beanClass).asCollection()
@@ -55,12 +55,12 @@ open class GenericTypeAwareAutowireCandidateResolver : BeanFactoryAware, SimpleA
                 }
                 return true
             } else {
-                // 如果bean的类型不是Collection，但是要解析的依赖是泛型的话，那么匹配泛型的类型和beanClass
+                // 如果bean的类型不是Collection, 但是要解析的依赖是泛型的话, 那么匹配泛型的类型和beanClass
                 return ClassUtils.isAssignFrom(resolvableType.getGenerics()[0].resolve(), beanClass)
             }
         } else if (ClassUtils.isAssignFrom(Map::class.java, dependencyType)) {
 
-            // 如果允许fallback的话，那么我们在Map的情况下也直接返回得了
+            // 如果允许fallback的话, 那么我们在Map的情况下也直接返回得了
             if (descriptor.fallbackMatchAllowed()) {
                 return true
             }

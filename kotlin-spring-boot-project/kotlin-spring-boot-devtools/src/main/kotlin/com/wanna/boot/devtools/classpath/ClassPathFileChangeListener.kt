@@ -6,8 +6,8 @@ import com.wanna.boot.devtools.filewatch.FileSystemWatcher
 import com.wanna.framework.context.event.ApplicationEventPublisher
 
 /**
- * ClassPath下的文件变更监听器，负责使用Spring的EventPublisher去完成事件的发布，
- * 告知所有的处理ClassPath已经发生改变的事件的监听器，来处理这个事件
+ * ClassPath下的文件变更监听器, 负责使用Spring的EventPublisher去完成事件的发布,
+ * 告知所有的处理ClassPath已经发生改变的事件的监听器, 来处理这个事件
  *
  * @param eventPublisher Spring ApplicationContext的EventPublisher
  * @param restartStrategy 重启的策略(符合要求的才去进行重启)
@@ -20,13 +20,13 @@ open class ClassPathFileChangeListener(
 ) : FileChangeListener {
 
     /**
-     * 当ClassPath下的文件发生变更时，应该执行的回调，
+     * 当ClassPath下的文件发生变更时, 应该执行的回调,
      * 应该使用EventPublisher去发布ClassPathChangedEvent
      *
      * @param changeSet 发生改变的文件情况
      */
     override fun onChange(changeSet: Set<ChangedFiles>) {
-        // 遍历所有的已经改变的文件，去判断是否需要去进行重启
+        // 遍历所有的已经改变的文件, 去判断是否需要去进行重启
         val restartRequired = isRestartRequired(changeSet)
 
         publishEvent(ClassPathChangedEvent(this, changeSet, restartRequired))
@@ -35,7 +35,7 @@ open class ClassPathFileChangeListener(
     private fun publishEvent(event: ClassPathChangedEvent) {
         this.eventPublisher.publishEvent(event)
 
-        // 如果需要去进行重启，那么需要将之前的Watcher去进行关闭
+        // 如果需要去进行重启, 那么需要将之前的Watcher去进行关闭
         if (event.restartRequired && this.fileSystemWatcherToStop != null) {
             this.fileSystemWatcherToStop.stop()
         }
@@ -45,7 +45,7 @@ open class ClassPathFileChangeListener(
      * 决策是否需要去进行重启？
      *
      * @param changeSet 发生改变的文件的累彪
-     * @return 如果需要重启，return true；否则return false
+     * @return 如果需要重启, return true; 否则return false
      */
     private fun isRestartRequired(changeSet: Set<ChangedFiles>): Boolean {
         changeSet.forEach { changedFiles ->

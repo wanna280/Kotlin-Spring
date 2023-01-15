@@ -4,8 +4,8 @@ import com.wanna.framework.util.ClassUtils
 import java.beans.PropertyChangeEvent
 
 /**
- * 它是属性访问异常的其中一种特殊情况，属于是类型转换不匹配的情况；
- * 当从一种类型转换成为另外一种类型失败时，就会出现这个异常
+ * 它是属性访问异常的其中一种特殊情况, 属于是类型转换不匹配的情况; 
+ * 当从一种类型转换成为另外一种类型失败时, 就会出现这个异常
  *
  * @author jianchao.jia
  * @version v1.0

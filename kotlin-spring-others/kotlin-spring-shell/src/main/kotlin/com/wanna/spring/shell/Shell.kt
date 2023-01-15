@@ -26,7 +26,7 @@ open class Shell(private val resultHandler: ResultHandler<Any>) : CommandRegistr
     /**
      * 完成初始化所有的Command的初始化工作
      *
-     * Note: 这里不能过早完成初始化，因为有可能MethodTargetRegistrar还没完成Bean的注册
+     * Note: 这里不能过早完成初始化, 因为有可能MethodTargetRegistrar还没完成Bean的注册
      */
     override fun afterSingletonsInstantiated() {
         val commandRegistry = DefaultCommandRegistry()
@@ -46,7 +46,7 @@ open class Shell(private val resultHandler: ResultHandler<Any>) : CommandRegistr
                 if (ex is ExitRequest) {  // 处理用户在输入的时候按下了Ctrl+C的情况
                     break
                 }
-                resultHandler.handleResult(ex)  // 处理结果，并且直接忽略掉
+                resultHandler.handleResult(ex)  // 处理结果, 并且直接忽略掉
                 continue
             }
             val result = evaluate(input)
@@ -66,12 +66,12 @@ open class Shell(private val resultHandler: ResultHandler<Any>) : CommandRegistr
             return EMPTY_INPUT
         }
         val command = commands[0]
-        // 如果获取不到命令，那么说明command not found
+        // 如果获取不到命令, 那么说明command not found
         val target = listCommands()[command] ?: return CommandNotFound(commands)
 
-        // 执行目标方法，并处理异常情况
+        // 执行目标方法, 并处理异常情况
         return try {
-            // 首先需要去解析目标ShellyMethod当中的参数列表(比如"add 1 2"，需要解析的就是"1 2"部分的参数)
+            // 首先需要去解析目标ShellyMethod当中的参数列表(比如"add 1 2", 需要解析的就是"1 2"部分的参数)
             val parameterTypes = target.method.parameterTypes
             val argsToUse = arrayOfNulls<Any>(commands.size - 1)  // 申请commands.size-1的长度
             argsToUse.indices.forEach { index ->

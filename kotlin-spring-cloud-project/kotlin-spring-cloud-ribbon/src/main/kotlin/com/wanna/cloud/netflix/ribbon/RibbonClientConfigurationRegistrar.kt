@@ -7,14 +7,14 @@ import com.wanna.framework.core.annotation.*
 import com.wanna.framework.core.type.AnnotationMetadata
 
 /**
- * 负责处理@RibbonClient的ImportBeanDefinitionRegistrar，负责给容器中导入组件(导入Specification)
+ * 负责处理@RibbonClient的ImportBeanDefinitionRegistrar, 负责给容器中导入组件(导入Specification)
  */
 @Suppress("UNCHECKED_CAST")
 open class RibbonClientConfigurationRegistrar : ImportBeanDefinitionRegistrar {
     override fun registerBeanDefinitions(annotationMetadata: AnnotationMetadata, registry: BeanDefinitionRegistry) {
         val clientsAttributes = annotationMetadata.getAnnotations().get(RibbonClients::class.java)
         if (clientsAttributes.present) {
-            // 遍历RibbonClients当中的所有RibbonClient注解，去进行处理
+            // 遍历RibbonClients当中的所有RibbonClient注解, 去进行处理
             val ribbonClients = clientsAttributes.getAnnotationArray("value", Array<RibbonClient>::class.java)
             ribbonClients.forEach {
                 val annotation =
@@ -23,7 +23,7 @@ open class RibbonClientConfigurationRegistrar : ImportBeanDefinitionRegistrar {
                 registerRibbonClient(registry, annotation)
             }
 
-            // 将defaultConfiguration注册一下，需要加上前缀"default."代表对所有的childContext(Service)生效...
+            // 将defaultConfiguration注册一下, 需要加上前缀"default."代表对所有的childContext(Service)生效...
             val defaultConfigurations = clientsAttributes.getClassArray("defaultConfiguration")
             defaultConfigurations.forEach {
                 registerClientConfiguration(registry, "default." + it.name, arrayOf(it))
@@ -39,7 +39,7 @@ open class RibbonClientConfigurationRegistrar : ImportBeanDefinitionRegistrar {
     }
 
     /**
-     * 处理一个@RibbonClient，将注解当中的相关信息，注册成为Specification
+     * 处理一个@RibbonClient, 将注解当中的相关信息, 注册成为Specification
      *
      * @param registry registry
      * @param attributes @RibbonClient当中的配置信息

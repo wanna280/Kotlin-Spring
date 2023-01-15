@@ -8,14 +8,14 @@ import org.slf4j.LoggerFactory
 import java.lang.reflect.Method
 
 /**
- * 它是一个DisposableBean的适配器，目的是将DisposableBean能够适配Runnable；
- * 因为Scope的Bean注册的回调必须得是一个Runnable，因此在这里去进行适配Runnable；
+ * 它是一个DisposableBean的适配器, 目的是将DisposableBean能够适配Runnable;
+ * 因为Scope的Bean注册的回调必须得是一个Runnable, 因此在这里去进行适配Runnable;
  *
- * 在Spring当中，对于使用了任何一种destroy方法的Bean，都会被包装成为一样一个DisposableBeanAdapter，并注册到Spring BeanFactory当中；
- * 当Spring BeanFactory执行了destroyBean时，会自动回调这个类当中的destroy方法；
+ * 在Spring当中, 对于使用了任何一种destroy方法的Bean, 都会被包装成为一样一个DisposableBeanAdapter, 并注册到Spring BeanFactory当中;
+ * 当Spring BeanFactory执行了destroyBean时, 会自动回调这个类当中的destroy方法;
  *
- * 不管是@PreDestroy注解的方法，还是它实现了DisposableBean，还是设置了destroyMethod到BeanDefinition当中，还是实现了JDK当中的AutoCloseable接口；
- * 这几种方式，都会被Spring BeanFactory统一包装成为一个DisposableBeanAdapter，注册到Spring BeanFactory当中
+ * 不管是@PreDestroy注解的方法, 还是它实现了DisposableBean, 还是设置了destroyMethod到BeanDefinition当中, 还是实现了JDK当中的AutoCloseable接口;
+ * 这几种方式, 都会被Spring BeanFactory统一包装成为一个DisposableBeanAdapter, 注册到Spring BeanFactory当中
  *
  * @see DisposableBean
  * @see DefaultListableBeanFactory.registerDisposableBeanIfNecessary
@@ -64,7 +64,7 @@ open class DisposableBeanAdapter(
      * 执行destroy方法
      */
     override fun destroy() {
-        // 1.应用所有的BeanPostProcessor，去进行回调
+        // 1.应用所有的BeanPostProcessor, 去进行回调
         if (this.beanPostProcessors.isNotEmpty()) {
             this.beanPostProcessors.forEach { it.postProcessBeforeDestruction(bean, beanName) }
         }
@@ -74,25 +74,25 @@ open class DisposableBeanAdapter(
             try {
                 (this.bean as DisposableBean).destroy()
             } catch (ex: Throwable) {
-                // 执行destroyMethod失败，打印日志信息
-                logger.warn("执行DisposableBean的destroy方法失败，原因是[$ex]")
+                // 执行destroyMethod失败, 打印日志信息
+                logger.warn("执行DisposableBean的destroy方法失败, 原因是[$ex]")
             }
         }
 
-        // 3.如果有destroy方法，那么去执行该方法
+        // 3.如果有destroy方法, 那么去执行该方法
         val destroyMethod = this.destroyMethod
         if (destroyMethod != null) {
             ReflectionUtils.makeAccessible(destroyMethod)
             try {
                 ReflectionUtils.invokeMethod(destroyMethod, this.bean)
             } catch (ex: Throwable) {
-                logger.warn("执行[beanName=$bean, beanClass=${this.bean::class.java}]的destroy方法[name=${destroyMethod.name}]失败，原因是[$ex]")
+                logger.warn("执行[beanName=$bean, beanClass=${this.bean::class.java}]的destroy方法[name=${destroyMethod.name}]失败, 原因是[$ex]")
             }
         }
     }
 
     /**
-     * 将destroy方法适配到Runnable，桥接去执行destroy方法
+     * 将destroy方法适配到Runnable, 桥接去执行destroy方法
      */
     override fun run() {
         destroy()
@@ -106,7 +106,7 @@ open class DisposableBeanAdapter(
          *
          * @param postProcessors 候选的DestructionAwareBeanPostProcessor列表
          * @param bean 要匹配的Bean
-         * @return 过滤之后的DestructionAwareBeanPostProcessor列表，全部都是能应用给当前Bean的Processor
+         * @return 过滤之后的DestructionAwareBeanPostProcessor列表, 全部都是能应用给当前Bean的Processor
          */
         private fun filterPostProcessors(
             postProcessors: List<DestructionAwareBeanPostProcessor>, bean: Any
@@ -115,7 +115,7 @@ open class DisposableBeanAdapter(
         }
 
         /**
-         * 判断一个Bean是否有Destory方法，DisposableBean/AutoCloseable，则return true
+         * 判断一个Bean是否有Destory方法, DisposableBean/AutoCloseable, 则return true
          *
          * @param bean bean
          * @param mbd MergedBeanDefinition
@@ -131,11 +131,11 @@ open class DisposableBeanAdapter(
         }
 
         /**
-         * 去推断是否有destroy方法？如果有返回找到的destroyMethodName，没有则return null
+         * 去推断是否有destroy方法？如果有返回找到的destroyMethodName, 没有则return null
          *
          * @param bean bean
          * @param mbd MergedBeanDefinition
-         * @return 如果找到了的话，返回值destroyMethodName，如果找不到的话，return null
+         * @return 如果找到了的话, 返回值destroyMethodName, 如果找不到的话, return null
          */
         private fun inferDestroyMethodIfNecessary(bean: Any, mbd: RootBeanDefinition?): String? {
             if (mbd == null) {
@@ -157,7 +157,7 @@ open class DisposableBeanAdapter(
                         }
                     }
                 }
-                mbd.resolvedDestroyMethodName = destroyMethodName ?: ""  // 如果为空时，设置为""，避免下次还进来去进行推断，直接从mbd当中获取即可
+                mbd.resolvedDestroyMethodName = destroyMethodName ?: ""  // 如果为空时, 设置为"", 避免下次还进来去进行推断, 直接从mbd当中获取即可
             }
             return if (StringUtils.hasText(destroyMethodName)) destroyMethodName else null
         }

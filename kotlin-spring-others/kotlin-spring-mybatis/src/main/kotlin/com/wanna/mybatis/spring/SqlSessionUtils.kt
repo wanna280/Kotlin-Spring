@@ -8,7 +8,7 @@ import org.apache.ibatis.session.SqlSessionFactory
 import org.slf4j.LoggerFactory
 
 /**
- * SqlSession的单例工具类，提供从Spring的TransactionManager当中去进行SqlSession的获取、注册、关闭等操作
+ * SqlSession的单例工具类, 提供从Spring的TransactionManager当中去进行SqlSession的获取、注册、关闭等操作
  *
  * @see TransactionSynchronizationManager
  */
@@ -20,8 +20,8 @@ object SqlSessionUtils {
     private val logger = LoggerFactory.getLogger(SqlSessionUtils::class.java)
 
     /**
-     * 在有事务的情况下，可以从Spring的事务同步管理器当中获取SqlSession；
-     * 如果事务同步管理器当中没有SqlSession的话，那么就得通过SqlSessionFactory去openSession去获取到SqlSession
+     * 在有事务的情况下, 可以从Spring的事务同步管理器当中获取SqlSession;
+     * 如果事务同步管理器当中没有SqlSession的话, 那么就得通过SqlSessionFactory去openSession去获取到SqlSession
      *
      * @param sqlSessionFactory sqlSessionFactory
      * @param executorType 执行器类型
@@ -33,31 +33,31 @@ object SqlSessionUtils {
         exceptionTranslator: PersistenceExceptionTranslator
     ): SqlSession {
 
-        // 1.如果存在有事务的话，那么可以从事务同步管理器当中去获取SqlSession，这样就保证每次CRUD操作，都获取到的是该SqlSession
+        // 1.如果存在有事务的话, 那么可以从事务同步管理器当中去获取SqlSession, 这样就保证每次CRUD操作, 都获取到的是该SqlSession
         val sqlSessionHolder = TransactionSynchronizationManager.getResource(sqlSessionFactory) as SqlSessionHolder?
         var sqlSession = sqlSessionHolder?.sqlSession
         if (sqlSession != null) {
             return sqlSession
         }
 
-        // 如果不存在已经有的事务的话，那么使用SqlSessionFactory.openSession去获取到SqlSession
+        // 如果不存在已经有的事务的话, 那么使用SqlSessionFactory.openSession去获取到SqlSession
         sqlSession = sqlSessionFactory.openSession(executorType)
 
         if (logger.isDebugEnabled) {
             logger.debug("正在创建一个新的SqlSession")
         }
 
-        // 把SqlSession入到事务同步管理器的ThreadLocal当中，下次再去getSqlSession，就可以从ThreadLocal当中去进行获取了
+        // 把SqlSession入到事务同步管理器的ThreadLocal当中, 下次再去getSqlSession, 就可以从ThreadLocal当中去进行获取了
         registerSessionHolder(sqlSessionFactory, executorType, exceptionTranslator, sqlSession)
 
         return sqlSession
     }
 
     /**
-     * 如果必要的话，需要去关闭SqlSession
+     * 如果必要的话, 需要去关闭SqlSession
      *
-     * * 1.如果是事务的SqlSession，调用release去释放连接
-     * * 2.如果不是事务的SqlSession，那么直接关闭SqlSession
+     * * 1.如果是事务的SqlSession, 调用release去释放连接
+     * * 2.如果不是事务的SqlSession, 那么直接关闭SqlSession
      *
      * @param sqlSession SqlSession
      * @param sqlSessionFactory SqlSessionFactory
@@ -65,10 +65,10 @@ object SqlSessionUtils {
     @JvmStatic
     fun closeSqlSession(sqlSession: SqlSession, sqlSessionFactory: SqlSessionFactory) {
         val sqlSessionHolder = TransactionSynchronizationManager.getResource(sqlSessionFactory) as SqlSessionHolder?
-        // 如果是事务的SqlSession，调用release去释放连接
+        // 如果是事务的SqlSession, 调用release去释放连接
         if (sqlSessionHolder != null && sqlSessionHolder.sqlSession == sqlSession) {
             sqlSessionHolder.released()
-            // 如果不是事务的SqlSession，那么直接关闭SqlSession
+            // 如果不是事务的SqlSession, 那么直接关闭SqlSession
         } else {
             sqlSession.close()
         }

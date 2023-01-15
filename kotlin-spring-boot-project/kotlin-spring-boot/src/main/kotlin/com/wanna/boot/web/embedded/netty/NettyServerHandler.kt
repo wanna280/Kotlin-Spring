@@ -71,7 +71,7 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
 
             // 3.交给DispatcherHandler去处理本次HTTP请求
             dispatcherHandler.doDispatch(request, response)
-            // fixed: not to flush，对于所有的flush操作，全部交给使用方去进行flush
+            // fixed: not to flush, 对于所有的flush操作, 全部交给使用方去进行flush
             // response.flush()
         }
     }
@@ -92,7 +92,7 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
     }
 
     /**
-     * 初始化Response，设置FlushCallback，在response调用flush时，就可以将数据写入给客户端了
+     * 初始化Response, 设置FlushCallback, 在response调用flush时, 就可以将数据写入给客户端了
      *
      * @param request request
      * @param response response
@@ -119,24 +119,24 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
             // setContentType, default for "application/json"
             httpResponse.headers()[HttpHeaders.CONTENT_TYPE] = getContentType()
 
-            // Http1.1当中Connection默认为"keep-alive"(长连接)，告诉对方在发送完成之后不用关闭TCP连接(设置为"false"时关闭长连接)
-            // 但是由于WebServer和浏览器的众多的历史原因，这个字段一直被保留，也会被浏览器/WebServer所进行发送(比如Tomcat也会发送这个字段)
+            // Http1.1当中Connection默认为"keep-alive"(长连接), 告诉对方在发送完成之后不用关闭TCP连接(设置为"false"时关闭长连接)
+            // 但是由于WebServer和浏览器的众多的历史原因, 这个字段一直被保留, 也会被浏览器/WebServer所进行发送(比如Tomcat也会发送这个字段)
             httpResponse.headers()[HttpHeaders.CONNECTION] = "keep-alive"
 
-            // addHeader，"Transfer-Encoding=chucked"，标识将数据去进行分块传输
+            // addHeader, "Transfer-Encoding=chucked", 标识将数据去进行分块传输
             httpResponse.headers()[HttpHeaders.TRANSFER_ENCODING] = "chunked"
 
             httpResponse.headers()[HttpHeaders.KEEP_ALIVE] = "timeout=60"
 
             // 添加Cookie
             val cookieHeader = cookieCodec.encodeAsHeader(response.getCookies())
-            // 如果存在有Cookie的话，那么我们需要设置Header
+            // 如果存在有Cookie的话, 那么我们需要设置Header
             if (cookieHeader != null) {
                 httpResponse.headers()[HttpHeaders.SET_COOKIE] = cookieHeader
             }
 
 
-            // write And Flush，将要Http响应报文数据写出给客户端...
+            // write And Flush, 将要Http响应报文数据写出给客户端...
             ctx.writeAndFlush(httpResponse)
         }
     }
@@ -186,7 +186,7 @@ open class NettyServerHandler(applicationContext: ApplicationContext) : ChannelI
             // 解析uri和url
             parseUriUrlAndParams(this, msg.uri())
 
-            // 将RequestBody当中的内容，包装成为InputStream设置到request当中
+            // 将RequestBody当中的内容, 包装成为InputStream设置到request当中
             val content = msg.content()
             val byteArray = ByteArray(content.readableBytes())
             content.readBytes(byteArray)

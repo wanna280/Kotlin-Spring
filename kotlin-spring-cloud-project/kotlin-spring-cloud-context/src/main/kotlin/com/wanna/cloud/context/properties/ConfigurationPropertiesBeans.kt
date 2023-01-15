@@ -12,7 +12,7 @@ import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.lang.Nullable
 
 /**
- * 它维护了所有的RefreshScope内的ConfigurationPropertiesBean，将其维护起来，方便后期在环境信息发生改变时，可以去对RefreshScope内的Bean去进行刷新
+ * 它维护了所有的RefreshScope内的ConfigurationPropertiesBean, 将其维护起来, 方便后期在环境信息发生改变时, 可以去对RefreshScope内的Bean去进行刷新
  *
  * @see ConfigurationPropertiesRebinder
  */
@@ -31,7 +31,7 @@ open class ConfigurationPropertiesBeans : ApplicationContextAware, BeanFactoryAw
     private var beanFactory: ConfigurableListableBeanFactory? = null
 
     /**
-     * Refresh是否已经初始化过了？第一次执行判断时，会完成RefreshScope的初始化工作...
+     * Refresh是否已经初始化过了？第一次执行判断时, 会完成RefreshScope的初始化工作...
      */
     private var refreshScopeInitialized = false
 
@@ -77,7 +77,7 @@ open class ConfigurationPropertiesBeans : ApplicationContextAware, BeanFactoryAw
         this.applicationContext ?: throw IllegalStateException("ApplicationContext还未完成初始化, 不能去进行获取")
 
     /**
-     * 在Bean初始化之前，对Bean检查，是否是一个ConfigurationPropertiesBean，如果是的话，那么需要去进行保存
+     * 在Bean初始化之前, 对Bean检查, 是否是一个ConfigurationPropertiesBean, 如果是的话, 那么需要去进行保存
      */
     override fun postProcessBeforeInitialization(beanName: String, bean: Any): Any? {
         if (isRefreshScoped(beanName)) {
@@ -90,7 +90,7 @@ open class ConfigurationPropertiesBeans : ApplicationContextAware, BeanFactoryAw
     }
 
     /**
-     * 判断该Bean是否在RefreshScope当中，比对beanName对应的BeanDefinition的scope是否是refresh
+     * 判断该Bean是否在RefreshScope当中, 比对beanName对应的BeanDefinition的scope是否是refresh
      *
      * @param beanName 要进行比对的beanName
      * @return 该Bean是否在RefreshScope当中？

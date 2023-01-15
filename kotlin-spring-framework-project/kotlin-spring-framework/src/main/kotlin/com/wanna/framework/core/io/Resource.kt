@@ -20,28 +20,28 @@ interface Resource : InputStreamSource {
     /**
      * 判断给资源是否存在？
      *
-     * @return 如果该资源存在的话，return true；不存在则return false
+     * @return 如果该资源存在的话, return true; 不存在则return false
      */
     fun exists(): Boolean
 
     /**
-     * 该资源是否是可读的？默认情况的实现下，只要该资源存在就是可读的
+     * 该资源是否是可读的？默认情况的实现下, 只要该资源存在就是可读的
      *
-     * @return 如果该文件可读，那么return true；否则return false
+     * @return 如果该文件可读, 那么return true; 否则return false
      */
     fun isReadable(): Boolean = exists()
 
     /**
      * 该资源当前是否是打开的？
      *
-     * @return 如果该资源已经打开了，那么return true；否则return false
+     * @return 如果该资源已经打开了, 那么return true; 否则return false
      */
     fun isOpen(): Boolean = false
 
     /**
      * 当前资源是否是一个文件？
      *
-     * @return 如果当前资源是一个文件的话，return true；否则return false
+     * @return 如果当前资源是一个文件的话, return true; 否则return false
      */
     fun isFile(): Boolean = false
 

@@ -21,10 +21,10 @@ import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 
 /**
- * 这是一个完成自动配置的ImportSelector，作用是从SpringFactories当中去加载通过EnableAutoConfiguration导入的相关配置类，
- * 并使用AutoConfigurationImportFilter，去对要导入的配置类去进行批量的筛选，可以通过不读取字节码、直接读取文件的方式去进行批量筛选掉；
- * 对于一个Bean具体的要不要导入到Spring容器当中，得通过Condition/SpringBootCondition去进行条件匹配来决定。
- * 怎么筛选？不管是对于OnBean/OnClass的相关条件，都是通过Class.forName直接去判断它是否在当前的应用的依赖当中，只要不在那么就不符合
+ * 这是一个完成自动配置的ImportSelector, 作用是从SpringFactories当中去加载通过EnableAutoConfiguration导入的相关配置类,
+ * 并使用AutoConfigurationImportFilter, 去对要导入的配置类去进行批量的筛选, 可以通过不读取字节码、直接读取文件的方式去进行批量筛选掉;
+ * 对于一个Bean具体的要不要导入到Spring容器当中, 得通过Condition/SpringBootCondition去进行条件匹配来决定.
+ * 怎么筛选？不管是对于OnBean/OnClass的相关条件, 都是通过Class.forName直接去判断它是否在当前的应用的依赖当中, 只要不在那么就不符合
  *
  * @see EnableAutoConfiguration
  * @see DeferredImportSelector
@@ -69,14 +69,14 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     }
 
     /**
-     * 获取自动配置信息的Entry，它的内部维护了要进行AutoConfiguration的配置类和排除掉的配置类的具体信息
+     * 获取自动配置信息的Entry, 它的内部维护了要进行AutoConfiguration的配置类和排除掉的配置类的具体信息
      *
      * @see AutoConfigurationEntry.configurations
      * @see AutoConfigurationEntry.excludes
      * @param metadata 导入EnableAutoConfiguration的配置类的注解信息
      */
     protected open fun getAutoConfigurationEntry(metadata: AnnotationMetadata): AutoConfigurationEntry {
-        // 检查是否开启了自动配置("spring.boot.enableautoconfiguration"配置)，如果没有开启自动配置的话，那么直接return即可
+        // 检查是否开启了自动配置("spring.boot.enableautoconfiguration"配置), 如果没有开启自动配置的话, 那么直接return即可
         if (!isEnabled(metadata)) {
             return EMPTY_ENTRY
         }
@@ -93,18 +93,18 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
         // 将要导入的配置类当中去移除掉所有的要进行移除的className
         configurations.removeAll(excludes)
 
-        // 利用AutoConfigurationImportFilter，利用autoconfiguration-metadata配置文件去完成自动配置类的提前过滤
+        // 利用AutoConfigurationImportFilter, 利用autoconfiguration-metadata配置文件去完成自动配置类的提前过滤
         configurations = ArrayList(getConfigurationClassFilter().filter(configurations))
 
-        // 发布AutoConfigurationImportEvent，通知所有的监听器去处理该事件
+        // 发布AutoConfigurationImportEvent, 通知所有的监听器去处理该事件
         fireAutoConfigurationImportEvents(configurations, excludes)
 
-        // 利用已经获取的configurations和excludes列表去构建AutoConfigurationEntry，去进行返回
+        // 利用已经获取的configurations和excludes列表去构建AutoConfigurationEntry, 去进行返回
         return AutoConfigurationEntry(configurations, excludes)
     }
 
     /**
-     * 获取候选的配置类，从SpringFactories当中去加载到所有的EnableAutoConfiguration导入的自动配置类的className列表
+     * 获取候选的配置类, 从SpringFactories当中去加载到所有的EnableAutoConfiguration导入的自动配置类的className列表
      *
      * @param metadata 注解元信息
      * @param attributes 注解属性
@@ -116,14 +116,14 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     }
 
     /**
-     * 发布AutoConfigurationImportEvent事件，通知所有的监听器，容器当中的自动配置已经完成了
+     * 发布AutoConfigurationImportEvent事件, 通知所有的监听器, 容器当中的自动配置已经完成了
      */
     protected open fun fireAutoConfigurationImportEvents(configurations: MutableList<String>, excludes: Set<String>) {
         // 从SpringFactories当中去加载AutoConfigurationImportListener
         val listeners = SpringFactoriesLoader.loadFactories(AutoConfigurationImportListener::class.java)
         val event = AutoConfigurationImportEvent(this, configurations, excludes)
 
-        // 通知所有的AutoConfigurationImportListener监听器，SpringBoot的自动配置已经完成了...
+        // 通知所有的AutoConfigurationImportListener监听器, SpringBoot的自动配置已经完成了...
         listeners.forEach {
             invokeAwareMethods(it)  // invoke Aware Methods
             it.onAutoConfigurationImportEvent(event)
@@ -151,7 +151,7 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     }
 
     /**
-     * 获取ConfigurationClassFilter，利用SpringBoot的metadata配置文件的方式，提前去对自动配置类去进行过滤
+     * 获取ConfigurationClassFilter, 利用SpringBoot的metadata配置文件的方式, 提前去对自动配置类去进行过滤
      *
      * @return 维护了AutoConfigurationImportFilter列表(OnBeanCondition/OnClassCondition等)的ClassFilter
      */
@@ -159,8 +159,8 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
         var configurationClassFilter = this.configurationClassFilter
         if (configurationClassFilter == null) {
 
-            // 从SpringFactories当中去加载AutoConfigurationImportFilter列表，并创建ConfigurationClassFilter对象
-            // 这里一般情况下，会加载到OnBeanCondition/OnClassCondition等AutoConfigurationImportFilter...
+            // 从SpringFactories当中去加载AutoConfigurationImportFilter列表, 并创建ConfigurationClassFilter对象
+            // 这里一般情况下, 会加载到OnBeanCondition/OnClassCondition等AutoConfigurationImportFilter...
             val importFilters =
                 SpringFactoriesLoader.loadFactories(AutoConfigurationImportFilter::class.java, classLoader)
             configurationClassFilter = ConfigurationClassFilter(classLoader, importFilters)
@@ -170,21 +170,21 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     }
 
     /**
-     * 是否要开启SpringBoot的自动配置，默认情况下开启，除非自己在配置文件
+     * 是否要开启SpringBoot的自动配置, 默认情况下开启, 除非自己在配置文件
      * 当中将"spring.boot.enableautoconfiguration"设为了false
      *
      * @param metadata @EnableAutoConfiguration的注解源信息
      */
     protected open fun isEnabled(metadata: AnnotationMetadata): Boolean {
         if (this::class.java == AutoConfigurationImportSelector::class.java) {
-            // 如果从环境当中获取到属性值不为false，则说明要开启自动配置，return true(默认也是return true)
+            // 如果从环境当中获取到属性值不为false, 则说明要开启自动配置, return true(默认也是return true)
             return environment.getProperty(ENABLED_OVERRIDE_PROPERTY, Boolean::class.java, true)
         }
         return true
     }
 
     /**
-     * 这是一个AutoConfiguration的配置类的列表，包括自动配置类列表以及要去进行排除的类的列表两个部分组件
+     * 这是一个AutoConfiguration的配置类的列表, 包括自动配置类列表以及要去进行排除的类的列表两个部分组件
      *
      * @param configurations 维护了要导入了配置类列表
      * @param excludes 维护了要进行排除的配置类列表
@@ -300,9 +300,9 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     }
 
     /**
-     * 配置类的ClassFilter，对要排除的配置类去进行排除，内部组合了AutoConfigurationImportFilter的列表
+     * 配置类的ClassFilter, 对要排除的配置类去进行排除, 内部组合了AutoConfigurationImportFilter的列表
      *
-     * @param classLoader classLoader，用来加载自动配置的元信息
+     * @param classLoader classLoader, 用来加载自动配置的元信息
      * @param filters AutoConfigurationImportFilters
      */
     inner class ConfigurationClassFilter(
@@ -320,11 +320,11 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
          * @return 使用AutoConfigurationImportFilter去完成过滤之后的配置类列表
          */
         fun filter(configurations: List<String>): List<String> {
-            // 将AutoConfiguration配置类列表转换为Array<String?>，因为需要将某个位置的元素设置为null，需要使用?类型
+            // 将AutoConfiguration配置类列表转换为Array<String?>, 因为需要将某个位置的元素设置为null, 需要使用?类型
             val candidates = ArrayList<String?>(configurations).toTypedArray()
 
-            // 遍历所有的AutoConfigurationImportFilter去进行匹配，
-            // 如果matches[index]=false，那么就将candidates[index]设置为null
+            // 遍历所有的AutoConfigurationImportFilter去进行匹配,
+            // 如果matches[index]=false, 那么就将candidates[index]设置为null
             filters.forEach {
                 invokeAwareMethods(it)  // invoke Aware Methods
                 val matches = it.matches(candidates, autoConfigurationMetadata)
@@ -334,20 +334,20 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
                     }
                 }
             }
-            // 过滤出来所有的notNull的元素，并转为List去进行return
+            // 过滤出来所有的notNull的元素, 并转为List去进行return
             return candidates.filterNotNull().toMutableList()
         }
     }
 
     /**
-     * 获取自动配置的注解，默认为@EnableAutoConfiguration
+     * 获取自动配置的注解, 默认为@EnableAutoConfiguration
      *
      * @return 自动配置类的注解
      */
     protected open fun getAnnotationClass(): Class<out Annotation> = EnableAutoConfiguration::class.java
 
     /**
-     * 对于一个Bean，如果必要的话，需要去执行Aware接口当中的方法
+     * 对于一个Bean, 如果必要的话, 需要去执行Aware接口当中的方法
      */
     private fun invokeAwareMethods(instance: Any) {
         if (instance is BeanFactoryAware) {

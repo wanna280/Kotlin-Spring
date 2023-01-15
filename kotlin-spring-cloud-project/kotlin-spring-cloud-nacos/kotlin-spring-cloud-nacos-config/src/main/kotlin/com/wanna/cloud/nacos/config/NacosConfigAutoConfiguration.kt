@@ -21,10 +21,10 @@ open class NacosConfigAutoConfiguration {
     }
 
     /**
-     * NacosConfigManager，负责去进行配置文件的获取
+     * NacosConfigManager, 负责去进行配置文件的获取
      *
      * @param nacosConfigProperties Nacos的配置信息
-     * @return NacosConfigManager，提供对于NacosServer的配置文件的加载功能
+     * @return NacosConfigManager, 提供对于NacosServer的配置文件的加载功能
      */
     @Bean
     open fun nacosConfigManager(nacosConfigProperties: NacosConfigProperties): NacosConfigManager {
@@ -32,10 +32,10 @@ open class NacosConfigAutoConfiguration {
     }
 
     /**
-     * Nacos的ContextRefresher，给NacosClient去注册监听器
+     * Nacos的ContextRefresher, 给NacosClient去注册监听器
      *
      * @param nacosConfigManager NacosConfigManager
-     * @return NacosContextRefresher(为所有的NacosPropertySource对应的文件去添加监听器，当对应的文件发生变更时，自动发布RefreshEvent事件)
+     * @return NacosContextRefresher(为所有的NacosPropertySource对应的文件去添加监听器, 当对应的文件发生变更时, 自动发布RefreshEvent事件)
      */
     @Bean
     open fun nacosContextRefresher(nacosConfigManager: NacosConfigManager): NacosContextRefresher {

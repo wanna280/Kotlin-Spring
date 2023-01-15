@@ -29,7 +29,7 @@ open class RestartLauncher(
     }
 
     /**
-     * 重启的方式，使用具体的ClassLoader(例如RestartClassLoader)，去获取到mainClass的"main"方法，并反射调用，
+     * 重启的方式, 使用具体的ClassLoader(例如RestartClassLoader), 去获取到mainClass的"main"方法, 并反射调用,
      * 去执行SpringBoot Application的重启工作
      *
      * @see com.wanna.boot.devtools.restart.classloader.RestartClassLoader

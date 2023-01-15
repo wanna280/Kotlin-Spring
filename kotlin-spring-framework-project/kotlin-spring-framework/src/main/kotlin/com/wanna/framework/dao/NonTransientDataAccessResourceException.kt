@@ -1,7 +1,7 @@
 package com.wanna.framework.dao
 
 /**
- * 暂时没有连接时发生的异常，并且这个异常是暂时的
+ * 暂时没有连接时发生的异常, 并且这个异常是暂时的
  *
  * @author jianchao.jia
  * @version v1.0

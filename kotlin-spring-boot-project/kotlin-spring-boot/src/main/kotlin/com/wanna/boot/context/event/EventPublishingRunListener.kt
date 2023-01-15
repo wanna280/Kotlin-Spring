@@ -12,7 +12,7 @@ import com.wanna.framework.core.environment.ConfigurableEnvironment
 import org.slf4j.LoggerFactory
 
 /**
- * 这是一个Spring的事件发布的运行监听器，它负责回调所有的监听器
+ * 这是一个Spring的事件发布的运行监听器, 它负责回调所有的监听器
  *
  * @param springApplication SpringApplication
  * @param args Spring应用的启动参数
@@ -32,7 +32,7 @@ open class EventPublishingRunListener(
     private var order: Int = 0
 
     /**
-     * 这是一个事件多拨器，可以完成ApplicationEvent的事件发布
+     * 这是一个事件多拨器, 可以完成ApplicationEvent的事件发布
      */
     private val initialMulticaster: ApplicationEventMulticaster = SimpleApplicationEventMulticaster()
 
@@ -81,9 +81,9 @@ open class EventPublishingRunListener(
     }
 
     /**
-     * 在这里，SpringApplication的ApplicationContext已经完成了创建以及配置类的注册(还未刷新)，因此可以往ApplicationContext当中注册ApplicationListener了
-     * 我们将已经保存的所有的SpringApplication的ApplicationListener全部转移到ApplicationContext当中去，也就是设置到applicationListeners列表当中去
-     * 但是此时ApplicationContext还没有发布事件的能力，因为它还未完成刷新(refresh)，因此此时仍旧使用initialMulticaster去进行发布事件而不是使用ApplicationContext去发布
+     * 在这里, SpringApplication的ApplicationContext已经完成了创建以及配置类的注册(还未刷新), 因此可以往ApplicationContext当中注册ApplicationListener了
+     * 我们将已经保存的所有的SpringApplication的ApplicationListener全部转移到ApplicationContext当中去, 也就是设置到applicationListeners列表当中去
+     * 但是此时ApplicationContext还没有发布事件的能力, 因为它还未完成刷新(refresh), 因此此时仍旧使用initialMulticaster去进行发布事件而不是使用ApplicationContext去发布
      *
      * @see com.wanna.framework.context.support.AbstractApplicationContext.refresh
      * @see com.wanna.framework.context.support.AbstractApplicationContext.applicationListeners
@@ -100,7 +100,7 @@ open class EventPublishingRunListener(
     }
 
     /**
-     * 此时SpringApplication的ApplicationContext已经完成了刷新，可以使用ApplicationContext去完成事件的发布了
+     * 此时SpringApplication的ApplicationContext已经完成了刷新, 可以使用ApplicationContext去完成事件的发布了
      *
      * @see com.wanna.framework.context.support.AbstractApplicationContext.refresh
      * @see SpringApplication.run
@@ -111,7 +111,7 @@ open class EventPublishingRunListener(
     }
 
     /**
-     * 此时SpringApplication已经处于运行当中了，可以使用ApplicationContext去完成事件的发布
+     * 此时SpringApplication已经处于运行当中了, 可以使用ApplicationContext去完成事件的发布
      *
      * @see com.wanna.framework.context.support.AbstractApplicationContext.refresh
      * @see com.wanna.framework.context.support.AbstractApplicationContext.applicationListeners
@@ -121,7 +121,7 @@ open class EventPublishingRunListener(
     }
 
     /**
-     * SpringApplication启动失败，有可能ApplicationContext已经创建，也有可能ApplicationContext还没完成创建
+     * SpringApplication启动失败, 有可能ApplicationContext已经创建, 也有可能ApplicationContext还没完成创建
      *
      * @see SpringApplication.run
      */

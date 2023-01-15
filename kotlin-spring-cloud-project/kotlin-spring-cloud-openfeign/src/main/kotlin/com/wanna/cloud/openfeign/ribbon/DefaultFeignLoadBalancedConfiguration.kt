@@ -7,7 +7,7 @@ import com.wanna.framework.context.annotation.Configuration
 import feign.Client
 
 /**
- * 默认情况下的配置Feign的Ribbon负载均衡客户端的配置类；在没有别的HttpClient存在的情况下，使用这个Client
+ * 默认情况下的配置Feign的Ribbon负载均衡客户端的配置类; 在没有别的HttpClient存在的情况下, 使用这个Client
  */
 @Configuration(proxyBeanMethods = false)
 open class DefaultFeignLoadBalancedConfiguration {

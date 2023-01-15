@@ -14,7 +14,7 @@ import com.wanna.nacos.naming.server.push.PushService
 import com.wanna.nacos.naming.server.util.JacksonUtils
 
 /**
- * 提供了Nacos的实例的相关操作，包括注册/删除/心跳等操作
+ * 提供了Nacos的实例的相关操作, 包括注册/删除/心跳等操作
  */
 @RequestMapping(["/v1/ns/instance"])
 @RestController
@@ -31,7 +31,7 @@ open class InstanceController {
      *
      * @param namespaceId namespaceId
      * @param instance 要去进行注册的实例信息(自动从请求参数当中去进行获取和封装)
-     * @return 如果正常注册完成，那么return "ok"
+     * @return 如果正常注册完成, 那么return "ok"
      */
     @RequestMapping(["/register"])
     open fun register(
@@ -49,7 +49,7 @@ open class InstanceController {
      *
      * @param namespaceId namespaceId
      * @param instance 要去进行取消注册的实例信息(自动从请求参数当中去进行获取和封装)
-     * @return 如果正常注册完成，那么return "ok"
+     * @return 如果正常注册完成, 那么return "ok"
      */
     @RequestMapping(["/deregister"])
     open fun deregister(
@@ -76,7 +76,7 @@ open class InstanceController {
         val service = serviceManager.getService(namespaceId, serviceName)
             ?: throw IllegalStateException("该NamingService[serviceName=$serviceName]还未存在")
         var instance = serviceManager.getInstance(namespaceId, serviceName, clusterName, ip, port)
-        // 如果该实例还没存在的话，那么先去进行注册...
+        // 如果该实例还没存在的话, 那么先去进行注册...
         if (instance == null) {
             instance = NamingInstance()
             instance.ip = ip
@@ -101,12 +101,12 @@ open class InstanceController {
         @RequestParam ip: String,
         @RequestParam(required = false, defaultValue = "0") port: Int
     ): Any {
-        // bug? 如果直接使用ObjectNode去进行写出，客户端使用Json去进行反序列化不能成果？
+        // bug? 如果直接使用ObjectNode去进行写出, 客户端使用Json去进行反序列化不能成果？
         return getNamingInstances(namespaceId, serviceName, clusters, ip, port, isCheckRequest = true, true).toString()
     }
 
     /**
-     * 根据ip和port，获取指定的实例的具体信息
+     * 根据ip和port, 获取指定的实例的具体信息
      */
     @RequestMapping(["/detail"])
     open fun detail(
@@ -121,7 +121,7 @@ open class InstanceController {
                 ?: throw IllegalStateException("无法获取到指定的Service[namespaceId=$namespaceId,serviceName=$serviceName]")
         val allIps = service.allIps(listOf(clusterName))
 
-        // 匹配集群下的所有NamingInstance，找到ip和port都匹配的NamingInstance
+        // 匹配集群下的所有NamingInstance, 找到ip和port都匹配的NamingInstance
         allIps.forEach {
             if (it.ip == ip && it.port == port) {
                 return it.asObjectNode().toString()
@@ -153,7 +153,7 @@ open class InstanceController {
         val objectNode = JacksonUtils.createEmptyObjectNode()
         val service = serviceManager.getService(namespaceId, serviceName)
 
-        // 如果Service不存在的话，那么返回一个空的信息即可...
+        // 如果Service不存在的话, 那么返回一个空的信息即可...
         if (service == null) {
             objectNode.put("name", serviceName)
             objectNode.put("clusters", clusters)
@@ -172,7 +172,7 @@ open class InstanceController {
         allIps.forEach { (if (it.healthy) healthyIps else unHealthyIps) += it }
 
         healthyIps.forEach { arrayNode.add(it.asObjectNode()) }
-        // 如果需要获取不健康的，那么添加不健康的实例列表...不然的话，只要健康的实例列表
+        // 如果需要获取不健康的, 那么添加不健康的实例列表...不然的话, 只要健康的实例列表
         if (!healthyOnly) {
             unHealthyIps.forEach { arrayNode.add(it.asObjectNode()) }
         }

@@ -8,7 +8,7 @@ import kotlin.reflect.KClass
 /**
  * 标识这是一个SpringBoot的测试类
  *
- * * 1.将会使用[SpringBootTestContextBootstrapper]去引导整个TestContext的启动；
+ * * 1.将会使用[SpringBootTestContextBootstrapper]去引导整个TestContext的启动; 
  * * 2.将会使用[SpringExtension]去进行扩展JUnit5
  */
 @BootstrapWith(SpringBootTestContextBootstrapper::class)

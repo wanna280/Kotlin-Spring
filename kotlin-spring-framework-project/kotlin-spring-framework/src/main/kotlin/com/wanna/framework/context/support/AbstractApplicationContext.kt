@@ -164,7 +164,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     private var applicationStartup: ApplicationStartup = ApplicationStartup.DEFAULT
 
     /**
-     *  Shutdown的回调钩子函数，当应用程序关闭时会自动触发的Hook线程
+     *  Shutdown的回调钩子函数, 当应用程序关闭时会自动触发的Hook线程
      */
     @Nullable
     private var shutdownHook: Thread? = null
@@ -655,7 +655,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
         synchronized(this.startupShutdownMonitor) {
             doClose()  //  doClose
 
-            // 如果注册了ShutdownHook的话，把ShutdownHook移除掉，因为当前的ApplicationContext已经关闭了...
+            // 如果注册了ShutdownHook的话, 把ShutdownHook移除掉, 因为当前的ApplicationContext已经关闭了...
             if (this.shutdownHook != null) {
                 try {
                     Runtime.getRuntime().removeShutdownHook(this.shutdownHook)
@@ -713,7 +713,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     }
 
     /**
-     * 断言BeanFactory还是处于活跃状态，已经完成刷新但是还没被关闭
+     * 断言BeanFactory还是处于活跃状态, 已经完成刷新但是还没被关闭
      */
     protected open fun assertBeanFactoryActive() {
         if (!active.get()) {
@@ -892,7 +892,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     override fun getApplicationStartup() = this.applicationStartup
 
     /**
-     * 注册一个ShutdownHook，当应用程序关闭时，自动关闭当前[ApplicationContext]
+     * 注册一个ShutdownHook, 当应用程序关闭时, 自动关闭当前[ApplicationContext]
      */
     override fun registerShutdownHook() {
         if (this.shutdownHook == null) {

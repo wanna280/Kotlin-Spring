@@ -29,22 +29,22 @@ object NestedExceptionUtils {
     }
 
     /**
-     * 获取产生当前给定的异常的最根本的原因(要么是rootCause，要么是自身)
+     * 获取产生当前给定的异常的最根本的原因(要么是rootCause, 要么是自身)
      *
      * @param origin 想要去进行检查的异常
-     * @return 如果origin存在有rootCause，那么return rootCause；如果origin不存在有rootCause的话，那么return null
+     * @return 如果origin存在有rootCause, 那么return rootCause; 如果origin不存在有rootCause的话, 那么return null
      */
     @JvmStatic
     fun getMostSpecificCause(origin: Throwable?): Throwable? = getRootCause(origin) ?: origin
 
 
     /**
-     * 获取一个异常的最顶层原因(cause)的异常，
-     * 因为对于每个异常来说，都会存在有cause，而对于cause这个异常，也会存在有cause，
-     * 就这样无穷无尽，对于这个方法来说，我们需要获取到一个异常的最顶层的cause。
+     * 获取一个异常的最顶层原因(cause)的异常,
+     * 因为对于每个异常来说, 都会存在有cause, 而对于cause这个异常, 也会存在有cause,
+     * 就这样无穷无尽, 对于这个方法来说, 我们需要获取到一个异常的最顶层的cause.
      *
      * @param origin 最原始的异常
-     * @return 返回最内层的异常，如果不存在最内层异常的话，return null
+     * @return 返回最内层的异常, 如果不存在最内层异常的话, return null
      */
     @JvmStatic
     fun getRootCause(origin: Throwable?): Throwable? {

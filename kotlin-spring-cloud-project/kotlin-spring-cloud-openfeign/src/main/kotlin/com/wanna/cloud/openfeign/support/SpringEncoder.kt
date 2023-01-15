@@ -11,7 +11,7 @@ import java.io.OutputStream
 import java.lang.reflect.Type
 
 /**
- * Encoder，将给定的Java对象，直接转换为数据，写入到请求体当中
+ * Encoder, 将给定的Java对象, 直接转换为数据, 写入到请求体当中
  *
  * @see Encoder
  * @param messageConverters Web当中的MessageConverter列表

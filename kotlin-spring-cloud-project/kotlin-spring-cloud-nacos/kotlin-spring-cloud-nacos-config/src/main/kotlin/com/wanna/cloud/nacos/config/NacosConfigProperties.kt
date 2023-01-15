@@ -35,7 +35,7 @@ open class NacosConfigProperties {
     var password = ""
 
     /**
-     * 获取NacosConfigProperties，重新生成所有的字段，并且返回Properties
+     * 获取NacosConfigProperties, 重新生成所有的字段, 并且返回Properties
      *
      * @return Properties
      */

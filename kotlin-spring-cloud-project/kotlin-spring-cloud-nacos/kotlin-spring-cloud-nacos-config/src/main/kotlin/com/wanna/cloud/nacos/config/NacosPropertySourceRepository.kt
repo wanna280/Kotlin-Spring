@@ -3,7 +3,7 @@ package com.wanna.cloud.nacos.config
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 这是一个Nacos的PropertySource的仓库，它是一个单例对象，提供全局的访问
+ * 这是一个Nacos的PropertySource的仓库, 它是一个单例对象, 提供全局的访问
  *
  * @see NacosPropertySource
  * @see NacosPropertySourceLocator.loadIfAbsent
@@ -38,7 +38,7 @@ object NacosPropertySourceRepository {
      *
      * @param dataId dataId
      * @param group group
-     * @return NacosPropertySource(如果不存在该group&dataId的NacosPropertySource，return null)
+     * @return NacosPropertySource(如果不存在该group&dataId的NacosPropertySource, return null)
      */
     @JvmStatic
     fun getNacosPropertySource(dataId: String, group: String): NacosPropertySource? {

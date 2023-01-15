@@ -22,10 +22,10 @@ import java.util.concurrent.CompletionStage
 open class DeferredResultMethodReturnValueHandler : HandlerMethodReturnValueHandler {
 
     /**
-     * 是否支持处理这样的返回值？只要是DeferredResult/ListenableFuture/CompletableFuture，那么就支持去进行处理
+     * 是否支持处理这样的返回值？只要是DeferredResult/ListenableFuture/CompletableFuture, 那么就支持去进行处理
      *
      * @param parameter 返回值类型封装成为的MethodParameter
-     * @return 如果返回值类型是DeferredResult/ListenableFuture/CompletableFuture，那么return true；否则return false
+     * @return 如果返回值类型是DeferredResult/ListenableFuture/CompletableFuture, 那么return true; 否则return false
      */
     override fun supportsReturnType(parameter: MethodParameter) =
         ClassUtils.isAssignFrom(CompletionStage::class.java, parameter.getParameterType()) ||
@@ -33,7 +33,7 @@ open class DeferredResultMethodReturnValueHandler : HandlerMethodReturnValueHand
                 ClassUtils.isAssignFrom(DeferredResult::class.java, parameter.getParameterType())
 
     /**
-     * 处理返回值，需要处理CompletableFuture/ListenableFuture/DeferredResult等类型的返回值
+     * 处理返回值, 需要处理CompletableFuture/ListenableFuture/DeferredResult等类型的返回值
      *
      * @param returnType 返回值类型封装出来的MethodParameter
      * @param returnValue 返回值对象
@@ -54,7 +54,7 @@ open class DeferredResultMethodReturnValueHandler : HandlerMethodReturnValueHand
 
         // 将ListenableFuture/CompletableFuture去转换成为DeferredResult
         // DeferredResult主要负责去监听ListenableFuture/CompletableFuture的处理完成的事件
-        // 对最终的结果去进行处理，支持使用监听器的方式去进行完成
+        // 对最终的结果去进行处理, 支持使用监听器的方式去进行完成
         val deferredResult: DeferredResult<Any?> = when (returnValue) {
             is DeferredResult<*> -> returnValue as DeferredResult<Any?>
             is ListenableFuture<*> -> adaptListenableFuture(returnValue as ListenableFuture<Any?>)

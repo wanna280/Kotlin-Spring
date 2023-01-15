@@ -3,7 +3,7 @@ package com.wanna.framework.test.context
 import com.wanna.framework.context.ApplicationContext
 
 /**
- * 在基于XML去进行加载到[ApplicationContext]的实现的基础上，
+ * 在基于XML去进行加载到[ApplicationContext]的实现的基础上,
  * 新增基于Spring的注解版的配置类的方式去进行[ApplicationContext]的加载
  *
  * @author jianchao.jia

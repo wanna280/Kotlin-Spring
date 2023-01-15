@@ -11,10 +11,10 @@ import javax.validation.*
 import javax.validation.spi.ValidationProvider
 
 /**
- * 基于本地的ValidatorFactory([javax.validation.ValidatorFactory])去实现的SpringValidatorAdapter，
- * 可以通过这个类去配置自定义原生的[javax.validation.Validator]的各个配置信息；
+ * 基于本地的ValidatorFactory([javax.validation.ValidatorFactory])去实现的SpringValidatorAdapter,
+ * 可以通过这个类去配置自定义原生的[javax.validation.Validator]的各个配置信息;
  *
- * 为SpringMVC当中的`@ModelAttribute`注解和`@RequestBody`注解当中的参数检验的实现提供支持；
+ * 为SpringMVC当中的`@ModelAttribute`注解和`@RequestBody`注解当中的参数检验的实现提供支持;
  *
  * @see SpringValidatorAdapter
  *
@@ -67,7 +67,7 @@ open class LocalValidatorFactoryBean : SpringValidatorAdapter(), InitializingBea
     private var validationPropertyMap = HashMap<String, String>()
 
     /**
-     * Spring的参数名发现器，提供对于构造器/方法的参数名的获取
+     * Spring的参数名发现器, 提供对于构造器/方法的参数名的获取
      */
     private var parameterNameDiscoverer: ParameterNameDiscoverer? = DefaultParameterNameDiscoverer()
 
@@ -127,7 +127,7 @@ open class LocalValidatorFactoryBean : SpringValidatorAdapter(), InitializingBea
         // 将ValidationPropertyMap当中的元素全部添加到Configuration当中
         this.validationPropertyMap.forEach(configuration::addProperty)
 
-        // 模板方法，交给子类去进行实现，对Configuration去进行更多自定义操作
+        // 模板方法, 交给子类去进行实现, 对Configuration去进行更多自定义操作
         postProcessConfiguration(configuration)
 
         // build ValidatorFactory&Validator
@@ -136,7 +136,7 @@ open class LocalValidatorFactoryBean : SpringValidatorAdapter(), InitializingBea
     }
 
     /**
-     * 如果必要的话，对Configuration的ParameterNameProvider去进行配置
+     * 如果必要的话, 对Configuration的ParameterNameProvider去进行配置
      *
      * @param configuration [javax.validation.Configuration]
      */
@@ -145,7 +145,7 @@ open class LocalValidatorFactoryBean : SpringValidatorAdapter(), InitializingBea
     }
 
     /**
-     * 提供对于[Configuration]的自定义工作，交给子类去进行实现
+     * 提供对于[Configuration]的自定义工作, 交给子类去进行实现
      *
      * @param configuration Configuration
      */

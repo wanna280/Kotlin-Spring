@@ -23,7 +23,7 @@ import feign.codec.Decoder
 import feign.codec.Encoder
 
 /**
- * 这是针对于每个FeignClient的配置类，会被FeignContext导入到每一个childContext当中
+ * 这是针对于每个FeignClient的配置类, 会被FeignContext导入到每一个childContext当中
  */
 @Configuration(proxyBeanMethods = false)
 open class FeignClientsConfiguration {

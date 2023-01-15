@@ -6,7 +6,7 @@ import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 
 /**
- * 支持ConfigurationProperties的Rebinder的自动配置类，负责监听环境已经改变的事件，对@ConfigurationProperties的Bean去进行刷新
+ * 支持ConfigurationProperties的Rebinder的自动配置类, 负责监听环境已经改变的事件, 对@ConfigurationProperties的Bean去进行刷新
  */
 @Configuration(proxyBeanMethods = false)
 open class ConfigurationPropertiesRebinderAutoConfiguration {
@@ -20,7 +20,7 @@ open class ConfigurationPropertiesRebinderAutoConfiguration {
     }
 
     /**
-     * 负责监听环境改变的事件，去对@ConfigurationProperties1的Bean去进行rebind
+     * 负责监听环境改变的事件, 去对@ConfigurationProperties1的Bean去进行rebind
      */
     @Bean
     open fun configurationPropertiesRebinder(beans: ConfigurationPropertiesBeans): ConfigurationPropertiesRebinder {

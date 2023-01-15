@@ -7,7 +7,7 @@ import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.util.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR
 
 /**
- * 这是一个支持注解的处理的ApplicationContext，
+ * 这是一个支持注解的处理的ApplicationContext,
  * * (1)可以通过注解的[BeanDefinitionReader]去完成配置类的注册;
  * * (2)可以通过[ClassPathBeanDefinitionScanner]去扫描指定的包下的所有配置类
  *
@@ -30,14 +30,14 @@ open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFa
     private val scanner = ClassPathBeanDefinitionScanner(this, true)
 
     /**
-     * 无参构造器，创建默认的Environment和BeanFactory;
+     * 无参构造器, 创建默认的Environment和BeanFactory;
      *
-     * Note: 对于无参数构造器来说, 我们并不完成刷新工作，需要使用者去自行完成ApplicationContext的刷新
+     * Note: 对于无参数构造器来说, 我们并不完成刷新工作, 需要使用者去自行完成ApplicationContext的刷新
      */
     constructor() : this(DefaultListableBeanFactory())
 
     /**
-     * 注册配置类到容器中，创建默认的Environment和BeanFactory，并完成ApplicationContext的刷新
+     * 注册配置类到容器中, 创建默认的Environment和BeanFactory, 并完成ApplicationContext的刷新
      *
      * @param componentClasses 需要去进行注册的配置类列表
      */
@@ -47,7 +47,7 @@ open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFa
     }
 
     /**
-     * 将指定包下的所有符合条件的全部配置类，全部封装成为BeanDefinition全部注册到容器中，并完成ApplicationContext的刷新
+     * 将指定包下的所有符合条件的全部配置类, 全部封装成为BeanDefinition全部注册到容器中, 并完成ApplicationContext的刷新
      *
      * @param basePackages 需要去进行扫描的包的列表
      */
@@ -57,7 +57,7 @@ open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFa
     }
 
     /**
-     * 设置ApplicationContext的Environment，给Scanner和Reader中的Environment都给替换掉了
+     * 设置ApplicationContext的Environment, 给Scanner和Reader中的Environment都给替换掉了
      *
      * @param environment Environment
      */
@@ -68,8 +68,8 @@ open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFa
     }
 
     /**
-     * 设置注册时，要使用的BeanNameGenerator，在进行ConfigurationClassPostProcessor，支持从容器当中去进行获取BeanNameGenerator，
-     * 也就是说，通过ApplicationContext的setBeanNameGenerator，可以替换全局的BeanNameGenerator
+     * 设置注册时, 要使用的BeanNameGenerator, 在进行ConfigurationClassPostProcessor, 支持从容器当中去进行获取BeanNameGenerator,
+     * 也就是说, 通过ApplicationContext的setBeanNameGenerator, 可以替换全局的BeanNameGenerator
      *
      * @param beanNameGenerator BeanNameGenerator
      */
@@ -77,7 +77,7 @@ open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFa
         this.reader.setBeanNameGenerator(beanNameGenerator)
         this.scanner.setBeanNameGenerator(beanNameGenerator)
 
-        // 往BeanFactory当中去注册单实例的Bean，指定beanName，后续可以通过beanName，获取到这个BeanNameGenerator
+        // 往BeanFactory当中去注册单实例的Bean, 指定beanName, 后续可以通过beanName, 获取到这个BeanNameGenerator
         getBeanFactory().registerSingleton(CONFIGURATION_BEAN_NAME_GENERATOR, beanNameGenerator)
     }
 
@@ -95,7 +95,7 @@ open class AnnotationConfigApplicationContext(beanFactory: DefaultListableBeanFa
     }
 
     /**
-     * 扫描指定的包，并对自定的包下的所有配置类去进行扫描
+     * 扫描指定的包, 并对自定的包下的所有配置类去进行扫描
      *
      * @param basePackages 要扫描的包的列表
      */

@@ -5,7 +5,7 @@ import java.io.InputStream
 import java.util.*
 
 /**
- * 这是一个Properties的Loader的工具类，可以完成Properties的加载
+ * 这是一个Properties的Loader的工具类, 可以完成Properties的加载
  */
 object PropertiesUtils {
     /**
@@ -22,7 +22,7 @@ object PropertiesUtils {
      * 使用指定classLoader去完成Properties的属性信息的加载
      *
      * @param classpath 类路径
-     * @param classLoader classLoader(如果为空，使用默认的classLoader)
+     * @param classLoader classLoader(如果为空, 使用默认的classLoader)
      */
     @JvmStatic
     fun loadProperties(classpath: String, classLoader: ClassLoader?): Properties {
@@ -35,7 +35,7 @@ object PropertiesUtils {
                 properties.load(element.openStream())
             }
         } catch (ex: Exception) {
-            throw FileNotFoundException("无法加载Properties资源文件，路径为[$classpath]")
+            throw FileNotFoundException("无法加载Properties资源文件, 路径为[$classpath]")
         }
         return properties
     }

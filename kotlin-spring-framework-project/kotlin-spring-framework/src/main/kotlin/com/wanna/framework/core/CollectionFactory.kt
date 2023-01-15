@@ -12,7 +12,7 @@ import kotlin.collections.LinkedHashMap
 import kotlin.collections.LinkedHashSet
 
 /**
- * CollectionFactory，支持给定collectionType/mapType去创建Collection/Map的对象, 是一个工具类
+ * CollectionFactory, 支持给定collectionType/mapType去创建Collection/Map的对象, 是一个工具类
  */
 object CollectionFactory {
 
@@ -38,7 +38,7 @@ object CollectionFactory {
     }
 
     /**
-     * 给定一个具体的CollectionType，去创建一个Collection实例对象
+     * 给定一个具体的CollectionType, 去创建一个Collection实例对象
      *
      * @param collectionType CollectionType
      * @param capacity 容量
@@ -51,7 +51,7 @@ object CollectionFactory {
     }
 
     /**
-     * 给定一个具体的CollectionType，去创建一个Collection实例对象
+     * 给定一个具体的CollectionType, 去创建一个Collection实例对象
      *
      * @param collectionType CollectionType
      * @param capacity 预期容量
