@@ -5,12 +5,15 @@ import com.wanna.framework.beans.PropertyAccessor.Companion.PROPERTY_KEY_PREFIX
 import com.wanna.framework.beans.PropertyAccessor.Companion.PROPERTY_KEY_PREFIX_CHAR
 import com.wanna.framework.beans.PropertyAccessor.Companion.PROPERTY_KEY_SUFFIX
 import com.wanna.framework.beans.PropertyAccessor.Companion.PROPERTY_KEY_SUFFIX_CHAR
+import com.wanna.framework.core.ResolvableType
+import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.util.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.Optional
+import kotlin.jvm.Throws
 
 
 /**
@@ -130,6 +133,15 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
         instance: Any,
         nestedPath: String
     ): AbstractNestablePropertyAccessor
+
+    /**
+     * 根据给定的[propertyName], 为它去获取一个[PropertyHandler], 去提供对于该属性的处理工作
+     *
+     * @param propertyName propertyName
+     * @return 处理该属性的[PropertyHandler]
+     */
+    @Nullable
+    protected abstract fun getLocalPropertyHandler(propertyName: String): PropertyHandler?
 
     /**
      * 为嵌套的属性, 去获取到[AbstractNestablePropertyAccessor]
@@ -330,28 +342,39 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
         }
     }
 
+    /**
+     * 处理本地的属性值的设置
+     *
+     * @param tokens token
+     * @param pv 要去进行设置的属性值PropertyValue
+     */
     private fun processLocalProperty(tokens: PropertyTokenHolder, pv: PropertyValue) {
-        // TODO
-        val name = pv.name
-        val value = pv.value
-        // add: 采用setter的方式去设置属性值，替换之前的字段设置
-        val writeMethodName = "set" + name[0].uppercase() + name.substring(1)
-        var isFound = false
-        ReflectionUtils.doWithMethods(getWrappedClass()) {
-            if (isFound) {
-                return@doWithMethods
+        val propertyHandler = getLocalPropertyHandler(tokens.actualName)
+        if (propertyHandler != null && propertyHandler.writeable) {
+            val originValue = pv.value
+            var valueToApply = originValue
+            var oldValue: Any? = null
+            if (propertyHandler.readable) {
+                oldValue = propertyHandler.getValue()
             }
-            val parameterTypes = it.parameterTypes
-            if (it.name == writeMethodName && it.parameterCount == 1) {
-                ReflectionUtils.makeAccessible(it)
-                var targetToInject: Any? = value
-                if (value is Collection<*> && !ClassUtils.isAssignFrom(Collection::class.java, parameterTypes[0])) {
-                    targetToInject = if (value.isNotEmpty()) value.iterator().next() else null
-                }
-                val converted = convertIfNecessary(targetToInject, parameterTypes[0])
-                ReflectionUtils.invokeMethod(it, getWrappedInstance(), converted)
-                isFound = true
+
+            if (valueToApply is Collection<*> &&
+                !ClassUtils.isAssignFrom(Collection::class.java, propertyHandler.propertyType)
+            ) {
+                valueToApply = if (valueToApply.isNotEmpty()) valueToApply.iterator().next() else null
             }
+
+            valueToApply = this.delegate!!.convertIfNecessary(
+                tokens.actualName,
+                oldValue,
+                valueToApply!!,
+                propertyHandler.propertyType
+            )
+
+            // 利用PropertyHandler, 去进行值的设置...
+            propertyHandler.setValue(valueToApply)
+        } else {
+            // TODO
         }
     }
 
@@ -387,15 +410,56 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
     }
 
     /**
+     * 对于一个特定的属性去进行处理的Handler
+     */
+    protected abstract class PropertyHandler(
+        val propertyType: Class<*>,
+        val readable: Boolean,
+        val writeable: Boolean
+    ) {
+
+        /**
+         * 将这个属性的类型, 去转换成为[ResolvableType]
+         *
+         * @return ResolvableType for propertyType
+         */
+        abstract fun getResolvableType(): ResolvableType
+
+        /**
+         * 将这个属性值的类型, 转换成为[TypeDescriptor]
+         *
+         * @return TypeHandler for propertyType
+         */
+        abstract fun toTypeDescriptor(): TypeDescriptor
+
+        /**
+         * 获取该属性的值
+         *
+         * @return propertyValue
+         */
+        @Nullable
+        @Throws(Exception::class)
+        abstract fun getValue(): Any?
+
+        /**
+         * 对该属性的值去进行设置
+         *
+         * @param value value to set
+         */
+        @Throws(Exception::class)
+        abstract fun setValue(@Nullable value: Any?)
+    }
+
+    /**
      * PropertyToken, 对于属性Key去进行描述
-     * 例如对于给定的是"address"这样的正常的表达式, name="address", canonicalName="address", keys=null;
-     * 对于给定的是"address[1][2]"这样的表达式, 那么name="address", canonicalName="address[1][2]", keys=[1,2]
+     * 例如对于给定的是"address"这样的正常的表达式, actualName="address", canonicalName="address", keys=null;
+     * 对于给定的是"address[1][2]"这样的表达式, 那么actualName="address", canonicalName="address[1][2]", keys=[1,2]
      *
-     * @param name 属性名
+     * @param actualName 真正的属性名
      * @param canonicalName 规范的属性名
      * @param keys keys(Map的Key, List的索引)
      */
-    class PropertyTokenHolder(var name: String, var canonicalName: String, @Nullable var keys: Array<String>?) {
+    class PropertyTokenHolder(var actualName: String, var canonicalName: String, @Nullable var keys: Array<String>?) {
         constructor(name: String) : this(name, name, null)
     }
 }

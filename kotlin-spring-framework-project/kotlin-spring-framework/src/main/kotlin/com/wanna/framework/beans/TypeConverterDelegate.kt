@@ -1,5 +1,6 @@
 package com.wanna.framework.beans
 
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 
 /**
@@ -17,19 +18,25 @@ class TypeConverterDelegate(private val registry: PropertyEditorRegistrySupport)
      * @return 转换之后的属性值
      * @throws IllegalArgumentException 参数类型不匹配的话
      */
+    @Nullable
     @Throws(IllegalArgumentException::class)
     @Suppress("UNCHECKED_CAST")
-    fun <T : Any> convertIfNecessary(propertyName: String?, oldValue: Any?, newValue: Any, requiredType: Class<T>): T? {
+    fun <T : Any> convertIfNecessary(
+        @Nullable propertyName: String?,
+        @Nullable oldValue: Any?,
+        @Nullable newValue: Any?,
+        requiredType: Class<T>
+    ): T? {
         val conversionService = registry.getConversionService()
         // 寻找自定义的PropertyEditor去进行转换...
         // 使用ConversionService去进行转换...
 
-        if (conversionService != null) {
+        if (conversionService != null && newValue != null) {
             if (conversionService.canConvert(newValue::class.java, requiredType)) {
                 return conversionService.convert(newValue, requiredType)
             }
         }
-        var convertedValue: Any = newValue
+        var convertedValue: Any? = newValue
         // 使用Editor去进行转换...
         val defaultEditors = registry.defaultEditors
         if (defaultEditors != null && newValue is String) {
@@ -47,7 +54,7 @@ class TypeConverterDelegate(private val registry: PropertyEditorRegistrySupport)
             // 如果参数类型转换存在问题的话，那么丢出去不合法参数异常...
             throw IllegalArgumentException(
                 "参数类型不匹配, 需要的类型是[${ClassUtils.getQualifiedName(requiredType)}], 但是实际得到的是[${
-                    ClassUtils.getQualifiedName(convertedValue::class.java)
+                    ClassUtils.getQualifiedName(convertedValue?.javaClass ?: Unit::class.java)
                 }]"
             )
         }
