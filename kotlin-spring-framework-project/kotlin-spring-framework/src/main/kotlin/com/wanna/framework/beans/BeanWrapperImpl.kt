@@ -9,12 +9,12 @@ import com.wanna.framework.util.ReflectionUtils
 import java.beans.PropertyDescriptor
 
 /**
- * BeanWrapper的具体实现，提供了属性的访问器，并组合了BeanFactory的TypeConverter，去完成Bean属性的类型的转换工作；
+ * BeanWrapper的具体实现, 提供了属性的访问器, 并组合了BeanFactory的TypeConverter, 去完成Bean属性的类型的转换工作;
  *
- * 它提供了SpringBean的BeanDefinition当中的PropertyValues(pvs)当中维护的所有的属性值的设置工作，在Spring的BeanDefinition当中，
- * 通过BeanDefinition去添加PropertyValue的方式，可以去实现属性的自动注入工作；
+ * 它提供了SpringBean的BeanDefinition当中的PropertyValues(pvs)当中维护的所有的属性值的设置工作, 在Spring的BeanDefinition当中,
+ * 通过BeanDefinition去添加PropertyValue的方式, 可以去实现属性的自动注入功能;
  *
- * 当然，别的情况下，也支持去进行设置，只要你能提供目标对象以及相应的PropertyValues列表即可
+ * 当然, 别的情况下, 也支持去进行设置, 只要你能提供目标对象以及相应的PropertyValues列表即可
  *
  * @see BeanWrapper
  * @see AbstractNestablePropertyAccessor
@@ -48,6 +48,25 @@ open class BeanWrapperImpl() : BeanWrapper, AbstractNestablePropertyAccessor() {
         this.autoGrowNestedPaths = parent.autoGrowNestedPaths
         this.rootObject = parent.getWrappedInstance()
     }
+
+    /**
+     * 获取到beanClass当中的所有属性列表
+     *
+     * @return wrappedClass当中的属性值列表
+     */
+    override fun getPropertyDescriptors(): Array<PropertyDescriptor> =
+        getCachedIntrospectionResults().getPropertyDescriptors()
+
+    /**
+     * 根据属性名, 去获取到beanClass当中的对应的属性
+     *
+     * @param propertyName 要去进行获取的属性的属性名
+     * @return wrappedClass当中的给定的propertyName的属性值
+     * @throws InvalidPropertyException 如果给定的属性名的[PropertyDescriptor]无法获取到的话
+     */
+    override fun getPropertyDescriptor(propertyName: String): PropertyDescriptor =
+        getCachedIntrospectionResults().getPropertyDescriptor(propertyName)
+            ?: throw InvalidPropertyException(getWrappedClass(), propertyName, "No such property")
 
     /**
      * 创建一个嵌套的[AbstractNestablePropertyAccessor]
@@ -93,6 +112,12 @@ open class BeanWrapperImpl() : BeanWrapper, AbstractNestablePropertyAccessor() {
         this.cachedIntrospectionResults = cachedIntrospectionResults
     }
 
+    /**
+     * 将JavaBeans的[PropertyDescriptor]去转换成为[Property]
+     *
+     * @param pd PropertyDescriptor
+     * @return Property
+     */
     private fun property(pd: PropertyDescriptor): Property {
         return Property(pd.javaClass, pd.readMethod, pd.writeMethod, pd.name)
     }

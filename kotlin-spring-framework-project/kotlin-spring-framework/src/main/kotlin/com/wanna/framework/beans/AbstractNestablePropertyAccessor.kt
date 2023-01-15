@@ -59,12 +59,27 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
     @Nullable
     protected var nestedPropertyAccessors: MutableMap<String, AbstractNestablePropertyAccessor>? = null
 
+    /**
+     * 获取包装的对象
+     *
+     * @return 包装的对象实例
+     */
     open fun getWrappedInstance(): Any = this.wrappedObject ?: IllegalStateException("Target object must not be null")
 
+    /**
+     * 设置包装的对象
+     *
+     * @param obj 要去进行包装的对象
+     */
     open fun setWrappedInstance(obj: Any) {
         this.wrappedObject = obj
     }
 
+    /**
+     * 获取包装的对象的类型
+     *
+     * @return 包装的对象的类型
+     */
     open fun getWrappedClass(): Class<*> = getWrappedInstance()::class.java
 
     /**
@@ -81,12 +96,50 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
      */
     open fun getRootClass(): Class<*> = getRootInstance().javaClass
 
+    /**
+     * 检查给定的属性名对应的属性是否是一个可读的属性
+     * Note: 当属性本身就不存在的话, return false
+     *
+     * @param name 属性名(可能是一个嵌套的属性, 或者是一个indexed/mapped属性, 也就是支持使用'[]'去访问List/Map)
+     * @return 如果该属性可读; 不存在的话, return false
+     */
     override fun isReadableProperty(name: String): Boolean {
-        return true
+        try {
+            val ph = getLocalPropertyHandler(name)
+            if (ph != null) {
+                return ph.readable
+            } else {
+                // Maybe an indexed/mapped property...
+                getPropertyValue(name)
+                return true
+            }
+        } catch (ex: InvalidPropertyException) {
+            // Cannot be evaluated, so can't be readable.
+        }
+        return false
     }
 
+    /**
+     * 检查给定的属性名对应的属性是否是一个可写的属性?
+     * Note: 当属性本身就不存在的话, return false
+     *
+     * @param name 属性名(可能是一个嵌套的属性, 或者是一个indexed/mapped属性, 也就是支持使用'[]'去访问List/Map)
+     * @return 如果该属性值可写, return true; 不存在的话, return false
+     */
     override fun isWritableProperty(name: String): Boolean {
-        return true
+        try {
+            val ph = getLocalPropertyHandler(name)
+            if (ph != null) {
+                return ph.writeable
+            } else {
+                // Maybe an indexed/mapped property...
+                getPropertyValue(name)
+                return true
+            }
+        } catch (ex: InvalidPropertyException) {
+            // Cannot be evaluated, so can't be readable.
+        }
+        return false
     }
 
     /**

@@ -17,9 +17,6 @@ abstract class AbstractPropertyAccessor : TypeConverterSupport(), ConfigurablePr
         this.delegate = TypeConverterDelegate(this)
     }
 
-    @Nullable
-    private var conversionService: ConversionService? = null
-
     /**
      * 对于当前的[PropertyAccessor], 是否需自增内部嵌套的路径?
      */
