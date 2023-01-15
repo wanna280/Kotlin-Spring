@@ -1,5 +1,7 @@
 package com.wanna.framework.core.convert
 
+import com.wanna.framework.lang.Nullable
+
 /**
  * 这是Spring实现的内容转换服务，它的主要作用是为Spring当中的各个地方的类型的转换提供支持
  *
@@ -34,7 +36,8 @@ interface ConversionService {
      * @param source 源对象(可以为空)
      * @param targetType 要转换的目标类型
      */
-    fun <T : Any> convert(source: Any?, targetType: Class<T>): T?
+    @Nullable
+    fun <T : Any> convert(@Nullable source: Any?, targetType: Class<T>): T?
 
     /**
      * 将source，转换为目标类型(targetType)，支持去解析targetType的泛型信息
@@ -43,5 +46,6 @@ interface ConversionService {
      * @param targetType 要转换的目标类型(TypeDescriptor，支持泛型的解析)
      * @return 转换之后的结果
      */
-    fun convert(source: Any?, targetType: TypeDescriptor): Any?
+    @Nullable
+    fun convert(@Nullable source: Any?, targetType: TypeDescriptor): Any?
 }

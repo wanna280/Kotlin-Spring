@@ -14,6 +14,7 @@ import com.wanna.framework.core.convert.support.GenericConversionService
 open class ApplicationConversionService : GenericConversionService() {
 
     init {
+        // 执行Configure, 添加一些默认的Converter
         configure(this)
     }
 
@@ -26,9 +27,9 @@ open class ApplicationConversionService : GenericConversionService() {
         private var sharedInstance: ApplicationConversionService? = null
 
         /**
-         * 获取共享的ConversionService，使用DCL完成获取
+         * 获取共享的[ApplicationConversionService], 使用DCL完成获取
          *
-         * @return 共享的DefaultConversionService
+         * @return 共享的[ApplicationConversionService]实例对象
          */
         @JvmStatic
         fun getSharedInstance(): ApplicationConversionService {
@@ -45,7 +46,7 @@ open class ApplicationConversionService : GenericConversionService() {
         }
 
         /**
-         * Configure
+         * 执行Configure, 添加一些默认的Converter到给定的[ConverterRegistry]当中
          *
          * @param registry ConverterRegistry
          */
