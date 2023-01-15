@@ -3,7 +3,7 @@ package com.wanna.cloud.context.scope
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 这是ScopeCache的标准实现，基于ConcurrentHashMap去进行实现
+ * 这是ScopeCache的标准实现, 基于ConcurrentHashMap去进行实现
  */
 open class StandardScopeCache : ScopeCache {
 

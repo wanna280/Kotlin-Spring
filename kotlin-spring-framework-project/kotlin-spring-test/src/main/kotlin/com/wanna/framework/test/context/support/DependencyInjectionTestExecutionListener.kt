@@ -8,7 +8,7 @@ import com.wanna.framework.test.context.TestContext
 import com.wanna.framework.test.context.TestExecutionListener
 
 /**
- * 为TestInstance去提供依赖注入的[TestExecutionListener]，借助[ApplicationContext]去为TestInstance去进行属性填充
+ * 为TestInstance去提供依赖注入的[TestExecutionListener], 借助[ApplicationContext]去为TestInstance去进行属性填充
  *
  * @author jianchao.jia
  * @version v1.0
@@ -36,7 +36,7 @@ open class DependencyInjectionTestExecutionListener : AbstractTestExecutionListe
     override fun getOrder(): Int = 2000
 
     /**
-     * 准备TestInstance实例对象，对[TestContext]当中的TestInstance去进行属性填充
+     * 准备TestInstance实例对象, 对[TestContext]当中的TestInstance去进行属性填充
      *
      * @param testContext TestContext
      */
@@ -45,19 +45,19 @@ open class DependencyInjectionTestExecutionListener : AbstractTestExecutionListe
     }
 
     /**
-     * 在`@Before`(JUnit5的`@BeforeEach`)方法执行之前，如果必要的话，需要对[TestContext]当中的TestInstance去进行再次属性填充
+     * 在`@Before`(JUnit5的`@BeforeEach`)方法执行之前, 如果必要的话, 需要对[TestContext]当中的TestInstance去进行再次属性填充
      *
      * @param testContext TestContext
      */
     override fun beforeTestMethod(testContext: TestContext) {
-        // 如果必要的话，在执行Test方法之前，再去进行一次依赖注入
+        // 如果必要的话, 在执行Test方法之前, 再去进行一次依赖注入
         if (testContext.getAttribute(REINJECT_DEPENDENCIES_ATTRIBUTE) == true) {
             injectDependencies(testContext)
         }
     }
 
     /**
-     * 对于[TestContext]当中的Bean，使用[AutowireCapableBeanFactory]去对它完成属性填充功能
+     * 对于[TestContext]当中的Bean, 使用[AutowireCapableBeanFactory]去对它完成属性填充功能
      *
      * @param testContext TestContext
      */

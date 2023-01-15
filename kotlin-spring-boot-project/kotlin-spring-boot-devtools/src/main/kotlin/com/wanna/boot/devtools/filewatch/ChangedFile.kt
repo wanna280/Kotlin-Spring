@@ -12,7 +12,7 @@ import java.io.File
 class ChangedFile(val sourceDirectory: File, val file: File, val type: Type) {
 
     /**
-     * 获取"file"相对于"sourceDirectory"的相对路径，有可能并不是只相差了一级目录，有可能相差了多级的目录
+     * 获取"file"相对于"sourceDirectory"的相对路径, 有可能并不是只相差了一级目录, 有可能相差了多级的目录
      *
      * @return relativeName
      */

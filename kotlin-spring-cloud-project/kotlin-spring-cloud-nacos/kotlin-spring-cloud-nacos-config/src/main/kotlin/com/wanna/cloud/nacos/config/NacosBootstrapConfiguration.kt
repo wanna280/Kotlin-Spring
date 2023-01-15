@@ -12,7 +12,7 @@ import com.wanna.framework.context.annotation.Configuration
 open class NacosBootstrapConfiguration {
 
     /**
-     * SpringCloudContext提供的PropertySourceLocator扩展接口，负责去加载远程ConfigServer当中的配置文件
+     * SpringCloudContext提供的PropertySourceLocator扩展接口, 负责去加载远程ConfigServer当中的配置文件
      *
      * @param nacosConfigManager NacosConfigManager
      * @return Nacos的PropertySourceLocator

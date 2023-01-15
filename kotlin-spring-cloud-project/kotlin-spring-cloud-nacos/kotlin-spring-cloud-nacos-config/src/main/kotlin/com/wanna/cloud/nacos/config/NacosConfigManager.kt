@@ -9,7 +9,7 @@ import java.io.StringReader
 import java.util.*
 
 /**
- * 这是一个NacosConfigManager，它内部集成了Nacos的ConfigService，去完成Nacos的配置中心的配置文件的拉取
+ * 这是一个NacosConfigManager, 它内部集成了Nacos的ConfigService, 去完成Nacos的配置中心的配置文件的拉取
  *
  * @param nacosConfigProperties Nacos的属性配置信息
  *
@@ -24,7 +24,7 @@ open class NacosConfigManager(val nacosConfigProperties: NacosConfigProperties) 
     private var configService: ConfigService? = null
 
     /**
-     * 获取Nacos的ConfigService，如果还没初始化的话，先完成初始化再返回
+     * 获取Nacos的ConfigService, 如果还没初始化的话, 先完成初始化再返回
      *
      * @return ConfigService
      */
@@ -72,7 +72,7 @@ open class NacosConfigManager(val nacosConfigProperties: NacosConfigProperties) 
     }
 
     /**
-     * 如果必要的话，先去初始化Nacos的ConfigService
+     * 如果必要的话, 先去初始化Nacos的ConfigService
      *
      * @see NacosFactory
      * @see ConfigService

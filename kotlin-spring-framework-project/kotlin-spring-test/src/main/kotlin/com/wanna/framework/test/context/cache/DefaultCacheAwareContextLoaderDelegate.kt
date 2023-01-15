@@ -29,8 +29,8 @@ open class DefaultCacheAwareContextLoaderDelegate : CacheAwareContextLoaderDeleg
         val contextLoader = mergedContextConfiguration.getContextLoader()
         val applicationContext: ApplicationContext
 
-        // 如果是SmartContextLoader，走注解的load
-        // 如果不是SmartContextLoader，走XML的load
+        // 如果是SmartContextLoader, 走注解的load
+        // 如果不是SmartContextLoader, 走XML的load
         if (contextLoader is SmartContextLoader) {
             applicationContext = contextLoader.loadContext(mergedContextConfiguration)
         } else {
@@ -42,8 +42,8 @@ open class DefaultCacheAwareContextLoaderDelegate : CacheAwareContextLoaderDeleg
 
 
     /**
-     * 根据[MergedContextConfiguration]配置信息从缓存当中去获得到[ApplicationContext]，
-     * 如果缓存当中还不存在对应的[ApplicationContext]的话，那么先构建出来一个[ApplicationContext]去放入到Cache当中。
+     * 根据[MergedContextConfiguration]配置信息从缓存当中去获得到[ApplicationContext], 
+     * 如果缓存当中还不存在对应的[ApplicationContext]的话, 那么先构建出来一个[ApplicationContext]去放入到Cache当中.
      *
      * @param mergedContextConfiguration Merged ContextConfiguration配置信息
      * @return 根据[ContextLoader]去进行加载得到的[ApplicationContext]
@@ -53,7 +53,7 @@ open class DefaultCacheAwareContextLoaderDelegate : CacheAwareContextLoaderDeleg
             var context = contextCache.get(mergedContextConfiguration)
             if (context == null) {
 
-                // 如果缓存当中没有的话，那么需要去进行真正的ApplicationContext的加载
+                // 如果缓存当中没有的话, 那么需要去进行真正的ApplicationContext的加载
                 context = loadContextInternal(mergedContextConfiguration)
                 contextCache.put(mergedContextConfiguration, context)
             }
@@ -62,7 +62,7 @@ open class DefaultCacheAwareContextLoaderDelegate : CacheAwareContextLoaderDeleg
     }
 
     /**
-     * 关闭Context，从缓存当中移除对应的[ApplicationContext]
+     * 关闭Context, 从缓存当中移除对应的[ApplicationContext]
      *
      * @param mergedContextConfiguration Merged ContextConfiguration
      */

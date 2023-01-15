@@ -7,7 +7,7 @@ import com.wanna.framework.context.processor.beans.BeanPostProcessor
 import com.wanna.framework.instrument.classloading.LoadTimeWeaver
 
 /**
- * 这是处理LoadTimeWeaverAware的处理器，它是一个BeanPostProcessor，负责给Bean处理LoadTimeWeaverAware接口，去注入LoadTimeWeaver对象
+ * 这是处理LoadTimeWeaverAware的处理器, 它是一个BeanPostProcessor, 负责给Bean处理LoadTimeWeaverAware接口, 去注入LoadTimeWeaver对象
  *
  * @see LoadTimeWeaver
  * @see LoadTimeWeaverAware
@@ -16,7 +16,7 @@ open class LoadTimeWeaverAwareProcessor() : BeanPostProcessor, BeanFactoryAware 
 
     private lateinit var beanFactory: BeanFactory
 
-    // 提供一个无参数的辅助构造器，并去设置beanFactory为null
+    // 提供一个无参数的辅助构造器, 并去设置beanFactory为null
     constructor(beanFactory: BeanFactory) : this() {
         this.beanFactory = beanFactory
     }
@@ -28,7 +28,7 @@ open class LoadTimeWeaverAwareProcessor() : BeanPostProcessor, BeanFactoryAware 
     }
 
     /**
-     * 完成LoadTimeWeaverAware接口的处理，去对Bean完成LoadTimeWeaver的注入
+     * 完成LoadTimeWeaverAware接口的处理, 去对Bean完成LoadTimeWeaver的注入
      */
     override fun postProcessBeforeInitialization(beanName: String, bean: Any): Any? {
         if (bean is LoadTimeWeaverAware) {

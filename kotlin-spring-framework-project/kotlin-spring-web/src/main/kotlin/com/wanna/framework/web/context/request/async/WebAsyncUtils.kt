@@ -11,7 +11,7 @@ import com.wanna.framework.web.server.HttpServerResponse
 object WebAsyncUtils {
 
     /**
-     * WebAsyncManager的属性，可以根据这个属性去request当中去寻找到WebAsyncManager
+     * WebAsyncManager的属性, 可以根据这个属性去request当中去寻找到WebAsyncManager
      *
      * @see HttpServerRequest.getAttribute
      */
@@ -19,10 +19,10 @@ object WebAsyncUtils {
     val WEB_ASYNC_MANAGER_ATTRIBUTE = WebAsyncManager::class.java.name + ".WEB_ASYNC_MANAGER"
 
     /**
-     * 根据request去获取到WebAsyncManager，提供异步API的支持
+     * 根据request去获取到WebAsyncManager, 提供异步API的支持
      *
-     * * 1.如果之前已经存在，那么从请求属性当中获取到已经存在有的；
-     * * 2.如果之前不存在，那么创建一个新的WebAsyncManager放到请求属性当中
+     * * 1.如果之前已经存在, 那么从请求属性当中获取到已经存在有的;
+     * * 2.如果之前不存在, 那么创建一个新的WebAsyncManager放到请求属性当中
      *
      * @param request request
      * @return 当前请求对应的WebAsyncManager

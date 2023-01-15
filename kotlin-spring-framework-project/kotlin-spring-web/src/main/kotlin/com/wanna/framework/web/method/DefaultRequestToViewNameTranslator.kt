@@ -3,18 +3,18 @@ package com.wanna.framework.web.method
 import com.wanna.framework.web.server.HttpServerRequest
 
 /**
- * 默认的Request转换为ViewName的翻译器；
- * 它实现将request的url转换为viewName，如果必要的话，去掉前置的"/"、后置的"/"，以及文件的后缀名
+ * 默认的Request转换为ViewName的翻译器;
+ * 它实现将request的url转换为viewName, 如果必要的话, 去掉前置的"/"、后置的"/", 以及文件的后缀名
  */
 open class DefaultRequestToViewNameTranslator : RequestToViewNameTranslator {
     companion object {
         private const val SLASH = "/"
     }
 
-    // viewName前缀，需要给viewName拼接什么样的前缀？
+    // viewName前缀, 需要给viewName拼接什么样的前缀？
     var prefix = ""
 
-    // viewName后缀，需要给viewName拼接什么样的后缀？
+    // viewName后缀, 需要给viewName拼接什么样的后缀？
     var suffix = ""
 
     // viewName的分隔符

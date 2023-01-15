@@ -4,7 +4,7 @@ import java.util.Date
 import java.util.concurrent.ScheduledFuture
 
 /**
- * Spring的任务调度器，对应于juc的ScheduledExecutorService
+ * Spring的任务调度器, 对应于juc的ScheduledExecutorService
  *
  * @see java.util.concurrent.ScheduledExecutorService
  * @see ScheduledFuture

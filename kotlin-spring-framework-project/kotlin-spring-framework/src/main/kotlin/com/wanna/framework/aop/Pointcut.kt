@@ -1,7 +1,7 @@
 package com.wanna.framework.aop
 
 /**
- * SpringAop的Pointcut，支持去对类和方法去进行匹配
+ * SpringAop的Pointcut, 支持去对类和方法去进行匹配
  *
  * @see ClassFilter
  * @see MethodMatcher

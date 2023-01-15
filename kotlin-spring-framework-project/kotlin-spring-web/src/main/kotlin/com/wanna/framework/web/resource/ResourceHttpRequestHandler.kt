@@ -7,7 +7,7 @@ import com.wanna.framework.web.server.HttpServerResponse
 import org.slf4j.LoggerFactory
 
 /**
- * Spring的资源的HttpRequestHandler，负责返回资源(html/css/js/jpg/png等)给客户端
+ * Spring的资源的HttpRequestHandler, 负责返回资源(html/css/js/jpg/png等)给客户端
  *
  * @see HttpRequestHandler
  */

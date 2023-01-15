@@ -12,7 +12,7 @@ import com.wanna.framework.test.context.TestContextBootstrapper
  */
 open class DefaultTestContextBootstrapper : AbstractTestContextBootstrapper() {
     /**
-     * 对于默认的ContextLoader，我们直接使用[DelegatingSmartContextLoader]
+     * 对于默认的ContextLoader, 我们直接使用[DelegatingSmartContextLoader]
      *
      * @param testClass testClass
      * @return DelegatingSmartContextLoader Class

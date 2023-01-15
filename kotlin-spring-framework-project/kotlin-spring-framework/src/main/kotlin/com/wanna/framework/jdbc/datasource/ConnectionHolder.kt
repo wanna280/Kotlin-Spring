@@ -5,7 +5,7 @@ import java.sql.Connection
 
 
 /**
- * ConnectionHolder，包装了一个Jdbc的Connection
+ * ConnectionHolder, 包装了一个Jdbc的Connection
  *
  * @param connection connection
  */

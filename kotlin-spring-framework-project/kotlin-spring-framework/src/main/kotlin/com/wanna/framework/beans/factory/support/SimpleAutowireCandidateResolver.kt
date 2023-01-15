@@ -1,7 +1,7 @@
 package com.wanna.framework.beans.factory.support
 
 /**
- * 这是一个简单的Autowire的候选Bean的解析器，是AutowireCandidateResolver接口的最简单实现。
+ * 这是一个简单的Autowire的候选Bean的解析器, 是AutowireCandidateResolver接口的最简单实现.
  *
  * @see AutowireCandidateResolver
  */

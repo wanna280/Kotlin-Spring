@@ -7,7 +7,7 @@ import com.wanna.framework.web.method.support.HandlerMethodArgumentResolver
 import com.wanna.framework.web.method.support.HandlerMethodReturnValueHandler
 
 /**
- * 它聚合了WebMvcConfigurer，去进行委托完成WebMvc的配置
+ * 它聚合了WebMvcConfigurer, 去进行委托完成WebMvc的配置
  */
 open class WebMvcConfigurerComposite : WebMvcConfigurer {
 

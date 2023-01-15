@@ -9,7 +9,7 @@ import java.util.jar.Attributes
 import java.util.jar.JarEntry
 
 /**
- * [JarEntry]的变体，供[JarFile]使用
+ * [JarEntry]的变体, 供[JarFile]使用
  *
  * @author jianchao.jia
  * @version v1.0

@@ -3,7 +3,7 @@ package com.wanna.framework.beans.factory.support.definition.config
 import com.wanna.framework.lang.Nullable
 
 /**
- * 这是一个Bean的Metadata的属性访问器，目的是为了提供BeanMetadataAttribute的访问
+ * 这是一个Bean的Metadata的属性访问器, 目的是为了提供BeanMetadataAttribute的访问
  */
 open class BeanMetadataAttributeAccessor : AttributeAccessorSupport() {
 

@@ -37,7 +37,7 @@ interface MethodMatcher {
     fun isRuntime(): Boolean
 
     /**
-     * 在运行时匹配一个方法，会将运行时的参数列表一起进行匹配
+     * 在运行时匹配一个方法, 会将运行时的参数列表一起进行匹配
      *
      * @param method 要进行匹配的方法
      * @param targetClass 要进行匹配的目标类

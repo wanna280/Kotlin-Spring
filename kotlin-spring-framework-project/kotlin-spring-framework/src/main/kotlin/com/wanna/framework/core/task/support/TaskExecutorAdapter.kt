@@ -7,8 +7,8 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 
 /**
- * TaskExecutor的Adapter，负责将juc的Executor适配到Spring的AsyncTaskExecutor；
- * 因为Spring当中需要用到AsyncTaskExecutor，而一般使用到是juc包下的Executor
+ * TaskExecutor的Adapter, 负责将juc的Executor适配到Spring的AsyncTaskExecutor;
+ * 因为Spring当中需要用到AsyncTaskExecutor, 而一般使用到是juc包下的Executor
  *
  * @param executor juc的Executor
  */

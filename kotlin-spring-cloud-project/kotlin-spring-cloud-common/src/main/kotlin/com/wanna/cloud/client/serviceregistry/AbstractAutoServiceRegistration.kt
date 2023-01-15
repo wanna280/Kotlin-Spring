@@ -10,7 +10,7 @@ import com.wanna.boot.web.server.WebServerInitializedEvent
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * 为服务的自动注册提供抽象的模板方法实现，它组合了ServiceRegistry，去完成服务的**自动注册**
+ * 为服务的自动注册提供抽象的模板方法实现, 它组合了ServiceRegistry, 去完成服务的**自动注册**
  *
  * @see start
  * @see stop
@@ -40,7 +40,7 @@ abstract class AbstractAutoServiceRegistration<R : Registration>(
     }
 
     /**
-     * 在发布了WebServer初始化完成事件之后，自动注册Service到注册中心当中；
+     * 在发布了WebServer初始化完成事件之后, 自动注册Service到注册中心当中; 
      * 这个事件会在Spring ApplicationContext启动时的onRefresh步骤当中去进行发布...
      *
      * @param event event
@@ -50,7 +50,7 @@ abstract class AbstractAutoServiceRegistration<R : Registration>(
     }
 
     open fun start() {
-        // 如果running状态为false，才需要去进行启动
+        // 如果running状态为false, 才需要去进行启动
         if (!this.running.get()) {
             val context = this.applicationContext!!
 
@@ -68,7 +68,7 @@ abstract class AbstractAutoServiceRegistration<R : Registration>(
     }
 
     /**
-     * 获取要注册的服务(ServiceInstance)，交给子类去完成实现
+     * 获取要注册的服务(ServiceInstance), 交给子类去完成实现
      *
      * @return 要进行注册的服务
      */

@@ -9,8 +9,8 @@ import com.wanna.framework.lang.Nullable
 import java.io.Closeable
 
 /**
- * 这是一个可以被配置的[ApplicationContext]，提供了对于[ApplicationContext]的各种自定义操作的方法；
- * 实现了JDK当中提供的[Closeable]接口，提供了`close`方法实现对于[ApplicationContext]的关闭;
+ * 这是一个可以被配置的[ApplicationContext], 提供了对于[ApplicationContext]的各种自定义操作的方法;
+ * 实现了JDK当中提供的[Closeable]接口, 提供了`close`方法实现对于[ApplicationContext]的关闭;
  * 为所有的[ApplicationContext]的子类的实现提供了相关的支持
  *
  * @see ApplicationContext
@@ -73,22 +73,22 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable, Lifecy
     fun getApplicationStartup(): ApplicationStartup
 
     /**
-     * 设置当前ApplicationContext要使用的ApplicationStartup，
-     * 通过ApplicationStartup，可以提供Spring应用启动的相关的性能监测工作
+     * 设置当前ApplicationContext要使用的ApplicationStartup,
+     * 通过ApplicationStartup, 可以提供Spring应用启动的相关的性能监测工作
      *
      * @param applicationStartup ApplicationStartup
      */
     fun setApplicationStartup(applicationStartup: ApplicationStartup)
 
     /**
-     * 刷新当前的ApplicationContext，完成所有Bean的实例化和初始化工作
+     * 刷新当前的ApplicationContext, 完成所有Bean的实例化和初始化工作
      */
     fun refresh();
 
     /**
      * 当前的ApplicationContext是否还是存活的？
      *
-     * @return 如果当前ApplicationContext没被关闭，return true，被关闭了则return false
+     * @return 如果当前ApplicationContext没被关闭, return true, 被关闭了则return false
      */
     fun isActive(): Boolean
 
@@ -110,9 +110,9 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable, Lifecy
     fun addBeanFactoryPostProcessor(processor: BeanFactoryPostProcessor)
 
     /**
-     * 获取Spring ApplicationContext中的BeanFactory，这里可以获取到的类型是ConfigurableListableBeanFactory
+     * 获取Spring ApplicationContext中的BeanFactory, 这里可以获取到的类型是ConfigurableListableBeanFactory
      *
-     * @return 获取到ApplicationContext内部使用的BeanFactory，类型是ConfigurableListableBeanFactory
+     * @return 获取到ApplicationContext内部使用的BeanFactory, 类型是ConfigurableListableBeanFactory
      */
     fun getBeanFactory(): ConfigurableListableBeanFactory
 
@@ -124,7 +124,7 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable, Lifecy
     fun setEnvironment(environment: ConfigurableEnvironment)
 
     /**
-     * 重写子类中的getEnvironment方法，让返回值为ConfigurableEnvironment
+     * 重写子类中的getEnvironment方法, 让返回值为ConfigurableEnvironment
      *
      * @return 当前Spring ApplicationContext对应的ConfigurableEnvironment
      */

@@ -24,7 +24,7 @@ object ContextLoaderUtils {
         val attributesList = ArrayList<ContextConfigurationAttributes>()
         var annotation = AnnotatedElementUtils.getMergedAnnotation(testClass, ContextConfiguration::class.java)!!
 
-        // 寻找当前testClass以及testClass的所有父类，去寻找@ContextConfiguration注解
+        // 寻找当前testClass以及testClass的所有父类, 去寻找@ContextConfiguration注解
         var clazz: Class<*>? = testClass
         while (clazz != null && clazz != Any::class.java) {
             convertContextConfigToConfigAttributesAndAddToList(testClass, attributesList, annotation)

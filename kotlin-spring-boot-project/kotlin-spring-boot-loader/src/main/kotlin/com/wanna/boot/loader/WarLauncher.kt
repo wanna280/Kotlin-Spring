@@ -19,8 +19,8 @@ open class WarLauncher : ExecutableArchiveLauncher() {
     override fun getArchiveEntryPathPrefix() = "WEB-INF/"
 
     /**
-     * 如果是文件夹，只要"WEB-INF/classes"去作为一个归档；
-     * 如果不是文件夹，要的是"WEB-INF/lib/"和"WEB-INF/lib-provided/"下的(目录本身不要)
+     * 如果是文件夹, 只要"WEB-INF/classes"去作为一个归档;
+     * 如果不是文件夹, 要的是"WEB-INF/lib/"和"WEB-INF/lib-provided/"下的(目录本身不要)
      *
      * @param entry 待匹配的ArchiveEntry
      * @return 它是否是一个合格的嵌套Archive？
@@ -31,7 +31,7 @@ open class WarLauncher : ExecutableArchiveLauncher() {
 
     companion object {
         /**
-         * Main方法，用于启动整个War包的应用，它会被Java应用自动回调到
+         * Main方法, 用于启动整个War包的应用, 它会被Java应用自动回调到
          *
          * @param args 命令行参数列表
          */

@@ -4,7 +4,7 @@ import com.wanna.cloud.client.ServiceInstance
 import com.wanna.framework.web.http.client.ClientHttpRequest
 
 /**
- * SpringCloud的ServiceInstance的Wrapper，目的是将request去进行包装，将原始的uri的host部分替换成为ServiceInstance的host
+ * SpringCloud的ServiceInstance的Wrapper, 目的是将request去进行包装, 将原始的uri的host部分替换成为ServiceInstance的host
  *
  * @param request 原始的客户端请求
  * @param loadBalancerClient LoadBalancerClient

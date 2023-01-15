@@ -10,7 +10,7 @@ import java.util.concurrent.*
 import kotlin.jvm.Throws
 
 /**
- * Spring家的任务执行器，主要对应于juc家的ThreadPoolExecutor，通过组合一个ThreadPoolExecutor完成实现
+ * Spring家的任务执行器, 主要对应于juc家的ThreadPoolExecutor, 通过组合一个ThreadPoolExecutor完成实现
  *
  * @author jianchao.jia
  * @version v1.0
@@ -21,8 +21,8 @@ import kotlin.jvm.Throws
 open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncListenableTaskExecutor {
 
     /**
-     * 操作poolSize的锁，因为对于ThreadPoolExecutor而言，corePoolSize、maxPoolSize和keepAliveSeconds
-     * 这三个参数都是可以去进行后续的修改的，因此需要对后期的修改去进行加锁保证并发安全
+     * 操作poolSize的锁, 因为对于ThreadPoolExecutor而言, corePoolSize、maxPoolSize和keepAliveSeconds
+     * 这三个参数都是可以去进行后续的修改的, 因此需要对后期的修改去进行加锁保证并发安全
      *
      * @see corePoolSize
      * @see maxPoolSize
@@ -31,12 +31,12 @@ open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncListena
     private val poolSizeMonitor = Any()
 
     /**
-     * 核心线程数量，默认为1个核心线程
+     * 核心线程数量, 默认为1个核心线程
      */
     private var corePoolSize = 1
 
     /**
-     * 最大线程数量，默认为Int.MAX_VALUE
+     * 最大线程数量, 默认为Int.MAX_VALUE
      */
     private var maxPoolSize = Int.MAX_VALUE
 
@@ -46,7 +46,7 @@ open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncListena
     private var queueCapacity = Int.MAX_VALUE
 
     /**
-     * 非核心线程数的空闲时间，单位为s
+     * 非核心线程数的空闲时间, 单位为s
      */
     private var keepAliveSeconds = 60
 
@@ -61,7 +61,7 @@ open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncListena
     private var prestartAllCoreThreads = false
 
     /**
-     * TaskDecorator，用于对提交给线程池的任务去进行自定义的装饰
+     * TaskDecorator, 用于对提交给线程池的任务去进行自定义的装饰
      *
      * @see TaskDecorator
      */
@@ -74,7 +74,7 @@ open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncListena
     private var threadPoolExecutor: ThreadPoolExecutor? = null
 
     /**
-     * 被TaskDecorator所装饰过的Runnable列表，key是原始的，value是被包装之后的
+     * 被TaskDecorator所装饰过的Runnable列表, key是原始的, value是被包装之后的
      */
     private var decoratedTaskMap = ConcurrentHashMap<Runnable, Any>()
 
@@ -89,9 +89,9 @@ open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncListena
         threadPoolExecutor ?: throw IllegalStateException("ThreadPoolExecutor不能为空")
 
     /**
-     * 初始化Executor，我们这里需要初始化的是一个ThreadPoolExecutor
+     * 初始化Executor, 我们这里需要初始化的是一个ThreadPoolExecutor
      *
-     * @param threadFactory ThreadFactory，用于线程池的Worker线程的创建的工厂方法
+     * @param threadFactory ThreadFactory, 用于线程池的Worker线程的创建的工厂方法
      * @param rejectedExecutionHandler 线程池的拒绝策略
      */
     override fun initializeExecutor(

@@ -7,7 +7,7 @@ import com.wanna.logger.impl.LogcLogger
 /**
  * 这是针对于Logger的LoggingEvent的一个具体实现
  *
- * @param loggerQualifierName logger的全类名，可以利用它去寻找callerInfo信息
+ * @param loggerQualifierName logger的全类名, 可以利用它去寻找callerInfo信息
  * @param level level
  * @param msg logMessage
  * @param logger logger
@@ -87,7 +87,7 @@ open class LoggingEvent(
     }
 
     /**
-     * 获取LoggerContext，有可能为null
+     * 获取LoggerContext, 有可能为null
      */
     open fun getLoggerContext() = this.loggerContext
 

@@ -1,7 +1,7 @@
 package com.wanna.framework.validation
 
 /**
- * Spring的Validator，用来完成参数的检验，是一个策略接口
+ * Spring的Validator, 用来完成参数的检验, 是一个策略接口
  *
  * @see javax.validation.Validator
  */

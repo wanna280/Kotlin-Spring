@@ -8,7 +8,7 @@ import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 
 /**
- * HandlerExceptionResolver的聚合，它支持遍历所有内部聚合的HandlerExceptionResolver，协作去完成异常的解析
+ * HandlerExceptionResolver的聚合, 它支持遍历所有内部聚合的HandlerExceptionResolver, 协作去完成异常的解析
  *
  * @see HandlerExceptionResolver
  */

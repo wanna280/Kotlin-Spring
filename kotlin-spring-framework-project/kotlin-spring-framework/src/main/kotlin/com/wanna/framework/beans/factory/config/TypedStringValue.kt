@@ -7,7 +7,7 @@ import com.wanna.framework.util.ClassUtils
 import kotlin.jvm.Throws
 
 /**
- * TypedStringValue，支持添加到BeanDefinition的PropertyValues当中在运行时去进行占位符解析
+ * TypedStringValue, 支持添加到BeanDefinition的PropertyValues当中在运行时去进行占位符解析
  *
  * @see BeanDefinition.getPropertyValues
  * @see MutablePropertyValues.addPropertyValue
@@ -31,7 +31,7 @@ open class TypedStringValue(val value: String? = null, val targetType: Any? = nu
     /**
      * 判断是否设置了targetType(Class)
      *
-     * @return 如果设置了targetType，那么return true；否则return false
+     * @return 如果设置了targetType, 那么return true; 否则return false
      */
     open fun hasTargetType(): Boolean = targetType is Class<*>
 
@@ -39,7 +39,7 @@ open class TypedStringValue(val value: String? = null, val targetType: Any? = nu
      * 获取targetType
      *
      * @return 获取targetType
-     * @throws IllegalStateException 如果targetType没有被设置，获取被设置的不是Class类型
+     * @throws IllegalStateException 如果targetType没有被设置, 获取被设置的不是Class类型
      */
     @Throws(IllegalStateException::class)
     open fun getTargetType(): Class<*>? {
@@ -53,7 +53,7 @@ open class TypedStringValue(val value: String? = null, val targetType: Any? = nu
      * 解析targetType(如果targetType被设置为String类型的话)
      *
      * @param classLoader 要去进行解析目标类的ClassLoader
-     * @return 解析到的目标类的类型(如果没有设置，那么return null)
+     * @return 解析到的目标类的类型(如果没有设置, 那么return null)
      */
     open fun resolveTargetType(classLoader: ClassLoader): Class<*>? {
         val targetTypeName = getTargetTypeName()
@@ -62,7 +62,7 @@ open class TypedStringValue(val value: String? = null, val targetType: Any? = nu
     }
 
     /**
-     * 获取targetType的name，如果是String，直接return；如果是Class，那么使用className
+     * 获取targetType的name, 如果是String, 直接return; 如果是Class, 那么使用className
      *
      * @return targetType的className
      */

@@ -6,7 +6,7 @@ import org.apache.ibatis.session.SqlSession
 import org.apache.ibatis.session.SqlSessionFactory
 
 /**
- * 提供了SqlSession的Dao访问的支持，组合了SqlSessionTemplate，支持去进行SqlSession的获取
+ * 提供了SqlSession的Dao访问的支持, 组合了SqlSessionTemplate, 支持去进行SqlSession的获取
  *
  * @see com.wanna.mybatis.spring.mapper.MapperFactoryBean
  */
@@ -16,7 +16,7 @@ open class SqlSessionDaoSupport : DaoSupport() {
     private var sqlSessionTemplate: SqlSessionTemplate? = null
 
     /**
-     * 设置SqlSessionFactory，如果此时SqlSessionTemplate为空，还需要去创建SqlSessionFactory；
+     * 设置SqlSessionFactory, 如果此时SqlSessionTemplate为空, 还需要去创建SqlSessionFactory; 
      *
      * @param sqlSessionFactory SqlSessionFactory
      */
@@ -27,7 +27,7 @@ open class SqlSessionDaoSupport : DaoSupport() {
     }
 
     /**
-     * 给定SqlSessionFactory，去创建SqlSessionTemplate
+     * 给定SqlSessionFactory, 去创建SqlSessionTemplate
      *
      * @param sqlSessionFactory SqlSessionFactory
      * @return SqlSessionTemplate

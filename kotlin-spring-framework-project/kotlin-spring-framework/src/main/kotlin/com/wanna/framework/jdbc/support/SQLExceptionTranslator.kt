@@ -5,7 +5,7 @@ import java.sql.SQLException
 
 /**
  *
- * [SQLException]的翻译器，提供将JDBC的[SQLException]去翻译成为Spring的[DataAccessException]的相关功能
+ * [SQLException]的翻译器, 提供将JDBC的[SQLException]去翻译成为Spring的[DataAccessException]的相关功能
  *
  * @author jianchao.jia
  * @version v1.0

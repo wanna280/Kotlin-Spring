@@ -12,7 +12,7 @@ open class FullyQualifiedAnnotationBeanNameGenerator : AnnotationBeanNameGenerat
     }
 
     /**
-     * 构建默认的beanName，采用全类名作为beanName
+     * 构建默认的beanName, 采用全类名作为beanName
      */
     override fun buildDefaultBeanName(beanDefinition: BeanDefinition): String {
         return beanDefinition.getBeanClassName() ?: throw IllegalStateException("beanClassName不能为空")

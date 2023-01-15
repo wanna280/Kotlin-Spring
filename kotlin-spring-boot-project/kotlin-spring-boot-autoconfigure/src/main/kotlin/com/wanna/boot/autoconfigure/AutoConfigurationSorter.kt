@@ -7,7 +7,7 @@ import java.io.IOException
 import java.util.*
 
 /**
- * 完成SpringBoot的AutoConfiguration自动配置类的排序，主要处理`@AutoConfigureAfter`/`@AutoConfigureBefore`等注解;
+ * 完成SpringBoot的AutoConfiguration自动配置类的排序, 主要处理`@AutoConfigureAfter`/`@AutoConfigureBefore`等注解;
  * Note: 这里不能去进行任何的类加载, 因为这里所处的时机比较早, 还不应该产生类加载的行为, 因此采用的方式是MetadataReader,
  * 利用ASM的方式去读取自动配置类的相关信息(比如`@AutoConfigureBefore`/`@AutoConfigureAfter`/`@AutoConfigureOrder`)
  *

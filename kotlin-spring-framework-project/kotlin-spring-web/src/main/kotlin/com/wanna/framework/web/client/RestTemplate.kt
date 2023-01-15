@@ -137,7 +137,7 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
         @Nullable responseExtractor: ResponseExtractor<T>?
     ): T? {
         // 使用ClientHttpRequestFactory创建ClientHttpRequest
-        // 如果当前RestTemplate当中存在有拦截器的话, 那么创建的将会是InterceptingClientHttpRequest；
+        // 如果当前RestTemplate当中存在有拦截器的话, 那么创建的将会是InterceptingClientHttpRequest; 
         // 如果当前RestTemplate当中不存在有拦截器的话, 那么创建的将会是来自于各个HttpClient(比如ApacheHttpClient)的ClientHttpRequest
         val clientRequest: ClientHttpRequest = createRequest(url, method)
 

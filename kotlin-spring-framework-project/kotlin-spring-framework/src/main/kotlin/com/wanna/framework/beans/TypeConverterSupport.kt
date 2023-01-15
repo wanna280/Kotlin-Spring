@@ -8,7 +8,7 @@ import com.wanna.framework.lang.Nullable
 open class TypeConverterSupport : PropertyEditorRegistrySupport(), TypeConverter {
 
     /**
-     * TypeConverter的委托工具类，同时组合ConversionService和PropertyEditor去进行类型的转换
+     * TypeConverter的委托工具类, 同时组合ConversionService和PropertyEditor去进行类型的转换
      */
     @Nullable
     protected var delegate: TypeConverterDelegate? = null

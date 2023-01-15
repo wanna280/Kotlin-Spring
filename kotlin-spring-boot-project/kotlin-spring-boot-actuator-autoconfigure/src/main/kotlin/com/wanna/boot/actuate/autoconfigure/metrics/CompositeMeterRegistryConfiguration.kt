@@ -10,9 +10,9 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
 
 /**
- * 用于给SpringBeanFactory当中去导入一个[CompositeMeterRegistry]的配置类，它会自动收集起来所有的[MeterRegistry]，
- * 并merge到一个[CompositeMeterRegistry]当中来，最终我们要去进行使用的就是[AutoConfiguredCompositeMeterRegistry]
- * 这个[CompositeMeterRegistry]，去提供最终的Endpoint的对外暴露；
+ * 用于给SpringBeanFactory当中去导入一个[CompositeMeterRegistry]的配置类, 它会自动收集起来所有的[MeterRegistry],
+ * 并merge到一个[CompositeMeterRegistry]当中来, 最终我们要去进行使用的就是[AutoConfiguredCompositeMeterRegistry]
+ * 这个[CompositeMeterRegistry], 去提供最终的Endpoint的对外暴露; 
  *
  * Eg:[io.micrometer.core.instrument.simple.SimpleMeterRegistry]
  *
@@ -28,8 +28,8 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry
 open class CompositeMeterRegistryConfiguration {
 
     /**
-     * 给SpringBeanFactory当中去导入一个组合了所有的[MeterRegistry]的[CompositeMeterRegistry]实现；
-     * 将所有的[MeterRegistry]去组合在一起，合并提供最终的Metrics监控功能
+     * 给SpringBeanFactory当中去导入一个组合了所有的[MeterRegistry]的[CompositeMeterRegistry]实现; 
+     * 将所有的[MeterRegistry]去组合在一起, 合并提供最终的Metrics监控功能
      *
      * @param clock Clock in Spring BeanFactory
      * @param registries MeterRegistries in Spring BeanFactory

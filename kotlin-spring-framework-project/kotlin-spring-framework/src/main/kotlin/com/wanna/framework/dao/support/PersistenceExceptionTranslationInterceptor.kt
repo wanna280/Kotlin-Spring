@@ -8,7 +8,7 @@ import com.wanna.framework.beans.factory.InitializingBean
 import com.wanna.framework.beans.factory.ListableBeanFactory
 
 /**
- * 持久层的异常翻译器的拦截器，拦截目标方法，为目标方法去
+ * 持久层的异常翻译器的拦截器, 拦截目标方法, 为目标方法去
  *
  * @author jianchao.jia
  * @version v1.0
@@ -22,7 +22,7 @@ open class PersistenceExceptionTranslationInterceptor private constructor(
 ) : MethodInterceptor, BeanFactoryAware, InitializingBean {
 
     /**
-     * 提供一个无参数构造器，因为可以通过BeanFactoryAware自动注入BeanFactory
+     * 提供一个无参数构造器, 因为可以通过BeanFactoryAware自动注入BeanFactory
      */
     constructor() : this(null, null)
 
@@ -47,7 +47,7 @@ open class PersistenceExceptionTranslationInterceptor private constructor(
 
     override fun afterPropertiesSet() {
         if (this.exceptionTranslator == null && this.beanFactory == null) {
-            throw IllegalStateException("BeanFactory和PersistenceExceptionTranslator必须指定一个，不允许两个都不指定")
+            throw IllegalStateException("BeanFactory和PersistenceExceptionTranslator必须指定一个, 不允许两个都不指定")
         }
     }
 

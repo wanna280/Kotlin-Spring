@@ -5,7 +5,7 @@ import com.wanna.framework.beans.factory.support.definition.config.BeanMetadataA
 import com.wanna.framework.util.BeanFactoryUtils
 
 /**
- * 这是一个BeanDefinitionHolder，里面包装了BeanDefinition和beanName
+ * 这是一个BeanDefinitionHolder, 里面包装了BeanDefinition和beanName
  *
  * @param beanDefinition beanDefinition
  * @param beanName beanName

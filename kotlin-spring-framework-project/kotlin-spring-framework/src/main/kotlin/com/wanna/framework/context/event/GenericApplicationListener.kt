@@ -4,9 +4,9 @@ import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.ResolvableType
 
 /**
- * 这是一个支持泛型的EventType，它和SmartApplicationListener类似；
- * 推荐使用GenericApplicationListener去替代之前的SmartApplicationListener；
- * 因为GenericApplicationListener它传递的eventType是ResolvableType，支持去解析泛型类型
+ * 这是一个支持泛型的EventType, 它和SmartApplicationListener类似;
+ * 推荐使用GenericApplicationListener去替代之前的SmartApplicationListener;
+ * 因为GenericApplicationListener它传递的eventType是ResolvableType, 支持去解析泛型类型
  *
  * @see SmartApplicationListener
  */

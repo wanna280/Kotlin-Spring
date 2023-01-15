@@ -1,7 +1,7 @@
 package com.wanna.framework.context.annotation
 
 /**
- * Autowired，用来完成容器中Bean的注入
+ * Autowired, 用来完成容器中Bean的注入
  */
 @Target(
     AnnotationTarget.FUNCTION,

@@ -6,7 +6,7 @@ import com.wanna.framework.web.server.HttpServerResponse
 import com.wanna.framework.web.HttpRequestHandler
 
 /**
- * Controller处理目标请求，并直接返回一个ModelAndView，交给子类去进行渲染
+ * Controller处理目标请求, 并直接返回一个ModelAndView, 交给子类去进行渲染
  *
  * @see HttpRequestHandler
  */

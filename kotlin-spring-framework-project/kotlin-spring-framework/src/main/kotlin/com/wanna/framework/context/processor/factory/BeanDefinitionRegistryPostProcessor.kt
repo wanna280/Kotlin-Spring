@@ -12,7 +12,7 @@ import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 interface BeanDefinitionRegistryPostProcessor : BeanFactoryPostProcessor {
 
     /**
-     * 对BeanDefinitionRegistry去进行后置处理，例如可以往里面注册BeanDefinition
+     * 对BeanDefinitionRegistry去进行后置处理, 例如可以往里面注册BeanDefinition
      *
      * @param registry BeanDefinitionRegistry
      */

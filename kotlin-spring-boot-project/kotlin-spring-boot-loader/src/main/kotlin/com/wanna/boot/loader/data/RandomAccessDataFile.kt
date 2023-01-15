@@ -3,7 +3,7 @@ package com.wanna.boot.loader.data
 import java.io.*
 
 /**
- * 基于文件的[RandomAccessData]的实现，实现对于文件的随机访问(按照index去访问文件)
+ * 基于文件的[RandomAccessData]的实现, 实现对于文件的随机访问(按照index去访问文件)
  * 内部实现时通过组合一个jdk当中提供的[RandomAccessFile]来实现
  *
  * @author jianchao.jia
@@ -52,7 +52,7 @@ class RandomAccessDataFile : RandomAccessData {
 
 
     /**
-     * 提供一个私有的构造器，供内部使用
+     * 提供一个私有的构造器, 供内部使用
      *
      * @param fileAccess FileAccess
      * @param offset offset
@@ -191,7 +191,7 @@ class RandomAccessDataFile : RandomAccessData {
     }
 
     /**
-     * 提供随机文件访问的对象，通过组合jdk当中提供的[RandomAccessFile]去完成实现
+     * 提供随机文件访问的对象, 通过组合jdk当中提供的[RandomAccessFile]去完成实现
      *
      * @param file 要去进行随机访问的文件
      */

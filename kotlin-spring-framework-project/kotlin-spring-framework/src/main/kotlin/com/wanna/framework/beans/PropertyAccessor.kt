@@ -4,7 +4,7 @@ import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.lang.Nullable
 
 /**
- * 标识这是一个属性的访问器，可以支持基于属性的名字对属性的设置以及获取,
+ * 标识这是一个属性的访问器, 可以支持基于属性的名字对属性的设置以及获取,
  * 也是提供对于[BeanWrapper]的基础类的实现
  *
  * @see BeanWrapperImpl

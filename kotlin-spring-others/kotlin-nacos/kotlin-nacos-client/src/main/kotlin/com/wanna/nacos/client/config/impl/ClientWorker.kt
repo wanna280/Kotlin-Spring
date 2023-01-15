@@ -229,7 +229,7 @@ open class ClientWorker(private val properties: Properties) : Closeable {
     }
 
     /**
-     * 检查ConfigServer当中配置文件，和本地的配置文件的MD5值去进行对比, 检查配置文件是否有发生变化?
+     * 检查ConfigServer当中配置文件, 和本地的配置文件的MD5值去进行对比, 检查配置文件是否有发生变化?
      *
      * @param probeUpdateString 要去进行探查的配置文件的dataId&group&md5&tenant
      */
@@ -298,7 +298,7 @@ open class ClientWorker(private val properties: Properties) : Closeable {
     }
 
     /**
-     * 长轮询任务的Runnable, 检查本地的这些配置文件，相比ConfigServer是否发生了变更?
+     * 长轮询任务的Runnable, 检查本地的这些配置文件, 相比ConfigServer是否发生了变更?
      * 如果发生变更的话, 就需要去通知该CacheData去进行触发它的所有的Listener
      *
      * @param taskId 需要去进行处理的CacheData的taskId

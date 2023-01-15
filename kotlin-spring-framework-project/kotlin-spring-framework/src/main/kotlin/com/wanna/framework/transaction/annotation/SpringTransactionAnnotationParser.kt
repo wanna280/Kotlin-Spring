@@ -6,7 +6,7 @@ import com.wanna.framework.transaction.interceptor.*
 import java.lang.reflect.AnnotatedElement
 
 /**
- * Spring事务的注解解析器，负责解析Spring家的@Transactional注解，并封装成为TransactionAttribute
+ * Spring事务的注解解析器, 负责解析Spring家的@Transactional注解, 并封装成为TransactionAttribute
  *
  * @see TransactionAnnotationParser
  */
@@ -26,7 +26,7 @@ open class SpringTransactionAnnotationParser : TransactionAnnotationParser {
     }
 
     /**
-     * 解析@Transactional注解，将该注解当中的相关属性封装到TransactionAttribute当中
+     * 解析@Transactional注解, 将该注解当中的相关属性封装到TransactionAttribute当中
      *
      * @param transactional @Transactional注解
      * @return 事务相关的属性信息
@@ -37,7 +37,7 @@ open class SpringTransactionAnnotationParser : TransactionAnnotationParser {
     }
 
     /**
-     * 解析@Transactional注解，将该注解当中的相关属性封装到TransactionAttribute当中
+     * 解析@Transactional注解, 将该注解当中的相关属性封装到TransactionAttribute当中
      *
      * @param attributes @Transactional注解当中的属性信息
      * @return 事务相关的属性信息

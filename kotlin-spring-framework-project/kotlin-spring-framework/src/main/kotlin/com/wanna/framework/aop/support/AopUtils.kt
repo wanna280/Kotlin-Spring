@@ -35,15 +35,15 @@ object AopUtils {
      *
      * @param advisor 要匹配的Advisor
      * @param targetClass 目标类
-     * @return 该Advisor是否可以应用给targetClass？可以应用return true；否则return false
+     * @return 该Advisor是否可以应用给targetClass？可以应用return true; 否则return false
      */
     @JvmStatic
     fun canApply(advisor: Advisor, targetClass: Class<*>): Boolean {
-        // 如果它是一个IntroductionAdvisor，获取ClassFilter去进行匹配
+        // 如果它是一个IntroductionAdvisor, 获取ClassFilter去进行匹配
         if (advisor is IntroductionAdvisor) {
             return advisor.getClassFilter().matches(targetClass)
         }
-        // 如果它是一个PointcutAdvisor，那么使用ClassFilter/MethodMatcher去进行匹配
+        // 如果它是一个PointcutAdvisor, 那么使用ClassFilter/MethodMatcher去进行匹配
         if (advisor is PointcutAdvisor) {
             return canApply(advisor.getPointcut(), targetClass)
         }
@@ -58,11 +58,11 @@ object AopUtils {
      */
     @JvmStatic
     fun canApply(pointcut: Pointcut, targetClass: Class<*>): Boolean {
-        // 如果ClassFilter去进行匹配，如果不匹配的话，直接return false
+        // 如果ClassFilter去进行匹配, 如果不匹配的话, 直接return false
         if (!pointcut.getClassFilter().matches(targetClass)) {
             return false
         }
-        // 如果ClassFilter匹配的话，那么使用MethodMatcher去进行匹配...只要匹配到其中一个方法就return true
+        // 如果ClassFilter匹配的话, 那么使用MethodMatcher去进行匹配...只要匹配到其中一个方法就return true
         val methodMatcher = pointcut.getMethodMatcher()
         if (methodMatcher == MethodMatcher.TRUE) {
             return true
@@ -72,7 +72,7 @@ object AopUtils {
         classes += targetClass
         classes += ClassUtils.getAllInterfacesForClassAsSet(targetClass)
 
-        // 遍历所有接口的所有方法，去进行匹配，如果匹配了，那么return true
+        // 遍历所有接口的所有方法, 去进行匹配, 如果匹配了, 那么return true
         classes.forEach { clazz ->
             val declaredMethods = ReflectionUtils.getDeclaredMethods(clazz)
             declaredMethods.forEach { method ->

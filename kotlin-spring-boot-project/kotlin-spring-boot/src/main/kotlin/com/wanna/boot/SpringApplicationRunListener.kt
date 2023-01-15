@@ -4,7 +4,7 @@ import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 
 /**
- * 这是一个SpringApplication的运行监听器，负责监听SpringApplication应用启动过程当中的各个阶段的事件
+ * 这是一个SpringApplication的运行监听器, 负责监听SpringApplication应用启动过程当中的各个阶段的事件
  */
 interface SpringApplicationRunListener {
 
@@ -16,7 +16,7 @@ interface SpringApplicationRunListener {
     }
 
     /**
-     * SpringApplication的环境已经准备好，可以对环境去进行后置处理
+     * SpringApplication的环境已经准备好, 可以对环境去进行后置处理
      */
     fun environmentPrepared(
         bootstrapContext: ConfigurableBootstrapContext,

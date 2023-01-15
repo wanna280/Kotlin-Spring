@@ -6,7 +6,7 @@ import org.xml.sax.ErrorHandler
 import org.xml.sax.InputSource
 
 /**
- * DocumentLoader，将一个文件去加载成为Document
+ * DocumentLoader, 将一个文件去加载成为Document
  *
  * @author jianchao.jia
  * @version v1.0

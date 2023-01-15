@@ -46,8 +46,8 @@ class JarFile private constructor(
         private const val READ_ACTION = "read"
 
         /**
-         * 注册一个"java.protocol.handler.pkgs"属性到SystemProperties当中，
-         * 以便[java.net.URLStreamHandler]可以定位到，用来处理那些Jar的URL
+         * 注册一个"java.protocol.handler.pkgs"属性到SystemProperties当中,
+         * 以便[java.net.URLStreamHandler]可以定位到, 用来处理那些Jar的URL
          */
         @JvmStatic
         fun registerUrlProtocolHandler() {
@@ -79,7 +79,7 @@ class JarFile private constructor(
     val rootJarFile: RandomAccessDataFile
 
     /**
-     * 以根JarFile作为基准，当前JarFile的相对路径
+     * 以根JarFile作为基准, 当前JarFile的相对路径
      */
     val pathFromRoot: String
 
@@ -176,16 +176,16 @@ class JarFile private constructor(
         val parser = CentralDirectoryParser()
 
         // 将JarFileEntries作为Visitor添加到Parser当中
-        // 在执行visitStart/FileHeader/visitEnd回调方法时，可以自动将相关的信息去设置到JarFileEntries当中
+        // 在执行visitStart/FileHeader/visitEnd回调方法时, 可以自动将相关的信息去设置到JarFileEntries当中
         entries = parser.addVisitor(JarFileEntries(this, filter))
 
         // JarType(DIRECT/NESTED_DIRECTORY,/NESTED_JAR)
         this.type = type
 
-        // 添加一个CentralDirectoryVisitor，用于将comment和isSigned去统计出来保存到当前的JarFile对象当中
+        // 添加一个CentralDirectoryVisitor, 用于将comment和isSigned去统计出来保存到当前的JarFile对象当中
         parser.addVisitor(centralDirectoryVisitor())
         try {
-            // 执行真正的CentralDirectory的解析工作，解析得到真正的Archive归档数据(跳过prefixBytes)...
+            // 执行真正的CentralDirectory的解析工作, 解析得到真正的Archive归档数据(跳过prefixBytes)...
             // 并回调Visitor的visitStart/visitFileHeader/visitEnd回调方法完成相关数据的统计工作...
             this.data = parser.parse(data, filter == null)!!
         } catch (ex: RuntimeException) {
@@ -197,7 +197,7 @@ class JarFile private constructor(
             throw ex
         }
 
-        // 用于去解析JarFile的Manifest的Supplier，也就是去读取当前Jar包下的"META-INF/MANIFEST.MF"文件的输入流
+        // 用于去解析JarFile的Manifest的Supplier, 也就是去读取当前Jar包下的"META-INF/MANIFEST.MF"文件的输入流
         this.manifestSupplier = manifestSupplier
             ?: Supplier {
                 try {
@@ -234,7 +234,7 @@ class JarFile private constructor(
     ) : this(rootFile, pathFromRoot, data, null, type, null)
 
     /**
-     * 创建一个访问CentralDirectory的Visitor，我们需要它的回调，去保存一些信息(comment和isSigned)
+     * 创建一个访问CentralDirectory的Visitor, 我们需要它的回调, 去保存一些信息(comment和isSigned)
      */
     private fun centralDirectoryVisitor(): CentralDirectoryVisitor {
         return object : CentralDirectoryVisitor {
@@ -261,7 +261,7 @@ class JarFile private constructor(
     override fun getPermission() = FilePermission(rootJarFile.file.path, READ_ACTION)
 
     /**
-     * 获取当前JarFile的Manifest，通过读取"META-INF/MANIFEST.SF"文件获取
+     * 获取当前JarFile的Manifest, 通过读取"META-INF/MANIFEST.SF"文件获取
      *
      * @return Manifest
      */
@@ -307,7 +307,7 @@ class JarFile private constructor(
     override fun iterator(): Iterator<java.util.jar.JarEntry> = entries.iterator { ensureOpen() }
 
     /**
-     * 根据文件名，从Jar包内部去获取到JarEntry
+     * 根据文件名, 从Jar包内部去获取到JarEntry
      *
      * @param name 文件名
      * @return JarEntry
@@ -315,7 +315,7 @@ class JarFile private constructor(
     fun getJarEntry(name: CharSequence): JarEntry? = entries.getEntry(name)
 
     /**
-     * 根据文件名，从Jar包内部去获取到JarEntry
+     * 根据文件名, 从Jar包内部去获取到JarEntry
      *
      * @param name 文件名
      * @return JarEntry
@@ -323,15 +323,15 @@ class JarFile private constructor(
     override fun getJarEntry(name: String): JarEntry? = getEntry(name) as JarEntry?
 
     /**
-     * 根据文件名，判断Jar包当中是否存在有该JarEntry？
+     * 根据文件名, 判断Jar包当中是否存在有该JarEntry？
      *
      * @param name 文件名
-     * @return 如果存在，return true；不存在return false
+     * @return 如果存在, return true; 不存在return false
      */
     fun containsEntry(name: String): Boolean = entries.containsEntry(name)
 
     /**
-     * 根据文件名，从Jar包内部去获取到JarEntry
+     * 根据文件名, 从Jar包内部去获取到JarEntry
      *
      * @param name 文件名
      * @return JarEntry
@@ -398,7 +398,7 @@ class JarFile private constructor(
     }
 
     /**
-     * 根据JarEntry去创建JarFile，支持是一个文件夹(比如"BOOT-INF/classes/")，也支持是一个文件，比如"xxx.jar"
+     * 根据JarEntry去创建JarFile, 支持是一个文件夹(比如"BOOT-INF/classes/"), 也支持是一个文件, 比如"xxx.jar"
      *
      * @param entry JarEntry
      * @return JarFile
@@ -436,7 +436,7 @@ class JarFile private constructor(
      */
     @Throws(IOException::class)
     private fun createJarFileFromFileEntry(entry: JarEntry): JarFile {
-        // 如果需要对内部的文件去进行创建JarFile(Jar包)，那么内部的JarFile(Jar包)的存放方式只能是直接存放，不能被压缩过...
+        // 如果需要对内部的文件去进行创建JarFile(Jar包), 那么内部的JarFile(Jar包)的存放方式只能是直接存放, 不能被压缩过...
         check(entry.method == ZipEntry.STORED) {
             ("Unable to open nested entry '" + entry.name + "'. It has been compressed and nested "
                     + "jar files must be stored without compression. Please check the "
@@ -489,8 +489,8 @@ class JarFile private constructor(
     }
 
     /**
-     * 获取当前JarFile的URL，如果之前没有的话，那么我们需要先生成再去进行保存；
-     * 这个方法返回的URL，将会被用于类加载器的类加载工作
+     * 获取当前JarFile的URL, 如果之前没有的话, 那么我们需要先生成再去进行保存;
+     * 这个方法返回的URL, 将会被用于类加载器的类加载工作
      *
      * @return JarFile URL
      * @see com.wanna.boot.loader.LaunchedURLClassLoader
@@ -498,11 +498,11 @@ class JarFile private constructor(
     @Throws(MalformedURLException::class)
     override fun getUrl(): URL {
         if (url == null) {
-            // 生成自定义的URL，在Jar的路径之后去添加一个"!/"路径，符合原生Java当中的Jar包URL的规范
+            // 生成自定义的URL, 在Jar的路径之后去添加一个"!/"路径, 符合原生Java当中的Jar包URL的规范
             var file = rootJarFile.file.toURI().toString() + pathFromRoot + "!/"
             file = file.replace("file:////", "file://")
 
-            // 构建一个URL，并且指定解析该URL的URLStreamHandler为我们自定义的Handler
+            // 构建一个URL, 并且指定解析该URL的URLStreamHandler为我们自定义的Handler
             // 因为正常的URLStreamHandler无法去解析我们构建出来的这样格式的URL
             url = URL("jar", "", -1, file, Handler(this))
         }

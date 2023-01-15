@@ -9,7 +9,7 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 它是一个默认的单实例Bean的注册中心，维护了SpringBeanFactory的三级缓存，可以从三级缓存当中去获取Bean
+ * 它是一个默认的单实例Bean的注册中心, 维护了SpringBeanFactory的三级缓存, 可以从三级缓存当中去获取Bean
  *
  * @see SingletonBeanRegistry
  */
@@ -34,17 +34,17 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     private val singletonsCurrentlyInCreation = Collections.newSetFromMap<String>(ConcurrentHashMap(16))
 
     /**
-     * 一级缓存，维护了单实例的Bean的Map
+     * 一级缓存, 维护了单实例的Bean的Map
      */
     private val singletonObjects = ConcurrentHashMap<String, Any>(256)
 
     /**
-     * 二级缓存，维护了早期的单实例Bean
+     * 二级缓存, 维护了早期的单实例Bean
      */
     private val earlySingletonObjects = ConcurrentHashMap<String, Any>(16)
 
     /**
-     * 三级缓存，维护了ObjectFactory(创建Bean的Callback)
+     * 三级缓存, 维护了ObjectFactory(创建Bean的Callback)
      */
     private val singletonFactories = HashMap<String, ObjectFactory<*>>(16)
 
@@ -54,15 +54,15 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     private val inCreationCheckExclusions = Collections.newSetFromMap<String>(ConcurrentHashMap(64))
 
     /**
-     *  已经注册到SingletonBeanRegistry当中的singletonBean的列表，对它的所有操作，都需要使用singletonObjects锁
+     *  已经注册到SingletonBeanRegistry当中的singletonBean的列表, 对它的所有操作, 都需要使用singletonObjects锁
      *
      *  @see singletonObjects
      */
     private val registeredSingletons = LinkedHashSet<String>()
 
     /**
-     * 注册了destroy的回调的Bean，交给SingletonBeanRegistry统一管理(使用LinkedHashMap保证顺序)；
-     * 当发生destroy时，需要将这些Bean去进行全部的destroy
+     * 注册了destroy的回调的Bean, 交给SingletonBeanRegistry统一管理(使用LinkedHashMap保证顺序);
+     * 当发生destroy时, 需要将这些Bean去进行全部的destroy
      */
     private val disposableBeans = LinkedHashMap<String, DisposableBean>()
 
@@ -77,16 +77,16 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
         // 先从一级缓存当中拿
         var singletonObject = singletonObjects[beanName]
 
-        // 如果一级缓存中没有，并且当前Bean已经正在创建当中了，那么说明有可能在二级缓存/三级缓存中
+        // 如果一级缓存中没有, 并且当前Bean已经正在创建当中了, 那么说明有可能在二级缓存/三级缓存中
         if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
             singletonObject = earlySingletonObjects[beanName]
 
-            // 如果二级缓存中没有，那么判断，是否允许了早期引用？如果允许的话，那么说明允许循环依赖，有可能在三级缓存当中
+            // 如果二级缓存中没有, 那么判断, 是否允许了早期引用？如果允许的话, 那么说明允许循环依赖, 有可能在三级缓存当中
             if (singletonObject == null && allowEarlyReference) {
 
-                // 加锁，避免这个过程中，别的线程往缓存当中加入了对象...
+                // 加锁, 避免这个过程中, 别的线程往缓存当中加入了对象...
                 synchronized(singletonObjects) {
-                    // 重新从一级缓存中拿，因为别的线程在之前的过程中加入了对象呢...
+                    // 重新从一级缓存中拿, 因为别的线程在之前的过程中加入了对象呢...
                     singletonObject = singletonObjects[beanName]
                     if (singletonObject == null) {
                         // 尝试从二级缓存中拿
@@ -95,12 +95,12 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
                             // 尝试从三级缓存中拿
                             val objectFactory = singletonFactories[beanName]
 
-                            // 如果三级缓存中没有，那么直接return null；如果三级缓存中有，那么从三级缓存当中去进行获取对象
+                            // 如果三级缓存中没有, 那么直接return null; 如果三级缓存中有, 那么从三级缓存当中去进行获取对象
                             objectFactory?.let {
                                 // 从三级缓存当中去获取到对象
                                 singletonObject = it.getObject()
 
-                                // 从三级缓存中移除，将早期的Java对象转移到二级缓存当中，避免造成重复代理...
+                                // 从三级缓存中移除, 将早期的Java对象转移到二级缓存当中, 避免造成重复代理...
                                 singletonFactories.remove(beanName)
                                 earlySingletonObjects[beanName] = singletonObject as Any
                             }
@@ -113,7 +113,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     }
 
     /**
-     * 获取单实例Bean，需要从ObjectFactory当中去获取Bean
+     * 获取单实例Bean, 需要从ObjectFactory当中去获取Bean
      *
      * @param beanName beanName
      * @param factory ObjectFactory(call back)
@@ -126,7 +126,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
         val singletonObject: Any?
         val newCreation: Boolean
         try {
-            // 调用objectFactory.getObject获取Bean，一般ObjectFactory在这里会是createBean方法
+            // 调用objectFactory.getObject获取Bean, 一般ObjectFactory在这里会是createBean方法
             singletonObject = factory.getObject()
             newCreation = true
         } catch (ex: Exception) {
@@ -135,7 +135,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
             // afterSingletonCreation...
             afterSingletonCreation(beanName)
         }
-        // 如果是新创建的，还需要将Bean加入到一级缓存的列表当中
+        // 如果是新创建的, 还需要将Bean加入到一级缓存的列表当中
         if (newCreation && singletonObject != null) {
             addSingleton(beanName, singletonObject)
         }
@@ -143,10 +143,10 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     }
 
     /**
-     * 获取单实例Bean，对外提供的方法
+     * 获取单实例Bean, 对外提供的方法
      *
      * @param beanName beanName
-     * @return 获取到的SingletonBean，有可能为null
+     * @return 获取到的SingletonBean, 有可能为null
      */
     override fun getSingleton(beanName: String): Any? {
         return getSingleton(beanName, true)
@@ -158,10 +158,10 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
      * @param beanName beanName
      */
     open fun beforeSingletonCreation(beanName: String) {
-        // 如果添加失败，说明之前已经添加过，那么抛出当前Bean已经正在创建中的异常...
+        // 如果添加失败, 说明之前已经添加过, 那么抛出当前Bean已经正在创建中的异常...
         if (!singletonsCurrentlyInCreation.add(beanName)) {
             throw BeanCurrentlyInCreationException(
-                "[$beanName]正在创建当中，当前正在创建的有[$singletonsCurrentlyInCreation]", null, beanName
+                "[$beanName]正在创建当中, 当前正在创建的有[$singletonsCurrentlyInCreation]", null, beanName
             )
         }
     }
@@ -172,7 +172,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
      * @param beanName beanName
      */
     open fun afterSingletonCreation(beanName: String) {
-        // 如果移除失败，说明之前都没有添加过这个Bean，抛出不合法的状态异常
+        // 如果移除失败, 说明之前都没有添加过这个Bean, 抛出不合法的状态异常
         if (!singletonsCurrentlyInCreation.remove(beanName)) {
             throw IllegalStateException("remove bean [$beanName] failed")
         }
@@ -235,14 +235,14 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
      * 判断给定的beanNam的Bean是否正在创建当中了？
      *
      * @param beanName beanName
-     * @return 如果当前正在创建当中，那么return true；否则return false
+     * @return 如果当前正在创建当中, 那么return true; 否则return false
      */
     open fun isCurrentlyInCreation(beanName: String): Boolean {
         return this.inCreationCheckExclusions.contains(beanName) || this.isSingletonCurrentlyInCreation(beanName)
     }
 
     /**
-     * 移除一个Singleton单实例Bean，同时尝试从三级缓存当中移除(within singleton lock)
+     * 移除一个Singleton单实例Bean, 同时尝试从三级缓存当中移除(within singleton lock)
      *
      * @param beanName beanName
      */
@@ -256,8 +256,8 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     }
 
     /**
-     * 从BeanDefinitionRegistry当中去摧毁一个单例Bean，
-     * 同时从三个缓存当中去移除，并回调DisposableBean
+     * 从BeanDefinitionRegistry当中去摧毁一个单例Bean,
+     * 同时从三个缓存当中去移除, 并回调DisposableBean
      *
      * @param beanName beanName
      */
@@ -265,19 +265,19 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
         // 1.从三级缓存当中去移除单实例Bean
         removeSingleton(beanName)
 
-        // 2.从DisposableBeans列表当中去移除一个DisposableBean，
-        // 如果之前已经存在，那么会将移除的DisposableBean去进行return...
+        // 2.从DisposableBeans列表当中去移除一个DisposableBean,
+        // 如果之前已经存在, 那么会将移除的DisposableBean去进行return...
         val disposableBean: DisposableBean?
         synchronized(this.disposableBeans) {
             disposableBean = this.disposableBeans.remove(beanName)
         }
 
-        // 3.如果必要的话，去回调它(DisposableBean)的destroy方法
+        // 3.如果必要的话, 去回调它(DisposableBean)的destroy方法
         destroyBean(beanName, disposableBean)
     }
 
     /**
-     * 摧毁一个Bean，回调它的destory方法，并完成相关的后续处理工作
+     * 摧毁一个Bean, 回调它的destory方法, 并完成相关的后续处理工作
      *
      * @param beanName beanName
      * @param disposableBean disposableBean(有可能为null)
@@ -288,7 +288,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
                 disposableBean.destroy()
             } catch (ex: Throwable) {
                 if (logger.isDebugEnabled) {
-                    logger.debug("执行DisposableBean[beanName=$beanName]的destory方法失败，原因是[$ex]")
+                    logger.debug("执行DisposableBean[beanName=$beanName]的destory方法失败, 原因是[$ex]")
                 }
             }
         }
@@ -315,7 +315,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
      */
     override fun registerSingleton(beanName: String, singleton: Any) {
         synchronized(singletonObjects) {
-            // 从以及缓存当中拿到旧的Object实例，如果已经存在有旧的Object，那么抛出不合法的状态异常
+            // 从以及缓存当中拿到旧的Object实例, 如果已经存在有旧的Object, 那么抛出不合法的状态异常
             val oldObject = singletonObjects[beanName]
             if (oldObject != null) {
                 throw IllegalStateException("在SingletonBeanRegistry中已经存在有[beanName=$beanName]的Bean")
@@ -329,7 +329,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
      * 容器当中是否含有该beanName的Bean？只检查SingletonObjects缓存
      *
      * @param beanName beanName
-     * @return 如果SingletonObjects当中包含了该对象，那么return true；否则return false
+     * @return 如果SingletonObjects当中包含了该对象, 那么return true; 否则return false
      */
     override fun containsSingleton(beanName: String): Boolean {
         return this.singletonObjects.containsKey(beanName)  // fixed:contains-->containsKey
@@ -386,7 +386,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
             this.singletonsCurrentlyInDestruction = true
         }
 
-        // 逆序回调所有的DisposableBean，去完成Bean的摧毁工作
+        // 逆序回调所有的DisposableBean, 去完成Bean的摧毁工作
         this.disposableBeans.keys.reversed().forEach(this::destroySingleton)
 
         // clear singleton Cache & set inDestruction to false

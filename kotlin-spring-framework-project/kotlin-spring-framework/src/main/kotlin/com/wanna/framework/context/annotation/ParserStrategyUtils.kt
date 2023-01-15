@@ -14,8 +14,8 @@ import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 
 /**
- * 这是一个解析器策略的工具类，它可以完成Bean的实例化，
- * 并回调相关的Aware接口(执行Aware接口，目前支持Environment/ClassLoader/BeanFactory的注入)
+ * 这是一个解析器策略的工具类, 它可以完成Bean的实例化,
+ * 并回调相关的Aware接口(执行Aware接口, 目前支持Environment/ClassLoader/BeanFactory的注入)
  *
  * @see BeanFactoryAware
  * @see ResourceLoaderAware
@@ -24,7 +24,7 @@ import com.wanna.framework.util.ClassUtils
 @Suppress("UNCHECKED_CAST")
 object ParserStrategyUtils {
     /**
-     * 根据beanClass, 去实例化得到BeanInstance，并完成Aware接口的回调
+     * 根据beanClass, 去实例化得到BeanInstance, 并完成Aware接口的回调
      *
      * @param clazz beanClass
      * @param environment Environment
@@ -63,7 +63,7 @@ object ParserStrategyUtils {
     }
 
     /**
-     * 执行Aware接口，目前支持Environment/ClassLoader/BeanFactory/ResourceLoader的注入
+     * 执行Aware接口, 目前支持Environment/ClassLoader/BeanFactory/ResourceLoader的注入
      *
      * @param bean bean
      * @param environment Environment

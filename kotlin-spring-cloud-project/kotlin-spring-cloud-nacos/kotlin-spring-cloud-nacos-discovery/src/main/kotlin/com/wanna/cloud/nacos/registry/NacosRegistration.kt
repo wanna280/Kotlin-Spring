@@ -27,7 +27,7 @@ open class NacosRegistration(
             metadata["preserved.ip.delete.timeout"] = properties.ipDeleteTimeout.toString()
         }
 
-        // 遍历所有的初始化器，去对NacosRegistration去进行自定义...
+        // 遍历所有的初始化器, 去对NacosRegistration去进行自定义...
         if (this.customizers.isNotEmpty()) {
             this.customizers.forEach { it.customNacosRegistration(this) }
         }

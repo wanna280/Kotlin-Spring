@@ -6,7 +6,7 @@ import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 
 
 /**
- * 匹配注解，判断一个类上是否标注了某个注解？
+ * 匹配注解, 判断一个类上是否标注了某个注解？
  *
  * @param annotationType 要去匹配的注解类型
  */

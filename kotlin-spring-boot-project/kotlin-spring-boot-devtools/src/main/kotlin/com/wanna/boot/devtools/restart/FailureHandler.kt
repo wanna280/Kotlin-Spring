@@ -21,7 +21,7 @@ interface FailureHandler {
     fun handle(error: Throwable): Outcome
 
     /**
-     * 处理失败的结果，是要结束？还是要去进行尝试？
+     * 处理失败的结果, 是要结束？还是要去进行尝试？
      */
     enum class Outcome { ABORT, RETRY }
 }

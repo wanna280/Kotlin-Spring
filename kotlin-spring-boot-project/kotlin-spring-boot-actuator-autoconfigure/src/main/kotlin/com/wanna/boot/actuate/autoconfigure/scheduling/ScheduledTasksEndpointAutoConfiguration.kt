@@ -8,7 +8,7 @@ import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.scheduling.config.ScheduledTaskHolder
 
 /**
- * 对于定时任务的Endpoint的监控信息的暴露的自动配置类，可以对外查看Spring当中的定时任务相关的信息
+ * 对于定时任务的Endpoint的监控信息的暴露的自动配置类, 可以对外查看Spring当中的定时任务相关的信息
  *
  * @see ScheduledTasksEndpoint
  */

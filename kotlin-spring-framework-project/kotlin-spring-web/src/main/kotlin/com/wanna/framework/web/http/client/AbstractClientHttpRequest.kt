@@ -14,7 +14,7 @@ abstract class AbstractClientHttpRequest : ClientHttpRequest {
     override fun getHeaders() = headers
 
     /**
-     * 实现方法，并提供一个internal方法，为子类传入HttpHeaders
+     * 实现方法, 并提供一个internal方法, 为子类传入HttpHeaders
      *
      * @return ClientHttpResponse(当前请求的执行结果)
      */

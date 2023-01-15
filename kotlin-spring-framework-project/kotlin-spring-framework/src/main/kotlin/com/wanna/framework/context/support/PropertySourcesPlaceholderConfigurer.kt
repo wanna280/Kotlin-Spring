@@ -49,7 +49,7 @@ open class PropertySourcesPlaceholderConfigurer : EnvironmentAware, PlaceholderC
     }
 
     /**
-     * 因为我们直接重写了postProcessBeanFactory方法，因此这个方法我们用不上
+     * 因为我们直接重写了postProcessBeanFactory方法, 因此这个方法我们用不上
      */
     override fun processProperties(beanFactory: ConfigurableListableBeanFactory, properties: Properties) {
         throw UnsupportedOperationException("考虑使用processProperties(ConfigurableListableBeanFactory, ConfigurablePropertyResolver)方法去进行使用")
@@ -62,7 +62,7 @@ open class PropertySourcesPlaceholderConfigurer : EnvironmentAware, PlaceholderC
      */
     override fun postProcessBeanFactory(beanFactory: ConfigurableListableBeanFactory) {
 
-        // 构建出来一个PropertySources，去包装Environment去作为PropertySourcesPropertyResolver最终再去实现占位符的解析
+        // 构建出来一个PropertySources, 去包装Environment去作为PropertySourcesPropertyResolver最终再去实现占位符的解析
         var propertySources: MutablePropertySources? = this.propertySources
         if (propertySources == null) {
             propertySources = MutablePropertySources()

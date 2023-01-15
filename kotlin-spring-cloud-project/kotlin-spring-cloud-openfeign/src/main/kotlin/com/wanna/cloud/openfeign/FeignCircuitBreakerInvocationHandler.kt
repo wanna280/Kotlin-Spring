@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 
 /**
- * Feign的CircuitBreaker的InvocationHandler，用来反射执行目标方法
+ * Feign的CircuitBreaker的InvocationHandler, 用来反射执行目标方法
  */
 class FeignCircuitBreakerInvocationHandler(
     private val target: feign.Target<*>,

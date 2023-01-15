@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.*
 
 /**
- * 为juc当中的ExecutorService去提供相关的安装工作的基础类，
+ * 为juc当中的ExecutorService去提供相关的安装工作的基础类,
  * 它的子类当中是为整个Spring当中的并发相关的Executor
  *
  * @author jianchao.jia
@@ -42,12 +42,12 @@ abstract class ExecutorConfigurationSupport : InitializingBean, BeanNameAware, D
     private var beanName: String? = null
 
     /**
-     * 在线程池关闭时，我们是否需要等待任务执行完成？默认为false
+     * 在线程池关闭时, 我们是否需要等待任务执行完成？默认为false
      */
     private var waitForTasksToCompleteOnShutdown = false
 
     /**
-     * 需要等待线程池处理结束工作的时间(单位为ms)，默认为0L
+     * 需要等待线程池处理结束工作的时间(单位为ms), 默认为0L
      */
     private var awaitTerminationMillis = 0L
 
@@ -63,14 +63,14 @@ abstract class ExecutorConfigurationSupport : InitializingBean, BeanNameAware, D
     private var rejectedExecutionHandler: RejectedExecutionHandler = ThreadPoolExecutor.AbortPolicy()
 
     /**
-     * ThreadFactory，当前本身就是一个ThreadFactory，因此默认值为this
+     * ThreadFactory, 当前本身就是一个ThreadFactory, 因此默认值为this
      *
      * @see CustomizableThreadFactory
      */
     private var threadFactory: ThreadFactory = this
 
     /**
-     * 在初始化Bean时，自动去初始化ExecutorService
+     * 在初始化Bean时, 自动去初始化ExecutorService
      *
      * @see InitializingBean
      */
@@ -79,7 +79,7 @@ abstract class ExecutorConfigurationSupport : InitializingBean, BeanNameAware, D
     }
 
     /**
-     * 重写父类方法，用于去监控ThreadNamePrefix是否已经完成了初始化工作
+     * 重写父类方法, 用于去监控ThreadNamePrefix是否已经完成了初始化工作
      *
      * @param threadNamePrefix ThreadNamePrefix
      */
@@ -92,7 +92,7 @@ abstract class ExecutorConfigurationSupport : InitializingBean, BeanNameAware, D
         if (logger.isDebugEnabled) {
             logger.debug("正在初始化ExecutorService")
         }
-        // 如果没有设置threadNamePrefix，那么使用beanName去作为ThreadNamePrefix
+        // 如果没有设置threadNamePrefix, 那么使用beanName去作为ThreadNamePrefix
         if (!this.threadNamePrefixSet && this.beanName != null) {
             setThreadNamePrefix(this.beanName!!)
         }
@@ -100,7 +100,7 @@ abstract class ExecutorConfigurationSupport : InitializingBean, BeanNameAware, D
     }
 
     /**
-     * 初始化Executor，模板方法，交给具体的子类去进行实现
+     * 初始化Executor, 模板方法, 交给具体的子类去进行实现
      *
      * @param threadFactory ThreadFactory(用于创建线程用到的工厂方法)
      * @param rejectedExecutionHandler 线程池的拒绝策略
@@ -111,7 +111,7 @@ abstract class ExecutorConfigurationSupport : InitializingBean, BeanNameAware, D
     ): ExecutorService
 
     /**
-     * 在当前的Bean摧毁时，自动对线程池去进行关闭
+     * 在当前的Bean摧毁时, 自动对线程池去进行关闭
      *
      * @see ExecutorService.shutdown
      * @see ExecutorService.shutdownNow
@@ -131,14 +131,14 @@ abstract class ExecutorConfigurationSupport : InitializingBean, BeanNameAware, D
             } else {
                 // shutdownNow, 并取消掉线程池当中的所有的剩余的任务
                 executor.shutdownNow().forEach(this::cancelRemainingTask)
-                // 如果必要的话，等一会线程池去处理结束的收尾工作才结束...
+                // 如果必要的话, 等一会线程池去处理结束的收尾工作才结束...
                 awaitTerminationIfNecessary(executor)
             }
         }
     }
 
     /**
-     * 在立刻去关闭线程池时，需要去处理剩下的任务列表
+     * 在立刻去关闭线程池时, 需要去处理剩下的任务列表
      *
      * @param task 关闭线程池剩下的任务
      */
@@ -158,7 +158,7 @@ abstract class ExecutorConfigurationSupport : InitializingBean, BeanNameAware, D
                 }
             } catch (ex: InterruptedException) {
                 if (logger.isWarnEnabled) {
-                    logger.warn("在等待线程池[${beanName ?: ""}]执行terminate的过程当中，遇到了线程被中断的情况")
+                    logger.warn("在等待线程池[${beanName ?: ""}]执行terminate的过程当中, 遇到了线程被中断的情况")
                 }
                 Thread.currentThread().interrupt()  // self interrupt
             }

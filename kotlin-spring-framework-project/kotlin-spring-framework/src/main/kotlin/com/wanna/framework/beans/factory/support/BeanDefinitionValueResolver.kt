@@ -21,9 +21,9 @@ class BeanDefinitionValueResolver(
     private val typeConverter: TypeConverter
 ) {
     /**
-     * 如果必要的话，需要去解析BeanDefinition当中的属性值
+     * 如果必要的话, 需要去解析BeanDefinition当中的属性值
      *
-     * 支持各种各样的类型，比如：
+     * 支持各种各样的类型, 比如：
      * * 1.RuntimeBeanReference
      * * 2.ManagedList(ArrayList<RuntimeBeanReference>)
      * * 3.TypedValueString

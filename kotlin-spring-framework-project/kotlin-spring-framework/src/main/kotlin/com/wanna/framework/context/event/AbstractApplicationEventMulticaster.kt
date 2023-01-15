@@ -135,7 +135,7 @@ abstract class AbstractApplicationEventMulticaster :
     }
 
     /**
-     * 根据ApplicationEvent以及eventType，去找到合适的ApplicationListener列表
+     * 根据ApplicationEvent以及eventType, 去找到合适的ApplicationListener列表
      *
      * @param event 目标事件
      * @param eventType 目标事件的类型
@@ -157,7 +157,7 @@ abstract class AbstractApplicationEventMulticaster :
                     if (it.supportsEventType(eventType)) {
                         applicationListeners += it
                     }
-                    // 如果是普通的ApplicationListener，那么需要去推断Event类型是否合法...
+                    // 如果是普通的ApplicationListener, 那么需要去推断Event类型是否合法...
                 } else {
                     val listenerType = ResolvableType.forClass(it::class.java).`as`(ApplicationListener::class.java)
                     val generics = listenerType.getGenerics()
@@ -177,15 +177,15 @@ abstract class AbstractApplicationEventMulticaster :
     }
 
     /**
-     * 这是一个ApplicationListener的注册中心，它可以存放ApplicationListener对象列表，也可以存放ApplicationListener的beanName
-     * <note>这必须是一个inner class，因为它要访问外部的BeanFactory完成getBean</note>
+     * 这是一个ApplicationListener的注册中心, 它可以存放ApplicationListener对象列表, 也可以存放ApplicationListener的beanName
+     * <note>这必须是一个inner class, 因为它要访问外部的BeanFactory完成getBean</note>
      */
     private inner class DefaultListenerRetriever {
         val applicationListeners = LinkedHashSet<ApplicationListener<*>>()
         val applicationListenerBeans = LinkedHashSet<String>()
 
         /**
-         * 获取所有的ApplicationListener，包括单例Bean以及beanName
+         * 获取所有的ApplicationListener, 包括单例Bean以及beanName
          *
          * @return 所有的ApplicationListener的列表(完成排序工作)
          */
@@ -193,7 +193,7 @@ abstract class AbstractApplicationEventMulticaster :
             // 1.添加实例对象的ApplicationListener对象列表
             val listeners = ArrayList<ApplicationListener<*>>(this.applicationListeners)
 
-            // 2.对所有的ApplicationListener的beanName的列表去完成getBean，并加入到候选的Listeners列表当中
+            // 2.对所有的ApplicationListener的beanName的列表去完成getBean, 并加入到候选的Listeners列表当中
             Optional.ofNullable(getBeanFactory()).ifPresent { beanFactory ->
                 applicationListenerBeans.forEach {
                     val listener = beanFactory.getBean(it, ApplicationListener::class.java)

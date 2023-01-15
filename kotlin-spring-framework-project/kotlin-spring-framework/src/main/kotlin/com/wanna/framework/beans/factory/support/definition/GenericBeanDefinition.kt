@@ -3,7 +3,7 @@ package com.wanna.framework.beans.factory.support.definition
 import com.wanna.framework.lang.Nullable
 
 /**
- * 这是一个通用的BeanDefinition，它主要为parent的BeanDefinition的动态设置提供支持
+ * 这是一个通用的BeanDefinition, 它主要为parent的BeanDefinition的动态设置提供支持
  *
  * @see AbstractBeanDefinition
  */

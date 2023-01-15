@@ -28,8 +28,8 @@ import javax.inject.Provider
 
 
 /**
- * 这是一个DefaultListableBeanFactory。
- * (1)它本身是一个ConfigurableListableBeanFactory, 提供对BeanFactory的配置功能以及列举BeanFactory中的Bean相关信息的功能；
+ * 这是一个DefaultListableBeanFactory.
+ * (1)它本身是一个ConfigurableListableBeanFactory, 提供对BeanFactory的配置功能以及列举BeanFactory中的Bean相关信息的功能;
  * (2)它本身还是一个BeanDefinitionRegistry, 主要提供BeanDefinition的注册中心的功能
  * (3)它本身还是一个AutowireCapableBeanFactory(有Autowire能力的BeanFactory), 可以从容器中获取到要进行注入的依赖
  */
@@ -71,15 +71,15 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     private val beanDefinitionMap = ConcurrentHashMap<String, BeanDefinition>()
 
     /**
-     * beanDefinitionNames, 采用的是ArrayList去进行存储；
-     * 实际上得加上beanDefinitionMap锁, 并采用写时复制的原则去进行操作, 保证使用方可以更加安全地去完成迭代；
+     * beanDefinitionNames, 采用的是ArrayList去进行存储;
+     * 实际上得加上beanDefinitionMap锁, 并采用写时复制的原则去进行操作, 保证使用方可以更加安全地去完成迭代;
      * 在添加元素/删除元素时, 都得新复制一份数据并进行修改, 接着重新设置引用, 就不影响使用方进行的迭代(也就是写时复制COW)
      */
     private var beanDefinitionNames = ArrayList<String>()
 
 
     /**
-     * 这是一个依赖的比较器, 可以通过beanFactory去进行获取, 可以基于比较规则, 对依赖去完成排序；
+     * 这是一个依赖的比较器, 可以通过beanFactory去进行获取, 可以基于比较规则, 对依赖去完成排序;
      * 在注解版IOC容器当中, 默认情况下会被设置为[AnnotationAwareOrderComparator]
      *
      * @see AnnotationAwareOrderComparator
@@ -89,8 +89,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     private var dependencyComparator: Comparator<Any?>? = null
 
     /**
-     * 这是一个可以被解析的依赖, 加入到这个Map当中的依赖可以进行Autowire(一般这里会注册BeanFactory, ApplicationContext等)。
-     * 对于Value不仅仅可以注册一个普通的单例对象，当然特殊地也可以注册一个[ObjectFactory]，在进行依赖解析时会自动触发[ObjectFactory.getObject]
+     * 这是一个可以被解析的依赖, 加入到这个Map当中的依赖可以进行Autowire(一般这里会注册BeanFactory, ApplicationContext等).
+     * 对于Value不仅仅可以注册一个普通的单例对象, 当然特殊地也可以注册一个[ObjectFactory], 在进行依赖解析时会自动触发[ObjectFactory.getObject]
      *
      * @see ObjectFactory
      */
@@ -103,8 +103,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     private var autowireCandidateResolver: AutowireCandidateResolver = SimpleAutowireCandidateResolver.INSTANCE
 
     /**
-     * **手工(manual)**注册的 singletonObject的beanName列表, 在这里进行维护, 它内部的beanName和beanDefinitionNames列表不会冲突；
-     * 不然通过registerSingleton操作对单例Bean进行注册时, 后续要对它去进行匹配时, 没有办法找到该对象；
+     * **手工(manual)**注册的 singletonObject的beanName列表, 在这里进行维护, 它内部的beanName和beanDefinitionNames列表不会冲突;
+     * 不然通过registerSingleton操作对单例Bean进行注册时, 后续要对它去进行匹配时, 没有办法找到该对象;
      * 因此这里就需要维护一个列表, 方便后期去进行类型的匹配, 比如解析Autowire依赖的时候, 就会对这个列表去进行匹配
      */
     private var manualSingletonNames = LinkedHashSet<String>()
@@ -368,7 +368,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         }
 
         /**
-         * 如果能够解析到依赖的话, return解析到的依赖；如果无法解析到该依赖的话, return null
+         * 如果能够解析到依赖的话, return解析到的依赖; 如果无法解析到该依赖的话, return null
          */
         override fun getIfAvailable(): Any? {
             return try {
@@ -550,7 +550,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * 判断该依赖是否是必须的？
      *
      * @param descriptor 依赖描述符
-     * @return 如果该依赖是必要的, return true；否则return false
+     * @return 如果该依赖是必要的, return true; 否则return false
      */
     protected open fun isRequired(descriptor: DependencyDescriptor): Boolean {
         return getAutowireCandidateResolver().isRequired(descriptor)
@@ -577,7 +577,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     /**
-     * 从Primary当中去决定, 选出最佳的一个；如果找到了多个, 那么抛出不Bean不唯一异常
+     * 从Primary当中去决定, 选出最佳的一个; 如果找到了多个, 那么抛出不Bean不唯一异常
      *
      * @param candidates 候选的要去进行匹配Primary的Bean
      * @param requiredType 请求去进行匹配的类型
@@ -605,7 +605,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      *
      * @param candidates 候选的要去进行匹配的Bean列表
      * @param requiredType 需要进行匹配的类型
-     * @return 如果找到了合适的最高优先级的Bean, return；否则return null
+     * @return 如果找到了合适的最高优先级的Bean, return; 否则return null
      * @throws NoUniqueBeanDefinitionException 如果无法从多个Bean当中决策出一个合适的Bean
      */
     @Nullable
@@ -650,7 +650,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * 使用依赖比较器去获取Bean的优先级, 如果beanFactory没有设置依赖的比较器的话, 那么return null
      *
      * @param bean 要去进行匹配优先级的bean
-     * @return 如果有依赖比较器, 使用依赖比较器去进行获取；不然return null
+     * @return 如果有依赖比较器, 使用依赖比较器去进行获取; 不然return null
      */
     @Nullable
     protected open fun getPriority(@Nullable bean: Any?): Int? {
@@ -671,7 +671,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     private fun isPrimary(beanName: String, beanInstance: Any) = getMergedBeanDefinition(beanName).isPrimary()
 
     /**
-     * 根据DependencyDescriptor去BeanFactory当中寻找到所有的候选的要进行注入的Bean的列表；
+     * 根据DependencyDescriptor去BeanFactory当中寻找到所有的候选的要进行注入的Bean的列表;
      * 所有会设涉及到Autowire的候选Bean的逻辑, 都会使用这个方法去进行完成
      *
      * @param beanName 正在请求注入的Bean的beanName, 例如A请求注入B, 那么这里beanName为A
@@ -746,8 +746,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     /**
-     * 检查是否是自引用？有一种情况, 那就是一个CompositeXxx的Bean, 想要去注入所有的XXx类型的Bean；
-     * 此时就会因为出现自引用, 从而导致循环依赖, 但是对于这种情况来说, 实际上我们是允许的, 因此我们需要去排除掉。
+     * 检查是否是自引用？有一种情况, 那就是一个CompositeXxx的Bean, 想要去注入所有的XXx类型的Bean;
+     * 此时就会因为出现自引用, 从而导致循环依赖, 但是对于这种情况来说, 实际上我们是允许的, 因此我们需要去排除掉.
      *
      * @param beanName beanName
      * @param candidateName 候选的正在去进行匹配的注入的对象
@@ -847,7 +847,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * 判断给定的beanType是否是一个MultipleBean(如果是Array/Collection/Map的话, 那么就是MultipleBean)
      *
      * @param type 需要进行匹配的类型Class
-     * @return 它是否是MultipleBean(如果是Array/Collection/Map的话, return true；否则return false)
+     * @return 它是否是MultipleBean(如果是Array/Collection/Map的话, return true; 否则return false)
      */
     private fun indicatesMultipleBeans(type: Class<*>): Boolean {
         return type.isArray || (type.isInterface && (ClassUtils.isAssignFrom(
@@ -902,7 +902,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     override fun containsBeanDefinition(name: String): Boolean = beanDefinitionNames.contains(name)
 
     /**
-     * 获取BeanDefinition, 一定能获取到, 如果获取不到直接抛出异常；
+     * 获取BeanDefinition, 一定能获取到, 如果获取不到直接抛出异常;
      * 如果想要不抛出异常, 请先使用containsBeanDefinition去进行判断该BeanDefinition是否存在
      *
      * @throws NoSuchBeanDefinitionException 如果没有找到这样的BeanDefinition异常
@@ -921,7 +921,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     /**
-     * 移除BeanDefinition, 需要拿到锁(beanDefinitionMap)才能去对其进行操作, 对BeanDefinitionNames列表去进行操作不是线程安全的；
+     * 移除BeanDefinition, 需要拿到锁(beanDefinitionMap)才能去对其进行操作, 对BeanDefinitionNames列表去进行操作不是线程安全的;
      * 为了保证BeanDefinitionNames可以去进行安全的迭代, 我们这里使用拷贝一份数据去进行修改的方式去进行remove, 也就是写时复制(COW)
      *
      * @param name beanName
@@ -982,7 +982,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     /**
-     * 重写摧毁Singleton的逻辑, 因为有可能摧毁SingletonBean时, 我的manualSingleNames列表没有正确地去清除；
+     * 重写摧毁Singleton的逻辑, 因为有可能摧毁SingletonBean时, 我的manualSingleNames列表没有正确地去清除;
      * 因为本类当中的的manualSingleNames也是与单实例Bean的注册中心是使用的同一套逻辑(并进行扩展)
      *
      * @param beanName beanName
@@ -1021,7 +1021,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
     /**
      * 重写注册DefaultSingletonBeanRegistry的registerSingleton方法,
-     * 目的是添加singletonBeanName去进行保存, 方便后续去进行寻找；
+     * 目的是添加singletonBeanName去进行保存, 方便后续去进行寻找;
      * 因为有可能直接使用registerSingleton去注册一个单例Bean到容器当中,
      * 但是该Bean没有被BeanDefinitionMap所管理, 我们得找个地方去进行存储,
      * 需要去对手动管理的单例Bean, 去提供管理, 因为我们也许会用到获取SingletonBean的情况

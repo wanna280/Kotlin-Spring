@@ -15,7 +15,7 @@ fun interface NamespaceHandlerResolver {
      * 根据NamespaceUri去解析到处理该Namespace的Handler
      *
      * @param namespaceUri namespaceUri
-     * @return NamespaceHandler(如果找不到处理该NamespaceUri的Handler，那么return null)
+     * @return NamespaceHandler(如果找不到处理该NamespaceUri的Handler, 那么return null)
      */
     @Nullable
     fun resolve(namespaceUri: String): NamespaceHandler?

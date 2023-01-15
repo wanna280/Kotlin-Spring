@@ -3,14 +3,14 @@ package com.wanna.framework.core.environment
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
- * 这是一个多个PropertySources的聚合，提供了线程安全的访问，对于任何相关的操作都会加上锁去进行操作
+ * 这是一个多个PropertySources的聚合, 提供了线程安全的访问, 对于任何相关的操作都会加上锁去进行操作
  */
 open class MutablePropertySources() : PropertySources {
     // PropertySource列表
     private val propertySourceList = CopyOnWriteArrayList<PropertySource<*>>()
 
     /**
-     * 提供一个PropertySources作为参数的构造器，对PropertySource列表去进行初始化
+     * 提供一个PropertySources作为参数的构造器, 对PropertySource列表去进行初始化
      */
     constructor(propertySources: PropertySources) : this() {
         propertySourceList += propertySources

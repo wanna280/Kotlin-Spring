@@ -1,15 +1,15 @@
 package com.wanna.framework.util
 
 /**
- * 多值Map，一个Key可以拥有多个Value(value存放的是一个List)
+ * 多值Map, 一个Key可以拥有多个Value(value存放的是一个List)
  */
 interface MultiValueMap<K, V> : MutableMap<K, MutableList<V>> {
 
     /**
-     * 给定一个key，去获取到该key对应的第一个value
+     * 给定一个key, 去获取到该key对应的第一个value
      *
      * @param key key
-     * @return 寻找到的第一个value(如果不存在的话，return null)
+     * @return 寻找到的第一个value(如果不存在的话, return null)
      */
     fun getFirst(key: K): V?
 
@@ -38,7 +38,7 @@ interface MultiValueMap<K, V> : MutableMap<K, MutableList<V>> {
     fun set(key: K, value: V)
 
     /**
-     * 转换为一个普通的Map，如果每个key有多个value的话，那么只取其中一个
+     * 转换为一个普通的Map, 如果每个key有多个value的话, 那么只取其中一个
      *
      * @return 转换之后的单个值的Map
      */

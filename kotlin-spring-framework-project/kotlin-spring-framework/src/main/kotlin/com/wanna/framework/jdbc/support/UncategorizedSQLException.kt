@@ -4,7 +4,7 @@ import com.wanna.framework.dao.UncategorizedDataAccessException
 import java.sql.SQLException
 
 /**
- * 无法识别的[SQLException]，实现了[UncategorizedDataAccessException]
+ * 无法识别的[SQLException], 实现了[UncategorizedDataAccessException]
  *
  * @author jianchao.jia
  * @version v1.0

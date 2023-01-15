@@ -25,7 +25,7 @@ abstract class AbstractPropertyBindingResult(objectName: String) : AbstractBindi
     }
 
     /**
-     * 获取PropertyAccessor，具体的获取逻辑交给子类去进行实现
+     * 获取PropertyAccessor, 具体的获取逻辑交给子类去进行实现
      *
      * @return ConfigurablePropertyAccessor
      */

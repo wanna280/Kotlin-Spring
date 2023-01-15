@@ -7,7 +7,7 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 
 /**
- * 这个类从Spring源码当中直接去进行移植的，目的是描述HTTP请求当中的MediaType(媒体类型)
+ * 这个类从Spring源码当中直接去进行移植的, 目的是描述HTTP请求当中的MediaType(媒体类型)
  */
 class MediaType : MimeType, Serializable {
     constructor(type: String) : super(type)

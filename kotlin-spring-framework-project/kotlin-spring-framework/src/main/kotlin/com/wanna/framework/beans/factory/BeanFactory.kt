@@ -5,8 +5,8 @@ import com.wanna.framework.context.exception.NoUniqueBeanDefinitionException
 import com.wanna.framework.lang.Nullable
 
 /**
- * Spring的BeanFactory，提供SpringBean的管理；
- * 在这个接口当中，主要提供一些关于Spring Bean的获取的功能。
+ * Spring的BeanFactory, 提供SpringBean的管理;
+ * 在这个接口当中, 主要提供一些关于Spring Bean的获取的功能.
  */
 interface BeanFactory {
     companion object {

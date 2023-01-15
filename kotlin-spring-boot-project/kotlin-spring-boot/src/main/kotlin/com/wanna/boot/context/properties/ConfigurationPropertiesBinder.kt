@@ -18,7 +18,7 @@ import com.wanna.framework.core.environment.PropertySources
 import org.slf4j.LoggerFactory
 
 /**
- * 这是一个ConfigurationProperties的Binder，负责完成@ConfigurationProperties的绑定工作
+ * 这是一个ConfigurationProperties的Binder, 负责完成@ConfigurationProperties的绑定工作
  *
  * @see ConfigurationProperties
  * @see ConfigurationPropertiesBean
@@ -41,7 +41,7 @@ open class ConfigurationPropertiesBinder @Autowired private constructor(private 
     private var propertySources: PropertySources = PropertySourcesDeducer(applicationContext).getPropertySources()
 
     /**
-     * 对于没有完成实例化的Bean，那么使用构造器去进行实例化并完成属性的设置
+     * 对于没有完成实例化的Bean, 那么使用构造器去进行实例化并完成属性的设置
      *
      * @param bean 要去进行绑定的ConfigurationPropertiesBean
      */
@@ -50,7 +50,7 @@ open class ConfigurationPropertiesBinder @Autowired private constructor(private 
     }
 
     /**
-     * 对已经完成实例化的Bean，去完成ConfigurationProperties的绑定工作
+     * 对已经完成实例化的Bean, 去完成ConfigurationProperties的绑定工作
      *
      * @param bean 要去进行绑定的ConfigurationPropertiesBean
      * @return 绑定结果BindResult

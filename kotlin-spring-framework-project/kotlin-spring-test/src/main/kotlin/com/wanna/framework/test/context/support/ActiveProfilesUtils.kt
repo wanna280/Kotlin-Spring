@@ -16,7 +16,7 @@ import com.wanna.framework.util.StringUtils
 object ActiveProfilesUtils {
 
     /**
-     * 从testClass上去解析[ActiveProfiles]注解，从而解析到所有的需要使用的profiles
+     * 从testClass上去解析[ActiveProfiles]注解, 从而解析到所有的需要使用的profiles
      *
      * @return 解析到的activeProfiles列表
      */

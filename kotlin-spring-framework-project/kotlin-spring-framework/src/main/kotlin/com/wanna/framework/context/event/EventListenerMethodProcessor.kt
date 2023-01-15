@@ -74,7 +74,7 @@ open class EventListenerMethodProcessor : BeanFactoryPostProcessor, SmartInitial
     }
 
     /**
-     * 对于[beanType]类上的所有方法去进行检查，看它是否有[EventListener]注解;
+     * 对于[beanType]类上的所有方法去进行检查, 看它是否有[EventListener]注解;
      * 如果有的话, 我们需要将它去转换成为[ApplicationListener]
      *
      * @param beanName beanName

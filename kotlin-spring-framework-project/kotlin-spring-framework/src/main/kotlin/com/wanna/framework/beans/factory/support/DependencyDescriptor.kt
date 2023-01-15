@@ -9,18 +9,18 @@ import java.lang.reflect.Field
 import java.lang.reflect.Type
 
 /**
- * 这是一个依赖的描述符，可以描述一个方法的参数，或者是一个字段，当然，也可以是一个构造器的参数也是可以的
- * 在Spring当中需要去进行依赖的解析时，就会将依赖的相关信息都封装成为一个DependencyDescriptor，方便BeanFactory当中可以对依赖去进行解析工作
+ * 这是一个依赖的描述符, 可以描述一个方法的参数, 或者是一个字段, 当然, 也可以是一个构造器的参数也是可以的
+ * 在Spring当中需要去进行依赖的解析时, 就会将依赖的相关信息都封装成为一个DependencyDescriptor, 方便BeanFactory当中可以对依赖去进行解析工作
  *
  * @param required 该依赖是否是必须的？
- * @param eager 解析依赖的时候，是否允许依赖被eagerInit(比如FactoryBean被提前创建)
+ * @param eager 解析依赖的时候, 是否允许依赖被eagerInit(比如FactoryBean被提前创建)
  */
 open class DependencyDescriptor protected constructor(
     field: Field?, parameter: MethodParameter?, private val required: Boolean, private val eager: Boolean = false
 ) : InjectionPoint(field, parameter) {
 
     /**
-     * 基于另外一个[DependencyDescriptor]去创建一个新的[DependencyDescriptor]对象，把相关的字段全部拷贝一份
+     * 基于另外一个[DependencyDescriptor]去创建一个新的[DependencyDescriptor]对象, 把相关的字段全部拷贝一份
      *
      * @param descriptor 另外的DependencyDescriptor
      */
@@ -47,7 +47,7 @@ open class DependencyDescriptor protected constructor(
     // 方法名(描述的是一个方法时才生效)
     private var methodName: String? = parameter?.getMethod()?.name
 
-    // 参数所在的索引，默认为0
+    // 参数所在的索引, 默认为0
     private var parameterIndex: Int = parameter?.getParameterIndex() ?: 0
 
     // containingClass
@@ -66,7 +66,7 @@ open class DependencyDescriptor protected constructor(
     /**
      * 初始化参数名发现器
      *
-     * @param parameterNameDiscoverer 要指定的ParameterNameDiscoverer；可以为null
+     * @param parameterNameDiscoverer 要指定的ParameterNameDiscoverer; 可以为null
      */
     open fun initParameterNameDiscoverer(parameterNameDiscoverer: ParameterNameDiscoverer?) {
         if (parameterNameDiscoverer != null) {
@@ -77,14 +77,14 @@ open class DependencyDescriptor protected constructor(
     /**
      * 是否允许Fallback的匹配？默认为不允许
      *
-     * @return 如果允许Fallback的匹配的话，那么return true；如果不允许的话，那么return false(默认)
+     * @return 如果允许Fallback的匹配的话, 那么return true; 如果不允许的话, 那么return false(默认)
      */
     open fun fallbackMatchAllowed(): Boolean = false
 
     /**
      * 获得一个允许去进行fallback的匹配的[DependencyDescriptor]
      *
-     * @return Fallback的DependencyDescriptor(重写了fallbackMatchAllowed方法，允许去进行fallback的匹配)
+     * @return Fallback的DependencyDescriptor(重写了fallbackMatchAllowed方法, 允许去进行fallback的匹配)
      */
     open fun forFallbackMatch(): DependencyDescriptor {
         return object : DependencyDescriptor(this) {
@@ -93,7 +93,7 @@ open class DependencyDescriptor protected constructor(
     }
 
     /**
-     * 获取泛型的类型，如果是一个方法参数，那么获取方法参数的泛型；如果是一个字段，那么获取字段的泛型类型
+     * 获取泛型的类型, 如果是一个方法参数, 那么获取方法参数的泛型; 如果是一个字段, 那么获取字段的泛型类型
      */
     open fun getGenericType(): Type {
         val parameter = getMethodParameter()
@@ -114,12 +114,12 @@ open class DependencyDescriptor protected constructor(
         this.containingClass = containingClass
     }
 
-    // 获取参数所在的索引，如果描述的是字段的话，值为0
+    // 获取参数所在的索引, 如果描述的是字段的话, 值为0
     open fun getParameterIndex(): Int {
         return parameterIndex
     }
 
-    // 如果描述的是一个方法的话，返回方法名，如果描述的不是一个方法的话，返回null
+    // 如果描述的是一个方法的话, 返回方法名, 如果描述的不是一个方法的话, 返回null
     open fun getMethodName(): String? {
         return methodName
     }
@@ -129,17 +129,17 @@ open class DependencyDescriptor protected constructor(
         return declaringClass!!
     }
 
-    // 获取方法的参数类型列表，如果描述的不是一个方法，那么return null
+    // 获取方法的参数类型列表, 如果描述的不是一个方法, 那么return null
     open fun getParameterTypes(): Array<Class<*>>? {
         return parameterTypes
     }
 
-    // 获取字段名，如果它根本不是一个字段，return null
+    // 获取字段名, 如果它根本不是一个字段, return null
     open fun getFieldName(): String? {
         return fieldName
     }
 
-    // 该依赖，是否是必要的？(required=true？)
+    // 该依赖, 是否是必要的？(required=true？)
     open fun isRequired(): Boolean {
         if (!required) {
             return false
@@ -150,7 +150,7 @@ open class DependencyDescriptor protected constructor(
     open fun isEager(): Boolean = eager
 
     /**
-     * 返回依赖的类型，如果是字段返回字段类型，如果是方法参数返回方法参数的类型
+     * 返回依赖的类型, 如果是字段返回字段类型, 如果是方法参数返回方法参数的类型
      */
     open fun getDependencyType(): Class<*> {
         val parameter = getMethodParameter()
@@ -165,7 +165,7 @@ open class DependencyDescriptor protected constructor(
     }
 
     /**
-     * 提供解析候选Bean的方式，默认实现为从给定的beanFactory当中去进行获取
+     * 提供解析候选Bean的方式, 默认实现为从给定的beanFactory当中去进行获取
      *
      * @param beanName beanName
      * @param beanFactory beanFactory

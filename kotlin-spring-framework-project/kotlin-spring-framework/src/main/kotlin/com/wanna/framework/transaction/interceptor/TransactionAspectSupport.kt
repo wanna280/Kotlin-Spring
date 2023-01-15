@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 
 /**
- * 提供事务的切面的支持的类，提供了Spring事务要执行的基础模板方法
+ * 提供事务的切面的支持的类, 提供了Spring事务要执行的基础模板方法
  *
  * @see invokeWithinTransaction
  * @see TransactionInterceptor
@@ -44,7 +44,7 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
     // 事务管理器的beanName
     private var transactionManagerBeanName: String? = null
 
-    // 事务属性源，提供@Transactional注解的解析
+    // 事务属性源, 提供@Transactional注解的解析
     private var transactionAttributeSource: TransactionAttributeSource? = null
 
     // 事务同步管理器的缓存
@@ -67,15 +67,15 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
      */
     override fun afterPropertiesSet() {
         if (this.beanFactory == null && this.getTransactionManager() == null) {
-            throw IllegalStateException("不允许既没有BeanFactory，又没有设置TransactionManager！")
+            throw IllegalStateException("不允许既没有BeanFactory, 又没有设置TransactionManager！")
         }
         if (getTransactionAttributeSource() == null) {
-            throw IllegalStateException("TransactionAttributeSource是必须有的，但是没有设置")
+            throw IllegalStateException("TransactionAttributeSource是必须有的, 但是没有设置")
         }
     }
 
     /**
-     * 如果一个方法，应该以事务的方式去进行运行，那么应该使用一个环绕的方式去对目标事务方法去进行增强
+     * 如果一个方法, 应该以事务的方式去进行运行, 那么应该使用一个环绕的方式去对目标事务方法去进行增强
      *
      * @param method 目标方法
      * @param targetClass 目标类
@@ -85,7 +85,7 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
     protected open fun invokeWithinTransaction(
         method: Method, targetClass: Class<*>?, callback: InvocationCallback
     ): Any? {
-        // 使用TransactionAttributeSource，去解析各类的@Transactional注解，并封装成为TransactionAttribute
+        // 使用TransactionAttributeSource, 去解析各类的@Transactional注解, 并封装成为TransactionAttribute
         val txSource = getTransactionAttributeSource()
         val txAttr = txSource?.getTransactionAttribute(method, targetClass)
 
@@ -105,32 +105,32 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
         try {
             returnVal = callback.proceedWithInvocation()
         } catch (ex: Throwable) {
-            // 完成事务，如果该异常需要回滚的话，那么需要对该异常去进行回滚
-            // 如果该异常不需要回滚的话，也需要去提交任务...
+            // 完成事务, 如果该异常需要回滚的话, 那么需要对该异常去进行回滚
+            // 如果该异常不需要回滚的话, 也需要去提交任务...
             completeTransactionAfterThrowing(txInfo, ex)
             throw ex
         } finally {
-            // 恢复之前的事务的TransactionInfo(如果之前没有事务方法，那么恢复为null)
+            // 恢复之前的事务的TransactionInfo(如果之前没有事务方法, 那么恢复为null)
             cleanupTransactionInfo(txInfo)
         }
-        // 在方法正常返回时，应该去提交事务
+        // 在方法正常返回时, 应该去提交事务
         commitTransactionAfterReturning(txInfo)
         return returnVal
     }
 
     /**
-     * 使用各种方式去进行尝试，从而去决定采用哪个TransactionManager
+     * 使用各种方式去进行尝试, 从而去决定采用哪个TransactionManager
      *
      * @param txAttr 事务属性(可以为null)
      * @return 决策到的TransactionManager(有可能为null)
      * @throws NoSuchBeanDefinitionException 如果从beanFactory当中获取不到TransactionManager
      */
     protected open fun determineTransactionManager(txAttr: TransactionAttribute?): TransactionManager? {
-        // 如果txAttr，或者beanFactory为空，那么只能直接getTransactionManager了
+        // 如果txAttr, 或者beanFactory为空, 那么只能直接getTransactionManager了
         if (txAttr == null || beanFactory == null) {
             return getTransactionManager()
         }
-        // 如果txAttr&beanFactory都不为空的话，就可以从beanFactory当中去进行寻找了
+        // 如果txAttr&beanFactory都不为空的话, 就可以从beanFactory当中去进行寻找了
 
         // 1.尝试从@Transactional注解当中去进行获取特殊的TransactionManager
         if (StringUtils.hasText(txAttr.getQualifier())) {
@@ -140,14 +140,14 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
         } else if (StringUtils.hasText(transactionManagerBeanName)) {
             return determineQualifiedTransactionManager(beanFactory!!, transactionManagerBeanName!!)
 
-            // 3.如果还是没有，那么直接尝试从beanFactory当中去获取TransactionManager...
+            // 3.如果还是没有, 那么直接尝试从beanFactory当中去获取TransactionManager...
         } else {
             var defaultTransactionManager = getTransactionManager()
             if (defaultTransactionManager == null) {
                 defaultTransactionManager = transactionManagerCache[DEFAULT_TRANSACTION_MANAGER_KEY]
                 if (defaultTransactionManager == null) {
 
-                    // getBean... 如果没有TransactionManager，那么抛出NoSuchBeanDefinitionException...
+                    // getBean... 如果没有TransactionManager, 那么抛出NoSuchBeanDefinitionException...
                     defaultTransactionManager = beanFactory!!.getBean(TransactionManager::class.java)
                     this.transactionManager = defaultTransactionManager
                     this.transactionManagerCache.putIfAbsent(DEFAULT_TRANSACTION_MANAGER_KEY, defaultTransactionManager)
@@ -173,11 +173,11 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
     }
 
     /**
-     * 将给定的transactionManager对象转换为Platform的TransactionManager，转换失败，抛出异常
+     * 将给定的transactionManager对象转换为Platform的TransactionManager, 转换失败, 抛出异常
      *
      * @param transactionManager transactionManager对象
      * @return 转换之后的PlatformTransactionManager
-     * @throws IllegalStateException 如果给定的transactionManager为空，或者它的类型不是PlatformTransactionManager
+     * @throws IllegalStateException 如果给定的transactionManager为空, 或者它的类型不是PlatformTransactionManager
      */
     protected open fun asPlatformTransactionManager(transactionManager: Any?): PlatformTransactionManager {
         if (transactionManager is PlatformTransactionManager) {
@@ -187,36 +187,36 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
     }
 
     /**
-     * 如果必要的话，创建一个事务
+     * 如果必要的话, 创建一个事务
      *
      * @param ptm 事务管理器
      * @param txAttr 事务属性
      * @param joinpointIdentification 方法id限定符号
-     * @return TransactionInfo(包装了事务的各个组件，包括ptm,txAttr,joinpointIdentification,transactionStatus)
+     * @return TransactionInfo(包装了事务的各个组件, 包括ptm,txAttr,joinpointIdentification,transactionStatus)
      */
     protected open fun createTransactionIfNecessary(
         ptm: PlatformTransactionManager, txAttr: TransactionAttribute?, joinpointIdentification: String
     ): TransactionInfo? {
         var txAttrDelegate: TransactionAttribute? = null
         if (txAttr != null) {
-            // 创建一层委托的TransactionAttribute，目的是让name可以返回joinpointIdentification
+            // 创建一层委托的TransactionAttribute, 目的是让name可以返回joinpointIdentification
             txAttrDelegate = object : DelegatingTransactionAttribute(txAttr) {
                 override fun getName() = joinpointIdentification
             }
         }
 
-        // 根据事务属性信息，交给事务管理器去获取事务...
+        // 根据事务属性信息, 交给事务管理器去获取事务...
         var status: TransactionStatus? = null
         if (txAttrDelegate != null) {
             status = ptm.getTransaction(txAttrDelegate)
         }
 
-        // 准备txInfo，包装相关的事务对象到txInfo当中，并且把txInfo绑定给当前线程
+        // 准备txInfo, 包装相关的事务对象到txInfo当中, 并且把txInfo绑定给当前线程
         return prepareTransactionInfo(ptm, txAttrDelegate, joinpointIdentification, status)
     }
 
     /**
-     * 准备TransactionInfo，将事务(TransactionInfo)绑定给当前线程
+     * 准备TransactionInfo, 将事务(TransactionInfo)绑定给当前线程
      *
      * @param ptm 平台的事务管理器
      * @param txAttr 事务属性
@@ -238,21 +238,21 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
             txInfo.newTransactionStatus(status)
         } else {
             if (logger.isTraceEnabled) {
-                logger.trace("当前方法没必要创建事务，因为这个方法没有Transactional")
+                logger.trace("当前方法没必要创建事务, 因为这个方法没有Transactional")
             }
         }
-        // 不管我们在这里是否有创建事务，我们都得将当前的TransactionInfo绑定给当前线程
+        // 不管我们在这里是否有创建事务, 我们都得将当前的TransactionInfo绑定给当前线程
         // 在这里间接地去维护了一个TransactionInfo的栈信息
         txInfo.bindToThread()
         return txInfo
     }
 
     /**
-     * 在执行过程中抛出异常，那么应该处理异常并以合适的方式去结束事务
+     * 在执行过程中抛出异常, 那么应该处理异常并以合适的方式去结束事务
      *
      * 使用事务属性对象去进行检查：
-     * * 1.如果该异常需要回滚，那么对事务去进行回滚操作
-     * * 2.如果该异常不需要回滚，那么对该事务去进行提交操作
+     * * 1.如果该异常需要回滚, 那么对事务去进行回滚操作
+     * * 2.如果该异常不需要回滚, 那么对该事务去进行提交操作
      *
      * @param txInfo 事务信息
      * @param ex 异常信息
@@ -260,10 +260,10 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
     protected open fun completeTransactionAfterThrowing(txInfo: TransactionInfo?, ex: Throwable) {
         val transactionStatus = txInfo?.getTransactionStatus()
         if (transactionStatus != null) {
-            // 如果该异常需要回滚的话，回滚事务
+            // 如果该异常需要回滚的话, 回滚事务
             if (txInfo.txAttr != null && txInfo.txAttr.rollbackOn(ex)) {
                 txInfo.transactionManager.rollback(transactionStatus)
-                // 否则，提交事务
+                // 否则, 提交事务
             } else {
                 txInfo.transactionManager.commit(transactionStatus)
             }
@@ -271,7 +271,7 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
     }
 
     /**
-     * 如果必要的话，需要存储之前的ThreadLocal的事务信息(TransactionInfo)
+     * 如果必要的话, 需要存储之前的ThreadLocal的事务信息(TransactionInfo)
      *
      * @param txInfo txInfo
      */
@@ -280,7 +280,7 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
     }
 
     /**
-     * 提交事务；如果必要的话，需要去恢复之前已经有的事务的连接
+     * 提交事务; 如果必要的话, 需要去恢复之前已经有的事务的连接
      *
      * @param txInfo txInfo
      */
@@ -307,7 +307,7 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
     }
 
     /**
-     * 执行目标方法的回调Callback，交给子类去进行指定
+     * 执行目标方法的回调Callback, 交给子类去进行指定
      */
     @FunctionalInterface
     protected interface InvocationCallback {
@@ -315,7 +315,7 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
     }
 
     /**
-     * TransactionInfo，维护了事务的相关信息
+     * TransactionInfo, 维护了事务的相关信息
      *
      * @param joinpointIdentification 方法的id限定名
      * @param txAttr 事务属性
@@ -343,11 +343,11 @@ open class TransactionAspectSupport : BeanFactoryAware, InitializingBean {
         }
 
         /**
-         * 将当前TransactionInfo设置到ThreadLocal当中(绑定给当前线程)，通过oldTransactionInfo配合，形成了TransactionInfo栈
+         * 将当前TransactionInfo设置到ThreadLocal当中(绑定给当前线程), 通过oldTransactionInfo配合, 形成了TransactionInfo栈
          */
         open fun bindToThread() {
             this.oldTransactionInfo = transactionInfoHolder.get()  // store old TransactionInfo
-            transactionInfoHolder.set(this)  // 将当前的TransactionInfo，设置到ThreadLocal当中
+            transactionInfoHolder.set(this)  // 将当前的TransactionInfo, 设置到ThreadLocal当中
         }
 
         open fun getTransactionStatus(): TransactionStatus? = this.transactionStatus

@@ -5,7 +5,7 @@ import com.wanna.framework.core.io.Resource
 import com.wanna.framework.lang.Nullable
 
 /**
- * PropertySource的Factory，支持去去进行PropertySource的创建
+ * PropertySource的Factory, 支持去去进行PropertySource的创建
  *
  * @see Resource
  * @see DefaultPropertySourceFactory

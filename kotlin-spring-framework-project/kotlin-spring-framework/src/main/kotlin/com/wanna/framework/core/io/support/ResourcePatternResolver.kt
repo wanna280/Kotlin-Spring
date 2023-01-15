@@ -30,7 +30,7 @@ interface ResourcePatternResolver : ResourceLoader {
     }
 
     /**
-     * 根据给定的位置表达式，去解析出来合适的资源
+     * 根据给定的位置表达式, 去解析出来合适的资源
      *
      * @param locationPattern 资源位置的表达式
      * @return 解析得到的资源列表

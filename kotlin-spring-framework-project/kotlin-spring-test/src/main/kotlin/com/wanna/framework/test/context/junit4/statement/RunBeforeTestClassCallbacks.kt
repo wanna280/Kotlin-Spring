@@ -5,7 +5,7 @@ import org.junit.BeforeClass
 import org.junit.runners.model.Statement
 
 /**
- * 在`@AfterClass`注解标注的方法执行之后，需要执行的Callback
+ * 在`@AfterClass`注解标注的方法执行之后, 需要执行的Callback
  *
  * @author jianchao.jia
  * @version v1.0

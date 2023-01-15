@@ -4,7 +4,7 @@ import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.lang.Nullable
 
 /**
- * 这是一个ApplicationEvent的多拨器，它可以维护监听器列表，并完成事件的发布
+ * 这是一个ApplicationEvent的多拨器, 它可以维护监听器列表, 并完成事件的发布
  *
  * @see ApplicationEventPublisher
  */
@@ -51,7 +51,7 @@ interface ApplicationEventMulticaster {
     fun multicastEvent(event: ApplicationEvent)
 
     /**
-     * 发布事件，可以执行事件的类型; 如果type为空，那么默认情况下会采用event.class作为type
+     * 发布事件, 可以执行事件的类型; 如果type为空, 那么默认情况下会采用event.class作为type
      *
      * @param event 需要去进行发布的事件
      * @param type 事件类型(可以为null)
@@ -59,7 +59,7 @@ interface ApplicationEventMulticaster {
     fun multicastEvent(event: ApplicationEvent, @Nullable type: Class<out ApplicationEvent>?)
 
     /**
-     * 发布事件，可以执行事件的类型; 如果eventType为空，那么默认情况下会采用event.class作为eventType
+     * 发布事件, 可以执行事件的类型; 如果eventType为空, 那么默认情况下会采用event.class作为eventType
      *
      * @param event 需要去进行发布的事件
      * @param eventType 事件类型(ResolvableType, 可以为null)

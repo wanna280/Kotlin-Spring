@@ -20,7 +20,7 @@ import kotlin.jvm.Throws
 
 
 /**
- * 它为ConfigurablePropertyAccessor提供了典型的模板方法实现；
+ * 它为ConfigurablePropertyAccessor提供了典型的模板方法实现;
  *
  * 它也提供了基于ConversionService和PropertyEditor去进行类型转换的功能
  *
@@ -188,7 +188,7 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
     }
 
     /**
-     * 设置属性值，应该使用setter的方式去进行设置
+     * 设置属性值, 应该使用setter的方式去进行设置
      *
      * @param name name
      * @param value value

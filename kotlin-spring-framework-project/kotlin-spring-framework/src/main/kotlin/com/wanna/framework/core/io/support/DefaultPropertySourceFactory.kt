@@ -32,7 +32,7 @@ open class DefaultPropertySourceFactory : PropertySourceFactory {
     /**
      * 创建一个PropertySource
      *
-     * @param name name(可以为空，为空时，将会使用默认的name)
+     * @param name name(可以为空, 为空时, 将会使用默认的name)
      * @param properties 加载到的Properties
      * @return 构建出来的PropertySource
      */

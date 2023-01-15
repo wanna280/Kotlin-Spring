@@ -5,7 +5,7 @@ import com.wanna.framework.context.event.PayloadApplicationEvent
 import java.util.stream.Stream
 
 /**
- * [ApplicationEvents]的默认实现，记录在Test执行过程当中的所有的[ApplicationEvent]事件
+ * [ApplicationEvents]的默认实现, 记录在Test执行过程当中的所有的[ApplicationEvent]事件
  *
  * @author jianchao.jia
  * @version v1.0
@@ -45,7 +45,7 @@ class DefaultApplicationEvents : ApplicationEvents {
         events.stream().map(this::unwrapPayloadEvent).filter(type::isInstance).map(type::cast)
 
     /**
-     * 对于给定的[ApplicationEvent]去进行unwrap(对于PayloadApplicationEvent来说，我们需要拿到它的payload)
+     * 对于给定的[ApplicationEvent]去进行unwrap(对于PayloadApplicationEvent来说, 我们需要拿到它的payload)
      *
      * @param source 原始的ApplicationEvent
      * @return unwrap之后的结果

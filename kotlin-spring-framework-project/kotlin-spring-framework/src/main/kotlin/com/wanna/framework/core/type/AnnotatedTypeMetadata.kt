@@ -8,8 +8,8 @@ import java.util.Collections
 import java.util.function.Function
 
 /**
- * 这是一个被注解标注的的类型的Metadata信息，支持去获取到注解的相关属性；
- * 主要有两类AnnotatedTypeMetadata的实现，一类是方法的Metadata(MethodMetadata)，另外一类是类的Metadata(AnnotationMetadata)；
+ * 这是一个被注解标注的的类型的Metadata信息, 支持去获取到注解的相关属性; 
+ * 主要有两类AnnotatedTypeMetadata的实现, 一类是方法的Metadata(MethodMetadata), 另外一类是类的Metadata(AnnotationMetadata); 
  *
  * @see MethodMetadata
  * @see AnnotationMetadata
@@ -27,12 +27,12 @@ interface AnnotatedTypeMetadata {
      * 判断该类型上是否标注了某个注解？(支持直接标注/以Meta注解的方式去进行标注)
      *
      * @param annotationName 注解的全类名
-     * @return 如果有标注的话，那么return true；否则return false
+     * @return 如果有标注的话, 那么return true; 否则return false
      */
     fun isAnnotated(annotationName: String): Boolean = getAnnotations().isPresent(annotationName)
 
     /**
-     * 指定具体的注解类型的className，去寻找到合适的注解的对应属性(对于注解对象, 将会转换成为Map; 对于Class的属性值, 不会转换为String)
+     * 指定具体的注解类型的className, 去寻找到合适的注解的对应属性(对于注解对象, 将会转换成为Map; 对于Class的属性值, 不会转换为String)
      *
      * @param annotationName 注解类型的全类名
      * @return 为该注解去解析到的注解属性Map; 如果不存在该注解的话, return null
@@ -62,17 +62,17 @@ interface AnnotatedTypeMetadata {
     }
 
     /**
-     * 指定具体的注解clazz，去寻找到合适的注解的对应属性
+     * 指定具体的注解clazz, 去寻找到合适的注解的对应属性
      *
      * @param annotationClass 注解的类型
-     * @return 解析到的注解属性Map; 如果不存在该注解的话，那么return null
+     * @return 解析到的注解属性Map; 如果不存在该注解的话, 那么return null
      */
     @Nullable
     fun getAnnotationAttributes(annotationClass: Class<out Annotation>): Map<String, Any>? =
         getAnnotationAttributes(annotationClass.name)
 
     /**
-     * 指定具体的注解类型的className，去寻找到**所有**合适的注解的对应属性(对于注解对象, 将会转换成为Map; 对于Class的属性值, 不会转换为String)
+     * 指定具体的注解类型的className, 去寻找到**所有**合适的注解的对应属性(对于注解对象, 将会转换成为Map; 对于Class的属性值, 不会转换为String)
      *
      * @param annotationName 注解类型的全类名
      * @return 为该注解去解析到的注解属性Map; 如果不存在该注解的话, return null
@@ -83,7 +83,7 @@ interface AnnotatedTypeMetadata {
 
 
     /**
-     * 指定具体的注解类型的className，去寻找到**所有**合适的注解的对应属性(对于注解对象, 将会转换成为Map)
+     * 指定具体的注解类型的className, 去寻找到**所有**合适的注解的对应属性(对于注解对象, 将会转换成为Map)
      *
      * @param annotationName 注解类型的全类名
      * @param classValueAsString 是否需要将值为Class的属性值去转换为String?

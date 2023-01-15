@@ -55,7 +55,7 @@ open class HeapDumpWebEndpoint {
     }
 
     /**
-     * HeapDumper，提供对于Java堆当中的相关信息的Dump到一个文件当中的策略接口
+     * HeapDumper, 提供对于Java堆当中的相关信息的Dump到一个文件当中的策略接口
      */
     interface HeapDumper {
 

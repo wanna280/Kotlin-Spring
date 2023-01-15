@@ -3,7 +3,7 @@ package com.wanna.logger.impl.appender.support
 import java.io.FileOutputStream
 
 /**
- * 这是一个基于文件的LoggerAppender，负责将日志输出到文件
+ * 这是一个基于文件的LoggerAppender, 负责将日志输出到文件
  */
 open class FileLoggerAppender : OutputStreamAppender() {
 

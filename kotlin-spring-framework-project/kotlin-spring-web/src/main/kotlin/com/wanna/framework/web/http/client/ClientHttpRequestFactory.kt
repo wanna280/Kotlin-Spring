@@ -4,7 +4,7 @@ import com.wanna.framework.web.bind.annotation.RequestMethod
 import java.net.URI
 
 /**
- * 这是一个ClientHttpRequest的Factory，负责完成ClientHttpRequest的创建工作
+ * 这是一个ClientHttpRequest的Factory, 负责完成ClientHttpRequest的创建工作
  *
  * @see ClientHttpRequest
  */

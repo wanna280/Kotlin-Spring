@@ -6,7 +6,7 @@ import javax.validation.ConstraintValidator
 import javax.validation.ConstraintValidatorFactory
 
 /**
- * Spring基于JSR303的ConstraintValidatorFactory的实现，基于内部去Delegate
+ * Spring基于JSR303的ConstraintValidatorFactory的实现, 基于内部去Delegate
  * 一个Spring的BeanFactory的方式去实现创建一个`ConstraintValidator`
  *
  * 这个类当中主要是提供编程式的API的方式去进行使用

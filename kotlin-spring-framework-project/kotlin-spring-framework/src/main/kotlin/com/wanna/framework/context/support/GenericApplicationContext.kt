@@ -16,8 +16,8 @@ import com.wanna.framework.lang.Nullable
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * 这是一个通用的ApplicationContext，它组合了BeanFactory，为AbstractApplicationContext当中的相关方法提供了实现；
- * 子类当中只要继续根据此类去扩展自己相关的功能(比如注册配置类)，即可实现出一个比较完整的的ApplicationContext
+ * 这是一个通用的ApplicationContext, 它组合了BeanFactory, 为AbstractApplicationContext当中的相关方法提供了实现;
+ * 子类当中只要继续根据此类去扩展自己相关的功能(比如注册配置类), 即可实现出一个比较完整的的ApplicationContext
  *
  * @see AbstractApplicationContext
  *
@@ -27,7 +27,7 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
     AbstractApplicationContext(), BeanDefinitionRegistry {
 
     /**
-     * 提供一个无参数的副构造器，创建一个默认的[DefaultListableBeanFactory]
+     * 提供一个无参数的副构造器, 创建一个默认的[DefaultListableBeanFactory]
      *
      * @see DefaultListableBeanFactory
      */
@@ -44,10 +44,10 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
     private var customClassLoader = false
 
     /**
-     * ResourceLoader，支持去进行自定义ResourceLoader；
-     * AbstractApplicationContext当中，本身就已经支持了ResourceLoader；
-     * 这里支持你去进行自定义，如果你自定义了，那么将会使用你给定的作为ResourceLoader；
-     * 如果你没有去进行自定义，那么将会使用AbstractApplicationContext作为ResourceLoader
+     * ResourceLoader, 支持去进行自定义ResourceLoader;
+     * AbstractApplicationContext当中, 本身就已经支持了ResourceLoader;
+     * 这里支持你去进行自定义, 如果你自定义了, 那么将会使用你给定的作为ResourceLoader;
+     * 如果你没有去进行自定义, 那么将会使用AbstractApplicationContext作为ResourceLoader
      *
      * @see AbstractApplicationContext
      * @see ResourceLoader
@@ -68,7 +68,7 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
     }
 
     /**
-     * 设置ApplicationStartup，同时将ApplicationStartup设置到BeanFactory当中
+     * 设置ApplicationStartup, 同时将ApplicationStartup设置到BeanFactory当中
      *
      * @param applicationStartup ApplicationStartup
      */
@@ -93,7 +93,7 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
 
 
     /**
-     * [ApplicationContext]支持去获取[AutowireCapableBeanFactory]，去提供Bean的创建和初始化工作
+     * [ApplicationContext]支持去获取[AutowireCapableBeanFactory], 去提供Bean的创建和初始化工作
      *
      * @return AutowireCapableBeanFactory
      */
@@ -102,7 +102,7 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
     /**
      * 是否允许发生循环依赖？
      *
-     * @return 如果允许循环依赖，那么return true；否则return false
+     * @return 如果允许循环依赖, 那么return true; 否则return false
      */
     open fun isAllowCircularReferences() = beanFactory.isAllowCircularReferences()
 
@@ -121,8 +121,8 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
     override fun getBeanDefinitions() = beanFactory.getBeanDefinitions()
 
     /**
-     * 根据beanName去获取到BeanDefinition；
-     * 如果想要不抛出异常，请先使用[containsBeanDefinition]方法去进行判断该BeanDefinition是否存在
+     * 根据beanName去获取到BeanDefinition;
+     * 如果想要不抛出异常, 请先使用[containsBeanDefinition]方法去进行判断该BeanDefinition是否存在
      *
      * @param beanName beanName
      * @return BeanDefinition
@@ -135,7 +135,7 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
      * 检查BeanFactory当中是否包含了给定的beanName的BeanDefinition
      *
      * @param name beanName
-     * @return 如果包含了该BeanDefinition，那么return true；否则return false
+     * @return 如果包含了该BeanDefinition, 那么return true; 否则return false
      */
     override fun containsBeanDefinition(name: String) = beanFactory.containsBeanDefinition(name)
 
@@ -163,7 +163,7 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
         beanFactory.registerBeanDefinition(name, beanDefinition)
 
     /**
-     * 设置parentApplicationContext的同时，需要设置parentBeanFactory
+     * 设置parentApplicationContext的同时, 需要设置parentBeanFactory
      *
      * @param parent parentApplicationContext
      */
@@ -173,9 +173,9 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
     }
 
     /**
-     * 获取ApplicationContext内部的BeanFactory；
-     * * 1.如果ApplicationContext是ConfigurableApplicationContext，那么可以从它里面获取BeanFactory；
-     * * 2.如果ApplicationContext不是ConfigurableApplicationContext，那么fallback直接就使用它作为parentBeanFactory；
+     * 获取ApplicationContext内部的BeanFactory;
+     * * 1.如果ApplicationContext是ConfigurableApplicationContext, 那么可以从它里面获取BeanFactory;
+     * * 2.如果ApplicationContext不是ConfigurableApplicationContext, 那么fallback直接就使用它作为parentBeanFactory;
      *
      * @return ApplicationContext内部的BeanFactory(可以为null)
      */
@@ -209,7 +209,7 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
     override fun getBeanClassLoader() = this.beanFactory.getBeanClassLoader()
 
     /**
-     * closeBeanFactory, 已经没有别的操作可以做了，所有的摧毁操作都在之前就已经被做完了
+     * closeBeanFactory, 已经没有别的操作可以做了, 所有的摧毁操作都在之前就已经被做完了
      */
     override fun closeBeanFactory() {
 
@@ -225,7 +225,7 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
     }
 
     /**
-     * 我们需要知道用户是否有自定义过ClassLoader，因此重写这个方法去进行记录一下
+     * 我们需要知道用户是否有自定义过ClassLoader, 因此重写这个方法去进行记录一下
      *
      * @param classLoader classLoader
      */
@@ -235,7 +235,7 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
     }
 
     /**
-     * 根据给定的资源的位置，去加载Resource
+     * 根据给定的资源的位置, 去加载Resource
      *
      * @param location 资源所在的位置location
      * @return 加载得到的Resource
@@ -254,8 +254,8 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
      */
     @Nullable
     override fun getClassLoader(): ClassLoader? {
-        // 只有在没有自定义ClassLoader的情况下，才使用ResourceLoader的ClassLoader
-        // 在自定义了的情况下，应该invoke super
+        // 只有在没有自定义ClassLoader的情况下, 才使用ResourceLoader的ClassLoader
+        // 在自定义了的情况下, 应该invoke super
         if (this.resourceLoader != null && !customClassLoader) {
             return this.resourceLoader?.getClassLoader() ?: throw IllegalStateException("ResourceLoader不能为空")
         }

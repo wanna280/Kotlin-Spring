@@ -226,7 +226,7 @@ object ClassUtils {
     }
 
     /**
-     * 判断childClass是否是parentClass的子类？如果其中一个返回为空，那么return true；只有两者均不为空时，才会去进行判断
+     * 判断childClass是否是parentClass的子类？如果其中一个返回为空, 那么return true; 只有两者均不为空时, 才会去进行判断
      *
      * @param parentClass parentClass
      * @param childClass parentClass
@@ -248,7 +248,7 @@ object ClassUtils {
         if (value != null) isAssignFrom(type, value::class.java) else !type.isPrimitive
 
     /**
-     * 判断childClass是否是parentClass的子类？如果其中一个返回为空，那么return true；只有两者均不为空时，才会去进行判断
+     * 判断childClass是否是parentClass的子类？如果其中一个返回为空, 那么return true; 只有两者均不为空时, 才会去进行判断
      *
      * @param lhsType parentClass
      * @param rhsType childClass
@@ -275,9 +275,9 @@ object ClassUtils {
     }
 
     /**
-     * 获取一个短的类名，也就是一个类的去掉包名之后的类名
+     * 获取一个短的类名, 也就是一个类的去掉包名之后的类名
      * 比如：
-     * * 1."com.wanna.User"会被转换为"User"，
+     * * 1."com.wanna.User"会被转换为"User", 
      * * 2."com.wanna.User$Default"会被转换为"User$Default"
      *
      * @param clazz 想要获取短类名的clazz
@@ -287,9 +287,9 @@ object ClassUtils {
     fun getShortName(clazz: Class<*>): String = getShortName(clazz.name)
 
     /**
-     * 获取一个短的类名，也就是一个类的去掉包名之后的类名
+     * 获取一个短的类名, 也就是一个类的去掉包名之后的类名
      * 比如：
-     * * 1."com.wanna.User"会被转换为"User"，
+     * * 1."com.wanna.User"会被转换为"User", 
      * * 2."com.wanna.User$Default"会被转换为"User$Default"
      *
      * @param clazzName 想要获取短类名的className
@@ -302,7 +302,7 @@ object ClassUtils {
     }
 
     /**
-     * 根据className，获取到AnnotationClass
+     * 根据className, 获取到AnnotationClass
      *
      * @param clazzName className
      * @param T 需要返回的注解类型
@@ -314,7 +314,7 @@ object ClassUtils {
     }
 
     /**
-     * 使用Class.forName的方式去，获取到Class(使用默认的ClassLoader)
+     * 使用Class.forName的方式去, 获取到Class(使用默认的ClassLoader)
      *
      * @param clazzName className
      * @return 加载到的类
@@ -325,7 +325,7 @@ object ClassUtils {
     }
 
     /**
-     * 使用Class.forName的方式去，获取到Class(可以使用自定义的ClassLoader)
+     * 使用Class.forName的方式去, 获取到Class(可以使用自定义的ClassLoader)
      *
      * Note: 支持各种各样的数组风格, 也支持基于基础数据类型的Class的获取
      *
@@ -412,7 +412,7 @@ object ClassUtils {
      * 判断指定的类是否存在于当前JVM的运行时的依赖当中？
      *
      * @param className 要去进行判断的className
-     * @return 存在return true；不存在return false
+     * @return 存在return true; 不存在return false
      */
     @JvmStatic
     fun isPresent(className: String): Boolean {
@@ -484,7 +484,7 @@ object ClassUtils {
      *
      * @param clazz 要去匹配的类
      * @param methodName 要寻找方法的方法名
-     * @return 方法名符合的Method列表(找不到的话，return empty)
+     * @return 方法名符合的Method列表(找不到的话, return empty)
      */
     private fun findMethodCandidatesByName(clazz: Class<*>, methodName: String): Set<Method> {
         val candidates = LinkedHashSet<Method>()
@@ -501,7 +501,7 @@ object ClassUtils {
      *
      * @param className 要去进行判断的className
      * @param classLoader 要使用的ClassLoader
-     * @return 存在return true；不存在return false
+     * @return 存在return true; 不存在return false
      */
     @JvmStatic
     fun isPresent(className: String, @Nullable classLoader: ClassLoader? = null): Boolean {
@@ -553,10 +553,10 @@ object ClassUtils {
     }
 
     /**
-     * 获取一个方法的全限定名，格式为"类名.方法名"
+     * 获取一个方法的全限定名, 格式为"类名.方法名"
      *
      * @param method method
-     * @param clazz clazz(如果为null，将会使用method.declaringClass作为clazz)
+     * @param clazz clazz(如果为null, 将会使用method.declaringClass作为clazz)
      * @return 该方法的全限定名
      */
     @JvmStatic
@@ -565,7 +565,7 @@ object ClassUtils {
     }
 
     /**
-     * 获取一个Class的文件名(简单类名+".class")，例如String.class
+     * 获取一个Class的文件名(简单类名+".class"), 例如String.class
      *
      * @param clazz class
      * @return ClassFileName
@@ -586,7 +586,7 @@ object ClassUtils {
     fun getPackageName(clazz: Class<*>): String = getPackageName(clazz.name)
 
     /**
-     * 指定一个className，获取它的包名
+     * 指定一个className, 获取它的包名
      *
      * @param fullQualifierName 类的全类名
      * @return 解析到的包名(切取最后一个'.'之前的部分去作为packageName)
@@ -598,7 +598,7 @@ object ClassUtils {
     }
 
     /**
-     * 获取一个类的全部父接口，并以Set的方式去进行返回
+     * 获取一个类的全部父接口, 并以Set的方式去进行返回
      *
      * @param clazz 要获取接口的目标类
      * @return 该类的所有接口(Set)
@@ -606,7 +606,7 @@ object ClassUtils {
     @JvmStatic
     fun getAllInterfacesForClassAsSet(clazz: Class<*>): Set<Class<*>> {
         val interfaces = LinkedHashSet<Class<*>>()
-        // 如果它是接口的话，直接return
+        // 如果它是接口的话, 直接return
         if (clazz.isInterface) {
             return setOf(clazz)
         }
@@ -630,9 +630,9 @@ object ClassUtils {
     }
 
     /**
-     * 给定一个类，去生成这个类的全限定名；
-     * 如果这个类是一个数组类，那么需要加上后缀"[]"；
-     * 如果一个类不是一个数组类，那么就是正常返回一个类的className
+     * 给定一个类, 去生成这个类的全限定名;
+     * 如果这个类是一个数组类, 那么需要加上后缀"[]";
+     * 如果一个类不是一个数组类, 那么就是正常返回一个类的className
      *
      * @param clazz clazz
      * @return 全限定名字符串
@@ -659,7 +659,7 @@ object ClassUtils {
     }
 
     /**
-     * 将资源名转换成为类名，将资源路径当中的"/"去转换成为"."
+     * 将资源名转换成为类名, 将资源路径当中的"/"去转换成为"."
      *
      * @param resourcePath 资源路径
      * @return className
@@ -669,7 +669,7 @@ object ClassUtils {
         resourcePath.replace(PATH_SEPARATOR, PACKAGE_SEPARATOR)
 
     /**
-     * 将类名转换成为资源名，将包名当中的"."去替换成为"/"
+     * 将类名转换成为资源名, 将包名当中的"."去替换成为"/"
      *
      * @param className className
      * @return 资源路径

@@ -32,7 +32,7 @@ open class MvcMappingDescriptionProvider : MappingDescriptionProvider {
             )
 
         /**
-         * 针对给定的[HandlerMapping]，尝试使用所有的[HandlerMappingDescriptionProvider]去进行策略的探测
+         * 针对给定的[HandlerMapping], 尝试使用所有的[HandlerMappingDescriptionProvider]去进行策略的探测
          *
          * @param handlerMapping handlerMapping
          * @param descriptionProviders 描述HandlerMapping的Provider
@@ -44,7 +44,7 @@ open class MvcMappingDescriptionProvider : MappingDescriptionProvider {
             descriptionProviders: List<HandlerMappingDescriptionProvider<*>>
         ): List<DispatcherHandlerMappingDescription> {
             descriptionProviders.forEach {
-                // 如果类型匹配的话，那么就交给它(HandlerMappingDescriptionProvider)去进行处理
+                // 如果类型匹配的话, 那么就交给它(HandlerMappingDescriptionProvider)去进行处理
                 if (ClassUtils.isAssignFrom(it.getMappingClass(), handlerMapping::class.java)) {
                     @Suppress("UNCHECKED_CAST")
                     return (it as HandlerMappingDescriptionProvider<T>).describe(handlerMapping)
@@ -71,7 +71,7 @@ open class MvcMappingDescriptionProvider : MappingDescriptionProvider {
     override fun describeMappings(applicationContext: ApplicationContext): Map<String, List<DispatcherHandlerMappingDescription>> {
         val mappings = LinkedHashMap<String, List<DispatcherHandlerMappingDescription>>()
 
-        // 探测出来所有的DispatcherHandler，挨个去进行描述
+        // 探测出来所有的DispatcherHandler, 挨个去进行描述
         // Key-beanName, Value-该DispatcherHandler当中的所有的HandlerMapping的描述结果
         determineDispatcherHandlers(applicationContext)
             .forEach { (name, handler) ->
@@ -82,8 +82,8 @@ open class MvcMappingDescriptionProvider : MappingDescriptionProvider {
     }
 
     /**
-     * 对于给定的HandlerMapping列表，去进行一一探测，每个[HandlerMapping]都会得到一个[DispatcherHandlerMappingDescription]列表，
-     * 我们将所有的[HandlerMapping]当中的结果去进行merge，并进行最终merge得到一个大的[DispatcherHandlerMappingDescription]列表
+     * 对于给定的HandlerMapping列表, 去进行一一探测, 每个[HandlerMapping]都会得到一个[DispatcherHandlerMappingDescription]列表,
+     * 我们将所有的[HandlerMapping]当中的结果去进行merge, 并进行最终merge得到一个大的[DispatcherHandlerMappingDescription]列表
      *
      * @param mappings 需要去进行探测的HandlerMappings列表
      * @return 对于所有的HandlerMappings去描述得到的DispatcherHandlerMappingDescriptions
@@ -107,7 +107,7 @@ open class MvcMappingDescriptionProvider : MappingDescriptionProvider {
     }
 
     /**
-     * 针对一种类型的[HandlerMapping]去进行描述的Provider的策略接口，
+     * 针对一种类型的[HandlerMapping]去进行描述的Provider的策略接口,
      * 我们根据目前已经提供实现的[HandlerMapping]类型去进行枚举提供实现
      *
      * @param T 当前Provider支持去进行描述的HandlerMapping的具体类型
@@ -149,10 +149,10 @@ open class MvcMappingDescriptionProvider : MappingDescriptionProvider {
          * 对于一个[RequestMappingInfoHandlerMapping]去进行描述
          *
          * @param handlerMapping HandlerMapping
-         * @return 对该HandlerMapping去进行描述，得到的描述信息列表
+         * @return 对该HandlerMapping去进行描述, 得到的描述信息列表
          */
         override fun describe(handlerMapping: RequestMappingInfoHandlerMapping): List<DispatcherHandlerMappingDescription> {
-            // 从HandlerMapping当中，获取到所有的HandlerMethods
+            // 从HandlerMapping当中, 获取到所有的HandlerMethods
             val handlerMethods = handlerMapping.getHandlerMethods()
 
             // 对所有的HandlerMethod去进行描述

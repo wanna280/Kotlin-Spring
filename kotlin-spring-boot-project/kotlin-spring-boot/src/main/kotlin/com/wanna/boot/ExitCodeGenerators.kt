@@ -1,7 +1,7 @@
 package com.wanna.boot
 
 /**
- * ExitCode的Generators，组合了ExitCodeGenerator的列表
+ * ExitCode的Generators, 组合了ExitCodeGenerator的列表
  *
  * @author jianchao.jia
  * @version v1.0

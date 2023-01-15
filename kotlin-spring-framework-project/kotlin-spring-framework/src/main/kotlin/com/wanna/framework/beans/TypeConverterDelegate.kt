@@ -9,7 +9,7 @@ import com.wanna.framework.util.ClassUtils
 class TypeConverterDelegate(private val registry: PropertyEditorRegistrySupport) {
 
     /**
-     * 如果必要的话，需要去完成类型的转换
+     * 如果必要的话, 需要去完成类型的转换
      *
      * @param propertyName propertyName(可以为null)
      * @param oldValue 该属性的旧的值(可以为null)
@@ -46,12 +46,12 @@ class TypeConverterDelegate(private val registry: PropertyEditorRegistrySupport)
                 convertedValue = editor.value
             }
         }
-        // bugfix...这里如果直接检查isAssignFrom的话，有可能会存在需要的最终结果当中，
-        // 其中一个是基础类型、一个是包装类型，从而导致问题，因此我们还是使用cast去进行检查吧
+        // bugfix...这里如果直接检查isAssignFrom的话, 有可能会存在需要的最终结果当中,
+        // 其中一个是基础类型、一个是包装类型, 从而导致问题, 因此我们还是使用cast去进行检查吧
         try {
             return convertedValue as T
         } catch (ex: Exception) {
-            // 如果参数类型转换存在问题的话，那么丢出去不合法参数异常...
+            // 如果参数类型转换存在问题的话, 那么丢出去不合法参数异常...
             throw IllegalArgumentException(
                 "参数类型不匹配, 需要的类型是[${ClassUtils.getQualifiedName(requiredType)}], 但是实际得到的是[${
                     ClassUtils.getQualifiedName(convertedValue?.javaClass ?: Unit::class.java)

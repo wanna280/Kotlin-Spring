@@ -10,17 +10,17 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.locks.ReentrantLock
 
 /**
- * 这是一个通用的Scope，提供了作为一个Scope的相关的通用方法，它是一个BeanFactoryPostProcessor，会将自身作为Scope注册到BeanFactory当中
+ * 这是一个通用的Scope, 提供了作为一个Scope的相关的通用方法, 它是一个BeanFactoryPostProcessor, 会将自身作为Scope注册到BeanFactory当中
  */
 open class GenericScope : Scope, BeanDefinitionRegistryPostProcessor, DisposableBean {
 
     // scopeName
     private var name = "generic"
 
-    // 操作缓存的锁，beanName->Lock
+    // 操作缓存的锁, beanName->Lock
     private val locks = ConcurrentHashMap<String, ReentrantLock>()
 
-    // Scope Cache，默认实现是基于ConcurrentHashMap的缓存
+    // Scope Cache, 默认实现是基于ConcurrentHashMap的缓存
     private var cache = BeanLifecycleWrapperCache(StandardScopeCache())
 
     /**
@@ -49,7 +49,7 @@ open class GenericScope : Scope, BeanDefinitionRegistryPostProcessor, Disposable
     }
 
     /**
-     * 摧毁当前Scope内的全部Bean，并回调所有的destroy Callback
+     * 摧毁当前Scope内的全部Bean, 并回调所有的destroy Callback
      */
     override fun destroy() {
         val beanLifecycleWrappers = this.cache.clear()
@@ -65,7 +65,7 @@ open class GenericScope : Scope, BeanDefinitionRegistryPostProcessor, Disposable
     }
 
     /**
-     * 给定beanName，去摧毁Scope内的一个Bean
+     * 给定beanName, 去摧毁Scope内的一个Bean
      *
      * @param name beanName
      * @return 是否destroy成功
@@ -90,14 +90,14 @@ open class GenericScope : Scope, BeanDefinitionRegistryPostProcessor, Disposable
     }
 
     /**
-     * 在进行BeanFactory进行后置处理时，将Scope(this)直接注册到BeanFactory当中
+     * 在进行BeanFactory进行后置处理时, 将Scope(this)直接注册到BeanFactory当中
      */
     override fun postProcessBeanFactory(beanFactory: ConfigurableListableBeanFactory) {
         beanFactory.registerScope(getName(), this)
     }
 
     override fun get(beanName: String, factory: ObjectFactory<*>): Any {
-        // 如果必要的话，将ObjectFactory加入到缓存当中(如果已经存在了的话，那么不会替换之前的)
+        // 如果必要的话, 将ObjectFactory加入到缓存当中(如果已经存在了的话, 那么不会替换之前的)
         val value = this.cache.put(beanName, BeanLifecycleWrapper(beanName, factory))
         this.locks.putIfAbsent(beanName, ReentrantLock())
         try {
@@ -122,7 +122,7 @@ open class GenericScope : Scope, BeanDefinitionRegistryPostProcessor, Disposable
      * 移除一个当前Scope内的Bean
      *
      * @param name beanName
-     * @return 移除之前存在的Bean(如果之前不存在，有可能为null)
+     * @return 移除之前存在的Bean(如果之前不存在, 有可能为null)
      */
     override fun remove(name: String): Any? {
         val lifecycleWrapper = this.cache.remove(name)
@@ -130,7 +130,7 @@ open class GenericScope : Scope, BeanDefinitionRegistryPostProcessor, Disposable
     }
 
     /**
-     * 提供了ScopeCache的包装，本来ScopeCache的是一个Object对象，我们将它去进行扩展，保证操作的Object对象，都是BeanLifecycleWrapper对象；
+     * 提供了ScopeCache的包装, 本来ScopeCache的是一个Object对象, 我们将它去进行扩展, 保证操作的Object对象, 都是BeanLifecycleWrapper对象; 
      *
      * @see BeanLifecycleWrapper
      * @see ScopeCache
@@ -155,8 +155,8 @@ open class GenericScope : Scope, BeanDefinitionRegistryPostProcessor, Disposable
     }
 
     /**
-     * 维护了一个Scope内的Bean的生命周期相关的组件，维护了一个Bean以及它的destroy回调函数；
-     * 因为它会被加入缓存的Value当中，应该实现自定义的equals方法，去保证不该替换时别进行替换
+     * 维护了一个Scope内的Bean的生命周期相关的组件, 维护了一个Bean以及它的destroy回调函数; 
+     * 因为它会被加入缓存的Value当中, 应该实现自定义的equals方法, 去保证不该替换时别进行替换
      *
      * @param name beanName
      * @param objectFactory 创建Bean的factory

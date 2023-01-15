@@ -3,7 +3,7 @@ package com.wanna.framework.beans
 import java.beans.PropertyChangeEvent
 
 /**
- * 在进行属性的访问时，出现了异常，例如执行目标方法异常、字段类型不匹配异常
+ * 在进行属性的访问时, 出现了异常, 例如执行目标方法异常、字段类型不匹配异常
  *
  * @author jianchao.jia
  * @version v1.0

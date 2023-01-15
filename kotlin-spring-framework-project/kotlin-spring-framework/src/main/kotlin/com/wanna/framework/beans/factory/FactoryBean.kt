@@ -1,7 +1,7 @@
 package com.wanna.framework.beans.factory
 
 /**
- * 这是一个FactoryBean，用来给容器中导入组件
+ * 这是一个FactoryBean, 用来给容器中导入组件
  */
 interface FactoryBean<T> {
 

@@ -5,7 +5,7 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.config.BeanMetadataElement
 
 /**
- * 支持去解析Bean引用的列表，支持去添加一个RuntimeBeanReference列表交给Spring去进行解析
+ * 支持去解析Bean引用的列表, 支持去添加一个RuntimeBeanReference列表交给Spring去进行解析
  *
  * @see com.wanna.framework.beans.factory.config.RuntimeBeanReference
  * @see BeanDefinitionValueResolver.resolveValueIfNecessary

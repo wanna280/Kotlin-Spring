@@ -15,7 +15,7 @@ import java.util.concurrent.Executor
 abstract class Subscriber<T : Event> {
 
     /**
-     * 真正地接收事件， 并对该事件去进行处理的Callback方法
+     * 真正地接收事件,  并对该事件去进行处理的Callback方法
      *
      * @param event 需要去进行处理的事件Event
      */

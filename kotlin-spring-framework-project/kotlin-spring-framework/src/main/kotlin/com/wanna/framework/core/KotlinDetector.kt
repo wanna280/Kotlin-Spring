@@ -4,8 +4,8 @@ import com.wanna.framework.util.ClassUtils
 import java.lang.reflect.Method
 
 /**
- * 这是一个Kotlin的探测器，负责探测Kotlin相关的依赖是否存在；
- * 比如探测这个类是否是一个Kotlin类，探测是否是一个挂起函数，探测Kotlin反射是否存在
+ * 这是一个Kotlin的探测器, 负责探测Kotlin相关的依赖是否存在; 
+ * 比如探测这个类是否是一个Kotlin类, 探测是否是一个挂起函数, 探测Kotlin反射是否存在
  */
 object KotlinDetector {
 

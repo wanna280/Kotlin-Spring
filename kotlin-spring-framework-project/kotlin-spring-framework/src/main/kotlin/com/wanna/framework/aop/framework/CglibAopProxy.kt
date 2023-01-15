@@ -11,9 +11,9 @@ import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
 /**
- * 基于Cglib的动态代理，需要使用基于ASM技术去实现的Enhancer去进行创建代理
+ * 基于Cglib的动态代理, 需要使用基于ASM技术去实现的Enhancer去进行创建代理
  *
- * @param config AdvisedSupport，维护了代理需要用到的相关的各个组件
+ * @param config AdvisedSupport, 维护了代理需要用到的相关的各个组件
  */
 open class CglibAopProxy(private val config: AdvisedSupport) : AopProxy {
     override fun getProxy(): Any {
@@ -26,7 +26,7 @@ open class CglibAopProxy(private val config: AdvisedSupport) : AopProxy {
         val rootClass = this.config.getTargetClass() ?: throw IllegalStateException("CGLIB代理当中必须设置targetClass")
         var proxySuperClass = rootClass
 
-        // 如果含有'$$'，说明已经被CGLIB代理过，需要使用它的父类去生成代理
+        // 如果含有'$$', 说明已经被CGLIB代理过, 需要使用它的父类去生成代理
         if (rootClass.name.contains("$$")) {
             proxySuperClass = rootClass.superclass
             val additionalInterfaces = rootClass.interfaces

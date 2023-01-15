@@ -8,7 +8,7 @@ import io.micrometer.core.instrument.config.MeterFilter
 import org.slf4j.LoggerFactory
 
 /**
- * 根据提供的[MeterBinder]、[MeterFilter]以及[MeterRegistryCustomizer]，提供对于给定的[MeterRegistry]的自定义
+ * 根据提供的[MeterBinder]、[MeterFilter]以及[MeterRegistryCustomizer], 提供对于给定的[MeterRegistry]的自定义
  *
  * @author jianchao.jia
  * @version v1.0
@@ -48,17 +48,17 @@ open class MeterRegistryConfigurer(
      */
     open fun configure(registry: MeterRegistry) {
 
-        // 对于customize方法必须在最前面，因为它们可能会自定义的Tags和修改Timer或者是一些总结性的配置信息
+        // 对于customize方法必须在最前面, 因为它们可能会自定义的Tags和修改Timer或者是一些总结性的配置信息
         customize(registry)
 
-        // 只有在不是AutoConfiguredCompositeMeterRegistry情况，才去进行添加Filters
-        // 我们需要将Filter去应用给非组合的MeterRegistry当中，而不是组合的MeterRegistry里
+        // 只有在不是AutoConfiguredCompositeMeterRegistry情况, 才去进行添加Filters
+        // 我们需要将Filter去应用给非组合的MeterRegistry当中, 而不是组合的MeterRegistry里
         if (registry !is AutoConfiguredCompositeMeterRegistry) {
             addFilters(registry)
         }
 
-        // 如果没有CompositeMeterRegistry这个用于去进行聚合的MeterRegistry的话，那么我们必须将它去应用给当前MeterRegistry
-        // 如果存在有CompositeMeterRegistry的话，那么我们只有在当前就是CompositeMeterRegistry的情况才去添加，不对单个的MeterRegistry去进行添加了
+        // 如果没有CompositeMeterRegistry这个用于去进行聚合的MeterRegistry的话, 那么我们必须将它去应用给当前MeterRegistry
+        // 如果存在有CompositeMeterRegistry的话, 那么我们只有在当前就是CompositeMeterRegistry的情况才去添加, 不对单个的MeterRegistry去进行添加了
         if (!this.hasCompositeMeterRegistry || registry is CompositeMeterRegistry) {
             addBinders(registry)
         }
@@ -70,7 +70,7 @@ open class MeterRegistryConfigurer(
     }
 
     /**
-     * 对于给定的[MeterRegistry]，使用[MeterRegistryCustomizer]去进行自定义
+     * 对于给定的[MeterRegistry], 使用[MeterRegistryCustomizer]去进行自定义
      *
      * @param registry 需要去进行自定义的MeterRegistry
      */

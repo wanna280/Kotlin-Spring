@@ -6,7 +6,7 @@ import com.wanna.framework.core.convert.converter.GenericConverter.*
 import com.wanna.framework.util.StringUtils
 
 /**
- * Array转为String的的Converter，将数组内的全部元素全部toString，并使用","去进行join
+ * Array转为String的的Converter, 将数组内的全部元素全部toString, 并使用","去进行join
  */
 open class ArrayToStringConverter : GenericConverter {
 

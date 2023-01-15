@@ -1,7 +1,7 @@
 package com.wanna.framework.core.environment
 
 /**
- * 这是一个简单的CommandLine的Args解析器，对传递的命令行参数去进行解析
+ * 这是一个简单的CommandLine的Args解析器, 对传递的命令行参数去进行解析
  *
  * @see CommandLineArgs
  */
@@ -10,7 +10,7 @@ class SimpleCommandLineArgsParser {
     fun parse(vararg args: String): CommandLineArgs {
         val commandLineArgs = CommandLineArgs()
         for (arg in args) {
-            // 如果以--开头的，切割成为k=v的形式，并加入到optionArgs当中
+            // 如果以--开头的, 切割成为k=v的形式, 并加入到optionArgs当中
             if (arg.startsWith("--")) {
                 val keyValue = arg.substring(2)
                 val index = keyValue.indexOf("=")
@@ -23,7 +23,7 @@ class SimpleCommandLineArgsParser {
                     }
                     commandLineArgs.addOptionArg(keyValue, null)
                 }
-                // 如果不是以--开头的，那么直接加入nonArg列表当中
+                // 如果不是以--开头的, 那么直接加入nonArg列表当中
             } else {
                 commandLineArgs.addNonArg(arg)
             }

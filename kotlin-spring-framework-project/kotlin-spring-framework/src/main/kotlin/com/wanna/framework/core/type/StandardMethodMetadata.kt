@@ -6,7 +6,7 @@ import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
 /**
- * 这是一个对于MethodMetadata的标准实现，描述的是一个方法的相关元信息
+ * 这是一个对于MethodMetadata的标准实现, 描述的是一个方法的相关元信息
  *
  * @see AnnotatedTypeMetadata
  */

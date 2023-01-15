@@ -52,7 +52,7 @@ open class SimpleApplicationEventMulticaster : AbstractApplicationEventMulticast
     }
 
     /**
-     * 发布事件，可以执行事件的类型; 如果type为空，那么默认情况下会采用event.class作为type
+     * 发布事件, 可以执行事件的类型; 如果type为空, 那么默认情况下会采用event.class作为type
      *
      * @param event 需要去进行发布的事件
      * @param type 事件类型(可以为null)
@@ -65,21 +65,21 @@ open class SimpleApplicationEventMulticaster : AbstractApplicationEventMulticast
 
 
     /**
-     * 发布事件，可以执行事件的类型; 如果eventType为空，那么默认情况下会采用event.class作为eventType
+     * 发布事件, 可以执行事件的类型; 如果eventType为空, 那么默认情况下会采用event.class作为eventType
      *
      * @param event 需要去进行发布的事件
      * @param eventType 事件类型(ResolvableType, 可以为null)
      */
     override fun multicastEvent(event: ApplicationEvent, @Nullable eventType: ResolvableType?) {
-        // 如果eventType为null，那么将会采用event的类型作为事件类型
+        // 如果eventType为null, 那么将会采用event的类型作为事件类型
         val eventResolvableType = eventType ?: ResolvableType.forClass(event::class.java)
-        // 根据事件类型，去获取到所有的匹配的ApplicationListener
+        // 根据事件类型, 去获取到所有的匹配的ApplicationListener
         val applicationListeners = getApplicationListeners<ApplicationEvent>(event, eventResolvableType)
         applicationListeners.forEach { invokeListener(it, event) }
     }
 
     /**
-     * 执行监听器，如果指定了errorHandler的话，那么使用errorHandler去进行处理，不然直接执行即可
+     * 执行监听器, 如果指定了errorHandler的话, 那么使用errorHandler去进行处理, 不然直接执行即可
      *
      * @param event event
      * @param applicationListener ApplicationListener
@@ -97,7 +97,7 @@ open class SimpleApplicationEventMulticaster : AbstractApplicationEventMulticast
     }
 
     /**
-     * 执行监听器，如果指定了Executor，那么将会交给Executor去进行执行；不然直接去进行回调监听器即可
+     * 执行监听器, 如果指定了Executor, 那么将会交给Executor去进行执行; 不然直接去进行回调监听器即可
      */
     protected open fun <E : ApplicationEvent> doInvokeListener(applicationListener: ApplicationListener<E>, event: E) {
         if (executor != null) {

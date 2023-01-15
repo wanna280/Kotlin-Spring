@@ -8,8 +8,8 @@ import com.wanna.framework.util.SystemPropertyUtils
 import java.util.*
 
 /**
- * 提供对于占位符的解析的基础支持类，它的父类当中已经实现了对于[Properties]的加载和后置处理，
- * 在这个类当中，我们可以利用这些[Properties]去提供占位符的解析功能，提供了一些解析占位符的模板方法功能
+ * 提供对于占位符的解析的基础支持类, 它的父类当中已经实现了对于[Properties]的加载和后置处理, 
+ * 在这个类当中, 我们可以利用这些[Properties]去提供占位符的解析功能, 提供了一些解析占位符的模板方法功能
  *
  * @author jianchao.jia
  * @version v1.0
@@ -62,7 +62,7 @@ abstract class PlaceholderConfigurerSupport : PropertyResourceConfigurer(), Bean
     var ignoreUnresolvablePlaceholders = false
 
     /**
-     * 当遇到这样一个值的时候，需要被当做null去进行处理，比如"null"/""
+     * 当遇到这样一个值的时候, 需要被当做null去进行处理, 比如"null"/""
      */
     var nullValue: String? = null
 
@@ -85,11 +85,11 @@ abstract class PlaceholderConfigurerSupport : PropertyResourceConfigurer(), Bean
     }
 
     /**
-     * 对于属性的处理工作，这里会将给定的[StringValueResolver]去添加到BeanFactory当中，
-     * 这样BeanFactory就新增了对于占位符的解析功能，作为一个模板方法交给子类去进行使用
+     * 对于属性的处理工作, 这里会将给定的[StringValueResolver]去添加到BeanFactory当中, 
+     * 这样BeanFactory就新增了对于占位符的解析功能, 作为一个模板方法交给子类去进行使用
      *
      * @param beanFactory BeanFactory
-     * @param valueResolver StringValueResolver，提供对于占位符的解析功能
+     * @param valueResolver StringValueResolver, 提供对于占位符的解析功能
      */
     protected open fun doProcessProperties(
         beanFactory: ConfigurableListableBeanFactory,
@@ -97,7 +97,7 @@ abstract class PlaceholderConfigurerSupport : PropertyResourceConfigurer(), Bean
     ) {
         val beanDefinitionVisitor = BeanDefinitionVisitor(valueResolver)
 
-        // 遍历所有的BeanDefinition，去进行占位符的解析功能
+        // 遍历所有的BeanDefinition, 去进行占位符的解析功能
         val beanDefinitionNames = beanFactory.getBeanDefinitionNames()
         beanDefinitionNames.forEach {
             if (it != beanName && this.beanFactory == beanFactory) {
@@ -105,7 +105,7 @@ abstract class PlaceholderConfigurerSupport : PropertyResourceConfigurer(), Bean
             }
         }
 
-        // 将StringValueResolver加入到BeanFactory当中，提供对于BeanFactory的一些占位符的解析功能
+        // 将StringValueResolver加入到BeanFactory当中, 提供对于BeanFactory的一些占位符的解析功能
         beanFactory.addEmbeddedValueResolver(valueResolver)
     }
 }

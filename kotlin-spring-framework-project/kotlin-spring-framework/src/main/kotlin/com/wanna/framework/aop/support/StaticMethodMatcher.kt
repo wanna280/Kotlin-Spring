@@ -4,7 +4,7 @@ import com.wanna.framework.aop.MethodMatcher
 import java.lang.reflect.Method
 
 /**
- * 静态的方法匹配器，不需要在运行时去进行方法的匹配，只需要根据方法/类去进行匹配，不用去匹配一个方法需要传递的参数
+ * 静态的方法匹配器, 不需要在运行时去进行方法的匹配, 只需要根据方法/类去进行匹配, 不用去匹配一个方法需要传递的参数
  *
  * @see MethodMatcher
  */

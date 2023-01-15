@@ -6,10 +6,10 @@ import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.beans.BeanFactoryAware
 
 /**
- * 这是一个基于BeanFactory的PointAdvisor，它拥有了从BeanFactory中获取Advisor的能力
+ * 这是一个基于BeanFactory的PointAdvisor, 它拥有了从BeanFactory中获取Advisor的能力
  *
- * (1)如果指定的advice，那么将会采用指定的advice
- * (2)如果指定了adviceBeanName时，那么将会从容器中获取Advice
+ * (1)如果指定的advice, 那么将会采用指定的advice
+ * (2)如果指定了adviceBeanName时, 那么将会从容器中获取Advice
  */
 abstract class AbstractBeanFactoryPointcutAdvisor : AbstractPointcutAdvisor(), BeanFactoryAware {
 

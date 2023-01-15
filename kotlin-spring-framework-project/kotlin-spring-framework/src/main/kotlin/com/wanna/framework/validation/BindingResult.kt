@@ -5,7 +5,7 @@ import com.wanna.framework.lang.Nullable
 
 interface BindingResult : Errors {
     companion object {
-        // BindingResult在放入Model当中时的前缀Key，做标识作用
+        // BindingResult在放入Model当中时的前缀Key, 做标识作用
         @JvmStatic
         val MODEL_KEY_PREFIX = BindingResult::class.java.name + "."
     }

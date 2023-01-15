@@ -6,11 +6,11 @@ import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 
 /**
- * 这是Spring当中对于一个Bean的实例化策略，提供三种实例化方式，分别是从BeanDefinition当中解析/给定构造器/给定FactoryBeanMethod
+ * 这是Spring当中对于一个Bean的实例化策略, 提供三种实例化方式, 分别是从BeanDefinition当中解析/给定构造器/给定FactoryBeanMethod
  */
 interface InstantiationStrategy {
     /**
-     * 实例化方式1：只给BeanDefinition，那么需要从BeanDefinition当中去解析合适的Constructor去进行实例
+     * 实例化方式1：只给BeanDefinition, 那么需要从BeanDefinition当中去解析合适的Constructor去进行实例
      *
      * @param bd MergedBeanDefinition
      * @param beanName beanName
@@ -20,7 +20,7 @@ interface InstantiationStrategy {
     fun instantiate(bd: RootBeanDefinition, beanName: String?, owner: BeanFactory): Any
 
     /**
-     * 实例化方式2：给了BeanDefinition，还给了构造器，直接通过构造器去完成Bean的实例化
+     * 实例化方式2：给了BeanDefinition, 还给了构造器, 直接通过构造器去完成Bean的实例化
      *
      * @param bd MergedBeanDefinition
      * @param beanName beanName
@@ -34,7 +34,7 @@ interface InstantiationStrategy {
     ): Any
 
     /**
-     * 实例化方式3：给了BeanDefinition，还给了factoryMethod和factoryBean，需要通过工厂(@Bean)方法去完成对象的实例化
+     * 实例化方式3：给了BeanDefinition, 还给了factoryMethod和factoryBean, 需要通过工厂(@Bean)方法去完成对象的实例化
      *
      * @param bd MergedBeanDefinition
      * @param beanName beanName

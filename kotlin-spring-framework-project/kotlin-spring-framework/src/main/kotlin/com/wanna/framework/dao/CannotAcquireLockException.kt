@@ -1,7 +1,7 @@
 package com.wanna.framework.dao
 
 /**
- * 在发生更新时不能去抢锁，例如"select for update"
+ * 在发生更新时不能去抢锁, 例如"select for update"
  *
  * @author jianchao.jia
  * @version v1.0

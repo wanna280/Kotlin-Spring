@@ -45,7 +45,7 @@ object ReflectionUtils {
     private val EMPTY_FIELD_ARRAY = emptyArray<Field>()
 
     /**
-     * 某个类对应的方法缓存(ConcurrentMap)，k为要获取的类，v为该类所定义的方法列表
+     * 某个类对应的方法缓存(ConcurrentMap), k为要获取的类, v为该类所定义的方法列表
      */
     @JvmStatic
     private val declaredMethodsCache = ConcurrentHashMap<Class<*>, Array<Method>>()
@@ -165,11 +165,11 @@ object ReflectionUtils {
     }
 
     /**
-     * 在一个类上name和type都匹配的字段，如果没找到，return null
+     * 在一个类上name和type都匹配的字段, 如果没找到, return null
      *
      * @param clazz 目标类
-     * @param name 字段名(如果name为空，那么类型匹配就行)
-     * @param type 字段类型(如果type==null，那么匹配所有类型，找到就return)
+     * @param name 字段名(如果name为空, 那么类型匹配就行)
+     * @param type 字段类型(如果type==null, 那么匹配所有类型, 找到就return)
      */
     @JvmStatic
     fun findField(clazz: Class<*>, name: String?, type: Class<*>?): Field? {
@@ -177,7 +177,7 @@ object ReflectionUtils {
         do {
             val declaredFields = getDeclaredFields(targetClass!!, false)
             for (field in declaredFields) {
-                // 如果type&name匹配的话，return
+                // 如果type&name匹配的话, return
                 if ((field.name == name && type == null)
                     || (name == null && field.type == type)
                     || (field.name == name && field.type == type)
@@ -191,7 +191,7 @@ object ReflectionUtils {
     }
 
     /**
-     * 对一个类以及父类当中定义的所有字段，去执行某一个操作(action)
+     * 对一个类以及父类当中定义的所有字段, 去执行某一个操作(action)
      *
      * @param clazz 目标类
      * @param action 对方法要执行的操作
@@ -202,7 +202,7 @@ object ReflectionUtils {
     }
 
     /**
-     * 对一个类以及父类当中定义的所有字段，去执行某一个操作(action)
+     * 对一个类以及父类当中定义的所有字段, 去执行某一个操作(action)
      *
      * @param clazz 目标类
      * @param action 对方法要执行的操作
@@ -218,7 +218,7 @@ object ReflectionUtils {
     }
 
     /**
-     * 对一个类当中定义的所有字段，去执行某一个操作(action)
+     * 对一个类当中定义的所有字段, 去执行某一个操作(action)
      *
      * @param clazz 目标类
      * @param action 对方法要执行的操作
@@ -229,7 +229,7 @@ object ReflectionUtils {
     }
 
     /**
-     * 对一个类当中定义的所有字段，去执行某一个操作(action)
+     * 对一个类当中定义的所有字段, 去执行某一个操作(action)
      *
      * @param clazz 目标类
      * @param action 对方法要执行的操作
@@ -261,19 +261,19 @@ object ReflectionUtils {
      * 获取一个类当中定义的所有字段
      *
      * @param clazz 目标类
-     * @param defensive 是否具有侵入性的，如果defensive=true，那么需要克隆一份进行返回
+     * @param defensive 是否具有侵入性的, 如果defensive=true, 那么需要克隆一份进行返回
      * @return 一个类当中的所有定义的字段列表
      */
     @JvmStatic
     fun getDeclaredFields(clazz: Class<*>, defensive: Boolean): Array<Field> {
         var result = declaredFieldsCache[clazz]
-        // 如果从缓存当中获取不到，那么需要去构建declaredMethods
+        // 如果从缓存当中获取不到, 那么需要去构建declaredMethods
         if (result == null) {
             val declaredFields: Array<Field> = clazz.declaredFields
             declaredFieldsCache[clazz] = if (declaredFields.isEmpty()) EMPTY_FIELD_ARRAY else declaredFields
             result = declaredFields
         }
-        // 如果有可能具有侵入性，那么需要clone一份进行return
+        // 如果有可能具有侵入性, 那么需要clone一份进行return
         return if (defensive) result.clone() else result
     }
 
@@ -301,7 +301,7 @@ object ReflectionUtils {
     }
 
     /**
-     * 根据name去指定类当中找到无参数的方法，有可能没找到，return null
+     * 根据name去指定类当中找到无参数的方法, 有可能没找到, return null
      *
      * @param clazz 目标类
      * @param name 方法名
@@ -314,8 +314,8 @@ object ReflectionUtils {
     }
 
     /**
-     * 根据name和参数类型列表去指定类当中去寻找方法，有可能没找到，return null；
-     * 会尝试去搜索所有的父类当中的所有方法，去进行匹配，直到，方法名和参数列表都完全匹配时，return
+     * 根据name和参数类型列表去指定类当中去寻找方法, 有可能没找到, return null;
+     * 会尝试去搜索所有的父类当中的所有方法, 去进行匹配, 直到, 方法名和参数列表都完全匹配时, return
      *
      * @param clazz 目标类
      * @param name 要去进行寻找的方法名
@@ -351,12 +351,12 @@ object ReflectionUtils {
     }
 
     /**
-     * 使用Java反射的方式，去执行给定的目标方法
+     * 使用Java反射的方式, 去执行给定的目标方法
      *
      * @param method 目标方法
      * @param target 目标方法要传递的this对象
-     * @param args 执行目标方法需要的参数列表，在拿到参数之后，会是以数组的方式去进行获取，但是method.invoke时
-     * 又是传递的vararg，就导致了数组里套数组的情况，需要使用*将数组中的元素继续进行拆分开
+     * @param args 执行目标方法需要的参数列表, 在拿到参数之后, 会是以数组的方式去进行获取, 但是method.invoke时
+     * 又是传递的vararg, 就导致了数组里套数组的情况, 需要使用*将数组中的元素继续进行拆分开
      * @return 执行目标方法返回的对象
      */
     @Nullable
@@ -424,7 +424,7 @@ object ReflectionUtils {
     }
 
     /**
-     * 判断这个方法是否来自于Object类，可以重写的equals/hashCode/toString方法也需要进行判断
+     * 判断这个方法是否来自于Object类, 可以重写的equals/hashCode/toString方法也需要进行判断
      *
      * @param method 要进行判断的方法
      * @return 如果它是Object的方法, 那么return true; 否则return false
@@ -448,7 +448,7 @@ object ReflectionUtils {
     }
 
     /**
-     * 对一个类当中定义的所有方法，执行同样的操作
+     * 对一个类当中定义的所有方法, 执行同样的操作
      *
      * @param clazz 要执行方法的类
      * @param action 要根据Method去进行执行的操作
@@ -459,11 +459,11 @@ object ReflectionUtils {
     }
 
     /**
-     * 对一个类当中定义的所有方法，执行同样的操作
+     * 对一个类当中定义的所有方法, 执行同样的操作
      *
      * @param clazz 要执行方法的类
      * @param action 要根据Method去进行执行的操作
-     * @param filter 该方法是否要执行的Filter？return true->执行，else->不执行
+     * @param filter 该方法是否要执行的Filter？return true->执行, else->不执行
      */
     @JvmStatic
     fun doWithLocalMethods(clazz: Class<*>, action: MethodCallback, filter: MethodMatcher) {
@@ -478,7 +478,7 @@ object ReflectionUtils {
     }
 
     /**
-     * 对一个类以及它父类当中定义的所有方法，执行同样的操作
+     * 对一个类以及它父类当中定义的所有方法, 执行同样的操作
      *
      * @param clazz 要执行方法的类
      * @param action 要根据Method去进行执行的操作
@@ -489,11 +489,11 @@ object ReflectionUtils {
     }
 
     /**
-     * 对一个类以及它父类当中定义的所有方法，执行同样的操作
+     * 对一个类以及它父类当中定义的所有方法, 执行同样的操作
      *
      * @param clazz 要执行方法的类
      * @param action 要根据Method去进行执行的操作
-     * @param filter 该方法是否要执行的Filter？return true->执行，else->不执行
+     * @param filter 该方法是否要执行的Filter？return true->执行, else->不执行
      */
     @JvmStatic
     fun doWithMethods(clazz: Class<*>, action: MethodCallback, filter: MethodMatcher) {
@@ -510,18 +510,18 @@ object ReflectionUtils {
             }
         }
 
-        // 如果它还有父类，并且父类不是Object(Any)的话，那么，让它的父类也执行这个操作
+        // 如果它还有父类, 并且父类不是Object(Any)的话, 那么, 让它的父类也执行这个操作
         if (clazz.superclass != null && clazz.superclass != Any::class.java) {
             doWithMethods(clazz.superclass, action, filter)
 
-            // 如果它是个接口了，那么处理它的所有的接口
+            // 如果它是个接口了, 那么处理它的所有的接口
         } else if (clazz.isInterface) {
             clazz.interfaces.forEach { doWithMethods(it, action, filter) }
         }
     }
 
     /**
-     * 获取一个类当中定义的所有的方法，包括所有的父类方法
+     * 获取一个类当中定义的所有的方法, 包括所有的父类方法
      *
      * @param clazz 要匹配的类
      * @return 该类当中的所有定义的方法列表
@@ -529,7 +529,7 @@ object ReflectionUtils {
     @JvmStatic
     fun getAllDeclaredMethods(clazz: Class<*>): Array<Method> {
         val allDeclaredMethods = ArrayList<Method>()
-        // 因为doWithMethods，正好会遍历所有的方法，正好利用该方法...
+        // 因为doWithMethods, 正好会遍历所有的方法, 正好利用该方法...
         doWithMethods(clazz, allDeclaredMethods::add)
         return allDeclaredMethods.toTypedArray()
     }
@@ -549,32 +549,32 @@ object ReflectionUtils {
      * 获取一个类定义的所有方法(包含declaredMethods, 以及直接接口上的defaultMethods)
      *
      * @param clazz 要获取方法的类
-     * @param defensive 这个方法是否具有侵入性？也就是需不需要将数据clone一份出来返回？true代表需要，反之不需要
+     * @param defensive 这个方法是否具有侵入性？也就是需不需要将数据clone一份出来返回？true代表需要, 反之不需要
      * @return 从给定的类上去解析完成的方法数组(包含declaredMethods, 以及直接接口上的defaultMethods)
      */
     @JvmStatic
     fun getDeclaredMethods(clazz: Class<*>, defensive: Boolean): Array<Method> {
-        // 首先尝试，从缓存当中获取该类定义的方法，获取不到，那么去进行构建...
+        // 首先尝试, 从缓存当中获取该类定义的方法, 获取不到, 那么去进行构建...
         var result = declaredMethodsCache[clazz]
         if (result == null) {
             val declaredMethods: Array<Method> = clazz.declaredMethods
             val defaultMethods: List<Method> = findConcreteMethodsOnInterfaces(clazz)
-            // 将declaredMethod列表和defaultMethod列表全部拷贝到result当中，并放入到缓存当中(如果为空的话，需要放入一个空方法的常量值)
-            // Array，第二个参数是传递的数组的index->Array[index]的元素产生方法的callback
+            // 将declaredMethod列表和defaultMethod列表全部拷贝到result当中, 并放入到缓存当中(如果为空的话, 需要放入一个空方法的常量值)
+            // Array, 第二个参数是传递的数组的index->Array[index]的元素产生方法的callback
             result = Array(declaredMethods.size + defaultMethods.size) { index ->
                 if (index < declaredMethods.size) declaredMethods[index] else defaultMethods[index - declaredMethods.size]  // fixed: index->index - declaredMethods.size
             }
             declaredMethodsCache[clazz] = if (result.isEmpty()) EMPTY_METHOD_ARRAY else result
         }
-        // 如果defensive=true，需要clone一份进行返回，如果defensive=false，那么直接返回原始对象
+        // 如果defensive=true, 需要clone一份进行返回, 如果defensive=false, 那么直接返回原始对象
         return if (defensive) result.clone() else result
     }
 
     /**
-     * 在一个类的所有接口上去上寻找Concrete(具体的，已经进行实现的)方法，也就是default方法
+     * 在一个类的所有接口上去上寻找Concrete(具体的, 已经进行实现的)方法, 也就是default方法
      *
      * @param clazz 需要去进行寻找方法的类
-     * @return 如果没有找到default方法，那么只是返回一个空的list，而不是null
+     * @return 如果没有找到default方法, 那么只是返回一个空的list, 而不是null
      */
     @JvmStatic
     private fun findConcreteMethodsOnInterfaces(clazz: Class<*>): List<Method> {

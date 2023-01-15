@@ -7,7 +7,7 @@ import java.util.ServiceLoader
  */
 object ServiceLoaderUtils {
     /**
-     * 给定具体类型，使用SPI机制加载到第一个元素
+     * 给定具体类型, 使用SPI机制加载到第一个元素
      *
      * @param clazz 指定的类型
      * @return 加载到的第一个元素(没有加载到return null)
@@ -19,7 +19,7 @@ object ServiceLoaderUtils {
     }
 
     /**
-     * 给定具体类型，使用SPI机制加载到全部元素
+     * 给定具体类型, 使用SPI机制加载到全部元素
      *
      * @param clazz 指定的类型
      * @return 加载到全部元素

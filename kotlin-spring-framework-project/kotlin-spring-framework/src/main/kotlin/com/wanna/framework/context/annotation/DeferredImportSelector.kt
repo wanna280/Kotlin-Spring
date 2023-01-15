@@ -4,7 +4,7 @@ import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.lang.Nullable
 
 /**
- * 这是一个延时进行导入的ImportSelector，会在用户自定义的组件全部被扫描完成之后，才进行组件的导入
+ * 这是一个延时进行导入的ImportSelector, 会在用户自定义的组件全部被扫描完成之后, 才进行组件的导入
  *
  * @see ImportSelector
  * @see ImportBeanDefinitionRegistrar
@@ -12,7 +12,7 @@ import com.wanna.framework.lang.Nullable
 interface DeferredImportSelector : ImportSelector {
 
     /**
-     * 返回这个ImportSelector应该所在的分组，如果分组为空(return null)，将会采用DeferredImportSelector的自身对象去进行分组
+     * 返回这个ImportSelector应该所在的分组, 如果分组为空(return null), 将会采用DeferredImportSelector的自身对象去进行分组
      *
      * @see Group
      * @see com.wanna.framework.context.annotation.ConfigurationClassParser.DeferredImportSelectorGroupingHandler

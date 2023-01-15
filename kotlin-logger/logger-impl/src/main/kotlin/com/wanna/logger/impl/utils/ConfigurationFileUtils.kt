@@ -21,7 +21,7 @@ object ConfigurationFileUtils {
      *
      * @param appenderName appenderName
      * @param properties 配置文件当中的相关信息
-     * @return 构建好的LoggerAppender，构建失败return null
+     * @return 构建好的LoggerAppender, 构建失败return null
      * @throws IllegalArgumentException 如果遇到了其中一项缺失的话
      */
     @Suppress("UNCHECKED_CAST")
@@ -82,23 +82,23 @@ object ConfigurationFileUtils {
                     if (pattern is String && layout is PatternLayout) {
                         layout.setPattern(pattern)
                     } else {
-                        throw IllegalArgumentException("没有为[Layout=$layoutProperty]设置pattern，请通过[$layoutEncoderProperty]进行设置")
+                        throw IllegalArgumentException("没有为[Layout=$layoutProperty]设置pattern, 请通过[$layoutEncoderProperty]进行设置")
                     }
                 } else {
                     throw IllegalArgumentException("指定的Layout[$layoutName]没有找到")
                 }
-                // 如果appender是一个OutputStream的Appender，那么需要设置设置到Appender当中
+                // 如果appender是一个OutputStream的Appender, 那么需要设置设置到Appender当中
                 if (appender is OutputStreamAppender) {
                     appender.encoder = encoder
                 }
             } else {
-                throw IllegalArgumentException("没有为[Appender=$appenderName]指定Encoder，请通过[$encoderProperty]进行设置")
+                throw IllegalArgumentException("没有为[Appender=$appenderName]指定Encoder, 请通过[$encoderProperty]进行设置")
             }
             extendsAppender(appender, appenderNameProperty, properties)
             return appender
         } else {
             throw IllegalArgumentException(
-                "没有指定Appender[${appenderName}]，请通过[$appenderNameProperty]进行设置"
+                "没有指定Appender[${appenderName}], 请通过[$appenderNameProperty]进行设置"
             )
         }
     }
@@ -122,7 +122,7 @@ object ConfigurationFileUtils {
     }
 
     /**
-     * 扩展ConsoleAppender，可以在这里完成OutputStream的设置
+     * 扩展ConsoleAppender, 可以在这里完成OutputStream的设置
      *
      * @param appender 创建好的Appender
      * @param properties 配置文件的相关信息
@@ -141,7 +141,7 @@ object ConfigurationFileUtils {
     }
 
     /**
-     * 扩展FileAppender，可以在这里完成配置文件的路径的设置
+     * 扩展FileAppender, 可以在这里完成配置文件的路径的设置
      *
      * @param appender 创建好的Appender
      * @param properties 配置文件的相关信息

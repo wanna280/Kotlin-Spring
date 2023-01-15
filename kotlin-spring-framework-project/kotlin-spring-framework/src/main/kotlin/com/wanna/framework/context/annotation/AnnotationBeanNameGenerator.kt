@@ -12,8 +12,8 @@ import com.wanna.framework.util.StringUtils
 import java.beans.Introspector
 
 /**
- * 基于注解的BeanName生成器，它会从Component/ManagedBean/Named等注解当中去找到合适的beanName，
- * 如果没找到，那么将会采用默认的beanName生成方式去进行beanName的生成
+ * 基于注解的BeanName生成器, 它会从Component/ManagedBean/Named等注解当中去找到合适的beanName,
+ * 如果没找到, 那么将会采用默认的beanName生成方式去进行beanName的生成
  */
 open class AnnotationBeanNameGenerator : BeanNameGenerator {
     companion object {
@@ -48,15 +48,15 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
      * @return beanName
      */
     override fun generateBeanName(beanDefinition: BeanDefinition, registry: BeanDefinitionRegistry): String {
-        // 如果它是一个被注解标注的BeanDefinition，那么需要首先从注解当中去进行推断，如果注解当中已经配置了beanName
-        // 那么就采用注解当中配置的beanName作为要采用的beanName，如果没有找到合适的beanName，那么就采用默认的生成策略去进行生成
+        // 如果它是一个被注解标注的BeanDefinition, 那么需要首先从注解当中去进行推断, 如果注解当中已经配置了beanName
+        // 那么就采用注解当中配置的beanName作为要采用的beanName, 如果没有找到合适的beanName, 那么就采用默认的生成策略去进行生成
         if (beanDefinition is AnnotatedBeanDefinition) {
             val beanName = determineBeanNameFromAnnotation(beanDefinition)
             if (StringUtils.hasText(beanName)) {
                 return beanName!!
             }
         }
-        // 如果它不是一个被注解标注的BeanDefinition，或者从注解当中没有推断出来合适的beanName，那么将会采用默认的方式去生成beanName
+        // 如果它不是一个被注解标注的BeanDefinition, 或者从注解当中没有推断出来合适的beanName, 那么将会采用默认的方式去生成beanName
         // 默认方式为：将类名的simpleName的首字母小写
         return buildDefaultBeanName(beanDefinition, registry)
     }
@@ -131,10 +131,10 @@ open class AnnotationBeanNameGenerator : BeanNameGenerator {
     }
 
     /**
-     * 构建默认的beanName，默认采用的是首字母小写的方式去进行生成；
+     * 构建默认的beanName, 默认采用的是首字母小写的方式去进行生成;
      *
-     * * 1.如果是一个普通的外层的类，它的类名不含有"$"，因此直接首字母小写即可；
-     * * 2.如果它是一个内部类，那么它的className会有一个"$"，需要获取内部类的类名去进行生成。("shortName=外部类名$内部类名")
+     * * 1.如果是一个普通的外层的类, 它的类名不含有"$", 因此直接首字母小写即可;
+     * * 2.如果它是一个内部类, 那么它的className会有一个"$", 需要获取内部类的类名去进行生成.("shortName=外部类名$内部类名")
      *
      * @param beanDefinition BeanDefinition
      */

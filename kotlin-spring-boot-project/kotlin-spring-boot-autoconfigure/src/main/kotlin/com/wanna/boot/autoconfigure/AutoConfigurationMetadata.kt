@@ -18,7 +18,7 @@ interface AutoConfigurationMetadata {
     fun wasProcessed(className: String): Boolean
 
     /**
-     * 根据className和key去获取到metadata信息，并利用得到的值去转换为Set；如果找不到时，返回默认值(defaultValue)
+     * 根据className和key去获取到metadata信息, 并利用得到的值去转换为Set; 如果找不到时, 返回默认值(defaultValue)
      *
      * @param className className
      * @param key key
@@ -27,7 +27,7 @@ interface AutoConfigurationMetadata {
     fun getSet(className: String, key: String, defaultValue: Set<String>): Set<String>
 
     /**
-     * 根据className和key去获取到metadata信息，并利用得到的值去转换为Set，如果找不到时，return null
+     * 根据className和key去获取到metadata信息, 并利用得到的值去转换为Set, 如果找不到时, return null
      *
      * @param className className
      * @param key key
@@ -57,7 +57,7 @@ interface AutoConfigurationMetadata {
     fun getInt(className: String, key: String): Int?
 
     /**
-     * 根据className和key去获取到metadata信息去进行返回；如果找不到时返回默认值(defaultValue)
+     * 根据className和key去获取到metadata信息去进行返回; 如果找不到时返回默认值(defaultValue)
      *
      * @param className className
      * @param key key
@@ -66,7 +66,7 @@ interface AutoConfigurationMetadata {
     fun get(className: String, key: String, defaultValue: String?): String?
 
     /**
-     * 根据className和key去获取到metadata信息去进行返回，如果找不到时，return null
+     * 根据className和key去获取到metadata信息去进行返回, 如果找不到时, return null
      *
      * @param className className
      * @param key key

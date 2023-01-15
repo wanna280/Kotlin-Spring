@@ -32,7 +32,7 @@ class DevToolsSettings {
      * 判断给的URL是否应该被include？
      *
      * @param url url
-     * @return 如果该URL匹配其中一个includePattern，return true；否则return false
+     * @return 如果该URL匹配其中一个includePattern, return true; 否则return false
      */
     fun isRestartInclude(url: URL): Boolean = isMatch(url.toString(), restartIncludePatterns)
 
@@ -40,7 +40,7 @@ class DevToolsSettings {
      * 判断给的URL是否应该被exclude？
      *
      * @param url url
-     * @return 如果该URL匹配其中一个excludePattern，return true；否则return false
+     * @return 如果该URL匹配其中一个excludePattern, return true; 否则return false
      */
     fun isRestartExclude(url: URL): Boolean = isMatch(url.toString(), restartExcludePatterns)
 
@@ -49,7 +49,7 @@ class DevToolsSettings {
      *
      * @param url url
      * @param patterns 要去进行匹配的正则表达式
-     * @return 如果存在有其中一个正则表达式匹配了url，那么return true；否则return false
+     * @return 如果存在有其中一个正则表达式匹配了url, 那么return true; 否则return false
      */
     private fun isMatch(url: String, patterns: Collection<Pattern>): Boolean {
         patterns.forEach {
@@ -61,7 +61,7 @@ class DevToolsSettings {
     }
 
     /**
-     * 获取到候选的Properties当中，所有的以prefix作为开头去进行配置配置的正则表达式
+     * 获取到候选的Properties当中, 所有的以prefix作为开头去进行配置配置的正则表达式
      *
      * @param prefix 要去匹配的prefix
      * @param properties 候选的Properties

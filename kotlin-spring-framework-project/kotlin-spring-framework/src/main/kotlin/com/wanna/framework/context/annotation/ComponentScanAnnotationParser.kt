@@ -15,7 +15,7 @@ import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 
 /**
- * 这是完成ComponentScan注解的扫描的解析器，负责将@ComponentScan注解当中配置的属性去进行解析，并完成ComponentScan的组件的扫描
+ * 这是完成ComponentScan注解的扫描的解析器, 负责将@ComponentScan注解当中配置的属性去进行解析, 并完成ComponentScan的组件的扫描
  *
  * @see ClassPathBeanDefinitionScanner
  * @see ComponentScan
@@ -29,7 +29,7 @@ open class ComponentScanAnnotationParser(
 ) {
 
     /**
-     * 解析@ComponentScan注解上配置的相关属性，并完成组件的扫描
+     * 解析@ComponentScan注解上配置的相关属性, 并完成组件的扫描
      *
      * @param attributes @ComponentScan注解上的相关配置信息
      * @param className 配置类的className
@@ -47,8 +47,8 @@ open class ComponentScanAnnotationParser(
         packages.addAll(attributes.getStringArray("basePackages"))
         packages.addAll((attributes.getClassArray("basePackageClasses")).map { it.packageName }.toList())
 
-        // 如果存在有scopeProxy的配置，那么就使用它作为Scope
-        // 如果不存在的话，那么就使用配置的ScopeMetadataResolver去进行使用
+        // 如果存在有scopeProxy的配置, 那么就使用它作为Scope
+        // 如果不存在的话, 那么就使用配置的ScopeMetadataResolver去进行使用
         val scopedProxyMode = attributes["scopeProxy"] as ScopedProxyMode
         if (scopedProxyMode != ScopedProxyMode.DEFAULT) {
             scanner.setScopedProxyMode(scopedProxyMode)
@@ -68,7 +68,7 @@ open class ComponentScanAnnotationParser(
         val lazyInit = attributes.getBoolean("lazyInit")
         scanner.setLazyInit(lazyInit)
 
-        // 如果没有获取到配置的packages列表，那么使用配置类所在的packageName作为要扫描的包
+        // 如果没有获取到配置的packages列表, 那么使用配置类所在的packageName作为要扫描的包
         if (packages.isEmpty()) {
             packages += ClassUtils.getPackageName(className)
         }

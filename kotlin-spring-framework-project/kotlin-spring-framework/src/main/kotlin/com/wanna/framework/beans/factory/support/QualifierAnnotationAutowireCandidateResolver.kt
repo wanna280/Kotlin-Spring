@@ -20,7 +20,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
 
     companion object {
         /**
-         * Qualifier的注解列表，包括来自于javax.annotation包下的的Qualifier注解，也包括来自于Spring家的Qualifier
+         * Qualifier的注解列表, 包括来自于javax.annotation包下的的Qualifier注解, 也包括来自于Spring家的Qualifier
          */
         @JvmStatic
         private val qualifierAnnotationTypes: MutableList<Class<out Annotation>> = ArrayList()
@@ -30,7 +30,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
             try {
                 qualifierAnnotationTypes.add(ClassUtils.forName("javax.inject.Qualifier"))
             } catch (ignored: ClassNotFoundException) {
-                // 找不到javax.annotation.Qualifier(JSR-330)类就算了，ignore...
+                // 找不到javax.annotation.Qualifier(JSR-330)类就算了, ignore...
             }
         }
     }
@@ -54,8 +54,8 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
     }
 
     /**
-     * 如果描述符当中给定了required=false，那么就return false；如果required=true，那么就得检查一下Autowired注解；
-     * 如果依赖描述符上给定的required=true，并且Autowired上required=false，那么也得return false；
+     * 如果描述符当中给定了required=false, 那么就return false; 如果required=true, 那么就得检查一下Autowired注解;
+     * 如果依赖描述符上给定的required=true, 并且Autowired上required=false, 那么也得return false;
      *
      * @param descriptor 依赖描述符
      * @return 该依赖是否是必须的？
@@ -68,13 +68,13 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
     /**
      *
      * ## 1.针对有Qualifier注解的情况
-     * 在这个方法当中，我们将对@Qualifier注解去进行匹配，如果Autowire的元素(字段/方法参数/方法/构造器参数/构造器)上有Qualifier属性，
-     * 并且在候选的BeanDefinition(bdHolder)对应的Bean当中也有Qualifier，那么将Qualifier去进行equals匹配，如果匹配直接return true；
-     * 如果还是不匹配的话，那么拿出Qualifier的"value"属性出来，和bdHolder.beanName匹配，如果匹配的话，return true...
-     * 也就是说支持去使用@Qualifier的方式去进行匹配Bean，也支持使用beanName的方式去进行匹配
+     * 在这个方法当中, 我们将对@Qualifier注解去进行匹配, 如果Autowire的元素(字段/方法参数/方法/构造器参数/构造器)上有Qualifier属性,
+     * 并且在候选的BeanDefinition(bdHolder)对应的Bean当中也有Qualifier, 那么将Qualifier去进行equals匹配, 如果匹配直接return true;
+     * 如果还是不匹配的话, 那么拿出Qualifier的"value"属性出来, 和bdHolder.beanName匹配, 如果匹配的话, return true...
+     * 也就是说支持去使用@Qualifier的方式去进行匹配Bean, 也支持使用beanName的方式去进行匹配
      *
      * ## 2.针对于没有Qualifier注解的情况...
-     * 只要候选的Bean的类型匹配，那么一律视为匹配！(父类当中处理)
+     * 只要候选的Bean的类型匹配, 那么一律视为匹配！(父类当中处理)
      *
      * @param bdHolder 候选Bean对应的BeanDefinition
      * @param descriptor 依赖描述符
@@ -89,10 +89,10 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
         var match = checkQualifiers(bdHolder, descriptor.getAnnotations())
         if (match) {
             val parameter = descriptor.getMethodParameter()
-            // 如果方法参数不为null，说明它可能是一个构造器/方法，一定不是一个字段
+            // 如果方法参数不为null, 说明它可能是一个构造器/方法, 一定不是一个字段
             if (parameter != null) {
                 val method = parameter.getMethod()
-                // 如果method==null(说明它是一个构造器)，或者该方法的返回值是void，那么还得去构造器或者是方法上找一找注解...
+                // 如果method==null(说明它是一个构造器), 或者该方法的返回值是void, 那么还得去构造器或者是方法上找一找注解...
                 if (method == null || method.returnType == Unit::class.java) {
                     match = checkQualifiers(bdHolder, parameter.getMethodAnnotations())
                 }
@@ -102,11 +102,11 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
     }
 
     /**
-     * 遍历所有要去进行匹配的注解，获取到Qualifier注解，去进行匹配；没有Qualifier注解的，只要类型是匹配的，那么一律return true
+     * 遍历所有要去进行匹配的注解, 获取到Qualifier注解, 去进行匹配; 没有Qualifier注解的, 只要类型是匹配的, 那么一律return true
      *
      * @param bdHolder 候选Bean的BeanDefinition
      * @param annotationsToMatch 要去进行注入的元素上的全部注解列表
-     * @return 是否匹配？(没有Qualifier注解的，一律return true，有Qualifier注解的，那么就得匹配)
+     * @return 是否匹配？(没有Qualifier注解的, 一律return true, 有Qualifier注解的, 那么就得匹配)
      */
     protected open fun checkQualifiers(bdHolder: BeanDefinitionHolder, annotationsToMatch: Array<Annotation>): Boolean {
         if (annotationsToMatch.isEmpty()) {
@@ -118,12 +118,12 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
             val annotationClass = annotation.annotationClass.java
             if (isQualifier(annotationClass)) {
                 if (!checkQualifier(bdHolder, annotation)) {
-                    fallbackToMeta = true  // 匹配失败，要去检查元信息的情况
+                    fallbackToMeta = true  // 匹配失败, 要去检查元信息的情况
                 } else {
-                    checkMeta = false  // 匹配成功，那么就不去检查元信息了
+                    checkMeta = false  // 匹配成功, 那么就不去检查元信息了
                 }
             }
-            // 如果之前没有匹配Qualifier的话，尝试去二级注解上去找
+            // 如果之前没有匹配Qualifier的话, 尝试去二级注解上去找
             if (checkMeta) {
                 var found = false
 
@@ -134,7 +134,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
                     val metaType = ann.type
                     if (isQualifier(metaType)) {
                         found = true
-                        // 如果之前匹配Qualifier的时候失败了(Qualifier找到了，说明就是Qualifier不匹配的情况了)，这里还失败那么肯定失败...
+                        // 如果之前匹配Qualifier的时候失败了(Qualifier找到了, 说明就是Qualifier不匹配的情况了), 这里还失败那么肯定失败...
                         if (fallbackToMeta && attributes[MergedAnnotation.VALUE] == "" && !checkQualifier(
                                 bdHolder, meta
                             )
@@ -143,7 +143,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
                         }
                     }
                 }
-                // 如果第一次检测确实是失败了，去二级注解上还没找到Qualifier注解，那么肯定return false
+                // 如果第一次检测确实是失败了, 去二级注解上还没找到Qualifier注解, 那么肯定return false
                 if (fallbackToMeta && !found) {
                     return false
                 }
@@ -159,7 +159,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
      * @param annotation Qualifier注解(实例)
      */
     protected open fun checkQualifier(bdHolder: BeanDefinitionHolder, annotation: Annotation): Boolean {
-        // 匹配类上，或者是FactoryMethod上的Qualifier注解信息
+        // 匹配类上, 或者是FactoryMethod上的Qualifier注解信息
         val beanDefinition = bdHolder.beanDefinition as RootBeanDefinition
         val annotationClass = annotation.annotationClass.java
 
@@ -174,12 +174,12 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
             targetAnnotation = AnnotatedElementUtils.getMergedAnnotation(factoryMethod, annotationClass)
         }
 
-        // 如果成对匹配的话(equals)，return true
+        // 如果成对匹配的话(equals), return true
         if (targetAnnotation != null && targetAnnotation == annotation) {
             return true
         }
 
-        // 如果没有成对匹配的话，那么需要fallback去匹配Qualifier注解与beanName的情况...
+        // 如果没有成对匹配的话, 那么需要fallback去匹配Qualifier注解与beanName的情况...
         val attributes = AnnotationUtils.getAnnotationAttributes(annotation)
         attributes.forEach { (k, v) ->
             if (k == MergedAnnotation.VALUE && bdHolder.matchesName(v.toString())) {
@@ -205,10 +205,10 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
     }
 
     /**
-     * 获取建议的值，从@Value注解上去寻找value属性，如果找到了return找到的值，如果没有找到，return null
+     * 获取建议的值, 从@Value注解上去寻找value属性, 如果找到了return找到的值, 如果没有找到, return null
      *
      * @param descriptor 依赖描述符
-     * @return 建议去设置的值，有@Value注解。return @Value的value属性，如果@Value注解没有，那么return null
+     * @return 建议去设置的值, 有@Value注解.return @Value的value属性, 如果@Value注解没有, 那么return null
      */
     override fun getSuggestedValue(descriptor: DependencyDescriptor): Any? {
         // 1.获取从方法参数/构造器参数/字段上的@Value注解的value属性
@@ -225,10 +225,10 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
 
 
     /**
-     * 判断是否是Qualifier注解(包括Spring家的Qualifier以及javax.inject包下的Qualifier)，如果找到了return true；没找到，return false
+     * 判断是否是Qualifier注解(包括Spring家的Qualifier以及javax.inject包下的Qualifier), 如果找到了return true; 没找到, return false
      *
      * @param annotationClass 目标注解类型
-     * @return 如果目标注解类型是Qualifier，那么return true；否则return false
+     * @return 如果目标注解类型是Qualifier, 那么return true; 否则return false
      */
     private fun isQualifier(annotationClass: Class<out Annotation>): Boolean {
         for (qualifierAnnotationType in qualifierAnnotationTypes) {
@@ -240,10 +240,10 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
     }
 
     /**
-     * 在给定的注解列表当中去寻找@Value注解的值，如果找不到，return null
+     * 在给定的注解列表当中去寻找@Value注解的值, 如果找不到, return null
      *
      * @param annotations 候选的注解列表
-     * @return 找到的@Value注解的value属性，如果找不到return null
+     * @return 找到的@Value注解的value属性, 如果找不到return null
      */
     private fun findValue(annotations: Array<Annotation>): Any? {
         val mergedAnnotation =
@@ -256,7 +256,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
     }
 
     /**
-     * 从给定的Value注解上找到它的value属性去进行return，如果value属性为空，那么抛出异常...
+     * 从给定的Value注解上找到它的value属性去进行return, 如果value属性为空, 那么抛出异常...
      *
      * @param annotationAttributes @Value注解信息
      * @return 在@Value注解上找到的value属性

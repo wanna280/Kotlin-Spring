@@ -57,7 +57,7 @@ abstract class AsyncExecutionAspectSupport(
     }
 
     /**
-     * 给定一个具体的方法，决定出要使用哪个Executor去执行异步任务？
+     * 给定一个具体的方法, 决定出要使用哪个Executor去执行异步任务？
      *
      * @param method 目标方法
      */
@@ -84,12 +84,12 @@ abstract class AsyncExecutionAspectSupport(
     }
 
     /**
-     * 提交任务给线程池去执行任务，并返回执行的结果
+     * 提交任务给线程池去执行任务, 并返回执行的结果
      *
      * @param task 要提交给线程池执行的任务(Callable)
      * @param executor 要使用的线程池
      * @param returnType 方法的返回值类型
-     * @return 目标方法的返回值结果(支持CompletableFuture/Future，别的类型不支持，只能return null)
+     * @return 目标方法的返回值结果(支持CompletableFuture/Future, 别的类型不支持, 只能return null)
      */
     protected open fun doSubmit(task: Callable<Any?>, executor: AsyncTaskExecutor, returnType: Class<*>): Any? {
         // 如果要求返回CompletableFuture
@@ -105,7 +105,7 @@ abstract class AsyncExecutionAspectSupport(
     }
 
     /**
-     * 给定一个具体的方法，获取它的Executor的Qualifier(beanName)
+     * 给定一个具体的方法, 获取它的Executor的Qualifier(beanName)
      *
      * @param method method
      * @return qualifierName
@@ -116,7 +116,7 @@ abstract class AsyncExecutionAspectSupport(
      * 尝试从BeanFactory当中去获取到默认的Executor
      *
      * @param beanFactory beanFactory
-     * @return 如果beanFactory不为null，并且beanFactory当中有Executor，那么从beanFactory当中获取；否则return null
+     * @return 如果beanFactory不为null, 并且beanFactory当中有Executor, 那么从beanFactory当中获取; 否则return null
      */
     protected open fun getDefaultExecutor(beanFactory: BeanFactory?): Executor? {
         if (beanFactory != null) {
@@ -128,7 +128,7 @@ abstract class AsyncExecutionAspectSupport(
                     return beanFactory.getBean(DEFAULT_TASK_EXECUTOR_BEAN_NAME, Executor::class.java)
                 } catch (ex2: NoSuchBeanDefinitionException) {
                     if (logger.isInfoEnabled) {
-                        logger.info("Spring BeanFactory当中存在有多个Executor，但是无法找到名为[$DEFAULT_TASK_EXECUTOR_BEAN_NAME]的Executor")
+                        logger.info("Spring BeanFactory当中存在有多个Executor, 但是无法找到名为[$DEFAULT_TASK_EXECUTOR_BEAN_NAME]的Executor")
                     }
                 }
             } catch (ex: NoSuchBeanDefinitionException) {

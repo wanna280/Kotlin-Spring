@@ -1,7 +1,7 @@
 package com.wanna.framework.test.context
 
 /**
- * Test应用的启动上下文，维护testClass和CacheAwareContextLoaderDelegate
+ * Test应用的启动上下文, 维护testClass和CacheAwareContextLoaderDelegate
  *
  * @author jianchao.jia
  * @version v1.0

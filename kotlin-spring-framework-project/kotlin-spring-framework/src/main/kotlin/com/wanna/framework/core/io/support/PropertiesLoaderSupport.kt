@@ -9,7 +9,7 @@ import java.net.UnknownHostException
 import java.util.*
 
 /**
- * 为PropertiesLoader提供支持的基础类，这个类当中主要提供mergeProperties方法，
+ * 为PropertiesLoader提供支持的基础类, 这个类当中主要提供mergeProperties方法,
  * 实现对于LocalProperties和Resource当中的Properties的Merge功能
  *
  * @author jianchao.jia
@@ -41,14 +41,14 @@ abstract class PropertiesLoaderSupport {
 
     /**
      * 是否LocalProperties需要去覆盖从文件当中加载到的Properties？
-     * 如果为true，先加载文件、再加载Properties；如果为false，先加载Properties再加载文件
+     * 如果为true, 先加载文件、再加载Properties; 如果为false, 先加载Properties再加载文件
      *
      * @see mergeProperties
      */
     var localOverride = false
 
     /**
-     * 设置Properties，填充localProperties属性
+     * 设置Properties, 填充localProperties属性
      *
      * @param properties properties
      */
@@ -57,7 +57,7 @@ abstract class PropertiesLoaderSupport {
     }
 
     /**
-     * 设置Properties，填充localProperties属性
+     * 设置Properties, 填充localProperties属性
      *
      * @param propertiesArray 需要去进行填充的Properties数组
      */
@@ -66,7 +66,7 @@ abstract class PropertiesLoaderSupport {
     }
 
     /**
-     * 设置资源路径，用于最终进行资源的加载
+     * 设置资源路径, 用于最终进行资源的加载
      *
      * @param location 资源路径
      * @see mergeProperties
@@ -76,7 +76,7 @@ abstract class PropertiesLoaderSupport {
     }
 
     /**
-     * 设置资源路径，用于最终进行资源的加载
+     * 设置资源路径, 用于最终进行资源的加载
      *
      * @param locations 资源路径列表
      * @see mergeProperties
@@ -86,14 +86,14 @@ abstract class PropertiesLoaderSupport {
     }
 
     /**
-     * Merge所有的Properties(资源文件和Properties)，得到一个大的Properties
+     * Merge所有的Properties(资源文件和Properties), 得到一个大的Properties
      *
      * @return Merge之后的Properties
      */
     protected open fun mergeProperties(): Properties {
         val properties = Properties()
 
-        // 如果localOverride=true，说明需要使用localProperties的属性去替换资源文件的属性
+        // 如果localOverride=true, 说明需要使用localProperties的属性去替换资源文件的属性
         if (this.localOverride) {
             loadProperties(properties)
         }
@@ -101,7 +101,7 @@ abstract class PropertiesLoaderSupport {
         // 把LocalProperties当中的属性去Merge到Properties当中
         localProperties?.forEach(properties::putAll)
 
-        // 如果localOverride=false，说明需要使用资源文件去替换掉localProperties当中的属性
+        // 如果localOverride=false, 说明需要使用资源文件去替换掉localProperties当中的属性
         if (!this.localOverride) {
             loadProperties(properties)
         }
@@ -109,7 +109,7 @@ abstract class PropertiesLoaderSupport {
     }
 
     /**
-     * 加载locations当中的资源，填充到Properties当中
+     * 加载locations当中的资源, 填充到Properties当中
      *
      * @param properties 需要填充属性的Properties
      * @see setLocationArray
@@ -122,7 +122,7 @@ abstract class PropertiesLoaderSupport {
             try {
                 PropertiesLoaderUtils.fillProperties(properties, it)
             } catch (ex: IOException) {
-                // 如果是资源找不到，但是确实是需要忽略的话，那么我们直接pass掉
+                // 如果是资源找不到, 但是确实是需要忽略的话, 那么我们直接pass掉
                 if (ignoreResourceNotFound && (ex is FileNotFoundException || ex is UnknownHostException)) {
                     if (logger.isInfoEnabled) {
                         logger.info("无法找到指定的资源文件[$it]")

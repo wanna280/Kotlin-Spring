@@ -6,8 +6,8 @@ import com.wanna.framework.transaction.TransactionDefinition.Companion.PROPAGATI
 import com.wanna.framework.transaction.TransactionDefinition.Companion.TIMEOUT_DEFAULT
 
 /**
- * 对于TransactionDefinition的具体实现，对需要提供的各个事务属性提供了getter/setter；
- * 各个getter/setter方法都会被直接设置为final的，不允许子类去进行重写
+ * 对于TransactionDefinition的具体实现, 对需要提供的各个事务属性提供了getter/setter; 
+ * 各个getter/setter方法都会被直接设置为final的, 不允许子类去进行重写
  *
  * @see TransactionDefinition
  */
@@ -31,7 +31,7 @@ open class DefaultTransactionDefinition : TransactionDefinition {
     // 事务是否是只读的事务？
     private var readOnly = false
 
-    // 事务的name，默认为null
+    // 事务的name, 默认为null
     private var name: String? = null
 
     final override fun getPropagationBehavior() = propagationBehavior

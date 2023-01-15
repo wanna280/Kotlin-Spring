@@ -1,7 +1,7 @@
 package com.wanna.framework.core.environment
 
 /**
- * 提供可以被配置的环境对象，可以对环境当中的各种信息去进行配置
+ * 提供可以被配置的环境对象, 可以对环境当中的各种信息去进行配置
  */
 interface ConfigurableEnvironment : Environment, ConfigurablePropertyResolver {
 

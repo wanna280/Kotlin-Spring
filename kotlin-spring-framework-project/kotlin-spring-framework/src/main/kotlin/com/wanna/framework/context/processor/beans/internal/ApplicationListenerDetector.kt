@@ -9,16 +9,16 @@ import java.util.Objects
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 它是一个ApplicationListener的Detector，完成ApplicationListener的检测，将容器中所有的ApplicationListener的Bean都给注册到容器当中
+ * 它是一个ApplicationListener的Detector, 完成ApplicationListener的检测, 将容器中所有的ApplicationListener的Bean都给注册到容器当中
  */
 open class ApplicationListenerDetector(private val applicationContext: AbstractApplicationContext) :
     MergedBeanDefinitionPostProcessor {
 
-    // 容器中的所有的ApplicationListener的beanName列表，value存放的是它是否单例
+    // 容器中的所有的ApplicationListener的beanName列表, value存放的是它是否单例
     private val singletonNames = ConcurrentHashMap<String, Boolean>()
 
     /**
-     * 完成ApplicationListener的检测，并将它是否单例的相关信息保存到Map当中
+     * 完成ApplicationListener的检测, 并将它是否单例的相关信息保存到Map当中
      */
     override fun postProcessMergedBeanDefinition(
         beanDefinition: RootBeanDefinition,
@@ -31,7 +31,7 @@ open class ApplicationListenerDetector(private val applicationContext: AbstractA
     }
 
     /**
-     * 如果它是一个ApplicationListener的话，那么需要把它注册到ApplicationContext当中
+     * 如果它是一个ApplicationListener的话, 那么需要把它注册到ApplicationContext当中
      *
      * @see AbstractApplicationContext.addApplicationListener
      */
@@ -47,7 +47,7 @@ open class ApplicationListenerDetector(private val applicationContext: AbstractA
     }
 
     /**
-     * 重写equals方法，实现自定义的equals逻辑
+     * 重写equals方法, 实现自定义的equals逻辑
      */
     override fun equals(other: Any?): Boolean =
         this === other || (other is ApplicationListenerDetector && other.applicationContext == this.applicationContext)

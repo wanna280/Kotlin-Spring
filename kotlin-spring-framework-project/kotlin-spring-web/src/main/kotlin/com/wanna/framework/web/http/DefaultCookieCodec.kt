@@ -27,7 +27,7 @@ open class DefaultCookieCodec : CookieCodec {
      * 将给定的这些Cookie去转换成为Header字符串, 将会通过headerName="Set-Cookie"字段写回给浏览器
      *
      * @param cookies Cookies对象
-     * @return 转换得到的CookieHeader字符串(如果不包含有Cookie的话，那么return null)
+     * @return 转换得到的CookieHeader字符串(如果不包含有Cookie的话, 那么return null)
      * @see HttpHeaders.SET_COOKIE
      */
     override fun encodeAsHeader(cookies: Array<Cookie>): String? {

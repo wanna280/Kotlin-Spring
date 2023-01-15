@@ -54,7 +54,7 @@ interface StartupStep {
 
 
     /**
-     * Tags，可用于进行迭代的Tag
+     * Tags, 可用于进行迭代的Tag
      */
     interface Tags : Iterable<Tag>
 

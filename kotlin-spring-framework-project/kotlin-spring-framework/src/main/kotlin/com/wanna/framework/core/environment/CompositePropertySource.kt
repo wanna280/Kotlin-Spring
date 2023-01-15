@@ -1,7 +1,7 @@
 package com.wanna.framework.core.environment
 
 /**
- * 这是一个聚合的PropertySource，内部聚合了多个PropertySource
+ * 这是一个聚合的PropertySource, 内部聚合了多个PropertySource
  *
  * @see PropertySource
  * @see EnumerablePropertySource
@@ -12,9 +12,9 @@ open class CompositePropertySource(name: String) : EnumerablePropertySource<Any>
     private val propertySources = LinkedHashSet<PropertySource<*>>()
 
     /**
-     * 如何获取一个指定的属性值？从PropertySource列表当中，挨个去进行检查；
-     * (1)如果其中一个PropertySource当中获取到了属性值的话，那么就return；
-     * (2)如果在所有的PropertySource当中都没有找到的话，那么return null
+     * 如何获取一个指定的属性值？从PropertySource列表当中, 挨个去进行检查;
+     * (1)如果其中一个PropertySource当中获取到了属性值的话, 那么就return;
+     * (2)如果在所有的PropertySource当中都没有找到的话, 那么return null
      */
     override fun getProperty(name: String): Any? {
         propertySources.forEach {
@@ -27,8 +27,8 @@ open class CompositePropertySource(name: String) : EnumerablePropertySource<Any>
     }
 
     /**
-     * 遍历所有的PropertySource，如果其中一个PropertySource当中包含了该属性值，那么return true；
-     * 如果所有的PropertySource当中都没有包含该属性值的话，那么return false
+     * 遍历所有的PropertySource, 如果其中一个PropertySource当中包含了该属性值, 那么return true;
+     * 如果所有的PropertySource当中都没有包含该属性值的话, 那么return false
      */
     override fun containsProperty(name: String): Boolean {
         propertySources.forEach {
@@ -66,7 +66,7 @@ open class CompositePropertySource(name: String) : EnumerablePropertySource<Any>
     open fun getPropertySources(): MutableCollection<PropertySource<*>> = this.propertySources
 
     /**
-     * 获取PropertySources列表当中的所有的propertyName列表，只有类型是EnumerablePropertySource的才能参与统计
+     * 获取PropertySources列表当中的所有的propertyName列表, 只有类型是EnumerablePropertySource的才能参与统计
      *
      * @see EnumerablePropertySource
      */

@@ -26,8 +26,8 @@ import javax.sql.DataSource
 
 
 /**
- * MyBatis的自动装配，自动给容器当中去导入SqlSessionTemplate和SqlSessionFactory；
- * 在MapperFactoryBean去进行属性的注入时，就可以去自动注入SqlSessionFactory和SqlSessionTemplate
+ * MyBatis的自动装配, 自动给容器当中去导入SqlSessionTemplate和SqlSessionFactory;
+ * 在MapperFactoryBean去进行属性的注入时, 就可以去自动注入SqlSessionFactory和SqlSessionTemplate
  *
  * @see SqlSessionFactory
  * @see SqlSessionTemplate
@@ -81,8 +81,8 @@ open class MybatisAutoConfiguration {
     }
 
     /**
-     * 只要在没有MapperFactoryBean和MapperScannerConfigurer时，才会导入这个配置类，并导入AutoConfiguredMapperScannerRegistrar；
-     * 主要作用是去提供@Mapper注解的匹配，将@Mapper的接口扫描到BeanFactory当中；已经如果有@MapperScan了，那么@Mapper注解的匹配工作不会生效
+     * 只要在没有MapperFactoryBean和MapperScannerConfigurer时, 才会导入这个配置类, 并导入AutoConfiguredMapperScannerRegistrar;
+     * 主要作用是去提供@Mapper注解的匹配, 将@Mapper的接口扫描到BeanFactory当中; 已经如果有@MapperScan了, 那么@Mapper注解的匹配工作不会生效
      *
      * @see AutoConfiguredMapperScannerRegistrar
      */
@@ -99,8 +99,8 @@ open class MybatisAutoConfiguration {
 
 
     /**
-     * 自动配置包的MapperScan的注册器，支持去扫描自动配置包下的所有@Mapper注解的接口；
-     * 在没有使用@MapperScan时生效，在使用了@MapperScan的情况下，@Mapper不生效(这个类不会被导入到Spring容器当中)
+     * 自动配置包的MapperScan的注册器, 支持去扫描自动配置包下的所有@Mapper注解的接口;
+     * 在没有使用@MapperScan时生效, 在使用了@MapperScan的情况下, @Mapper不生效(这个类不会被导入到Spring容器当中)
      *
      * @see Mapper
      */
@@ -109,7 +109,7 @@ open class MybatisAutoConfiguration {
 
         override fun registerBeanDefinitions(annotationMetadata: AnnotationMetadata, registry: BeanDefinitionRegistry) {
             if (!AutoConfigurationPackages.has(this.beanFactory)) {
-                logger.debug("无法获取到自动配置包，无法去扫描@Mapper的组件...忽略掉")
+                logger.debug("无法获取到自动配置包, 无法去扫描@Mapper的组件...忽略掉")
                 return
             }
             logger.debug("开始去寻找标注了@Mapper注解的接口去进行注册...")

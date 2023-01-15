@@ -5,9 +5,9 @@ import com.wanna.framework.transaction.TransactionDefinition
 import kotlin.reflect.KClass
 
 /**
- * 标识这是一个事务方法，当然，也可以标注在类上表示该类的所有方法都拥有事务功能
+ * 标识这是一个事务方法, 当然, 也可以标注在类上表示该类的所有方法都拥有事务功能
  *
- * 要使用事务功能，必须得使用`EnableTransactionManagement`，去开启Spring事务的支持，如下代码所示
+ * 要使用事务功能, 必须得使用`EnableTransactionManagement`, 去开启Spring事务的支持, 如下代码所示
  *
  * ```kotlin
  * @Component
@@ -17,10 +17,10 @@ import kotlin.reflect.KClass
  *
  * @see EnableTransactionManagement
  *
- * @param value 指定要使用的TransactionManager的beanName，同transactionManager
- * @param transactionManager 指定要使用的TransactionManager的beanName，同value
+ * @param value 指定要使用的TransactionManager的beanName, 同transactionManager
+ * @param transactionManager 指定要使用的TransactionManager的beanName, 同value
  * @param timeout 事务的超时时间
- * @param readOnly 事务是否只读？设置为只读会提高性能，但是如果出现写操作会抛出异常
+ * @param readOnly 事务是否只读？设置为只读会提高性能, 但是如果出现写操作会抛出异常
  * @param rollbackFor 遇到哪个异常时需要回滚(指定Class)
  * @param rollbackForClassName 遇到哪个异常时需要回滚？(指定className)
  * @param noRollbackFor 遇到哪个异常时不需要回滚？(指定Class)

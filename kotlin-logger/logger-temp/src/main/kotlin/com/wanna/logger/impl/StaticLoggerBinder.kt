@@ -13,7 +13,7 @@ class StaticLoggerBinder : LoggerFactoryBinder {
         val SINGLETON = StaticLoggerBinder()
 
         init {
-            // 在通过方法去获取Singleton之前，初始化Singleton
+            // 在通过方法去获取Singleton之前, 初始化Singleton
             SINGLETON.init()
         }
 

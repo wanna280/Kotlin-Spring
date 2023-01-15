@@ -5,7 +5,7 @@ import com.wanna.framework.beans.factory.HierarchicalBeanFactory
 import com.wanna.framework.beans.factory.ListableBeanFactory
 
 /**
- * 这是一个BeanFactory的工具类，提供对BeanFactory当中相关操作提供公共方法
+ * 这是一个BeanFactory的工具类, 提供对BeanFactory当中相关操作提供公共方法
  */
 object BeanFactoryUtils {
     /**
@@ -19,7 +19,7 @@ object BeanFactoryUtils {
     }
 
     /**
-     * 将beanName前缀中的"&"全部去掉，实现解引用
+     * 将beanName前缀中的"&"全部去掉, 实现解引用
      *
      * @param beanName beanName
      * @return 转换之后得到的beanName
@@ -29,7 +29,7 @@ object BeanFactoryUtils {
         if (!beanName.startsWith(FACTORY_BEAN_PREFIX)) {
             return beanName
         }
-        // 一个for循环切掉所有的FactoryBean的prefix，也就是"&"
+        // 一个for循环切掉所有的FactoryBean的prefix, 也就是"&"
         var name = beanName
         do {
             name = name.substring(FACTORY_BEAN_PREFIX.length)

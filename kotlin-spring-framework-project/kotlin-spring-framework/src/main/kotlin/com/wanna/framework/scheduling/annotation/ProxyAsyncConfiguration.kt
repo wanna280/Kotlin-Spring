@@ -7,7 +7,7 @@ import com.wanna.framework.context.annotation.Role
 import com.wanna.framework.scheduling.config.TaskManagementConfigUtils
 
 /**
- * 为@Async的方法提供代理的配置类导入一个BeanPostProcessor，去将匹配@Async的Advisor应用给方法/类上标注了@Async注解的Bean；
+ * 为@Async的方法提供代理的配置类导入一个BeanPostProcessor, 去将匹配@Async的Advisor应用给方法/类上标注了@Async注解的Bean;
  * 让标注@Async的方法可以通过Spring Aop的方式去进行代理完成异步的执行
  *
  * @see Async
@@ -22,7 +22,7 @@ open class ProxyAsyncConfiguration : AbstractAsyncConfiguration() {
     }
 
     /**
-     * 给容器中导入一个处理@Async的BeanPostProcessor，并处理@EnableAsync注解当中的相关属性，该BeanPostProcessor会设置一个Advisor去匹配@Async注解；
+     * 给容器中导入一个处理@Async的BeanPostProcessor, 并处理@EnableAsync注解当中的相关属性, 该BeanPostProcessor会设置一个Advisor去匹配@Async注解;
      *
      * * 1.要使用的Advisor是AsyncAnnotationAdvisor
      * * 2.该Advisor当中要使用的Advice为AnnotationAsyncExecutionInterceptor

@@ -7,9 +7,9 @@ import java.lang.reflect.Executable
 import java.lang.reflect.Method
 
 /**
- * 这是一个BeanDefinition的实现，是Spring的BeanFactory当中，完成了BeanDefinition的Merged之后的一个BeanDefinition，
- * 它也可以被用作BeanDefinition的注册，但是更加推荐使用GenericBeanDefinition，因为它支持动态配置parent BeanDefinition的方式；
- * 一个RootBeanDefinition，可能不止来自于一个BeanDefinition，可能是来自于多个它继承(通过parent)的BeanDefinition的合并
+ * 这是一个BeanDefinition的实现, 是Spring的BeanFactory当中, 完成了BeanDefinition的Merged之后的一个BeanDefinition,
+ * 它也可以被用作BeanDefinition的注册, 但是更加推荐使用GenericBeanDefinition, 因为它支持动态配置parent BeanDefinition的方式;
+ * 一个RootBeanDefinition, 可能不止来自于一个BeanDefinition, 可能是来自于多个它继承(通过parent)的BeanDefinition的合并
  *
  * @see BeanDefinition
  * @see GenericBeanDefinition
@@ -52,7 +52,7 @@ open class RootBeanDefinition() : AbstractBeanDefinition() {
     var postProcessed: Boolean = false
 
     /**
-     * 当前的BeanDefinition，是否已经陈旧了?  需要去进行re-merge?
+     * 当前的BeanDefinition, 是否已经陈旧了?  需要去进行re-merge?
      */
     var stale: Boolean = false
 
@@ -68,7 +68,7 @@ open class RootBeanDefinition() : AbstractBeanDefinition() {
     var resolvedConstructorOrFactoryMethod: Executable? = null
 
     /**
-     * 准备的构造器参数列表，需要完成解析后，才能成为最终的参数列表
+     * 准备的构造器参数列表, 需要完成解析后, 才能成为最终的参数列表
      */
     @Nullable
     var preparedConstructorArguments: Array<out Any?>? = null
@@ -80,18 +80,18 @@ open class RootBeanDefinition() : AbstractBeanDefinition() {
     var resolvedConstructorArguments: Array<out Any?>? = null
 
     /**
-     * 构造器参数是否已经完成了解析? 如果已经完成了解析，那么就可以通过RootBeanDefinition当中去获取到构造器参数列表
+     * 构造器参数是否已经完成了解析? 如果已经完成了解析, 那么就可以通过RootBeanDefinition当中去获取到构造器参数列表
      */
     var constructorArgumentsResolved = false
 
     /**
-     * 一个BeanDefinition所装饰的BeanDefinition，因为需要维护beanName，所以这里保存一个BeanDefinitionHolder
+     * 一个BeanDefinition所装饰的BeanDefinition, 因为需要维护beanName, 所以这里保存一个BeanDefinitionHolder
      */
     @Nullable
     var decoratedDefinition: BeanDefinitionHolder? = null
 
     /**
-     * 能否在beforeInstantiation当中解析到合适的Bean? 如果解析不到，那么下次就不会回调beforeInstantiation了(提高性能)
+     * 能否在beforeInstantiation当中解析到合适的Bean? 如果解析不到, 那么下次就不会回调beforeInstantiation了(提高性能)
      */
     var beforeInstantiationResolved: Boolean = true
 
@@ -102,7 +102,7 @@ open class RootBeanDefinition() : AbstractBeanDefinition() {
     var resolvedDestroyMethodName: String? = null
 
     /**
-     * 是否是FactoryBean，可以为null代表还没解析过
+     * 是否是FactoryBean, 可以为null代表还没解析过
      */
     @Nullable
     private var isFactoryBean: Boolean? = null

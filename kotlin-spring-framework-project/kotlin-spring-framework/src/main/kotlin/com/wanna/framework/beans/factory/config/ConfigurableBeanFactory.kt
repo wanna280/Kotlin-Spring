@@ -12,10 +12,10 @@ import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.lang.Nullable
 
 /**
- * 这是一个支持配置的BeanFactory，它实现了SingletonBeanRegistry和HierarchicalBeanFactory，
- * 支持BeanFactory的继承(获取parentBeanFactory)功能，也支持了单实例Bean的注册中心功能
+ * 这是一个支持配置的BeanFactory, 它实现了SingletonBeanRegistry和HierarchicalBeanFactory,
+ * 支持BeanFactory的继承(获取parentBeanFactory)功能, 也支持了单实例Bean的注册中心功能
  *
- * 不仅如此，在当前接口当中，还新增了类型转换、Scope的注册，嵌入式值解析器的注册等功能。
+ * 不仅如此, 在当前接口当中, 还新增了类型转换、Scope的注册, 嵌入式值解析器的注册等功能.
  *
  * @see HierarchicalBeanFactory
  * @see SingletonBeanRegistry
@@ -42,23 +42,23 @@ interface ConfigurableBeanFactory : HierarchicalBeanFactory, SingletonBeanRegist
     fun setParentBeanFactory(@Nullable parentBeanFactory: BeanFactory?)
 
     /**
-     * 获取当前BeanFactory当中的类型转换器(如果不存在的话，将会采用默认的TypeConverter)
+     * 获取当前BeanFactory当中的类型转换器(如果不存在的话, 将会采用默认的TypeConverter)
      *
-     * @return TypeConverter(不会为null，如果没设置的话，会存在有默认的TypeConverter)
+     * @return TypeConverter(不会为null, 如果没设置的话, 会存在有默认的TypeConverter)
      */
     fun getTypeConverter(): TypeConverter
 
     /**
-     * 自定义TypeConverter(用在Spring当中完成类型的转换，会组合ConversionService和PropertyEditor，协助去完成类型的转换)
+     * 自定义TypeConverter(用在Spring当中完成类型的转换, 会组合ConversionService和PropertyEditor, 协助去完成类型的转换)
      *
      * @param typeConverter 需要使用的TypeConverter
      */
     fun setTypeConverter(@Nullable typeConverter: TypeConverter?)
 
     /**
-     * 对外提供获取ConversionService的接口，去提供类型的转换的支持
+     * 对外提供获取ConversionService的接口, 去提供类型的转换的支持
      *
-     * @return ConversionService(如果当前BeanFactory不存在的话，return null)
+     * @return ConversionService(如果当前BeanFactory不存在的话, return null)
      */
     @Nullable
     fun getConversionService(): ConversionService?
@@ -71,16 +71,16 @@ interface ConfigurableBeanFactory : HierarchicalBeanFactory, SingletonBeanRegist
     fun setConversionService(@Nullable conversionService: ConversionService?)
 
     /**
-     * 添加字符串的值解析器，比如用来解析"${}"占位符表达式
+     * 添加字符串的值解析器, 比如用来解析"${}"占位符表达式
      *
      * @param resolver 需要添加的嵌入式值解析器
      */
     fun addEmbeddedValueResolver(resolver: StringValueResolver)
 
     /**
-     * 当前BeanFactory当中是否有嵌入式的值解析器，如果有的话，才支持去进行表达式的解析
+     * 当前BeanFactory当中是否有嵌入式的值解析器, 如果有的话, 才支持去进行表达式的解析
      *
-     * @return 如果当前BeanFactory当中有嵌入式的值解析器的话，return true；否则的话return false
+     * @return 如果当前BeanFactory当中有嵌入式的值解析器的话, return true; 否则的话return false
      */
     fun hasEmbeddedValueResolver(): Boolean
 
@@ -96,7 +96,7 @@ interface ConfigurableBeanFactory : HierarchicalBeanFactory, SingletonBeanRegist
     /**
      * 设置当前BeanFactory要使用的BeanClassLoader
      *
-     * @param classLoader 你想要去进行设置的BeanClassLoader，如果为空，将会使用默认的ClassLoader
+     * @param classLoader 你想要去进行设置的BeanClassLoader, 如果为空, 将会使用默认的ClassLoader
      */
     fun setBeanClassLoader(@Nullable classLoader: ClassLoader?)
 
@@ -118,7 +118,7 @@ interface ConfigurableBeanFactory : HierarchicalBeanFactory, SingletonBeanRegist
      * 根据scopeName去获取已经注册的Scope
      *
      * @param name scopeName
-     * @return Scope(如果没有注册过该scopeName对应的Scope的话，return null)
+     * @return Scope(如果没有注册过该scopeName对应的Scope的话, return null)
      */
     @Nullable
     fun getRegisteredScope(name: String): Scope?
@@ -176,7 +176,7 @@ interface ConfigurableBeanFactory : HierarchicalBeanFactory, SingletonBeanRegist
 
 
     /**
-     * 获取合并之后的BeanDefinition(支持从parentBeanFactory当中去进行获取)，提供公开的对外访问的接口
+     * 获取合并之后的BeanDefinition(支持从parentBeanFactory当中去进行获取), 提供公开的对外访问的接口
      *
      * @param name 想要去获取MergedBeanDefinition的beanName
      * @return 合并之后的BeanDefinition(一般为RootBeanDefinition)
@@ -186,10 +186,10 @@ interface ConfigurableBeanFactory : HierarchicalBeanFactory, SingletonBeanRegist
     fun getMergedBeanDefinition(name: String): BeanDefinition
 
     /**
-     * BeanFactory也得提供获取ApplicationStartup的功能，提供getter/setter
+     * BeanFactory也得提供获取ApplicationStartup的功能, 提供getter/setter
      */
     /**
-     * 设置[ApplicationStartup]，提供Spring BeanFactory启动过程当中的指标监控
+     * 设置[ApplicationStartup], 提供Spring BeanFactory启动过程当中的指标监控
      *
      * @param applicationStartup ApplicationStartup
      */
@@ -213,7 +213,7 @@ interface ConfigurableBeanFactory : HierarchicalBeanFactory, SingletonBeanRegist
     fun isFactoryBean(name: String): Boolean
 
     /**
-     * 摧毁一个在特定的Scope内的Bean(Note: 任何的在摧毁过程当中的异常都应该被catch并记录日志，而不是传播给调用方去进行处理)
+     * 摧毁一个在特定的Scope内的Bean(Note: 任何的在摧毁过程当中的异常都应该被catch并记录日志, 而不是传播给调用方去进行处理)
      *
      * @param beanName beanName of BeanDefinition
      * @throws NoSuchBeanDefinitionException 如果BeanFactory当中没有这样的beanName的BeanDefinition
@@ -222,7 +222,7 @@ interface ConfigurableBeanFactory : HierarchicalBeanFactory, SingletonBeanRegist
     fun destroyScopedBean(beanName: String)
 
     /**
-     * 摧毁一个Bean(Note: 任何的在摧毁过程当中的异常都应该被catch并记录日志，而不是传播给调用方去进行处理)
+     * 摧毁一个Bean(Note: 任何的在摧毁过程当中的异常都应该被catch并记录日志, 而不是传播给调用方去进行处理)
      *
      * @param beanName beanName of BeanDefinition
      * @param bean 需要去进行摧毁的Bean
@@ -232,8 +232,8 @@ interface ConfigurableBeanFactory : HierarchicalBeanFactory, SingletonBeanRegist
     fun destroyBean(beanName: String, bean: Any)
 
     /**
-     * 摧毁当前BeanFactory当中的所有的单例Bean(Note: 任何的在摧毁过程当中的异常都应该被catch并记录日志，而不是传播给调用方去进行处理)；
-     * 通常只有在BeanFactory关闭时，才会需要去摧毁所有的单例Bean
+     * 摧毁当前BeanFactory当中的所有的单例Bean(Note: 任何的在摧毁过程当中的异常都应该被catch并记录日志, 而不是传播给调用方去进行处理);
+     * 通常只有在BeanFactory关闭时, 才会需要去摧毁所有的单例Bean
      */
     fun destroySingletons()
 

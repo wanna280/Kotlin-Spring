@@ -16,7 +16,7 @@ enum class HttpStatus(val value: Int, val series: Series, val reasonPhase: Strin
     ;
 
     /**
-     * Http状态码所属的系列的枚举值，也就是我们常说的"1xx"，"2xx"，"3xx"，"4xx"，"5xx"
+     * Http状态码所属的系列的枚举值, 也就是我们常说的"1xx", "2xx", "3xx", "4xx", "5xx"
      *
      * @param value SeriesInt
      */

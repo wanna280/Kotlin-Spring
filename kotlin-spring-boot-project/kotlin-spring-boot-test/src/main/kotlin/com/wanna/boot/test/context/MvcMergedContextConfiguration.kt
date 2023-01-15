@@ -6,7 +6,7 @@ import com.wanna.framework.test.context.ContextLoader
 import com.wanna.framework.test.context.MergedContextConfiguration
 
 /**
- * Mvc场景下的[MergedContextConfiguration]，继承的目的仅仅是标识作用。
+ * Mvc场景下的[MergedContextConfiguration], 继承的目的仅仅是标识作用.
  *
  * @author jianchao.jia
  * @version v1.0

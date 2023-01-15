@@ -8,7 +8,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 
 /**
- * 定时任务的Registrar，负责将任务交给任务调度器去进行执行
+ * 定时任务的Registrar, 负责将任务交给任务调度器去进行执行
  *
  * @see ScheduledExecutorService
  * @see TaskScheduler
@@ -30,8 +30,8 @@ open class ScheduledTaskRegistrar : InitializingBean, DisposableBean, ScheduledT
     private val scheduledTasks = LinkedHashSet<ScheduledTask>()
 
     /**
-     * 设置用于定时任务的调度的Scheduler，支持给定一个TaskScheduler，或者是ScheduledExecutorService；
-     * 当传入一个ScheduledExecutorService时，会自动将它去包装成为一个TaskScheduler
+     * 设置用于定时任务的调度的Scheduler, 支持给定一个TaskScheduler, 或者是ScheduledExecutorService; 
+     * 当传入一个ScheduledExecutorService时, 会自动将它去包装成为一个TaskScheduler
      *
      * @see TaskScheduler
      * @see ScheduledExecutorService
@@ -58,7 +58,7 @@ open class ScheduledTaskRegistrar : InitializingBean, DisposableBean, ScheduledT
     override fun getScheduledTasks(): Set<ScheduledTask> = this.scheduledTasks
 
     /**
-     * 在初始化时，应该启动所有的定时任务，因为之前加入时，有可能并未完成任务的启动...
+     * 在初始化时, 应该启动所有的定时任务, 因为之前加入时, 有可能并未完成任务的启动...
      */
     override fun afterPropertiesSet() {
         if (this.scheduler == null) {
@@ -70,7 +70,7 @@ open class ScheduledTaskRegistrar : InitializingBean, DisposableBean, ScheduledT
     }
 
     /**
-     * 在Spring容器关闭/当前Bean被摧毁时，需要去关闭所有的ScheduledTask任务列表，关闭线程池
+     * 在Spring容器关闭/当前Bean被摧毁时, 需要去关闭所有的ScheduledTask任务列表, 关闭线程池
      */
     override fun destroy() {
         this.scheduledTasks.forEach(ScheduledTask::cancel)

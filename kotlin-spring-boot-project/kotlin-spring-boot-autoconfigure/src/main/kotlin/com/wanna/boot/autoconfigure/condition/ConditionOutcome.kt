@@ -1,7 +1,7 @@
 package com.wanna.boot.autoconfigure.condition
 
 /**
- * 这是一个SpringBootCondition的匹配结果的一层抽象，Outcome(结果)-意思和Result基本一致,差不多可以通用
+ * 这是一个SpringBootCondition的匹配结果的一层抽象, Outcome(结果)-意思和Result基本一致,差不多可以通用
  *
  * @see SpringBootCondition
  */

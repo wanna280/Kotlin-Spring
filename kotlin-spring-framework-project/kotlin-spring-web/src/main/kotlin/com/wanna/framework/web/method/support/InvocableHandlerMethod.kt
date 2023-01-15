@@ -16,7 +16,7 @@ import java.lang.reflect.Method
 import java.util.concurrent.Callable
 
 /**
- * 这是一个可以被执行的HandlerMethod，提供了invokeAndHandle方法，外部可以直接调用，去完成方法的调用
+ * 这是一个可以被执行的HandlerMethod, 提供了invokeAndHandle方法, 外部可以直接调用, 去完成方法的调用
  *
  * @see invokeAndHandle
  * @see HandlerMethod
@@ -95,16 +95,16 @@ open class InvocableHandlerMethod() : HandlerMethod() {
     }
 
     /**
-     * 执行目标HandlerMethod，并处理目标方法的返回值
+     * 执行目标HandlerMethod, 并处理目标方法的返回值
      *
      * @param webRequest NativeWebRequest(request and response)
      * @param mavContainer ModelAndView容器
-     * @param provideArgs 外部提供的参数列表，在进行参数解析时，优先从给定的参数列表当中获取
+     * @param provideArgs 外部提供的参数列表, 在进行参数解析时, 优先从给定的参数列表当中获取
      */
     open fun invokeAndHandle(
         webRequest: ServerWebRequest, mavContainer: ModelAndViewContainer, vararg provideArgs: Any
     ) {
-        // 遍历所有的ArgumentResolver去解析方法参数，并反射执行目标方法
+        // 遍历所有的ArgumentResolver去解析方法参数, 并反射执行目标方法
         val returnValue = invokeForRequest(webRequest, mavContainer, *provideArgs)
 
         if (returnValue == null) {
@@ -117,7 +117,7 @@ open class InvocableHandlerMethod() : HandlerMethod() {
         mavContainer.requestHandled = false
         val returnValueType = getReturnValueType(returnValue)
 
-        // 遍历所有的ReturnValueHandler，去找到合适的一个去进行方法的返回值的处理...
+        // 遍历所有的ReturnValueHandler, 去找到合适的一个去进行方法的返回值的处理...
         try {
             this.returnValueHandlers?.handleReturnValue(returnValue, webRequest, returnValueType, mavContainer)
         } catch (ex: Exception) {
@@ -130,11 +130,11 @@ open class InvocableHandlerMethod() : HandlerMethod() {
 
 
     /**
-     * 使用HandlerMethod当中组合的参数解析器去获取HandlerMethod执行时，应该用到的参数值列表
+     * 使用HandlerMethod当中组合的参数解析器去获取HandlerMethod执行时, 应该用到的参数值列表
      *
      * @param webRequest NativeWebRequest(request and response)
      * @param mavContainer ModelAndViewContainer
-     * @param provideArgs 外部提供的参数列表，在进行参数解析时，优先从给定的参数列表当中获取
+     * @param provideArgs 外部提供的参数列表, 在进行参数解析时, 优先从给定的参数列表当中获取
      * @return 当前HandlerMethod的参数列表params
      * @throws IllegalStateException 如果没有找到合适的方法的参数解析器去解析当前的方法参数
      * @throws Exception 如果使用参数解析器解析过程当中发生了异常
@@ -150,24 +150,24 @@ open class InvocableHandlerMethod() : HandlerMethod() {
         val resolvers = argumentResolvers
         (methodParameters.indices).forEach {
             val parameter = methodParameters[it]
-            // 先尝试从外部提供的参数列表当中去进行寻找类型匹配的参数(比如@ExceptionHandler需要用到具体的异常信息，就支持从这里去进行给定)
+            // 先尝试从外部提供的参数列表当中去进行寻找类型匹配的参数(比如@ExceptionHandler需要用到具体的异常信息, 就支持从这里去进行给定)
             params[it] = findProvidedArgument(parameter, *provideArgs)
-            // 如果找到了，那么就不使用参数解析器去进行匹配了；如果没有找到，那么就得交给参数解析器去完成解析了
+            // 如果找到了, 那么就不使用参数解析器去进行匹配了; 如果没有找到, 那么就得交给参数解析器去完成解析了
             if (params[it] != null) {
                 return@forEach
             }
-            // 在解析之前，需要先初始化参数名发现器，方便在解析参数的值时，可以去获取参数的name
+            // 在解析之前, 需要先初始化参数名发现器, 方便在解析参数的值时, 可以去获取参数的name
             parameter.initParameterNameDiscoverer(this.parameterNameDiscoverer)
-            // 交给方法参数解析器列表，挨个尝试去解析方法参数
+            // 交给方法参数解析器列表, 挨个尝试去解析方法参数
             if (resolvers != null) {
                 if (!resolvers.supportsParameter(parameter)) {
-                    throw IllegalStateException("解析方法参数[$parameter]失败，原因是没有找到合适的参数解析器去进行解析")
+                    throw IllegalStateException("解析方法参数[$parameter]失败, 原因是没有找到合适的参数解析器去进行解析")
                 }
                 try {
                     params[it] = resolvers.resolveArgument(parameter, webRequest, mavContainer, binderFactory)
                 } catch (ex: Exception) {
                     if (logger.isDebugEnabled) {
-                        logger.debug("使用参数解析器去解析参数[$parameter]失败，原因是[${ex.message}]", ex)
+                        logger.debug("使用参数解析器去解析参数[$parameter]失败, 原因是[${ex.message}]", ex)
                     }
                     throw ex
                 }
@@ -177,11 +177,11 @@ open class InvocableHandlerMethod() : HandlerMethod() {
     }
 
     /**
-     * 从提供的参数当中，找到类型匹配的参数
+     * 从提供的参数当中, 找到类型匹配的参数
      *
      * @param parameter 目标参数信息
-     * @param provideArgs 外部提供的参数列表，在进行参数解析时，优先从给定的参数列表当中获取
-     * @return 如果从候选的参数列表当中找到了合适的参数，那么return该参数；如果没有匹配的，return null
+     * @param provideArgs 外部提供的参数列表, 在进行参数解析时, 优先从给定的参数列表当中获取
+     * @return 如果从候选的参数列表当中找到了合适的参数, 那么return该参数; 如果没有匹配的, return null
      */
     @Nullable
     protected open fun findProvidedArgument(parameter: MethodParameter, vararg provideArgs: Any): Any? {
@@ -194,11 +194,11 @@ open class InvocableHandlerMethod() : HandlerMethod() {
     }
 
     /**
-     * 解析HandlerMethod方法参数，并执行目标方法
+     * 解析HandlerMethod方法参数, 并执行目标方法
      *
      * @param webRequest NativeWebRequest(request and response)
      * @param mavContainer ModelAndView容器
-     * @param provideArgs 外部提供的参数列表，在进行参数解析时，优先从给定的参数列表当中获取
+     * @param provideArgs 外部提供的参数列表, 在进行参数解析时, 优先从给定的参数列表当中获取
      * @return 执行目标Handler方法的返回值
      */
     @Nullable
@@ -226,17 +226,17 @@ open class InvocableHandlerMethod() : HandlerMethod() {
             return ReflectionUtils.invokeMethod(method, this.bean, *args)
         } catch (ex: IllegalArgumentException) {
             throw IllegalArgumentException(
-                "执行HandlerMethod出现了不合法参数，[method=${method}, args=${args.contentToString()}]",
+                "执行HandlerMethod出现了不合法参数, [method=${method}, args=${args.contentToString()}]",
                 ex
             )
         } catch (ex: InvocationTargetException) {
-            throw IllegalStateException("执行目标方法发生错误，原因是-->${ex.targetException}", ex)
+            throw IllegalStateException("执行目标方法发生错误, 原因是-->${ex.targetException}", ex)
         }
     }
 
     /**
-     * 包装异步的执行结果成为一个HandlerMethod，并将返回值封装成为一个MethodParameter，
-     * 设置匹配的注解是从原来的HandlerMethod上去进行搜索，而不是从Callable的call方法上去进行搜索
+     * 包装异步的执行结果成为一个HandlerMethod, 并将返回值封装成为一个MethodParameter,
+     * 设置匹配的注解是从原来的HandlerMethod上去进行搜索, 而不是从Callable的call方法上去进行搜索
      *
      * @param result 异步任务处理的最终结果
      * @return InvocableHandlerMethod
@@ -252,7 +252,7 @@ open class InvocableHandlerMethod() : HandlerMethod() {
 
 
     /**
-     * 处理并发任务的HandlerMethod，主要用于去替换掉原本的HandlerMethod，转换成为我们自定义的Handler的方式去处理本次请求
+     * 处理并发任务的HandlerMethod, 主要用于去替换掉原本的HandlerMethod, 转换成为我们自定义的Handler的方式去处理本次请求
      *
      * @param result 异步任务执行的结果
      * @param returnType 该方法的返回类型封装成为的返回值类型
@@ -270,7 +270,7 @@ open class InvocableHandlerMethod() : HandlerMethod() {
         }
 
         /**
-         * 重写获取方法上的注解的方法，沿用外部类的寻找注解的方式去进行寻找
+         * 重写获取方法上的注解的方法, 沿用外部类的寻找注解的方式去进行寻找
          *
          * @param annotationType annotationType
          */
@@ -281,7 +281,7 @@ open class InvocableHandlerMethod() : HandlerMethod() {
          * 判断该方法上是否有存在该注解？
          *
          * @param annotationClass 要去进行匹配的注解
-         * @return 如果该方法上有该注解，那么return true；否则return false
+         * @return 如果该方法上有该注解, 那么return true; 否则return false
          */
         override fun hasMethodAnnotation(annotationClass: Class<out Annotation>) =
             this@InvocableHandlerMethod.hasMethodAnnotation(annotationClass)

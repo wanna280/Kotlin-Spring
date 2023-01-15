@@ -6,7 +6,7 @@ import com.wanna.framework.util.ResourceUtils
 import java.util.*
 
 /**
- * ResourcePattern的工具类，提供资源路径的表达式解析的相关工具方法
+ * ResourcePattern的工具类, 提供资源路径的表达式解析的相关工具方法
  *
  * @author jianchao.jia
  * @version v1.0
@@ -27,7 +27,7 @@ object ResourcePatternUtils {
     /**
      * 将ResourceLoader去转换成为ResourcePatternResolver
      *
-     * @param resourceLoader ResourceLoader(可以为null，将会使用DefaultResultLoader)
+     * @param resourceLoader ResourceLoader(可以为null, 将会使用DefaultResultLoader)
      * @return 转换之后的ResourcePatternResolver
      */
     @JvmStatic

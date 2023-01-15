@@ -13,20 +13,20 @@ import java.util.concurrent.Executor
 import java.util.function.Supplier
 
 /**
- * 对@Async注解的增强Advisor，支持去匹配类上/方法上的@Async注解，去使用AnnotationAsyncExecutionInterceptor
- * 去进行拦截该异步方法，从而完成异步方法的增强
+ * 对@Async注解的增强Advisor, 支持去匹配类上/方法上的@Async注解, 去使用AnnotationAsyncExecutionInterceptor
+ * 去进行拦截该异步方法, 从而完成异步方法的增强
  *
  * @see AnnotationAsyncExecutionInterceptor
  */
 open class AsyncAnnotationAdvisor() : AbstractPointcutAdvisor(), BeanFactoryAware {
 
     /**
-     * advice，用于去拦截@Async注解的执行
+     * advice, 用于去拦截@Async注解的执行
      */
     private var advice: Advice? = null
 
     /**
-     * pointcut，提供对于@Async注解的匹配
+     * pointcut, 提供对于@Async注解的匹配
      */
     private var pointcut: Pointcut? = null
 
@@ -70,7 +70,7 @@ open class AsyncAnnotationAdvisor() : AbstractPointcutAdvisor(), BeanFactoryAwar
     }
 
     /**
-     * 构建Pointcut，去匹配一个类/方法上的@Async注解
+     * 构建Pointcut, 去匹配一个类/方法上的@Async注解
      *
      * @param asyncAnnotationTypes 要使用的@Async注解列表？
      * @return Pointcut

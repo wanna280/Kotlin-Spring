@@ -19,7 +19,7 @@ import org.w3c.dom.Node
 import java.util.*
 
 /**
- * BeanDefinition的解析器的Delegate，提供真正地去解析和注册BeanDefinition的功能
+ * BeanDefinition的解析器的Delegate, 提供真正地去解析和注册BeanDefinition的功能
  *
  * @author jianchao.jia
  * @version v1.0
@@ -214,7 +214,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
      * 解析自定义XML元素(需要使用到NamespaceHandler去提供BeanDefinition的解析)
      *
      * @param element element
-     * @return 解析到的BeanDefinition(如果解析失败，那么return null)
+     * @return 解析到的BeanDefinition(如果解析失败, 那么return null)
      */
     @Nullable
     fun parseCustomElement(element: Element): BeanDefinition? = parseCustomElement(element, null)
@@ -224,7 +224,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
      *
      * @param element element
      * @param containingBd 已经存在有的BeanDefinition(如果有的话)
-     * @return 解析到的BeanDefinition(如果解析失败，那么return null)
+     * @return 解析到的BeanDefinition(如果解析失败, 那么return null)
      */
     @Nullable
     fun parseCustomElement(element: Element, @Nullable containingBd: BeanDefinition?): BeanDefinition? {
@@ -262,11 +262,11 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
             beanName = name
         }
 
-        // 解析BeanDefinition，并填充属性信息
+        // 解析BeanDefinition, 并填充属性信息
         val beanDefinition = parseBeanDefinitionElement(element, beanName, containingBd)
         if (beanDefinition != null) {
 
-            // 如果还是不存在有beanName，那么我们去生成beanName
+            // 如果还是不存在有beanName, 那么我们去生成beanName
             if (!StringUtils.hasText(beanName)) {
                 beanName = readerContext.generateBeanName(beanDefinition)
             }
@@ -276,12 +276,12 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
     }
 
     /**
-     * 将一个"bean"标签去解析成为一个BeanDefinition，比如"class"属性，比如"parent"属性
+     * 将一个"bean"标签去解析成为一个BeanDefinition, 比如"class"属性, 比如"parent"属性
      *
      * @param element 一个"bean"标签的Element
      * @param beanName 从"Element"当中去解析到的beanName
      * @param containingBd 已经包含的BeanDefinition(如果存在的话)
-     * @return 从一个"bean"标签的Element当中去解析到的BeanDefinition，解析失败return null
+     * @return 从一个"bean"标签的Element当中去解析到的BeanDefinition, 解析失败return null
      */
     @Nullable
     fun parseBeanDefinitionElement(
@@ -310,7 +310,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
         // 解析BeanDescription
         parseDescription(element, definition)
 
-        // 解析"meta"标签，将它解析成为BeanDefinition的Attribute
+        // 解析"meta"标签, 将它解析成为BeanDefinition的Attribute
         parseMetaElements(element, definition)
 
         // 解析"lookup-method"这个标签成为MethodOverride加入到BeanDefinition
@@ -344,7 +344,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
     }
 
     /**
-     * 解析"meta"标签，将它添加到BeanDefinition的属性(Attribute)当中
+     * 解析"meta"标签, 将它添加到BeanDefinition的属性(Attribute)当中
      *
      * @param element "bean"标签的Element
      * @param bd 正在解析的BeanDefinition
@@ -364,7 +364,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
     }
 
     /**
-     * 解析"lookup-method"标签，将它解析成为一个[LookupOverride]并添加到BeanDefinition当中
+     * 解析"lookup-method"标签, 将它解析成为一个[LookupOverride]并添加到BeanDefinition当中
      *
      * @param element "bean"标签的Element
      * @param bd 正在解析的BeanDefinition
@@ -384,7 +384,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
     }
 
     /**
-     * 解析"replaced-method"标签，将它解析成为一个[ReplaceOverride]并添加到BeanDefinition当中
+     * 解析"replaced-method"标签, 将它解析成为一个[ReplaceOverride]并添加到BeanDefinition当中
      *
      * @param element element
      * @param bd 正在解析的BeanDefinition
@@ -404,7 +404,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
     }
 
     /**
-     * 解析"bean"标签下面的所有的"property"标签(遍历所有的子标签去进行处理，找到所有的"property"标签)
+     * 解析"bean"标签下面的所有的"property"标签(遍历所有的子标签去进行处理, 找到所有的"property"标签)
      *
      * @param element Element
      * @param bd 正在解析的BeanDefinition
@@ -421,7 +421,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
     }
 
     /**
-     * 解析一个"property"标签，并添加到BeanDefinition当中
+     * 解析一个"property"标签, 并添加到BeanDefinition当中
      *
      * @param element "property"标签的Element
      * @param bd 正在解析的BeanDefinition
@@ -440,7 +440,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
     }
 
     /**
-     * 解析一个"property"标签当中配置的propertyValue，可能是"ref"字段，也可能是"value"字段
+     * 解析一个"property"标签当中配置的propertyValue, 可能是"ref"字段, 也可能是"value"字段
      *
      * @param element "property"标签
      * @param bd BeanDefinition
@@ -452,11 +452,11 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
         val ref = element.getAttribute(REF_ATTRIBUTE)
         val value = element.getAttribute(VALUE_ATTRIBUTE)
 
-        // 如果是一个ref，那么创建一个RuntimeBeanReference
+        // 如果是一个ref, 那么创建一个RuntimeBeanReference
         if (StringUtils.hasText(ref)) {
             return RuntimeBeanReference(ref)
 
-            // 如果是一个value，那么创建TypedStringValue
+            // 如果是一个value, 那么创建TypedStringValue
         } else if (StringUtils.hasText(value)) {
             return TypedStringValue(value)
         }
@@ -464,16 +464,16 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
     }
 
     /**
-     * 判断Node是否一个候选的Element？只有它是一个默认的namespace，或者它的parentNode不是一个默认的namespace才行
+     * 判断Node是否一个候选的Element？只有它是一个默认的namespace, 或者它的parentNode不是一个默认的namespace才行
      *
      * @param node Node
-     * @return 如果是一个候选Element，那么return true；否则return false
+     * @return 如果是一个候选Element, 那么return true; 否则return false
      */
     private fun isCandidateElement(node: Node?): Boolean =
         node is Element && (isDefaultNamespace(node) || !isDefaultNamespace(node.parentNode))
 
     /**
-     * 如果必要的话，需要去解析BeanDefinition的一些属性信息，
+     * 如果必要的话, 需要去解析BeanDefinition的一些属性信息,
      * 包括"scope"/"lazyInit"/"autowireMode"/"autowireCandidate"/"initMethod"/"destroyMethod"等一系列的属性
      *
      * @param element "bean"标签的Element
@@ -494,18 +494,18 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
             bd.setScope(containingBd.getScope())
         }
 
-        // 设置abstract属性(默认为false，只有配置了true才会为true)
+        // 设置abstract属性(默认为false, 只有配置了true才会为true)
         if (element.hasAttribute(ABSTRACT_ATTRIBUTE)) {
             bd.setAbstract(element.getAttribute(ABSTRACT_ATTRIBUTE) == TRUE_VALUE)
         }
 
-        // 设置lazyInit属性(默认为false，只有配置了true才会为true)
+        // 设置lazyInit属性(默认为false, 只有配置了true才会为true)
         val lazyInit = element.getAttribute(LAZY_INIT_ATTRIBUTE)
         if (!StringUtils.hasText(lazyInit)) {
             bd.setLazyInit(TRUE_VALUE == lazyInit)
         }
 
-        // 设置autowireCandidate属性(默认为true，如果配置了false则为false)
+        // 设置autowireCandidate属性(默认为true, 如果配置了false则为false)
         if (element.hasAttribute(AUTOWIRE_CANDIDATE_ATTRIBUTE)) {
             bd.setAutowireCandidate(FALSE_VALUE != element.getAttribute(AUTOWIRE_CANDIDATE_ATTRIBUTE))
         }
@@ -521,7 +521,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
             bd.setDependsOn(dependsOn)
         }
 
-        // 设置primary属性(默认为false，只有配置了true才会为true)
+        // 设置primary属性(默认为false, 只有配置了true才会为true)
         if (element.hasAttribute(PRIMARY_ATTRIBUTE)) {
             bd.setPrimary(TRUE_VALUE == element.getAttribute(PRIMARY_ATTRIBUTE))
         }
@@ -564,7 +564,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
     }
 
     /**
-     * 如果必要的话，需要去对BeanDefinition去进行包装
+     * 如果必要的话, 需要去对BeanDefinition去进行包装
      *
      * @param element element
      * @param origin 原始的BeanDefinitionHolder
@@ -575,7 +575,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
 
 
     /**
-     * 如果必要的话，需要去对BeanDefinition去进行包装
+     * 如果必要的话, 需要去对BeanDefinition去进行包装
      *
      * @param element element
      * @param origin 原始的BeanDefinitionHolder
@@ -590,13 +590,13 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
         // 包装的结果的BeanDefinitionHolder
         var finalDefinition = origin
 
-        // 1.遍历所有的属性，尝试去进行包装
+        // 1.遍历所有的属性, 尝试去进行包装
         val attributes = element.attributes
         for (i in 0..attributes.length) {
             val node = attributes.item(i)
             finalDefinition = decorateIfRequired(node, finalDefinition, containingBd)
         }
-        // 2.遍历所有的ChildNode，尝试去进行包装
+        // 2.遍历所有的ChildNode, 尝试去进行包装
         val childNodes = element.childNodes
         for (i in 0..childNodes.length) {
             val node = childNodes.item(i)
@@ -608,7 +608,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
     }
 
     /**
-     * 如果必要的话，对原始的BeanDefinition去进行包装
+     * 如果必要的话, 对原始的BeanDefinition去进行包装
      *
      * @param node Node
      * @param originDef 原始的BeanDefinition
@@ -627,7 +627,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
                 val decorated =
                     namespaceHandler.decorate(node, originDef, ParserContext(readerContext, this, containingBd))
 
-                // 如果包装成功，那么返回包装之后的结果
+                // 如果包装成功, 那么返回包装之后的结果
                 if (decorated != null) {
                     return decorated
                 }
@@ -640,7 +640,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
      * 判断给定的namespaceUri是否是一个默认Namespace
      *
      * @param namespaceUri namespaceUri
-     * @return 如果它是Spring默认的NamespaceUri(namespaceUri为空，或者是namespaceUri为beans)，那么return true；否则return false
+     * @return 如果它是Spring默认的NamespaceUri(namespaceUri为空, 或者是namespaceUri为beans), 那么return true; 否则return false
      */
     fun isDefaultNamespace(@Nullable namespaceUri: String?): Boolean =
         !StringUtils.hasText(namespaceUri) || Objects.equals(BEANS_NAMESPACE_URI, namespaceUri)
@@ -649,7 +649,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
      * 判断给定的Node是否是默认的Namespace？
      *
      * @param node node
-     * @return 如果namespaceUri是Spring的默认Namespace，那么return true；否则return false
+     * @return 如果namespaceUri是Spring的默认Namespace, 那么return true; 否则return false
      */
     fun isDefaultNamespace(node: Node): Boolean = isDefaultNamespace(getNamespaceUri(node))
 
@@ -657,7 +657,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
      * 从一个Node当中去获取到该Node的NamespaceUri
      *
      * @param node node
-     * @return 解析到的NamespaceUri(如果不存在，那么return null)
+     * @return 解析到的NamespaceUri(如果不存在, 那么return null)
      */
     @Nullable
     fun getNamespaceUri(node: Node): String? = node.namespaceURI

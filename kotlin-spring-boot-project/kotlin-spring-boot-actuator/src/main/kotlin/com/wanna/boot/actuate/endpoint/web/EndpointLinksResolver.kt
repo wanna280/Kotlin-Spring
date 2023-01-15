@@ -3,7 +3,7 @@ package com.wanna.boot.actuate.endpoint.web
 import com.wanna.boot.actuate.endpoint.ExposableEndpoint
 
 /**
- * endpoint的链接解析器，负责将所有的endpoint，去转换为url
+ * endpoint的链接解析器, 负责将所有的endpoint, 去转换为url
  *
  * @see Link
  */

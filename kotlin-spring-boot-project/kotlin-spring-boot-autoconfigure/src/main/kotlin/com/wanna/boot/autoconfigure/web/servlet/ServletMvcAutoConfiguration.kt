@@ -80,7 +80,7 @@ open class ServletMvcAutoConfiguration {
     }
 
     /**
-     * 开启SpringMVC的的配置的类，导入SpringMVC需要用到的各个相关的组件
+     * 开启SpringMVC的的配置的类, 导入SpringMVC需要用到的各个相关的组件
      */
     @Configuration(proxyBeanMethods = false)
     open class EnableWebMvcConfiguration : DelegatingWebMvcConfiguration() {
@@ -97,7 +97,7 @@ open class ServletMvcAutoConfiguration {
     }
 
     /**
-     * 处理"favicon.ico"请求的配置类，在SpringBoot2.2.x之前存在，2.2.x之后取消了(根据默认Logo知道网站开发框架，泄露隐私)
+     * 处理"favicon.ico"请求的配置类, 在SpringBoot2.2.x之前存在, 2.2.x之后取消了(根据默认Logo知道网站开发框架, 泄露隐私)
      */
     @ConditionalOnProperty(value = ["spring.mvc.favicon.enabled"], matchIfMissing = true)
     @Configuration(proxyBeanMethods = false)

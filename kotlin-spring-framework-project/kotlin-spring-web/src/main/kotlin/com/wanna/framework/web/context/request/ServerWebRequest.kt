@@ -4,7 +4,7 @@ import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 
 /**
- * 它是NativeWebRequest的实现，使用HttpServerRequest作为request，使用HttpServerResponse作为response
+ * 它是NativeWebRequest的实现, 使用HttpServerRequest作为request, 使用HttpServerResponse作为response
  */
 open class ServerWebRequest(private val request: HttpServerRequest, private val response: HttpServerResponse? = null) :
     NativeWebRequest {

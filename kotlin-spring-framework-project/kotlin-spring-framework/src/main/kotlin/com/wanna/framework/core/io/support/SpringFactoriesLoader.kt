@@ -8,13 +8,13 @@ import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 这是一个SpringFactories的加载工具类，负责完成spring.factories当中的配置文件的加载
+ * 这是一个SpringFactories的加载工具类, 负责完成spring.factories当中的配置文件的加载
  */
 object SpringFactoriesLoader {
     private const val FACTORIES_RESOURCE_LOCATION = "META-INF/spring.factories"  // spring.factories文件的资源路径
 
     /**
-     * 这是一个SpringFactories缓存，key-classLoader，hKey-factory，hValues-factoryNames
+     * 这是一个SpringFactories缓存, key-classLoader, hKey-factory, hValues-factoryNames
      */
     @JvmStatic
     private val cache = ConcurrentHashMap<ClassLoader, MutableMap<String, MutableList<String>>>()
@@ -45,7 +45,7 @@ object SpringFactoriesLoader {
      * 创建SpringFactories
      *
      * @param factoryNames 要进行实例化的FactoryNames
-     * @param type 类型，用来决定泛型
+     * @param type 类型, 用来决定泛型
      * @param parameterTypes 构造器的参数类型列表
      * @param args 构造器参数列表
      */
@@ -80,9 +80,9 @@ object SpringFactoriesLoader {
     }
 
     /**
-     * 给定具体的ClassLoader，去完成SpringFactories的加载
+     * 给定具体的ClassLoader, 去完成SpringFactories的加载
      *
-     * @param classLoader 指定classLoader，如果为空，将会使用默认的classLoader
+     * @param classLoader 指定classLoader, 如果为空, 将会使用默认的classLoader
      */
     @JvmStatic
     fun loadFactoryNames(factoryType: Class<*>, classLoader: ClassLoader?): List<String> {
@@ -91,7 +91,7 @@ object SpringFactoriesLoader {
     }
 
     /**
-     * 给定具体的classLoader，去完成SpringFactories的加载
+     * 给定具体的classLoader, 去完成SpringFactories的加载
      */
     private fun loadSpringFactories(classLoader: ClassLoader): Map<String, List<String>> {
         var result = cache[classLoader]

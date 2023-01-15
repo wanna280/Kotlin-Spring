@@ -1,7 +1,7 @@
 package com.wanna.framework.aop
 
 /**
- * 不对类进行匹配，直接return true
+ * 不对类进行匹配, 直接return true
  */
 class TrueClassFilter : ClassFilter {
     companion object {

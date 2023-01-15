@@ -14,13 +14,13 @@ import com.wanna.framework.web.method.support.ModelAndViewContainer
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 这是一个抽象的支持Name-Value的方法参数解析器，它主要针对于有存在有Name-Value的参数去进行解析；
- * 比如RequestParam、RequestHeader等就是典型的Name-Value模式的参数，它们都可以使用此类作为基类去进行处理；
+ * 这是一个抽象的支持Name-Value的方法参数解析器, 它主要针对于有存在有Name-Value的参数去进行解析;
+ * 比如RequestParam、RequestHeader等就是典型的Name-Value模式的参数, 它们都可以使用此类作为基类去进行处理;
  *
  * 此类的所有子类当中需要提供实现的方法：
- * (1)在createNamedValueInfo方法当中，告诉本类NamedValueInfo如何去进行解析
- * (2)在resolveName方法当中，如何根据根据name去解析出来value的值
- * (3)在supportsParameter方法当中，判断当前参数你是否支持解析？
+ * (1)在createNamedValueInfo方法当中, 告诉本类NamedValueInfo如何去进行解析
+ * (2)在resolveName方法当中, 如何根据根据name去解析出来value的值
+ * (3)在supportsParameter方法当中, 判断当前参数你是否支持解析？
  *
  * @see RequestParamMethodArgumentResolver
  * @see RequestHeaderMethodArgumentResolver
@@ -33,7 +33,7 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
     private var beanFactory: ConfigurableBeanFactory? = null
 
     /**
-     * NamedValueInfo缓存，key-方法参数，value-要处理的NamedValueInfo
+     * NamedValueInfo缓存, key-方法参数, value-要处理的NamedValueInfo
      */
     private val namedValueInfoCache = ConcurrentHashMap<MethodParameter, NamedValueInfo>()
 
@@ -52,10 +52,10 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
         @Nullable mavContainer: ModelAndViewContainer?,
         @Nullable binderFactory: WebDataBinderFactory?
     ): Any? {
-        // 获取NamedValueInfo，交给子类去进行注解的解析并构建NamedValueInfo
+        // 获取NamedValueInfo, 交给子类去进行注解的解析并构建NamedValueInfo
         val namedValueInfo = getNamedValueInfo(parameter)
 
-        // 如果必要的话，使用beanFactory去将name使用嵌入式的值解析器的方式去进行解析
+        // 如果必要的话, 使用beanFactory去将name使用嵌入式的值解析器的方式去进行解析
         val resolvedName = resolveEmbeddedValuesAndExpressions(namedValueInfo.name)
             ?: throw IllegalArgumentException("无法解析到方法的参数名[${namedValueInfo.name}]")
 
@@ -99,7 +99,7 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
     }
 
     /**
-     * 给定了参数名(name)，需要去解析该参数名对应的值(value)，解析该参数的具体逻辑交给子类去进行实现
+     * 给定了参数名(name), 需要去解析该参数名对应的值(value), 解析该参数的具体逻辑交给子类去进行实现
      *
      * @param name paramName
      * @param parameter 方法参数信息
@@ -119,7 +119,7 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
     }
 
     /**
-     * 获取NamedValueInfo，如果没有的话，交给子类去进行构建
+     * 获取NamedValueInfo, 如果没有的话, 交给子类去进行构建
      *
      * @param parameter 方法参数
      * @return NamedValueInfo
@@ -135,9 +135,9 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
     }
 
     /**
-     * 更新NamedValue，如果没有解析到NamedValueInfo的name的话，需要从方法参数当中去获取name
+     * 更新NamedValue, 如果没有解析到NamedValueInfo的name的话, 需要从方法参数当中去获取name
      *
-     * Note: MethodParameter，需要提前初始化参数名解析器，才能去去获取到参数名
+     * Note: MethodParameter, 需要提前初始化参数名解析器, 才能去去获取到参数名
      * @param parameter 方法参数
      * @param namedValueInfo 子类构建的NamedValueInfo
      * @return 重新构建的NamedValueInfo(将defaultValue从"DEFAULT_NONE"转换成为null)
@@ -145,7 +145,7 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
     private fun updateNamedValueInfo(parameter: MethodParameter, namedValueInfo: NamedValueInfo): NamedValueInfo {
         var name: String? = namedValueInfo.name
         if (name == null || name.isEmpty()) {
-            // 如果没有指定name的话，需要获取参数名name
+            // 如果没有指定name的话, 需要获取参数名name
             name = parameter.getParameterName()
             if (name == null) {
                 throw IllegalArgumentException("解析参数名失败")
@@ -159,7 +159,7 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
     }
 
     /**
-     * 如何去创建NamedValueInfo? 交给子类去实现，用来去获取注解当中的相关信息
+     * 如何去创建NamedValueInfo? 交给子类去实现, 用来去获取注解当中的相关信息
      *
      * @param parameter 方法参数
      * @return 构建好的NamedValueInfo
@@ -167,7 +167,7 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
     protected abstract fun createNamedValueInfo(parameter: MethodParameter): NamedValueInfo
 
     /**
-     * 这是对Name-Value模式的参数的封装，包括一个参数当中的name、required以及defaultValue；这些信息主要从相关的注解头上去进行获取
+     * 这是对Name-Value模式的参数的封装, 包括一个参数当中的name、required以及defaultValue; 这些信息主要从相关的注解头上去进行获取
      *
      * @see RequestParam
      * @see RequestHeader

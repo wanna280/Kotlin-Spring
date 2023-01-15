@@ -3,7 +3,7 @@ package com.wanna.framework.core.io
 import com.wanna.framework.lang.Nullable
 
 /**
- * 协议的解析器，是一个策略接口，供完成资源的加载
+ * 协议的解析器, 是一个策略接口, 供完成资源的加载
  *
  * @author jianchao.jia
  * @version v1.0

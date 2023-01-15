@@ -53,22 +53,22 @@ open class PatternLayout : LoggerLayout<ILoggingEvent> {
     }
 
     /**
-     * 将LoggingEvent按照指定的格式，去格式格式化成为字符串，去进行日志的输出
+     * 将LoggingEvent按照指定的格式, 去格式格式化成为字符串, 去进行日志的输出
      *
      * @param event event
      * @param pattern 要匹配的模式
-     * @return 转换得到的最终字符串，用于去进行日志的输出
+     * @return 转换得到的最终字符串, 用于去进行日志的输出
      */
     protected open fun format(event: ILoggingEvent, pattern: String): String {
         val builder = StringBuilder()
         var index = 0
         while (index < pattern.length) {
             if (pattern[index] == '%') {
-                // 获取左括号、右括号以及空格的位置index(pattern[index..length]部分的字符串)，并利用data class去进行解构
+                // 获取左括号、右括号以及空格的位置index(pattern[index..length]部分的字符串), 并利用data class去进行解构
                 val (leftIndex, rightIndex, spaceIndex) = matchBracket(pattern, index)
                 var patternToMatch = ""
-                // 如果下一个遇到先是空格，那么空格之前的部分有可能作为要进行解析的格式化字符串(比如%m,%n])
-                // 但是有可能末尾会存在有用来进行美观的输出的反括号，因此需要从最长的字符串一步步缩短长度去进行匹配
+                // 如果下一个遇到先是空格, 那么空格之前的部分有可能作为要进行解析的格式化字符串(比如%m,%n])
+                // 但是有可能末尾会存在有用来进行美观的输出的反括号, 因此需要从最长的字符串一步步缩短长度去进行匹配
                 if (spaceIndex != -1) {
                     for (rIndex in (index + 1 until spaceIndex).reversed()) {
                         patternToMatch = pattern.substring(index + 1, rIndex + 1)
@@ -80,17 +80,17 @@ open class PatternLayout : LoggerLayout<ILoggingEvent> {
                         }
                     }
                     index = spaceIndex  // index跳转到空格的位置
-                    // 如果同时有左括号和右括号的话，那么应该将左括号和右括号的部分混合之前的格式化字符串，去交给Converter去进行处理
+                    // 如果同时有左括号和右括号的话, 那么应该将左括号和右括号的部分混合之前的格式化字符串, 去交给Converter去进行处理
                 } else if (leftIndex != -1 && rightIndex != -1) {
                     patternToMatch = pattern.substring(index + 1, leftIndex)
                     val clazz = converterMap[patternToMatch]
                     if (clazz != null) {
-                        // 括号部分也是要用来去进行匹配的的，从右括号的部分切割，并交给Converter去完成解析
+                        // 括号部分也是要用来去进行匹配的的, 从右括号的部分切割, 并交给Converter去完成解析
                         val matchToUse = pattern.substring(index, rightIndex + 1)
                         builder.append(getHandledValue(clazz, matchToUse, event))  // 拼接Converter转换的值
                     }
                     index = rightIndex + 1  // index跳转到右括号之后的位置
-                    // 如果只要左括号没有右括号的话，那么pass掉，直接丢不合法的参数异常
+                    // 如果只要左括号没有右括号的话, 那么pass掉, 直接丢不合法的参数异常
                 } else {
                     throw IllegalArgumentException("格式化当中之后出现了只有左括号没有右括号的情况")
                 }
@@ -103,7 +103,7 @@ open class PatternLayout : LoggerLayout<ILoggingEvent> {
     }
 
     /**
-     * 给定一个带格式化的字符串表达式，交给Converter去进行处理
+     * 给定一个带格式化的字符串表达式, 交给Converter去进行处理
      *
      * @param clazz Converter的类型
      * @param expression 表达式
@@ -114,7 +114,7 @@ open class PatternLayout : LoggerLayout<ILoggingEvent> {
         clazz: Class<out Converter<out ILoggingEvent>>, expression: String, event: ILoggingEvent
     ): String {
         var handledValue = invokeTargetConverter(clazz, expression, event)
-        // 如果转换之后，还有%，那么需要递归去进行处理，而不是忽略掉，因为有可能有%rea(%m)这种情况
+        // 如果转换之后, 还有%, 那么需要递归去进行处理, 而不是忽略掉, 因为有可能有%rea(%m)这种情况
         if (handledValue.indexOf('%') != -1) {
             handledValue = format(event, handledValue)
         }
@@ -122,7 +122,7 @@ open class PatternLayout : LoggerLayout<ILoggingEvent> {
     }
 
     /**
-     * 执行目标Converter的convert方法，获取Converter转换之后的结果
+     * 执行目标Converter的convert方法, 获取Converter转换之后的结果
      *
      * @param clazz Converter类型
      * @param expression 表达式
@@ -155,28 +155,28 @@ open class PatternLayout : LoggerLayout<ILoggingEvent> {
         val leftIndex1 = pattern.indexOf('[', startIndex)
         val leftIndex2 = pattern.indexOf('{', startIndex)
 
-        // 找到三者之中最前面的一个括号的位置，如果三个括号都不存在的话，leftIndex=Int.MAX_VALUE
+        // 找到三者之中最前面的一个括号的位置, 如果三个括号都不存在的话, leftIndex=Int.MAX_VALUE
         val leftIndex = minOf(
             if (leftIndex0 == -1) Int.MAX_VALUE else leftIndex0,
             if (leftIndex1 == -1) Int.MAX_VALUE else leftIndex1,
             if (leftIndex2 == -1) Int.MAX_VALUE else leftIndex2
         )
-        // (1)如果后面根本没有括号，那么leftIndex=rightIndex=-1
-        // (2)如果先出现空格，后出现括号，那么以空格为准
+        // (1)如果后面根本没有括号, 那么leftIndex=rightIndex=-1
+        // (2)如果先出现空格, 后出现括号, 那么以空格为准
         return if (leftIndex == Int.MAX_VALUE || spaceIndex < leftIndex) {
             Bracket(-1, -1, if (spaceIndex == -1) pattern.length else spaceIndex)
-            //(3)如果先出现括号，后出现空格的话，需要匹配到右括号的位置...
+            //(3)如果先出现括号, 后出现空格的话, 需要匹配到右括号的位置...
         } else {
             Bracket(leftIndex, matchRightBracket(pattern, leftIndex), -1)
         }
     }
 
     /**
-     * 根据左括号的类型，去匹配到右括号的位置
+     * 根据左括号的类型, 去匹配到右括号的位置
      *
      * @param pattern 整个pattern字符串
      * @param currentIndex 当前左括号(,[,{位置的索引
-     * @return 匹配到的右括号的index，如果没有匹配到，return -1
+     * @return 匹配到的右括号的index, 如果没有匹配到, return -1
      */
     private fun matchRightBracket(pattern: String, currentIndex: Int): Int {
         var rightIndex = -1

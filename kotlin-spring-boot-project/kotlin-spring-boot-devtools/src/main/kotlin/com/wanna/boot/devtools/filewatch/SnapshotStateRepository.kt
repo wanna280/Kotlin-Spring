@@ -24,7 +24,7 @@ interface SnapshotStateRepository {
     /**
      * 获取之前存储的状态信息
      *
-     * @return 之前存储的状态信息(如果之前没有存储的话，return null)
+     * @return 之前存储的状态信息(如果之前没有存储的话, return null)
      */
     fun store(): Any?
 

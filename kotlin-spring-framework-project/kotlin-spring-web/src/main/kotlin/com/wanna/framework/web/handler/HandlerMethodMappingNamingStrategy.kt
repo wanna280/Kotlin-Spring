@@ -3,9 +3,9 @@ package com.wanna.framework.web.handler
 import com.wanna.framework.web.method.HandlerMethod
 
 /**
- * 这是一个HandlerMethod的Mapping的命名策略，可以根据handlerMethod和mapping去对放入注册中心当中的name去进行生成
+ * 这是一个HandlerMethod的Mapping的命名策略, 可以根据handlerMethod和mapping去对放入注册中心当中的name去进行生成
  *
- * @param T mappingType，子类自己指定
+ * @param T mappingType, 子类自己指定
  */
 interface HandlerMethodMappingNamingStrategy<T> {
     /**

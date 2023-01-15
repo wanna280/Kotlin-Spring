@@ -4,7 +4,7 @@ import org.slf4j.ILoggerFactory
 import org.slf4j.spi.LoggerFactoryBinder
 
 /**
- * 这是针对于Slf4j使用的StaticLoggerBinder，去为Slf4j当中的LoggerFactory的获取提供支持
+ * 这是针对于Slf4j使用的StaticLoggerBinder, 去为Slf4j当中的LoggerFactory的获取提供支持
  *
  * @see LoggerFactoryBinder
  */
@@ -21,7 +21,7 @@ open class StaticLoggerBinder : LoggerFactoryBinder {
         }
 
         /**
-         * 这个方法是交给Slf4j去进行回调的，必须有这个方法，不然Slf4j不能完成初始化工作
+         * 这个方法是交给Slf4j去进行回调的, 必须有这个方法, 不然Slf4j不能完成初始化工作
          */
         @JvmStatic
         fun getSingleton(): StaticLoggerBinder {
@@ -30,7 +30,7 @@ open class StaticLoggerBinder : LoggerFactoryBinder {
     }
 
     /**
-     * 对Logger的上下文完成初始化工作，比如添加FileAppender/LoggerAppender以及LoggingLevel等属性
+     * 对Logger的上下文完成初始化工作, 比如添加FileAppender/LoggerAppender以及LoggingLevel等属性
      *
      * @see Slf4jBridgeContextInitializer
      */

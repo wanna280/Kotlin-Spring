@@ -15,7 +15,7 @@ open class DefaultCommandRegistry : ConfigurableCommandRegistry {
     override fun register(name: String, command: MethodTarget) {
         val oldCommand = commandMap[name]
         if (oldCommand != null) {
-            throw IllegalStateException("之前已经注册过当前的command，不能重复注册[command=$name]")
+            throw IllegalStateException("之前已经注册过当前的command, 不能重复注册[command=$name]")
         }
         commandMap[name] = command
     }

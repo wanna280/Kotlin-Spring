@@ -10,10 +10,10 @@ import javax.validation.metadata.BeanDescriptor
 import javax.validation.metadata.ConstraintDescriptor
 
 /**
- * ValidatorAdapter，可以将`javax.validation.Validator`转换到Spring的Validator，
- * 当然也可以使用`javax.validation.Validator`自身的方式去进行对外暴露。
+ * ValidatorAdapter, 可以将`javax.validation.Validator`转换到Spring的Validator,
+ * 当然也可以使用`javax.validation.Validator`自身的方式去进行对外暴露.
  *
- * 可以基于编程式，去设置内部的target Validator作为Wrapper；当然也可以使用`CustomValidatorBean`和
+ * 可以基于编程式, 去设置内部的target Validator作为Wrapper; 当然也可以使用`CustomValidatorBean`和
  * `LocalValidatorFactoryBean`去作为`SmartValidator`的主要的实现
  *
  * @see javax.validation.Validator
@@ -23,7 +23,7 @@ open class SpringValidatorAdapter(@Nullable private var targetValidator: javax.v
     SmartValidator, javax.validation.Validator {
     companion object {
         /**
-         * BeanValidation相关注解的内部属性信息，对于每个Validation相关的注解都会应该去存在这些属性
+         * BeanValidation相关注解的内部属性信息, 对于每个Validation相关的注解都会应该去存在这些属性
          *
          * @see javax.validation.constraints.NotBlank
          * @see javax.validation.constraints.NotEmpty
@@ -56,17 +56,17 @@ open class SpringValidatorAdapter(@Nullable private var targetValidator: javax.v
     open fun getTargetValidator(): javax.validation.Validator? = this.targetValidator
 
     /**
-     * 只要存在有targetValidator，那么就支持去进行检验
+     * 只要存在有targetValidator, 那么就支持去进行检验
      *
      * @param clazz 要去进行检验的目标类
      */
     override fun supports(clazz: Class<*>) = this.targetValidator != null
 
     /**
-     * 来自Validator的validate方法，支持使用targetValidator去对目标参数去进行检验
+     * 来自Validator的validate方法, 支持使用targetValidator去对目标参数去进行检验
      *
      * @param target 待检验参数的目标对象
-     * @param errors Errors，用来记录参数检验过程当中发生的错误信息
+     * @param errors Errors, 用来记录参数检验过程当中发生的错误信息
      */
     override fun validate(target: Any, errors: Errors) {
         Optional.ofNullable(targetValidator).ifPresent {
@@ -75,12 +75,12 @@ open class SpringValidatorAdapter(@Nullable private var targetValidator: javax.v
     }
 
     /**
-     * 来自SmartValidator的validate方法，新增validationHints的实现，
+     * 来自SmartValidator的validate方法, 新增validationHints的实现,
      * 在这里会将validationHints去转换成为ValidationGroup去进行检验
      *
      * @param target 待完成参数检验的目标对象
      * @param errors 用于记录Error信息
-     * @param validationHints validationHints，将会被用做ValidationGroup
+     * @param validationHints validationHints, 将会被用做ValidationGroup
      */
     override fun validate(target: Any, errors: Errors, vararg validationHints: Any) {
         Optional.ofNullable(targetValidator).ifPresent {
@@ -133,16 +133,16 @@ open class SpringValidatorAdapter(@Nullable private var targetValidator: javax.v
      * 将validationHints转换成为ValidationGroup
      *
      * @param validationHints validationHints
-     * @return Array<Class>，从validationHints当中去过滤出来所有的Class作为Group
+     * @return Array<Class>, 从validationHints当中去过滤出来所有的Class作为Group
      */
     private fun asValidationGroups(vararg validationHints: Any): Array<Class<*>> =
         validationHints.filterIsInstance<Class<*>>().toTypedArray()
 
     /**
-     * 处理JSR330当中Validator解析违反的约束情况的ConstraintViolation，并将结果设置到Spring提供的实现的Errors当中
+     * 处理JSR330当中Validator解析违反的约束情况的ConstraintViolation, 并将结果设置到Spring提供的实现的Errors当中
      *
-     * @param violations 违反约束情况(ConstraintViolations)，由JSR303的Validator处理得到
-     * @param errors Errors，记录错误信息
+     * @param violations 违反约束情况(ConstraintViolations), 由JSR303的Validator处理得到
+     * @param errors Errors, 记录错误信息
      */
     protected open fun processConstraintViolations(violations: Set<ConstraintViolation<Any>>, errors: Errors) {
         violations.forEach {

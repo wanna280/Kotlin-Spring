@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /**
  *
- * 支持去进行自定义的ThreadCreator，提供`createThread`方法去提供线程的创建的工厂方法
+ * 支持去进行自定义的ThreadCreator, 提供`createThread`方法去提供线程的创建的工厂方法
  *
  * @author jianchao.jia
  * @version v1.0
@@ -36,7 +36,7 @@ open class CustomizableThreadCreator : Serializable {
 
 
     /**
-     * 维护了线程的数量，使用AtomicInteger去生成线程名的后缀
+     * 维护了线程的数量, 使用AtomicInteger去生成线程名的后缀
      */
     private val threadCount = AtomicInteger()
 
@@ -84,7 +84,7 @@ open class CustomizableThreadCreator : Serializable {
     protected open fun nextThreadName(): String = threadNamePrefix + threadCount.getAndIncrement()
 
     /**
-     * 获取默认的ThreadNamePrefix，采用类名+"-"的方式去进行生成
+     * 获取默认的ThreadNamePrefix, 采用类名+"-"的方式去进行生成
      *
      * @return ThreadNamePrefix
      */

@@ -4,7 +4,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 
 /**
- * 维护了PropertyValue列表，它是PropertyValues的具体实现
+ * 维护了PropertyValue列表, 它是PropertyValues的具体实现
  *
  * @see PropertyValue
  * @see PropertyValues
@@ -12,12 +12,12 @@ import java.util.concurrent.CopyOnWriteArrayList
 open class MutablePropertyValues() : PropertyValues {
 
     /**
-     * 内部维护的属性值列表，采用COW的方式去进行维护
+     * 内部维护的属性值列表, 采用COW的方式去进行维护
      */
     private val propertyValueList: MutableList<PropertyValue> = CopyOnWriteArrayList()
 
     /**
-     * 提供一个PropertyValues的构造器，将它里面的属性全部拷贝到当前对象的PropertyValues当中
+     * 提供一个PropertyValues的构造器, 将它里面的属性全部拷贝到当前对象的PropertyValues当中
      *
      * @param propertyValues PropertyValues
      */

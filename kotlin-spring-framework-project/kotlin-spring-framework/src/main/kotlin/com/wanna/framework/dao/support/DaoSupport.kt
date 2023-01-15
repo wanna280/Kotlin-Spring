@@ -20,7 +20,7 @@ abstract class DaoSupport : InitializingBean {
     protected val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     /**
-     * 在完成Bean的初始化时，需要去检查Dao相关的配置
+     * 在完成Bean的初始化时, 需要去检查Dao相关的配置
      */
     override fun afterPropertiesSet() {
         checkDaoConfig()
@@ -33,7 +33,7 @@ abstract class DaoSupport : InitializingBean {
     }
 
     /**
-     * 检查Dao的配置，交给子类去进行实现
+     * 检查Dao的配置, 交给子类去进行实现
      */
     protected abstract fun checkDaoConfig()
 

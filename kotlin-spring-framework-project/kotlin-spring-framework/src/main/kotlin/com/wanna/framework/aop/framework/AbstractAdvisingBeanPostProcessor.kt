@@ -12,26 +12,26 @@ import com.wanna.framework.context.processor.beans.BeanPostProcessor
  */
 abstract class AbstractAdvisingBeanPostProcessor : ProxyProcessorSupport(), BeanPostProcessor {
     /**
-     * 要去进行apply的Advisor，使用protected关键字，保证子类可以去进行访问
+     * 要去进行apply的Advisor, 使用protected关键字, 保证子类可以去进行访问
      *
      * @see Advisor
      */
     protected var advisor: Advisor? = null
 
     /**
-     * 在完成Bean的后置处理时，需要检验该Bean是否应该创建代理呢？
+     * 在完成Bean的后置处理时, 需要检验该Bean是否应该创建代理呢？
      *
      * @param bean bean
      * @param beanName beanName
-     * @return 如果需要创建代理，那么return 代理对象；如果不需要代理的话，那么return bean
+     * @return 如果需要创建代理, 那么return 代理对象; 如果不需要代理的话, 那么return bean
      */
     override fun postProcessAfterInitialization(beanName: String, bean: Any): Any? {
         val advisor = advisor
-        // 如果没有设置Advisor，或者该Bean是否一个Aop的基础设置Bean的话
+        // 如果没有设置Advisor, 或者该Bean是否一个Aop的基础设置Bean的话
         if (advisor == null || bean is AopInfrastructureBean) {
             return bean
         }
-        // 如果它是一个合格的Bean的话，则需要去创建代理
+        // 如果它是一个合格的Bean的话, 则需要去创建代理
         if (isEligible(bean, beanName)) {
             val proxyFactory = prepareProxyFactory(bean, beanName)  // prepare ProxyFactory
             proxyFactory.addAdvisor(advisor)  // add Advisor
@@ -42,14 +42,14 @@ abstract class AbstractAdvisingBeanPostProcessor : ProxyProcessorSupport(), Bean
     }
 
     /**
-     * 判断当前Bean是否需要去应用代理，我们主要匹配Advisor是否可以应用给当前Bean
+     * 判断当前Bean是否需要去应用代理, 我们主要匹配Advisor是否可以应用给当前Bean
      *
      * @param bean bean
      * @param beanName beanName
      */
     protected open fun isEligible(bean: Any, beanName: String): Boolean {
         this.advisor ?: return false
-        // 使用AopUtil，去匹配这个BeanPostProcessor当中的Advisor，能否应用给当前的Bean
+        // 使用AopUtil, 去匹配这个BeanPostProcessor当中的Advisor, 能否应用给当前的Bean
         return AopUtils.canApply(this.advisor!!, bean::class.java)
     }
 
@@ -68,8 +68,8 @@ abstract class AbstractAdvisingBeanPostProcessor : ProxyProcessorSupport(), Bean
     }
 
     /**
-     * 在ProxyFactory彻底准备好了之后，如果必要的话，可以去自定义ProxyFactory；
-     * 模板方法，交给子类方法去实现
+     * 在ProxyFactory彻底准备好了之后, 如果必要的话, 可以去自定义ProxyFactory;
+     * 模板方法, 交给子类方法去实现
      *
      * @param proxyFactory proxyFactory
      */

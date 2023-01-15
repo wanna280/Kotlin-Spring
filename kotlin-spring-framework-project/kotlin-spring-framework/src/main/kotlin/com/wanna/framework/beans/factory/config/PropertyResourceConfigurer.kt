@@ -8,8 +8,8 @@ import com.wanna.framework.core.io.support.PropertiesLoaderSupport
 import java.util.*
 
 /**
- * 提供了对属性资源的配置功能，父类[PropertiesLoaderSupport]当中已经提供了对于XML配置文件和[Resource]的加载；
- * 在这个类当中，我们通过[BeanFactoryPostProcessor]的方式，交给用户一些去对最终的[Properties]的自定义的机会
+ * 提供了对属性资源的配置功能, 父类[PropertiesLoaderSupport]当中已经提供了对于XML配置文件和[Resource]的加载;
+ * 在这个类当中, 我们通过[BeanFactoryPostProcessor]的方式, 交给用户一些去对最终的[Properties]的自定义的机会
  *
  * @author jianchao.jia
  * @version v1.0
@@ -73,16 +73,16 @@ abstract class PropertyResourceConfigurer : PropertiesLoaderSupport(), BeanFacto
      *
      * @param propertyName propertyName
      * @param propertyValue propertyValue
-     * @return 经过转换之后的属性值，将会替换原始的值
+     * @return 经过转换之后的属性值, 将会替换原始的值
      */
     protected open fun convertProperty(propertyName: String, propertyValue: String?): String? =
         convertPropertyValue(propertyValue)
 
     /**
-     * 对一个属性值(无法获取到propertyName，只能获取到propertValue)去进行具体的处理
+     * 对一个属性值(无法获取到propertyName, 只能获取到propertValue)去进行具体的处理
      *
      * @param propertyValue propertyValue
-     * @return 经过转换之后的属性值，将会替换原始的值
+     * @return 经过转换之后的属性值, 将会替换原始的值
      */
     protected open fun convertPropertyValue(propertyValue: String?): String? = propertyValue
 

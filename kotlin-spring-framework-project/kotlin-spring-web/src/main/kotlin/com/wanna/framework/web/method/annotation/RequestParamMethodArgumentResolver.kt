@@ -14,7 +14,7 @@ import com.wanna.framework.web.server.HttpServerRequest
 open class RequestParamMethodArgumentResolver : AbstractNamedValueMethodArgumentResolver() {
 
     /**
-     * 是否支持处理这样的参数？只要参数上标注了@RequestParam注解，就支持去进行处理
+     * 是否支持处理这样的参数？只要参数上标注了@RequestParam注解, 就支持去进行处理
      *
      * @param parameter 方法参数
      * @return 是否支持去进行处理
@@ -28,7 +28,7 @@ open class RequestParamMethodArgumentResolver : AbstractNamedValueMethodArgument
     }
 
     /**
-     * 给定paramName，需要去计算该paramName在请求参数当中的具体的值
+     * 给定paramName, 需要去计算该paramName在请求参数当中的具体的值
      *
      * @param name paramName
      * @param parameter 方法参数
@@ -44,7 +44,7 @@ open class RequestParamMethodArgumentResolver : AbstractNamedValueMethodArgument
      * 构建RequestParam的NamedValueInfo
      *
      * @param parameter 方法参数
-     * @return 根据该方法参数当中的@RequestParam注解，去解析成为NamedValueInfo信息
+     * @return 根据该方法参数当中的@RequestParam注解, 去解析成为NamedValueInfo信息
      */
     override fun createNamedValueInfo(parameter: MethodParameter): NamedValueInfo {
         val requestParam = parameter.getAnnotation(RequestParam::class.java)!!
@@ -56,7 +56,7 @@ open class RequestParamMethodArgumentResolver : AbstractNamedValueMethodArgument
     }
 
     /**
-     * 针对于RequestParam的NamedValueInfo，负责包装name/required/defaultValue等信息
+     * 针对于RequestParam的NamedValueInfo, 负责包装name/required/defaultValue等信息
      */
     private class RequestParamNamedValueInfo(name: String, required: Boolean, defaultValue: String) :
         NamedValueInfo(name, required, defaultValue)

@@ -14,8 +14,8 @@ import com.wanna.framework.util.ClassUtils
 import java.io.IOException
 
 /**
- * 这是一个BeanDefinition的Loader，它内部继承了AnnotatedBeanDefinitionReader，去完成BeanDefinition的加载；
- * 它注册是加载注册到SpringApplication当中的一些配置类的对象，比如primarySources等
+ * 这是一个BeanDefinition的Loader, 它内部继承了AnnotatedBeanDefinitionReader, 去完成BeanDefinition的加载;
+ * 它注册是加载注册到SpringApplication当中的一些配置类的对象, 比如primarySources等
  *
  * @see SpringApplication.primarySources
  * @see AnnotatedBeanDefinitionReader
@@ -25,7 +25,7 @@ import java.io.IOException
 open class BeanDefinitionLoader(registry: BeanDefinitionRegistry, private val sources: Array<*>) {
 
     /**
-     * BeanNameGenerator，用于BeanName的生成
+     * BeanNameGenerator, 用于BeanName的生成
      */
     private var beanNameGenerator: BeanNameGenerator? = null
 
@@ -40,12 +40,12 @@ open class BeanDefinitionLoader(registry: BeanDefinitionRegistry, private val so
     private var resourceLoader: ResourceLoader? = null
 
     /**
-     * BeanDefinitionScanner，提供包的扫描
+     * BeanDefinitionScanner, 提供包的扫描
      */
     private var scanner: ClassPathBeanDefinitionScanner = ClassPathBeanDefinitionScanner(registry)
 
     /**
-     * 这是一个BeanDefinitionReader，负责注册配置类到容器当中
+     * 这是一个BeanDefinitionReader, 负责注册配置类到容器当中
      */
     private val reader = AnnotatedBeanDefinitionReader(registry)
 
@@ -76,7 +76,7 @@ open class BeanDefinitionLoader(registry: BeanDefinitionRegistry, private val so
 
 
     /**
-     * 根据各种资源的类型去匹配，执行BeanDefinition的加载
+     * 根据各种资源的类型去匹配, 执行BeanDefinition的加载
      */
     open fun load() {
         sources.forEach {
@@ -90,7 +90,7 @@ open class BeanDefinitionLoader(registry: BeanDefinitionRegistry, private val so
     }
 
     /**
-     * 给定的source是一个字符串，我们尝试各种类型去进行加载
+     * 给定的source是一个字符串, 我们尝试各种类型去进行加载
      *
      * @param resource resource
      */
@@ -117,14 +117,14 @@ open class BeanDefinitionLoader(registry: BeanDefinitionRegistry, private val so
     }
 
     /**
-     * 加载一个配置类，使用DefinitionReader去进行注册即可
+     * 加载一个配置类, 使用DefinitionReader去进行注册即可
      *
      * @param clazz 待注册的配置类
      */
     protected open fun load(clazz: Class<*>) = reader.registerBean(clazz)
 
     /**
-     * 根据一个资源，去加载成为BeanDefinition
+     * 根据一个资源, 去加载成为BeanDefinition
      *
      * @param resource Resource
      */
@@ -144,7 +144,7 @@ open class BeanDefinitionLoader(registry: BeanDefinitionRegistry, private val so
      * 将给定的资源去加载成为资源
      *
      * @param resolvedResource 资源路径
-     * @return 如果有候选的可以被加载的，那么return true；否则return false
+     * @return 如果有候选的可以被加载的, 那么return true; 否则return false
      */
     private fun loadAsResources(resolvedResource: String): Boolean {
         val resources = findResources(resolvedResource)
@@ -179,7 +179,7 @@ open class BeanDefinitionLoader(registry: BeanDefinitionRegistry, private val so
      * 检查给定的资源是否是一个可以去加载的资源？
      *
      * @param resource 资源
-     * @return 如果是可以加载的，那么return true；否则return false
+     * @return 如果是可以加载的, 那么return true; 否则return false
      */
     private fun isLoadCandidate(resource: Resource?): Boolean {
         if (resource == null || !resource.exists()) {

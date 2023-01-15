@@ -17,12 +17,12 @@ import java.util.function.Supplier
 open class DefaultBootstrapContext : ConfigurableBootstrapContext {
 
     /**
-     * InstanceSupplier的列表，Key是类型，Value是该类型对应的InstanceSupplier
+     * InstanceSupplier的列表, Key是类型, Value是该类型对应的InstanceSupplier
      */
     private val instanceSuppliers = HashMap<Class<*>, InstanceSupplier<*>>()
 
     /**
-     * 单例的Instance列表，如果InstanceSupplier是单例的话，那么创建之后就会被缓存到这个Map当中
+     * 单例的Instance列表, 如果InstanceSupplier是单例的话, 那么创建之后就会被缓存到这个Map当中
      */
     private val instances = HashMap<Class<*>, Any>()
 
@@ -43,7 +43,7 @@ open class DefaultBootstrapContext : ConfigurableBootstrapContext {
         getOrElseThrow(type, IllegalStateException("给定的type=[${type.name}]没有被注册过"))
 
     /**
-     * 根据type从BootstrapContext当中去获取到对应的实例，如果不存在的话，那么返回给定的默认值
+     * 根据type从BootstrapContext当中去获取到对应的实例, 如果不存在的话, 那么返回给定的默认值
      *
      * @param type type
      * @param T type
@@ -55,7 +55,7 @@ open class DefaultBootstrapContext : ConfigurableBootstrapContext {
     }
 
     /**
-     * 根据type从BootstrapContext当中去获取到对应的实例，如果不存在的话，那么返回给定的默认值
+     * 根据type从BootstrapContext当中去获取到对应的实例, 如果不存在的话, 那么返回给定的默认值
      *
      * @param type type
      * @param T type
@@ -72,7 +72,7 @@ open class DefaultBootstrapContext : ConfigurableBootstrapContext {
     }
 
     /**
-     * 根据type从BootstrapContext当中去获取到对应的实例，如果不存在的话，那么返回给定的默认值
+     * 根据type从BootstrapContext当中去获取到对应的实例, 如果不存在的话, 那么返回给定的默认值
      *
      * @param type type
      * @param T type
@@ -88,7 +88,7 @@ open class DefaultBootstrapContext : ConfigurableBootstrapContext {
      *
      * @param type type
      * @param T Type
-     * @return 如果已经注册过，return true；否则return false
+     * @return 如果已经注册过, return true; 否则return false
      */
     override fun <T> isRegistered(type: Class<T>): Boolean {
         synchronized(this.instanceSuppliers) {
@@ -114,7 +114,7 @@ open class DefaultBootstrapContext : ConfigurableBootstrapContext {
         register(type, instanceSupplier, true)
 
     /**
-     * 如果之前没有该类型的对象的话，那么去注册一个到BootstrapRegistry当中；如果之前已经有的话，那么就不必注册
+     * 如果之前没有该类型的对象的话, 那么去注册一个到BootstrapRegistry当中; 如果之前已经有的话, 那么就不必注册
      *
      * @param type type
      * @param instanceSupplier 创建对象的InstanceSupplier
@@ -126,7 +126,7 @@ open class DefaultBootstrapContext : ConfigurableBootstrapContext {
      * 根据类型去获取它所注册的InstanceSupplier
      *
      * @param type type
-     * @return 该类型对于的InstanceSupplier(如果不存在该类型对应的实例，那么return null)
+     * @return 该类型对于的InstanceSupplier(如果不存在该类型对应的实例, 那么return null)
      */
     @Suppress("UNCHECKED_CAST")
     override fun <T> getRegisteredInstanceSupplier(type: Class<T>): InstanceSupplier<T>? {
@@ -137,7 +137,7 @@ open class DefaultBootstrapContext : ConfigurableBootstrapContext {
 
 
     /**
-     * 根据type从BootstrapContext当中去获取到对应的实例，如果不存在的话，那么抛出异常
+     * 根据type从BootstrapContext当中去获取到对应的实例, 如果不存在的话, 那么抛出异常
      *
      * @param type type
      * @param T type
@@ -160,7 +160,7 @@ open class DefaultBootstrapContext : ConfigurableBootstrapContext {
      * @param type type
      * @param instanceSupplier InstanceSupplier
      * @param replaceExisting 是否需要替换掉已经存在的？
-     * @throws IllegalStateException 如果之前已经存在过实例，还去进行初始
+     * @throws IllegalStateException 如果之前已经存在过实例, 还去进行初始
      */
     private fun <T> register(type: Class<T>, instanceSupplier: InstanceSupplier<T>, replaceExisting: Boolean) {
         synchronized(this.instanceSuppliers) {
@@ -174,9 +174,9 @@ open class DefaultBootstrapContext : ConfigurableBootstrapContext {
     }
 
     /**
-     * 根据type和InstanceSupplier去获取到实例对象；
-     * 如果instances缓存当中已经有了该类型对应的对象的话，那么直接从缓存获取即可；
-     * 如果Instances缓存当中没有的话，那么使用给定的InstanceSupplier去进行创建
+     * 根据type和InstanceSupplier去获取到实例对象;
+     * 如果instances缓存当中已经有了该类型对应的对象的话, 那么直接从缓存获取即可;
+     * 如果Instances缓存当中没有的话, 那么使用给定的InstanceSupplier去进行创建
      *
      * @param type type
      * @param instanceSupplier InstanceSupplier
@@ -195,7 +195,7 @@ open class DefaultBootstrapContext : ConfigurableBootstrapContext {
     }
 
     /**
-     * 关闭BootstrapContext，触发BootstrapContextClosedEvent
+     * 关闭BootstrapContext, 触发BootstrapContextClosedEvent
      *
      * @param context ApplicationContext
      */

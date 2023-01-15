@@ -6,9 +6,9 @@ import com.wanna.framework.util.ClassUtils
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * 默认的NamespaceHandler的解析器的实现，从"META-INF/spring.handlers"当中去加载所有的配置文件；
- * 并提供对外获取NamespaceHandler的解析的相关功能，外部传入一个NamespaceId，需要去解析该NamespaceId
- * 对应的NamespaceHandler，方便完成后续的配置文件的解析工作
+ * 默认的NamespaceHandler的解析器的实现, 从"META-INF/spring.handlers"当中去加载所有的配置文件;
+ * 并提供对外获取NamespaceHandler的解析的相关功能, 外部传入一个NamespaceId, 需要去解析该NamespaceId
+ * 对应的NamespaceHandler, 方便完成后续的配置文件的解析工作
  *
  * @author jianchao.jia
  * @version v1.0
@@ -29,13 +29,13 @@ open class DefaultNamespaceHandlerResolver(
     }
 
     /**
-     * ClassLoader，有默认值
+     * ClassLoader, 有默认值
      */
     private val classLoader: ClassLoader = classLoader ?: ClassUtils.getDefaultClassLoader()
 
     /**
-     * NamespaceHandler的结果，如果该NamespaceHandler被获取过，那么Value就是该实例对象；
-     * 如果没获取过，那么就是从"META-INF/spring.handlers"当中加载到的属性值
+     * NamespaceHandler的结果, 如果该NamespaceHandler被获取过, 那么Value就是该实例对象;
+     * 如果没获取过, 那么就是从"META-INF/spring.handlers"当中加载到的属性值
      */
     @Volatile
     private var handlerMappings: MutableMap<String, Any>? = null
@@ -56,7 +56,7 @@ open class DefaultNamespaceHandlerResolver(
      * 根据NamespaceUri去解析出来对应的NamespaceHandler
      *
      * @param namespaceUri namespaceUri
-     * @return 解析到的NamespaceHandler，如果不存在该namespaceUri对应的NamespaceHandler的话，return null
+     * @return 解析到的NamespaceHandler, 如果不存在该namespaceUri对应的NamespaceHandler的话, return null
      */
     override fun resolve(namespaceUri: String): NamespaceHandler? {
         val handlerMappings = getHandlerMappings()
@@ -77,7 +77,7 @@ open class DefaultNamespaceHandlerResolver(
     }
 
     /**
-     * 获取HandlerMappings，如果之前还没初始化的话，那么使用DCL的方式去进行初始化
+     * 获取HandlerMappings, 如果之前还没初始化的话, 那么使用DCL的方式去进行初始化
      *
      * @return HandlerMappings
      */

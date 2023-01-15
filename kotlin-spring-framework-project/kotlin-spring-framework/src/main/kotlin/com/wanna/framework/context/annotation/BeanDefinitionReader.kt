@@ -6,7 +6,7 @@ import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.lang.Nullable
 
 /**
- * BeanDefinitionReader，提供对于BeanDefinition的加载功能
+ * BeanDefinitionReader, 提供对于BeanDefinition的加载功能
  */
 interface BeanDefinitionReader {
 
@@ -20,7 +20,7 @@ interface BeanDefinitionReader {
     /**
      * 获取资源加载器
      *
-     * @return ResourceLoader(如果没有的话，return null)
+     * @return ResourceLoader(如果没有的话, return null)
      */
     @Nullable
     fun getResourceLoader(): ResourceLoader?
@@ -28,7 +28,7 @@ interface BeanDefinitionReader {
     /**
      * 获取BeanClassLoader
      *
-     * @return BeanClassLoader(如果没有的话，return null)
+     * @return BeanClassLoader(如果没有的话, return null)
      */
     @Nullable
     fun getBeanClassLoader(): ClassLoader?

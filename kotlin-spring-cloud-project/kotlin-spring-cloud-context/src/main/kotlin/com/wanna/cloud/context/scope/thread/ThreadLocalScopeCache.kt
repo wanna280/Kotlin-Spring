@@ -3,8 +3,8 @@ package com.wanna.cloud.context.scope.thread
 import com.wanna.cloud.context.scope.ScopeCache
 
 /**
- * ThreadLocal的ScopeCache；
- * Why: Spring源码当中，为什么用的ConcurrentHashMap？？？又没有线程竞争的情况，明明HashMap已经足够
+ * ThreadLocal的ScopeCache;
+ * Why: Spring源码当中, 为什么用的ConcurrentHashMap？？？又没有线程竞争的情况, 明明HashMap已经足够
  */
 open class ThreadLocalScopeCache : ScopeCache {
 

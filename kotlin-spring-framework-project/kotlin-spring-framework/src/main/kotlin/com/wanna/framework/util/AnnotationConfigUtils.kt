@@ -52,7 +52,7 @@ object AnnotationConfigUtils {
     }
 
     /**
-     * 处理通用的BeanDefinition注解，包括@Primary/@Lazy/@DependsOn/@Role等注解；
+     * 处理通用的BeanDefinition注解, 包括@Primary/@Lazy/@DependsOn/@Role等注解;
      * 需要使用的metadata信息从BeanDefinition当中获取即可
      *
      * @param abd BeanDefinition
@@ -72,19 +72,19 @@ object AnnotationConfigUtils {
     @Suppress("UNCHECKED_CAST")
     fun processCommonDefinitionAnnotations(abd: AnnotatedBeanDefinition, metadata: AnnotatedTypeMetadata) {
 
-        // 如果标注了@Primary注解，将BeanDefinition的Primary设置为true
+        // 如果标注了@Primary注解, 将BeanDefinition的Primary设置为true
         val primary = metadata.isAnnotated(Primary::class.java.name)
         if (primary) {
             abd.setPrimary(true)
         }
 
-        // 如果标注了@Lazy注解，将BeanDefinition的LazyInit设置为true
+        // 如果标注了@Lazy注解, 将BeanDefinition的LazyInit设置为true
         val lazy = metadata.isAnnotated(Lazy::class.java.name)
         if (lazy) {
             abd.setLazyInit(true)
         }
 
-        // 如果标注了Role注解，需要设置Bean的Role信息
+        // 如果标注了Role注解, 需要设置Bean的Role信息
         val role = metadata.isAnnotated(Role::class.java.name)
         if (role) {
             val bdRole = metadata.getAnnotations().get(Role::class.java).getInt(MergedAnnotation.VALUE)
@@ -120,12 +120,12 @@ object AnnotationConfigUtils {
     ): MutableSet<BeanDefinitionHolder> {
         val beanFactory = unwrapDefaultListableBeanFactory(registry)
         if (beanFactory != null) {
-            // 如果容器中的依赖比较器不是支持注解版的依赖比较器，那么就采用注解版的依赖比较器，去支持注解版的Order的比较
+            // 如果容器中的依赖比较器不是支持注解版的依赖比较器, 那么就采用注解版的依赖比较器, 去支持注解版的Order的比较
             if (beanFactory.getDependencyComparator() !is AnnotationAwareOrderComparator) {
                 beanFactory.setDependencyComparator(AnnotationAwareOrderComparator.INSTANCE)
             }
 
-            // 设置AutowireCandidate的Resolver，主要用来完成自动注入的元素的匹配
+            // 设置AutowireCandidate的Resolver, 主要用来完成自动注入的元素的匹配
             if (beanFactory.getAutowireCandidateResolver() !is ContextAnnotationAutowireCandidateResolver) {
                 beanFactory.setAutowireCandidateResolver(ContextAnnotationAutowireCandidateResolver.INSTANCE)
             }
@@ -134,7 +134,7 @@ object AnnotationConfigUtils {
         // 完成注册的beanDefinition列表
         val beanDefs = HashSet<BeanDefinitionHolder>()
 
-        // 1.注册ConfigurationClassPostProcessor，处理注解版往容器中注册Bean的方式
+        // 1.注册ConfigurationClassPostProcessor, 处理注解版往容器中注册Bean的方式
         if (!registry.containsBeanDefinition(CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME)) {
             val rootBeanDefinition = RootBeanDefinition(ConfigurationClassPostProcessor::class.java)
             rootBeanDefinition.setSource(source)
@@ -150,7 +150,7 @@ object AnnotationConfigUtils {
             beanDefs += registerProcessor(AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME, rootBeanDefinition, registry)
         }
 
-        // 3.注册通用注解的Processor，包括@PostConstruct/@Resource等注解
+        // 3.注册通用注解的Processor, 包括@PostConstruct/@Resource等注解
         if (!registry.containsBeanDefinition(COMMON_ANNOTATION_PROCESSOR_BEAN_NAME)) {
             val rootBeanDefinition = RootBeanDefinition(CommonAnnotationPostProcessor::class.java)
             rootBeanDefinition.setSource(source)
@@ -175,7 +175,7 @@ object AnnotationConfigUtils {
     }
 
     /**
-     * 注册一个BeanDefinition到容器(BeanDefinitionRegistryPostProcessor)中，并返回一个BeanDefinitionHolder
+     * 注册一个BeanDefinition到容器(BeanDefinitionRegistryPostProcessor)中, 并返回一个BeanDefinitionHolder
      */
     @JvmStatic
     private fun registerProcessor(

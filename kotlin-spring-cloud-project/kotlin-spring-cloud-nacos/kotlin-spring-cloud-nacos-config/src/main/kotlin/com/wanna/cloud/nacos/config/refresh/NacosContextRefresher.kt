@@ -11,10 +11,10 @@ import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.event.ApplicationListener
 
 /**
- * Nacos的ContextRefresher，负责给NacosConfigManager的ConfigService当中去注册监听器；
+ * Nacos的ContextRefresher, 负责给NacosConfigManager的ConfigService当中去注册监听器;
  *
- * 当配置文件发生改变时，会自动发布RefreshEvent事件，该事件它会被RefreshEventListener所处理，
- * 因此会去触发SpringCloudContext当中的ContextRefresher，从而去刷新Environment，以及RefreshScope内的对象
+ * 当配置文件发生改变时, 会自动发布RefreshEvent事件, 该事件它会被RefreshEventListener所处理,
+ * 因此会去触发SpringCloudContext当中的ContextRefresher, 从而去刷新Environment, 以及RefreshScope内的对象
  *
  * @see NacosConfigManager
  *
@@ -38,8 +38,8 @@ open class NacosContextRefresher(private val nacosConfigManager: NacosConfigMana
     }
 
     /**
-     * 当SpringApplication已经就绪时，将所有的[NacosPropertySource]去注册监听器；
-     * 在NacosServer的配置文件更新时，可以通知所有的RefreshScope内的Bean去完成Rebind重新绑定
+     * 当SpringApplication已经就绪时, 将所有的[NacosPropertySource]去注册监听器;
+     * 在NacosServer的配置文件更新时, 可以通知所有的RefreshScope内的Bean去完成Rebind重新绑定
      *
      * @param event ApplicationReadyEvent(SpringApplication已经准备好的事件)
      */

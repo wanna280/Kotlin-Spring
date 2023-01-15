@@ -5,7 +5,7 @@ import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 
 /**
- * Handler处理过程当中的异常的解析器，负责去处理本次请求当中的异常
+ * Handler处理过程当中的异常的解析器, 负责去处理本次请求当中的异常
  */
 fun interface HandlerExceptionResolver {
 

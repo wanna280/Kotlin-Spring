@@ -10,7 +10,7 @@ import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.lang.Nullable
 
 /**
- * 这是一个ConfigurationPropertiesBean的Registrar, 负责将@EnableConfigurationProperties的注解当中配置的组件注册到容器当中；
+ * 这是一个ConfigurationPropertiesBean的Registrar, 负责将@EnableConfigurationProperties的注解当中配置的组件注册到容器当中;
  * 在@EnableConfigurationProperties注解当中的value属性当中配置的所有的类, 都会被注册到BeanDefinitionRegistry当中
  *
  * @see EnableConfigurationPropertiesRegistrar
@@ -69,7 +69,7 @@ open class ConfigurationPropertiesBeanRegistrar(private val registry: BeanDefini
      * 获取@ConfigurationProperties的属性, 并封装为AnnotationAttributes
      *
      * @param type 要进行寻找的目标类
-     * @return 如果类上找到了注解信息, 那么return；没有找到则return null
+     * @return 如果类上找到了注解信息, 那么return; 没有找到则return null
      */
     @Nullable
     private fun getConfigurationPropertiesAnnotationAttributes(type: Class<*>): AnnotationAttributes? {

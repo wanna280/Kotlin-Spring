@@ -9,7 +9,7 @@ import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.util.ClassUtils
 
 /**
- * 这是一个环境的ApplicationListener，它支持在SpringApplication启动当中，对环境的相关事件去进行处理
+ * 这是一个环境的ApplicationListener, 它支持在SpringApplication启动当中, 对环境的相关事件去进行处理
  */
 open class EnvironmentPostProcessorApplicationListener : SmartApplicationListener {
     override fun onApplicationEvent(event: ApplicationEvent) {
@@ -25,7 +25,7 @@ open class EnvironmentPostProcessorApplicationListener : SmartApplicationListene
     }
 
     /**
-     * 处理环境准备好的事件，遍历所有的EnvironmentPostProcessor去完成后置处理
+     * 处理环境准备好的事件, 遍历所有的EnvironmentPostProcessor去完成后置处理
      *
      * @param event event
      */
@@ -36,7 +36,7 @@ open class EnvironmentPostProcessorApplicationListener : SmartApplicationListene
     }
 
     /**
-     * 从SpringFactories当中去获取到环境处理器，去对环境去进行处理
+     * 从SpringFactories当中去获取到环境处理器, 去对环境去进行处理
      */
     open fun getEnvironmentPostProcessors(): List<EnvironmentPostProcessor> {
         return SpringFactoriesLoader.loadFactories(EnvironmentPostProcessor::class.java)

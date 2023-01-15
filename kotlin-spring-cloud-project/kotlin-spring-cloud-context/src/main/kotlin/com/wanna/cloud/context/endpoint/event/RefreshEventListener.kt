@@ -8,9 +8,9 @@ import com.wanna.framework.util.ClassUtils
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
- * 它是一个监听RefreshEvent的Listener，当RefreshEvent到来时，会自动触发ContextRefresher去完成refresh；
+ * 它是一个监听RefreshEvent的Listener, 当RefreshEvent到来时, 会自动触发ContextRefresher去完成refresh;
  *
- * 当Context发生变化时，需要发布一个Refresh事件-->RefreshEventListener处理-->ContextRefresher.refresh-->
+ * 当Context发生变化时, 需要发布一个Refresh事件-->RefreshEventListener处理-->ContextRefresher.refresh-->
  * 更新配置文件到环境-->发布EnvironmentChangeEvent事件--->RefreshScope.refreshAll刷新RefreshScope内的全部Bean
  *
  * @see ContextRefresher

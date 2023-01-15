@@ -27,12 +27,12 @@ open class HttpServerRequestImpl : HttpServerRequest {
     var scheme: String = "http"
 
     /**
-     * 完成请求路径，包括query部分
+     * 完成请求路径, 包括query部分
      */
     private var uri = "/"
 
     /**
-     * 请求路径，不包含query部分
+     * 请求路径, 不包含query部分
      */
     private var url = "/"
 
@@ -70,7 +70,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
     private val attributes = LinkedHashMap<String, Any?>()
 
     /**
-     * ActionHook，当给予对应的状态码时，应该产生的动作
+     * ActionHook, 当给予对应的状态码时, 应该产生的动作
      */
     private var actionHook: ActionHook? = null
 
@@ -89,7 +89,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
     }
 
     /**
-     * 获取request的输入流，可以从输出流当中获取RequestBody
+     * 获取request的输入流, 可以从输出流当中获取RequestBody
      *
      * @return RequestBody的输入流
      */
@@ -114,7 +114,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
     }
 
     /**
-     * 设置request的具体的参数(如果之前已经有该参数了，那么直接去进行替换)
+     * 设置request的具体的参数(如果之前已经有该参数了, 那么直接去进行替换)
      *
      * @param name paramName
      * @param value paramValue(为null时代表移除)
@@ -128,7 +128,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
     }
 
     /**
-     * 添加参数，如果value为空的话，移除该name的param
+     * 添加参数, 如果value为空的话, 移除该name的param
      *
      * @param name paramName
      * @param value paramValue(为null时代表移除)
@@ -149,7 +149,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
      * 根据name获取param
      *
      * @param name paramName
-     * @return 给定paramName获取到的参数列表(如果存在有多个param，那么使用"; "去进行分割)
+     * @return 给定paramName获取到的参数列表(如果存在有多个param, 那么使用"; "去进行分割)
      */
     override fun getParam(name: String): String? {
         return this.params[name]?.joinToString(COMMA)
@@ -178,7 +178,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
     }
 
     /**
-     * 添加Header，如果value为空的话，标识移除该name的header
+     * 添加Header, 如果value为空的话, 标识移除该name的header
      *
      * @param name headerName
      * @param value headerValue
@@ -205,7 +205,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
      * 根据name去获取到headerValue
      *
      * @param name headerName
-     * @return 根据name去获取到的headerValue(如果该header存在有多个值，那么使用"; "去进行分割)
+     * @return 根据name去获取到的headerValue(如果该header存在有多个值, 那么使用"; "去进行分割)
      */
     override fun getHeader(name: String): String? {
         return this.headers[name]?.joinToString(COMMA)

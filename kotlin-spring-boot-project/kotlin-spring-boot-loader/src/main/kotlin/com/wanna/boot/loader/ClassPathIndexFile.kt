@@ -7,7 +7,7 @@ import java.net.URL
 import java.util.stream.Collectors
 
 /**
- * 维护了ClassPath的索引的文件("classpath.idx")的描述，维护了一个应用当中依赖的所有的Jar包的列表
+ * 维护了ClassPath的索引的文件("classpath.idx")的描述, 维护了一个应用当中依赖的所有的Jar包的列表
  *
  * @author jianchao.jia
  * @version v1.0
@@ -46,7 +46,7 @@ class ClassPathIndexFile(val root: File, _lines: List<String>) {
      * 判断当前的ClassPathIndexFile是否包含了给定的Entry？
      *
      * @param name entryName
-     * @return 如果包含的话，那么return true；否则return false
+     * @return 如果包含的话, 那么return true; 否则return false
      */
     fun containsEntry(name: String): Boolean = lines.contains(name)
 
@@ -116,7 +116,7 @@ class ClassPathIndexFile(val root: File, _lines: List<String>) {
          */
         @JvmStatic
         private fun asFile(url: URL): File {
-            require("file" == url.protocol) { "给定的URL[$url]并不是一个文件的协议，无法去引用一个文件" }
+            require("file" == url.protocol) { "给定的URL[$url]并不是一个文件的协议, 无法去引用一个文件" }
             return try {
                 File(url.toURI())
             } catch (ex: URISyntaxException) {

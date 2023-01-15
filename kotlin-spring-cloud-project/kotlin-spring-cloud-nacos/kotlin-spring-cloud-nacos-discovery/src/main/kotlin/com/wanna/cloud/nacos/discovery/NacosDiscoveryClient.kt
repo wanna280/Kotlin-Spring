@@ -4,8 +4,8 @@ import com.wanna.cloud.client.ServiceInstance
 import com.wanna.cloud.client.discovery.DiscoveryClient
 
 /**
- * 这是一个Nacos的服务发现的Client，实现SpringCloud当中对于DiscoveryClient的规范；
- * 它主要整合了NacosServiceDiscovery去进行委托实现SpringCloud的规范，从而最终实现服务的发现；
+ * 这是一个Nacos的服务发现的Client, 实现SpringCloud当中对于DiscoveryClient的规范;
+ * 它主要整合了NacosServiceDiscovery去进行委托实现SpringCloud的规范, 从而最终实现服务的发现;
  * 支持去获取所有的实例列表、根据serviceId去获取所有的ServiceInstance列表等功能
  *
  * @see NacosServiceDiscovery

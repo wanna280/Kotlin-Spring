@@ -4,7 +4,7 @@ class ClassLoaderTest {
 }
 
 /**
- * 自定义ClassLoader，去进行loadClass
+ * 自定义ClassLoader, 去进行loadClass
  */
 class MyClassLoader : ClassLoader() {
     override fun loadClass(name: String?): Class<*> {
@@ -20,7 +20,7 @@ class MyClassLoader : ClassLoader() {
 }
 
 fun main() {
-    // 使用不同的ClassLoader，可以去加载用一个类
+    // 使用不同的ClassLoader, 可以去加载用一个类
     val loader = MyClassLoader()
     val clazz = loader.loadClass("com.wanna.boot.test.ClassLoaderTest")
     val clazz2 = ClassLoaderTest::class.java

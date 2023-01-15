@@ -9,7 +9,7 @@ import feign.codec.Decoder
 import java.io.InputStream
 
 /**
- * SpringDecoder，负责将本次请求的Response，编码成为返回值的JavaBean去进行返回
+ * SpringDecoder, 负责将本次请求的Response, 编码成为返回值的JavaBean去进行返回
  *
  * @see Decoder
  * @param messageConverters Web当中的MessageConverter列表

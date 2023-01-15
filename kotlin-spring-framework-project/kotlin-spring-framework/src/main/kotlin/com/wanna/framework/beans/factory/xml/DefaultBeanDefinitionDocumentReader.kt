@@ -26,7 +26,7 @@ open class DefaultBeanDefinitionDocumentReader : BeanDefinitionDocumentReader {
         const val BEAN_ELEMENT = "bean"
 
         /**
-         * 嵌套的beans标签，Spring的XML配置文件允许beans标签内部嵌套beans标签
+         * 嵌套的beans标签, Spring的XML配置文件允许beans标签内部嵌套beans标签
          */
         const val NESTED_BEANS_ELEMENT = "beans"
 
@@ -77,7 +77,7 @@ open class DefaultBeanDefinitionDocumentReader : BeanDefinitionDocumentReader {
         readerContext ?: throw IllegalStateException("ReaderContext不能为空")
 
     /**
-     * 将W3C的Document解析成为BeanDefinition，并完成注册功能
+     * 将W3C的Document解析成为BeanDefinition, 并完成注册功能
      *
      * @param document W3C的Document
      * @param readerContext 上下文信息(NamespaceHandlerResolver/Resource/XmlBeanDefinitionReader...)
@@ -87,7 +87,7 @@ open class DefaultBeanDefinitionDocumentReader : BeanDefinitionDocumentReader {
         // 先将ReaderContext去保存起来
         this.readerContext = readerContext
 
-        // 获取到Document的Root元素，去进行真正的BeanDefinition的注册
+        // 获取到Document的Root元素, 去进行真正的BeanDefinition的注册
         doRegisterBeanDefinitions(document.documentElement)
     }
 
@@ -97,7 +97,7 @@ open class DefaultBeanDefinitionDocumentReader : BeanDefinitionDocumentReader {
      * @param root Spring的XML配置文件的根元素
      */
     protected open fun doRegisterBeanDefinitions(root: Element) {
-        // 暂时创建一个新的delegate替换掉this.delegate，在解析完成之后，将delegate去进行恢复
+        // 暂时创建一个新的delegate替换掉this.delegate, 在解析完成之后, 将delegate去进行恢复
         val parent = this.delegate
         val delegate = createDelegate(getReaderContext(), root, parent)
         this.delegate = delegate
@@ -118,7 +118,7 @@ open class DefaultBeanDefinitionDocumentReader : BeanDefinitionDocumentReader {
         // 3.回调解析XML之后的钩子方法
         postProcessXml(root)
 
-        // 在解析完成之后，之前的delegate去恢复
+        // 在解析完成之后, 之前的delegate去恢复
         this.delegate = parent
     }
 
@@ -147,50 +147,50 @@ open class DefaultBeanDefinitionDocumentReader : BeanDefinitionDocumentReader {
      * @param delegate 解析XML使用的delegate
      */
     protected open fun parseBeanDefinitions(root: Element, delegate: BeanDefinitionParserDelegate) {
-        // 如果当前root标签是"beans"(或者空)的Namespace，那么需要遍历它内部所有的元素去进行处理
+        // 如果当前root标签是"beans"(或者空)的Namespace, 那么需要遍历它内部所有的元素去进行处理
         if (delegate.isDefaultNamespace(root)) {
             val childNodes = root.childNodes
             for (i in 0..childNodes.length) {
                 val node = childNodes.item(i)
                 if (node is Element) {
-                    // 如果是默认的Namespace，那么解析"import"/"bean"/"beans"等标签
+                    // 如果是默认的Namespace, 那么解析"import"/"bean"/"beans"等标签
                     if (delegate.isDefaultNamespace(node)) {
                         parseDefaultElement(node, delegate)
 
-                        // 如果不是默认的Namespace，那么需要根据NamespaceHandler去进行处理
+                        // 如果不是默认的Namespace, 那么需要根据NamespaceHandler去进行处理
                     } else {
                         delegate.parseCustomElement(node)
                     }
                 }
             }
 
-            // 如果root标签不是"beans"，也不是空的Namespace，那么交给delegate去进行自定义标签的解析
+            // 如果root标签不是"beans", 也不是空的Namespace, 那么交给delegate去进行自定义标签的解析
         } else {
             delegate.parseCustomElement(root)
         }
     }
 
     /**
-     * 解析Spring内部的默认Element，包括"beans"内部的"import"、"bean"、"beans"等这些标签
+     * 解析Spring内部的默认Element, 包括"beans"内部的"import"、"bean"、"beans"等这些标签
      *
      * @param element element
      * @param delegate delegate
      */
     private fun parseDefaultElement(element: Element, delegate: BeanDefinitionParserDelegate) {
-        // 如果当前是一个"import"标签，那么说明需要导入一个XML配置文件
+        // 如果当前是一个"import"标签, 那么说明需要导入一个XML配置文件
         if (delegate.nodeNameEquals(element, IMPORT_ELEMENT)) {
             importBeanDefinitionResource(element)
-            // 如果当前是一个"bean"标签，那么需要去解析成为BeanDefinition
+            // 如果当前是一个"bean"标签, 那么需要去解析成为BeanDefinition
         } else if (delegate.nodeNameEquals(element, BEAN_ELEMENT)) {
             processBeanDefinition(element, delegate)
-            // 如果是一个嵌套的"beans"标签("beans"标签内部嵌套"beans"标签)，那么递归处理
+            // 如果是一个嵌套的"beans"标签("beans"标签内部嵌套"beans"标签), 那么递归处理
         } else if (delegate.nodeNameEquals(element, NESTED_BEANS_ELEMENT)) {
             doRegisterBeanDefinitions(element)
         }
     }
 
     /**
-     * 处理一个"bean"标签，将它去解析成为BeanDefinition并注册到BeanDefinitionRegistry当中
+     * 处理一个"bean"标签, 将它去解析成为BeanDefinition并注册到BeanDefinitionRegistry当中
      *
      * @param element 当前"bean"标签
      * @param delegate delegate
@@ -200,7 +200,7 @@ open class DefaultBeanDefinitionDocumentReader : BeanDefinitionDocumentReader {
         var bdHolder = delegate.parseBeanDefinitionElement(element)
         if (bdHolder != null) {
 
-            // 如果必要的话，对BeanDefinition去进行包装
+            // 如果必要的话, 对BeanDefinition去进行包装
             bdHolder = delegate.decorateBeanDefinitionIfRequired(element, bdHolder)
 
             // 将BeanDefinition注册到BeanDefinitionRegistry当中
@@ -209,7 +209,7 @@ open class DefaultBeanDefinitionDocumentReader : BeanDefinitionDocumentReader {
     }
 
     /**
-     * 处理"import"标签，导入Spring的XML文件
+     * 处理"import"标签, 导入Spring的XML文件
      *
      * @param element "import"标签的element
      */
@@ -243,14 +243,14 @@ open class DefaultBeanDefinitionDocumentReader : BeanDefinitionDocumentReader {
     }
 
     /**
-     * 在进行XML的解析之前，需要去进行的前置处理工作
+     * 在进行XML的解析之前, 需要去进行的前置处理工作
      *
      * @param root Document根元素
      */
     protected open fun preProcessXml(root: Element) {}
 
     /**
-     * 在进行XML的解析之后，需要去进行的后置处理工作
+     * 在进行XML的解析之后, 需要去进行的后置处理工作
      *
      * @param root Document根元素
      */

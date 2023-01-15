@@ -4,8 +4,8 @@ import com.wanna.framework.lang.Nullable
 import java.io.Serializable
 
 /**
- * ClassLoaderFileRepository的默认实现，维护了许多的ClassLoaderFile；
- * 为RestartClassLoader所服务，用于去完成资源的加载(比如从远程加载一个文件)
+ * ClassLoaderFileRepository的默认实现, 维护了许多的ClassLoaderFile; 
+ * 为RestartClassLoader所服务, 用于去完成资源的加载(比如从远程加载一个文件)
  *
  * @see ClassLoaderFile
  * @see ClassLoaderFileRepository
@@ -64,7 +64,7 @@ open class ClassLoaderFiles(private val sourceDirectories: MutableMap<String, So
     }
 
     /**
-     * 如果必要的话，创建一个SourceDirectory
+     * 如果必要的话, 创建一个SourceDirectory
      *
      * @param sourceDirectory sourceDirectoryName
      * @return 创建/获取到的SourceDirectory
@@ -81,7 +81,7 @@ open class ClassLoaderFiles(private val sourceDirectories: MutableMap<String, So
     /**
      * 描述了一个源文件夹下的文件信息
      *
-     * @param name name，文件夹的名称
+     * @param name name, 文件夹的名称
      */
     class SourceDirectory(val name: String) : Serializable {
         private val files = LinkedHashMap<String, ClassLoaderFile>()
@@ -90,7 +90,7 @@ open class ClassLoaderFiles(private val sourceDirectories: MutableMap<String, So
          * 根据fileName去获取到对应的ClassLoaderFile
          *
          * @param name fileName
-         * @return 根据fileName寻找到的ClassLoaderFile(如果没有，那么return null)
+         * @return 根据fileName寻找到的ClassLoaderFile(如果没有, 那么return null)
          */
         @Nullable
         fun get(name: String): ClassLoaderFile? = this.files[name]
@@ -106,7 +106,7 @@ open class ClassLoaderFiles(private val sourceDirectories: MutableMap<String, So
         }
 
         /**
-         * 获取FileEntrySet，key-fileName，value-ClassLoaderFile
+         * 获取FileEntrySet, key-fileName, value-ClassLoaderFile
          *
          * @return FileEntrySet
          */

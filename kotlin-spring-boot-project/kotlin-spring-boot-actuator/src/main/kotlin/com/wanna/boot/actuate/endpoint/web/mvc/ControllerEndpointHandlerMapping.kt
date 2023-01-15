@@ -16,18 +16,18 @@ open class ControllerEndpointHandlerMapping(
     private val corsConfig: CorsConfiguration?
 ) : RequestMappingHandlerMapping() {
 
-    // Handlers，建立Controller与Endpoint之间的映射关系，方便通过Controller去获取到ControllerEndpoint
+    // Handlers, 建立Controller与Endpoint之间的映射关系, 方便通过Controller去获取到ControllerEndpoint
     private val handlers: Map<Any, ExposableControllerEndpoint> = endpoints.associateBy { it.getController() }
 
     /**
-     * 初始化HandlerMethods，将所有的ControllerEndpoint的bean上的RequestMapping方法去注册为HandlerMethod
+     * 初始化HandlerMethods, 将所有的ControllerEndpoint的bean上的RequestMapping方法去注册为HandlerMethod
      */
     override fun initHandlerMethods() {
         handlers.keys.forEach(this::detectHandlerMethods)
     }
 
     /**
-     * 重写注册HandlerMethod的方式，我们需要给RequestMapping的路径去拼接上"/actuator"和endpointId的前缀
+     * 重写注册HandlerMethod的方式, 我们需要给RequestMapping的路径去拼接上"/actuator"和endpointId的前缀
      *
      * @param handler handler(ControllerEndpointObject)
      * @param mapping RequestMappingInfo
@@ -40,12 +40,12 @@ open class ControllerEndpointHandlerMapping(
     }
 
     /**
-     * 获取ControllerEndpoint的RequestMappingInfo，需要将将路径去进行拼接，
+     * 获取ControllerEndpoint的RequestMappingInfo, 需要将将路径去进行拼接,
      * 路径的格式为"/actuator/{endpointId}/{classMapping}/{methodMapping}"
      *
      * @param endpoint ControllerEndpoint
      * @param mapping RequestMappingInfo
-     * @return 重新去进行构建的RequestMappingInfo(重新拼接了路径，别的没改变)
+     * @return 重新去进行构建的RequestMappingInfo(重新拼接了路径, 别的没改变)
      */
     private fun getEndpointMappedPattern(
         endpoint: ExposableControllerEndpoint,
@@ -65,9 +65,9 @@ open class ControllerEndpointHandlerMapping(
     }
 
     /**
-     * 判断是否有CorsConfigurationSource？(似乎也不必重写，因为父类会根据MappingRegistry去进行匹配)
-     * 因为这个HandlerMapping不会被配置全局的CorsConfigurationSource，
-     * 因此我们不必使用父类的判断，我们直接根据this.corsConfig去进行判断
+     * 判断是否有CorsConfigurationSource？(似乎也不必重写, 因为父类会根据MappingRegistry去进行匹配)
+     * 因为这个HandlerMapping不会被配置全局的CorsConfigurationSource,
+     * 因此我们不必使用父类的判断, 我们直接根据this.corsConfig去进行判断
      *
      * @param handler handler
      */

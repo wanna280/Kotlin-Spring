@@ -4,7 +4,7 @@ import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 
 /**
- * 这是一个带有优先级的参数名发现器，它聚合了多个参数名发现器，去配合完成
+ * 这是一个带有优先级的参数名发现器, 它聚合了多个参数名发现器, 去配合完成
  */
 open class PrioritizedParameterNameDiscoverer : ParameterNameDiscoverer {
     // 参数名发现器列表

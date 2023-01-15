@@ -4,7 +4,7 @@ import com.wanna.framework.context.annotation.Conditional
 import kotlin.reflect.KClass
 
 /**
- * 只要当给定的Bean都不存在于容器当中时，才会完成装配
+ * 只要当给定的Bean都不存在于容器当中时, 才会完成装配
  *
  * @see OnBeanCondition
  */

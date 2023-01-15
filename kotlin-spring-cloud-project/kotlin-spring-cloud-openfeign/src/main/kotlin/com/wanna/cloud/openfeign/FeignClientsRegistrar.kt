@@ -19,7 +19,7 @@ import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
 
 /**
- * 用来处理@EnableFeignClients以及@FeignClient的ImportBeanDefinitionRegistrar；
+ * 用来处理@EnableFeignClients以及@FeignClient的ImportBeanDefinitionRegistrar; 
  *
  * @see EnableFeignClients
  * @see FeignClient
@@ -36,7 +36,7 @@ open class FeignClientsRegistrar : ImportBeanDefinitionRegistrar, EnvironmentAwa
     override fun registerBeanDefinitions(annotationMetadata: AnnotationMetadata, registry: BeanDefinitionRegistry) {
         val attributes = annotationMetadata.getAnnotations().get(EnableFeignClients::class.java)
         if (attributes.present) {
-            // 注册默认的配置类列表...这些配置类是要apply给全部的FeignClient的，因此需要加上"default."前缀
+            // 注册默认的配置类列表...这些配置类是要apply给全部的FeignClient的, 因此需要加上"default."前缀
             val name = NamedContextFactory.DEFAULT_PREFIX + annotationMetadata.getClassName()
             val configurations = attributes.getClassArray("defaultConfiguration") as Array<Class<*>>
             registerClientConfiguration(registry, name, configurations)
@@ -53,7 +53,7 @@ open class FeignClientsRegistrar : ImportBeanDefinitionRegistrar, EnvironmentAwa
         // 处理@EnableFeignClients扫描到的组件的列表
         basePackages.forEach { candidateComponents += scanner.findCandidateComponents(it) }
 
-        // 处理@EnableFeignClients上配置的clients属性，全部合并到候选的组件当中去
+        // 处理@EnableFeignClients上配置的clients属性, 全部合并到候选的组件当中去
         val clients = attributes.getClassArray("clients")
         val clientsBeanDefinitions = clients.map { AnnotatedGenericBeanDefinition(it) }.toList()
         candidateComponents += clientsBeanDefinitions
@@ -66,14 +66,14 @@ open class FeignClientsRegistrar : ImportBeanDefinitionRegistrar, EnvironmentAwa
                 // 注册@FeignClient上对于当前的FeignClient的配置类列表Configurations
                 registerClientConfiguration(registry, clientName, clientAttributes.getClassArray("configuration"))
 
-                // 解析@FeignClient当中的相关属性，从而去注册FeignClient
+                // 解析@FeignClient当中的相关属性, 从而去注册FeignClient
                 registerFeignClient(registry, metadata, clientAttributes)
             }
         }
     }
 
     /**
-     * 注册FeignClient的相关配置类，会自动apply给对应的FeignClient
+     * 注册FeignClient的相关配置类, 会自动apply给对应的FeignClient
      */
     private fun registerClientConfiguration(
         registry: BeanDefinitionRegistry, name: String, configurations: Array<Class<*>>
@@ -84,7 +84,7 @@ open class FeignClientsRegistrar : ImportBeanDefinitionRegistrar, EnvironmentAwa
     }
 
     /**
-     * 解析一个@FeignClient注解，将其封装成为FeignClientFactoryBean，并注册到容器当中
+     * 解析一个@FeignClient注解, 将其封装成为FeignClientFactoryBean, 并注册到容器当中
      */
     private fun registerFeignClient(
         registry: BeanDefinitionRegistry, metadata: AnnotationMetadata, attributes: MergedAnnotation<*>
@@ -123,7 +123,7 @@ open class FeignClientsRegistrar : ImportBeanDefinitionRegistrar, EnvironmentAwa
     }
 
     /**
-     * 获取Scanner，去进行FeignClient的扫描，扫描FeignClient的组件...
+     * 获取Scanner, 去进行FeignClient的扫描, 扫描FeignClient的组件...
      */
     private fun getScanner(registry: BeanDefinitionRegistry): ClassPathBeanDefinitionScanner {
         val scanner = ClassPathBeanDefinitionScanner(registry, false)

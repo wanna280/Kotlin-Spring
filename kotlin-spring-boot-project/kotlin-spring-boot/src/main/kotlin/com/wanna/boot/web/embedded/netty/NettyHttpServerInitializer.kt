@@ -8,7 +8,7 @@ import io.netty.handler.codec.http.HttpServerCodec
 import io.netty.handler.stream.ChunkedWriteHandler
 
 /**
- * 这是NettyHttpSever的初始化器，负责给容器当中去注册Http报文的编解码器以及处理本次请求的Handler
+ * 这是NettyHttpSever的初始化器, 负责给容器当中去注册Http报文的编解码器以及处理本次请求的Handler
  *
  * @see ChannelInitializer
  * @see HttpServerCodec

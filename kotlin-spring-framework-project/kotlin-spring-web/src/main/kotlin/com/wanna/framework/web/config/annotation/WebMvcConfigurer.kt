@@ -8,7 +8,7 @@ import com.wanna.framework.web.method.support.HandlerMethodReturnValueHandler
 
 
 /**
- * WebMvcConfigurer，支持去对SpringMebMvc当中的各个组件去进行自定义
+ * WebMvcConfigurer, 支持去对SpringMebMvc当中的各个组件去进行自定义
  *
  * @see WebMvcConfigurationSupport
  * @see DelegatingWebMvcConfiguration
@@ -23,7 +23,7 @@ interface WebMvcConfigurer {
     fun configureContentNegotiation(configurer: ContentNegotiationConfigurer) {}
 
     /**
-     * 添加拦截器列表，往给定的拦截器注册中心当中去添加拦截器，即可实现SpringWebMvc从拦截器的添加
+     * 添加拦截器列表, 往给定的拦截器注册中心当中去添加拦截器, 即可实现SpringWebMvc从拦截器的添加
      *
      * @param registry 拦截器的注册中心
      */
@@ -51,7 +51,7 @@ interface WebMvcConfigurer {
     fun configureMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {}
 
     /**
-     * 扩展MessageConverter(在默认的MessageConverter列表的情况下，新增MessageConverter)
+     * 扩展MessageConverter(在默认的MessageConverter列表的情况下, 新增MessageConverter)
      *
      * @param converters SpringWebMvc的MessageConverters列表
      */
@@ -72,7 +72,7 @@ interface WebMvcConfigurer {
     fun extendHandlerExceptionResolvers(resolvers: MutableList<HandlerExceptionResolver>) {}
 
     /**
-     * 添加Formatter(Converter)，提供SpringWebMvc当中类型的转换支持
+     * 添加Formatter(Converter), 提供SpringWebMvc当中类型的转换支持
      *
      * @param formatterRegistry SpringWebMvc的Formatter注册中心
      */
