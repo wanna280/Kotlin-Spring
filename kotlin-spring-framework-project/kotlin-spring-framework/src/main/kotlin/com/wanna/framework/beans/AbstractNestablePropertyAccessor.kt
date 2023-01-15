@@ -9,9 +9,9 @@ import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
-import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.util.StringUtils
 import org.slf4j.LoggerFactory
+import java.lang.StringBuilder
 import java.util.Optional
 import kotlin.jvm.Throws
 
@@ -32,6 +32,11 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
         @JvmStatic
         private val logger = LoggerFactory.getLogger(AbstractNestablePropertyAccessor::class.java)
     }
+
+    /**
+     * 自动递增的限制
+     */
+    private var autoGrowCollectionLimit = Int.MAX_VALUE
 
 
     /**
@@ -72,7 +77,21 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
      * @param obj 要去进行包装的对象
      */
     open fun setWrappedInstance(obj: Any) {
+        this.setWrappedInstance(obj, null, null)
+    }
+
+    /**
+     * 设置包装的对象
+     *
+     * @param obj 要去进行包装的对象
+     * @param nestedPath 嵌套的路径
+     * @param rootObject rootObject
+     */
+    open fun setWrappedInstance(obj: Any, @Nullable nestedPath: String?, @Nullable rootObject: Any?) {
         this.wrappedObject = obj
+        this.nestedPropertyAccessors = null
+        this.nestedPath = nestedPath ?: ""
+        this.rootObject = if (this.nestedPath.isNotEmpty()) rootObject else wrappedObject
     }
 
     /**
@@ -143,6 +162,90 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
     }
 
     /**
+     * 设置属性值，应该使用setter的方式去进行设置
+     *
+     * @param name name
+     * @param value value
+     */
+    override fun setPropertyValue(name: String, value: Any?) {
+        val nestedPa = getPropertyAccessorForPropertyPath(name)
+        val tokens = getPropertyNameTokens(getFinalPath(nestedPa, name))
+
+        // 获取到Nested PropertyAccessor, 直接去setPropertyValue
+        nestedPa.setPropertyValue(tokens, PropertyValue(name, value))
+    }
+
+    /**
+     * 设置PropertyValue, 对指定的Property的值去进行设置
+     *
+     * @param propertyValue 要去进行设置的PropertyValue
+     */
+    override fun setPropertyValue(propertyValue: PropertyValue) {
+        var resolvedTokens = propertyValue.resolvedTokens as PropertyTokenHolder?
+
+        // 如果之前还没解析过Token, 那么先去解析Token
+        if (resolvedTokens == null) {
+            val propertyName = propertyValue.name
+            val nestPa = getPropertyAccessorForPropertyPath(propertyName)
+
+            // 切取nestedPath的最后一段作为finalPath, 并解析成为Token
+            resolvedTokens = getPropertyNameTokens(getFinalPath(nestPa, propertyName))
+
+            // 解析完成Token之后, 去执行PropertyValue的设置
+            nestPa.setPropertyValue(tokens = resolvedTokens, pv = propertyValue)
+
+            // 如果之前已经解析过Token了...那么直接去进行PropertyValue的设置
+        } else {
+            this.setPropertyValue(resolvedTokens, propertyValue)
+        }
+    }
+
+
+    /**
+     * 根据name去获取到Property的Value
+     *
+     * @param name propertyName
+     * @return 根据propertyName去获取到的Property的Value
+     */
+    @Nullable
+    override fun getPropertyValue(name: String): Any? {
+        val nestedPa = getPropertyAccessorForPropertyPath(name)
+        val tokens = getPropertyNameTokens(getFinalPath(nestedPa, name))
+        // 支持嵌套(indexed/mapped)的方式, 去为给定的属性名, 去进行属性值的解析
+        return nestedPa.getPropertyValue(tokens)
+    }
+
+    /**
+     * 执行属性值的设置
+     *
+     * @param tokens token
+     * @param pv 要去进行设置的PropertyValue信息
+     */
+    protected open fun setPropertyValue(tokens: PropertyTokenHolder, pv: PropertyValue) {
+        // 如果有Keys, 那么说明要设置到Map/List的内部元素当中
+        if (tokens.keys != null) {
+            processKeyedProperty(tokens, pv)
+
+            // 如果没有Keys, 那么只需要去进行字段的设置
+        } else {
+            processLocalProperty(tokens, pv)
+        }
+    }
+
+    /**
+     * 根据nestedPath, 去获取到它的最后一段路径, 例如"user.address[0]", 此时需要返回"address[0]"
+     *
+     * @param pa PropertyAccessor
+     * @param nestedPath nestedPath
+     */
+    protected open fun getFinalPath(pa: AbstractNestablePropertyAccessor, nestedPath: String): String {
+        if (pa == this) {
+            return nestedPath
+        }
+        return nestedPath.substring(PropertyAccessorUtils.getLastNestedPropertySeparatorIndex(nestedPath) + 1)
+    }
+
+    /**
      * 为给定的propertyPath去获取到对应的[PropertyAccessor], 提供属性的访问
      *
      * @param propertyPath propertyPath
@@ -170,9 +273,90 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
         }
     }
 
+    /**
+     * 为给定的tokens[PropertyTokenHolder]去获取到具体的属性值
+     *
+     * @param tokens 为属性名去完成解析之后得到的tokens
+     * @return 根据给定的tokens去获取到的属性值
+     */
     @Nullable
     protected open fun getPropertyValue(tokens: PropertyTokenHolder): Any? {
-        return null
+        val propertyName = tokens.canonicalName
+        val actualName = tokens.actualName
+        val ph = getLocalPropertyHandler(actualName)
+        // 如果不存在有Getter, 那么...
+        if (ph == null || !ph.readable) {
+            throw NotReadablePropertyException(getRootClass(), this.nestedPath + propertyName)
+        }
+        var value: Any? = ph.getValue()
+        if (tokens.keys != null) {
+            if (value == null) {
+                if (autoGrowNestedPaths) {
+                    value = setDefaultValue(PropertyTokenHolder(propertyName))
+                } else {
+                    throw NullValueInNestedPathException(
+                        getRootClass(),
+                        this.nestedPath + propertyName,
+                        "Cannot access indexed value of property referenced in indexed property path '$propertyName': returned null"
+                    )
+                }
+            }
+            val indexedPropertyName = StringBuilder(propertyName)
+            for (i in 0 until tokens.keys!!.size) {
+                val key = tokens.keys!![i]
+                if (value == null) {
+                    throw NullValueInNestedPathException(
+                        getRootClass(),
+                        this.nestedPath + propertyName,
+                        "Cannot access indexed value of property referenced in indexed property path '$propertyName': returned null"
+                    )
+                }
+                if (value.javaClass.isArray) {
+                    val index = key.toInt()
+                    growArrayIfNecessary(value, index, indexedPropertyName.toString())
+                    value = java.lang.reflect.Array.get(value, index)
+                } else if (value is List<*>) {
+                    val index = key.toInt()
+                    growCollectionIfNecessary(value, index, propertyName, ph, i + 1)
+                    value = value[index]
+                } else if (value is Set<*>) {
+                    val index = key.toInt()
+                    // 对于Set, 无法扩容...size不够直接异常
+                    if (index < 0 || index >= value.size) {
+                        throw InvalidPropertyException(
+                            getRootClass(), this.nestedPath + propertyName,
+                            "Cannot get element with index " + index + " from Set of size " +
+                                    value.size + ", accessed using property path '" + propertyName + "'"
+                        )
+                    }
+                    // 手动迭代K次, 去获取到Set当中的该位置的元素
+                    val iterator = value.iterator()
+                    for (k in 0..index) {
+                        val next = iterator.next()
+                        if (k == index) {
+                            value = next
+                            break
+                        }
+                    }
+                } else if (value is Map<*, *>) {
+                    // TODO, not supported nested, only support string
+                    val elementType = String::class.java
+                    // 对Key去进行convert
+                    val convertedKey =
+                        convertIfNecessary(null, null, key, elementType, TypeDescriptor.forClass(elementType))
+                    value = value[convertedKey]
+                } else {
+                    throw InvalidPropertyException(
+                        getRootClass(), this.nestedPath + propertyName,
+                        "Property referenced in indexed property path '" + propertyName +
+                                "' is neither an array nor a List nor a Set nor a Map; returned value was [" + value + "]"
+                    )
+                }
+                // 把当前正在处理的Key, 去添加到indexedPropertyName当中...
+                indexedPropertyName.append(PROPERTY_KEY_PREFIX).append(key).append(PROPERTY_KEY_SUFFIX)
+            }
+        }
+        return value
     }
 
     /**
@@ -195,6 +379,25 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
      */
     @Nullable
     protected abstract fun getLocalPropertyHandler(propertyName: String): PropertyHandler?
+
+    /**
+     * 针对给定的属性, 去完成类型转换
+     *
+     * @param propertyName 属性名
+     * @param oldValue 属性旧值
+     * @param newValue 属性新值
+     * @return 经过属性转换之后的属性值
+     */
+    @Nullable
+    @Throws(TypeMismatchException::class)
+    protected open fun convertForProperty(
+        @Nullable propertyName: String?,
+        @Nullable oldValue: Any?,
+        @Nullable newValue: Any?,
+        td: TypeDescriptor
+    ): Any? {
+        return convertIfNecessary(propertyName, oldValue, newValue, td.type, td)
+    }
 
     /**
      * 为嵌套的属性, 去获取到[AbstractNestablePropertyAccessor]
@@ -239,7 +442,55 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
         return nestedPropertyAccessor
     }
 
+    private fun growArrayIfNecessary(array: Any, index: Int, name: String): Any {
+        if (!autoGrowNestedPaths) {
+            return array
+        }
+        val length = java.lang.reflect.Array.getLength(array)
+        if (index in length until autoGrowCollectionLimit) {
+            val componentType = array.javaClass.componentType
+
+            // 创建一个更长的数组, 把元素拷贝过去
+            val newArray = java.lang.reflect.Array.newInstance(componentType, index + 1)
+            System.arraycopy(array, 0, newArray, 0, index)
+            for (i in 0..index) {
+                java.lang.reflect.Array.set(newArray, i, newValue(componentType, null, name))
+            }
+            setPropertyValue(name, newArray)
+            return getPropertyValue(name) ?: throw IllegalStateException("Default value must not be null")
+        } else {
+            return array
+        }
+    }
+
+    private fun growCollectionIfNecessary(
+        collection: Collection<Any?>,
+        index: Int,
+        name: String,
+        ph: PropertyHandler,
+        nestingLevel: Int
+    ) {
+        if (!autoGrowNestedPaths || collection !is MutableCollection<*>) {
+            return
+        }
+        if (index >= collection.size && index < autoGrowCollectionLimit) {
+            val elementType: Class<*>? = Any::class.java  // TODO nesting not support
+            if (elementType != null) {
+                for (i in collection.size..index) {
+                    (collection as MutableCollection<Any?>).add(newValue(elementType, null, name))
+                }
+            }
+        }
+
+    }
+
     private fun setDefaultValue(tokens: PropertyTokenHolder): Any {
+        // TODO
+        return Any()
+    }
+
+    private fun newValue(type: Class<*>, @Nullable desc: TypeDescriptor?, name: String): Any {
+        // TODO
         return Any()
     }
 
@@ -289,7 +540,7 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
                 if (keyEnd != -1) {
 
                     // 真正的actualName只去计算第一次遇到"["之前的这部分
-                    actualName = actualName ?: propertyName.substring(0, keyEnd)
+                    actualName = actualName ?: propertyName.substring(0, keyStart)
 
                     // 切取"["和"]"之间的这部分作为Key
                     var key = propertyName.substring(keyStart + PROPERTY_KEY_PREFIX.length, keyEnd)
@@ -319,154 +570,12 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
         return token
     }
 
-    /**
-     * 设置属性值，应该使用setter的方式去进行设置
-     *
-     * @param name name
-     * @param value value
-     */
-    override fun setPropertyValue(name: String, value: Any?) {
-        val nestedPa = getPropertyAccessorForPropertyPath(name)
-        val tokens = getPropertyNameTokens(getFinalPath(nestedPa, name))
-
-        // 获取到Nested PropertyAccessor, 直接去setPropertyValue
-        nestedPa.setPropertyValue(tokens, PropertyValue(name, value))
-    }
-
-    override fun setPropertyValue(propertyValue: PropertyValue) {
-        var resolvedTokens = propertyValue.resolvedTokens as PropertyTokenHolder?
-
-        // 如果之前还没解析过Token, 那么先去解析Token
-        if (resolvedTokens == null) {
-            val propertyName = propertyValue.name
-            val nestPa = getPropertyAccessorForPropertyPath(propertyName)
-
-            // 切取nestedPath的最后一段作为finalPath, 并解析成为Token
-            resolvedTokens = getPropertyNameTokens(getFinalPath(nestPa, propertyName))
-
-            // 解析完成Token之后, 去执行PropertyValue的设置
-            nestPa.setPropertyValue(tokens = resolvedTokens, pv = propertyValue)
-
-            // 如果之前已经解析过Token了...那么直接去进行PropertyValue的设置
-        } else {
-            this.setPropertyValue(resolvedTokens, propertyValue)
-        }
-    }
-
-    /**
-     * 执行属性值的设置
-     *
-     * @param tokens token
-     * @param pv 要去进行设置的PropertyValue信息
-     */
-    protected open fun setPropertyValue(tokens: PropertyTokenHolder, pv: PropertyValue) {
-        // 如果有Keys, 那么说明要设置到Map/List的内部元素当中
-        if (tokens.keys != null) {
-            processKeyedProperty(tokens, pv)
-
-            // 如果没有Keys, 那么只需要去进行字段的设置
-        } else {
-            processLocalProperty(tokens, pv)
-        }
-    }
-
-    private fun processKeyedProperty(tokens: PropertyTokenHolder, pv: PropertyValue) {
-        // TODO
-        val name = pv.name
-        val value = pv.value
-        // add: 采用setter的方式去设置属性值，替换之前的字段设置
-        val writeMethodName = "set" + name[0].uppercase() + name.substring(1)
-        var isFound = false
-        ReflectionUtils.doWithMethods(getWrappedClass()) {
-            if (isFound) {
-                return@doWithMethods
-            }
-            val parameterTypes = it.parameterTypes
-            if (it.name == writeMethodName && it.parameterCount == 1) {
-                ReflectionUtils.makeAccessible(it)
-                var targetToInject: Any? = value
-                if (value is Collection<*> && !ClassUtils.isAssignFrom(Collection::class.java, parameterTypes[0])) {
-                    targetToInject = if (value.isNotEmpty()) value.iterator().next() else null
-                }
-                val converted = convertIfNecessary(targetToInject, parameterTypes[0])
-                ReflectionUtils.invokeMethod(it, getWrappedInstance(), converted)
-                isFound = true
-            }
-        }
-    }
-
-    /**
-     * 处理本地的属性值的设置
-     *
-     * @param tokens token
-     * @param pv 要去进行设置的属性值PropertyValue
-     */
-    private fun processLocalProperty(tokens: PropertyTokenHolder, pv: PropertyValue) {
-        val ph = getLocalPropertyHandler(tokens.actualName)
-        if (ph != null && ph.writeable) {
-            val originValue = pv.value
-            var valueToApply = originValue
-            var oldValue: Any? = null
-
-            // 如果这个PropertyValue之前已经完成了转换, 那么直接获取转换之后的值即可...
-            if (pv.isConverted()) {
-                valueToApply = pv.getConvertedValue()
-
-                // 如果这个PropertyValue之前还没完成转换, 那么在这里去进行转换
-            } else {
-                // 检查是否需要把oldValue提供给PropertyEditor?
-                if (extractOldValueForEditor && ph.readable) {
-                    oldValue = ph.getValue()
-                }
-
-                // convert for property...
-                valueToApply = convertForProperty(tokens.actualName, oldValue, valueToApply, ph.toTypeDescriptor())
-            }
-
-            // 获取到完成类型转换之后的值之后, 利用PropertyHandler, 去进行值的设置...
-            ph.setValue(valueToApply)
-        } else {
-            // TODO
-        }
-    }
-
-    /**
-     * 根据nestedPath, 去获取到它的最后一段路径, 例如"user.address[0]", 此时需要返回"address[0]"
-     *
-     * @param pa PropertyAccessor
-     * @param nestedPath nestedPath
-     */
-    protected open fun getFinalPath(pa: AbstractNestablePropertyAccessor, nestedPath: String): String {
-        if (pa == this) {
-            return nestedPath
-        }
-        return nestedPath.substring(PropertyAccessorUtils.getLastNestedPropertySeparatorIndex(nestedPath))
-    }
-
-    /**
-     * 针对给定的属性, 去完成类型转换
-     *
-     * @param propertyName 属性名
-     * @param oldValue 属性旧值
-     * @param newValue 属性新值
-     * @return 经过属性转换之后的属性值
-     */
-    @Nullable
-    @Throws(TypeMismatchException::class)
-    protected open fun convertForProperty(
-        propertyName: String,
-        @Nullable oldValue: Any?,
-        @Nullable newValue: Any?,
-        td: TypeDescriptor
-    ): Any? {
-        return convertIfNecessary(propertyName, oldValue, newValue, td)
-    }
-
     @Nullable
     private fun convertIfNecessary(
-        propertyName: String,
+        @Nullable propertyName: String?,
         @Nullable oldValue: Any?,
         @Nullable newValue: Any?,
+        @Nullable requiredType: Class<*>?,
         td: TypeDescriptor
     ): Any? {
         var valueToApply: Any? = newValue
@@ -483,17 +592,45 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
         return valueToApply
     }
 
+    private fun processKeyedProperty(tokens: PropertyTokenHolder, pv: PropertyValue) {
+        // TODO
+    }
+
     /**
-     * 根据name去获取到Property的Value
+     * 处理本地的属性值的设置
      *
-     * @param name propertyName
-     * @return 根据propertyName去获取到的Property的Value
+     * @param tokens token
+     * @param pv 要去进行设置的属性值PropertyValue
      */
-    @Nullable
-    override fun getPropertyValue(name: String): Any? {
-        val nestedPa = getPropertyAccessorForPropertyPath(name)
-        val tokens = getPropertyNameTokens(getFinalPath(nestedPa, name))
-        return nestedPa.getPropertyValue(tokens)
+    private fun processLocalProperty(tokens: PropertyTokenHolder, pv: PropertyValue) {
+        val ph = getLocalPropertyHandler(tokens.actualName)
+
+        if (ph == null || !ph.writeable) {
+            // TODO
+            return
+        }
+
+        val originValue = pv.value
+        var valueToApply = originValue
+        var oldValue: Any? = null
+
+        // 如果这个PropertyValue之前已经完成了转换, 那么直接获取转换之后的值即可...
+        if (pv.isConverted()) {
+            valueToApply = pv.getConvertedValue()
+
+            // 如果这个PropertyValue之前还没完成转换, 那么在这里去进行转换
+        } else {
+            // 检查是否需要把oldValue提供给PropertyEditor?
+            if (extractOldValueForEditor && ph.readable) {
+                oldValue = ph.getValue()
+            }
+
+            // convert for property...
+            valueToApply = convertForProperty(tokens.actualName, oldValue, valueToApply, ph.toTypeDescriptor())
+        }
+
+        // 获取到完成类型转换之后的值之后, 利用PropertyHandler, 去进行值的设置...
+        ph.setValue(valueToApply)
     }
 
     /**

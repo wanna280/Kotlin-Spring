@@ -31,22 +31,18 @@ open class BeanWrapperImpl() : BeanWrapper, AbstractNestablePropertyAccessor() {
     @Nullable
     private var cachedIntrospectionResults: CachedIntrospectionResults? = null
 
-    constructor(@Nullable wrappedObject: Any?) : this() {
-        this.wrappedObject = wrappedObject
+    constructor(wrappedObject: Any) : this() {
+        this.setWrappedInstance(wrappedObject)
     }
 
     constructor(obj: Any, @Nullable nestedPath: String?, @Nullable rootObject: Any?) : this() {
-        this.wrappedObject = obj
-        this.nestedPath = nestedPath ?: ""
-        this.rootObject = rootObject
+        this.setWrappedInstance(obj, nestedPath, rootObject)
     }
 
     constructor(obj: Any, @Nullable nestedPath: String?, parent: AbstractNestablePropertyAccessor) : this() {
-        this.wrappedObject = obj
-        this.nestedPath = nestedPath ?: ""
+        this.setWrappedInstance(obj, nestedPath, parent.getWrappedInstance())
         this.setConversionService(parent.getConversionService())
         this.autoGrowNestedPaths = parent.autoGrowNestedPaths
-        this.rootObject = parent.getWrappedInstance()
     }
 
     /**
