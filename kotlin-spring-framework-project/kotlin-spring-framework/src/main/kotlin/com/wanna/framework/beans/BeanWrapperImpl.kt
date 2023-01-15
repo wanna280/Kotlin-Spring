@@ -1,6 +1,7 @@
 package com.wanna.framework.beans
 
 import com.wanna.framework.core.ResolvableType
+import com.wanna.framework.core.convert.Property
 import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.convert.support.DefaultConversionService
 import com.wanna.framework.lang.Nullable
@@ -92,6 +93,10 @@ open class BeanWrapperImpl() : BeanWrapper, AbstractNestablePropertyAccessor() {
         this.cachedIntrospectionResults = cachedIntrospectionResults
     }
 
+    private fun property(pd: PropertyDescriptor): Property {
+        return Property(pd.javaClass, pd.readMethod, pd.writeMethod, pd.name)
+    }
+
     /**
      * 对于Bean的属性的处理的Handler
      *
@@ -121,7 +126,7 @@ open class BeanWrapperImpl() : BeanWrapper, AbstractNestablePropertyAccessor() {
          *
          * @return propertyType的TypeDescriptor
          */
-        override fun toTypeDescriptor(): TypeDescriptor = TypeDescriptor(getResolvableType())
+        override fun toTypeDescriptor(): TypeDescriptor = TypeDescriptor(property(pd))
 
         /**
          * 使用Getter的方式, 去获取到一个Bean的属性值

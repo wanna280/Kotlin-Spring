@@ -406,7 +406,7 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
         @Nullable newValue: Any?,
         td: TypeDescriptor
     ): Any? {
-        return convertIfNecessary(propertyName, newValue, oldValue, td)
+        return convertIfNecessary(propertyName, oldValue, newValue, td)
     }
 
     @Nullable

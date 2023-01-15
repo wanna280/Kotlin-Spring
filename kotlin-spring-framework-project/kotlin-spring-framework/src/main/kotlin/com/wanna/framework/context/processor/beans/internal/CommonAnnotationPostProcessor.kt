@@ -165,11 +165,11 @@ open class CommonAnnotationPostProcessor : InitDestroyAnnotationBeanPostProcesso
     /**
      * 这是一个Resource的InjectedElement，它描述了一个@Resource标注的方法/字段，需要去完成自动注入
      *
-     * @param _member 方法/字段
+     * @param member 方法/字段
      * @param element 标注@Resource的元素(方法或者字段)
      */
-    private inner class ResourceElement(_member: Member, private val element: AnnotatedElement) :
-        InjectionMetadata.InjectedElement(_member) {
+    private inner class ResourceElement(member: Member, private val element: AnnotatedElement) :
+        InjectionMetadata.InjectedElement(member) {
         private var name: String = element.getAnnotation(Resource::class.java).name
 
         private var lazyLookup = false
@@ -178,11 +178,11 @@ open class CommonAnnotationPostProcessor : InitDestroyAnnotationBeanPostProcesso
             // 如果必要的话，需要去解析resourceName
             if (!StringUtils.hasText(name)) {
                 if (isField) {
-                    name = (member as Field).name
+                    name = (this.member as Field).name
                 } else {
-                    val methodName = (member as Method).name
+                    val methodName = (this.member as Method).name
                     if (methodName.startsWith("set") && methodName.length > 3) {
-                        name = methodName[3].lowercase() + methodName.substring(4)
+                        name = StringUtils.uncapitalizeAsProperty(methodName.substring(3))
                     }
                 }
             }
@@ -199,7 +199,8 @@ open class CommonAnnotationPostProcessor : InitDestroyAnnotationBeanPostProcesso
          * @return 去执行自动注入的元素
          */
         override fun getResourceToInject(bean: Any, beanName: String): Any {
-            return resourceFactory?.getBean(name) ?: throw IllegalStateException("没有ResourceFactory去提供@Resource的注入")
+            return resourceFactory?.getBean(name)
+                ?: throw IllegalStateException("没有ResourceFactory去提供@Resource的注入")
         }
     }
 }

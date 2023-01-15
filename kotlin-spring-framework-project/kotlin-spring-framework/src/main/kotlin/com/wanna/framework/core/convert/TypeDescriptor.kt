@@ -16,6 +16,8 @@ import java.lang.reflect.Field
 open class TypeDescriptor(val resolvableType: ResolvableType) :
     Serializable {
 
+    constructor(property: Property) : this(ResolvableType.forClass(property.type))
+
     val type: Class<*> = resolvableType.resolve(Any::class.java)
 
     companion object {

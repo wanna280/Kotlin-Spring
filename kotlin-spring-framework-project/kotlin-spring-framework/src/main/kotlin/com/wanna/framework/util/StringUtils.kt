@@ -2,6 +2,7 @@ package com.wanna.framework.util
 
 import com.wanna.framework.lang.Nullable
 import org.springframework.util.StringUtils
+import java.beans.Introspector
 
 /**
  * 这是一个String的工具类
@@ -50,6 +51,68 @@ object StringUtils {
     }
 
     /**
+     * 将给定的字符串的第一个字母变成大写, 使用[String.uppercase]去转换第一个字符, 别的字符不发生变化
+     *
+     * @param str 待转换的字符串
+     * @return 转换之后的字符串
+     */
+    @JvmStatic
+    fun capitalize(str: String): String = changeFirstCharacterCase(str, true)
+
+    /**
+     * 将给定的字符串的第一个字母变成小写, 使用[String.lowercase]去转换第一个字符, 别的字符不发生变化
+     *
+     * @param str 待转换的字符串
+     * @return 转换之后的字符串
+     */
+    @JvmStatic
+    fun uncapitalize(str: String): String = changeFirstCharacterCase(str, false)
+
+    /**
+     * 将给定的字符串的第一个字母变成小写, 使用[String.lowercase]去转换第一个字符, 别的字符不发生变化
+     *
+     * Note: 特殊地, 如果第一个和第二个字母都是大写, 那么就不进行转换了
+     *
+     * @param str 待转换的字符串
+     * @return 转换之后的字符串
+     * @see Introspector.decapitalize
+     */
+    @JvmStatic
+    fun uncapitalizeAsProperty(str: String): String {
+        if (!hasText(str) || (str.length > 1 && str[0].isUpperCase() && str[1].isUpperCase())) {
+            return str
+        }
+        return changeFirstCharacterCase(str, false)
+    }
+
+    /**
+     * 改变给定的字符串的第一个字母的大小写
+     *
+     * @param str 待转换的字符串
+     * @param capitalize 为true代表转为大写, 为false代表转为小写
+     * @return 转换之后的字符串
+     */
+    @JvmStatic
+    private fun changeFirstCharacterCase(str: String, capitalize: Boolean): String {
+        if (str.isBlank()) {
+            return str
+        }
+        val baseChar = str[0]
+        val updatedChar: Char
+        if (capitalize) {
+            updatedChar = baseChar.uppercaseChar()
+        } else {
+            updatedChar = baseChar.lowercaseChar()
+        }
+        if (baseChar == updatedChar) {
+            return str
+        }
+        val chars = str.toCharArray()
+        chars[0] = updatedChar
+        return String(chars)
+    }
+
+    /**
      * 获取干净的path
      *
      * @param path
@@ -57,6 +120,7 @@ object StringUtils {
      */
     @JvmStatic
     fun cleanPath(path: String): String {
+        // TODO
         return StringUtils.cleanPath(path)
     }
 
