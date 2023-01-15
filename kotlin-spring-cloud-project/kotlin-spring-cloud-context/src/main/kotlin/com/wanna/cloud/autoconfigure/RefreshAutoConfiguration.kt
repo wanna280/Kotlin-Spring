@@ -11,7 +11,7 @@ import com.wanna.framework.context.annotation.Configuration
 /**
  * 自动完成Refresh的自动配置类，自动导入Refresh相关的组件
  */
-@Configuration
+@Configuration(proxyBeanMethods = false)
 open class RefreshAutoConfiguration {
 
     /**
