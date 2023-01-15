@@ -37,27 +37,26 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
     }
 
     /**
-     * 自动递增的限制
+     * 集合的自动递增容量的限制
      */
     private var autoGrowCollectionLimit = Int.MAX_VALUE
-
 
     /**
      * 包装的对象
      */
     @Nullable
-    protected var wrappedObject: Any? = null
+    private var wrappedObject: Any? = null
 
     /**
      * root的对象, 因为存在有对象的嵌套, 因此就可能存在有root对象
      */
     @Nullable
-    protected var rootObject: Any? = null
+    private var rootObject: Any? = null
 
     /**
      * 当前[PropertyAccessor]所在的嵌套的路径
      */
-    protected var nestedPath = ""
+    private var nestedPath = ""
 
     /**
      * 维护当前的[PropertyAccessor]对应的嵌套的[PropertyAccessor]列表, Key-nestedPath, Value是该nestedPath的[PropertyAccessor]
@@ -75,20 +74,18 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
     open fun getWrappedInstance(): Any = this.wrappedObject ?: IllegalStateException("Target object must not be null")
 
     /**
-     * 设置包装的对象
+     * 设置要去进行包装的对象(WrappedInstance)
      *
      * @param obj 要去进行包装的对象
      */
-    open fun setWrappedInstance(obj: Any) {
-        this.setWrappedInstance(obj, null, null)
-    }
+    open fun setWrappedInstance(obj: Any) = this.setWrappedInstance(obj, null, null)
 
     /**
-     * 设置包装的对象
+     * 设置要去进行包装的对象
      *
      * @param obj 要去进行包装的对象
      * @param nestedPath 嵌套的路径
-     * @param rootObject rootObject
+     * @param rootObject rootObject(如果nestedPath为null/"", 将会使用wrappedInstance; 如果nestedPath不为null, 那么将得设置成为rootObject)
      */
     open fun setWrappedInstance(obj: Any, @Nullable nestedPath: String?, @Nullable rootObject: Any?) {
         this.wrappedObject = obj
@@ -430,7 +427,7 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
     ): AbstractNestablePropertyAccessor
 
     /**
-     * 根据给定的[propertyName], 为它去获取一个[PropertyHandler], 去提供对于该属性的处理工作
+     * 根据给定的属性名[propertyName], 为该属性去获取到一个[PropertyHandler], 去提供对于该属性的处理工作
      *
      * @param propertyName propertyName
      * @return 处理该属性的[PropertyHandler]
@@ -782,6 +779,10 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
 
     /**
      * 对于一个特定的属性去进行处理的Handler
+     *
+     * @param propertyType propertyType
+     * @param readable has getter?
+     * @param writeable has setter?
      */
     protected abstract class PropertyHandler(
         val propertyType: Class<*>,
@@ -790,7 +791,7 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
     ) {
 
         /**
-         * 将这个属性的类型, 去转换成为[ResolvableType]
+         * 获取到这个属性的类型的[ResolvableType]
          *
          * @return ResolvableType for propertyType
          */
