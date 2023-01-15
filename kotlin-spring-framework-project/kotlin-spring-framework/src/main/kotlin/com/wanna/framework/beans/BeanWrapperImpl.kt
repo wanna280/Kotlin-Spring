@@ -5,6 +5,7 @@ import com.wanna.framework.core.convert.Property
 import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.convert.support.DefaultConversionService
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ReflectionUtils
 import java.beans.PropertyDescriptor
 
@@ -26,23 +27,60 @@ open class BeanWrapperImpl() : BeanWrapper, AbstractNestablePropertyAccessor() {
     }
 
     /**
-     * 获取到beanType的内省的结果信息, 基于JDK原生的BeanInfo去进行实现, 并提供缓存实现
+     * 获取到beanType的内省的结果信息, 基于JDK原生的BeanInfo去进行实现, 并提供缓存实现,
+     * 避免每次去进行JavaBeans的Introspection内省操作时产生消耗
      */
     @Nullable
     private var cachedIntrospectionResults: CachedIntrospectionResults? = null
 
+    /**
+     * 基于一个给定的Class去构建[BeanWrapper], 利用无参数构造器对该类去进行实例化作为WrappedInstance
+     *
+     * @param clazz clazz
+     */
+    constructor(clazz: Class<*>) : this(BeanUtils.instantiateClass(clazz))
+
+    /**
+     * 基于给定的WrappedInstance去构建出来[BeanWrapper]
+     *
+     * @param wrappedObject WrappedObject
+     */
     constructor(wrappedObject: Any) : this() {
         this.setWrappedInstance(wrappedObject)
     }
 
-    constructor(obj: Any, @Nullable nestedPath: String?, @Nullable rootObject: Any?) : this() {
-        this.setWrappedInstance(obj, nestedPath, rootObject)
+    /**
+     * 创建一个属性嵌套的[BeanWrapper]
+     *
+     * @param wrappedObject WrappedInstance
+     * @param nestedPath 嵌套的路径
+     * @param rootObject rootObject
+     */
+    constructor(wrappedObject: Any, @Nullable nestedPath: String?, @Nullable rootObject: Any?) : this() {
+        this.setWrappedInstance(wrappedObject, nestedPath, rootObject)
     }
 
-    constructor(obj: Any, @Nullable nestedPath: String?, parent: AbstractNestablePropertyAccessor) : this() {
-        this.setWrappedInstance(obj, nestedPath, parent.getWrappedInstance())
+    /**
+     * 创建一个属性嵌套的[BeanWrapper]
+     *
+     * @param wrappedObject WrappedInstance
+     * @param nestedPath 嵌套的路径
+     * @param parent parent PropertyAccessor
+     */
+    constructor(wrappedObject: Any, @Nullable nestedPath: String?, parent: AbstractNestablePropertyAccessor) : this() {
+        this.setWrappedInstance(wrappedObject, nestedPath, parent.getWrappedInstance())
         this.setConversionService(parent.getConversionService())
         this.autoGrowNestedPaths = parent.autoGrowNestedPaths
+    }
+
+    /**
+     * 设置WrappedInstance, 重写父类方法, 为了去刷新[CachedIntrospectionResults]
+     *
+     * @param wrappedObject WrappedInstance
+     */
+    override fun setWrappedInstance(wrappedObject: Any) {
+        super.setWrappedInstance(wrappedObject)
+        this.setCachedIntrospectionResults(CachedIntrospectionResults.forClass(wrappedObject::class.java))
     }
 
     /**
