@@ -483,22 +483,17 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
         return valueToApply
     }
 
+    /**
+     * 根据name去获取到Property的Value
+     *
+     * @param name propertyName
+     * @return 根据propertyName去获取到的Property的Value
+     */
+    @Nullable
     override fun getPropertyValue(name: String): Any? {
-        // add: 采用getter的方式去获取属性值
-        val readMethodName = "get" + name[0].uppercase() + name.substring(1)
-        var isFound = false
-        var returnValue: Any? = null
-        ReflectionUtils.doWithMethods(getWrappedClass()) {
-            if (isFound) {
-                return@doWithMethods
-            }
-            if (it.name == readMethodName && it.parameterCount == 0) {
-                ReflectionUtils.makeAccessible(it)
-                returnValue = ReflectionUtils.invokeMethod(it, getWrappedInstance())
-                isFound = true
-            }
-        }
-        return returnValue
+        val nestedPa = getPropertyAccessorForPropertyPath(name)
+        val tokens = getPropertyNameTokens(getFinalPath(nestedPa, name))
+        return nestedPa.getPropertyValue(tokens)
     }
 
     /**
