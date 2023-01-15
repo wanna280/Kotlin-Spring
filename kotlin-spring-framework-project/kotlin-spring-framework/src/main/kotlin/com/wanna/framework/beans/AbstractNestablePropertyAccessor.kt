@@ -5,13 +5,16 @@ import com.wanna.framework.beans.PropertyAccessor.Companion.PROPERTY_KEY_PREFIX
 import com.wanna.framework.beans.PropertyAccessor.Companion.PROPERTY_KEY_PREFIX_CHAR
 import com.wanna.framework.beans.PropertyAccessor.Companion.PROPERTY_KEY_SUFFIX
 import com.wanna.framework.beans.PropertyAccessor.Companion.PROPERTY_KEY_SUFFIX_CHAR
+import com.wanna.framework.core.CollectionFactory
 import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
 import org.slf4j.LoggerFactory
 import java.lang.StringBuilder
+import java.lang.reflect.Modifier
 import java.util.Optional
 import kotlin.jvm.Throws
 
@@ -162,12 +165,38 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
     }
 
     /**
+     * 给定一个propertyName, 去获取到该Property对应的属性值类型
+     *
+     * @param name propertyName
+     * @return 该属性值的类型(如果获取不到, return null)
+     */
+    @Nullable
+    override fun getPropertyType(name: String): Class<*>? {
+        try {
+            // 1.检查本地的属性?
+            val ph = getLocalPropertyHandler(name)
+            if (ph != null) {
+                return ph.propertyType
+            }
+            // 2.检查嵌套的属性?
+            val value = getPropertyValue(name)
+            if (value != null) {
+                return value.javaClass
+            }
+
+        } catch (ex: Exception) {
+            // Consider as not determinable.
+        }
+        return null
+    }
+
+    /**
      * 设置属性值，应该使用setter的方式去进行设置
      *
      * @param name name
      * @param value value
      */
-    override fun setPropertyValue(name: String, value: Any?) {
+    override fun setPropertyValue(name: String, @Nullable value: Any?) {
         val nestedPa = getPropertyAccessorForPropertyPath(name)
         val tokens = getPropertyNameTokens(getFinalPath(nestedPa, name))
 
@@ -213,6 +242,35 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
         val tokens = getPropertyNameTokens(getFinalPath(nestedPa, name))
         // 支持嵌套(indexed/mapped)的方式, 去为给定的属性名, 去进行属性值的解析
         return nestedPa.getPropertyValue(tokens)
+    }
+
+    /**
+     * 为指定的属性名对应的属性的类型, 去获取到[TypeDescriptor]
+     *
+     * @param name 属性名(可能是一个嵌套的属性, 或者是一个indexed/mapped属性, 也就是支持使用'[]'去访问List/Map)
+     * @return 获取到的对应的属性对应的TypeDescriptor(获取不到return null)
+     */
+    @Nullable
+    override fun getPropertyTypeDescriptor(name: String): TypeDescriptor? {
+        try {
+            val nestedPa = getPropertyAccessorForPropertyPath(name)
+            val tokens = getPropertyNameTokens(getFinalPath(nestedPa, name))
+            val ph = nestedPa.getLocalPropertyHandler(tokens.actualName)
+            if (ph != null) {
+                if (tokens.keys != null) {
+                    if (ph.readable || ph.writeable) {
+                        return ph.nested(tokens.keys!!.size)
+                    }
+                } else {
+                    if (ph.readable || ph.writeable) {
+                        return ph.toTypeDescriptor()
+                    }
+                }
+            }
+        } catch (ex: InvalidPropertyException) {
+
+        }
+        return null
     }
 
     /**
@@ -484,14 +542,71 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
 
     }
 
+    /**
+     * 为给定的Token去设置默认值
+     *
+     * @param tokens tokens
+     * @return 为给定的token对应的属性去解析得到的默认值
+     */
     private fun setDefaultValue(tokens: PropertyTokenHolder): Any {
-        // TODO
-        return Any()
+        val propertyValue = createDefaultPropertyValue(tokens)
+        setPropertyValue(tokens, propertyValue)
+        return getPropertyValue(tokens) ?: throw IllegalStateException("Default value must not be null")
     }
 
+    /**
+     * 为给定的Token对应位置的属性, 去创建出来属性值[PropertyValue]
+     *
+     * @param tokens token
+     * @return 创建出来的[PropertyValue]对象
+     */
+    private fun createDefaultPropertyValue(tokens: PropertyTokenHolder): PropertyValue {
+        val td = getPropertyTypeDescriptor(tokens.canonicalName) ?: throw NullValueInNestedPathException(
+            getRootClass(), this.nestedPath + tokens.canonicalName,
+            "Could not determine property type for auto-growing a default value"
+        )
+        return PropertyValue(tokens.canonicalName, newValue(td.type, td, tokens.canonicalName))
+    }
+
+    /**
+     * 为给定的类型, 去创建一个默认值
+     *
+     * @param type 要去进行创建对象的类型(可以是Array/Collection/Map等)
+     * @param desc TypeDescriptor
+     * @param name 属性名
+     * @return 创建出来的默认值对象
+     * @throws NullValueInNestedPathException 如果创建对象过程出现了异常
+     */
+    @Throws(NullValueInNestedPathException::class)
     private fun newValue(type: Class<*>, @Nullable desc: TypeDescriptor?, name: String): Any {
-        // TODO
-        return Any()
+        try {
+            if (type.isArray) {
+                val componentType = type.componentType
+                // TODO - only handles 2-dimensional arrays
+                if (componentType.isArray) {
+                    val array = java.lang.reflect.Array.newInstance(componentType, 1)
+                    java.lang.reflect.Array.newInstance(componentType.componentType, 0)
+                    return array
+                } else {
+                    return java.lang.reflect.Array.newInstance(componentType, 0)
+                }
+            } else if (ClassUtils.isAssignFrom(Collection::class.java, type)) {
+                return CollectionFactory.createCollection<Any?>(type, 16)
+            } else if (ClassUtils.isAssignFrom(Map::class.java, type)) {
+                return CollectionFactory.createMap<Any?, Any?>(type, 16)
+            } else {
+                val declaredConstructor = type.getDeclaredConstructor()
+                if (Modifier.isPublic(declaredConstructor.modifiers)) {
+                    throw IllegalAccessException("Auto-growing not allowed with private constructor: $declaredConstructor")
+                }
+                return BeanUtils.instantiateClass(declaredConstructor)
+            }
+        } catch (ex: Throwable) {
+            throw NullValueInNestedPathException(
+                getRootClass(), this.nestedPath + name,
+                "Could not instantiate property type [" + type.getName() + "] to auto-grow nested property path", ex
+            )
+        }
     }
 
     /**
@@ -592,8 +707,40 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
         return valueToApply
     }
 
+    /**
+     * 执行对于propertyName当中存在有"[]"这样的Key表达式的情况的属性值设置
+     *
+     * @param tokens 解析完成得到的tokens
+     * @param pv 要去进行设置的PropertyValue
+     */
     private fun processKeyedProperty(tokens: PropertyTokenHolder, pv: PropertyValue) {
         // TODO
+        val propValue = getPropertyHoldingValue(tokens)
+        val ph = getLocalPropertyHandler(tokens.actualName)
+            ?: throw InvalidPropertyException(
+                getRootClass(),
+                this.nestedPath + tokens.actualName,
+                "No PropertyHandler found"
+            )
+
+        val lastKey = tokens.keys!![tokens.keys!!.size - 1]
+        if (propValue.javaClass.isArray) {
+
+        } else if (propValue is List<*>) {
+
+        } else if (propValue is Map<*, *>) {
+
+        }
+
+    }
+
+    /**
+     * 获取该属性所持有的对象
+     *
+     * @param tokens tokens
+     */
+    private fun getPropertyHoldingValue(tokens: PropertyTokenHolder): Any {
+        return Any()
     }
 
     /**
@@ -655,6 +802,14 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
          * @return TypeHandler for propertyType
          */
         abstract fun toTypeDescriptor(): TypeDescriptor
+
+        /**
+         * 获取嵌套指定级别的[TypeDescriptor]
+         *
+         * @return TypeDescriptor for nested level propertyType
+         */
+        @Nullable
+        abstract fun nested(level: Int): TypeDescriptor?
 
         /**
          * 获取该属性的值

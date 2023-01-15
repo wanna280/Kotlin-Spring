@@ -149,6 +149,11 @@ open class BeanWrapperImpl() : BeanWrapper, AbstractNestablePropertyAccessor() {
          */
         override fun toTypeDescriptor(): TypeDescriptor = TypeDescriptor(property(pd))
 
+        override fun nested(level: Int): TypeDescriptor? {
+            // TODO
+            return null
+        }
+
         /**
          * 使用Getter的方式, 去获取到一个Bean的属性值
          *

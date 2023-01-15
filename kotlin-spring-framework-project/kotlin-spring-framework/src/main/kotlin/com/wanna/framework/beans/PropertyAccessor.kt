@@ -1,5 +1,6 @@
 package com.wanna.framework.beans
 
+import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.lang.Nullable
 
 /**
@@ -95,6 +96,15 @@ interface PropertyAccessor {
      */
     @Nullable
     fun getPropertyType(name: String): Class<*>?
+
+    /**
+     * 为指定的属性名对应的属性的类型, 去获取到[TypeDescriptor]
+     *
+     * @param name 属性名(可能是一个嵌套的属性, 或者是一个indexed/mapped属性, 也就是支持使用'[]'去访问List/Map)
+     * @return 获取到的对应的属性对应的TypeDescriptor(获取不到return null)
+     */
+    @Nullable
+    fun getPropertyTypeDescriptor(name: String): TypeDescriptor?
 
     /**
      * 批量执行属性值的设置
