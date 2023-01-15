@@ -18,6 +18,11 @@ interface ConfigurablePropertyAccessor : PropertyAccessor, PropertyEditorRegistr
     var autoGrowNestedPaths: Boolean
 
     /**
+     * 是否需要提取一个属性的旧值给PropertyEditor?
+     */
+    var extractOldValueForEditor: Boolean
+
+    /**
      * 获取ConversionService
      *
      * @return ConversionService, if any

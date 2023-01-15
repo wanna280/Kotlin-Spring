@@ -1,6 +1,7 @@
 package com.wanna.framework.beans
 
 import com.wanna.framework.core.convert.ConversionService
+import com.wanna.framework.lang.Nullable
 
 /**
  * 这是一个抽象的属性访问器, 它组合了TypeConverter和PropertyAccessor, 可以去进行属性的设置工作;
@@ -16,9 +17,18 @@ abstract class AbstractPropertyAccessor : TypeConverterSupport(), ConfigurablePr
         this.delegate = TypeConverterDelegate(this)
     }
 
+    @Nullable
     private var conversionService: ConversionService? = null
 
+    /**
+     * 对于当前的[PropertyAccessor], 是否需自增内部嵌套的路径?
+     */
     override var autoGrowNestedPaths: Boolean = false
+
+    /**
+     * 是否需要提取一个属性的旧值给PropertyEditor?
+     */
+    override var extractOldValueForEditor: Boolean = false
 
     /**
      * 设置PropertyValue, 对指定的Property的值去进行设置

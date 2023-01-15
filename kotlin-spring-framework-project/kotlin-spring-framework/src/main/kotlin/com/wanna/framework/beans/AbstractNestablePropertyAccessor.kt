@@ -349,30 +349,29 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
      * @param pv 要去进行设置的属性值PropertyValue
      */
     private fun processLocalProperty(tokens: PropertyTokenHolder, pv: PropertyValue) {
-        val propertyHandler = getLocalPropertyHandler(tokens.actualName)
-        if (propertyHandler != null && propertyHandler.writeable) {
+        val ph = getLocalPropertyHandler(tokens.actualName)
+        if (ph != null && ph.writeable) {
             val originValue = pv.value
             var valueToApply = originValue
             var oldValue: Any? = null
-            if (propertyHandler.readable) {
-                oldValue = propertyHandler.getValue()
+
+            // 如果这个PropertyValue之前已经完成了转换, 那么直接获取转换之后的值即可...
+            if (pv.isConverted()) {
+                valueToApply = pv.getConvertedValue()
+
+                // 如果这个PropertyValue之前还没完成转换, 那么在这里去进行转换
+            } else {
+                // 检查是否需要把oldValue提供给PropertyEditor?
+                if (extractOldValueForEditor && ph.readable) {
+                    oldValue = ph.getValue()
+                }
+
+                // convert for property...
+                valueToApply = convertForProperty(tokens.actualName, oldValue, valueToApply, ph.toTypeDescriptor())
             }
 
-            if (valueToApply is Collection<*> &&
-                !ClassUtils.isAssignFrom(Collection::class.java, propertyHandler.propertyType)
-            ) {
-                valueToApply = if (valueToApply.isNotEmpty()) valueToApply.iterator().next() else null
-            }
-
-            valueToApply = this.delegate!!.convertIfNecessary(
-                tokens.actualName,
-                oldValue,
-                valueToApply!!,
-                propertyHandler.propertyType
-            )
-
-            // 利用PropertyHandler, 去进行值的设置...
-            propertyHandler.setValue(valueToApply)
+            // 获取到完成类型转换之后的值之后, 利用PropertyHandler, 去进行值的设置...
+            ph.setValue(valueToApply)
         } else {
             // TODO
         }
@@ -389,6 +388,46 @@ abstract class AbstractNestablePropertyAccessor() : AbstractPropertyAccessor() {
             return nestedPath
         }
         return nestedPath.substring(PropertyAccessorUtils.getLastNestedPropertySeparatorIndex(nestedPath))
+    }
+
+    /**
+     * 针对给定的属性, 去完成类型转换
+     *
+     * @param propertyName 属性名
+     * @param oldValue 属性旧值
+     * @param newValue 属性新值
+     * @return 经过属性转换之后的属性值
+     */
+    @Nullable
+    @Throws(TypeMismatchException::class)
+    protected open fun convertForProperty(
+        propertyName: String,
+        @Nullable oldValue: Any?,
+        @Nullable newValue: Any?,
+        td: TypeDescriptor
+    ): Any? {
+        return convertIfNecessary(propertyName, newValue, oldValue, td)
+    }
+
+    @Nullable
+    private fun convertIfNecessary(
+        propertyName: String,
+        @Nullable oldValue: Any?,
+        @Nullable newValue: Any?,
+        td: TypeDescriptor
+    ): Any? {
+        var valueToApply: Any? = newValue
+        if (valueToApply is Collection<*> &&
+            !ClassUtils.isAssignFrom(Collection::class.java, td.type)
+        ) {
+            valueToApply = if (valueToApply.isNotEmpty()) valueToApply.iterator().next() else null
+        }
+
+        val delegate = this.delegate ?: throw IllegalStateException("No TypeConverterDelegate")
+
+        // 使用TypeConverterDelegate, 去完成类型转换
+        valueToApply = delegate.convertIfNecessary(propertyName, oldValue, valueToApply!!, td.type)
+        return valueToApply
     }
 
     override fun getPropertyValue(name: String): Any? {
