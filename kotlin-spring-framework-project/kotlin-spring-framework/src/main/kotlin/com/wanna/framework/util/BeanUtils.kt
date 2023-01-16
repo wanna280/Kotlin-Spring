@@ -8,7 +8,6 @@ import com.wanna.framework.core.KotlinDetector
 import com.wanna.framework.lang.Nullable
 import java.beans.ConstructorProperties
 import java.beans.PropertyDescriptor
-import java.lang.UnsupportedOperationException
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
@@ -17,13 +16,34 @@ import kotlin.reflect.jvm.javaConstructor
 
 object BeanUtils {
 
-    // 参数名发现器, 提供方法/构造器当中的参数名的获取
+    /**
+     * 参数名发现器, 提供方法/构造器当中的参数名的获取
+     */
     private val parameterNameDiscoverer = DefaultParameterNameDiscoverer()
 
-    // Key-包装类型, Value-基础类型
+    /**
+     * 基础类型的默认值的缓存, Key-类型, Value-该类型的默认值
+     */
+    @JvmStatic
+    private val DEFAULT_TYPE_VALUES = mapOf<Class<*>, Any>(
+        Boolean::class.java to false,
+        Byte::class.java to 0.toByte(),
+        Short::class.java to 0.toShort(),
+        Int::class.java to 0,
+        Long::class.java to 0.toLong(),
+        Double::class.java to 0.0,
+        Float::class.java to 0.0.toFloat(),
+        Char::class.java to '0'
+    )
+
+    /**
+     * Key-包装类型, Value-基础类型
+     */
     private val primitiveWrapperTypeMap = LinkedHashMap<Class<*>, Class<*>>(8)
 
-    // Key-基础类型, Value-包装类型
+    /**
+     * Key-基础类型, Value-包装类型
+     */
     private val primitiveTypeToWrapperMap = LinkedHashMap<Class<*>, Class<*>>(8)
 
     init {
@@ -49,7 +69,21 @@ object BeanUtils {
     @JvmStatic
     fun <T> instantiateClass(ctor: Constructor<T>, vararg args: Any?): T {
         try {
-            return ctor.newInstance(*args)
+            val parameterCount = ctor.parameterCount
+            if (parameterCount == 0) {
+                return ctor.newInstance()
+            }
+            val argsWithDefaultValue: Array<Any?> = arrayOfNulls(parameterCount)
+            for (i in 0 until parameterCount) {
+                if (args[i] == null) {
+                    val parameterType = ctor.parameterTypes[i]
+                    argsWithDefaultValue[i] =
+                        if (parameterType.isPrimitive) DEFAULT_TYPE_VALUES[parameterType] else null
+                } else {
+                    argsWithDefaultValue[i] = args[i]
+                }
+            }
+            return ctor.newInstance(*argsWithDefaultValue)
         } catch (ex: Exception) {
             ReflectionUtils.handleReflectionException(ex)
         }

@@ -27,15 +27,15 @@ import com.wanna.framework.util.StringUtils.collectionToCommaDelimitedString
 import com.wanna.framework.web.context.support.StandardServletEnvironment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.Collections
+import java.util.*
 
 /**
  * 这是一个SpringApplication的启动类, 交由它去进行引导整个SpringApplication的启动
  *
  * @param resourceLoader 资源加载器, 提供资源的加载
- * @param _primarySources 启动类列表
+ * @param primarySources 启动类列表
  */
-open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg _primarySources: Class<*>) {
+open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg primarySources: Class<*>) {
     companion object {
 
         /**
@@ -173,7 +173,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     /**
      * primarySources
      */
-    private var primarySources: MutableSet<Class<*>> = LinkedHashSet(_primarySources.toList())
+    private var primarySources: MutableSet<Class<*>> = LinkedHashSet(primarySources.toList())
 
     /**
      * sources

@@ -33,17 +33,28 @@ class CollectionToCollectionConverter(private val conversionService: ConversionS
         if (source == null || source !is Collection<*>) {
             return null
         }
-        val result = CollectionFactory.createCollection<Any?>(targetType.type, source.size)
 
         // fixed: 针对集合当中的单个元素去进行类型的转换...
         val sourceElementType = sourceType.resolvableType.asCollection().getGenerics()[0].resolve(Any::class.java)
         val targetElementType = targetType.resolvableType.asCollection().getGenerics()[0].resolve(Any::class.java)
 
-        // 对Collection当中的每个元素尝试去进行类型的转换
-        if (conversionService.canConvert(sourceElementType, targetElementType)) {
-            source.forEach {
-                result.add(conversionService.convert(it, targetElementType))
-            }
+        val copyRequired = !targetType.type.isInstance(source)
+        if (!copyRequired && source.isEmpty()) {
+            return source
+        }
+
+        val elementTypeDescriptor = targetType.getElementTypeDescriptor()
+        if (elementTypeDescriptor == null && !copyRequired) {
+            return source
+        }
+
+        val result = CollectionFactory.createCollection<Any?>(targetType.type, source.size)
+        if (elementTypeDescriptor == null) {
+            result.addAll(source)
+
+            // 对Collection当中的每个元素尝试去进行类型的转换
+        } else {
+            source.forEach { result.add(conversionService.convert(it, targetElementType)) }
         }
 
         return result

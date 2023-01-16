@@ -1,5 +1,6 @@
 package com.wanna.boot
 
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.StopWatch
 import org.slf4j.Logger
 import java.lang.management.ManagementFactory
@@ -9,7 +10,7 @@ import java.lang.management.ManagementFactory
  *
  * @param sourceClass 源类(主启动类), 如果不设置默认为"application"
  */
-class StartupInfoLogger(private val sourceClass: Class<*>?) {
+class StartupInfoLogger(@Nullable private val sourceClass: Class<*>?) {
 
     /**
      * 记录SpringApplication启动过程当中的相关的信息
@@ -82,8 +83,8 @@ class StartupInfoLogger(private val sourceClass: Class<*>?) {
 
     /**
      * 获取SpringApplication的name, 如果sourceClass为空, 那么name默认为application; 如果sourceClass不为空, 则应用名称为简单类名
+     *
+     * @return applicationName
      */
-    private fun getApplicationName(): String {
-        return sourceClass?.simpleName ?: "application"
-    }
+    private fun getApplicationName(): String = sourceClass?.simpleName ?: "application"
 }

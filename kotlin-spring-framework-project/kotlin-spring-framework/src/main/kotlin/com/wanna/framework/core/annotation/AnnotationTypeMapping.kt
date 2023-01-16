@@ -4,7 +4,7 @@ import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.util.StringUtils
 import java.lang.reflect.Method
-import java.util.Arrays
+import java.util.*
 
 /**
  * 针对一个注解, 建立起来的映射关系
@@ -37,6 +37,13 @@ class AnnotationTypeMapping(
      * alias别名的映射关系, index->当前注解当中的属性方法的index, value->root注解当中通过@AliasFor去指向了该属性方法的root属性方法的位置index
      */
     private val aliasMappings: IntArray
+
+    /**
+     * 该注解是否需要去进行合成? 如果有@AliasFor注解, 那么为true
+     *
+     * @see AliasFor
+     */
+    val synthesizable: Boolean
 
     /**
      * convention映射关系
@@ -91,6 +98,30 @@ class AnnotationTypeMapping(
 
         // 处理Alias关系
         processAliases()
+
+
+        // 计算一下该注解是否需要去进行合成? 如果有@AliasFor注解, 那么为true
+        this.synthesizable = computeSynthesizableFlag()
+    }
+
+    /**
+     * 计算是否需要去进行合成的标志位
+     *
+     * @return 如果需要去进行合成, return true; 否则return false
+     * @see AliasFor
+     */
+    private fun computeSynthesizableFlag(): Boolean {
+        for (mapping in aliasMappings) {
+            if (mapping != -1) {
+                return true
+            }
+        }
+
+        if (this.aliasedBy.isNotEmpty()) {
+            return true
+        }
+
+        return false
     }
 
     /**
