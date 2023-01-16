@@ -8,61 +8,29 @@ import kotlin.reflect.KClass
  *
  * @see ComponentScanAnnotationParser
  * @see ClassPathBeanDefinitionScanner
+ *
+ * @param value  要扫描哪些包？具体的作用和basePackages一致, see[basePackages]
+ * @param basePackages 要扫描哪些包？具体作用和value一致, see [value]
+ * @param basePackageClasses 要以哪些类的所在包去进行扫描
+ * @param nameGenerator 扫描过程当中需要使用的beanNameGenerator去生成beanName
+ * @param scopeResolver  ScopeResolver, 提供对于Bean的Scope的解析工作, 默认实现为找到@Scope注解去进行使用; (Note: 只有在ScopeProxyMode没有自定义的情况下才会生效)
+ * @param scopeProxy 自定义ScopeProxy, 对于@ComponentScan扫描进来的全部Bean(在没有特殊配置@Scope的情况下)的作用域都将会被设置成为它
+ * @param includeFilters 需要匹配的条件才能导入进来的Filter, 只要匹配其中一个条件, 就支持被扫描进来
+ * @param excludeFilters 匹配其中一个条件就不能导入的排除的Filter
+ * @param useDefaultFilters 是否需要使用默认的Filter来匹配@Component相关注解, 默认为true
+ * @param lazyInit 是否要将导入进来的Bean全部都设置成为懒加载？
  */
 @Repeatable
 annotation class ComponentScan(
-    /**
-     * 要扫描哪些包？具体的作用和basePackages一致
-     *
-     * @see basePackageClasses
-     * @see basePackages
-     */
     @get:AliasFor("basePackages") val value: Array<String> = [],
-
-    /**
-     * 要扫描哪些包？具体作用和value一直
-     */
     @get:AliasFor("value") val basePackages: Array<String> = [],
-
-    /**
-     * 要以哪些类的所在包去进行扫描
-     */
     val basePackageClasses: Array<KClass<*>> = [],
-
-    /**
-     * 扫描过程当中需要使用的beanNameGenerator去生成beanName
-     */
     val nameGenerator: KClass<out BeanNameGenerator> = BeanNameGenerator::class,
-
-    /**
-     * ScopeResolver, 提供对于Bean的Scope的解析工作, 默认实现为找到@Scope注解去进行使用;
-     * Note: 只有在ScopeProxyMode没有自定义的情况下才会生效
-     */
     val scopeResolver: KClass<out ScopeMetadataResolver> = AnnotationScopeMetadataResolver::class,
-
-    /**
-     * 自定义ScopeProxy, 对于@ComponentScan扫描进来的全部Bean(在没有特殊配置@Scope的情况下)的作用域都将会被设置成为它
-     */
     val scopeProxy: ScopedProxyMode = ScopedProxyMode.DEFAULT,
-
-    /**
-     * 需要匹配的条件才能导入进来的Filter, 只要匹配其中一个条件, 就支持被扫描进来
-     */
     val includeFilters: Array<Filter> = [],
-
-    /**
-     * 匹配其中一个条件就不能导入的排除的Filter
-     */
     val excludeFilters: Array<Filter> = [],
-
-    /**
-     * 是否需要使用默认的Filter来匹配@Component相关注解, 默认为true
-     */
     val useDefaultFilters: Boolean = true,
-
-    /**
-     * 是否要将导入进来的Bean全部都设置成为懒加载？
-     */
     val lazyInit: Boolean = false
 ) {
 
@@ -76,10 +44,14 @@ annotation class ComponentScan(
      * @see com.wanna.framework.core.type.filter.AnnotationTypeFilter
      * @see com.wanna.framework.core.type.filter.AssignableTypeFilter
      * @see com.wanna.framework.core.type.filter.RegexPatternTypeFilter
+     *
+     * @param filterType  // 要去进行匹配的类型？匹配注解？匹配类型？
+     * @param value 想要当做Filter的类
+     * @param classes 想要当做Filter的类
      */
     annotation class Filter(
-        val filterType: FilterType = FilterType.ANNOTATION,  // 要去进行匹配的类型？匹配注解？匹配类型？
-        @get:AliasFor("classes") val value: Array<KClass<*>> = [],  // 想要当做Filter的类
-        @get:AliasFor("value") val classes: Array<KClass<*>> = []   // 想要当做Filter的类
+        val filterType: FilterType = FilterType.ANNOTATION,
+        @get:AliasFor("classes") val value: Array<KClass<*>> = [],
+        @get:AliasFor("value") val classes: Array<KClass<*>> = []
     )
 }
