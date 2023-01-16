@@ -7,6 +7,7 @@ import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.core.convert.converter.GenericConverter
 import com.wanna.framework.core.convert.support.GenericConversionService
 import com.wanna.framework.lang.Nullable
+import java.util.*
 
 /**
  * 绑定的类型转换器
@@ -21,10 +22,11 @@ class BindConverter(conversionServices: List<ConversionService>) {
     /**
      * ConversionService列表
      */
-    private val delegates: MutableList<ConversionService> = ArrayList()
+    private val delegates: List<ConversionService>
 
     init {
-        // 检查一下给定的ConversionServices当中是否有ApplicationConversionService
+        val delegates = ArrayList<ConversionService>()
+        // 1.检查一下给定的ConversionServices当中是否有ApplicationConversionService
         var hasApplication = false
 
         // 将全部的ConversionService全部去进行merge, 并统计一下hasApplication标志
@@ -35,10 +37,12 @@ class BindConverter(conversionServices: List<ConversionService>) {
             }
         }
 
-        // 如果不存在有ApplicationConversionService的话, 那么再加入一个ApplicationConversionService...
+        // 2.如果不存在有ApplicationConversionService的话, 那么再加入一个ApplicationConversionService...
         if (conversionServices.isEmpty()) {
-            this.delegates += ApplicationConversionService.getSharedInstance()
+            delegates += ApplicationConversionService.getSharedInstance()
         }
+
+        this.delegates = Collections.unmodifiableList(delegates)
     }
 
     /**
@@ -49,16 +53,31 @@ class BindConverter(conversionServices: List<ConversionService>) {
      * @return 转换之后得到的对象
      */
     @Nullable
-    fun <T : Any> convert(source: Any?, target: Bindable<T>): T? {
+    fun <T : Any> convert(@Nullable source: Any?, target: Bindable<T>): T? {
         source ?: return null
         return convert(source, target.type, target.annotations)
     }
 
+    /**
+     * 将给定的对象去转换成为目标类型
+     *
+     * @param source 原始的待转换的对象
+     * @param targetType 要去进行转换的目标类型
+     * @return 转换之后得到的对象
+     */
     @Nullable
     fun <T : Any> convert(source: Any, targetType: ResolvableType): T? {
-        return convert<T>(source, TypeDescriptor.forObject(source), ResolvableTypeDescriptor(targetType, emptyArray()))
+        return convert(source, targetType, emptyArray())
     }
 
+    /**
+     * 将给定的对象去转换成为目标类型
+     *
+     * @param source 原始的待转换的对象
+     * @param targetType 要去进行转换的目标类型
+     * @param annotations target身上的注解列表
+     * @return 转换之后得到的对象
+     */
     @Nullable
     fun <T : Any> convert(source: Any, targetType: ResolvableType, annotations: Array<Annotation>): T? {
         return convert(source, TypeDescriptor.forObject(source), ResolvableTypeDescriptor(targetType, annotations))

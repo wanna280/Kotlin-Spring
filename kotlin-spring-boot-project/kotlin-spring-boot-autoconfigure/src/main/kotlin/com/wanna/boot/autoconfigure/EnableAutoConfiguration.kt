@@ -1,6 +1,7 @@
 package com.wanna.boot.autoconfigure
 
 import com.wanna.framework.context.annotation.Import
+import java.lang.annotation.Inherited
 import kotlin.reflect.KClass
 
 /**
@@ -15,6 +16,7 @@ import kotlin.reflect.KClass
  * @param excludeNames 要排除的配置类列表(className)
  */
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.TYPE, AnnotationTarget.CLASS)
+@Inherited
 @Import([AutoConfigurationImportSelector::class])
 @AutoConfigurationPackage
 annotation class EnableAutoConfiguration(val exclude: Array<KClass<*>> = [], val excludeNames: Array<String> = []) {

@@ -8,6 +8,7 @@ import com.wanna.framework.context.annotation.ComponentScan.Filter
 import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.context.annotation.FilterType.*
 import com.wanna.framework.core.annotation.AliasFor
+import java.lang.annotation.Inherited
 import kotlin.reflect.KClass
 
 /**
@@ -20,6 +21,8 @@ import kotlin.reflect.KClass
  * @param excludeNames 要去排除的自动配置类的类名
  * @param exclude 要去进行排除的自动配置类
  */
+@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
+@Inherited
 @ComponentScan(
     excludeFilters = [Filter(CUSTOM, [TypeExcludeFilter::class]),
         Filter(CUSTOM, [AutoConfigurationExcludeFilter::class])]
