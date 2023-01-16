@@ -18,19 +18,6 @@ import com.wanna.framework.lang.Nullable
  * @param conversionServices 提供类型转换的ConversionService列表
  */
 class BindConverter(conversionServices: List<ConversionService>) {
-    companion object {
-        /**
-         * 基于给定的[ConversionService], 快速去构建出来[BindConverter]的工厂方法
-         *
-         * @param conversionServices ConversionService列表
-         * @return BindConverter
-         */
-        @JvmStatic
-        fun get(conversionServices: List<ConversionService>): BindConverter {
-            return BindConverter(conversionServices)
-        }
-    }
-
     /**
      * ConversionService列表
      */
@@ -78,16 +65,16 @@ class BindConverter(conversionServices: List<ConversionService>) {
     }
 
     /**
-     * 检查给定的对象, 是否能转换成为目标对象
+     * 检查给定的对象, 是否能转换成为目标类型的对象?
      *
      * @param source 待检查的对象实例
      * @param targetType 需要去进行转换的目标类型
      * @return 能否去进行转换?
      */
-    fun canConvert(source: Any?, targetType: ResolvableType): Boolean {
+    fun canConvert(@Nullable source: Any?, targetType: ResolvableType): Boolean {
         source ?: return false
         delegates.forEach {
-            if (it.canConvert(TypeDescriptor.forClass(source::class.java), TypeDescriptor(targetType))) {
+            if (it.canConvert(TypeDescriptor.forObject(source), TypeDescriptor(targetType))) {
                 return true
             }
         }
@@ -129,6 +116,19 @@ class BindConverter(conversionServices: List<ConversionService>) {
 
         override fun convert(source: Any?, sourceType: TypeDescriptor, targetType: TypeDescriptor): Any? {
             return source
+        }
+    }
+
+    companion object {
+        /**
+         * 基于给定的[ConversionService], 快速去构建出来[BindConverter]的工厂方法
+         *
+         * @param conversionServices ConversionService列表
+         * @return BindConverter
+         */
+        @JvmStatic
+        fun get(conversionServices: List<ConversionService>): BindConverter {
+            return BindConverter(conversionServices)
         }
     }
 }
