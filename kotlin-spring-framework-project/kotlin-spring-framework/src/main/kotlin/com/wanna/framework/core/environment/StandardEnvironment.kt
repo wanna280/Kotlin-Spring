@@ -25,7 +25,9 @@ open class StandardEnvironment : AbstractEnvironment() {
      */
     override fun customizePropertySources(propertySources: MutablePropertySources) {
         propertySources.addLast(PropertiesPropertySource(SYSTEM_PROPERTY_PROPERTY_SOURCE_NAME, getSystemProperties()))
-        propertySources.addLast(MapPropertySource(SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME, getSystemEnvironment()))
+        propertySources.addLast(
+            SystemEnvironmentPropertySource(SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME, getSystemEnvironment())
+        )
     }
 
 }

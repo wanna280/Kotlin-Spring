@@ -1,9 +1,9 @@
 package com.wanna.boot.context.properties.source
 
+import com.wanna.boot.context.properties.source.ConfigurationPropertyName.ElementType
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.StringUtils
 import java.util.function.Function
-import kotlin.jvm.Throws
 import kotlin.math.min
 
 /**
@@ -329,6 +329,25 @@ open class ConfigurationPropertyName(private val elements: Elements) {
         }
 
         /**
+         * 将给定的属性名[name]去转换成为[ConfigurationPropertyName]
+         *
+         * @param name 属性名
+         * @param separator 属性名当中的多段, 应该使用什么去进行分割?
+         * @param elementValueProcessor 对于切割之后得到的元素, 应该怎么去进行转换?
+         * @return 转换得到的[ConfigurationPropertyName]
+         */
+        @JvmStatic
+        fun adapt(
+            name: String,
+            separator: Char,
+            elementValueProcessor: Function<String, String>
+        ): ConfigurationPropertyName {
+            // 使用ElementsParser去进行解析, 并使用给定的分隔符去作为段分割符...
+            val elements = ElementsParser(name, separator).parse(elementValueProcessor)
+            return ConfigurationPropertyName(elements)
+        }
+
+        /**
          * 需要添加的name很可能只有一段, 因此给定一个预期capacity为1的快捷构建方式;
          * 如果capacity=1不够用的话, 那么也支持去进行自动扩容
          *
@@ -501,7 +520,7 @@ open class ConfigurationPropertyName(private val elements: Elements) {
          * @param valueProcessor 对当前这一段的值, 需要去进行自定义的处理之后才apply, 这个valueProcessor就可以去转换
          * @return 解析得到的[Elements]
          */
-        fun parse(valueProcessor: Function<String, String>?): Elements {
+        fun parse(@Nullable valueProcessor: Function<String, String>?): Elements {
             val length = this.source.length
             // 记录左括号的数量, 当遇到'['时+1, 当遇到']'时-1, 如果计算完整个属性名, 值不为0的话, 说明是不合法的
             var openBracketCount = 0
@@ -512,21 +531,21 @@ open class ConfigurationPropertyName(private val elements: Elements) {
             // 先把type初始化为EMPTY, 后面解析过程当中去进行慢慢更新
             var type = ElementType.EMPTY
 
-            // 对
-            source.indices.forEach {
-                val ch = this.source[it]
+            // 对source当中的字符去进行逐一处理...
+            for (index in source.indices) {
+                val ch = this.source[index]
                 // 如果遇到了'[', 那么说明是遇到了数组index的前缀
                 if (ch == '[') {
                     // 如果当前的括号数量为0的话, 那么就说明是之前的元素处理完了, 现在需要开始去处理index的情况了...
                     if (openBracketCount == 0) {
 
                         // 把'['括号之前的那一段的内容去收集起来
-                        add(start, it, type, valueProcessor)
+                        add(start, index, type, valueProcessor)
 
                         // 下一个元素的开始位置的位置是index+1, 也就是'['之后的字符;
                         // 将type暂时修改为NUMERICALLY_INDEXED, 当然其中不一定正确, 需要在后面去进行修正
                         // (如果是数字的话, 那么就是对的; 但是如果不是数字的话, 那么需要在后面去进行修正成为INDEXED)
-                        start = it + 1
+                        start = index + 1
                         type = ElementType.NUMERICALLY_INDEXED
                     }
                     // 左括号的数量+1
@@ -540,10 +559,10 @@ open class ConfigurationPropertyName(private val elements: Elements) {
                     if (openBracketCount == 0) {
 
                         // 把之前的'['和现在遇到的']'之间的这一段元素去收集起来
-                        add(start, it, type, valueProcessor)
+                        add(start, index, type, valueProcessor)
 
                         // 下一个元素的开始的位置是index+1, 也就是']'之后的那个字符; 将type先修改为EMPTY
-                        start = it + 1
+                        start = index + 1
                         type = ElementType.EMPTY
                     }
 
@@ -551,15 +570,15 @@ open class ConfigurationPropertyName(private val elements: Elements) {
                 } else if (!type.indexed && ch == separator) {
 
                     // 把刚刚遇到的这一段收集起来
-                    add(start, it, type, valueProcessor)
+                    add(start, index, type, valueProcessor)
 
                     // 下一个元素的开始位置是index+1, 也就是'.'之后的那个字符; 将type先修改为EMPTY
-                    start = it + 1
+                    start = index + 1
                     type = ElementType.EMPTY
 
                     // 如果不是'[', 不是']', 也不是'.'的话, 那么就需要尝试去进行更新type
                 } else {
-                    type = updateType(type, ch, it - start)
+                    type = updateType(type, ch, index - start)
                 }
             }
 
@@ -652,7 +671,7 @@ open class ConfigurationPropertyName(private val elements: Elements) {
 
                 // 使用ValueProcessor, 使用substring(startIndex, endIndex)去进行切割得到这一段的元素的值, 并去进行转换
                 val resolved = valueProcessor.apply(this.source.substring(start, end))
-                val resolvedElements = ElementsParser(resolved, '.').parse()
+                val resolvedElements = ElementsParser(resolved, separator).parse()
                 if (resolvedElements.size != 1) {
                     throw IllegalStateException("ResolvedElements不允许出现多个元素")
                 }
