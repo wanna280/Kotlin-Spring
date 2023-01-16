@@ -1,5 +1,6 @@
 package com.wanna.boot.context.properties.source
 
+import com.wanna.framework.lang.Nullable
 import java.util.function.Predicate
 
 /**
@@ -23,7 +24,8 @@ open class FilteredConfigurationPropertiesSource(
      * @param name 用于去进行获取属性的属性名
      * @return 如果它能够被filter所匹配上, 那么返回对应的[ConfigurationProperty]; 匹配不上的话, return null
      */
-    override fun getConfigurationProperty(name: ConfigurationPropertyName): ConfigurationProperty? {
+    override fun getConfigurationProperty(@Nullable name: ConfigurationPropertyName?): ConfigurationProperty? {
+        name ?: return null
         val filtered = filter.test(name)
         return if (filtered) source.getConfigurationProperty(name) else null
     }

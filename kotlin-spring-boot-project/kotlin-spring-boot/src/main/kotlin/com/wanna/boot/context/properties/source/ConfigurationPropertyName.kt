@@ -56,6 +56,11 @@ open class ConfigurationPropertyName(private val elements: Elements) {
         return this.string!!
     }
 
+    /**
+     * 构建toString的结果, 对于多段属性名之间, 我们使用"."去进行拼接
+     *
+     * @return toString
+     */
     private fun buildToString(): String {
         val elements = getNumberOfElements()
         val builder = StringBuilder(elements shl 3)
@@ -74,7 +79,7 @@ open class ConfigurationPropertyName(private val elements: Elements) {
     }
 
     /**
-     * 获取当前的[ConfigurationPropertyName]的段的数量
+     * 获取当前的[ConfigurationPropertyName]的段的数量(Elements Size)
      *
      * @return element size
      */
@@ -332,7 +337,20 @@ open class ConfigurationPropertyName(private val elements: Elements) {
          * 将给定的属性名[name]去转换成为[ConfigurationPropertyName]
          *
          * @param name 属性名
-         * @param separator 属性名当中的多段, 应该使用什么去进行分割?
+         * @param separator 属性名当中的多段, 应该使用什么去进行分割? (比如正常使用"."进行分割, 有可能使用"_"作为分隔符去进行分隔符)
+         * @return 转换得到的[ConfigurationPropertyName]
+         */
+        @JvmStatic
+        fun adapt(
+            name: String,
+            separator: Char
+        ): ConfigurationPropertyName = adapt(name, separator, null)
+
+        /**
+         * 将给定的属性名[name]去转换成为[ConfigurationPropertyName]
+         *
+         * @param name 属性名
+         * @param separator 属性名当中的多段, 应该使用什么去进行分割? (比如正常使用"."进行分割, 有可能使用"_"作为分隔符去进行分隔符)
          * @param elementValueProcessor 对于切割之后得到的元素, 应该怎么去进行转换?
          * @return 转换得到的[ConfigurationPropertyName]
          */
@@ -340,7 +358,7 @@ open class ConfigurationPropertyName(private val elements: Elements) {
         fun adapt(
             name: String,
             separator: Char,
-            elementValueProcessor: Function<String, String>
+            @Nullable elementValueProcessor: Function<String, String>?
         ): ConfigurationPropertyName {
             // 使用ElementsParser去进行解析, 并使用给定的分隔符去作为段分割符...
             val elements = ElementsParser(name, separator).parse(elementValueProcessor)

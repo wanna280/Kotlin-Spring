@@ -22,7 +22,7 @@ interface ConfigurationPropertySource {
      * @return 根据属性名去找到的找到的属性值[ConfigurationProperty], 获取不到return null
      */
     @Nullable
-    fun getConfigurationProperty(name: ConfigurationPropertyName): ConfigurationProperty?
+    fun getConfigurationProperty(@Nullable name: ConfigurationPropertyName?): ConfigurationProperty?
 
     /**
      * 使用filter去过滤出来合适的属性值, 并返回出来一个新的带有属性名功能过滤功能的[ConfigurationPropertySource]

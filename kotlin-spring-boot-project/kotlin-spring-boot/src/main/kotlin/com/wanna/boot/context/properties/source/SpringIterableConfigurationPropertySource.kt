@@ -1,6 +1,5 @@
 package com.wanna.boot.context.properties.source
 
-import com.wanna.boot.context.properties.bind.DataObjectPropertyName
 import com.wanna.framework.core.environment.EnumerablePropertySource
 import com.wanna.framework.core.environment.PropertySource
 
@@ -12,7 +11,7 @@ import com.wanna.framework.core.environment.PropertySource
  * @date 2022/12/4
  *
  * @param propertySource 可以支持去进行属性名的迭代的[PropertySource]
- * @param propertyMappers PropertyMappers
+ * @param propertyMappers PropertyMappers, 提供对于属性名的映射
  */
 open class SpringIterableConfigurationPropertySource(
     propertySource: EnumerablePropertySource<*>,

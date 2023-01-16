@@ -1,5 +1,6 @@
 package com.wanna.boot.context.properties.source
 
+import com.wanna.boot.origin.PropertySourceOrigin
 import com.wanna.framework.core.environment.EnumerablePropertySource
 import com.wanna.framework.core.environment.PropertySource
 import com.wanna.framework.core.environment.StandardEnvironment
@@ -12,23 +13,53 @@ import com.wanna.framework.lang.Nullable
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/12/3
+ *
+ * @param propertySource 要去进行封装的[PropertySource], 提供对于属性获取到来源
+ * @param propertyMappers PropertyMappers, 提供对于属性名的映射
  */
 open class SpringConfigurationPropertySource(
     val propertySource: PropertySource<*>,
     val propertyMappers: Array<PropertyMapper>
 ) : ConfigurationPropertySource {
 
+    init {
+        // 对于PropertyMapper不能为空
+        if (propertyMappers.isEmpty()) {
+            throw IllegalStateException("PropertyMappers must contain at least one item")
+        }
+    }
+
     /**
-     * 根据属性名去获取到属性值
+     * 根据属性名去获取到属性值, Note: 这里name可能给定的是"user.name"这样的属性,
+     * 但是在[PropertySource]当中, 可能并不存在有"user.name"这样的属性名, 但是存在有"USER_NAME"这样的属性名,
+     * 我们可以认为它们俩是等价的属性, 因此我们可以将"user.name"去转换成为"USER_NAME", 这样就可以去[PropertySource]当中去进行获取了;
      *
      * @param name name
      * @return 根据属性名去获取到的属性值(获取不到return null)
      */
     @Nullable
-    override fun getConfigurationProperty(name: ConfigurationPropertyName): ConfigurationProperty? {
-        val property = propertySource.getProperty(name.toString()) ?: return null
-        return ConfigurationProperty.of(name, property)
+    override fun getConfigurationProperty(@Nullable name: ConfigurationPropertyName?): ConfigurationProperty? {
+        name ?: return null
+        // 根据所有的PropertyMapper, 尝试去进行map, 得到所有的候选属性名, 从PropertySource当中去进行获取到对应的属性
+        for (propertyMapper in propertyMappers) {
+            for (propertyName in propertyMapper.map(name)) {
+                val value = propertySource.getProperty(propertyName)
+                if (value != null) {
+                    val origin = PropertySourceOrigin.get(propertySource, propertyName)
+                    return ConfigurationProperty.of(this, name, value, origin)
+                }
+            }
+        }
+        return null
     }
+
+    /**
+     * toString, 直接使用[PropertySource]去进行生成即可
+     *
+     * @return toString
+     */
+    override fun toString(): String = this.propertySource.toString()
+
 
     companion object {
         /**
@@ -64,14 +95,15 @@ open class SpringConfigurationPropertySource(
         }
 
         /**
-         * 根据给定的[PropertySource], 去获取到对应的[PropertyMapper]
+         * 根据给定的[PropertySource], 去获取到对该类型的[PropertySource]去提供属性值映射功能的[PropertyMapper]
          *
          * @param source PropertySource
-         * @return PropertyMappers
+         * @return 为给PropertySource提供属性值映射的PropertyMappers
          */
         @JvmStatic
         private fun getPropertyMappers(source: PropertySource<*>): Array<PropertyMapper> {
             // 如果它是一个SystemEnvironmentPropertySource的话, 需要使用SystemEnvironmentPropertyMapper和DefaultPropertyMapper
+            // 因为SystemEnvironment当中的属性名, 和正常的属性名不一样, 是含有大量的"_"符号的, 比如"USER_NAME"
             if (source is SystemEnvironmentPropertySource && hasSystemEnvironmentName(source)) {
                 return SYSTEM_ENVIRONMENT_MAPPERS
             }
