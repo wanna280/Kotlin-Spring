@@ -1,6 +1,8 @@
 package com.wanna.framework.util
 
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ReflectionUtils.FieldMatcher
+import com.wanna.framework.util.ReflectionUtils.MethodMatcher
 import java.lang.reflect.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -22,7 +24,7 @@ object ReflectionUtils {
      */
     @JvmField
     val COPYABLE_FIELDS = MethodMatcher { method ->
-        !Modifier.isStatic(method.modifiers) && Modifier.isFinal(method.modifiers)
+        !Modifier.isStatic(method.modifiers) && !Modifier.isFinal(method.modifiers)
     }
 
 
@@ -39,19 +41,19 @@ object ReflectionUtils {
     private val EMPTY_CLASS_ARRAY = emptyArray<Class<*>>()
 
     /**
-     * 空的字段的常量
+     * 空的字段数组的常量
      */
     @JvmStatic
     private val EMPTY_FIELD_ARRAY = emptyArray<Field>()
 
     /**
-     * 某个类对应的方法缓存(ConcurrentMap), k为要获取的类, v为该类所定义的方法列表
+     * 某个类对应的方法缓存(ConcurrentMap), Key为要获取的类, Value为该类所定义的方法列表
      */
     @JvmStatic
     private val declaredMethodsCache = ConcurrentHashMap<Class<*>, Array<Method>>()
 
     /**
-     * 某个类对应的字段缓存(ConcurrentMap), k为要去进行获取的类, v为该类定义的字段列表
+     * 某个类对应的字段缓存(ConcurrentMap), Key为要去进行获取的类, Value为该类定义的字段列表
      */
     @JvmStatic
     private val declaredFieldsCache = ConcurrentHashMap<Class<*>, Array<Field>>()
