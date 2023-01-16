@@ -19,10 +19,12 @@ class DefaultPropertyMapper : PropertyMapper {
     }
 
     override fun map(configurationPropertyName: ConfigurationPropertyName): List<String> {
+        // TODO
         return listOf(configurationPropertyName.toString())
     }
 
     override fun map(name: String): ConfigurationPropertyName {
+        // TODO
         return ConfigurationPropertyName.of(DataObjectPropertyName.toDashedForm(name))
     }
 }

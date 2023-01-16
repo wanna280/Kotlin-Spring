@@ -13,4 +13,5 @@ com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
   com.wanna.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration,\
   com.wanna.boot.autoconfigure.validation.ValidationAutoConfiguration,\
   com.wanna.boot.autoconfigure.web.mvc.NettyMvcAutoConfiguration,\
-  com.wanna.boot.autoconfigure.web.servlet.ServletMvcAutoConfiguration
+  com.wanna.boot.autoconfigure.web.servlet.ServletMvcAutoConfiguration,\
+  com.wanna.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration

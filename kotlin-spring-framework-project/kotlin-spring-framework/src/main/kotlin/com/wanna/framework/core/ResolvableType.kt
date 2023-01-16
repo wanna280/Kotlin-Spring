@@ -191,6 +191,23 @@ open class ResolvableType() {
     }
 
     /**
+     * 获取当前[ResolvableType]的原始类型
+     *
+     * @return rawClass(or null)
+     */
+    @Nullable
+    open fun getRawClass(): Class<*>? {
+        if (this.type == this.resolved) {
+            return this.resolved
+        }
+        var rawType = this.type
+        if (rawType is ParameterizedType) {
+            rawType = rawType.rawType
+        }
+        return if (rawType is Class<*>) rawType else null
+    }
+
+    /**
      * 判断当前类型是否是一个数组？有三种情况是匹配的
      * (1)type is Class, 并且type.isArray
      * (2)type is GenericArrayType
