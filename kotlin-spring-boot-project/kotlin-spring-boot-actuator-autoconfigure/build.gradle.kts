@@ -20,6 +20,7 @@ dependencies {
 
 
     testImplementation(project(":kotlin-spring-framework-project:kotlin-spring-web"))
+    testImplementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
     testImplementation("org.aspectj:aspectjweaver:$aspectJVersion")
     testImplementation(project(":kotlin-logger:logger-slf4j-impl"))

@@ -10,8 +10,6 @@ import java.lang.reflect.Method
 import java.util.*
 import java.util.function.Function
 import java.util.function.Predicate
-import kotlin.NoSuchElementException
-import kotlin.collections.LinkedHashMap
 
 /**
  * TypeMapped MergedAnnotation
@@ -483,10 +481,25 @@ open class TypeMappedAnnotation<A : Annotation>(
      */
     @Suppress("UNCHECKED_CAST")
     override fun createSynthesized(): A {
-        if (type.isInstance(rootAttributes)) {
+        if (type.isInstance(rootAttributes) && !isSynthesizable()) {
             return rootAttributes as A
         }
         return SynthesizedMergedAnnotationInvocationHandler.createProxy(this, type)
+    }
+
+    /**
+     * 检查是否可以去合成?
+     *
+     * @return 如果需要去进行合成return true; 否则return false
+     */
+    private fun isSynthesizable(): Boolean {
+        // 如果已经合成过了, 那么return false
+        if (this.rootAttributes is SynthesizedAnnotation) {
+            return false
+        }
+
+        // 如果还没合成过, 那么需要检查@AliasFor注解, 去判断是否需要去进行合成
+        return this.mapping.synthesizable
     }
 
     companion object {
