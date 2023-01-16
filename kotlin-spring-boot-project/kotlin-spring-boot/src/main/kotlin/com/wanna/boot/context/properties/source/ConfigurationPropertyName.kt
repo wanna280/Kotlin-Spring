@@ -33,6 +33,11 @@ open class ConfigurationPropertyName(private val elements: Elements) {
     private var string: String? = null
 
     /**
+     * 缓存hashCode, 避免重复计算
+     */
+    private var hashCode = 0
+
+    /**
      * 给当前的[ConfigurationPropertyName]去添加一个后缀, 获取一个新的[ConfigurationPropertyName]
      *
      * @param suffix 添加的后缀
@@ -77,6 +82,7 @@ open class ConfigurationPropertyName(private val elements: Elements) {
         }
         return builder.toString()
     }
+
 
     /**
      * 获取当前的[ConfigurationPropertyName]的段的数量(Elements Size)
@@ -180,6 +186,53 @@ open class ConfigurationPropertyName(private val elements: Elements) {
      */
     open fun isEmpty(): Boolean = this.elements.size == 0
 
+    /**
+     * 对于equals, 采用Elements当中的内容去进行检查
+     *
+     * @param other other
+     * @return 如果Elements当中的元素完全相同, return true; 否则return false
+     */
+    override fun equals(@Nullable other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as ConfigurationPropertyName
+        // shortcut
+        if (getNumberOfElements() != other.getNumberOfElements()) {
+            return false
+        }
+        return elementsEqual(other)
+    }
+
+    /**
+     * 计算hashCode
+     *
+     *
+     * @return hashCode
+     */
+    override fun hashCode(): Int {
+        var hashCode = this.hashCode
+        val elements = this.elements
+        if (hashCode == 0 && elements.size != 0) {
+            for (elementIndex in 0 until elements.size) {
+                var elementHashCode = 0
+                val indexed = elements.getType(elementIndex).indexed
+                val length = elements.getLength(elementIndex)
+                for (j in 0 until length) {
+                    var ch = elements.charAt(elementIndex, j)
+                    if (!indexed) {
+                        ch = ch.lowercaseChar()
+                    }
+                    if (ch.isDigit() || ch.isLowerCase()) {
+                        elementHashCode = 31 * elementHashCode + ch.code
+                    }
+                }
+                hashCode = 31 * hashCode + elementHashCode
+            }
+            this.hashCode = hashCode
+        }
+        return hashCode
+    }
+
 
     /**
      * 描述的是一个配置的属性名当中的元素, 并分为多段去进行描述
@@ -256,7 +309,7 @@ open class ConfigurationPropertyName(private val elements: Elements) {
             if (this.resolved != null && index < resolved.size && this.resolved[index].isNotEmpty()) {
                 return resolved[index].length
             }
-            return this.start[index] - this.end[index]
+            return this.end[index] - this.start[index]  // fixed: length=end-start
         }
 
         /**
