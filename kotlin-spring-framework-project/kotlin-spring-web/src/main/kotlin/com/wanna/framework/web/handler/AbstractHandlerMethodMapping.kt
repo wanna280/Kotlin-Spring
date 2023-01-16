@@ -5,7 +5,6 @@ import com.wanna.framework.core.MethodIntrospector
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.LinkedMultiValueMap
-import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.web.HandlerMapping
 import com.wanna.framework.web.cors.CorsConfiguration
 import com.wanna.framework.web.method.HandlerMethod
@@ -128,7 +127,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
         })
 
         // 对于所有的HandlerMethod去执行注册
-        methods.map { registerHandlerMethod(handler, it.key, it.value) }
+        methods.forEach { registerHandlerMethod(handler, it.key, it.value) }
     }
 
     /**
