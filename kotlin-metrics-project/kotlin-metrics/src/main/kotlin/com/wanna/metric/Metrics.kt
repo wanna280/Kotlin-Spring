@@ -27,7 +27,6 @@ object Metrics {
     /**
      * 监控指标Item, 记录的是指标对应的平均值, Key-指标名, Value-该指标对应的监控指标数据
      */
-    @JvmStatic
     internal val avgItems = ConcurrentHashMap<String, MetricItem>()
 
     /**
@@ -36,25 +35,21 @@ object Metrics {
      * @see Metrics.recordSize
      * @see Metrics.recordValue
      */
-    @JvmStatic
     internal val values = ConcurrentHashMap<String, MetricAtomicLong>()
 
     /**
      * JVM的监控指标, Key-指标名, Value-该指标名对应的监控指标数据
      */
-    @JvmStatic
     internal val jvmItems = ConcurrentHashMap<String, MetricItem>()
 
     /**
      * 当前的统计结果, 不允许有写的情况, 采用的是直接替换的方式, 线程安全
      */
-    @JvmStatic
     internal var currentItems: Map<String, Any> = emptyMap()
 
     /**
      * 当前的Setting的统计结果, 不允许有写的情况, 采用的是直接替换的方式, 线程安全
      */
-    @JvmStatic
     internal var currentSettingItems: Map<String, Any> = emptyMap()
 
     init {
@@ -188,4 +183,20 @@ object Metrics {
         }
         metricAtomicLong.addAndGet(value)
     }
+
+    /**
+     * 获取当前的监控指标快照
+     *
+     * @return 当前监控指标快照
+     */
+    @JvmStatic
+    fun getCurrentItems(): Map<String, Any> = this.currentItems
+
+    /**
+     * 获取当前的Setting监控指标快照
+     *
+     * @return 当前Setting监控指标快照
+     */
+    @JvmStatic
+    fun getCurrentSettingItems(): Map<String, Any> = this.currentSettingItems
 }
