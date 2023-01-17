@@ -6,7 +6,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 /**
- * 监控指标的定时任务
+ * 定时去汇总监控指标的定时任务
  *
  * @author jianchao.jia
  * @version v1.0
@@ -24,6 +24,9 @@ object MetricScheduleTask {
     private val metricScheduleExecutor = ScheduledThreadPoolExecutor(1, NamedThreadFactory("metric-schedule"))
 
 
+    /**
+     * 启动相关定时任务, 去进行监控指标的快照记录
+     */
     @JvmStatic
     fun loadSchedule() {
         metricScheduleExecutor.scheduleAtFixedRate(MetricTask(), 0, 2000L, TimeUnit.MILLISECONDS)
@@ -72,7 +75,20 @@ object MetricScheduleTask {
                 makeMetricResult(metrics, settingMetrics, avgItem.key, avgItem.value.dumpAndClearItem())
             }
 
-            // 将汇总的指标保存到Metrics当中去
+            // 将values去copy一份, 并且clear掉...
+            val valuesMetrics = LinkedHashMap(Metrics.values)
+            Metrics.values.clear()
+
+            // 对values的监控指标去进行收集
+            for (valuesMetric in valuesMetrics) {
+                val valueMetricName = makeMetricName(valuesMetric.key, "_Value")
+
+                // 记录一个Value类型的数量指标
+                metrics[valueMetricName] = valuesMetric.value.get()
+            }
+
+
+            // 将汇总得到的快照指标数据去保存到Metrics当中去
             Metrics.currentSettingItems = Collections.unmodifiableMap(settingMetrics)
             Metrics.currentItems = Collections.unmodifiableMap(metrics)
         }
@@ -162,13 +178,26 @@ object MetricScheduleTask {
         }
 
         private fun makeItemQuantile(name: String, count: Long, time: Long, metrics: MutableMap<String, Any>) {
-            var metricItem = Metrics.getJvmItems()[name]
+            var metricItem = Metrics.jvmItems[name]
             if (metricItem == null) {
                 metricItem = MetricItem()
                 metricItem.addSample(name, count, time)
-                Metrics.getJvmItems()[name] = metricItem
+                Metrics.jvmItems[name] = metricItem
             }
 
+            // 计算count
+            metrics[makeMetricName(name, "_COUNT")] = count - metricItem.countc.get()
+
+            // 计算time
+            if (count - metricItem.countc.get() > 0) {
+                metrics[makeMetricName(name, "_TIME")] =
+                    (time - metricItem.timec.get()) / (count - metricItem.countc.get())
+            }
+
+            // 重新去构建一个MetricItem, 并将本次数据添加到MetricItem当中...
+            metricItem = MetricItem()
+            metricItem.addSample(name, count, time)
+            Metrics.jvmItems[name] = metricItem
         }
     }
 }

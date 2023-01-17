@@ -28,27 +28,34 @@ object Metrics {
      * 监控指标Item, 记录的是指标对应的平均值, Key-指标名, Value-该指标对应的监控指标数据
      */
     @JvmStatic
-    val avgItems = ConcurrentHashMap<String, MetricItem>()
+    internal val avgItems = ConcurrentHashMap<String, MetricItem>()
+
+    /**
+     * Value类型的指标Item, 针对某个指标需要记录一个数量的情况去进行使用, Key为指标名, Value是该指标对应的统计值数量
+     *
+     * @see Metrics.recordSize
+     * @see Metrics.recordValue
+     */
+    @JvmStatic
+    internal val values = ConcurrentHashMap<String, MetricAtomicLong>()
 
     /**
      * JVM的监控指标, Key-指标名, Value-该指标名对应的监控指标数据
      */
     @JvmStatic
-    private val jvmItems = ConcurrentHashMap<String, MetricItem>()
+    internal val jvmItems = ConcurrentHashMap<String, MetricItem>()
 
     /**
      * 当前的统计结果, 不允许有写的情况, 采用的是直接替换的方式, 线程安全
      */
     @JvmStatic
-    var currentItems: Map<String, Any> = emptyMap()
-        internal set
+    internal var currentItems: Map<String, Any> = emptyMap()
 
     /**
      * 当前的Setting的统计结果, 不允许有写的情况, 采用的是直接替换的方式, 线程安全
      */
     @JvmStatic
-    var currentSettingItems: Map<String, Any> = emptyMap()
-        internal set
+    internal var currentSettingItems: Map<String, Any> = emptyMap()
 
     init {
         // 添加Metrics的定时任务, 实现定时将指标汇总到currentItems/currentSettingItems当中...
@@ -148,31 +155,37 @@ object Metrics {
      */
     @JvmStatic
     private fun checkAndNewItem(name: String, saveSample: Boolean): MetricItem {
-        var monitorItem = avgItems[name]
-        if (monitorItem == null) {
-            monitorItem = MetricItem(saveSample)
-            // 如果之前已经存在, 那么返回之前已经存在的; 如果之前不存在, 返回新的MetricItem
-            return avgItems.computeIfAbsent(name) { monitorItem }
-        }
-        return monitorItem
+        // 如果之前已经存在, 那么返回之前已经存在的; 如果之前不存在, 返回新的MetricItem
+        return avgItems[name] ?: avgItems.computeIfAbsent(name) { MetricItem(saveSample) }
     }
 
+    /**
+     * 对于单个指标去记录一个数量监控(对于下次recordSize时, 统计方式为将会覆盖掉之前的数量指标)
+     *
+     * @param name 指标名
+     * @param size 针对该指标要去记录的数量指标
+     */
     @JvmStatic
     fun recordSize(name: String, size: Long) {
-
+        var metricAtomicLong = values[name]
+        if (metricAtomicLong == null) {
+            metricAtomicLong = values.computeIfAbsent(name) { MetricAtomicLong() }
+        }
+        metricAtomicLong.set(size)
     }
 
     /**
-     * 获取JVM Items
+     * 对于单个指标去记录一个数量监控(对于下次recordValue时, 统计方式为会将该指标去进行累加)
      *
-     * @return JVM Items
+     * @param name 指标名
+     * @param value 针对该指标要去记录的数量指标
      */
-    internal fun getJvmItems(): MutableMap<String, MetricItem> = this.jvmItems
-
-    /**
-     * 获取AVG Items
-     *
-     * @return AVG Items
-     */
-    internal fun getAvgItems(): MutableMap<String, MetricItem> = this.avgItems
+    @JvmStatic
+    fun recordValue(name: String, value: Long) {
+        var metricAtomicLong = values[name]
+        if (metricAtomicLong == null) {
+            metricAtomicLong = values.computeIfAbsent(name) { MetricAtomicLong() }
+        }
+        metricAtomicLong.addAndGet(value)
+    }
 }

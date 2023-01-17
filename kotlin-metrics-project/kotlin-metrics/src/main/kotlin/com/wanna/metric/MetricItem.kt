@@ -26,17 +26,17 @@ class MetricItem(private val saveSample: Boolean = false) {
     /**
      * 指标名
      */
-    var name = ""
+    internal var name = ""
 
     /**
      * 统计耗时的计数器
      */
-    var timec = AtomicLong()
+    internal var timec = AtomicLong()
 
     /**
      * 统计数量的计数值
      */
-    var countc = AtomicLong()
+    internal var countc = AtomicLong()
 
     /**
      * 添加一条统计记录的数据到当前[MetricItem]当中
