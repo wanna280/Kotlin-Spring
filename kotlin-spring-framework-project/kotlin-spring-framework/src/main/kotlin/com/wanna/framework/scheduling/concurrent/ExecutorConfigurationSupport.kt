@@ -42,7 +42,7 @@ abstract class ExecutorConfigurationSupport : InitializingBean, BeanNameAware, D
     private var beanName: String? = null
 
     /**
-     * 在线程池关闭时, 我们是否需要等待任务执行完成？默认为false
+     * 在线程池关闭时, 我们是否需要等待任务执行完成? 默认为false
      */
     private var waitForTasksToCompleteOnShutdown = false
 

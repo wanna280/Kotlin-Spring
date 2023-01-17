@@ -98,7 +98,7 @@ open class MapperScannerRegistrar : ImportBeanDefinitionRegistrar {
         }
         propertyValues.addPropertyValue("basePackages", StringUtils.collectionToCommaDelimitedString(basePackages))
 
-        // 解析是否要懒加载的属性？
+        // 解析是否要懒加载的属性?
         val lazyInitialization = attributes.getString("lazyInitialization")
         if (StringUtils.hasText(lazyInitialization)) {
             propertyValues.addPropertyValue("lazyInitialization", lazyInitialization)

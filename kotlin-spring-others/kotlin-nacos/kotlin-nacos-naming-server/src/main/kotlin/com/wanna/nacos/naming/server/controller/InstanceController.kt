@@ -101,7 +101,7 @@ open class InstanceController {
         @RequestParam ip: String,
         @RequestParam(required = false, defaultValue = "0") port: Int
     ): Any {
-        // bug? 如果直接使用ObjectNode去进行写出, 客户端使用Json去进行反序列化不能成果？
+        // bug? 如果直接使用ObjectNode去进行写出, 客户端使用Json去进行反序列化不能成果?
         return getNamingInstances(namespaceId, serviceName, clusters, ip, port, isCheckRequest = true, true).toString()
     }
 
@@ -139,7 +139,7 @@ open class InstanceController {
      * @param clientIp clientIp
      * @param port clientPort
      * @param isCheckRequest 它是否只是一个检查的请求
-     * @param healthyOnly 是否只获取健康的实例列表？
+     * @param healthyOnly 是否只获取健康的实例列表?
      */
     open fun getNamingInstances(
         namespaceId: String,

@@ -30,7 +30,7 @@ interface MethodMatcher {
     fun matches(method: Method, targetClass: Class<*>): Boolean
 
     /**
-     * 是否需要在运行时去进行匹配？运行时可以将执行该方法的参数也传递给你去进行匹配
+     * 是否需要在运行时去进行匹配? 运行时可以将执行该方法的参数也传递给你去进行匹配
      *
      * @return 如果需要在运行时去进行匹配, return true; 否则return false
      */

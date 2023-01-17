@@ -266,7 +266,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
         // 2.如果没有自定义Validator的话, 那么我们直接去进行推断...
         if (validator == null) {
 
-            // 检查JDK的Validator是否在我们的依赖当中？
+            // 检查JDK的Validator是否在我们的依赖当中?
             if (ClassUtils.isPresent(
                     "javax.validation.Validator", WebMvcConfigurationSupport::class.java.classLoader
                 )

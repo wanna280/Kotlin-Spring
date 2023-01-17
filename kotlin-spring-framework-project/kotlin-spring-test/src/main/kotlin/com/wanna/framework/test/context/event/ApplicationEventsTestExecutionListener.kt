@@ -84,7 +84,7 @@ open class ApplicationEventsTestExecutionListener : AbstractTestExecutionListene
         }
         synchronized(applicationEventsMonitor) {
 
-            // 检查一下之前是否已经注册过了ApplicationEventsApplicationListener？
+            // 检查一下之前是否已经注册过了ApplicationEventsApplicationListener?
             val notAlreadyRegistered =
                 applicationContext.getApplicationListeners().stream()
                     .map { it::class.java }
@@ -103,7 +103,7 @@ open class ApplicationEventsTestExecutionListener : AbstractTestExecutionListene
     }
 
     /**
-     * 检查一下是否需要记录[ApplicationEvents]？
+     * 检查一下是否需要记录[ApplicationEvents]?
      *
      * @param testContext TestContext
      * @return 如果testClass上标注空[RecordApplicationEvents]注解, 那么return true; 否则return false

@@ -12,7 +12,7 @@ import com.wanna.framework.web.bind.annotation.RequestMethod
 open class HttpHeaders : MultiValueMap<String, String> {
     companion object {
         /**
-         * 客户端想要接收什么媒体类型的响应？比如"application/json"、"text/html"
+         * 客户端想要接收什么媒体类型的响应? 比如"application/json"、"text/html"
          */
         const val ACCEPT = "Accept"
 
@@ -108,7 +108,7 @@ open class HttpHeaders : MultiValueMap<String, String> {
          * 在非长连接下, 每次传输报文数据时, 都需要进行TCP的三次握手和四次挥手, 而四次挥手可以去标识着该报文已经结束, 因此性能低下.
          * 正常情况下, 如果是长连接的话, 应该要告诉浏览器当前HTTP文档的结束位置在哪, 一般情况下需要添加"Content-Length=xxx"这个Header
          * 但是这样意味着, 服务器要对数据去进行长度的统计, 再去进行发送, 从而耗费了不必要的性能, 因此才有了分块("chuck")传输
-         * 分块传输的目的, 就是告诉浏览器, 当前的文档从哪里结束？
+         * 分块传输的目的, 就是告诉浏览器, 当前的文档从哪里结束? 
          * Note: 如果"Content-Length"太短, 会导致文档被提前截断; "Content-Length"太长, 会导致浏览器的pending(因为接收不到来自服务器的数据, 所以一直等待)
          *
          * 下面是一个Demo的Http报文的格式：
@@ -314,7 +314,7 @@ open class HttpHeaders : MultiValueMap<String, String> {
     }
 
     /**
-     * HttpHeaders当中是否有包含"Access-Control-Allow-Origin"呢？
+     * HttpHeaders当中是否有包含"Access-Control-Allow-Origin"呢? 
      *
      * @return 如果有包含""Access-Control-Allow-Origin"", return其值; 没有则return null
      */

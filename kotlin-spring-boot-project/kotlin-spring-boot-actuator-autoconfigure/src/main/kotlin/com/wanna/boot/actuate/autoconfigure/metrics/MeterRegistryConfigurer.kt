@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory
  * @param meterFilters MeterFilters(应用到非组合的MeterRegistry当中)
  * @param customizers MeterRegistryCustomizers
  * @param addToGlobalRegistry 是否需要将给定的MeterRegistry去添加到全局的MeterRegistry当中
- * @param hasCompositeMeterRegistry BeanFactory当中是否存在有组合所有的MeterRegistry的CompositeMeterRegistry？
+ * @param hasCompositeMeterRegistry BeanFactory当中是否存在有组合所有的MeterRegistry的CompositeMeterRegistry? 
  *
  * @see MeterFilter
  * @see MeterBinder

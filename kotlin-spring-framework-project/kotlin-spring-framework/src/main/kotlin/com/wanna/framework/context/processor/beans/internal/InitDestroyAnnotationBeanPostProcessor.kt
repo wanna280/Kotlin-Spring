@@ -54,10 +54,10 @@ open class InitDestroyAnnotationBeanPostProcessor : DestructionAwareBeanPostProc
     }
 
     /**
-     * 是否需要注册destroy回调？只要该Bean有Destroy方法, 就需要进行注册
+     * 是否需要注册destroy回调? 只要该Bean有Destroy方法, 就需要进行注册
      *
      * @param bean bean
-     * @return 是否需要注册destroy回调？return true则需要, return false则不需要
+     * @return 是否需要注册destroy回调? return true则需要, return false则不需要
      */
     override fun requiresDestruction(bean: Any): Boolean {
         return findLifecycleMetadata(bean::class.java).hasDestroyMethods()

@@ -10,7 +10,7 @@ import com.wanna.framework.web.server.AsyncContext
  */
 interface AsyncWebRequest : NativeWebRequest {
     /**
-     * 该异步任务是否已经开始？
+     * 该异步任务是否已经开始?
      *
      * @return 如果已经开始return true; 否则return false
      */

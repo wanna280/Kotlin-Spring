@@ -28,7 +28,7 @@ interface BootstrapRegistry {
     fun <T> registerIfAbsent(type: Class<T>, instanceSupplier: InstanceSupplier<T>)
 
     /**
-     * 判断BootstrapRegistry当中是否已经注册过该类型的实例？
+     * 判断BootstrapRegistry当中是否已经注册过该类型的实例?
      *
      * @param type type
      * @return 如果已经注册过, return true; 否则return false

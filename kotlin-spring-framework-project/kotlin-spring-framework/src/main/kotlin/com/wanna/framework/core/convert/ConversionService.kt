@@ -13,7 +13,7 @@ import com.wanna.framework.lang.Nullable
 interface ConversionService {
 
     /**
-     * 能否将源类型(sourceType)的对象转换为目标类型(targetType)？
+     * 能否将源类型(sourceType)的对象转换为目标类型(targetType)?
      *
      * @param sourceType 源类型
      * @param targetType 目标类型
@@ -22,7 +22,7 @@ interface ConversionService {
     fun canConvert(sourceType: Class<*>, targetType: Class<*>): Boolean
 
     /**
-     * 支持使用TypeDescriptor的方式去进行判断, 能否将目标类型转换target类型？
+     * 支持使用TypeDescriptor的方式去进行判断, 能否将目标类型转换target类型?
      *
      * @param sourceType sourceType(TypeDescriptor, 支持泛型的解析)
      * @param targetType targetType(TypeDescriptor, 支持泛型的解析)

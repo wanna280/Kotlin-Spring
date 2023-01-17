@@ -25,7 +25,7 @@ interface ConfigurableListableBeanFactory : ListableBeanFactory, ConfigurableBea
      * 注册一个可以被解析的依赖, 注册之后, 后续可以通过Autowire进行获取; 在进行元素的解析时, 支持从注册的依赖当中去进行获取
      *
      * @param dependencyType 要去进行注册的依赖的类型
-     * @param autowireValue 该依赖要使用的值？(可以为单例对象, 也可以为ObjectFactory)
+     * @param autowireValue 该依赖要使用的值? (可以为单例对象, 也可以为ObjectFactory)
      *
      * @see com.wanna.framework.beans.factory.ObjectFactory
      */
@@ -36,7 +36,7 @@ interface ConfigurableListableBeanFactory : ListableBeanFactory, ConfigurableBea
      *
      * @param beanName requestingBeanName
      * @param descriptor 要去进行注入的元素的依赖描述符
-     * @return 它支持是一个Autowire的CandidateBean？
+     * @return 它支持是一个Autowire的CandidateBean? 
      */
     fun isAutowireCandidate(beanName: String, descriptor: DependencyDescriptor): Boolean
 

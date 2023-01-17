@@ -16,7 +16,7 @@ interface HandlerMethodArgumentResolver {
      * 是否支持解析当前方法参数
      *
      * @param parameter 方法参数
-     * @return 是否支持处理？支持处理return true; 否则return false
+     * @return 是否支持处理? 支持处理return true; 否则return false
      */
     fun supportsParameter(parameter: MethodParameter): Boolean
 

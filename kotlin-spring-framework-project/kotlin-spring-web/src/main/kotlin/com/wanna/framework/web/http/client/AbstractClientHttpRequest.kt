@@ -9,7 +9,7 @@ abstract class AbstractClientHttpRequest : ClientHttpRequest {
     // Headers
     private val headers = HttpHeaders()
 
-    // 是否已经执行过了？
+    // 是否已经执行过了? 
     private var executed = false
     override fun getHeaders() = headers
 

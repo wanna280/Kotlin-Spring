@@ -54,7 +54,7 @@ class AutoConfigurationPackages {
         }
 
         /**
-         * 判断给定的BeanFactory当中是否存在有自动配置包？
+         * 判断给定的BeanFactory当中是否存在有自动配置包?
          *
          * @param beanFactory
          */

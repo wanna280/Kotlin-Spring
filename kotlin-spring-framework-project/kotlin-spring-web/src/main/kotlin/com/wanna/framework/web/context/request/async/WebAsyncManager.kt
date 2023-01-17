@@ -83,7 +83,7 @@ class WebAsyncManager {
     fun isConcurrentHandlingStarted(): Boolean = this.asyncWebRequest != null && this.asyncWebRequest!!.isAsyncStarted()
 
     /**
-     * 判断异步请求的任务是否已经结束并产生了结果？
+     * 判断异步请求的任务是否已经结束并产生了结果?
      *
      * @return 如果return true, 说明结果已经产生; 不然就说明结果还没产生, 需要等待下一次再来获取结果
      */

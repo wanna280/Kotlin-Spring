@@ -54,8 +54,8 @@ object BeanFactoryUtils {
      *
      * @param lbf 目标BeanFactory
      * @param type 要去BeanFactory当中去进行获取的指定类型
-     * @param includeNonSingletons 是否包括非单例对象？
-     * @param allowEagerInit 是否允许eagerInit？
+     * @param includeNonSingletons 是否包括非单例对象?
+     * @param allowEagerInit 是否允许eagerInit?
      * @return 该类型的所有BeanNames
      */
     @JvmStatic

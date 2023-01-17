@@ -165,7 +165,7 @@ open class ExceptionHandlerExceptionResolver : HandlerExceptionResolver, Applica
         ex: Throwable
     ): InvocableHandlerMethod? {
 
-        // 首先, 寻找当前Controller当中是否有合适的ExceptionHandler？
+        // 首先, 寻找当前Controller当中是否有合适的ExceptionHandler?
         val handlerType: Class<*>?
         if (handlerMethod != null) {
             handlerType = handlerMethod.beanType ?: throw IllegalStateException("HandlerMethod的beanType不能为null")

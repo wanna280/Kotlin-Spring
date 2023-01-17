@@ -34,7 +34,7 @@ open class ClassPathMapperScanner(registry: BeanDefinitionRegistry) : ClassPathB
     // 是否要添加Mapper到MyBatis的Configuration当中
     var addToConfig = true
 
-    // 是否要懒加载？默认为false
+    // 是否要懒加载? 默认为false
     var lazyInitialization = false
 
     // SqlSessionFactory
@@ -52,10 +52,10 @@ open class ClassPathMapperScanner(registry: BeanDefinitionRegistry) : ClassPathB
     // 要匹配的注解, 比如@Mapper
     var annotationClass: Class<out Annotation?>? = null
 
-    // 要匹配的父类？
+    // 要匹配的父类?
     var markerInterface: Class<*>? = null
 
-    // 要使用的MapperFactoryBeanClass？可以支持去自定义
+    // 要使用的MapperFactoryBeanClass? 可以支持去自定义
     var mapperFactoryBeanClass: Class<out MapperFactoryBean?> = MapperFactoryBean::class.java
 
     // 默认的scope, Bean的作用域
@@ -130,7 +130,7 @@ open class ClassPathMapperScanner(registry: BeanDefinitionRegistry) : ClassPathB
             beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, beanClass)
             propertyValues.addPropertyValue("addToConfig", this.addToConfig)
 
-            // 是否已经找到了合适的SqlSessionFactory？
+            // 是否已经找到了合适的SqlSessionFactory?
             var explicitFactoryUsed = false
 
             // 添加SqlSessionFactory, 目的是为了回调MapperFactoryBean.setSqlSessionFactory方法
@@ -159,7 +159,7 @@ open class ClassPathMapperScanner(registry: BeanDefinitionRegistry) : ClassPathB
                 explicitFactoryUsed = true
             }
 
-            // 替换掉beanClass并设置LazyInit(是否懒加载？)
+            // 替换掉beanClass并设置LazyInit(是否懒加载? )
             beanDefinition.setBeanClass(mapperFactoryBeanClass)
             beanDefinition.setLazyInit(this.lazyInitialization)
 

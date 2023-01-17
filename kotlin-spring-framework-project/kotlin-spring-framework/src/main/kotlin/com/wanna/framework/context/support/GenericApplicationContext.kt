@@ -34,12 +34,12 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
     constructor() : this(DefaultListableBeanFactory())
 
     /**
-     * 容器是否已经刷新过的标志位？容器不允许被重复刷新
+     * 容器是否已经刷新过的标志位? 容器不允许被重复刷新
      */
     private val refreshed = AtomicBoolean(false)
 
     /**
-     * 是否自定义过了ClassLoader？
+     * 是否自定义过了ClassLoader?
      */
     private var customClassLoader = false
 
@@ -100,7 +100,7 @@ open class GenericApplicationContext(private val beanFactory: DefaultListableBea
     override fun getAutowireCapableBeanFactory(): AutowireCapableBeanFactory = beanFactory
 
     /**
-     * 是否允许发生循环依赖？
+     * 是否允许发生循环依赖?
      *
      * @return 如果允许循环依赖, 那么return true; 否则return false
      */

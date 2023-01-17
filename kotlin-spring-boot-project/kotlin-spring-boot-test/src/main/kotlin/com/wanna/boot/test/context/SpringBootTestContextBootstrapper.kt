@@ -83,7 +83,7 @@ open class SpringBootTestContextBootstrapper : DefaultTestContextBootstrapper() 
     }
 
     /**
-     * 检查给定的这些配置类当中是否有不是[TestConfiguration]的类？
+     * 检查给定的这些配置类当中是否有不是[TestConfiguration]的类?
      *
      * @param classes 待检查的配置类列表
      * @return 如果存在未标注[TestConfiguration]的类, 那么return true; 如果给定的这些类全部都标注了[TestConfiguration]注解的话, return false

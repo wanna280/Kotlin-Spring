@@ -18,7 +18,7 @@ import com.wanna.framework.util.AnnotationConfigUtils.registerAnnotationConfigPr
  * 在指定的包下寻找Spring的配置类, 可以重写findCandidateComponents方法去进行自定义扫描的逻辑...
  *
  * @param registry BeanDefinitionRegistry(需要去注册BeanDefinition的地方)
- * @param useDefaultFilters 是否需要去应用默认的Filter？
+ * @param useDefaultFilters 是否需要去应用默认的Filter? 
  * @param resourceLoader ResourceLoader, 提供资源的加载(可以为null)
  */
 open class ClassPathBeanDefinitionScanner(
@@ -33,7 +33,7 @@ open class ClassPathBeanDefinitionScanner(
     private var beanNameGenerator: BeanNameGenerator = AnnotationBeanNameGenerator.INSTANCE
 
     /**
-     * 是否包含注解版的配置？如果开启了, 使用它进行扫描时, 就会往容器中注册注解的通用处理器(默认为true)
+     * 是否包含注解版的配置? 如果开启了, 使用它进行扫描时, 就会往容器中注册注解的通用处理器(默认为true)
      */
     private var includeAnnotationConfig: Boolean = true
 
@@ -43,7 +43,7 @@ open class ClassPathBeanDefinitionScanner(
     private var scopeMetadataResolver: ScopeMetadataResolver = AnnotationScopeMetadataResolver()
 
     /**
-     * 扫描进来的Bean是否需要设置成为lazyInit的？
+     * 扫描进来的Bean是否需要设置成为lazyInit的? 
      */
     private var lazyInit: Boolean = false
 
@@ -140,7 +140,7 @@ open class ClassPathBeanDefinitionScanner(
     }
 
     /**
-     * 是否需要将注解相关的配置去导入进来？
+     * 是否需要将注解相关的配置去导入进来? 
      *
      * @param includeAnnotationConfig 如果为true, 将会导入Spring的一堆注解处理器
      */
@@ -149,7 +149,7 @@ open class ClassPathBeanDefinitionScanner(
     }
 
     /**
-     * 扫描进来的Bean是否都需要配置成为懒加载的？
+     * 扫描进来的Bean是否都需要配置成为懒加载的? 
      *
      * @param lazyInit lazyInit
      */

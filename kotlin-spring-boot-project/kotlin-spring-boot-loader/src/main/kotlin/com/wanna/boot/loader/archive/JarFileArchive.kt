@@ -215,7 +215,7 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
         private var current: Archive.Entry? = poll()
 
         /**
-         * 是否还有下一个元素？(根据current是否为null去进行判断)
+         * 是否还有下一个元素? (根据current是否为null去进行判断)
          *
          * @return 如果还有下一个元素, 那么return true; 否则return false
          */

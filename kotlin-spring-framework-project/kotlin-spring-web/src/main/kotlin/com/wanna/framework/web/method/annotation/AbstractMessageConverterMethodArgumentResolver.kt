@@ -71,7 +71,7 @@ abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArg
     }
 
     /**
-     * 检查该参数当中的@RequestBody是否是必须的？
+     * 检查该参数当中的@RequestBody是否是必须的?
      *
      * @param parameter 方法参数
      * @return @RequestBody注解上的required属性(true/false)
@@ -158,7 +158,7 @@ abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArg
     }
 
     /**
-     * 是否需要去丢出一个绑定参数异常？
+     * 是否需要去丢出一个绑定参数异常?
      *
      * * 1.如果下一个参数就是Errors(BindingResult), 那么就说明不必丢出异常
      * * 2.如果下一个参数不是Errors(BindingResult), 那么就说明需要丢出异常

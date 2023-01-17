@@ -208,7 +208,7 @@ open class ResolvableType() {
     }
 
     /**
-     * 判断当前类型是否是一个数组？有三种情况是匹配的
+     * 判断当前类型是否是一个数组? 有三种情况是匹配的
      * (1)type is Class, 并且type.isArray
      * (2)type is GenericArrayType
      * (3)解析类型(resolveType())解析出来是数组...
@@ -277,7 +277,7 @@ open class ResolvableType() {
     }
 
     /**
-     * 当前类型是否有泛型？
+     * 当前类型是否有泛型?
      */
     open fun hasGeneric(): Boolean {
         return getGenerics().isNotEmpty()

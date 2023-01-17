@@ -45,7 +45,7 @@ internal class CentralDirectoryEndRecord(data: RandomAccessData) {
     private var block: ByteArray
 
     /**
-     * 从Block数据块的哪个位置开始才是EOCD？
+     * 从Block数据块的哪个位置开始才是EOCD? 
      */
     private var offset: Int
 
@@ -184,7 +184,7 @@ internal class CentralDirectoryEndRecord(data: RandomAccessData) {
         }
 
     /**
-     * 是否是一个ZIP64的归档？如果解析出来了ZIP64End, 那么说明是; 否则说明不是
+     * 是否是一个ZIP64的归档? 如果解析出来了ZIP64End, 那么说明是; 否则说明不是
      *
      * @return 如果Zip64End不为空, 那么return true; 否则return false
      */

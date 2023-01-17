@@ -26,7 +26,7 @@ open class SimpleAsyncTaskExecutor private constructor(
     // 统计当前已经创建的线程数量, 用来生成threadName
     private val threadCount = AtomicInteger(0);
 
-    // 是否要使用守护线程？默认为false
+    // 是否要使用守护线程? 默认为false
     var daemon: Boolean = false
 
     // threadNamePrefix

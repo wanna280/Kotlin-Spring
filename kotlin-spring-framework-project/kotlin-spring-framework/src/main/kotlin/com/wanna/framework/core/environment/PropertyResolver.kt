@@ -11,7 +11,7 @@ import com.wanna.framework.lang.Nullable
 interface PropertyResolver {
 
     /**
-     * 是否包含有这个属性？
+     * 是否包含有这个属性?
      *
      * @param key 属性名
      * @return 如果包含有这样的属性名return true; 否则return false

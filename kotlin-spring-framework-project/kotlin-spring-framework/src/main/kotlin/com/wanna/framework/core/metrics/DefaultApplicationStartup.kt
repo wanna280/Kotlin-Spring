@@ -20,7 +20,7 @@ open class DefaultApplicationStartup : ApplicationStartup {
      * @see StartupStep
      */
     open class DefaultStep : StartupStep {
-        // 是否已经记录完成了？
+        // 是否已经记录完成了? 
         private var recorded = false
 
         private val defaultTags = DefaultTags()

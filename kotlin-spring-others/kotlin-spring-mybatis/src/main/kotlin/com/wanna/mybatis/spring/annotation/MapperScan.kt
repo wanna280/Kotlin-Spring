@@ -18,9 +18,9 @@ import kotlin.reflect.KClass
  * @param sqlSessionTemplateRef SqlSessionTemplate的beanName
  * @param factoryBean 导入Mapper使用的FactoryBean
  * @param defaultScope 默认的作用域(默认为单例)
- * @param lazyInitialization 是否是懒加载的？
- * @param annotationClass 要匹配哪个注解？在拥有注解的情况下, 就将其扫描到容器当中
- * @param markerInterface 要扫描哪个接口的所有子类？可以和annotationClass一起使用, 两者之间是取并集, 而不是取交集
+ * @param lazyInitialization 是否是懒加载的?
+ * @param annotationClass 要匹配哪个注解? 在拥有注解的情况下, 就将其扫描到容器当中
+ * @param markerInterface 要扫描哪个接口的所有子类? 可以和annotationClass一起使用, 两者之间是取并集, 而不是取交集
  */
 @Import([MapperScannerRegistrar::class])
 @Repeatable

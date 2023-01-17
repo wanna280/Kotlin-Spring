@@ -57,7 +57,7 @@ abstract class AsyncExecutionAspectSupport(
     }
 
     /**
-     * 给定一个具体的方法, 决定出要使用哪个Executor去执行异步任务？
+     * 给定一个具体的方法, 决定出要使用哪个Executor去执行异步任务?
      *
      * @param method 目标方法
      */

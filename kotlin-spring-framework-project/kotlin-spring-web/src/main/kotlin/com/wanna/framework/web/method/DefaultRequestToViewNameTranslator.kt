@@ -11,10 +11,10 @@ open class DefaultRequestToViewNameTranslator : RequestToViewNameTranslator {
         private const val SLASH = "/"
     }
 
-    // viewName前缀, 需要给viewName拼接什么样的前缀？
+    // viewName前缀, 需要给viewName拼接什么样的前缀? 
     var prefix = ""
 
-    // viewName后缀, 需要给viewName拼接什么样的后缀？
+    // viewName后缀, 需要给viewName拼接什么样的后缀? 
     var suffix = ""
 
     // viewName的分隔符
@@ -26,7 +26,7 @@ open class DefaultRequestToViewNameTranslator : RequestToViewNameTranslator {
     // 是否要去掉url后置的"/"(比如"/user/")
     var stripTrailingSlash = true
 
-    // 是否要去掉文件后缀名？
+    // 是否要去掉文件后缀名? 
     var stripExtension = true
 
     override fun getViewName(request: HttpServerRequest): String? {

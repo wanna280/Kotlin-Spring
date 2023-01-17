@@ -24,7 +24,7 @@ open class HandlerMethodReturnValueHandlerComposite : HandlerMethodReturnValueHa
     }
 
     /**
-     * 是否支持处理该类型的返回值类型？只要有其中一个ReturnValueHandler支持去匹配, 那么就支持去进行处理
+     * 是否支持处理该类型的返回值类型? 只要有其中一个ReturnValueHandler支持去匹配, 那么就支持去进行处理
      *
      * @param parameter 返回值类型封装成为的MethodParameter
      * @return 只要有其中一个ReturnValueHandler支持去处理, 那么return true

@@ -14,7 +14,7 @@ open class BeanDefinitionHolder(val beanDefinition: BeanDefinition, val beanName
     BeanMetadataAttributeAccessor() {
 
     /**
-     * 判断name和beanName对应的类型是否匹配？
+     * 判断name和beanName对应的类型是否匹配?
      *
      * @param name 要比较的候选name
      */

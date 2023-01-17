@@ -32,7 +32,7 @@ open class RestartClassLoader(
      * 对于不用热加载的类, 我们直接交给parentClassLoader去进行加载
      *
      * @param name className
-     * @param resolve 是否要完成链接？
+     * @param resolve 是否要完成链接?
      * @return 根据className加载到的类
      */
     override fun loadClass(name: String, resolve: Boolean): Class<*> {
@@ -42,7 +42,7 @@ open class RestartClassLoader(
 
             // 2. 如果缓存当中没有, 那么我们就得尝试去进行加载了
             if (loadedClass == null) {
-                // 2.1 尝试去当前ClassLoader去进行加载, 看是否能加载到？
+                // 2.1 尝试去当前ClassLoader去进行加载, 看是否能加载到?
                 loadedClass = try {
                     findClass(name)
                 } catch (ex: ClassNotFoundException) {
@@ -69,7 +69,7 @@ open class RestartClassLoader(
     override fun findClass(name: String): Class<*> {
         val path = name.replace(".", "/") + ".class"
 
-        // 检查UpdatedFiles当中是否才能在有该文件？如果没有直接调用super
+        // 检查UpdatedFiles当中是否才能在有该文件? 如果没有直接调用super
         val file = updatedFiles.getFile(path) ?: return super.findClass(name)
 
         // 如果该文件是被删除了, 那么丢出ClassNotFoundException

@@ -12,7 +12,7 @@ import com.wanna.framework.core.ResolvableType
  */
 interface GenericApplicationListener : SmartApplicationListener, Ordered {
     /**
-     * 是否支持去处理这样的事件类型？
+     * 是否支持去处理这样的事件类型? 
      *
      * @param type 事件类型(ResolvableType), 支持去进行泛型的解析
      * @return 如果支持处理该事件类型, return true; 不支持则return false

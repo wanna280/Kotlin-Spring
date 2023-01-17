@@ -14,7 +14,7 @@ open class FileSnapshot(val file: File) {
     // 上次修改时间
     val lastModified = file.lastModified()
 
-    // 文件是否已经存在？
+    // 文件是否已经存在? 
     val exists = file.exists()
 
     override fun equals(other: Any?): Boolean {

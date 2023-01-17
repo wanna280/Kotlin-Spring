@@ -15,7 +15,7 @@ open class ViewNameMethodReturnValueHandler : HandlerMethodReturnValueHandler {
      * 它支持处理字符串类型的返回值, 负责将字符串类型的返回值解析成为视图名
      *
      * @param parameter 方法的返回值类型封装的MethodParameter
-     * @return 能否支持处理该返回值类型？只要返回值是字符串就支持
+     * @return 能否支持处理该返回值类型? 只要返回值是字符串就支持
      */
     override fun supportsReturnType(parameter: MethodParameter): Boolean {
         return ClassUtils.isAssignFrom(CharSequence::class.java, parameter.getParameterType())

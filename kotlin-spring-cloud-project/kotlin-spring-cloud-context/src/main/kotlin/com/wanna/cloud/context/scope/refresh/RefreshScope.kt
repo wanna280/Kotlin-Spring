@@ -27,7 +27,7 @@ open class RefreshScope : GenericScope(), Ordered, ApplicationContextAware, Appl
 
     private lateinit var registry: BeanDefinitionRegistry
 
-    // 是否渴望去进行初始化？如果渴望去进行初始化的话, 那么容器启动完成就去实例化所有的Bean
+    // 是否渴望去进行初始化? 如果渴望去进行初始化的话, 那么容器启动完成就去实例化所有的Bean
     private var eager: Boolean = true
 
     override fun postProcessBeanDefinitionRegistry(registry: BeanDefinitionRegistry) {

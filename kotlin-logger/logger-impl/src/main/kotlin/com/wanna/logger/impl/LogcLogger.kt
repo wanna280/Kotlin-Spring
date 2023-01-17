@@ -191,7 +191,7 @@ open class LogcLogger(name: String) : Logger {
      * @param msg 输出的消息
      */
     private fun filterAndLog(loggerQualifierName: String, level: Level, msg: Any?) {
-        // 让LoggerFilter去决策本次日志信息, 是否应该要进行输出？
+        // 让LoggerFilter去决策本次日志信息, 是否应该要进行输出?
         val reply = abstractLoggerContext!!.getFilterChainDecisionReply(this, level, msg, emptyArray(), null)
 
         // 如果最终的结果是DENY的话, 那么需要拒绝, 不进行本次日志的输出, return

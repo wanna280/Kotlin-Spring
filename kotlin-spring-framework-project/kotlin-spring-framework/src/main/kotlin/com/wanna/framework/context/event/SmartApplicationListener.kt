@@ -11,7 +11,7 @@ import com.wanna.framework.core.Ordered
 interface SmartApplicationListener : ApplicationListener<ApplicationEvent>, Ordered {
 
     /**
-     * 是否支持去处理这样的事件类型？只有支持处理该类型的事件, 才会将事件交给当前监听器去进行处理
+     * 是否支持去处理这样的事件类型? 只有支持处理该类型的事件, 才会将事件交给当前监听器去进行处理
      *
      * @param eventType 事件类型
      * @return 如果支持处理该事件类型, return true; 不支持则return false

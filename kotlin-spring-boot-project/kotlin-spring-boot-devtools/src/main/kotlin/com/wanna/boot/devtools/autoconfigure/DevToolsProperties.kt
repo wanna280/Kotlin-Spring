@@ -27,7 +27,7 @@ open class DevToolsProperties {
                 "resource/**,META-INF/maven/**,META-INF/resources/**,public/**,static/**,template/**,META-INF/docs/**"
         }
 
-        // 是否要开启Restart？
+        // 是否要开启Restart? 
         var enable: Boolean = true
 
         // 触发Restart的文件(默认为所有的文件都当做触发Restart的文件, 如果需要, 需要自行配置)

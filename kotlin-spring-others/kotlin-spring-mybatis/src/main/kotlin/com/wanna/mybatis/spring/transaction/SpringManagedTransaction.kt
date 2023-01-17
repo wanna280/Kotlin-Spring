@@ -27,12 +27,12 @@ open class SpringManagedTransaction(private val dataSource: DataSource) : Transa
     private var connection: Connection? = null
 
     /**
-     * 是否自动提交？
+     * 是否自动提交? 
      */
     private var autoCommit = true
 
     /**
-     * 判断当前连接是否是一个事务连接？如果TransactionSynchronizationManager当中就是当前连接的话, 那么为true
+     * 判断当前连接是否是一个事务连接? 如果TransactionSynchronizationManager当中就是当前连接的话, 那么为true
      */
     private var isTransactionConnection = false
 

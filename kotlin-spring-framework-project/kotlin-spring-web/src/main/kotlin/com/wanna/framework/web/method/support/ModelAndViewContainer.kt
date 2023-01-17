@@ -18,7 +18,7 @@ open class ModelAndViewContainer {
     var view: Any? = null
 
     /**
-     * 是否是重定向视图？
+     * 是否是重定向视图? 
      */
     var redirectModelScenario = false
 
@@ -83,7 +83,7 @@ open class ModelAndViewContainer {
     open fun containsAttribute(name: String): Boolean = getModel().containsKey(name)
 
     /**
-     * 是否要使用默认的Model？
+     * 是否要使用默认的Model? 
      *
      * @return 如果不是重定向, 则return true; 不然return false
      */

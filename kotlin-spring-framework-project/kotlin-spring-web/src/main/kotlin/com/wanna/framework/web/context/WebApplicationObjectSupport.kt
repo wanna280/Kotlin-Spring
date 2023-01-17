@@ -8,7 +8,7 @@ import com.wanna.framework.context.support.ApplicationObjectSupport
 abstract class WebApplicationObjectSupport : ApplicationObjectSupport() {
 
     /**
-     * ApplicationContext是否是必须的？在WebApplication下, ApplicationContext是必须的
+     * ApplicationContext是否是必须的? 在WebApplication下, ApplicationContext是必须的
      */
     override fun isContextRequired(): Boolean {
         return true

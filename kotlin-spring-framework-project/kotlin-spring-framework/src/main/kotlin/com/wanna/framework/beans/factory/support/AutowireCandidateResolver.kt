@@ -12,11 +12,11 @@ package com.wanna.framework.beans.factory.support
 interface AutowireCandidateResolver {
 
     /**
-     * 判断一个Bean是否是符合进行注入的要求？默认只从BeanDefinition.isAutowireCandidate中进行判断;
+     * 判断一个Bean是否是符合进行注入的要求? 默认只从BeanDefinition.isAutowireCandidate中进行判断;
      *
      * ## 1.DependencyDescriptor上有Qualifier注解的情况
      * Spring在进行Autowire的匹配时, 会将所有的候选Bean的列表, 挨个调用这个方法去进行匹配, 而BeanDefinition就是该候选的Bean的相关信息;
-     * (子类中)首先会比较DependencyDescriptor当中的Qualifier和候选的BeanDefinition中的Qualifier是否**成对**匹配？匹配则return true;
+     * (子类中)首先会比较DependencyDescriptor当中的Qualifier和候选的BeanDefinition中的Qualifier是否**成对**匹配? 匹配则return true;
      * 如果不匹配的话, 那么就尝试将Qualifier注解当中的value属性和bdHolder.beanName去进行匹配, 如果匹配的话那么return true
      *
      * ## 2.DependencyDescriptor上没有Qualifier注解的情况
@@ -35,7 +35,7 @@ interface AutowireCandidateResolver {
      * 在子类当中可以去进行扩展, 去实现比如在@Autowired注解上去找是否required=true
      *
      * @param descriptor 依赖描述符
-     * @return 是否是必须的？如果是必须的, 但是没有Spring BeanFactory找到直接抛异常
+     * @return 是否是必须的? 如果是必须的, 但是没有Spring BeanFactory找到直接抛异常
      */
     fun isRequired(descriptor: DependencyDescriptor): Boolean {
         return descriptor.isRequired()
@@ -46,7 +46,7 @@ interface AutowireCandidateResolver {
      * 遍历依赖描述符上的所有的注解, 去和Qualifier去进行比对, 如果匹配那么return true; 不然return false
      *
      * @param descriptor 要进行匹配的依赖描述符
-     * @return 该依赖描述符上是否有Qualifier？
+     * @return 该依赖描述符上是否有Qualifier? 
      */
     fun hasQualifier(descriptor: DependencyDescriptor): Boolean {
         return false
@@ -56,7 +56,7 @@ interface AutowireCandidateResolver {
      * 决定是否有一个建议去进行设置的默认值, 用来处理字段或者方法参数上标注的@Value注解
      *
      * @param descriptor 要去进行注入的依赖描述符
-     * @return 是否有默认的建议值？如果没有return null, 有建议返回值的默认值则返回
+     * @return 是否有默认的建议值? 如果没有return null, 有建议返回值的默认值则返回
      */
     fun getSuggestedValue(descriptor: DependencyDescriptor): Any? {
         return null

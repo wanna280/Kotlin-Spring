@@ -14,7 +14,7 @@ import java.net.URL
  *
  * @param fileSystemWatcher FileSystemWatcher(负责监控FileSystem的文件的变化)
  * @param urls 候选的要去进行监控的URL列表(jar包/outputPath)
- * @param restartStrategy 重启策略, 用来判断某个文件发生变更时, 是否应该重启应用？
+ * @param restartStrategy 重启策略, 用来判断某个文件发生变更时, 是否应该重启应用?
  */
 class ClassPathFileSystemWatcher(
     private val fileSystemWatcher: FileSystemWatcher,
@@ -22,7 +22,7 @@ class ClassPathFileSystemWatcher(
     private val restartStrategy: ClassPathRestartStrategy?
 ) : InitializingBean, DisposableBean, ApplicationContextAware {
 
-    // 在重启(发布ClassPathChangedEvent)时, 是否需要stopWatcher？
+    // 在重启(发布ClassPathChangedEvent)时, 是否需要stopWatcher?
     var stopWatcherOnRestart: Boolean = true
 
     // ApplicationContext
@@ -43,7 +43,7 @@ class ClassPathFileSystemWatcher(
     override fun afterPropertiesSet() {
         // 如果指定了restart策略的话, 我们需要去添加一个Listener去处理文件发生变化时去重启Application
         if (this.restartStrategy != null) {
-            // 在重启时, 是否需要去重启FileSystemWatcher？
+            // 在重启时, 是否需要去重启FileSystemWatcher?
             var watcherToStop: FileSystemWatcher? = null
             if (stopWatcherOnRestart) {
                 watcherToStop = this.fileSystemWatcher

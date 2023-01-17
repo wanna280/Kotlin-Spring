@@ -7,7 +7,7 @@ import java.lang.reflect.InvocationTargetException
  * 但是默认情况下线程的退出时, 会存在有ExceptionHandler去直接把异常的调用栈打出来,
  * 但是实际上呢, 我们并不需要它把异常栈打出来, 我们要做的只是直接退出当前线程就行了
  *
- * @param delegate 当异常类型不是SilentExitException时, 应该怎么去处理？
+ * @param delegate 当异常类型不是SilentExitException时, 应该怎么去处理?
  * 我们就需要组合一个delegate去完成(一般为线程的原始ExceptionHandler)
  */
 class SilentExitExceptionHandler(private val delegate: Thread.UncaughtExceptionHandler) :

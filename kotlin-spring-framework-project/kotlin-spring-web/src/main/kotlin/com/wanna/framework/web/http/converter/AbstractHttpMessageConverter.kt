@@ -50,7 +50,7 @@ abstract class AbstractHttpMessageConverter<T> : HttpMessageConverter<T> {
     override fun getSupportedMediaTypes() = this.supportedMediaTypes
 
     /**
-     * 能否去读这样的MediaType成为clazz类型的数据？如果它支持去处理这样的类型的数据, 并且支持这种MediaType的写的功能即可认为它可以读
+     * 能否去读这样的MediaType成为clazz类型的数据? 如果它支持去处理这样的类型的数据, 并且支持这种MediaType的写的功能即可认为它可以读
      *
      * @param clazz JavaBean类型
      * @param mediaType MediaType
@@ -58,7 +58,7 @@ abstract class AbstractHttpMessageConverter<T> : HttpMessageConverter<T> {
     override fun canRead(clazz: Class<*>, @Nullable mediaType: MediaType?) = supports(clazz) && canRead(mediaType)
 
     /**
-     * 能否将clazz类型的JavaBean数据去写出成为MediaType类型的响应数据？如果它支持去处理这样的类型的数据, 并且支持这种MediaType的写的功能即可认为它可以写
+     * 能否将clazz类型的JavaBean数据去写出成为MediaType类型的响应数据? 如果它支持去处理这样的类型的数据, 并且支持这种MediaType的写的功能即可认为它可以写
      *
      * @param clazz JavaBean类型
      * @param mediaType MediaType
@@ -119,7 +119,7 @@ abstract class AbstractHttpMessageConverter<T> : HttpMessageConverter<T> {
     }
 
     /**
-     * 是否支持这样的类型数据？
+     * 是否支持这样的类型数据?
      *
      * @param clazz JavaBean类型
      */

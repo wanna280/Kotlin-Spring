@@ -64,7 +64,7 @@ open class ComponentScanAnnotationParser(
         getTypeFilters(includeFilters).forEach(scanner::addIncludeFilter)
         getTypeFilters(excludeFilters).forEach(scanner::addExcludeFilter)
 
-        // 设置是否懒加载？
+        // 设置是否懒加载?
         val lazyInit = attributes.getBoolean("lazyInit")
         scanner.setLazyInit(lazyInit)
 

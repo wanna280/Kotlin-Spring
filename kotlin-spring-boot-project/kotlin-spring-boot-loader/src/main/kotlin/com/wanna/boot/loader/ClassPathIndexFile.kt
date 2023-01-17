@@ -43,7 +43,7 @@ class ClassPathIndexFile(val root: File, _lines: List<String>) {
     fun size(): Int = lines.size
 
     /**
-     * 判断当前的ClassPathIndexFile是否包含了给定的Entry？
+     * 判断当前的ClassPathIndexFile是否包含了给定的Entry? 
      *
      * @param name entryName
      * @return 如果包含的话, 那么return true; 否则return false

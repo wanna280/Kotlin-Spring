@@ -139,7 +139,7 @@ class CentralDirectoryFileHeader(
     override fun getMethod() = Bytes.littleEndianValue(header, headerOffset + 10, 2).toInt()
 
     /**
-     * 判断当前FileHeader当中是否存在有name？
+     * 判断当前FileHeader当中是否存在有name? 
      */
     override fun hasName(name: CharSequence, suffix: Char): Boolean = this.name?.matches(name, suffix) ?: false
 
@@ -163,7 +163,7 @@ class CentralDirectoryFileHeader(
     fun getName(): AsciiBytes? = this.name
 
     /**
-     * 判断当前文件是否是一个文件夹？
+     * 判断当前文件是否是一个文件夹? 
      */
     fun isDirectory(): Boolean = this.name?.endsWith(SLASH) ?: false
 

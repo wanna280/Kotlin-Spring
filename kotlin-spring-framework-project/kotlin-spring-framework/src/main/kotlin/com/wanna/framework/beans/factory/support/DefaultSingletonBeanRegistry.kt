@@ -29,7 +29,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     private var singletonsCurrentlyInDestruction = false
 
     /**
-     * 当前Bean是否正在创建当中？
+     * 当前Bean是否正在创建当中? 
      */
     private val singletonsCurrentlyInCreation = Collections.newSetFromMap<String>(ConcurrentHashMap(16))
 
@@ -70,7 +70,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
      * 根据beanName去获取单实例的Bean
      *
      * @param beanName beanName
-     * @param allowEarlyReference 是否允许早期引用？主要是解决循环依赖问题
+     * @param allowEarlyReference 是否允许早期引用? 主要是解决循环依赖问题
      * @return 根据beanName获取到的单例Bean
      */
     open fun getSingleton(beanName: String, allowEarlyReference: Boolean): Any? {
@@ -81,7 +81,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
         if (singletonObject == null && isSingletonCurrentlyInCreation(beanName)) {
             singletonObject = earlySingletonObjects[beanName]
 
-            // 如果二级缓存中没有, 那么判断, 是否允许了早期引用？如果允许的话, 那么说明允许循环依赖, 有可能在三级缓存当中
+            // 如果二级缓存中没有, 那么判断, 是否允许了早期引用? 如果允许的话, 那么说明允许循环依赖, 有可能在三级缓存当中
             if (singletonObject == null && allowEarlyReference) {
 
                 // 加锁, 避免这个过程中, 别的线程往缓存当中加入了对象...
@@ -209,7 +209,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     }
 
     /**
-     * 当前Bean是否正在创建中？
+     * 当前Bean是否正在创建中? 
      *
      * @param beanName 要判断的beanName
      */
@@ -221,7 +221,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
      * 设置某个Bean是否正在创建当中的状态
      *
      * @param beanName beanName
-     * @param inCreation 是否正在创建当中？如果为true代表添加、为false代表删除
+     * @param inCreation 是否正在创建当中? 如果为true代表添加、为false代表删除
      */
     open fun setCurrentlyInCreation(beanName: String, inCreation: Boolean) {
         if (!inCreation) {
@@ -232,7 +232,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     }
 
     /**
-     * 判断给定的beanNam的Bean是否正在创建当中了？
+     * 判断给定的beanNam的Bean是否正在创建当中了? 
      *
      * @param beanName beanName
      * @return 如果当前正在创建当中, 那么return true; 否则return false
@@ -326,7 +326,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     }
 
     /**
-     * 容器当中是否含有该beanName的Bean？只检查SingletonObjects缓存
+     * 容器当中是否含有该beanName的Bean? 只检查SingletonObjects缓存
      *
      * @param beanName beanName
      * @return 如果SingletonObjects当中包含了该对象, 那么return true; 否则return false

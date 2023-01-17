@@ -12,7 +12,7 @@ open class CompositePropertySource(name: String) : EnumerablePropertySource<Any>
     private val propertySources = LinkedHashSet<PropertySource<*>>()
 
     /**
-     * 如何获取一个指定的属性值？从PropertySource列表当中, 挨个去进行检查;
+     * 如何获取一个指定的属性值? 从PropertySource列表当中, 挨个去进行检查;
      * (1)如果其中一个PropertySource当中获取到了属性值的话, 那么就return;
      * (2)如果在所有的PropertySource当中都没有找到的话, 那么return null
      */

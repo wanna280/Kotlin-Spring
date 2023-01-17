@@ -223,7 +223,7 @@ open class ScheduledAnnotationBeanPostProcessor : ApplicationListener<ContextRef
      *
      * @param beanFactory beanFactory
      * @param schedulerType SchedulerType
-     * @param byName 是要按照name去进行解析吗？
+     * @param byName 是要按照name去进行解析吗?
      */
     private fun <T : Any> resolveSchedulerBean(
         beanFactory: BeanFactory, schedulerType: Class<T>, byName: Boolean
@@ -280,7 +280,7 @@ open class ScheduledAnnotationBeanPostProcessor : ApplicationListener<ContextRef
      * @param method 要执行的目标方法
      */
     protected open fun processScheduled(scheduled: Scheduled, bean: Any, method: Method) {
-        // 是否从@Scheduled注解上去寻找到了定时任务的配置？因为没有找到的话, 需要丢出异常
+        // 是否从@Scheduled注解上去寻找到了定时任务的配置? 因为没有找到的话, 需要丢出异常
         var processedSchedule = true
 
         val runnable = createRunnable(bean, method)
@@ -378,7 +378,7 @@ open class ScheduledAnnotationBeanPostProcessor : ApplicationListener<ContextRef
     }
 
     /**
-     * 是否需要为指定的Bean去注册destruction的回调？
+     * 是否需要为指定的Bean去注册destruction的回调?
      *
      * @param bean 要去注册回调的Bean
      * @return 如果该Bean有@Scheduled方法, 那么return true, 否则return false

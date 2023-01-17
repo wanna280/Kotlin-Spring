@@ -9,8 +9,8 @@ import kotlin.reflect.KClass
  * @see ComponentScanAnnotationParser
  * @see ClassPathBeanDefinitionScanner
  *
- * @param value  要扫描哪些包？具体的作用和basePackages一致, see[basePackages]
- * @param basePackages 要扫描哪些包？具体作用和value一致, see [value]
+ * @param value  要扫描哪些包? 具体的作用和basePackages一致, see[basePackages]
+ * @param basePackages 要扫描哪些包? 具体作用和value一致, see [value]
  * @param basePackageClasses 要以哪些类的所在包去进行扫描
  * @param nameGenerator 扫描过程当中需要使用的beanNameGenerator去生成beanName
  * @param scopeResolver  ScopeResolver, 提供对于Bean的Scope的解析工作, 默认实现为找到@Scope注解去进行使用; (Note: 只有在ScopeProxyMode没有自定义的情况下才会生效)
@@ -18,7 +18,7 @@ import kotlin.reflect.KClass
  * @param includeFilters 需要匹配的条件才能导入进来的Filter, 只要匹配其中一个条件, 就支持被扫描进来
  * @param excludeFilters 匹配其中一个条件就不能导入的排除的Filter
  * @param useDefaultFilters 是否需要使用默认的Filter来匹配@Component相关注解, 默认为true
- * @param lazyInit 是否要将导入进来的Bean全部都设置成为懒加载？
+ * @param lazyInit 是否要将导入进来的Bean全部都设置成为懒加载? 
  */
 @Repeatable
 annotation class ComponentScan(
@@ -45,7 +45,7 @@ annotation class ComponentScan(
      * @see com.wanna.framework.core.type.filter.AssignableTypeFilter
      * @see com.wanna.framework.core.type.filter.RegexPatternTypeFilter
      *
-     * @param filterType  // 要去进行匹配的类型？匹配注解？匹配类型？
+     * @param filterType  // 要去进行匹配的类型? 匹配注解? 匹配类型? 
      * @param value 想要当做Filter的类
      * @param classes 想要当做Filter的类
      */

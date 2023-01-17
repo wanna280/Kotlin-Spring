@@ -38,7 +38,7 @@ interface AnnotationMetadata : AnnotatedTypeMetadata, ClassMetadata {
     }
 
     /**
-     * 该类上是否直接标注了这个注解？
+     * 该类上是否直接标注了这个注解? 
      *
      * @param annotationName 注解的全类名
      * @return 如果直接标注了该注解的话, 那么return true; 否则return false

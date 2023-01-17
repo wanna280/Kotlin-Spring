@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
 @AutoConfigurationPackage
 annotation class EnableAutoConfiguration(val exclude: Array<KClass<*>> = [], val excludeNames: Array<String> = []) {
     companion object {
-        // 是否开启自动配置的属性？通过配置文件将该属性设为false时, 即可关闭自动配置功能
+        // 是否开启自动配置的属性? 通过配置文件将该属性设为false时, 即可关闭自动配置功能
         const val ENABLED_OVERRIDE_PROPERTY: String = "spring.boot.enableautoconfiguration"
     }
 }

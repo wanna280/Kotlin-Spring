@@ -60,7 +60,7 @@ open class ConfigurationPropertiesBean(
     open fun getAnnotation() = annotation
 
     /**
-     * 获取绑定方式, 是采用JavaBean的Setter还是构造器的方式去完成绑定？
+     * 获取绑定方式, 是采用JavaBean的Setter还是构造器的方式去完成绑定? 
      *
      * @return BindMethod(Setter/Constructor)
      */
@@ -108,7 +108,7 @@ open class ConfigurationPropertiesBean(
         }
 
         /**
-         * 判断该Bean是否是通过FactoryMethod(@Bean方法)被导入进来的？
+         * 判断该Bean是否是通过FactoryMethod(@Bean方法)被导入进来的? 
          *
          * @param beanName beanName
          * @param applicationContext ApplicationContext
@@ -195,7 +195,7 @@ open class ConfigurationPropertiesBean(
     }
 
     /**
-     * 采用何种方式去进行绑定？JAVA_BEAN/VALUE_OBJECT两种方式, 对于VALUE_OBJECT是那种全部通过构造器去完成属性注入的Java对象
+     * 采用何种方式去进行绑定? JAVA_BEAN/VALUE_OBJECT两种方式, 对于VALUE_OBJECT是那种全部通过构造器去完成属性注入的Java对象
      */
     enum class BindMethod {
         JAVA_BEAN,  // setter for JavaBean

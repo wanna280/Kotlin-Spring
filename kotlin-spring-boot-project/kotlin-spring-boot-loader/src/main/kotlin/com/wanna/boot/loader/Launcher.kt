@@ -139,7 +139,7 @@ abstract class Launcher {
     }
 
     /**
-     * 该归档文件是否是被解压之后的？
+     * 该归档文件是否是被解压之后的? 
      *
      * @return 如果是被解压之后的, 那么return true
      */

@@ -166,7 +166,7 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
     }
 
     /**
-     * 当前HandlerMapping当中, 是否存在有CorsConfigurationSource？
+     * 当前HandlerMapping当中, 是否存在有CorsConfigurationSource?
      * 默认情况下：只要当前HandlerMapping当中存在着CorsConfigurationSource,
      * 或者Handler本身就是CorsConfigurationSource类型, return true,
      * 子类也可以根据需要去进行扩展该功能

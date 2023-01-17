@@ -18,7 +18,7 @@ import com.wanna.framework.web.method.support.ModelAndViewContainer
 open class ErrorsMethodArgumentResolver : HandlerMethodArgumentResolver {
 
     /**
-     * 支持哪些类型的参数？支持去处理Errors/BindingResult类型的方法参数(BindingResult是Errors的子接口)
+     * 支持哪些类型的参数? 支持去处理Errors/BindingResult类型的方法参数(BindingResult是Errors的子接口)
      *
      * @param parameter 方法参数
      * @return 如果它是Errors的子类(包括BindingResult的子类), 那么就支持去进行处理

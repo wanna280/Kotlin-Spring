@@ -72,7 +72,7 @@ open class AsyncAnnotationAdvisor() : AbstractPointcutAdvisor(), BeanFactoryAwar
     /**
      * 构建Pointcut, 去匹配一个类/方法上的@Async注解
      *
-     * @param asyncAnnotationTypes 要使用的@Async注解列表？
+     * @param asyncAnnotationTypes 要使用的@Async注解列表?
      * @return Pointcut
      */
     protected open fun buildPointcut(asyncAnnotationTypes: Set<Class<out Annotation>>): Pointcut {

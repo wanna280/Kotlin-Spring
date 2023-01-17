@@ -36,21 +36,21 @@ open class GenericConversionService : ConfigurableConversionService {
     }
 
     /**
-     * 判断Converter注册中心当中, 是否存在有这样的Converter, 能去完成从sourceType->targetType的类型转换？
+     * 判断Converter注册中心当中, 是否存在有这样的Converter, 能去完成从sourceType->targetType的类型转换?
      *
      * @param sourceType sourceType
      * @param targetType targetType
-     * @return 是否能支持从sourceType->targetType？
+     * @return 是否能支持从sourceType->targetType?
      */
     override fun canConvert(sourceType: Class<*>, targetType: Class<*>) =
         converters.getConverter(sourceType, targetType).hasConverter()
 
     /**
-     * 判断Converter注册中心当中, 是否存在有这样的Converter, 能去完成从sourceType->targetType的类型转换？
+     * 判断Converter注册中心当中, 是否存在有这样的Converter, 能去完成从sourceType->targetType的类型转换?
      *
      * @param sourceType sourceType
      * @param targetType targetType
-     * @return 是否能支持从sourceType->targetType？
+     * @return 是否能支持从sourceType->targetType?
      */
     override fun canConvert(sourceType: TypeDescriptor, targetType: TypeDescriptor) =
         canConvert(sourceType.type, targetType.type)

@@ -225,7 +225,7 @@ open class DefaultBeanDefinitionDocumentReader : BeanDefinitionDocumentReader {
         // 真正的资源
         val actualResources = LinkedHashSet<Resource>()
 
-        // 判断该位置是一个绝对路径还是一个相对路径？
+        // 判断该位置是一个绝对路径还是一个相对路径?
         var absoluteLocation = false
         try {
             absoluteLocation = ResourcePatternUtils.isUrl(location) || ResourceUtils.toURI(location).isAbsolute

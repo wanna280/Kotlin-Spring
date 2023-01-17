@@ -227,7 +227,7 @@ abstract class AbstractTestContextBootstrapper : TestContextBootstrapper {
             AnnotatedElementUtils.getMergedAnnotation(testClass, TestExecutionListeners::class.java)
         val listenerClasses: Collection<Class<out TestExecutionListener>>
 
-        // 是否需要引用默认的Listener？
+        // 是否需要引用默认的Listener?
         var useDefaults = false
         // 如果没有@TestExecutionListeners注解的话, 将会采用默认的TestExecutionListener
         if (listenersAnnotation == null) {

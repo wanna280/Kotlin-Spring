@@ -260,8 +260,8 @@ open class CorsConfiguration() {
     }
 
     /**
-     * 检查你给出的所有的HttpHeaders的列表, 判断你给出的所有的HttpHeader, 在CROS请求当中, 我作为服务端是否允许？
-     * 并返回浏览器, 我服务端允许了你给出的哪些RequestHeader？如果一个都不允许(return null), 说明本次CORS请求不合法,
+     * 检查你给出的所有的HttpHeaders的列表, 判断你给出的所有的HttpHeader, 在CROS请求当中, 我作为服务端是否允许?
+     * 并返回浏览器, 我服务端允许了你给出的哪些RequestHeader? 如果一个都不允许(return null), 说明本次CORS请求不合法,
      * 因为你连我要求的一个Header都没给出, 你必须给出其中一个我允许的Header, 才能通过本次请求
      *
      * @param requestHeaders requestHeaders(PreFlight请求的"Access-Control-Request-Headers", 或者是Http请求当中的Headers)
@@ -277,12 +277,12 @@ open class CorsConfiguration() {
             return null
         }
 
-        // 先统计出判断是否是允许所有的Header？
+        // 先统计出判断是否是允许所有的Header?
         val allowAnyHeader = this.allowedHeaders!!.contains(ALL)
 
         val result = ArrayList<String>(requestHeaders.size)
 
-        // 匹配客户端给的所有请求, 看看服务器端允不允许Header？
+        // 匹配客户端给的所有请求, 看看服务器端允不允许Header?
         requestHeaders.forEach {
             val requestHeader = it.trim()
             if (allowAnyHeader) {

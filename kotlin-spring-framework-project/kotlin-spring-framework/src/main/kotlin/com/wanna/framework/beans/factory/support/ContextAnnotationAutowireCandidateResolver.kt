@@ -31,7 +31,7 @@ open class ContextAnnotationAutowireCandidateResolver : QualifierAnnotationAutow
     }
 
     /**
-     * 该依赖是否是懒加载的？
+     * 该依赖是否是懒加载的? 
      *
      * @param descriptor 依赖描述符
      * @return 如果有@Lazy注解并且value设置为true, return true; 没有则return false

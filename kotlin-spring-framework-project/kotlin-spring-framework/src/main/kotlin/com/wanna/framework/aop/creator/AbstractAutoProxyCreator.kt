@@ -173,7 +173,7 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
     }
 
     /**
-     * 判断一个类是否是基础设施的类？只要它是Advice/Advisor/Pointcut/AopInfrastructureBean的子类,
+     * 判断一个类是否是基础设施的类? 只要它是Advice/Advisor/Pointcut/AopInfrastructureBean的子类,
      * 那么它就会被判断为一个基础设施的Class, log：不要尝试在基础设施Bean上去创建代理！
      *
      * @param beanClass beanClass
@@ -240,7 +240,7 @@ abstract class AbstractAutoProxyCreator : SmartInstantiationAwareBeanPostProcess
 
 
     /**
-     * 针对于给定的Bean去获取Advices和Advisors, 具体怎么获取这些Advice和Advisor？交给子类去进行实现,
+     * 针对于给定的Bean去获取Advices和Advisors, 具体怎么获取这些Advice和Advisor? 交给子类去进行实现,
      * 这个类当中仅仅去提供抽象的模板方法, 并不提供具体的实现方式
      *
      * @return 如果返回空, 代表不进行代理; 如果返回非空, 则根据返回的Advisor和Advice去产生代理

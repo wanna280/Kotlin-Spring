@@ -57,7 +57,7 @@ open class PropertyPlaceholderConfigurer : PlaceholderConfigurerSupport() {
      *
      * @param placeholder 占位符的属性名
      * @param properties Properties
-     * @param systemPropertiesMode 对于SystemProperties, 应该怎么去进行使用？override/fallback/never
+     * @param systemPropertiesMode 对于SystemProperties, 应该怎么去进行使用? override/fallback/never
      * @return 占位符解析到的属性值
      */
     protected open fun resolvePlaceholder(

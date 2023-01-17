@@ -208,7 +208,7 @@ object ReflectionUtils {
      *
      * @param clazz 目标类
      * @param action 对方法要执行的操作
-     * @param filter 哪些方法需要进行操作？使用Filter去进行过滤出来
+     * @param filter 哪些方法需要进行操作? 使用Filter去进行过滤出来
      */
     @JvmStatic
     fun doWithFields(clazz: Class<*>, action: FieldCallback, filter: (Field) -> Boolean) {
@@ -235,7 +235,7 @@ object ReflectionUtils {
      *
      * @param clazz 目标类
      * @param action 对方法要执行的操作
-     * @param filter 哪些方法需要进行操作？
+     * @param filter 哪些方法需要进行操作? 
      */
     @JvmStatic
     fun doWithLocalFields(clazz: Class<*>, action: FieldCallback, filter: FieldMatcher) {
@@ -439,7 +439,7 @@ object ReflectionUtils {
     }
 
     /**
-     * 判断给定的字段是否是"public static final"的字段？
+     * 判断给定的字段是否是"public static final"的字段? 
      *
      * @param field 待检查的字段
      * @return 如果是"public static final", return true; 否则return false
@@ -465,7 +465,7 @@ object ReflectionUtils {
      *
      * @param clazz 要执行方法的类
      * @param action 要根据Method去进行执行的操作
-     * @param filter 该方法是否要执行的Filter？return true->执行, else->不执行
+     * @param filter 该方法是否要执行的Filter? return true->执行, else->不执行
      */
     @JvmStatic
     fun doWithLocalMethods(clazz: Class<*>, action: MethodCallback, filter: MethodMatcher) {
@@ -495,7 +495,7 @@ object ReflectionUtils {
      *
      * @param clazz 要执行方法的类
      * @param action 要根据Method去进行执行的操作
-     * @param filter 该方法是否要执行的Filter？return true->执行, else->不执行
+     * @param filter 该方法是否要执行的Filter? return true->执行, else->不执行
      */
     @JvmStatic
     fun doWithMethods(clazz: Class<*>, action: MethodCallback, filter: MethodMatcher) {
@@ -551,7 +551,7 @@ object ReflectionUtils {
      * 获取一个类定义的所有方法(包含declaredMethods, 以及直接接口上的defaultMethods)
      *
      * @param clazz 要获取方法的类
-     * @param defensive 这个方法是否具有侵入性？也就是需不需要将数据clone一份出来返回？true代表需要, 反之不需要
+     * @param defensive 这个方法是否具有侵入性? 也就是需不需要将数据clone一份出来返回? true代表需要, 反之不需要
      * @return 从给定的类上去解析完成的方法数组(包含declaredMethods, 以及直接接口上的defaultMethods)
      */
     @JvmStatic

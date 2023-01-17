@@ -55,7 +55,7 @@ abstract class AbstractFallbackTransactionAttributeSource : TransactionAttribute
     protected abstract fun findTransactionAttribute(method: Method): TransactionAttribute?
 
     /**
-     * 是否只允许public方法(默认为false)拥有事务？
+     * 是否只允许public方法(默认为false)拥有事务? 
      *
      * @return 如果只允许public方法, return true; 不然为false
      */

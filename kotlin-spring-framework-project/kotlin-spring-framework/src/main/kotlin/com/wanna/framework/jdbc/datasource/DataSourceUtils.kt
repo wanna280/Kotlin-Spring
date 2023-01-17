@@ -99,7 +99,7 @@ object DataSourceUtils {
     fun doReleaseConnection(connection: Connection?, dataSource: DataSource?) {
         connection ?: return
         if (dataSource != null) {
-            // 从事务同步管理器当中去获取到Connection, 去进行释放连接？
+            // 从事务同步管理器当中去获取到Connection, 去进行释放连接?
             val connectionHolder = TransactionSynchronizationManager.getResource(dataSource) as ConnectionHolder?
             if (connectionHolder != null && connectionHolder.connection == connection) {
                 connectionHolder.released()

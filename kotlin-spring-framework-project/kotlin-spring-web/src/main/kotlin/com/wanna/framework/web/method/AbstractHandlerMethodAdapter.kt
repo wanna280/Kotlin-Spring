@@ -59,7 +59,7 @@ abstract class AbstractHandlerMethodAdapter : HandlerAdapter, Ordered {
      * 子类需要自定义的是否支持处理的方式
      *
      * @param handler HandlerMethod
-     * @return 是否支持使用这样的Handler去处理请求？
+     * @return 是否支持使用这样的Handler去处理请求? 
      */
     abstract fun supportInternal(handler: HandlerMethod): Boolean
 }

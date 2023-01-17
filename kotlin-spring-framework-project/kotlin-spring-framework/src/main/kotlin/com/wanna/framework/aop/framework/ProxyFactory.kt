@@ -1,7 +1,7 @@
 package com.wanna.framework.aop.framework
 
 /**
- * ## 1.ProxyFactory是什么？
+ * ## 1.ProxyFactory是什么?
  *
  * ProxyFactory是AdvisedSupport的子类, 可以通过它配置要进行代理的接口以及TargetSource等配置, 最终通过getProxy去生成Aop代理; 
  * 对于Spring当中去创建Aop代理, 这个类是SpringAop的一个入口类, 只需要去自定义ProxyFactory的TargetSource, 即可完成代理; 

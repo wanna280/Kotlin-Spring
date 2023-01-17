@@ -17,8 +17,8 @@ import java.lang.reflect.Method
 
 /**
  * 这是一个处理@RequestMapping注解的HandlerMapping, 基本上所有的功能都在它的父类当中实现了, 它需要实现相关的模板方法：
- * (1)如何判断它是一个Handler？---如果类上标注了@RequestMapping/@Controller注解, 它就是一个支持当前类去进行处理的Handler
- * (2)如果解析一个HandlerMethod？---解析方法/类上的@RequestMapping注解的相关信息即可判断它是否是一个HandlerMethod
+ * (1)如何判断它是一个Handler? ---如果类上标注了@RequestMapping/@Controller注解, 它就是一个支持当前类去进行处理的Handler
+ * (2)如果解析一个HandlerMethod? ---解析方法/类上的@RequestMapping注解的相关信息即可判断它是否是一个HandlerMethod
  *
  * @see RequestMapping
  * @see Controller
@@ -40,7 +40,7 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
     private var contentNegotiationManager = ContentNegotiationManager()
 
     /**
-     * 怎么判断它是否是一个Handler？只需要类上加了@Controller/@RequestMapping注解, 它就是一个Handler;
+     * 怎么判断它是否是一个Handler? 只需要类上加了@Controller/@RequestMapping注解, 它就是一个Handler;
      * 这里使用的hasAnnotation的API, 可以向目标类的父类当中去进行搜索;
      * 对于一个Controller产生了代理的情况下, 这种情况是很必要的！！！
      *

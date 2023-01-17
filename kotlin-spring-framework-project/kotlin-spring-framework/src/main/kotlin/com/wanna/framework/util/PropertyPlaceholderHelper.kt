@@ -39,7 +39,7 @@ open class PropertyPlaceholderHelper(
      * 解析占位符, 支持"%{%{user.name}} %{user.id}"这种情况, user.name等具体的属性值, 甚至还可以是占位符, 也支持去进行解析
      *
      * @param text 要去进行解析的目标占位符文本
-     * @param placeholderResolver 占位符解析的策略接口, 从哪获取属性的回调方法？
+     * @param placeholderResolver 占位符解析的策略接口, 从哪获取属性的回调方法?
      * @return 解析完成的占位符
      * @see parseStringValue
      */
@@ -51,7 +51,7 @@ open class PropertyPlaceholderHelper(
      * 解析占位符, 本来需要传入的是一个PlaceholderResolver, 为了能直接提供一个Kotlin函数引用, 在这里使用适配器模式去做一层适配
      *
      * @param text 要去进行解析的目标占位符文本
-     * @param placeholderResolver 占位符解析的策略接口, 从哪获取属性的回调方法？
+     * @param placeholderResolver 占位符解析的策略接口, 从哪获取属性的回调方法?
      * @return 解析完成的占位符
      * @see parseStringValue
      */
@@ -64,7 +64,7 @@ open class PropertyPlaceholderHelper(
     /**
      * 解析字符串的值, 在这里完成真正的占位符解析
      * @param text 要去进行解析的目标占位符文本
-     * @param placeholderResolver 占位符解析的策略接口, 从哪获取属性的回调方法？
+     * @param placeholderResolver 占位符解析的策略接口, 从哪获取属性的回调方法?
      * @param visitedPlaceholder 已经完成解析的占位符, 避免递归过程中, 出现循环解析的情况...
      * @return 解析完成的占位符
      */
@@ -144,7 +144,7 @@ open class PropertyPlaceholderHelper(
      * 如果最终, withinNestedPlaceholder==0时, 说明内部的全部占位符都解析完了, 直接return, 后面部分的字符串就不用管了
      *
      * @param text 要去寻找的文本
-     * @param startIndex 从哪里开始寻找？
+     * @param startIndex 从哪里开始寻找?
      * @return 找到的占位符的结束位置(如果没有找到, return -1)
      */
     protected open fun findPlaceholderEndIndex(text: CharSequence, startIndex: Int): Int {

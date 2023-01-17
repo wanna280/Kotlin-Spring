@@ -113,7 +113,7 @@ open class OnClassCondition : FilteringSpringBootCondition() {
     }
 
     /**
-     * 获取Condition的匹配结果, 判断requiredBeanTypes列表当中的所有的className是否都已经存在？
+     * 获取Condition的匹配结果, 判断requiredBeanTypes列表当中的所有的className是否都已经存在?
      *
      * @param requiredBeanTypes 需要去进行匹配的className列表
      * @return 如果要匹配的所有className都已经存在, 那么return null; 如果存在有className不存在的, 那么return noMatch

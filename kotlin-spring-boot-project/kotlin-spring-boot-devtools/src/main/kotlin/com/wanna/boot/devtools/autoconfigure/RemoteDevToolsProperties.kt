@@ -20,7 +20,7 @@ class RemoteDevToolsProperties {
     // 需要携带的Secret
     var secret: String = ""
 
-    // 是否要开启Restart？
+    // 是否要开启Restart? 
     var restart = Restart()
 
     class Restart {

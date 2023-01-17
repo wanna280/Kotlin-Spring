@@ -80,7 +80,7 @@ internal class JarFileEntries
     private lateinit var certifications: Array<JarEntryCertification>
 
     /**
-     * 判断当前Jar包是否是一个多发行版的Jar包？
+     * 判断当前Jar包是否是一个多发行版的Jar包?
      * 如果Manifest当中存在有"Multi-Release"的话, 就属于是多发行版Jar包
      */
     private val isMultiReleaseJar: Boolean
@@ -326,14 +326,14 @@ internal class JarFileEntries
      *
      * @param name 文件名
      * @param type type(CentralDirectoryFileHeader/JarEntry)
-     * @param cacheEntry 是否需要把搜索结果添加到entryCache当中？
+     * @param cacheEntry 是否需要把搜索结果添加到entryCache当中?
      * @return FileHeader
      */
     private fun <T : FileHeader> getEntry(name: CharSequence, type: Class<T>, cacheEntry: Boolean): T? {
         // 根据name和type去获取到对应的FileHeader
         val entry: T? = doGetEntry(name, type, cacheEntry, null)
 
-        // 如果它不是一个META-INF的FileHeader, 并且是个多发行版的Jar包？
+        // 如果它不是一个META-INF的FileHeader, 并且是个多发行版的Jar包?
         if (!isMetaInfEntry(name) && isMultiReleaseJar!!) {
             var version = RUNTIME_VERSION
             val nameAlias = if (entry is JarEntry) entry.asciiBytesName else AsciiBytes(name.toString())
@@ -349,7 +349,7 @@ internal class JarFileEntries
     }
 
     /**
-     * 当前给定的这个文件名是否是"META-INF/"下的Entry？
+     * 当前给定的这个文件名是否是"META-INF/"下的Entry?
      *
      * @param name 文件名
      * @return 如果以"META-INF/"开头, return true; 否则return false
@@ -361,7 +361,7 @@ internal class JarFileEntries
      *
      * @param name fileName
      * @param type type(CentralDirectoryFileHeader/JarEntry)
-     * @param cacheEntry 是否需要把搜索结果添加到entryCache当中？
+     * @param cacheEntry 是否需要把搜索结果添加到entryCache当中?
      */
     private fun <T : FileHeader> doGetEntry(
         name: CharSequence, type: Class<T>, cacheEntry: Boolean,
@@ -389,7 +389,7 @@ internal class JarFileEntries
      * @param hashCode 文件名的hashCode
      * @param name 文件名
      * @param type type(CentralDirectoryFileHeader/JarEntry)
-     * @param cacheEntry 是否需要把搜索结果添加到entryCache当中？
+     * @param cacheEntry 是否需要把搜索结果添加到entryCache当中?
      * @param nameAlias nameAlias
      */
     private fun <T : FileHeader> getEntry(
@@ -441,7 +441,7 @@ internal class JarFileEntries
      *
      * @param index index
      * @param type type
-     * @param cacheEntry 是否需要把搜索结果添加到entryCache当中？
+     * @param cacheEntry 是否需要把搜索结果添加到entryCache当中?
      * @param nameAlias nameAlias
      * @return FileHeader(CentralDirectoryFileHeader/JarEntry)
      */

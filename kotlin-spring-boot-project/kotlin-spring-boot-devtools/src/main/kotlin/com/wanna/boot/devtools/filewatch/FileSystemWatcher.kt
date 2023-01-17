@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * 基于文件系统的方式, 观察指定的文件/文件夹的变化情况的Watcher
  *
- * @param daemon Watcher是否要使用daemon线程？
+ * @param daemon Watcher是否要使用daemon线程?
  * @param pollInterval poll的间隔
  * @param quietPeriod quiet的间隔(在扫描完一次目录之后, 需要休息一段时间再去进行继续扫描)
  * @param snapshotStateRepository 存放快照的仓库
@@ -217,7 +217,7 @@ class FileSystemWatcher(
         }
 
         /**
-         * 遍历所有的要去进行扫描的文件夹, 去检查是否有文件夹下的文件内容发生变化？
+         * 遍历所有的要去进行扫描的文件夹, 去检查是否有文件夹下的文件内容发生变化?
          *
          * @throws IllegalStateException 如果在睡眠的过程当中被interrupt
          */
@@ -243,7 +243,7 @@ class FileSystemWatcher(
         }
 
         /**
-         * 比较之前的和现在的目录下的的触发文件的内容是否不相同？
+         * 比较之前的和现在的目录下的的触发文件的内容是否不相同?
          *
          * @param previous 先前的Snapshot信息
          * @param current 当前的Snapshot信息

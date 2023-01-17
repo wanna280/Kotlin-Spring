@@ -226,7 +226,7 @@ object ClassUtils {
     }
 
     /**
-     * 判断childClass是否是parentClass的子类？如果其中一个返回为空, 那么return true; 只有两者均不为空时, 才会去进行判断
+     * 判断childClass是否是parentClass的子类? 如果其中一个返回为空, 那么return true; 只有两者均不为空时, 才会去进行判断
      *
      * @param parentClass parentClass
      * @param childClass parentClass
@@ -248,7 +248,7 @@ object ClassUtils {
         if (value != null) isAssignFrom(type, value::class.java) else !type.isPrimitive
 
     /**
-     * 判断childClass是否是parentClass的子类？如果其中一个返回为空, 那么return true; 只有两者均不为空时, 才会去进行判断
+     * 判断childClass是否是parentClass的子类? 如果其中一个返回为空, 那么return true; 只有两者均不为空时, 才会去进行判断
      *
      * @param lhsType parentClass
      * @param rhsType childClass
@@ -409,7 +409,7 @@ object ClassUtils {
     }
 
     /**
-     * 判断指定的类是否存在于当前JVM的运行时的依赖当中？
+     * 判断指定的类是否存在于当前JVM的运行时的依赖当中?
      *
      * @param className 要去进行判断的className
      * @return 存在return true; 不存在return false
@@ -430,7 +430,7 @@ object ClassUtils {
     }
 
     /**
-     * 判断指定的类当中是否存在有给定名字的方法？
+     * 判断指定的类当中是否存在有给定名字的方法?
      * (Note: 1.只找public方法)
      *
      * @param clazz clazz
@@ -497,7 +497,7 @@ object ClassUtils {
     }
 
     /**
-     * 判断指定的类是否存在于当前JVM的运行时的依赖当中？
+     * 判断指定的类是否存在于当前JVM的运行时的依赖当中?
      *
      * @param className 要去进行判断的className
      * @param classLoader 要使用的ClassLoader

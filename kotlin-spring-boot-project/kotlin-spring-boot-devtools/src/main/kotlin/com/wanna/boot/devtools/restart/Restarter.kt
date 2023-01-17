@@ -51,7 +51,7 @@ open class Restarter(
     // Logger
     private var logger: Logger = LoggerFactory.getLogger(Restarter::class.java)
 
-    // 是否启用了Restart功能？如果设置为false, 则不会去进行重启
+    // 是否启用了Restart功能? 如果设置为false, 则不会去进行重启
     var enabled = true
 
     // Restarter的属性信息
@@ -141,7 +141,7 @@ open class Restarter(
     /**
      * 完成Restarter的初始化工作, 如果必要的话, 现在就立马去完成重启
      *
-     * @param restartOnInitialize 在初始化时是否就应该去重启整个SpringApplication？
+     * @param restartOnInitialize 在初始化时是否就应该去重启整个SpringApplication? 
      * 如果为true, 那么立刻完成初始化工作; 如果为false, 那么需要在文件发生改变时才去进行重启
      */
     open fun initialize(restartOnInitialize: Boolean) {
@@ -221,7 +221,7 @@ open class Restarter(
      * 启动Application, 使用RestartClassLoader去加载类, 并使用
      * RestartLauncher去反射执行目标main方法
      *
-     * @param failureHandler 启动失败的异常处理器, 可以决策启动失败应该怎么办？应该放弃, 还是应该重试？
+     * @param failureHandler 启动失败的异常处理器, 可以决策启动失败应该怎么办? 应该放弃, 还是应该重试? 
      */
     protected open fun start(failureHandler: FailureHandler) {
         while (true) {
@@ -390,7 +390,7 @@ open class Restarter(
          *
          * @param args 命令行参数
          * @param initializer Restart的初始化器
-         * @param restartOnInitialize 在初始化时是否就去完成重启SpringApplication？默认为true
+         * @param restartOnInitialize 在初始化时是否就去完成重启SpringApplication? 默认为true
          */
         @JvmStatic
         fun initialize(args: Array<String>, initializer: RestartInitializer, restartOnInitialize: Boolean = true) {

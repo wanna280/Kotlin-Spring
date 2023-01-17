@@ -83,7 +83,7 @@ open class ProducesRequestCondition(
             return null  // 解析错误, 那么说明不匹配, return null
         }
 
-        // 4.获取匹配的结果, 判断你想要去进行接收的MediaType, 看下有哪个是我能产出的？
+        // 4.获取匹配的结果, 判断你想要去进行接收的MediaType, 看下有哪个是我能产出的?
         val result = getMatchingExpressions(mediaTypes)
 
         // 5.如果确实有我能去进行产出的, 那么return ProducesRequestCondition, 并包装我能去进行产出的类型
@@ -99,7 +99,7 @@ open class ProducesRequestCondition(
     }
 
     /**
-     * 遍历你所有想要接收的数据类型, 看是否有一个是我想要去进行产出的？
+     * 遍历你所有想要接收的数据类型, 看是否有一个是我想要去进行产出的?
      *
      * @param acceptedMediaTypes 你想要去进行接收的MediaType列表
      * @return 如果有我能去进行产出的, 那么return 能产出MediaType的List; 如果没有我能去进行产出的, 那么return null

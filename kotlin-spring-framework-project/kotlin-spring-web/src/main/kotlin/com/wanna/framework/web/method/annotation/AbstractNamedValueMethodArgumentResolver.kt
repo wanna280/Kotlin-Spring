@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap
  * 此类的所有子类当中需要提供实现的方法：
  * (1)在createNamedValueInfo方法当中, 告诉本类NamedValueInfo如何去进行解析
  * (2)在resolveName方法当中, 如何根据根据name去解析出来value的值
- * (3)在supportsParameter方法当中, 判断当前参数你是否支持解析？
+ * (3)在supportsParameter方法当中, 判断当前参数你是否支持解析?
  *
  * @see RequestParamMethodArgumentResolver
  * @see RequestHeaderMethodArgumentResolver
@@ -174,7 +174,7 @@ abstract class AbstractNamedValueMethodArgumentResolver : HandlerMethodArgumentR
      * @see CookieValue
      *
      * @param name paramName
-     * @param required 是否是必须的？
+     * @param required 是否是必须的?
      * @param defaultValue 默认值
      */
     protected open class NamedValueInfo(val name: String, val required: Boolean, val defaultValue: String?)

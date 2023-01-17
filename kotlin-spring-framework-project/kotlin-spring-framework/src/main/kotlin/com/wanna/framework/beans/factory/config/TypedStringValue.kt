@@ -13,7 +13,7 @@ import kotlin.jvm.Throws
  * @see MutablePropertyValues.addPropertyValue
  *
  * @param value 要去进行解析的字符串表达式
- * @param targetType targetType or targetTypeName(需要把value解析成为什么类型？支持使用TypeConverter去完成转换)
+ * @param targetType targetType or targetTypeName(需要把value解析成为什么类型? 支持使用TypeConverter去完成转换)
  */
 open class TypedStringValue(val value: String? = null, val targetType: Any? = null) : BeanMetadataElement {
 

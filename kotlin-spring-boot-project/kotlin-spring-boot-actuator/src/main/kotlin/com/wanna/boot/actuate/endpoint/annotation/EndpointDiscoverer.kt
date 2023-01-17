@@ -111,7 +111,7 @@ abstract class EndpointDiscoverer<E : ExposableEndpoint<O>, O : Operation>(priva
     ): O
 
     /**
-     * 是否该Endpoint的类型需要去进行暴露？(默认情况下, 只要有@Endpoint注解就行, 支持去进行自定义)
+     * 是否该Endpoint的类型需要去进行暴露? (默认情况下, 只要有@Endpoint注解就行, 支持去进行自定义)
      *
      * @param beanType beanType
      * @return 如果需要暴露, return true; 否则return false

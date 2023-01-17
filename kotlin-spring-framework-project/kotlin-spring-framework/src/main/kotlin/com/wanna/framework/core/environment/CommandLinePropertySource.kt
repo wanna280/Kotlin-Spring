@@ -42,7 +42,7 @@ abstract class CommandLinePropertySource<T>(name: String, source: T) : Enumerabl
     }
 
     /**
-     * 在命令行的PropertySource当中是否存在有该属性值？
+     * 在命令行的PropertySource当中是否存在有该属性值? 
      * (1)如果name为noOptionArgs的属性值name, 那么需要判断noOptionArgs是否为空
      * (2)如果name不为noOptionArgs的属性值name, 那么就从optionArgs当中去进行判断
      */
@@ -56,7 +56,7 @@ abstract class CommandLinePropertySource<T>(name: String, source: T) : Enumerabl
     }
 
     /**
-     * PropertySource当中是否已经包含了该参数？交给子类去进行实现
+     * PropertySource当中是否已经包含了该参数? 交给子类去进行实现
      */
     abstract fun containsOption(name: String): Boolean
 

@@ -21,7 +21,7 @@ abstract class AbstractAsyncConfiguration : ImportAware {
     // 执行异步方法的默认Executor
     protected var executor: Supplier<Executor>? = null
 
-    // 执行异步方法过程中遇到没有捕获的异常, 应该怎么去处理？
+    // 执行异步方法过程中遇到没有捕获的异常, 应该怎么去处理? 
     protected var exceptionHandler: Supplier<AsyncUncaughtExceptionHandler>? = null
 
     /**

@@ -167,7 +167,7 @@ abstract class AbstractApplicationEventMulticaster :
                         if (ClassUtils.isAssignFrom(listenerGeneric, eventClass)) {
                             applicationListeners += it
                         }
-                        // 如果没有泛型类型？自己看着办
+                        // 如果没有泛型类型? 自己看着办
                     } else {
                         applicationListeners += it
                     }

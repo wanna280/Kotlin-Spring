@@ -31,20 +31,20 @@ open class RequestResponseBodyMethodProcessor(
     }
 
     /**
-     * 它支持处理什么样的参数？方法参数上标注了@RequestBody的参数即可支持处理
+     * 它支持处理什么样的参数? 方法参数上标注了@RequestBody的参数即可支持处理
      *
      * @param parameter 方法参数
-     * @return 是否支持处理这样的参数？
+     * @return 是否支持处理这样的参数?
      */
     override fun supportsParameter(parameter: MethodParameter): Boolean {
         return parameter.getAnnotation(RequestBody::class.java) != null
     }
 
     /**
-     * 它支持处理什么样的返回值？只要目标类的HandlerMethod上标注了@ResponseBody的返回值, 或者类上标注了@ResponseBody即可支持处理
+     * 它支持处理什么样的返回值? 只要目标类的HandlerMethod上标注了@ResponseBody的返回值, 或者类上标注了@ResponseBody即可支持处理
      *
      * @param parameter 返回值类型
-     * @return 是否支持处理这样的返回值类型？
+     * @return 是否支持处理这样的返回值类型?
      */
     override fun supportsReturnType(parameter: MethodParameter): Boolean {
         return parameter.hasMethodAnnotation(ResponseBody::class.java)
@@ -91,7 +91,7 @@ open class RequestResponseBodyMethodProcessor(
             // 创建一个WebDataBinder
             val dataBinder = binderFactory.createBinder(webRequest, arg, name)
             if (arg != null) {
-                // 检验参数是否合法？
+                // 检验参数是否合法?
                 validateIfApplicable(dataBinder, parameter)
 
                 // 如果DataBinder的BindingResult当中存在有Errors, 并且当前参数的下一个参数并不是BindingResult的话

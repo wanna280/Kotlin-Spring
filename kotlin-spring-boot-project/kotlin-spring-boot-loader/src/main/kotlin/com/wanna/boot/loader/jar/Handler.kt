@@ -383,7 +383,7 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
     }
 
     /**
-     * 判断给定的两个URL是否是相同的文件？
+     * 判断给定的两个URL是否是相同的文件?
      *
      * @param u1 url1
      * @param u2 url2

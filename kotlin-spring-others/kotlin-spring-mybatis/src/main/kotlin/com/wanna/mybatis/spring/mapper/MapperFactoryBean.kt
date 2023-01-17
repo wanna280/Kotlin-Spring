@@ -13,7 +13,7 @@ import com.wanna.mybatis.spring.support.SqlSessionDaoSupport
 open class MapperFactoryBean(var mapperInterface: Class<*>? = null) : FactoryBean<Any>, SqlSessionDaoSupport() {
 
     /**
-     * 是否需要添加到Configuration当中？
+     * 是否需要添加到Configuration当中? 
      */
     var addToConfig = true
 

@@ -33,7 +33,7 @@ abstract class ApplicationObjectSupport : ApplicationContextAware {
     }
 
     /**
-     * 是否ApplicationContext是必须设置的？如果是的话, 没有设置还想获取直接抛异常
+     * 是否ApplicationContext是必须设置的? 如果是的话, 没有设置还想获取直接抛异常
      */
     protected open fun isContextRequired(): Boolean {
         return false

@@ -193,7 +193,7 @@ interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
     fun getRole(): Int
 
     /**
-     * 当前BeanDefinition是否是抽象的？
+     * 当前BeanDefinition是否是抽象的? 
      *
      * @param abstractFlag 如果抽象, 设置为true; 否则为false
      */
@@ -229,7 +229,7 @@ interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
     fun getMethodOverrides(): MethodOverrides
 
     /**
-     * 当前BeanDefinition当中是否有需要进行运行时方法重写的？
+     * 当前BeanDefinition当中是否有需要进行运行时方法重写的? 
      *
      * @return 如果当前BeanDefinition存在有要进行运行时方法重写的话, return true; 否则return false
      */
@@ -243,7 +243,7 @@ interface BeanDefinition : AttributeAccessor, BeanMetadataElement {
     fun getPropertyValues(): MutablePropertyValues
 
     /**
-     * 是否有PropertyValue？
+     * 是否有PropertyValue? 
      *
      * @return 如果存在有PropertyValue的话, return true; 否则return false
      */

@@ -84,7 +84,7 @@ open class DefaultBootstrapContext : ConfigurableBootstrapContext {
         getOrElseThrow(type, exceptionSupplier.get())
 
     /**
-     * 判断当前的BootstrapContext当中是否已经注册了给定类型的实例？
+     * 判断当前的BootstrapContext当中是否已经注册了给定类型的实例? 
      *
      * @param type type
      * @param T Type
@@ -159,7 +159,7 @@ open class DefaultBootstrapContext : ConfigurableBootstrapContext {
      *
      * @param type type
      * @param instanceSupplier InstanceSupplier
-     * @param replaceExisting 是否需要替换掉已经存在的？
+     * @param replaceExisting 是否需要替换掉已经存在的? 
      * @throws IllegalStateException 如果之前已经存在过实例, 还去进行初始
      */
     private fun <T> register(type: Class<T>, instanceSupplier: InstanceSupplier<T>, replaceExisting: Boolean) {

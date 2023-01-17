@@ -11,10 +11,10 @@ import com.wanna.framework.web.context.request.NativeWebRequest
 interface HandlerMethodReturnValueHandler {
 
     /**
-     * 是否支持处理这样的返回值？
+     * 是否支持处理这样的返回值?
      *
      * @param parameter 方法返回值封装的MethodParameter
-     * @return 是否支持处理？支持return true; 不然return false
+     * @return 是否支持处理? 支持return true; 不然return false
      */
     fun supportsReturnType(parameter: MethodParameter): Boolean
 

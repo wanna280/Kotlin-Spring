@@ -31,11 +31,11 @@ object AopUtils {
     }
 
     /**
-     * 指定的Advisor是否可以应用给目标类？
+     * 指定的Advisor是否可以应用给目标类?
      *
      * @param advisor 要匹配的Advisor
      * @param targetClass 目标类
-     * @return 该Advisor是否可以应用给targetClass？可以应用return true; 否则return false
+     * @return 该Advisor是否可以应用给targetClass? 可以应用return true; 否则return false
      */
     @JvmStatic
     fun canApply(advisor: Advisor, targetClass: Class<*>): Boolean {

@@ -58,7 +58,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
      * 如果依赖描述符上给定的required=true, 并且Autowired上required=false, 那么也得return false;
      *
      * @param descriptor 依赖描述符
-     * @return 该依赖是否是必须的？
+     * @return 该依赖是否是必须的? 
      */
     override fun isRequired(descriptor: DependencyDescriptor): Boolean {
         val autowired = descriptor.getAnnotation(Autowired::class.java)
@@ -78,7 +78,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
      *
      * @param bdHolder 候选Bean对应的BeanDefinition
      * @param descriptor 依赖描述符
-     * @return 是否匹配？
+     * @return 是否匹配? 
      */
     override fun isAutowireCandidate(bdHolder: BeanDefinitionHolder, descriptor: DependencyDescriptor): Boolean {
         if (!super.isAutowireCandidate(bdHolder, descriptor)) {
@@ -106,7 +106,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
      *
      * @param bdHolder 候选Bean的BeanDefinition
      * @param annotationsToMatch 要去进行注入的元素上的全部注解列表
-     * @return 是否匹配？(没有Qualifier注解的, 一律return true, 有Qualifier注解的, 那么就得匹配)
+     * @return 是否匹配? (没有Qualifier注解的, 一律return true, 有Qualifier注解的, 那么就得匹配)
      */
     protected open fun checkQualifiers(bdHolder: BeanDefinitionHolder, annotationsToMatch: Array<Annotation>): Boolean {
         if (annotationsToMatch.isEmpty()) {
@@ -153,7 +153,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
     }
 
     /**
-     * 判断Qualifier和beanName或者成对的Qualifier是否匹配？
+     * 判断Qualifier和beanName或者成对的Qualifier是否匹配? 
      *
      * @param bdHolder beanDefinition
      * @param annotation Qualifier注解(实例)
@@ -193,7 +193,7 @@ open class QualifierAnnotationAutowireCandidateResolver : GenericTypeAwareAutowi
      * 判断要进行注入的依赖的DependencyDescriptor上是否有Qualifier注解(Spring家的Qualifier和javax.inject包下的Qualifier)
      *
      * @param descriptor 依赖描述符
-     * @return 依赖描述符当中的注解是否存在有Qualifier注解？
+     * @return 依赖描述符当中的注解是否存在有Qualifier注解? 
      */
     override fun hasQualifier(descriptor: DependencyDescriptor): Boolean {
         for (annotation in descriptor.getAnnotations()) {

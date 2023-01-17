@@ -52,9 +52,9 @@ open class InstrumentationLoadTimeWeaver(_classLoader: ClassLoader) : LoadTimeWe
         }
 
         /**
-         * 判断当前VM当中是否存在有Instrumentation的依赖？必须得通过JavaAgent导入了InstrumentationSavingAgent这个类时才能return true
+         * 判断当前VM当中是否存在有Instrumentation的依赖? 必须得通过JavaAgent导入了InstrumentationSavingAgent这个类时才能return true
          *
-         * @return JVM是否给我们回调了Instrumentation？如果回调了, 说明使用将JavaAgent, return true; 如果没有回调, 值为null, return false
+         * @return JVM是否给我们回调了Instrumentation? 如果回调了, 说明使用将JavaAgent, return true; 如果没有回调, 值为null, return false
          */
         @JvmStatic
         fun isInstrumentationAvailable() = getInstrumentation() != null

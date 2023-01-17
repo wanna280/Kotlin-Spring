@@ -112,7 +112,7 @@ open class SpringApplicationBannerPrinter(
     /**
      * 要使用Logger去进行输出, 但是Banner只能接受PrintStream去进行输出,
      * 因此这里创建一个ByteArrayOutputStream去存储PrintStream当中的内容
-     * 输出的内容, 接着将ByteArrayOutputStream转为字符串, 交给Logger去进行输出即可(适配器模式？)
+     * 输出的内容, 接着将ByteArrayOutputStream转为字符串, 交给Logger去进行输出即可(适配器模式? )
      *
      * @param environment Environment
      * @param mainClass mainClass
@@ -148,7 +148,7 @@ open class SpringApplicationBannerPrinter(
         }
 
         /**
-         * Banner列表当中是否至少含有一个Banner？
+         * Banner列表当中是否至少含有一个Banner?
          *
          * @return 如果bannerList当中存在有Banner的话, 那么return true; 否则return false
          */

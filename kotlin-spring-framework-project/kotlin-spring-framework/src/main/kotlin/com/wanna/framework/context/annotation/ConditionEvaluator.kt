@@ -14,7 +14,7 @@ import com.wanna.framework.core.type.AnnotatedTypeMetadata
 import com.wanna.framework.util.ClassUtils
 
 /**
- * 这是一个条件计算器, 计算某个Bean是否应该被导入到容器当中？
+ * 这是一个条件计算器, 计算某个Bean是否应该被导入到容器当中?
  *
  * @see com.wanna.framework.context.util.ConfigurationClassParser.conditionEvaluator
  * @see com.wanna.framework.context.util.ConfigurationClassParser.processConfigurationClass
@@ -31,7 +31,7 @@ open class ConditionEvaluator(
     private val context: ConditionContext = ConditionContextImpl(registry, environment, resourceLoader)
 
     /**
-     * 根据注解信息去判断, 是否应该跳过？
+     * 根据注解信息去判断, 是否应该跳过?
      *
      * @param metadata 方法/类的注解信息的描述
      */
@@ -42,7 +42,7 @@ open class ConditionEvaluator(
 
     /**
      * @param metadata 类/方法当中的注解信息的描述
-     * @param phase 当前处于哪个阶段？是解析配置类还是注册Bean？
+     * @param phase 当前处于哪个阶段? 是解析配置类还是注册Bean?
      */
     open fun shouldSkip(metadata: AnnotatedTypeMetadata?, phase: ConfigurationPhase?): Boolean {
         // 如果没有给定metadata, 或者metadata当中没有标注@Conditional注解, 那么肯定不应该跳过, return false

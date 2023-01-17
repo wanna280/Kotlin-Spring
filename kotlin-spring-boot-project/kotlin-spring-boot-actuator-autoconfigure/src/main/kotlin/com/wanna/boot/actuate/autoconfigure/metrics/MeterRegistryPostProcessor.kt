@@ -61,7 +61,7 @@ open class MeterRegistryPostProcessor(
      */
     private fun getConfigurer(): MeterRegistryConfigurer {
         if (this.configurer == null) {
-            // 检查一下是否存在有CompositeMeterRegistry？
+            // 检查一下是否存在有CompositeMeterRegistry? 
             val hasCompositeMeterRegistry =
                 this.applicationContext.getBeanNamesForType(CompositeMeterRegistry::class.java, true, false).isEmpty()
 

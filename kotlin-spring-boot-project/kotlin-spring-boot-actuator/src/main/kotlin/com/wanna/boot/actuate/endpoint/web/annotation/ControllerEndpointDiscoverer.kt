@@ -38,7 +38,7 @@ open class ControllerEndpointDiscoverer(applicationContext: ApplicationContext) 
     }
 
     /**
-     * 创建一个OperationOperation？对于ControllerEndpoint, 不应该存在有Endpoint
+     * 创建一个OperationOperation? 对于ControllerEndpoint, 不应该存在有Endpoint
      */
     override fun createOperation(
         endpointId: EndpointId,

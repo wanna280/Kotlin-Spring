@@ -14,7 +14,7 @@ import com.wanna.framework.web.server.HttpServerRequest
 open class RequestParamMethodArgumentResolver : AbstractNamedValueMethodArgumentResolver() {
 
     /**
-     * 是否支持处理这样的参数？只要参数上标注了@RequestParam注解, 就支持去进行处理
+     * 是否支持处理这样的参数? 只要参数上标注了@RequestParam注解, 就支持去进行处理
      *
      * @param parameter 方法参数
      * @return 是否支持去进行处理

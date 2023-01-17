@@ -31,7 +31,7 @@ open class ConfigurationPropertiesBeans : ApplicationContextAware, BeanFactoryAw
     private var beanFactory: ConfigurableListableBeanFactory? = null
 
     /**
-     * Refresh是否已经初始化过了？第一次执行判断时, 会完成RefreshScope的初始化工作...
+     * Refresh是否已经初始化过了? 第一次执行判断时, 会完成RefreshScope的初始化工作...
      */
     private var refreshScopeInitialized = false
 
@@ -93,7 +93,7 @@ open class ConfigurationPropertiesBeans : ApplicationContextAware, BeanFactoryAw
      * 判断该Bean是否在RefreshScope当中, 比对beanName对应的BeanDefinition的scope是否是refresh
      *
      * @param beanName 要进行比对的beanName
-     * @return 该Bean是否在RefreshScope当中？
+     * @return 该Bean是否在RefreshScope当中? 
      */
     private fun isRefreshScoped(beanName: String): Boolean {
         val beanFactory = this.beanFactory ?: return false  // not BeanFactory return false

@@ -51,12 +51,12 @@ open class ThreadPoolTaskExecutor : ExecutorConfigurationSupport(), AsyncListena
     private var keepAliveSeconds = 60
 
     /**
-     * 是否允许核心线程超时？默认为false
+     * 是否允许核心线程超时? 默认为false
      */
     private var allowCoreThreadTimeOut = false
 
     /**
-     * 是否需要预先启动所有的核心线程？默认为false
+     * 是否需要预先启动所有的核心线程? 默认为false
      */
     private var prestartAllCoreThreads = false
 

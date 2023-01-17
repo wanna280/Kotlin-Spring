@@ -136,7 +136,7 @@ class JarFile private constructor(
     private var manifest: SoftReference<Manifest>? = null
 
     /**
-     * 当前JarFile是否已经被签名？
+     * 当前JarFile是否已经被签名?
      */
     var isSigned = false
         private set
@@ -323,7 +323,7 @@ class JarFile private constructor(
     override fun getJarEntry(name: String): JarEntry? = getEntry(name) as JarEntry?
 
     /**
-     * 根据文件名, 判断Jar包当中是否存在有该JarEntry？
+     * 根据文件名, 判断Jar包当中是否存在有该JarEntry?
      *
      * @param name 文件名
      * @return 如果存在, return true; 不存在return false

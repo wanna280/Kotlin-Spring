@@ -15,7 +15,7 @@ import com.wanna.framework.web.http.MediaType
 interface HttpMessageConverter<T> {
 
     /**
-     * 获取当前MessageConverter所支持的所有媒体类型？
+     * 获取当前MessageConverter所支持的所有媒体类型?
      *
      * @return 所支持的所有媒体类型
      */
@@ -36,12 +36,12 @@ interface HttpMessageConverter<T> {
      *
      * @param clazz 这个HttpMessageConverter能否支持将mediaType转换成为这个类型
      * @param mediaType 媒体类型
-     * @return 能否转换？
+     * @return 能否转换?
      */
     fun canRead(clazz: Class<*>, @Nullable mediaType: MediaType?): Boolean
 
     /**
-     * 是否支持写这样的MediaType？
+     * 是否支持写这样的MediaType?
      *
      * @param clazz 这个HttpConverter能否支持将clazz类型转换成为这个mediaType类型
      * @param mediaType 媒体类型
