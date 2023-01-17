@@ -68,19 +68,18 @@ class MetricItem(private val saveSample: Boolean = false) {
 
 
     /**
-     * copy得到一个新的MetricItem, 并将当前MetricItem清空
+     * copy得到一个新的[MetricItem], 并将当前[MetricItem]当中的相关指标数据去进行清空
      *
-     * @return MetricItem
+     * @return copy得到的一个新的[MetricItem]
      */
     @Synchronized
     fun dumpAndClearItem(): MetricItem {
         val metricItem = MetricItem()
         metricItem.countc = this.countc
-        metricItem.timec = this.countc
+        metricItem.timec = this.timec
 
         this.countc = AtomicLong()
         this.timec = AtomicLong()
-
         return metricItem
     }
 
