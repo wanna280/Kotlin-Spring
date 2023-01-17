@@ -43,3 +43,8 @@ include(":kotlin-logger:logger-api")
 include(":kotlin-logger:logger-impl")
 include(":kotlin-logger:logger-temp")
 include(":kotlin-logger:logger-slf4j-impl")
+
+
+// for metrics project
+include(":kotlin-metrics-project")
+include(":kotlin-metrics-project:kotlin-metrics")
