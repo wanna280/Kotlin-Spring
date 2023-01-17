@@ -1,8 +1,12 @@
 package com.wanna.metric
 
+import com.wanna.metric.utils.MetricsConfiguration
+import org.slf4j.LoggerFactory
 import java.lang.management.ManagementFactory
 import java.util.*
+import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.ScheduledThreadPoolExecutor
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 /**
@@ -13,6 +17,11 @@ import java.util.concurrent.TimeUnit
  * @date 2023/1/17
  */
 object MetricScheduleTask {
+    /**
+     * Logger
+     */
+    @JvmStatic
+    private val logger = LoggerFactory.getLogger(MetricScheduleTask::class.java)
 
     /**
      * 执行定时汇报指标的线程池, 每2秒尝试去执行一次, 将指标汇总到Metrics当中
@@ -23,13 +32,52 @@ object MetricScheduleTask {
     @JvmStatic
     private val metricScheduleExecutor = ScheduledThreadPoolExecutor(1, NamedThreadFactory("metric-schedule"))
 
+    /**
+     * 执行异步任务的计算的线程池
+     */
+    @JvmStatic
+    private val metricAsyncCalculateExecutor = ThreadPoolExecutor(
+        MetricsConfiguration.coreCalculateThreads,
+        MetricsConfiguration.maxCalculateThreads,
+        60L,
+        TimeUnit.SECONDS,
+        LinkedBlockingDeque(MetricsConfiguration.maxCalculateQueueSize),
+        NamedThreadFactory("metric-async-calculate")
+    ) { _, _ ->
+        logger.error("add async calculate task error")
+    }
+
 
     /**
      * 启动相关定时任务, 去进行监控指标的快照记录
      */
     @JvmStatic
     fun loadSchedule() {
+        logger.info("metric-init start...")
+        // 添加一个指标快照的收集的MetricTask定时任务
         metricScheduleExecutor.scheduleAtFixedRate(MetricTask(), 0, 2000L, TimeUnit.MILLISECONDS)
+
+
+        // 添加ShutdownHook, 当应用关闭时, 自动关闭线程池...
+        Runtime.getRuntime().addShutdownHook(Thread({
+            logger.info("metric schedule executor shutdown")
+            metricScheduleExecutor.shutdown()
+
+            logger.info("metric async calculate executor shutdown")
+            metricAsyncCalculateExecutor.shutdownNow()
+        }, "metrics-shutdown-hook-thread"))
+        logger.info("metric-init finished...")
+    }
+
+    /**
+     * 交给执行异步任务线程池去执行一个任务
+     *
+     * @param task 要交给线程池去进行执行的Runnable任务
+     * @see metricAsyncCalculateExecutor
+     */
+    @JvmStatic
+    fun execute(task: Runnable) {
+        metricAsyncCalculateExecutor.execute(task)
     }
 
     /**
@@ -69,7 +117,7 @@ object MetricScheduleTask {
             // 将Tomcat的监控指标信息汇总到Metrics当中...
             metricsTomcat(metrics)
 
-            // 将用户自定义Metric指标去汇总到Metrics当中...
+            // 将用户自定义的count/time类型的Metric指标去汇总到Metrics当中...
             for (avgItem in Metrics.avgItems) {
 
                 makeMetricResult(metrics, settingMetrics, avgItem.key, avgItem.value.dumpAndClearItem())
@@ -79,13 +127,16 @@ object MetricScheduleTask {
             val valuesMetrics = LinkedHashMap(Metrics.values)
             Metrics.values.clear()
 
-            // 对values的监控指标去进行收集
+            // 对values类型的的监控指标去进行收集
             for (valuesMetric in valuesMetrics) {
                 val valueMetricName = makeMetricName(valuesMetric.key, "_Value")
 
                 // 记录一个Value类型的数量指标
                 metrics[valueMetricName] = valuesMetric.value.get()
             }
+
+            // 在最后, 再去计算一下定时任务的耗时时间为多少?
+            metrics["Metric_Schedule_Task_Time"] = System.currentTimeMillis() - current
 
 
             // 将汇总得到的快照指标数据去保存到Metrics当中去
