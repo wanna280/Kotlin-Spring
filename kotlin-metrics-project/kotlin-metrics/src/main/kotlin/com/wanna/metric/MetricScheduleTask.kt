@@ -123,7 +123,7 @@ object MetricScheduleTask {
                 makeMetricResult(metrics, settingMetrics, avgItem.key, avgItem.value.dumpAndClearItem())
             }
 
-            // 将values去copy一份, 并且clear掉...
+            // 将values去copy一份, 并且clear掉Metrics当中保存的结果, 重新去进行统计...
             val valuesMetrics = LinkedHashMap(Metrics.values)
             Metrics.values.clear()
 
