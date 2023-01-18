@@ -133,12 +133,12 @@ object Metrics {
             val start = System.nanoTime()
 
             // 获取到当前指标对应的MetricItem
-            val monitorItem = checkAndNewItem(name, saveSample)
+            val monitorItem = getOrNewMetricItem(name, saveSample)
             // 将当前统计数据添加到MetricItem当中去
             monitorItem.addSample(name, count, time, tags)
 
             // 记录一下本次recordMany打指标所花费的时间
-            val metricsItem = checkAndNewItem(METRIC_NAME, false)
+            val metricsItem = getOrNewMetricItem(METRIC_NAME, false)
             metricsItem.addSample(METRIC_NAME, 1L, (System.nanoTime() - start) / 1000)
         } catch (ex: Throwable) {
             logger.error("Metrics handle error, name={}", name, ex)
@@ -146,14 +146,15 @@ object Metrics {
     }
 
     /**
-     * 检查之前是否已经存在有给定的指标名对应的[MetricItem]? 如果已经存在, 返回之前的; 如果之前不存在, 返回新创建的
+     * 检查在[avgItems]当中之前是否已经存在有给定的指标名对应的[MetricItem]?
+     * 如果之前已经存在, 返回之前的[MetricItem]; 如果之前不存在, 返回新创建的[MetricItem]
      *
      * @param name 指标名
      * @param saveSample 是否需要保存采样数据?
      * @return 针对给定的指标名获取到的对应的MetricItem
      */
     @JvmStatic
-    private fun checkAndNewItem(name: String, saveSample: Boolean): MetricItem {
+    private fun getOrNewMetricItem(name: String, saveSample: Boolean): MetricItem {
         // 如果之前已经存在, 那么返回之前已经存在的; 如果之前不存在, 返回新的MetricItem
         return avgItems[name] ?: avgItems.computeIfAbsent(name) { MetricItem(saveSample) }
     }
@@ -162,7 +163,7 @@ object Metrics {
      * 对于单个指标去记录一个数量监控(对于下次recordSize时, 统计方式为将会覆盖掉之前的数量指标)
      *
      * @param name 指标名
-     * @param size 针对该指标要去记录的数量指标
+     * @param size 针对该指标要去记录的统计数量
      */
     @JvmStatic
     fun recordSize(name: String, size: Long) {

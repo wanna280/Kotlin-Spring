@@ -24,6 +24,32 @@ object MetricScheduleTask {
     private val logger = LoggerFactory.getLogger(MetricScheduleTask::class.java)
 
     /**
+     * Count后缀
+     */
+    private const val COUNT_SUFFIX = "_Count"
+
+    /**
+     * Time后缀
+     */
+    private const val TIME_SUFFIX = "_Time"
+
+    /**
+     * Value后缀
+     */
+    private const val VALUE_SUFFIX = "_Value"
+
+    /**
+     * JVM前缀
+     */
+    private const val JVM_PREFIX = "JVM_"
+
+    /**
+     * 空字符串常量
+     */
+    private const val EMPTY = ""
+
+
+    /**
      * 执行定时汇报指标的线程池, 每2秒尝试去执行一次, 将指标汇总到Metrics当中
      *
      * @see Metrics.currentItems
@@ -133,14 +159,15 @@ object MetricScheduleTask {
 
             // 对values类型的的监控指标去进行收集
             for (valuesMetric in valuesMetrics) {
-                val valueMetricName = makeMetricName(valuesMetric.key, "_Value")
+                val valueMetricName = makeMetricName(EMPTY, valuesMetric.key, VALUE_SUFFIX)
 
                 // 记录一个Value类型的数量指标
                 metrics[valueMetricName] = valuesMetric.value.get()
             }
 
             // 在最后, 再去计算一下定时任务的耗时时间为多少?
-            metrics["Metric_Schedule_Task_Time"] = System.currentTimeMillis() - current
+
+            metrics[makeMetricName("Metric", "Schedule_Task", TIME_SUFFIX)] = System.currentTimeMillis() - current
 
 
             // 将汇总得到的快照指标数据去保存到Metrics当中去
@@ -148,8 +175,15 @@ object MetricScheduleTask {
             Metrics.currentItems = Collections.unmodifiableMap(metrics)
         }
 
-        private fun makeMetricName(name: String, suffix: String): String {
-            return name + suffix
+        /**
+         * 生成指标名
+         *
+         * @param prefix 指标名前缀
+         * @param name 指标名
+         * @param suffix 指标名后缀(例如"_Count"/"_Time")
+         */
+        private fun makeMetricName(prefix: String, name: String, suffix: String): String {
+            return prefix + name + suffix
         }
 
         private fun makeMetricResult(
@@ -161,8 +195,8 @@ object MetricScheduleTask {
             val count = item.countc.get()
             val time = item.timec.get()
 
-            val metricCountName = makeMetricName(name, "_Count")
-            val metricTimeName = makeMetricName(name, "_Time")
+            val metricCountName = makeMetricName(EMPTY, name, COUNT_SUFFIX)
+            val metricTimeName = makeMetricName(EMPTY, name, TIME_SUFFIX)
 
             // 1.填充count
             metrics[metricCountName] = count
@@ -193,32 +227,41 @@ object MetricScheduleTask {
             // JVM线程信息
             val threadMXBean = ManagementFactory.getThreadMXBean()
             if (threadMXBean != null) {
-                metrics["JVM_Thread_Count"] = threadMXBean.threadCount
+                metrics[makeMetricName(JVM_PREFIX, "Thread", COUNT_SUFFIX)] = threadMXBean.threadCount
             }
 
             // JVM的JIT编译信息
             val compilationMXBean = ManagementFactory.getCompilationMXBean()
             if (compilationMXBean != null) {
-                makeItemQuantile("JVM_JIT_Compilation", 1, compilationMXBean.totalCompilationTime, metrics)
+                makeItemQuantile(
+                    makeMetricName(JVM_PREFIX, "JIT_Compilation", EMPTY),
+                    1,
+                    compilationMXBean.totalCompilationTime,
+                    metrics
+                )
             }
 
             // JVM的堆内存信息
             val memoryMXBean = ManagementFactory.getMemoryMXBean()
             if (memoryMXBean != null) {
-                metrics["JVM_Heap_Memory_Usage_MBytes_Count"] = memoryMXBean.heapMemoryUsage.used
-                metrics["JVM_Heap_Memory_Init_MBytes_Count"] = memoryMXBean.heapMemoryUsage.init
-                metrics["JVM_Heap_Memory_Max_MBytes_Count"] = memoryMXBean.heapMemoryUsage.max
-                metrics["JVM_Heap_Memory_Commit_MBytes_Count"] = memoryMXBean.heapMemoryUsage.committed
+                metrics[makeMetricName(JVM_PREFIX, "Heap_Memory_Usage_MBytes", COUNT_SUFFIX)] =
+                    memoryMXBean.heapMemoryUsage.used
+                metrics[makeMetricName(JVM_PREFIX, "Heap_Memory_Init_MBytes", COUNT_SUFFIX)] =
+                    memoryMXBean.heapMemoryUsage.init
+                metrics[makeMetricName(JVM_PREFIX, "Heap_Memory_Max_MBytes", COUNT_SUFFIX)] =
+                    memoryMXBean.heapMemoryUsage.max
+                metrics[makeMetricName(JVM_PREFIX, "Heap_Memory_Commit_MBytes", COUNT_SUFFIX)] =
+                    memoryMXBean.heapMemoryUsage.committed
             }
 
             // JVM的内存池的内存使用信息(Code_Cache/Metaspace/Compressed_Class_Space/PS_Eden_Space/PS_Survivor_Space/PS_Old_Gen)
             for (memoryPoolMXBean in ManagementFactory.getMemoryPoolMXBeans()) {
                 val usage = memoryPoolMXBean.usage
                 val name = memoryPoolMXBean.name.replace("\\s|\\'|-", "_")
-                metrics["JVM_" + name + "_Memory_Usage_MBytes_Count"] = usage.used
-                metrics["JVM_" + name + "_Memory_Init_MBytes_Count"] = usage.init
-                metrics["JVM_" + name + "_Memory_Max_MBytes_Count"] = usage.max
-                metrics["JVM_" + name + "_Memory_Commit_MBytes_Count"] = usage.committed
+                metrics[makeMetricName(JVM_PREFIX, name + "_Memory_Usage_MBytes", COUNT_SUFFIX)] = usage.used
+                metrics[makeMetricName(JVM_PREFIX, name + "_Memory_Init_MBytes", COUNT_SUFFIX)] = usage.init
+                metrics[makeMetricName(JVM_PREFIX, name + "_Memory_Max_MBytes", COUNT_SUFFIX)] = usage.max
+                metrics[makeMetricName(JVM_PREFIX, name + "_Memory_Commit_MBytes", COUNT_SUFFIX)] = usage.committed
             }
 
         }
@@ -241,11 +284,11 @@ object MetricScheduleTask {
             }
 
             // 计算count
-            metrics[makeMetricName(name, "_COUNT")] = count - metricItem.countc.get()
+            metrics[makeMetricName(EMPTY, name, COUNT_SUFFIX)] = count - metricItem.countc.get()
 
             // 计算time
             if (count - metricItem.countc.get() > 0) {
-                metrics[makeMetricName(name, "_TIME")] =
+                metrics[makeMetricName(EMPTY, name, TIME_SUFFIX)] =
                     (time - metricItem.timec.get()) / (count - metricItem.countc.get())
             }
 
