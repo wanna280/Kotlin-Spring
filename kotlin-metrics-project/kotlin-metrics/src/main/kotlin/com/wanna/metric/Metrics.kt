@@ -1,5 +1,6 @@
 package com.wanna.metric
 
+import com.wanna.metric.server.MetricServerHelper
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 import javax.annotation.Nullable
@@ -55,6 +56,9 @@ object Metrics {
     init {
         // 添加Metrics的定时任务, 实现定时将指标汇总到currentItems/currentSettingItems当中...
         MetricScheduleTask.loadSchedule()
+
+        // 启动MetricServer, 负责使用HTTPServer的方式去进行Metrics指标的暴露...
+        MetricServerHelper.load()
     }
 
 

@@ -44,7 +44,7 @@ object MetricScheduleTask {
         LinkedBlockingDeque(MetricsConfiguration.maxCalculateQueueSize),
         NamedThreadFactory("metric-async-calculate")
     ) { _, _ ->
-        logger.error("add async calculate task error")
+        logger.error("metric-schedule: add async calculate task error")
     }
 
 
@@ -53,17 +53,21 @@ object MetricScheduleTask {
      */
     @JvmStatic
     fun loadSchedule() {
-        logger.info("metric-init start...")
+        // log init start
+        logger.info("metric-schedule: init start...")
         // 添加一个指标快照的收集的MetricTask定时任务
         metricScheduleExecutor.scheduleAtFixedRate(MetricTask(), 0, 2000L, TimeUnit.MILLISECONDS)
+
+        // log success
+        logger.info("metric-schedule: init successfully...")
 
 
         // 添加ShutdownHook, 当应用关闭时, 自动关闭线程池...
         Runtime.getRuntime().addShutdownHook(Thread({
-            logger.info("metric schedule executor shutdown")
+            logger.info("metric-schedule: executor shutdown")
             metricScheduleExecutor.shutdown()
 
-            logger.info("metric async calculate executor shutdown")
+            logger.info("metric-schedule: async calculate executor shutdown")
             metricAsyncCalculateExecutor.shutdownNow()
         }, "metrics-shutdown-hook-thread"))
         logger.info("metric-init finished...")
