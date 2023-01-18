@@ -1,3 +1,6 @@
+com.wanna.boot.logging.LoggingSystemFactory=\
+  com.wanna.boot.logging.logback.LogbackLoggingSystem$Factory
+
 # Run Listener
 com.wanna.boot.SpringApplicationRunListener=\
   com.wanna.boot.context.event.EventPublishingRunListener
@@ -5,7 +8,8 @@ com.wanna.boot.SpringApplicationRunListener=\
 # ApplicationListener
 com.wanna.framework.context.event.ApplicationListener=\
   com.wanna.boot.context.config.DelegatingApplicationListener,\
-  com.wanna.boot.env.EnvironmentPostProcessorApplicationListener
+  com.wanna.boot.env.EnvironmentPostProcessorApplicationListener,\
+  com.wanna.boot.context.logging.LoggingApplicationListener
 
 # Environment Processor
 com.wanna.boot.env.EnvironmentPostProcessor=\

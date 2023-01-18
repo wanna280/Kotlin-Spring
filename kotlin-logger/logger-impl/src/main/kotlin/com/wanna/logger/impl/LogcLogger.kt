@@ -7,6 +7,7 @@ import com.wanna.logger.impl.event.Level
 import com.wanna.logger.impl.event.LoggingEvent
 import com.wanna.logger.impl.filter.FilterReply
 import java.util.concurrent.CopyOnWriteArrayList
+import javax.annotation.Nullable
 
 /**
  * 这是一个自定义的Logger, 针对于API规范中的Logger提供具体的实现
@@ -113,7 +114,7 @@ open class LogcLogger(name: String) : Logger {
      * @param newLevel 要进行设置的level
      * @throws IllegalArgumentException 如果当前是RootLogger, 并且newLevel=null, 不允许这种情况
      */
-    open fun setLevel(newLevel: Level?) {
+    open fun setLevel(@Nullable newLevel: Level?) {
         synchronized(this) {
             val level = this.level
             // 如果oldLevel==newLevel

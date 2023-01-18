@@ -7,7 +7,7 @@ package com.wanna.logger.api
 interface Logger {
     fun info(msg: String)
 
-    fun isInfoEnabled() : Boolean
+    fun isInfoEnabled(): Boolean
 
     fun debug(msg: String)
 
@@ -15,11 +15,11 @@ interface Logger {
 
     fun warn(msg: String)
 
-    fun isWarnEnabled() : Boolean
+    fun isWarnEnabled(): Boolean
 
     fun error(msg: String)
 
-    fun isErrorEnabled() : Boolean
+    fun isErrorEnabled(): Boolean
 
     fun trace(msg: String)
 

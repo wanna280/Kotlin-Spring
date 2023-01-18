@@ -17,3 +17,4 @@ const val feignHttpClientVersion = "11.8"  // feign HttpClient Version
 const val mybatisVersion = "3.5.10" // mybatis Version
 const val servletApiVersion = "4.0.1" // servlet-api Version
 const val tomcatCoreVersion = "9.0.70" // tomcat-core Version
+const val logbackVersion = "1.4.5"  // logback Version
