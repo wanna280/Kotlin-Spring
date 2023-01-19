@@ -11,15 +11,31 @@ package com.wanna.common.logging
  */
 interface Logger {
 
+    val isFatalEnabled: Boolean
+
+    val isErrorEnabled: Boolean
+
+    val isWarnEnabled: Boolean
+
     val isInfoEnabled: Boolean
 
     val isDebugEnabled: Boolean
 
-    val isWarnEnabled: Boolean
-
-    val isErrorEnabled: Boolean
-
     val isTraceEnabled: Boolean
+
+    // fatal相关API
+    fun fatal(msg: String)
+
+    fun fatal(msg: String, vararg args: Any?)
+
+    fun fatal(msg: String, ex: Throwable)
+
+    // error相关API
+    fun error(msg: String)
+
+    fun error(msg: String, vararg args: Any?)
+
+    fun error(msg: String, ex: Throwable)
 
     // info相关API
 
@@ -44,13 +60,6 @@ interface Logger {
     fun warn(msg: String, vararg args: Any?)
 
     fun warn(msg: String, ex: Throwable)
-
-    // error相关API
-    fun error(msg: String)
-
-    fun error(msg: String, vararg args: Any?)
-
-    fun error(msg: String, ex: Throwable)
 
     // trace相关API
 
