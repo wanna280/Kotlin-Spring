@@ -19,7 +19,7 @@ abstract class AbstractAdvisingBeanPostProcessor : ProxyProcessorSupport(), Bean
     protected var advisor: Advisor? = null
 
     /**
-     * 在完成Bean的后置处理时, 需要检验该Bean是否应该创建代理呢？
+     * 在完成Bean的后置处理时, 需要检验该Bean是否应该创建代理呢?
      *
      * @param bean bean
      * @param beanName beanName

@@ -14,10 +14,10 @@ import com.wanna.framework.web.server.HttpServerRequest
 open class RequestHeaderMethodArgumentResolver : AbstractNamedValueMethodArgumentResolver() {
 
     /**
-     * 是否支持去处理当前类型的参数？
+     * 是否支持去处理当前类型的参数?
      *
      * @param parameter 方法参数
-     * @return 当前的方法参数解析器是否支持处理这样的方法参数？如果标注了`@RequestHeader`注解则支持去进行处理, return true; 否则return false
+     * @return 当前的方法参数解析器是否支持处理这样的方法参数? 如果标注了`@RequestHeader`注解则支持去进行处理, return true; 否则return false
      */
     override fun supportsParameter(parameter: MethodParameter): Boolean =
         parameter.getAnnotation(RequestHeader::class.java) != null

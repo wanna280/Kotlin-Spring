@@ -4,7 +4,7 @@ import com.wanna.logger.impl.LogcLogger
 import com.wanna.logger.impl.event.Level
 
 /**
- * 这是一个日志的Filter, 决定某次日志要不要进行输出？
+ * 这是一个日志的Filter, 决定某次日志要不要进行输出? 
  */
 interface LoggerFilter {
     fun decide(

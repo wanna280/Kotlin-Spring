@@ -1,7 +1,7 @@
 package com.wanna.framework.validation.beanvalidation
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 对于一个可选的Validator的实现的FactoryBean;

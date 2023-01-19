@@ -4,8 +4,8 @@ import com.wanna.framework.beans.*
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.support.DefaultConversionService
 import com.wanna.framework.lang.Nullable
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import java.beans.PropertyEditor
 import java.util.*
 

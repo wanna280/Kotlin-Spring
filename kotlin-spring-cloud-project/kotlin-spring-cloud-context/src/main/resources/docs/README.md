@@ -1,7 +1,7 @@
 # 1. SpringCloud-RefreshScope
 
 
-## 1.1 RefreshScope是什么？
+## 1.1 RefreshScope是什么? 
 
 在Spring当中一个Bean的作用域包括`singleton`/`prototype`以及自定义Scope三种类型.RefreshScope就是其中的一个自定义的Scope类型.
 

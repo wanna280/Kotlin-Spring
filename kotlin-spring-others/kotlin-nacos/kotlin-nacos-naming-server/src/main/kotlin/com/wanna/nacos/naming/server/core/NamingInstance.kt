@@ -20,7 +20,7 @@ open class NamingInstance : Instance() {
          * 从请求当中去解析到的NamingInstance相关属性
          *
          * @param request request
-         * @param updateLastBeat 是否更新最后一次心跳的时间？
+         * @param updateLastBeat 是否更新最后一次心跳的时间? 
          */
         @JvmStatic
         fun fromRequest(request: HttpServerRequest, updateLastBeat: Boolean = true): NamingInstance {

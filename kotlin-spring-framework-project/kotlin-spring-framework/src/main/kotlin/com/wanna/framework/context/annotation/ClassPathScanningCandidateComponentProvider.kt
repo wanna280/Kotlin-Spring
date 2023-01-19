@@ -20,8 +20,8 @@ import com.wanna.framework.core.type.filter.AnnotationTypeFilter
 import com.wanna.framework.core.type.filter.TypeFilter
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import java.io.IOException
 
 /**
@@ -35,7 +35,7 @@ import java.io.IOException
  * @see ResourcePatternResolver
  */
 open class ClassPathScanningCandidateComponentProvider(
-    useDefaultFilters: Boolean = true,  // 是否需要应用默认的Filter？
+    useDefaultFilters: Boolean = true,  // 是否需要应用默认的Filter? 
     @Nullable resourceLoader: ResourceLoader? = null
 ) : ResourceLoaderAware, EnvironmentCapable {
     companion object {
@@ -82,7 +82,7 @@ open class ClassPathScanningCandidateComponentProvider(
     private var metadataReaderFactory: MetadataReaderFactory? = null
 
     init {
-        // 是否要应用默认的Filter？默认情况下, 需要去匹配@Component的Bean
+        // 是否要应用默认的Filter? 默认情况下, 需要去匹配@Component的Bean
         if (useDefaultFilters) {
             this.registerDefaultFilters()
         }
@@ -91,7 +91,7 @@ open class ClassPathScanningCandidateComponentProvider(
     /**
      * 给定一个候选的包, 去扫描该包下的候选的组件
      *
-     * @param basePackage 要扫描的包？(支持去进行占位符解析)
+     * @param basePackage 要扫描的包? (支持去进行占位符解析)
      * @return 该包下扫描得到的所有的候选BeanDefinition
      */
     open fun scanCandidateComponents(basePackage: String): Set<BeanDefinition> {
@@ -251,7 +251,7 @@ open class ClassPathScanningCandidateComponentProvider(
     /**
      * 重设所有的Filter, 如果必要的话, 还需要去应用默认的Filter
      *
-     * @param useDefaultFilters 是否需要应用默认的Filter？
+     * @param useDefaultFilters 是否需要应用默认的Filter? 
      */
     open fun resetFilters(useDefaultFilters: Boolean) {
         this.includeFilters.clear()

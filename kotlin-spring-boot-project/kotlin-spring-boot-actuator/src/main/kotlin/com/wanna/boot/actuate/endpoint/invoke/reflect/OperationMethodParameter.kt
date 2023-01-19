@@ -25,7 +25,7 @@ open class OperationMethodParameter(private val name: String, private val parame
     override fun getType() = this.parameter.type
 
     /**
-     * 判断该属性是否是强制的？如果是强制的, 那么return true;
+     * 判断该属性是否是强制的? 如果是强制的, 那么return true;
      * 对于一个强制的方法参数, 如果用户很可能没给的话, 那么很可能会丢出异常
      */
     override fun isMandatory(): Boolean {

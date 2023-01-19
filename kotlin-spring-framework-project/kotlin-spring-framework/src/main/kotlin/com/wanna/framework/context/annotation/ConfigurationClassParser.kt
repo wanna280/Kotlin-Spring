@@ -27,7 +27,7 @@ import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.io.FileNotFoundException
 import java.net.SocketException
 import java.net.UnknownHostException
@@ -86,7 +86,7 @@ open class ConfigurationClassParser(
     )
 
     /**
-     * 条件计算器, 通过@Conditional注解去计算该Bean是否应该被导入到容器当中？
+     * 条件计算器, 通过@Conditional注解去计算该Bean是否应该被导入到容器当中? 
      */
     private val conditionEvaluator = ConditionEvaluator(this.registry, this.environment, resourceLoader)
 
@@ -353,7 +353,7 @@ open class ConfigurationClassParser(
         for (propertySource in propertySources) {
             val name =
                 if (!StringUtils.hasText(propertySource.getString("name"))) null else propertySource.getString("name")
-            // 是否需要忽略未找到的资源？
+            // 是否需要忽略未找到的资源? 
             val ignoreResourceNotFound = propertySource.getBoolean("ignoreResourceNotFound")
             val locations = propertySource.getStringArray("locations")
             if (locations.isEmpty()) {
@@ -434,7 +434,7 @@ open class ConfigurationClassParser(
      * 处理@ImportSource注解, 这个注解的作用是为别的方式导入Bean提供支持; 比如在注解版的IOC容器当中, 去提供对XML配置文件的处理
      *
      * @see ImportResource
-     * @see BeanDefinitionReader 如何导入组件？通过自定义BeanDefinitionReader的方式去进行导入组件
+     * @see BeanDefinitionReader 如何导入组件? 通过自定义BeanDefinitionReader的方式去进行导入组件
      */
     @Suppress("UNCHECKED_CAST")
     private fun processImportSources(configClass: ConfigurationClass, sourceClass: SourceClass) {
@@ -619,7 +619,7 @@ open class ConfigurationClassParser(
         /**
          * 将SourceClass转换为ConfigurationClass(配置类对象)
          *
-         * @param importedBy 它是被哪个类导入进来的？
+         * @param importedBy 它是被哪个类导入进来的? 
          * @return 构建好的ConfigurationClass
          */
         fun asConfigClass(importedBy: ConfigurationClass): ConfigurationClass {
@@ -631,7 +631,7 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 判断它是否和某个类型匹配？
+         * 判断它是否和某个类型匹配? 
          *
          * @param parentClass 父类
          * @return 当前clazz是否是parentClass的子类

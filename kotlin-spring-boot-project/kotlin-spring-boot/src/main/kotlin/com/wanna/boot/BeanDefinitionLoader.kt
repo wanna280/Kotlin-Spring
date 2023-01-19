@@ -176,7 +176,7 @@ open class BeanDefinitionLoader(registry: BeanDefinitionRegistry, private val so
     }
 
     /**
-     * 检查给定的资源是否是一个可以去加载的资源？
+     * 检查给定的资源是否是一个可以去加载的资源? 
      *
      * @param resource 资源
      * @return 如果是可以加载的, 那么return true; 否则return false

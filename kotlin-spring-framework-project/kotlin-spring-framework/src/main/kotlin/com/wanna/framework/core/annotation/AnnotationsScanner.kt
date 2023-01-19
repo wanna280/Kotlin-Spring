@@ -315,7 +315,7 @@ object AnnotationsScanner {
      * @param aggregateIndex aggregateIndex
      * @param processor 处理注解的Processor
      * @param includeEnclosing 是否要处理外部类?
-     * @param includeInterfaces 是否要处理接口？
+     * @param includeInterfaces 是否要处理接口?
      * @return 使用给定的AnnotationsProcessor去处理注解的结果...
      */
     @Nullable

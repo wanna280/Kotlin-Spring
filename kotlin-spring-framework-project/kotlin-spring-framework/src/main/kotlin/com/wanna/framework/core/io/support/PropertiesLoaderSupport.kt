@@ -1,8 +1,8 @@
 package com.wanna.framework.core.io.support
 
 import com.wanna.framework.core.io.Resource
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.net.UnknownHostException
@@ -35,12 +35,12 @@ abstract class PropertiesLoaderSupport {
     protected var locations: Array<Resource>? = null
 
     /**
-     * 是否需要忽略掉资源找不到的情况？
+     * 是否需要忽略掉资源找不到的情况? 
      */
     var ignoreResourceNotFound = false
 
     /**
-     * 是否LocalProperties需要去覆盖从文件当中加载到的Properties？
+     * 是否LocalProperties需要去覆盖从文件当中加载到的Properties? 
      * 如果为true, 先加载文件、再加载Properties; 如果为false, 先加载Properties再加载文件
      *
      * @see mergeProperties

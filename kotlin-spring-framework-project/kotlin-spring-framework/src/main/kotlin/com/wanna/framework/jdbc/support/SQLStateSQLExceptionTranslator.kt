@@ -1,7 +1,7 @@
 package com.wanna.framework.jdbc.support
 
 import com.wanna.framework.dao.*
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.sql.SQLException
 
 /**

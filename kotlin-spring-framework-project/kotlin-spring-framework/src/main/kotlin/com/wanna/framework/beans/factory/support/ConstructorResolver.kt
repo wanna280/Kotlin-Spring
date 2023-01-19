@@ -82,7 +82,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
         var argsToUse: Array<out Any?>? = null
         var argsToResolve: Array<out Any?>? = null
 
-        // 1.检查BeanDefinition当中是否有已经缓存的构造器列表？
+        // 1.检查BeanDefinition当中是否有已经缓存的构造器列表?
         synchronized(mbd.constructorArgumentLock) {
             constructorToUse = mbd.resolvedConstructorOrFactoryMethod as Constructor<*>?
 
@@ -248,7 +248,7 @@ open class ConstructorResolver(private val beanFactory: AbstractAutowireCapableB
      * @param paramTypes 参数类型列表
      * @param paramNames 参数名列表(可以为空)
      * @param executable 方法/构造器
-     * @param autowiring 在构造器参数当中找不到合适的参数时, 是否要进行自动注入？
+     * @param autowiring 在构造器参数当中找不到合适的参数时, 是否要进行自动注入?
      */
     private fun createArgumentArray(
         beanName: String,

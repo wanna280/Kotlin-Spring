@@ -9,7 +9,7 @@ import com.wanna.framework.context.event.ApplicationEventMulticaster
 import com.wanna.framework.context.event.SimpleApplicationEventMulticaster
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.environment.ConfigurableEnvironment
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 这是一个Spring的事件发布的运行监听器, 它负责回调所有的监听器

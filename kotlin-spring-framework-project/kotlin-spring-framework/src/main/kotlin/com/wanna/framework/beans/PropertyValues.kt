@@ -18,7 +18,7 @@ interface PropertyValues {
     fun getPropertyValues(): Array<PropertyValue>
 
     /**
-     * 遍历所有的PropertyValue去判断是否包含这个属性值？
+     * 遍历所有的PropertyValue去判断是否包含这个属性值?
      *
      * @param name propertyName
      * @return 当前PropertyValue列表当中是否已经包含了给定的propertyName的属性值

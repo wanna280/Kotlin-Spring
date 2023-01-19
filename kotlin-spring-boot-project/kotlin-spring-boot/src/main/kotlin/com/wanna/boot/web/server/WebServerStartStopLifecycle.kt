@@ -10,7 +10,7 @@ import com.wanna.framework.context.Lifecycle
 open class WebServerStartStopLifecycle(private val webServerManager: WebServerManager) : Lifecycle {
 
     /**
-     * 该WebServer是否正在运行当中？
+     * 该WebServer是否正在运行当中?
      */
     private var running = false
 

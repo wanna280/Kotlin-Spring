@@ -11,6 +11,11 @@ import com.wanna.framework.core.environment.PropertySource
  */
 open class PropertySourceOrigin(val propertySource: PropertySource<*>, val propertyName: String) : Origin {
 
+    /**
+     * toString
+     */
+    override fun toString(): String = "\"$propertyName\" from property source \"${propertySource.name}\""
+
     companion object {
 
         /**

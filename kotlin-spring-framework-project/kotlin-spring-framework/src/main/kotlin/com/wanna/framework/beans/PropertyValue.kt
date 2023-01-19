@@ -13,7 +13,7 @@ open class PropertyValue(val name: String, @Nullable var value: Any?) :
     BeanMetadataAttributeAccessor() {
 
     /**
-     * 该PropertyValue是否是可选的？
+     * 该PropertyValue是否是可选的?
      */
     var optional: Boolean = true
 

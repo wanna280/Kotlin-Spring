@@ -86,7 +86,7 @@ interface ConfigurableApplicationContext : ApplicationContext, Closeable, Lifecy
     fun refresh();
 
     /**
-     * 当前的ApplicationContext是否还是存活的？
+     * 当前的ApplicationContext是否还是存活的?
      *
      * @return 如果当前ApplicationContext没被关闭, return true, 被关闭了则return false
      */

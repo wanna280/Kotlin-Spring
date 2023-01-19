@@ -15,7 +15,7 @@ import com.wanna.framework.context.support.PropertySourcesPlaceholderConfigurer
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.PropertySources
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 这是一个ConfigurationProperties的Binder, 负责完成@ConfigurationProperties的绑定工作

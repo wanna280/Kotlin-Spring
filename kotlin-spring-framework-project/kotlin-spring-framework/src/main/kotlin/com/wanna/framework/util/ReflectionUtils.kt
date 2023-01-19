@@ -1,6 +1,8 @@
 package com.wanna.framework.util
 
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ReflectionUtils.FieldMatcher
+import com.wanna.framework.util.ReflectionUtils.MethodMatcher
 import java.lang.reflect.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -22,7 +24,7 @@ object ReflectionUtils {
      */
     @JvmField
     val COPYABLE_FIELDS = MethodMatcher { method ->
-        !Modifier.isStatic(method.modifiers) && Modifier.isFinal(method.modifiers)
+        !Modifier.isStatic(method.modifiers) && !Modifier.isFinal(method.modifiers)
     }
 
 
@@ -39,19 +41,19 @@ object ReflectionUtils {
     private val EMPTY_CLASS_ARRAY = emptyArray<Class<*>>()
 
     /**
-     * 空的字段的常量
+     * 空的字段数组的常量
      */
     @JvmStatic
     private val EMPTY_FIELD_ARRAY = emptyArray<Field>()
 
     /**
-     * 某个类对应的方法缓存(ConcurrentMap), k为要获取的类, v为该类所定义的方法列表
+     * 某个类对应的方法缓存(ConcurrentMap), Key为要获取的类, Value为该类所定义的方法列表
      */
     @JvmStatic
     private val declaredMethodsCache = ConcurrentHashMap<Class<*>, Array<Method>>()
 
     /**
-     * 某个类对应的字段缓存(ConcurrentMap), k为要去进行获取的类, v为该类定义的字段列表
+     * 某个类对应的字段缓存(ConcurrentMap), Key为要去进行获取的类, Value为该类定义的字段列表
      */
     @JvmStatic
     private val declaredFieldsCache = ConcurrentHashMap<Class<*>, Array<Field>>()
@@ -206,7 +208,7 @@ object ReflectionUtils {
      *
      * @param clazz 目标类
      * @param action 对方法要执行的操作
-     * @param filter 哪些方法需要进行操作？使用Filter去进行过滤出来
+     * @param filter 哪些方法需要进行操作? 使用Filter去进行过滤出来
      */
     @JvmStatic
     fun doWithFields(clazz: Class<*>, action: FieldCallback, filter: (Field) -> Boolean) {
@@ -233,7 +235,7 @@ object ReflectionUtils {
      *
      * @param clazz 目标类
      * @param action 对方法要执行的操作
-     * @param filter 哪些方法需要进行操作？
+     * @param filter 哪些方法需要进行操作? 
      */
     @JvmStatic
     fun doWithLocalFields(clazz: Class<*>, action: FieldCallback, filter: FieldMatcher) {
@@ -437,7 +439,7 @@ object ReflectionUtils {
     }
 
     /**
-     * 判断给定的字段是否是"public static final"的字段？
+     * 判断给定的字段是否是"public static final"的字段? 
      *
      * @param field 待检查的字段
      * @return 如果是"public static final", return true; 否则return false
@@ -463,7 +465,7 @@ object ReflectionUtils {
      *
      * @param clazz 要执行方法的类
      * @param action 要根据Method去进行执行的操作
-     * @param filter 该方法是否要执行的Filter？return true->执行, else->不执行
+     * @param filter 该方法是否要执行的Filter? return true->执行, else->不执行
      */
     @JvmStatic
     fun doWithLocalMethods(clazz: Class<*>, action: MethodCallback, filter: MethodMatcher) {
@@ -493,7 +495,7 @@ object ReflectionUtils {
      *
      * @param clazz 要执行方法的类
      * @param action 要根据Method去进行执行的操作
-     * @param filter 该方法是否要执行的Filter？return true->执行, else->不执行
+     * @param filter 该方法是否要执行的Filter? return true->执行, else->不执行
      */
     @JvmStatic
     fun doWithMethods(clazz: Class<*>, action: MethodCallback, filter: MethodMatcher) {
@@ -549,7 +551,7 @@ object ReflectionUtils {
      * 获取一个类定义的所有方法(包含declaredMethods, 以及直接接口上的defaultMethods)
      *
      * @param clazz 要获取方法的类
-     * @param defensive 这个方法是否具有侵入性？也就是需不需要将数据clone一份出来返回？true代表需要, 反之不需要
+     * @param defensive 这个方法是否具有侵入性? 也就是需不需要将数据clone一份出来返回? true代表需要, 反之不需要
      * @return 从给定的类上去解析完成的方法数组(包含declaredMethods, 以及直接接口上的defaultMethods)
      */
     @JvmStatic

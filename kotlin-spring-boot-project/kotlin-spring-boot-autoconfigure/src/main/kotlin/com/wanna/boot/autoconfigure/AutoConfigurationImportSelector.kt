@@ -24,7 +24,7 @@ import com.wanna.framework.util.ClassUtils
  * 这是一个完成自动配置的ImportSelector, 作用是从SpringFactories当中去加载通过EnableAutoConfiguration导入的相关配置类,
  * 并使用AutoConfigurationImportFilter, 去对要导入的配置类去进行批量的筛选, 可以通过不读取字节码、直接读取文件的方式去进行批量筛选掉;
  * 对于一个Bean具体的要不要导入到Spring容器当中, 得通过Condition/SpringBootCondition去进行条件匹配来决定.
- * 怎么筛选？不管是对于OnBean/OnClass的相关条件, 都是通过Class.forName直接去判断它是否在当前的应用的依赖当中, 只要不在那么就不符合
+ * 怎么筛选? 不管是对于OnBean/OnClass的相关条件, 都是通过Class.forName直接去判断它是否在当前的应用的依赖当中, 只要不在那么就不符合
  *
  * @see EnableAutoConfiguration
  * @see DeferredImportSelector

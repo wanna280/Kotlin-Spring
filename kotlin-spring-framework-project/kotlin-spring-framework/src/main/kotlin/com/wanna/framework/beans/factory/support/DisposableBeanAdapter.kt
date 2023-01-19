@@ -4,7 +4,7 @@ import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.processor.beans.DestructionAwareBeanPostProcessor
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.util.StringUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.lang.reflect.Method
 
 /**
@@ -27,7 +27,7 @@ open class DisposableBeanAdapter(
     _postProcessors: List<DestructionAwareBeanPostProcessor>
 ) : DisposableBean, Runnable {
 
-    // 是否需要执行DisposableBean？
+    // 是否需要执行DisposableBean?
     private val invokeDisposableBean: Boolean = bean is DisposableBean
 
     // 要应用给当前Bean的DestructionAwareBeanPostProcessor列表
@@ -119,7 +119,7 @@ open class DisposableBeanAdapter(
          *
          * @param bean bean
          * @param mbd MergedBeanDefinition
-         * @return 是否有destroy方法？
+         * @return 是否有destroy方法?
          */
         @JvmStatic
         fun hasDestroyMethod(bean: Any, mbd: RootBeanDefinition): Boolean {
@@ -131,7 +131,7 @@ open class DisposableBeanAdapter(
         }
 
         /**
-         * 去推断是否有destroy方法？如果有返回找到的destroyMethodName, 没有则return null
+         * 去推断是否有destroy方法? 如果有返回找到的destroyMethodName, 没有则return null
          *
          * @param bean bean
          * @param mbd MergedBeanDefinition
@@ -163,7 +163,7 @@ open class DisposableBeanAdapter(
         }
 
         /**
-         * 是否有可以去进行给当前Bean的DestructionAwareBeanPostProcessor？
+         * 是否有可以去进行给当前Bean的DestructionAwareBeanPostProcessor?
          *
          * @param bean bean
          * @param postProcessors 要去进行匹配的DestructionAwareBeanPostProcessor列表

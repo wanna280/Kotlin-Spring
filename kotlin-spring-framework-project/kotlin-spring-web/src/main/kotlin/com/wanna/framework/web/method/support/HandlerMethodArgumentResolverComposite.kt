@@ -29,10 +29,10 @@ class HandlerMethodArgumentResolverComposite : HandlerMethodArgumentResolver {
     }
 
     /**
-     * 是否支持处理这样的参数？遍历所有的ArgumentResolver, 只要其中一个能处理就行
+     * 是否支持处理这样的参数? 遍历所有的ArgumentResolver, 只要其中一个能处理就行
      *
      * @param parameter 参数解析器
-     * @return 能否支持解析？只要找到了合适的ArgumentResolver, 那么return true; 不然return false
+     * @return 能否支持解析? 只要找到了合适的ArgumentResolver, 那么return true; 不然return false
      */
     override fun supportsParameter(parameter: MethodParameter): Boolean {
         return getArgumentResolver(parameter) != null

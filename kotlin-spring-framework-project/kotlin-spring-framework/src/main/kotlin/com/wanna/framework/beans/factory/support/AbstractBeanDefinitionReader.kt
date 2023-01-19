@@ -10,8 +10,8 @@ import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.PathMatchingResourcePatternResolver
 import com.wanna.framework.core.io.support.ResourcePatternResolver
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 
 /**
  *

@@ -65,7 +65,7 @@ open class ConfigurationPropertiesBindingPostProcessor : BeanPostProcessor, Appl
 
 
     /**
-     * 在初始化Bean之前, 去拦截下来Bean的创建, 去判断Bean是否标注了@ConfigurationProperties注解？
+     * 在初始化Bean之前, 去拦截下来Bean的创建, 去判断Bean是否标注了@ConfigurationProperties注解?
      *
      * @param bean bean
      * @param beanName beanName

@@ -20,12 +20,12 @@ interface FactoryBean<T> {
     fun getObject(): T
 
     /**
-     * 要导入的FactoryBeanObject是否是单例的？
+     * 要导入的FactoryBeanObject是否是单例的?
      */
     fun isSingleton(): Boolean
 
     /**
-     * 要导入的FactoryBeanObject是否是原型的？
+     * 要导入的FactoryBeanObject是否是原型的?
      */
     fun isPrototype(): Boolean
 }

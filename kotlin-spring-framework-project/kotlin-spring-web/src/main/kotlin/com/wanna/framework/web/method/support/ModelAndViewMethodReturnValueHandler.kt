@@ -15,7 +15,7 @@ import com.wanna.framework.web.ui.SmartView
 open class ModelAndViewMethodReturnValueHandler : HandlerMethodReturnValueHandler {
 
     /**
-     * 是否处理该返回值？只要返回值类型是ModelAndView就支持
+     * 是否处理该返回值? 只要返回值类型是ModelAndView就支持
      *
      * @param parameter 返回值类型封装成为的MethodParameter
      */

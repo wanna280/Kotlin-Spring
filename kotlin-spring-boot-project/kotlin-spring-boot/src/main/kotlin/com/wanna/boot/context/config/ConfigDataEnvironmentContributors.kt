@@ -6,7 +6,7 @@ import com.wanna.boot.context.properties.bind.Binder
 import com.wanna.boot.context.properties.source.ConfigurationPropertySource
 import com.wanna.framework.core.environment.PropertySource
 import com.wanna.framework.lang.Nullable
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.util.*
 import java.util.stream.Collectors
 

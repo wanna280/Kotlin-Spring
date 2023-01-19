@@ -19,7 +19,7 @@ import com.wanna.framework.core.comparator.OrderComparator
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.BeanFactoryUtils
 import com.wanna.framework.util.ClassUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
@@ -61,7 +61,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     /**
-     * 是否允许发生BeanDefinition的覆盖？后来的BeanDefinition是否有资格去替换掉之前的BeanDefinition？
+     * 是否允许发生BeanDefinition的覆盖? 后来的BeanDefinition是否有资格去替换掉之前的BeanDefinition?
      */
     private var allowBeanDefinitionOverriding: Boolean = false
 
@@ -168,13 +168,13 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * 给定一个beanName, 去判断该Bean是否是FactoryBean
      *
      * @param name beanName
-     * @return 该Bean是否是FactoryBean？
+     * @return 该Bean是否是FactoryBean?
      */
     override fun isFactoryBean(name: String): Boolean {
         //将beanName当中的&前缀全部去掉
         val transformBeanName = transformBeanName(name)
 
-        // 1.尝试去从容器当中获取到Singleton对象, 看它类型是否是一个FactoryBean？
+        // 1.尝试去从容器当中获取到Singleton对象, 看它类型是否是一个FactoryBean?
         val singleton = getSingleton(transformBeanName, false)
         if (singleton != null) {
             return singleton is FactoryBean<*>
@@ -220,12 +220,12 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     open fun getAutowireCandidateResolver(): AutowireCandidateResolver = this.autowireCandidateResolver
 
     /**
-     * 判断一个候选Bean能否注入给DependencyDescriptor的目标元素？
+     * 判断一个候选Bean能否注入给DependencyDescriptor的目标元素?
      * 支持去进行匹配BeanDefinition当中的AutowireCandidate属性以及Qualifier注解等情况
      *
      * @param beanName beanName
      * @param descriptor 依赖描述符
-     * @return 是否是一个Autowire的候选Bean？
+     * @return 是否是一个Autowire的候选Bean?
      */
     override fun isAutowireCandidate(beanName: String, descriptor: DependencyDescriptor): Boolean {
         return isAutowireCandidate(beanName, descriptor, getAutowireCandidateResolver())
@@ -298,7 +298,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     ) : DependencyDescriptor(null, null, false, false) {
 
         /**
-         * 它是否是必须的？
+         * 它是否是必须的?
          */
         private var required: Boolean? = null
 
@@ -349,7 +349,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      *
      * @param originDescriptor 原始依赖描述符
      * @param beanName beanName
-     * @param asTarget 要使用哪个父类的泛型类型去进行寻找？
+     * @param asTarget 要使用哪个父类的泛型类型去进行寻找?
      */
     private open inner class DependencyObjectProvider(
         private val originDescriptor: DependencyDescriptor, @Nullable private val beanName: String?, asTarget: Class<*>
@@ -476,7 +476,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             var value = getAutowireCandidateResolver().getSuggestedValue(descriptor)
             if (value != null) {
                 // 如果value是String类型
-                // 那么需要使用嵌入式的值解析器完成解析...(SpEL呢？)
+                // 那么需要使用嵌入式的值解析器完成解析...(SpEL呢? )
                 if (value is String) {
                     value = this.resolveEmbeddedValue(value)
                 }
@@ -547,7 +547,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     /**
-     * 判断该依赖是否是必须的？
+     * 判断该依赖是否是必须的?
      *
      * @param descriptor 依赖描述符
      * @return 如果该依赖是必要的, return true; 否则return false
@@ -662,11 +662,11 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     /**
-     * 判断一个Bean是否是Primary的？
+     * 判断一个Bean是否是Primary的?
      *
      * @param beanName beanName
      * @param beanInstance beanInstance
-     * @return 该Bean是否是Primary的？如果是return true, 不然return false
+     * @return 该Bean是否是Primary的? 如果是return true, 不然return false
      */
     private fun isPrimary(beanName: String, beanInstance: Any) = getMergedBeanDefinition(beanName).isPrimary()
 
@@ -703,8 +703,8 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
         // 2.遍历容器中的所有的类型匹配的Bean, 去进行挨个地匹配...为了AutowireCandidate的Bean
         for (candidateName in candidateNames) {
-            // 从DependencyDescriptor当中解析到合适的依赖, 判断该Bean, 是否是一个Autowire候选Bean？
-            // 比较类型和Qualifier(beanName)是否匹配？
+            // 从DependencyDescriptor当中解析到合适的依赖, 判断该Bean, 是否是一个Autowire候选Bean?
+            // 比较类型和Qualifier(beanName)是否匹配?
             // Note: 这里我们必须需要去排除自引用的情况
             if (!isSelfReference(beanName, candidateName) && isAutowireCandidate(candidateName, descriptor)) {
                 addCandidateEntry(result, candidateName, descriptor, requiredType)
@@ -721,13 +721,13 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
             // 根据给定的fallbackDescriptor, 再去进行一次匹配
             candidateNames.forEach {
-                // 从DependencyDescriptor当中解析到合适的依赖, 判断该Bean, 是否是一个Autowire候选Bean？
+                // 从DependencyDescriptor当中解析到合适的依赖, 判断该Bean, 是否是一个Autowire候选Bean?
                 if (!isSelfReference(beanName, it) && isAutowireCandidate(it, fallbackDescriptor)) {
                     addCandidateEntry(result, it, descriptor, requiredType)
                 }
             }
 
-            // 如果不是一个MultipleBean的话, 那么我们再去检查一下是否是自身引用的情况？
+            // 如果不是一个MultipleBean的话, 那么我们再去检查一下是否是自身引用的情况?
             // 对于自身引用的情况, 我们是完全允许的...对于非Array/Collection/Map的情况, 那么我们在这里去允许去注入自身
             // 这里我们首先得排除掉MultiElementDescriptor的情况, 因为它也可以决定是否正在注入的元素是一个MultipleBean
             if (!multiple) {
@@ -746,7 +746,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     /**
-     * 检查是否是自引用？有一种情况, 那就是一个CompositeXxx的Bean, 想要去注入所有的XXx类型的Bean;
+     * 检查是否是自引用? 有一种情况, 那就是一个CompositeXxx的Bean, 想要去注入所有的XXx类型的Bean;
      * 此时就会因为出现自引用, 从而导致循环依赖, 但是对于这种情况来说, 实际上我们是允许的, 因此我们需要去排除掉.
      *
      * @param beanName beanName
@@ -892,11 +892,11 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     open fun getDependencyComparator(): Comparator<Any?>? = dependencyComparator
 
     /**
-     * 当前BeanFactory当中是否包含了BeanDefinition？
+     * 当前BeanFactory当中是否包含了BeanDefinition?
      * 在进行getBeanDefinition之前请先使用containsBeanDefinition去进行判断, 因为getBeanDefinition方法在找不到时会抛出异常
      *
      * @param name beanName
-     * @return BeanDefinitionNames当中是否存在有该name对应的BeanDefinition？
+     * @return BeanDefinitionNames当中是否存在有该name对应的BeanDefinition?
      * @see getBeanDefinition
      */
     override fun containsBeanDefinition(name: String): Boolean = beanDefinitionNames.contains(name)
@@ -1073,7 +1073,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * Note：这里不能去getBean的, 只能从BeanDefinition当中去进行匹配...
      *
      * @param type beanType
-     * @param includeNonSingletons 是否允许非单例对象？
+     * @param includeNonSingletons 是否允许非单例对象?
      * @param allowEagerInit 是否允许去进行eager加载
      * @return beanType对应的beanName列表
      */
@@ -1089,7 +1089,7 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * Note：这里不能去getBean的, 只能从BeanDefinition当中去进行匹配...
      *
      * @param type beanType
-     * @param includeNonSingletons 是否允许非单例对象？
+     * @param includeNonSingletons 是否允许非单例对象?
      * @param allowEagerInit 是否允许去进行eager加载
      * @return beanType对应的beanName列表
      */

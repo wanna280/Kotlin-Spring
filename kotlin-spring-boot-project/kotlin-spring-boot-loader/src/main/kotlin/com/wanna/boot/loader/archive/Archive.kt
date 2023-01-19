@@ -35,7 +35,7 @@ interface Archive : Iterable<Archive.Entry> {
     fun getManifest(): Manifest?
 
     /**
-     * 当前的归档文件是否已经被解压(unpack-解压)了？默认为false
+     * 当前的归档文件是否已经被解压(unpack-解压)了? 默认为false
      *
      * @return 如果已经被解压, 那么return true; 如果没有被解压, 那么return false
      */
@@ -60,7 +60,7 @@ interface Archive : Iterable<Archive.Entry> {
     interface Entry {
 
         /**
-         * 判断当前的Entry是否是一个目录？
+         * 判断当前的Entry是否是一个目录?
          *
          * @return 如果当前Entry是一个目录, 那么return true; 否则return false
          */

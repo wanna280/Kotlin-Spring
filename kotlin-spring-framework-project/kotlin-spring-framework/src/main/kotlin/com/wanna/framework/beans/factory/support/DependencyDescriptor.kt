@@ -12,7 +12,7 @@ import java.lang.reflect.Type
  * 这是一个依赖的描述符, 可以描述一个方法的参数, 或者是一个字段, 当然, 也可以是一个构造器的参数也是可以的
  * 在Spring当中需要去进行依赖的解析时, 就会将依赖的相关信息都封装成为一个DependencyDescriptor, 方便BeanFactory当中可以对依赖去进行解析工作
  *
- * @param required 该依赖是否是必须的？
+ * @param required 该依赖是否是必须的? 
  * @param eager 解析依赖的时候, 是否允许依赖被eagerInit(比如FactoryBean被提前创建)
  */
 open class DependencyDescriptor protected constructor(
@@ -75,7 +75,7 @@ open class DependencyDescriptor protected constructor(
     }
 
     /**
-     * 是否允许Fallback的匹配？默认为不允许
+     * 是否允许Fallback的匹配? 默认为不允许
      *
      * @return 如果允许Fallback的匹配的话, 那么return true; 如果不允许的话, 那么return false(默认)
      */
@@ -139,7 +139,7 @@ open class DependencyDescriptor protected constructor(
         return fieldName
     }
 
-    // 该依赖, 是否是必要的？(required=true？)
+    // 该依赖, 是否是必要的? (required=true? )
     open fun isRequired(): Boolean {
         if (!required) {
             return false

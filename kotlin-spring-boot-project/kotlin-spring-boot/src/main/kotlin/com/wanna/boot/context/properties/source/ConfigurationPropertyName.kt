@@ -1,9 +1,9 @@
 package com.wanna.boot.context.properties.source
 
+import com.wanna.boot.context.properties.source.ConfigurationPropertyName.ElementType
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.StringUtils
 import java.util.function.Function
-import kotlin.jvm.Throws
 import kotlin.math.min
 
 /**
@@ -33,6 +33,11 @@ open class ConfigurationPropertyName(private val elements: Elements) {
     private var string: String? = null
 
     /**
+     * 缓存hashCode, 避免重复计算
+     */
+    private var hashCode = 0
+
+    /**
      * 给当前的[ConfigurationPropertyName]去添加一个后缀, 获取一个新的[ConfigurationPropertyName]
      *
      * @param suffix 添加的后缀
@@ -56,6 +61,11 @@ open class ConfigurationPropertyName(private val elements: Elements) {
         return this.string!!
     }
 
+    /**
+     * 构建toString的结果, 对于多段属性名之间, 我们使用"."去进行拼接
+     *
+     * @return toString
+     */
     private fun buildToString(): String {
         val elements = getNumberOfElements()
         val builder = StringBuilder(elements shl 3)
@@ -73,8 +83,9 @@ open class ConfigurationPropertyName(private val elements: Elements) {
         return builder.toString()
     }
 
+
     /**
-     * 获取当前的[ConfigurationPropertyName]的段的数量
+     * 获取当前的[ConfigurationPropertyName]的段的数量(Elements Size)
      *
      * @return element size
      */
@@ -175,6 +186,53 @@ open class ConfigurationPropertyName(private val elements: Elements) {
      */
     open fun isEmpty(): Boolean = this.elements.size == 0
 
+    /**
+     * 对于equals, 采用Elements当中的内容去进行检查
+     *
+     * @param other other
+     * @return 如果Elements当中的元素完全相同, return true; 否则return false
+     */
+    override fun equals(@Nullable other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as ConfigurationPropertyName
+        // shortcut
+        if (getNumberOfElements() != other.getNumberOfElements()) {
+            return false
+        }
+        return elementsEqual(other)
+    }
+
+    /**
+     * 计算hashCode
+     *
+     *
+     * @return hashCode
+     */
+    override fun hashCode(): Int {
+        var hashCode = this.hashCode
+        val elements = this.elements
+        if (hashCode == 0 && elements.size != 0) {
+            for (elementIndex in 0 until elements.size) {
+                var elementHashCode = 0
+                val indexed = elements.getType(elementIndex).indexed
+                val length = elements.getLength(elementIndex)
+                for (j in 0 until length) {
+                    var ch = elements.charAt(elementIndex, j)
+                    if (!indexed) {
+                        ch = ch.lowercaseChar()
+                    }
+                    if (ch.isDigit() || ch.isLowerCase()) {
+                        elementHashCode = 31 * elementHashCode + ch.code
+                    }
+                }
+                hashCode = 31 * hashCode + elementHashCode
+            }
+            this.hashCode = hashCode
+        }
+        return hashCode
+    }
+
 
     /**
      * 描述的是一个配置的属性名当中的元素, 并分为多段去进行描述
@@ -251,7 +309,7 @@ open class ConfigurationPropertyName(private val elements: Elements) {
             if (this.resolved != null && index < resolved.size && this.resolved[index].isNotEmpty()) {
                 return resolved[index].length
             }
-            return this.start[index] - this.end[index]
+            return this.end[index] - this.start[index]  // fixed: length=end-start
         }
 
         /**
@@ -326,6 +384,38 @@ open class ConfigurationPropertyName(private val elements: Elements) {
         @Throws(InvalidConfigurationPropertyNameException::class)
         fun of(name: String): ConfigurationPropertyName {
             return of(name, false)!!
+        }
+
+        /**
+         * 将给定的属性名[name]去转换成为[ConfigurationPropertyName]
+         *
+         * @param name 属性名
+         * @param separator 属性名当中的多段, 应该使用什么去进行分割? (比如正常使用"."进行分割, 有可能使用"_"作为分隔符去进行分隔符)
+         * @return 转换得到的[ConfigurationPropertyName]
+         */
+        @JvmStatic
+        fun adapt(
+            name: String,
+            separator: Char
+        ): ConfigurationPropertyName = adapt(name, separator, null)
+
+        /**
+         * 将给定的属性名[name]去转换成为[ConfigurationPropertyName]
+         *
+         * @param name 属性名
+         * @param separator 属性名当中的多段, 应该使用什么去进行分割? (比如正常使用"."进行分割, 有可能使用"_"作为分隔符去进行分隔符)
+         * @param elementValueProcessor 对于切割之后得到的元素, 应该怎么去进行转换?
+         * @return 转换得到的[ConfigurationPropertyName]
+         */
+        @JvmStatic
+        fun adapt(
+            name: String,
+            separator: Char,
+            @Nullable elementValueProcessor: Function<String, String>?
+        ): ConfigurationPropertyName {
+            // 使用ElementsParser去进行解析, 并使用给定的分隔符去作为段分割符...
+            val elements = ElementsParser(name, separator).parse(elementValueProcessor)
+            return ConfigurationPropertyName(elements)
         }
 
         /**
@@ -501,7 +591,7 @@ open class ConfigurationPropertyName(private val elements: Elements) {
          * @param valueProcessor 对当前这一段的值, 需要去进行自定义的处理之后才apply, 这个valueProcessor就可以去转换
          * @return 解析得到的[Elements]
          */
-        fun parse(valueProcessor: Function<String, String>?): Elements {
+        fun parse(@Nullable valueProcessor: Function<String, String>?): Elements {
             val length = this.source.length
             // 记录左括号的数量, 当遇到'['时+1, 当遇到']'时-1, 如果计算完整个属性名, 值不为0的话, 说明是不合法的
             var openBracketCount = 0
@@ -512,21 +602,21 @@ open class ConfigurationPropertyName(private val elements: Elements) {
             // 先把type初始化为EMPTY, 后面解析过程当中去进行慢慢更新
             var type = ElementType.EMPTY
 
-            // 对
-            source.indices.forEach {
-                val ch = this.source[it]
+            // 对source当中的字符去进行逐一处理...
+            for (index in source.indices) {
+                val ch = this.source[index]
                 // 如果遇到了'[', 那么说明是遇到了数组index的前缀
                 if (ch == '[') {
                     // 如果当前的括号数量为0的话, 那么就说明是之前的元素处理完了, 现在需要开始去处理index的情况了...
                     if (openBracketCount == 0) {
 
                         // 把'['括号之前的那一段的内容去收集起来
-                        add(start, it, type, valueProcessor)
+                        add(start, index, type, valueProcessor)
 
                         // 下一个元素的开始位置的位置是index+1, 也就是'['之后的字符;
                         // 将type暂时修改为NUMERICALLY_INDEXED, 当然其中不一定正确, 需要在后面去进行修正
                         // (如果是数字的话, 那么就是对的; 但是如果不是数字的话, 那么需要在后面去进行修正成为INDEXED)
-                        start = it + 1
+                        start = index + 1
                         type = ElementType.NUMERICALLY_INDEXED
                     }
                     // 左括号的数量+1
@@ -540,10 +630,10 @@ open class ConfigurationPropertyName(private val elements: Elements) {
                     if (openBracketCount == 0) {
 
                         // 把之前的'['和现在遇到的']'之间的这一段元素去收集起来
-                        add(start, it, type, valueProcessor)
+                        add(start, index, type, valueProcessor)
 
                         // 下一个元素的开始的位置是index+1, 也就是']'之后的那个字符; 将type先修改为EMPTY
-                        start = it + 1
+                        start = index + 1
                         type = ElementType.EMPTY
                     }
 
@@ -551,15 +641,15 @@ open class ConfigurationPropertyName(private val elements: Elements) {
                 } else if (!type.indexed && ch == separator) {
 
                     // 把刚刚遇到的这一段收集起来
-                    add(start, it, type, valueProcessor)
+                    add(start, index, type, valueProcessor)
 
                     // 下一个元素的开始位置是index+1, 也就是'.'之后的那个字符; 将type先修改为EMPTY
-                    start = it + 1
+                    start = index + 1
                     type = ElementType.EMPTY
 
                     // 如果不是'[', 不是']', 也不是'.'的话, 那么就需要尝试去进行更新type
                 } else {
-                    type = updateType(type, ch, it - start)
+                    type = updateType(type, ch, index - start)
                 }
             }
 
@@ -652,7 +742,7 @@ open class ConfigurationPropertyName(private val elements: Elements) {
 
                 // 使用ValueProcessor, 使用substring(startIndex, endIndex)去进行切割得到这一段的元素的值, 并去进行转换
                 val resolved = valueProcessor.apply(this.source.substring(start, end))
-                val resolvedElements = ElementsParser(resolved, '.').parse()
+                val resolvedElements = ElementsParser(resolved, separator).parse()
                 if (resolvedElements.size != 1) {
                     throw IllegalStateException("ResolvedElements不允许出现多个元素")
                 }

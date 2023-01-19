@@ -49,7 +49,7 @@ open class NamingCluster(clusterName: String, var service: NamingService) : Clus
     /**
      * 获取一个Cluster下的临时/持久节点的全部实例
      *
-     * @param ephemeral 是否要获取持久节点？
+     * @param ephemeral 是否要获取持久节点?
      * @return 如果ephemeral=true, 返回所有的临时节点; 如果ephemeral=false, 返回所有的持久节点
      */
     open fun allIps(ephemeral: Boolean): List<NamingInstance> {
@@ -57,7 +57,7 @@ open class NamingCluster(clusterName: String, var service: NamingService) : Clus
     }
 
     /**
-     * 当前Cluster下是否没有任何一个实例？
+     * 当前Cluster下是否没有任何一个实例?
      *
      * @return 如果没有持久节点, 也没有临时节点, return true; 不然return false
      */
@@ -91,7 +91,7 @@ open class NamingCluster(clusterName: String, var service: NamingService) : Clus
     }
 
     /**
-     * subtract(Note: 计算减法), 计算"oldIps-newIps"的结果(也就是计算oldIps当中比newIps当中多了哪些实例？)
+     * subtract(Note: 计算减法), 计算"oldIps-newIps"的结果(也就是计算oldIps当中比newIps当中多了哪些实例? )
      *
      * @param oldIps oldIps
      * @param newIps newIps

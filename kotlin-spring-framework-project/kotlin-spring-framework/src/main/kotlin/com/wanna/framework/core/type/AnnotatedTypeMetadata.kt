@@ -24,7 +24,7 @@ interface AnnotatedTypeMetadata {
     fun getAnnotations(): MergedAnnotations
 
     /**
-     * 判断该类型上是否标注了某个注解？(支持直接标注/以Meta注解的方式去进行标注)
+     * 判断该类型上是否标注了某个注解? (支持直接标注/以Meta注解的方式去进行标注)
      *
      * @param annotationName 注解的全类名
      * @return 如果有标注的话, 那么return true; 否则return false

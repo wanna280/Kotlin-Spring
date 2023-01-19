@@ -9,7 +9,7 @@ package com.wanna.framework.scheduling.annotation
  * @see java.util.concurrent.Future
  * @see java.util.concurrent.Executor
  *
- * @param value 指定要使用哪个线程池去执行异步任务？可以指定一个juc包下的Executor, 或者是Spring自家的TaskExecutor,
+ * @param value 指定要使用哪个线程池去执行异步任务? 可以指定一个juc包下的Executor, 或者是Spring自家的TaskExecutor,
  * 如果该属性配置在方法层面上, 只要方法级别会使用该线程池; 如果该属性配置在类层面上, 该类当中的所有方法都会异步执行, 并应用该线程池; 
  */
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.TYPE, AnnotationTarget.CLASS)

@@ -6,7 +6,7 @@ import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.nio.charset.StandardCharsets
 
 /**
@@ -89,7 +89,7 @@ open class DefaultCorsProcessor : CorsProcessor {
      * @param request request
      * @param response response
      * @param config CorsConfig
-     * @param isPreflightRequest 当前请求是否是一个预检请求？
+     * @param isPreflightRequest 当前请求是否是一个预检请求?
      */
     protected open fun handleInternal(
         request: HttpServerRequest,
@@ -98,7 +98,7 @@ open class DefaultCorsProcessor : CorsProcessor {
         isPreflightRequest: Boolean
     ): Boolean {
 
-        // 1.检查RequestOrigin是否被服务端接受？(从"Origin"当中去进行获取)
+        // 1.检查RequestOrigin是否被服务端接受? (从"Origin"当中去进行获取)
         val requestOrigin = request.getHeaders().getOrigin()
         val allowOrigin = checkOrigin(config, requestOrigin)
         if (allowOrigin == null) {
@@ -159,7 +159,7 @@ open class DefaultCorsProcessor : CorsProcessor {
     }
 
     /**
-     * 检查Origin, 我服务端是否允许你浏览器去访问？
+     * 检查Origin, 我服务端是否允许你浏览器去访问?
      *
      * @param config CorsConfig
      * @param requestOrigin 请求的origin
@@ -170,7 +170,7 @@ open class DefaultCorsProcessor : CorsProcessor {
     }
 
     /**
-     * 检查HttpMethods, 我服务端是否允许你浏览器去进行访问？
+     * 检查HttpMethods, 我服务端是否允许你浏览器去进行访问?
      *
      * @param config CorsConfig
      * @param method RequestMethod(对于预检"PreFlight"请求, 需要从"Access-Control-Request-Methods"当中去进行获取)
@@ -184,7 +184,7 @@ open class DefaultCorsProcessor : CorsProcessor {
     }
 
     /**
-     * 检查HttpHeaders, 是否存在有我服务端允许的Header？
+     * 检查HttpHeaders, 是否存在有我服务端允许的Header?
      *
      * @param config CorsConfig
      * @param requestHeaders RequestHeaders(对于预检"PreFlight"请求, 需要从"Access-Control-Request-Headers"当中去进行获取)
@@ -206,7 +206,7 @@ open class DefaultCorsProcessor : CorsProcessor {
      * * 2.如果不是一个预检请求, 那么直接使用"requestMethod"去返回即可
      *
      * @param request request
-     * @param isPreflightRequest 当前请求是否是一个预检请求？
+     * @param isPreflightRequest 当前请求是否是一个预检请求?
      * @return 对于预检请求, return "Access-Control-Request-Methods"字段的值; 对于不是预检请求, return "request.method"
      */
     @Nullable
@@ -220,7 +220,7 @@ open class DefaultCorsProcessor : CorsProcessor {
      * * 2.如果该请求不是一个预检请求, 那么需要直接使用"request.headerNames"去进行返回
      *
      * @param request request
-     * @param isPreflightRequest 该请求是否是一个预检请求？
+     * @param isPreflightRequest 该请求是否是一个预检请求?
      * @return 对于预检请求, return "Access-Control-Request-Headers"字段的值; 对于不是预检请求, return "request.headerNames"
      */
     private fun getRequestHeadersToUse(request: HttpServerRequest, isPreflightRequest: Boolean): List<String> =

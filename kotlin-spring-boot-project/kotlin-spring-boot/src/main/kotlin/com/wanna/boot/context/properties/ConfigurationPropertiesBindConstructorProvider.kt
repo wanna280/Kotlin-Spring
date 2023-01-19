@@ -11,7 +11,7 @@ import kotlin.jvm.Throws
 
 /**
  * 它主要是解析@ConfigurationProperties注解的Bean当中的@ConstructorBinding注解, 去判断一个ConfigurationPropertiesBean
- * 应该使用构造器的方式去进行绑定？还是应该使用JavaBean的setter的方式去进行绑定
+ * 应该使用构造器的方式去进行绑定? 还是应该使用JavaBean的setter的方式去进行绑定
  *
  * @see ConfigurationPropertiesBean
  */

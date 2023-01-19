@@ -25,7 +25,7 @@ open class NamingService : Service() {
     var namespaceId: String = ""
 
     /**
-     * 是否启用该NamingService？
+     * 是否启用该NamingService?
      */
     var enabled = true
 
@@ -77,7 +77,7 @@ open class NamingService : Service() {
     /**
      * 统计当前NamingService下的**所有**集群下的所有的NamingInstance列表(持久/临时二选一)
      *
-     * @param ephemeral 要统计的是临时节点还是所有的节点？
+     * @param ephemeral 要统计的是临时节点还是所有的节点?
      * @return 所有集群下的所有(临时/持久)实例列表
      */
     open fun allIps(ephemeral: Boolean): List<NamingInstance> {
@@ -113,7 +113,7 @@ open class NamingService : Service() {
      * 给出当前的NamingService下的最新的NamingInstance列表, 对Cluster去进行分类, 交给Cluster去进行实例列表的更新工作
      *
      * @param instances 最新的实例列表
-     * @param ephemeral 更新的是否是临时节点？
+     * @param ephemeral 更新的是否是临时节点?
      */
     open fun updateIPs(instances: Collection<NamingInstance>, ephemeral: Boolean) {
         // 为全部集群构建新的NamingInstance列表, key-clusterName, value-该cluster下要去进行更新的实例列表

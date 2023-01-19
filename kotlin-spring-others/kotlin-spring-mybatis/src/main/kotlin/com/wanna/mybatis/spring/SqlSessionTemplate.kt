@@ -39,7 +39,7 @@ class SqlSessionTemplate(
     /**
      * !!!获取Mapper, 需要使用Configuration去getMapper, 才能自定义SqlSession, 
      * 使用原始的SqlSession去获取SqlSession, 获取到的是原始的DefaultSqlSession;
-     * 为什么我们需要自定义SqlSession？因为我们需要对执行Mapper的目标方法去进行拦截
+     * 为什么我们需要自定义SqlSession? 因为我们需要对执行Mapper的目标方法去进行拦截
      *
      * @param type MapperType
      * @return Mapper Object

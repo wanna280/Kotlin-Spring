@@ -35,7 +35,7 @@ abstract class NestedRuntimeException(message: String?, cause: Throwable?) : Run
     fun getMostSpecificCause(): Throwable = NestedExceptionUtils.getMostSpecificCause(this) ?: this
 
     /**
-     * 判断当前的异常(以及所有的cause)当中是否包含了给定的异常类型的异常？
+     * 判断当前的异常(以及所有的cause)当中是否包含了给定的异常类型的异常? 
      *
      * @param exType 异常类型
      * @return 如果内部确实包含了给定的exType, 那么return true; 否则return false

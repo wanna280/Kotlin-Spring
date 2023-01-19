@@ -51,13 +51,13 @@ abstract class PlaceholderConfigurerSupport : PropertyResourceConfigurer(), Bean
 
 
     /**
-     * 是否需要trim掉值？
+     * 是否需要trim掉值?
      */
     var trimValues: Boolean = false
 
 
     /**
-     * 是否需要忽略无法解析的占位符？
+     * 是否需要忽略无法解析的占位符?
      */
     var ignoreUnresolvablePlaceholders = false
 

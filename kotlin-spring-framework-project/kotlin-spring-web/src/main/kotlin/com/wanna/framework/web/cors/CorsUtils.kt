@@ -54,12 +54,12 @@ object CorsUtils {
 
 
     /**
-     * 是否是一个CORS的预检("PreFlight")请求？
+     * 是否是一个CORS的预检("PreFlight")请求?
      * Note: 对于DELETE/PUT等请求, 浏览器会对服务器端发送一个预检请求, 因为没有具体的请求方式, 采用的请求的方式是"OPTIONS",
      * 并且在预检请求当中, 浏览器还会自动携带上"Origin"和"Access-Control-Request-Method"这两个请求头, 我们需要同时去进行鉴别
      *
      * @param request request
-     * @return 该请求是否是一个预检请求？如果是return true; 否则return false
+     * @return 该请求是否是一个预检请求? 如果是return true; 否则return false
      */
     @JvmStatic
     fun isPreFlightRequest(request: HttpServerRequest): Boolean {

@@ -92,7 +92,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     }
 
     /**
-     * 遍历所有的Bean, 去判断它是否是一个Handler？
+     * 遍历所有的Bean, 去判断它是否是一个Handler? 
      * 如果是一个Handler的话, 把它所有的HandlerMethod注册到MappingRegistry当中
      *
      * @see detectHandlerMethods
@@ -178,10 +178,10 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     }
 
     /**
-     * 给定一个BeanClass, 去判断它是否是一个Handler？(最典型的是@Controller注解)
+     * 给定一个BeanClass, 去判断它是否是一个Handler? (最典型的是@Controller注解)
      *
      * @param beanType beanType
-     * @return 它是否是一个Handler？是一个Handler时return true; 否则return false
+     * @return 它是否是一个Handler? 是一个Handler时return true; 否则return false
      */
     protected abstract fun isHandler(beanType: Class<*>): Boolean
 
@@ -211,7 +211,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
             // 根据path, 直接去获取mapping列表
             val directPathMatches = mappingRegistry.getMappingsByDirectPath(lookupPath)
 
-            // 如果根据直接路径就匹配到了合适的Mapping, 那么交给子类去匹配, 哪些Mapping是匹配的？
+            // 如果根据直接路径就匹配到了合适的Mapping, 那么交给子类去匹配, 哪些Mapping是匹配的? 
             if (directPathMatches.isNotEmpty()) {
                 addMatchingMappings(matches, request, directPathMatches)
             }
@@ -260,7 +260,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     }
 
     /**
-     * 是否有CorsConfiguration？我们要去扩展父类的是否有CorsConfigurationSource的逻辑,
+     * 是否有CorsConfiguration? 我们要去扩展父类的是否有CorsConfigurationSource的逻辑,
      * 因为我们有针对具体的HandlerMethod去配置具体的CorsConfiguration, 我们这里需要去进行检查MappingRegistry
      *
      * @param handler handler
@@ -302,7 +302,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     }
 
     /**
-     * 添加匹配到Mapping, 遍历所有的Mapping, 交给子类去决定该Mapping是否是匹配当前的请求的？
+     * 添加匹配到Mapping, 遍历所有的Mapping, 交给子类去决定该Mapping是否是匹配当前的请求的? 
      *
      * @param matches 最终匹配的结果, 输出参数
      * @param request request
@@ -319,7 +319,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
     }
 
     /**
-     * 如何去进行匹配当前请求和Mapping匹配？抽象的模板方法, 交给子类去实现
+     * 如何去进行匹配当前请求和Mapping匹配? 抽象的模板方法, 交给子类去实现
      *
      * @param request request
      * @return 如果匹配到return mapping, 如果匹配不到, return null
@@ -479,7 +479,7 @@ abstract class AbstractHandlerMethodMapping<T> : AbstractHandlerMapping(), Initi
      * @param directPaths 路径列表
      * @param handlerMethod handlerMethod(bean+method)
      * @param name mappingName
-     * @param corsConfig 该Registration是否有CorsConfig？
+     * @param corsConfig 该Registration是否有CorsConfig? 
      */
     data class MappingRegistration<T>(
         val mapping: T,

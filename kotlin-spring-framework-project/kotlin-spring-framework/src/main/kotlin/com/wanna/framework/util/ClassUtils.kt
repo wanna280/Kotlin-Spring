@@ -5,7 +5,7 @@ import com.wanna.framework.constants.CLASS_ARRAY_TYPE
 import com.wanna.framework.constants.NUMBER_ARRAY_TYPE
 import com.wanna.framework.constants.STRING_ARRAY_TYPE
 import com.wanna.framework.lang.Nullable
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.lang.reflect.Method
 import java.util.*
 
@@ -226,7 +226,7 @@ object ClassUtils {
     }
 
     /**
-     * 判断childClass是否是parentClass的子类？如果其中一个返回为空, 那么return true; 只有两者均不为空时, 才会去进行判断
+     * 判断childClass是否是parentClass的子类? 如果其中一个返回为空, 那么return true; 只有两者均不为空时, 才会去进行判断
      *
      * @param parentClass parentClass
      * @param childClass parentClass
@@ -248,7 +248,7 @@ object ClassUtils {
         if (value != null) isAssignFrom(type, value::class.java) else !type.isPrimitive
 
     /**
-     * 判断childClass是否是parentClass的子类？如果其中一个返回为空, 那么return true; 只有两者均不为空时, 才会去进行判断
+     * 判断childClass是否是parentClass的子类? 如果其中一个返回为空, 那么return true; 只有两者均不为空时, 才会去进行判断
      *
      * @param lhsType parentClass
      * @param rhsType childClass
@@ -277,7 +277,7 @@ object ClassUtils {
     /**
      * 获取一个短的类名, 也就是一个类的去掉包名之后的类名
      * 比如：
-     * * 1."com.wanna.User"会被转换为"User", 
+     * * 1."com.wanna.User"会被转换为"User",
      * * 2."com.wanna.User$Default"会被转换为"User$Default"
      *
      * @param clazz 想要获取短类名的clazz
@@ -289,7 +289,7 @@ object ClassUtils {
     /**
      * 获取一个短的类名, 也就是一个类的去掉包名之后的类名
      * 比如：
-     * * 1."com.wanna.User"会被转换为"User", 
+     * * 1."com.wanna.User"会被转换为"User",
      * * 2."com.wanna.User$Default"会被转换为"User$Default"
      *
      * @param clazzName 想要获取短类名的className
@@ -409,7 +409,7 @@ object ClassUtils {
     }
 
     /**
-     * 判断指定的类是否存在于当前JVM的运行时的依赖当中？
+     * 判断指定的类是否存在于当前JVM的运行时的依赖当中?
      *
      * @param className 要去进行判断的className
      * @return 存在return true; 不存在return false
@@ -430,7 +430,7 @@ object ClassUtils {
     }
 
     /**
-     * 判断指定的类当中是否存在有给定名字的方法？
+     * 判断指定的类当中是否存在有给定名字的方法?
      * (Note: 1.只找public方法)
      *
      * @param clazz clazz
@@ -497,7 +497,7 @@ object ClassUtils {
     }
 
     /**
-     * 判断指定的类是否存在于当前JVM的运行时的依赖当中？
+     * 判断指定的类是否存在于当前JVM的运行时的依赖当中?
      *
      * @param className 要去进行判断的className
      * @param classLoader 要使用的ClassLoader
@@ -511,17 +511,6 @@ object ClassUtils {
         } catch (ex: ClassNotFoundException) {
             return false
         }
-    }
-
-    /**
-     * 使用指定的类的无参数构造器去实例化一个对象
-     *
-     * @param clazz 想要去进行实例化的类
-     * @return 实例化完成的Java对象
-     */
-    @JvmStatic
-    fun <T> newInstance(clazz: Class<T>): T {
-        return clazz.getDeclaredConstructor().newInstance()
     }
 
     /**

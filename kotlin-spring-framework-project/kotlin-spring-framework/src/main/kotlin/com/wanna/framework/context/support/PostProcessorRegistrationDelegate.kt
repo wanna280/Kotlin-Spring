@@ -16,9 +16,9 @@ import com.wanna.framework.core.metrics.ApplicationStartup
 /**
  * 这是一个执行PostProcessor的委托类, 可以委托去完成BeanFactoryPostProcessor和BeanPostProcessor的执行;
  *
- * Note: 在注册阶段当中必须分开去进行getBean, 最开始只能统计beanName列表(至于为什么PriorityOrdered可以提前getBean？因为它是第一个getBean的阶段,
+ * Note: 在注册阶段当中必须分开去进行getBean, 最开始只能统计beanName列表(至于为什么PriorityOrdered可以提前getBean? 因为它是第一个getBean的阶段,
  * 这样, PriorityOrdered的Bean就不必经历存放beanName的阶段, 直接就经历了getBean阶段即可)
- * 后面才能去进行getBean, 至于为什么？因为在getBean时, 会导致该Bean提前完成初始化工作, 但是该Bean很可能需要应用之前的一些
+ * 后面才能去进行getBean, 至于为什么? 因为在getBean时, 会导致该Bean提前完成初始化工作, 但是该Bean很可能需要应用之前的一些
  * PostProcessor, 但是如果你提前getBean了, 那么很明显, 是不能做到的！
  * 因为PriorityOrdered/Ordered/NonOrdered是分步注册的, 必须保证前一个阶段的PostProcessor全部注册之后后一个阶段的Bean才能去进行注册
  *

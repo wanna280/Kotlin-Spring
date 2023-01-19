@@ -12,7 +12,7 @@ import java.lang.annotation.Inherited
 import kotlin.reflect.KClass
 
 /**
- * 对于单元测试当中, 应该如何去加载(load)/配置(configure)一个Spring的[ApplicationContext]？
+ * 对于单元测试当中, 应该如何去加载(load)/配置(configure)一个Spring的[ApplicationContext]? 
  *
  * # 支持的资源类型如下
  * * 1.可以通过value/locations属性去指定一个Spring的XML配置文件; 

@@ -9,8 +9,8 @@ import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.io.DefaultResourceLoader
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.lang.Nullable
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 它是一个配置文件的环境处理器, 它负责去处理SpringApplication当中的配置文件的加载;

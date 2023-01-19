@@ -1,6 +1,6 @@
 package com.wanna.cloud.openfeign
 
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * Fallback Factory

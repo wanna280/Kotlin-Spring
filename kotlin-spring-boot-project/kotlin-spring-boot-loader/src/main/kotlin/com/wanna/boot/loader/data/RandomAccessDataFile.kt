@@ -76,8 +76,8 @@ class RandomAccessDataFile : RandomAccessData {
     /**
      * 创建一个只含有原始文件的一部分的[RandomAccessData]
      *
-     * @param offset 要从原始文件的哪里开始读取？
-     * @param length 要读取的长度？
+     * @param offset 要从原始文件的哪里开始读取? 
+     * @param length 要读取的长度? 
      * @return 含有原始文件的一部分的RandomAccessData对象
      */
     override fun getSubsection(offset: Long, length: Long): RandomAccessData {

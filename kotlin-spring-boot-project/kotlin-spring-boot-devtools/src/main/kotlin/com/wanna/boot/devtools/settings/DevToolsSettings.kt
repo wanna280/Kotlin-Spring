@@ -29,7 +29,7 @@ class DevToolsSettings {
     }
 
     /**
-     * 判断给的URL是否应该被include？
+     * 判断给的URL是否应该被include?
      *
      * @param url url
      * @return 如果该URL匹配其中一个includePattern, return true; 否则return false
@@ -37,7 +37,7 @@ class DevToolsSettings {
     fun isRestartInclude(url: URL): Boolean = isMatch(url.toString(), restartIncludePatterns)
 
     /**
-     * 判断给的URL是否应该被exclude？
+     * 判断给的URL是否应该被exclude?
      *
      * @param url url
      * @return 如果该URL匹配其中一个excludePattern, return true; 否则return false
@@ -45,7 +45,7 @@ class DevToolsSettings {
     fun isRestartExclude(url: URL): Boolean = isMatch(url.toString(), restartExcludePatterns)
 
     /**
-     * 判断给定的URL是否符合给定的正则表达式？
+     * 判断给定的URL是否符合给定的正则表达式?
      *
      * @param url url
      * @param patterns 要去进行匹配的正则表达式

@@ -34,7 +34,7 @@ open class DirectorySnapshot(val directory: File) {
     }
 
     /**
-     * 获取给定的当前(snapshot)的文件夹的的相当于之前(this)的DirectorySnapshot有什么变化？
+     * 获取给定的当前(snapshot)的文件夹的的相当于之前(this)的DirectorySnapshot有什么变化?
      * 需要去统计这期间发生了变更的文件列表以及操作类型(ADD/MODIFY/DELETE), 并将其包装到ChangedFiles
      *
      * @return 该目录下已经发生变更的文件列表(ChangedFiles)
@@ -96,7 +96,7 @@ open class DirectorySnapshot(val directory: File) {
     private fun getFileMap(): Map<File, FileSnapshot> = this.files.map { it.file to it }.toMap(LinkedHashMap())
 
     /**
-     * 比较之前的文件夹的snapshot和当前的snapshot(other)的触发的文件数量/内容相同？
+     * 比较之前的文件夹的snapshot和当前的snapshot(other)的触发的文件数量/内容相同?
      *
      * @param other newSnapShot
      * @param filter 触发文件的FileFilter(为null时, 所有的文件都会被当中触发文件)
@@ -117,7 +117,7 @@ open class DirectorySnapshot(val directory: File) {
         if (filter == null) source else source.filter { filter.accept(it.file) }.toSet()
 
     /**
-     * 判断是否需要接受该文件的改变？
+     * 判断是否需要接受该文件的改变?
      *
      * * 1.如果没有TriggerFilter, 那么只要文件改变了就接受;
      * * 2.如果指定了TriggerFilter, 那么触发的文件我们不应该作为ChangedFile去统计

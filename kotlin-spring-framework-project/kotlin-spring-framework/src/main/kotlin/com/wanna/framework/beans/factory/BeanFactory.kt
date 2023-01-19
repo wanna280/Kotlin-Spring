@@ -71,29 +71,29 @@ interface BeanFactory {
     fun containsBean(name: String): Boolean
 
     /**
-     * 根据beanName去判断该Bean是否是单例Bean？
+     * 根据beanName去判断该Bean是否是单例Bean?
      *
      * @param beanName beanName
-     * @return 该Bean是否是单例的？
+     * @return 该Bean是否是单例的?
      */
     @Throws(NoSuchBeanDefinitionException::class)
     fun isSingleton(beanName: String): Boolean
 
     /**
-     * 根据beanName去判断该Bean是否是原型的？
+     * 根据beanName去判断该Bean是否是原型的?
      *
      * @param beanName beanName
-     * @return 该Bean是否是原型的？
+     * @return 该Bean是否是原型的?
      */
     @Throws(NoSuchBeanDefinitionException::class)
     fun isPrototype(beanName: String): Boolean
 
     /**
-     * beanName对应的Bean的类型是否匹配type？
+     * beanName对应的Bean的类型是否匹配type?
      *
      * @param name 要匹配的beanName
      * @param type 要去进行匹配的类型
-     * @return 根据name获取到的Bean是否匹配指定的类型？
+     * @return 根据name获取到的Bean是否匹配指定的类型?
      *  @throws NoSuchBeanDefinitionException 如果beanFactory当中没有这样beanName的BeanDefinition的话¬
      */
     @Throws(NoSuchBeanDefinitionException::class)

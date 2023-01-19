@@ -44,7 +44,7 @@ open class InjectionMetadata(val targetClass: Class<*>, private val elements: Co
     abstract class InjectedElement(_member: Member) {
         // 要进行注入的成员, 方法/字段/构造器都是Member的子类
         val member: Member = _member
-        // 元素是否是字段？
+        // 元素是否是字段? 
         val isField = _member is Field
 
         /**

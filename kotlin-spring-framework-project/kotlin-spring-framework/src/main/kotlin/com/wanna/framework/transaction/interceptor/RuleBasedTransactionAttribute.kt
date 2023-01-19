@@ -31,7 +31,7 @@ open class RuleBasedTransactionAttribute : DefaultTransactionAttribute() {
         // 记录最小深度的异常(初始化为Int.MAX)
         var deepest = Int.MAX_VALUE
         // 遍历所有的Rollback规则, 判断哪个规则是最匹配的
-        // 看ex的几级父类, 可以匹配到指定的规则？找到深度最小的一个规则作为目标规则
+        // 看ex的几级父类, 可以匹配到指定的规则? 找到深度最小的一个规则作为目标规则
         this.rollbackRules?.forEach {
             val depth = it.getDepth(ex::class.java)
             if (depth in 0 until deepest) {

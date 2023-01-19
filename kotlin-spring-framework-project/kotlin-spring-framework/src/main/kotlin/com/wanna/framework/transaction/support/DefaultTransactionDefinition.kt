@@ -28,7 +28,7 @@ open class DefaultTransactionDefinition : TransactionDefinition {
     // 事务的超时时间
     private var timeout: Int = TIMEOUT_DEFAULT
 
-    // 事务是否是只读的事务？
+    // 事务是否是只读的事务?
     private var readOnly = false
 
     // 事务的name, 默认为null

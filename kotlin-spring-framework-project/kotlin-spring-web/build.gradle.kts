@@ -1,5 +1,6 @@
 dependencies {
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-framework"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-jcl"))
 
     // compileOnly
     compileOnly("org.apache.httpcomponents:httpclient:$apacheHttpClientVersion")

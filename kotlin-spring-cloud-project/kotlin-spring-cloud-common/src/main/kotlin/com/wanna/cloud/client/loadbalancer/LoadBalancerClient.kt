@@ -10,11 +10,11 @@ import java.net.URI
  * * 3.在这里(SpringCloud Common)只是会做一层抽象, 具体的实现细节, 完全交给实现方去进行自行实现; 
  * * 4.实现方可以基于Ribbon在SpringCloud的模块去进行实现, 也可以基于SpringCloudLoadBalancer去进行实现
  *
- * ## LoadBalancer从哪来？
+ * ## LoadBalancer从哪来?
  * * 1.这里使用到的LoadBalancer有可能是来自于Ribbon的ILoadBalancer, 也有可能是来自于SpringCloud自家的LoadBalancer; 
  * * 2.这里LoadBalancer具体的实现, 就看LoadBalancer的实现方采用何种方式去提供实现, 抽象层无法精确地落地到各家的具体实现
  *
- * ## 如何使用？
+ * ## 如何使用?
  * * 在完成了负载均衡的自动配置之后, 使用方想要使用负载均衡的策略, 只需注入LoadBalancerClient并且去进行使用即可.
  *
  * @see ServiceInstanceChooser

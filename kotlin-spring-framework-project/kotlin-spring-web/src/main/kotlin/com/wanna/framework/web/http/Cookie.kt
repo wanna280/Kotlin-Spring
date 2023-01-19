@@ -36,7 +36,7 @@ open class Cookie(_name: String, _value: String) : Cloneable, Serializable {
     var maxAge = -1
 
     /**
-     * 当前Cookie是在哪个路径下生成的？默认为"/"
+     * 当前Cookie是在哪个路径下生成的? 默认为"/"
      */
     var path: String = "/"
 

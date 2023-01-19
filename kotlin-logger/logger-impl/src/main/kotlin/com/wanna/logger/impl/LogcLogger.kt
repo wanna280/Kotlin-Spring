@@ -7,6 +7,7 @@ import com.wanna.logger.impl.event.Level
 import com.wanna.logger.impl.event.LoggingEvent
 import com.wanna.logger.impl.filter.FilterReply
 import java.util.concurrent.CopyOnWriteArrayList
+import javax.annotation.Nullable
 
 /**
  * 这是一个自定义的Logger, 针对于API规范中的Logger提供具体的实现
@@ -113,7 +114,7 @@ open class LogcLogger(name: String) : Logger {
      * @param newLevel 要进行设置的level
      * @throws IllegalArgumentException 如果当前是RootLogger, 并且newLevel=null, 不允许这种情况
      */
-    open fun setLevel(newLevel: Level?) {
+    open fun setLevel(@Nullable newLevel: Level?) {
         synchronized(this) {
             val level = this.level
             // 如果oldLevel==newLevel
@@ -191,7 +192,7 @@ open class LogcLogger(name: String) : Logger {
      * @param msg 输出的消息
      */
     private fun filterAndLog(loggerQualifierName: String, level: Level, msg: Any?) {
-        // 让LoggerFilter去决策本次日志信息, 是否应该要进行输出？
+        // 让LoggerFilter去决策本次日志信息, 是否应该要进行输出?
         val reply = abstractLoggerContext!!.getFilterChainDecisionReply(this, level, msg, emptyArray(), null)
 
         // 如果最终的结果是DENY的话, 那么需要拒绝, 不进行本次日志的输出, return

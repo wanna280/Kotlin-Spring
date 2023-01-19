@@ -21,7 +21,7 @@ open class ConfigurationClass(val metadata: AnnotationMetadata, var resource: Re
     val beanMethods = LinkedHashSet<BeanMethod>()
 
     /**
-     * 被哪个组件导入进来的？
+     * 被哪个组件导入进来的?
      */
     private val importedBy = LinkedHashSet<ConfigurationClass>()
 
@@ -113,7 +113,7 @@ open class ConfigurationClass(val metadata: AnnotationMetadata, var resource: Re
     }
 
     /**
-     * 当前配置类当中是否有@Bean标注的方法？
+     * 当前配置类当中是否有@Bean标注的方法?
      *
      * @return 如果有@Bean方法, return true; 否则return false
      */
@@ -137,7 +137,7 @@ open class ConfigurationClass(val metadata: AnnotationMetadata, var resource: Re
     }
 
     /**
-     * 设置当前配置类是否哪个配置了类导入的？
+     * 设置当前配置类是否哪个配置了类导入的?
      *
      * @param configurationClass 导入当前配置类的配置类
      */
@@ -146,12 +146,12 @@ open class ConfigurationClass(val metadata: AnnotationMetadata, var resource: Re
     }
 
     /**
-     * 获取当前配置类是被哪些配置类所导入？
+     * 获取当前配置类是被哪些配置类所导入?
      */
     open fun getImportedBy(): Collection<ConfigurationClass> = importedBy
 
     /**
-     * 是否被Import进来的？
+     * 是否被Import进来的?
      *
      * @return 如果当前的配置类是被导入的, return true; 不然return false
      */

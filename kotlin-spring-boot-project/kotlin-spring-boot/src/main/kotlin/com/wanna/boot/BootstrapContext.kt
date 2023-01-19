@@ -58,7 +58,7 @@ interface BootstrapContext {
     fun <T, X : Throwable> getOrElseThrow(type: Class<T>, exceptionSupplier: Supplier<out X>): T
 
     /**
-     * 判断当前的BootstrapContext当中是否已经注册了给定类型的实例？
+     * 判断当前的BootstrapContext当中是否已经注册了给定类型的实例?
      *
      * @param type type
      * @param T Type

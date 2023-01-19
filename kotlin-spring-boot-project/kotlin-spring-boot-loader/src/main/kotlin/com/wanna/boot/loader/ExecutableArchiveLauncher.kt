@@ -107,7 +107,7 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
         entry.getName().startsWith(getArchiveEntryPathPrefix())
 
     /**
-     * 检查给定的ArchiveEntry是否是一个嵌套的归档文件？
+     * 检查给定的ArchiveEntry是否是一个嵌套的归档文件?
      *
      * @param entry 待匹配的ArchiveEntry
      * @return 如果它是一个嵌套的归档文件, 那么return true; 否则return false
@@ -146,7 +146,7 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
     }
 
     /**
-     * 检查给定的ArchiveEntry是否在ClassPathIndex当中？
+     * 检查给定的ArchiveEntry是否在ClassPathIndex当中?
      *
      * @param entry 待匹配的ArchiveEntry
      * @return 如果它在ClassPathIndex当中, 那么return true; 否则return false

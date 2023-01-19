@@ -79,7 +79,7 @@ interface ListableBeanFactory : BeanFactory {
     fun getBeanDefinitionCount(): Int
 
     /**
-     * 容器中是否包含这样的BeanDefinition？不会匹配注册的单例Bean
+     * 容器中是否包含这样的BeanDefinition? 不会匹配注册的单例Bean
      *
      * @param name beanName
      * @return 如果beanFactory当中有, return true, 否则return false

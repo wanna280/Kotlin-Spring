@@ -6,6 +6,7 @@ include(":kotlin-spring-framework-project:kotlin-spring-framework")
 include(":kotlin-spring-framework-project:kotlin-spring-instrument")
 include(":kotlin-spring-framework-project:kotlin-spring-web")
 include(":kotlin-spring-framework-project:kotlin-spring-test")
+include(":kotlin-spring-framework-project:kotlin-spring-jcl")
 
 
 // for spring boot subprojects
@@ -42,5 +43,9 @@ include(":kotlin-spring-others:kotlin-nacos:kotlin-nacos-client")
 include(":kotlin-logger:logger-api")
 include(":kotlin-logger:logger-impl")
 include(":kotlin-logger:logger-temp")
-include(":kotlin-logger:logger-test")
 include(":kotlin-logger:logger-slf4j-impl")
+
+
+// for metrics project
+include(":kotlin-metrics-project")
+include(":kotlin-metrics-project:kotlin-metrics")

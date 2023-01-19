@@ -17,7 +17,7 @@ interface TransactionAttribute : TransactionDefinition {
     fun getQualifier(): String?
 
     /**
-     * 在给定的异常的情况下, 事务是否需要去进行回滚？
+     * 在给定的异常的情况下, 事务是否需要去进行回滚?
      *
      * @param ex 给定的一场
      * @return 需要回滚return true; 不然return false

@@ -46,7 +46,7 @@ class AnnotationTypeMapping(
     val synthesizable: Boolean
 
     /**
-     * convention映射关系
+     * convention映射关系, TODO
      */
     private val conventionMappings: IntArray
 
@@ -55,9 +55,12 @@ class AnnotationTypeMapping(
     private val annotationValueSource: Array<AnnotationTypeMapping?>
 
     /**
-     * aliasedBy, Key是@AliasFor注解指向的目标注解属性方法, Value是标注了当前注解当中的@AliasFor注解的属性方法;
-     * 为什么要这样设计呢? 比如@Configuration注解的value上标注了@AliasFor注解, 并且指向了@Component的value属性,
-     * 那么在使用时, 其实我们是需要使用@Component的value属性去寻找@Configuration的value属性的, 因此建立的映射关系是被动关系.
+     * aliasedBy, Key是`@AliasFor`注解指向的目标注解属性方法, Value是标注了当前注解当中的`@AliasFor`注解的属性方法;
+     * 为什么要这样设计呢? 比如`@Service`注解的value属性上标注了`@AliasFor`注解, 并且指向了`@Component`的value属性,
+     * 那么在使用时, 其实我们是需要使用`@Component`的value属性去寻找`@Service`的value属性的, 因此建立的映射关系是被动关系.
+     *
+     * eg: 对于`@Service`注解的AnnotationTypeMapping来说, Key为`@Component`注解的value方法, Value为`@Service`注解的value方法,
+     * 因为`@Service`注解当中可能还存在有一个name方法, 也指向了`@Component`注解的value方法, 因此对于Value来说, 可能是一个List
      */
     private val aliasedBy: Map<Method, List<Method>>
 
@@ -78,7 +81,7 @@ class AnnotationTypeMapping(
         // 如果给定了root的话, 那么使用给定的root, 不然的话, 使用this作为root
         this.root = source?.root ?: this
 
-        // 当前注解当中的属性方法
+        // 解析当前注解当中的属性方法
         this.attributes = AttributeMethods.forAnnotationType(annotationType)
 
         // 初始化MirrorSets
@@ -96,7 +99,7 @@ class AnnotationTypeMapping(
         // 解析aliasedBy
         this.aliasedBy = resolveAliasedForTargets()
 
-        // 处理Alias关系
+        // 处理Alias关系(@AliasFor)
         processAliases()
 
 
@@ -125,14 +128,18 @@ class AnnotationTypeMapping(
     }
 
     /**
-     * 处理Aliases
+     * 处理@Aliases别名注解
+     *
+     * @see AliasFor
      */
     private fun processAliases() {
         val aliases = ArrayList<Method>()
 
-        // 遍历当前注解当中的所有的属性方法, 去进行处理
+        // 遍历当前注解当中的所有的属性方法, 尝试去进行处理@AliasFor注解
         for (i in 0 until attributes.size) {
             aliases.clear()
+
+            // 将当前属性方法去添加到aliases队列当中...
             aliases += attributes[i]
 
             // 收集所有通过@AliasFor去指向当前正在进行处理的属性方法的那些属性方法
@@ -147,14 +154,14 @@ class AnnotationTypeMapping(
     }
 
     /**
-     * 找到当前Meta注解, 以及它的所有source当中, 所有的指向了当前的注解的所有的属性方法
-     * 比如A标注了B作为Meta, B标注了C作为Meta, 当前是C的话, 它会遍历C当中的所有的属性方法, 去A/B当中去找到指向C的那些属性方法
+     * 找到当前Meta注解, 以及它的所有source注解当中, 所有的指向了当前的注解的所有的属性方法
+     * 比如A标注了B作为Meta, B标注了C作为Meta, 当前是C注解的话, 它会遍历C当中的所有的属性方法, 去A/B当中去找到指向C的那些属性方法
      *
      * @param aliases aliases队列, 最终所有的指向这些属性方法的属性方法都将会收集到这里
      */
     private fun collectAliases(aliases: MutableList<Method>) {
         var mapping: AnnotationTypeMapping? = this
-        // 从this开始, 遍历它的所有的source, 找到通过@AliasFor指向了当前注解当中的属性的那些方法
+        // 从this开始, 遍历它的所有的source注解, 为了找到通过@AliasFor指向了当前注解当中的属性的那些方法
         while (mapping != null) {
 
             // 遍历队列当中的所有的属性方法, 去找到指向该属性方法的所有的@AliasFor方法
@@ -236,6 +243,8 @@ class AnnotationTypeMapping(
     private fun resolveAliasedForTargets(): Map<Method, List<Method>> {
         val aliasedBy = HashMap<Method, MutableList<Method>>()
         for (i in 0 until attributes.size) {
+
+            // 对于当前注解的所有属性方法来说, 我们去尝试去获取到它的@AliasFor注解...
             val attribute = attributes[i]
             val aliasFor = AnnotationsScanner.getDeclaredAnnotation(attribute, AliasFor::class.java)
             if (aliasFor != null) {

@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
  * @version v1.0
  * @date 2022/9/21
  *
- * @param annotationType 要封装的是哪个注解的方法？
+ * @param annotationType 要封装的是哪个注解的方法? 
  * @param attributeMethods 注解内部的属性方法
  */
 class AttributeMethods(
@@ -69,7 +69,7 @@ class AttributeMethods(
         /**
          * 提供一个基于给定一个注解, 去构建出来的AttributeMethods对象的工厂方法
          *
-         * @param annotationType 想要为哪个注解去构建AttributeMethods？
+         * @param annotationType 想要为哪个注解去构建AttributeMethods? 
          * @return 构建出来的AttributesMethods(如果给定的annotationType为null, 那么return null)
          */
         @JvmStatic
@@ -81,7 +81,7 @@ class AttributeMethods(
         /**
          * 为给定的注解类型去构建出来AttributeMethods
          *
-         * @param annotationType 想要为哪个注解去构建AttributeMethods？
+         * @param annotationType 想要为哪个注解去构建AttributeMethods? 
          * @return 构建出来的AttributesMethods
          */
         @JvmStatic
@@ -94,7 +94,7 @@ class AttributeMethods(
         }
 
         /**
-         * 判断给定的方法是否是一个注解的属性方法？
+         * 判断给定的方法是否是一个注解的属性方法? 
          *
          * @param method 待进行判断的方法
          * @return 如果它是一个属性方法, 那么return true; 否则return false

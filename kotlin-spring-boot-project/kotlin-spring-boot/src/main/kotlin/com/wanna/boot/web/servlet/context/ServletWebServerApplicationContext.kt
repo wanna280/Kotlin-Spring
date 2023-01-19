@@ -18,7 +18,7 @@ import com.wanna.framework.web.context.WebApplicationContext
 import com.wanna.framework.web.context.support.GenericWebApplicationContext
 import com.wanna.framework.web.context.support.StandardServletEnvironment
 import com.wanna.framework.web.context.support.WebApplicationContextUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import javax.servlet.ServletConfig
 import javax.servlet.ServletContext
 

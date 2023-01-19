@@ -18,7 +18,7 @@ object DevToolsEnablementDeducer {
      * 从给定的线程的栈轨迹当中去推断是否应该启用DevTools
      *
      * @param thread 给定的用来去探测栈轨迹的线程
-     * @return 是否应该启用DevTools？如果存在有"test"的栈轨迹, return false; 否则return true
+     * @return 是否应该启用DevTools? 如果存在有"test"的栈轨迹, return false; 否则return true
      */
     @JvmStatic
     fun shouldEnable(thread: Thread): Boolean {

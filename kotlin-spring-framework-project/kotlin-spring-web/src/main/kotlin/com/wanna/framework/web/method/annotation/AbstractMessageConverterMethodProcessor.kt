@@ -52,7 +52,7 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
      * 使用MessageConverter去进行写出, 将方法的返回值去以合适的方式去进行序列化, 并将序列化的结果写入到HTTP响应报文的ResponseBody当中
      * 存在着多种类型的转换(比如转json/xml)的MessageConverter, 需要遍历所有的HttpMessageConverter, 去找到一个合适的处理本次请求的写出的MessageConverter
      *
-     * @param value 要进行写出的值？
+     * @param value 要进行写出的值?
      * @param returnType 返回值类型封装的MethodParameter
      * @param inputMessage 输入流
      * @param outputMessage 输出流
@@ -80,7 +80,7 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
 
             // 如果用户没有自定义的ContentType, 那么需要根据可以接收的和可以产出的类型去进行匹配...
         } else {
-            // 遍历客户端可以接收的所有类型的MediaType, 去判断我服务端当前能否产出？
+            // 遍历客户端可以接收的所有类型的MediaType, 去判断我服务端当前能否产出?
             val mediaTypesToUse = ArrayList<MediaType>()
             for (requestType in acceptableMediaTypes) {
                 for (producibleMediaType in producibleMediaTypes) {

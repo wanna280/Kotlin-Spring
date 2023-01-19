@@ -9,7 +9,7 @@ import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.handler.ViewResolver
 import com.wanna.framework.web.ui.View
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.io.IOException
 
 open class TemplateViewResolver : ViewResolver, BeanClassLoaderAware, Ordered, ApplicationContextAware,

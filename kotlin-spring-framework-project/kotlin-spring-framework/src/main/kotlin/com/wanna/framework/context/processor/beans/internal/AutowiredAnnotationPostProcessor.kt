@@ -45,7 +45,7 @@ open class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostPro
     // 候选构造器的缓存, key-beanClass, value-constructors
     private val candidateConstructorsCache: ConcurrentHashMap<Class<*>, Array<Constructor<*>>> = ConcurrentHashMap(256)
 
-    // 哪些注解要作为Autowire注解？默认包括@Autowired/@Value和@Inject
+    // 哪些注解要作为Autowire注解? 默认包括@Autowired/@Value和@Inject
     private val autowiredAnnotationTypes = HashSet<Class<out Annotation>>()
 
     init {
@@ -68,7 +68,7 @@ open class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostPro
 
     /**
      * 设置AutowiredAnnotationTypess
-     * @param types 要用哪些注解作为Autowired的注解？
+     * @param types 要用哪些注解作为Autowired的注解?
      */
     open fun setAutowiredAnnotationTypess(types: Set<Class<out Annotation>>) {
         this.autowiredAnnotationTypes.clear()  // clear
@@ -249,7 +249,7 @@ open class AutowiredAnnotationPostProcessor : SmartInstantiationAwareBeanPostPro
     }
 
     /**
-     * 决定一个方法/字段上标注的Autowire相关注解中, 是否是required？
+     * 决定一个方法/字段上标注的Autowire相关注解中, 是否是required?
      */
     private fun determineRequiredStatus(accessibleObject: AccessibleObject): Boolean {
         if (accessibleObject is Field) {

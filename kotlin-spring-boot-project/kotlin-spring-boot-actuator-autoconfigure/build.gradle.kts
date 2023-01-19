@@ -4,6 +4,7 @@ dependencies {
     implementation(project(":kotlin-spring-boot-project:kotlin-spring-boot-autoconfigure"))
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-framework"))
     implementation(project(":kotlin-spring-boot-project:kotlin-spring-boot-actuator"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-jcl"))
 
 
     // CompileOnly Optional

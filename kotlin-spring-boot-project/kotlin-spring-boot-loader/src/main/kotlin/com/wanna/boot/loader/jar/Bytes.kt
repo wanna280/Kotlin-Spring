@@ -13,7 +13,7 @@ internal object Bytes {
      * 使用小端方式去读取
      *
      * @param bytes 要读取的ByteArray
-     * @param offset 从哪里开始读取？
+     * @param offset 从哪里开始读取?
      * @param length 要读取的长度
      * @return 读取到的内容
      */

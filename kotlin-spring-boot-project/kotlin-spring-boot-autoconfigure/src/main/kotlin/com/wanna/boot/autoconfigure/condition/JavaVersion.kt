@@ -16,8 +16,8 @@ import java.util.stream.Stream
  *
  * @param versionName 当前版本的名称(例如1.8/9/10)
  * @param clazz 鉴别当前Java版本所使用到的类
- * @param methodName 鉴别当前Java版本所使用的方法名？
- * @param available 该Java版本是否是available的？
+ * @param methodName 鉴别当前Java版本所使用的方法名? 
+ * @param available 该Java版本是否是available的? 
  */
 enum class JavaVersion(
     val versionName: String,
@@ -116,7 +116,7 @@ enum class JavaVersion(
 
 
     /**
-     * 判断当前(this)是否比给定的版本高(">=")？
+     * 判断当前(this)是否比给定的版本高(">=")? 
      *
      * @param version 需要去进行检查的版本version
      * @return 如果当前比version高(">="), 那么return true; 否则return false

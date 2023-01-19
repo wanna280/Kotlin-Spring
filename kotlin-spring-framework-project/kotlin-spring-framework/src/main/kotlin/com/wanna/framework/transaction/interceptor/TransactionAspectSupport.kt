@@ -11,7 +11,7 @@ import com.wanna.framework.util.StringUtils
 import com.wanna.framework.transaction.PlatformTransactionManager
 import com.wanna.framework.transaction.TransactionManager
 import com.wanna.framework.transaction.TransactionStatus
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 

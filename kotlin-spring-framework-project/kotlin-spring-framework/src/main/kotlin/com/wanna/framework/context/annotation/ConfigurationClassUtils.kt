@@ -43,7 +43,7 @@ object ConfigurationClassUtils {
 
 
     /**
-     * 检查一个给定的BeanDefinition是否有资格成为一个配置类？
+     * 检查一个给定的BeanDefinition是否有资格成为一个配置类?
      *
      * * 1.类上标注了@Import/@ImportResource/@PropertySource/@ComponentScan注解, return true;
      * * 2.当中包含了@Bean的方法, return true
@@ -51,7 +51,7 @@ object ConfigurationClassUtils {
      * * 4.别的情况, 一律return false
      *
      * 与此同时, 还会做以下的功能：
-     * * 1.检查一个配置类是帮配置类, 还是全配置类？将属性设置到BeanDefinition的属性当中, 方便后续去进行检查是否被检查过
+     * * 1.检查一个配置类是帮配置类, 还是全配置类? 将属性设置到BeanDefinition的属性当中, 方便后续去进行检查是否被检查过
      *     * 1.1如果它标注了@Configuration注解, 并且proxyBeanMethods=true, 那么它是一个全配置类(FULL)
      *     * 1.2如果它是一个合格的配置类, 比如类上标注了@Import/@ImportSource注解的去了, 它是一个半配置类(LITE)
      * * 2.如果一个类上有@Order注解, 那么将它的order属性设置到BeanDefinition的属性当中, 外部可能会需要用到(用来排序)
@@ -111,7 +111,7 @@ object ConfigurationClassUtils {
     }
 
     /**
-     * 根据注解元信息, 去判断判断一个类, 是否有资格成为Spring的一个的配置类？
+     * 根据注解元信息, 去判断判断一个类, 是否有资格成为Spring的一个的配置类?
      * 只要有Spring当中的一些标志性注解, 那么它就有机会成为一个候选的配置类
      *
      * @param metadata 目标配置类的相关注解信息
@@ -129,7 +129,7 @@ object ConfigurationClassUtils {
                 return true
             }
         }
-        // 3.检查它身上是否有@Bean注解？如果有的话, return true, 否则return false
+        // 3.检查它身上是否有@Bean注解? 如果有的话, return true, 否则return false
         return try {
             metadata.hasAnnotatedMethods(Bean::class.java.name)
         } catch (ex: Exception) {

@@ -13,7 +13,7 @@ import com.wanna.framework.beans.method.ReplaceOverride
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.StringUtils
 import com.wanna.framework.util.StringUtils.commaDelimitedListToStringArray
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.util.*
@@ -464,7 +464,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
     }
 
     /**
-     * 判断Node是否一个候选的Element？只有它是一个默认的namespace, 或者它的parentNode不是一个默认的namespace才行
+     * 判断Node是否一个候选的Element? 只有它是一个默认的namespace, 或者它的parentNode不是一个默认的namespace才行
      *
      * @param node Node
      * @return 如果是一个候选Element, 那么return true; 否则return false
@@ -646,7 +646,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
         !StringUtils.hasText(namespaceUri) || Objects.equals(BEANS_NAMESPACE_URI, namespaceUri)
 
     /**
-     * 判断给定的Node是否是默认的Namespace？
+     * 判断给定的Node是否是默认的Namespace? 
      *
      * @param node node
      * @return 如果namespaceUri是Spring的默认Namespace, 那么return true; 否则return false
@@ -663,7 +663,7 @@ class BeanDefinitionParserDelegate(val readerContext: XmlReaderContext) {
     fun getNamespaceUri(node: Node): String? = node.namespaceURI
 
     /**
-     * 判断给定的node的name是否和目标desiredName匹配？
+     * 判断给定的node的name是否和目标desiredName匹配? 
      *
      * @param node node
      * @param desiredName 待匹配的nodeName

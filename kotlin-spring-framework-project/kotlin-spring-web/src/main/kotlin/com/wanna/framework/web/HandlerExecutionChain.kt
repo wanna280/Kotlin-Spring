@@ -2,8 +2,8 @@ package com.wanna.framework.web
 
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 这是对拦截器链的封装, 内部组合了拦截器链以及处理本次请求的Handler, 对于每个HandlerMapping应该返回的就是一个HandlerExecutionChain

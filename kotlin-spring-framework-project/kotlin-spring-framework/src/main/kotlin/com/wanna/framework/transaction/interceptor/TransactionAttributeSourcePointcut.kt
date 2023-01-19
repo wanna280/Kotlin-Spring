@@ -27,7 +27,7 @@ abstract class TransactionAttributeSourcePointcut : StaticMethodMatcherPointcut(
      *
      * @param method 目标方法
      * @param targetClass 目标类
-     * @return 该方法是否匹配？
+     * @return 该方法是否匹配?
      */
     override fun matches(method: Method, targetClass: Class<*>): Boolean {
         val attribute = getTransactionAttributeSource()?.getTransactionAttribute(method, targetClass)

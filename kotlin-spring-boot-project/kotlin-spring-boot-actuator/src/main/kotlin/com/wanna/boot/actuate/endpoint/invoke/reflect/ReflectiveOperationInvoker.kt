@@ -37,7 +37,7 @@ open class ReflectiveOperationInvoker(private val target: Any, private val opera
     }
 
     /**
-     * 验证参数的合法性, 判断是否有参数, 该方法需要, 但是并不存在于参数列表当中？
+     * 验证参数的合法性, 判断是否有参数, 该方法需要, 但是并不存在于参数列表当中? 
      *
      * @param context 方法参数列表
      * @throws MissingParametersException 如果缺少了某些必要的参数的话
@@ -56,7 +56,7 @@ open class ReflectiveOperationInvoker(private val target: Any, private val opera
      *
      * @param context 本次请求当中的参数值列表
      * @param parameter 要去进行匹配的方法参数
-     * @return isMissing？
+     * @return isMissing? 
      */
     private fun isMissing(context: InvocationContext, parameter: OperationParameter): Boolean {
         return parameter.isMandatory() && !context.containsArgument(parameter.getName())

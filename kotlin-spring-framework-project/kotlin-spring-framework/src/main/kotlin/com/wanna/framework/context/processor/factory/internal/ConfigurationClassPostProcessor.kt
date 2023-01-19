@@ -26,7 +26,7 @@ import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.util.ClassUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * SpringBeanFactory的配置类处理器, 用来扫描Spring当中的配置类, 包括对@Configuration/@Component/@Bean等注解的处理
@@ -265,7 +265,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
                 candidateNames = newCandidateNames  // update last BeanDefinitionNames
             }
             // 如果candidates当中还存在有BeanDefinition的话, 那么我们应该去进行二次执行reader/parser的解析工作
-            // 为什么还要去进行二次执行？因为有一种可能, 就是在BeanDefinitionRegistrar当中, 导入了一个配置类的情况
+            // 为什么还要去进行二次执行? 因为有一种可能, 就是在BeanDefinitionRegistrar当中, 导入了一个配置类的情况
             // 在之前其实是并未处理这个问题的, BeanDefinitionRegistrar导入的配置类, 单纯注册但并未支持去进行递归处理
             // 但是我们知道：不管是(1)配置类的内部类/(2)@Import导入的配置类/(3)ImportSelector导入配置类
             // 这几种方式, 都是支持递归扫描处理的, 而唯独ImportBeanDefinitionRegistrar这种情况, 在之前我们都并未

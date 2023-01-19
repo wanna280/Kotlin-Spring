@@ -4,8 +4,8 @@ import com.wanna.framework.beans.factory.InitializingBean
 import com.wanna.framework.beans.factory.support.DisposableBean
 import com.wanna.framework.context.aware.BeanNameAware
 import com.wanna.framework.lang.Nullable
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import java.util.concurrent.*
 
 /**
@@ -42,7 +42,7 @@ abstract class ExecutorConfigurationSupport : InitializingBean, BeanNameAware, D
     private var beanName: String? = null
 
     /**
-     * 在线程池关闭时, 我们是否需要等待任务执行完成？默认为false
+     * 在线程池关闭时, 我们是否需要等待任务执行完成? 默认为false
      */
     private var waitForTasksToCompleteOnShutdown = false
 

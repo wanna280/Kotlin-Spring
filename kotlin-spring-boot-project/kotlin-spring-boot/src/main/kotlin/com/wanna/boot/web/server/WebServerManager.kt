@@ -2,7 +2,7 @@ package com.wanna.boot.web.server
 
 import com.wanna.boot.web.mvc.context.MvcWebServerInitializedEvent
 import com.wanna.framework.context.ApplicationContext
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 这是一个WebServerManager, 负责去启动和关闭WebServer

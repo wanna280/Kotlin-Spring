@@ -5,7 +5,7 @@ import com.wanna.framework.transaction.TransactionSystemException
 import com.wanna.framework.transaction.support.AbstractPlatformTransactionManager
 import com.wanna.framework.transaction.support.DefaultTransactionStatus
 import com.wanna.framework.transaction.support.TransactionSynchronizationManager
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.Statement
@@ -23,10 +23,10 @@ open class DataSourceTransactionManager : AbstractPlatformTransactionManager() {
         private val logger = LoggerFactory.getLogger(DataSourceTransactionManager::class.java)
     }
 
-    // 要使用的数据源？
+    // 要使用的数据源? 
     private var dataSource: DataSource? = null
 
-    // 是否强制只读？
+    // 是否强制只读? 
     private var enforceReadOnly = false
 
     /**
@@ -216,13 +216,13 @@ open class DataSourceTransactionManager : AbstractPlatformTransactionManager() {
         // ConnectionHolder
         private var connectionHolder: ConnectionHolder? = null
 
-        // 是否是一个新的连接？
+        // 是否是一个新的连接? 
         private var newConnectionHolder = false
 
-        // 是否允许safePoint？
+        // 是否允许safePoint? 
         private var isSafePointAllow = true
 
-        // 是否只读？
+        // 是否只读? 
         private var readOnly: Boolean = false
 
         // 先前的隔离级别, 有可能为null
@@ -271,7 +271,7 @@ open class DataSourceTransactionManager : AbstractPlatformTransactionManager() {
         fun getPreviousIsolationLevel() = this.previousIsolationLevel
 
         /**
-         * 是否是一条新的JDBC连接？
+         * 是否是一条新的JDBC连接? 
          *
          * @return 如果是新连接, return true; 否则return false
          */

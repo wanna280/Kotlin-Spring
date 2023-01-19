@@ -2,7 +2,7 @@ package com.wanna.boot.web.embedded.tomcat
 
 import com.wanna.boot.web.server.WebServer
 import org.apache.catalina.startup.Tomcat
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * Tomcat WebServer

@@ -17,7 +17,7 @@ interface HandlerMapping {
 
 HandlerMapping主要作用是, 给定request, 根据url、header等策略决策出来合适的Handler去处理请求. 这里的Handler是Any(Object)类型的, 因为并没有办法决定Handler的上层应该是什么类型.
 
-但是我们在HandlerMapping的接口定义当中, 返回值是HandlerExecutionChain, 是为什么呢？原因在于`HandlerExecutionChain=Handler+HandlerInterceptor`.对于每个HandlerMapping来说, 都集成了SpringMVC的拦截器列表, 它在返回Handler时, 应该将拦截器也一并去进行返回.
+但是我们在HandlerMapping的接口定义当中, 返回值是HandlerExecutionChain, 是为什么呢? 原因在于`HandlerExecutionChain=Handler+HandlerInterceptor`.对于每个HandlerMapping来说, 都集成了SpringMVC的拦截器列表, 它在返回Handler时, 应该将拦截器也一并去进行返回.
 
 ```kotlin
 open class HandlerExecutionChain(private val handler: Any, interceptors: Collection<HandlerInterceptor>? = null) {
@@ -88,7 +88,7 @@ open class HandlerExecutionChain(private val handler: Any, interceptors: Collect
 
 ## 1.2 HandlerAdapter
 
-在HandlerMapping当中, 我们已经介绍到, 不同的HandlerMapping会返回不同类型的Handler(比如HandlerMethod/HttpRequestHandler).那么对于返回回来的Handler, 我`Dispatcher`应该怎么处理？我怎么知道怎么处理？(因为没有一层合适的接口抽象, 我连要调用你Handler的哪个方法都不知道)
+在HandlerMapping当中, 我们已经介绍到, 不同的HandlerMapping会返回不同类型的Handler(比如HandlerMethod/HttpRequestHandler).那么对于返回回来的Handler, 我`Dispatcher`应该怎么处理? 我怎么知道怎么处理? (因为没有一层合适的接口抽象, 我连要调用你Handler的哪个方法都不知道)
 
 因此, 一般只要HandlerMapping返回了一种类型的Handler, 那么我就需要写一个对应的处理该Handler的策略.对于处理该Handler的策略, 就是HandlerAdapter.
 
@@ -110,7 +110,7 @@ open class HandlerExecutionChain(private val handler: Any, interceptors: Collect
 
 我们要做的, 也是遍历所有的HandlerAdapter, 看哪个HandlerAdapter可以处理当前类型的Handler.
 
-那么你是否有这样的疑问, 既然HandlerMapping需要返回一个Handler, 该Handler又得交给HandlerAdapter去进行处理, 是不是很多余？既然是一对一的, 我们为啥不直接放在一个类里去做？
+那么你是否有这样的疑问, 既然HandlerMapping需要返回一个Handler, 该Handler又得交给HandlerAdapter去进行处理, 是不是很多余? 既然是一对一的, 我们为啥不直接放在一个类里去做? 
 
 其实, 在基于这样的HandlerMapping和HandlerAdapter的设计下, 其实我们可以发现, 我们当然也可以自定义一个HandlerMapping, 让它返回HandlerMethod, 直接交给Dispatcher去进行处理.而Dispatcher当中, 又恰好有这样的HandlerAdapter去处理HandlerMethod, 因此Dispatcher也能处理我们的请求. 也就是说, HandlerMapping与HandlerAdapter之间的关系并不是一对一的, 只要保证HandlerMapping产生的Handler, 有合适的HandlerAdapter去进行处理即可, 在后续的扩展当中, 完全可以基于已经有的基础设施去进行扩展, 让整体的耦合度变得非常低.对应的就是, 也许HandlerMapping的种类, 可以远多于HandlerAdapter的种类, 可以多个HandlerMapping产生同一个类型的Handler.
 

@@ -33,7 +33,7 @@ open class ThreadPoolTaskScheduler : ExecutorConfigurationSupport(), TaskSchedul
     private var corePoolSize = 1
 
     /**
-     * 在一个任务被取消时, 是否应该将该任务从阻塞队列当中去进行移除掉？
+     * 在一个任务被取消时, 是否应该将该任务从阻塞队列当中去进行移除掉?
      * 默认为false; 之所以存在有这样的一个标志位, 是在于如果不去进行移除的话,
      * 那么工作队列当中就维护了已经取消的任务列表和还没被取消的任务的视图, 这个
      * 视图有可能是需要的, 因此设计了这么一个标志位, 允许不从阻塞队列当中移除;
@@ -48,16 +48,16 @@ open class ThreadPoolTaskScheduler : ExecutorConfigurationSupport(), TaskSchedul
     private var removeOnCancelPolicy = false
 
     /**
-     * 当线程池关闭时, 是否应该继续执行那些周期性任务？默认为false
+     * 当线程池关闭时, 是否应该继续执行那些周期性任务? 默认为false
      *
      * 主要针对的是scheduleWithFixedDelay和scheduleAtFixRate两个方法丢给线程池去进行执行的任务,
-     * 在线程池关闭时, 我们是否还需要继续执行该任务？默认情况下为false, 当线程池关闭时, 就不再去执行该任务了
+     * 在线程池关闭时, 我们是否还需要继续执行该任务? 默认情况下为false, 当线程池关闭时, 就不再去执行该任务了
      */
     @Volatile
     private var continueExistingPeriodicTasksAfterShutdownPolicy = false
 
     /**
-     * 当线程池关闭时, 是否还应该执行已经延时的任务？默认为true
+     * 当线程池关闭时, 是否还应该执行已经延时的任务? 默认为true
      *
      * 主要针对的是使用schedule方法丢给线程池的任务, 有可能丢给线程池了,
      * 但是该任务还没执行完, 或者是甚至还没有被执行到, 因此我们很可能是
@@ -108,7 +108,7 @@ open class ThreadPoolTaskScheduler : ExecutorConfigurationSupport(), TaskSchedul
         if (scheduledExecutorService == null) this.corePoolSize else getScheduledThreadPoolExecutor().poolSize
 
     /**
-     * 在取消任务时, 是否应该将该任务从阻塞队列当中去进行移除掉？默认为false
+     * 在取消任务时, 是否应该将该任务从阻塞队列当中去进行移除掉? 默认为false
      *
      * @param removeOnCancelPolicy 如果为true, 那么取消任务时, 也会从阻塞队列当中去进行移除
      */
@@ -118,7 +118,7 @@ open class ThreadPoolTaskScheduler : ExecutorConfigurationSupport(), TaskSchedul
     }
 
     /**
-     * 在线程池关闭时, 是否还应该继续执行周期性的任务？默认为false
+     * 在线程池关闭时, 是否还应该继续执行周期性的任务? 默认为false
      *
      * @param flag 如果为true, 在线程池关闭时, 还应该继续执行周期性任务
      */
@@ -129,7 +129,7 @@ open class ThreadPoolTaskScheduler : ExecutorConfigurationSupport(), TaskSchedul
     }
 
     /**
-     * 在线程池关闭时, 是否还应该继续执行已经被延时的任务？默认为true
+     * 在线程池关闭时, 是否还应该继续执行已经被延时的任务? 默认为true
      *
      * @param flag 如果为true, 在线程池关闭时, 还应该继续执行已经被延时的任务
      */

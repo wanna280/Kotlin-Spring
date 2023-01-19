@@ -2,6 +2,8 @@ package com.wanna.boot
 
 import com.wanna.boot.context.properties.bind.Bindable
 import com.wanna.boot.context.properties.bind.Binder
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContext
@@ -25,8 +27,6 @@ import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StopWatch
 import com.wanna.framework.util.StringUtils.collectionToCommaDelimitedString
 import com.wanna.framework.web.context.support.StandardServletEnvironment
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.*
 
 /**
@@ -225,12 +225,12 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     private var mainApplicationClass: Class<*>? = deduceMainApplicationClass()
 
     /**
-     * 是否允许BeanDefinition去发生覆盖？
+     * 是否允许BeanDefinition去发生覆盖?
      */
     private var allowBeanDefinitionOverriding: Boolean = true
 
     /**
-     * 是否需要添加ConversionService到容器当中？
+     * 是否需要添加ConversionService到容器当中?
      */
     private var addConversionService = true
 
@@ -260,7 +260,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     private var logStartupInfo = true
 
     /**
-     * 是否需要去注册ShutdownHook？默认为true
+     * 是否需要去注册ShutdownHook? 默认为true
      */
     private var registerShutdownHook = true
 
@@ -964,7 +964,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      */
     protected open fun getApplicationLogger(): Logger {
         if (this.mainApplicationClass != null) {
-            return LoggerFactory.getLogger(this.mainApplicationClass)
+            return LoggerFactory.getLogger(this.mainApplicationClass!!)
         }
         return this.logger
     }
@@ -1068,7 +1068,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 设置是否允许BeanDefinition的覆盖？
+     * 设置是否允许BeanDefinition的覆盖?
      *
      * @param allowBeanDefinitionOverriding 如果为true, 允许覆盖; 否则不允许
      */
@@ -1077,7 +1077,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 是否允许BeanDefinition的覆盖？
+     * 是否允许BeanDefinition的覆盖?
      *
      * @return 如果允许覆盖return true; 否则return false
      */

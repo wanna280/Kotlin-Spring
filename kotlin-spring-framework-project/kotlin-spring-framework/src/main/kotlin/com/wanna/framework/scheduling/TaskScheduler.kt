@@ -15,7 +15,7 @@ interface TaskScheduler {
      * 使用固定的delay的定时调度
      *
      * @param task 要提交的定时任务
-     * @param startTime 开始时间？
+     * @param startTime 开始时间?
      * @param delay 延时的时间
      */
     fun scheduleWithFixedDelay(task: Runnable, startTime: Date, delay: Long): ScheduledFuture<*>

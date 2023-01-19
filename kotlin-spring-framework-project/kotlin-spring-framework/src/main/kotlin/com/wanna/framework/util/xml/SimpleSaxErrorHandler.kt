@@ -1,6 +1,6 @@
 package com.wanna.framework.util.xml
 
-import org.slf4j.Logger
+import com.wanna.common.logging.Logger
 import org.xml.sax.ErrorHandler
 import org.xml.sax.SAXParseException
 

@@ -4,7 +4,7 @@ import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.core.metrics.StartupStep
-import org.slf4j.Logger
+import com.wanna.common.logging.Logger
 import java.util.function.Consumer
 
 /**

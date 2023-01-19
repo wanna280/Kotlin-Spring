@@ -24,9 +24,14 @@ object StringUtils {
     private const val CURRENT_PATH = "."
 
     /**
-     * 顶级目录的path为".."
+     * 上一级目录的path为".."
      */
     private const val TOP_PATH = ".."
+
+    /**
+     * 文件扩展名的分隔符为"."
+     */
+    private const val EXTENSION_SEPARATOR = '.'
 
     /**
      * 空的String数组
@@ -269,6 +274,27 @@ object StringUtils {
         // 把剩下的字符串全部append到最后
         sb.append(inString, pos, inString.length)
         return sb.toString()
+    }
+
+    /**
+     * 从给定的路径当中, 去提取到文件扩展名
+     *
+     * @param path 文件路径
+     * @return 文件扩展名(如果不存在扩展名, return null)
+     */
+    @Nullable
+    @JvmStatic
+    fun getFilenameExtension(@Nullable path: String?): String? {
+        path ?: return null
+        val extensionIndex = path.lastIndexOf(EXTENSION_SEPARATOR)
+        if (extensionIndex == -1) {
+            return null
+        }
+        val folderIndex = path.lastIndexOf(FOLDER_SEPARATOR)
+        if (folderIndex > extensionIndex) {
+            return null
+        }
+        return path.substring(extensionIndex + 1)
     }
 
     @JvmStatic

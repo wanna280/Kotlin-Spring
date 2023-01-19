@@ -27,9 +27,9 @@ open class WebEndpointProperties {
         val exclude: Set<String> = emptySet()
     }
 
-    // 是否要暴露发现页？在发现页当中, 需要提供暴露的所有的endpoint的相关信息
+    // 是否要暴露发现页? 在发现页当中, 需要提供暴露的所有的endpoint的相关信息
     class Discovery {
-        // 是否要开启DiscoveryPage？
+        // 是否要开启DiscoveryPage? 
         var enabled = true
     }
 }

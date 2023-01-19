@@ -9,7 +9,7 @@ import com.wanna.framework.test.context.*
 import com.wanna.framework.test.context.support.ContextLoaderUtils.resolveContextConfigurationAttributes
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * [TestContextBootstrapper]的抽象模板实现, 负责解析testClass上的相关注解, 去最终构建出来[TestContext];
@@ -227,7 +227,7 @@ abstract class AbstractTestContextBootstrapper : TestContextBootstrapper {
             AnnotatedElementUtils.getMergedAnnotation(testClass, TestExecutionListeners::class.java)
         val listenerClasses: Collection<Class<out TestExecutionListener>>
 
-        // 是否需要引用默认的Listener？
+        // 是否需要引用默认的Listener?
         var useDefaults = false
         // 如果没有@TestExecutionListeners注解的话, 将会采用默认的TestExecutionListener
         if (listenersAnnotation == null) {

@@ -30,7 +30,7 @@ annotation class Bean(
     val value: String = "",
     @get:AliasFor("value")
     val name: String = "",
-    val autowireCandidate: Boolean = true,  // 是否是AutowireCandidate？
+    val autowireCandidate: Boolean = true,  // 是否是AutowireCandidate?
     val autowireMode: Int = AutowireCapableBeanFactory.AUTOWIRE_NO,  // AutowireMode
     val initMethod: String = "",
     val destroyMethod: String = ""

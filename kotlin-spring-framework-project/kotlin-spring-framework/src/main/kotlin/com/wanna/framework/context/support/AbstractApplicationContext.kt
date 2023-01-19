@@ -33,7 +33,7 @@ import com.wanna.framework.core.io.support.ResourcePatternResolver
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ReflectionUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -170,7 +170,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     private var shutdownHook: Thread? = null
 
     /**
-     * 当前的ApplicationContext是否还活跃？(当应用启动时, 会被设置为true; 当关闭时会被设置为false)
+     * 当前的ApplicationContext是否还活跃? (当应用启动时, 会被设置为true; 当关闭时会被设置为false)
      *
      * @see refresh
      * @see close
@@ -178,7 +178,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     private var active = AtomicBoolean(false)
 
     /**
-     * 当前的ApplicationContext是否已经关闭了？(默认为false, 当应用关闭时, 会被设置为true)
+     * 当前的ApplicationContext是否已经关闭了? (默认为false, 当应用关闭时, 会被设置为true)
      */
     private var closed = AtomicBoolean(false)
 
@@ -638,7 +638,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     }
 
     /**
-     * 当前的ApplicationContext是否还活跃？
+     * 当前的ApplicationContext是否还活跃?
      *
      * @return 如果还没关闭, return true; 否则return false
      */
@@ -813,7 +813,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     }
 
     /**
-     * 判断给定的beanName的Bean在BeanFactory当中是否是单例的？
+     * 判断给定的beanName的Bean在BeanFactory当中是否是单例的?
      *
      * @param beanName beanName
      * @return 如果是单例的return true; 否则return false
@@ -826,7 +826,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     }
 
     /**
-     * 判断给定的beanName的Bean在BeanFactory当中是否是原型的？
+     * 判断给定的beanName的Bean在BeanFactory当中是否是原型的?
      *
      * @param beanName beanName
      * @return 如果是原型的return true; 否则return false
@@ -839,7 +839,7 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
     }
 
     /**
-     * 根据beanName去检查BeanFactory当中该beanName对应的Bean的类型是否和给定的type匹配？
+     * 根据beanName去检查BeanFactory当中该beanName对应的Bean的类型是否和给定的type匹配?
      *
      * @param name beanName
      * @param type 要去进行匹配的beanType
@@ -932,8 +932,8 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
      * 从当前BeanFactory当中去获取所有类型匹配的BeanName列表
      *
      * @param type 需要寻找的beanType
-     * @param includeNonSingletons 是否需要寻找非单例的Bean？
-     * @param allowEagerInit 是否渴望对一些需要懒加载的Bean去进行初始化？(比如允许FactoryBean提前getObject)
+     * @param includeNonSingletons 是否需要寻找非单例的Bean?
+     * @param allowEagerInit 是否渴望对一些需要懒加载的Bean去进行初始化? (比如允许FactoryBean提前getObject)
      */
     override fun getBeanNamesForType(
         type: Class<*>, includeNonSingletons: Boolean, allowEagerInit: Boolean
@@ -957,8 +957,8 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
      * 使用包含当前BeanFactory以及所有的parentBeanFactory的方式去获取所有类型匹配的BeanName列表
      *
      * @param type 需要寻找的beanType
-     * @param includeNonSingletons 是否需要寻找非单例的Bean？
-     * @param allowEagerInit 是否渴望对一些需要懒加载的Bean去进行初始化？(比如允许FactoryBean提前getObject)
+     * @param includeNonSingletons 是否需要寻找非单例的Bean?
+     * @param allowEagerInit 是否渴望对一些需要懒加载的Bean去进行初始化? (比如允许FactoryBean提前getObject)
      */
     override fun getBeanNamesForTypeIncludingAncestors(
         type: Class<*>,

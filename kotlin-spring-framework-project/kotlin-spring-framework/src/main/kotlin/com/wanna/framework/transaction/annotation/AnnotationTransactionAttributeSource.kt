@@ -9,7 +9,7 @@ import java.lang.reflect.Method
  * 基于注解的Spring注解属性源, 它提供事务属性的来源, 从@Transactional的方法/类上去进行寻找和匹配;
  * 委托了TransactionAnnotationParser去提供匹配@Transactional注解的规则
  *
- * @param publicMethodsOnly 是否只允许public方法拥有事务？默认为true
+ * @param publicMethodsOnly 是否只允许public方法拥有事务? 默认为true
  *
  * @see TransactionAttribute
  * @see TransactionAnnotationParser

@@ -8,6 +8,6 @@ import java.util.EventObject
  * @see ApplicationEventMulticaster
  * @see ApplicationEventPublisher
  *
- * @param source 事件发布源, 事件从哪个对象当中发布？
+ * @param source 事件发布源, 事件从哪个对象当中发布?
  */
 open class ApplicationEvent(source: Any?) : EventObject(source)

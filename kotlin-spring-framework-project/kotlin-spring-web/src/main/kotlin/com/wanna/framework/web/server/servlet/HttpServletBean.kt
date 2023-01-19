@@ -8,8 +8,8 @@ import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.context.ConfigurableWebEnvironment
 import com.wanna.framework.web.context.support.StandardServletEnvironment
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import javax.servlet.http.HttpServlet
 
 /**

@@ -88,7 +88,7 @@ open class MethodParameter(
     }
 
     /**
-     * 判断方法上是否有该注解？(支持使用继承的方式去进行寻找)
+     * 判断方法上是否有该注解? (支持使用继承的方式去进行寻找)
      *
      * @param annotationClass 要去进行匹配的注解类型
      * @return 如果方法上标注了该注解, 那么return true; 否则return false
@@ -145,7 +145,7 @@ open class MethodParameter(
     }
 
     /**
-     * 该方法/构造器, 被定义在哪个类当中？
+     * 该方法/构造器, 被定义在哪个类当中? 
      *
      * @return 方法/构造器所被定义的类
      */
@@ -242,7 +242,7 @@ open class MethodParameter(
          * 提供静态方法, 为Executable去构建MethodParameter
          *
          * @param executable 方法/构造器
-         * @param parameterIndex 当前参数位于该方法/构造器的第几个位置？
+         * @param parameterIndex 当前参数位于该方法/构造器的第几个位置? 
          * @return 为该方法参数构建好的MethodParameter对象
          */
         @JvmStatic

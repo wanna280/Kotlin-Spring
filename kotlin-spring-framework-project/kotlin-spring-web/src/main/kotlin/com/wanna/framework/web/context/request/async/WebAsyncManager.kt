@@ -2,8 +2,8 @@ package com.wanna.framework.web.context.request.async
 
 import com.wanna.framework.core.task.AsyncTaskExecutor
 import com.wanna.framework.core.task.SimpleAsyncTaskExecutor
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import java.util.concurrent.Callable
 
 /**
@@ -83,7 +83,7 @@ class WebAsyncManager {
     fun isConcurrentHandlingStarted(): Boolean = this.asyncWebRequest != null && this.asyncWebRequest!!.isAsyncStarted()
 
     /**
-     * 判断异步请求的任务是否已经结束并产生了结果？
+     * 判断异步请求的任务是否已经结束并产生了结果?
      *
      * @return 如果return true, 说明结果已经产生; 不然就说明结果还没产生, 需要等待下一次再来获取结果
      */

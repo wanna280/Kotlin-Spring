@@ -10,7 +10,7 @@ import com.wanna.framework.core.environment.MapPropertySource
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * ## NamedContextFactory是什么？
+ * ## NamedContextFactory是什么? 
  *
  * * 1.它创建了一个Child Context的列表列表, 允许Specification在各自的Context当中去定义各自的Bean; 
  * * 2.在SpringCloud当中说, 它是从Spring-Cloud-Netflix当中的SpringClientFactory移植(ported from)过来的; 
@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
  * 在Spring当中, 它的子类实现有FeignContext(cloud-feign)、SpringClientFactory(cloud-ribbon)、LoadBalancerClientFactory
  * (cloud-balancer)这些情况; 需要注意的是, 这些不同的子类分别来自于SpringCloud的3个模块.(但是这三个子类的作者都是同样的...)
  *
- * ## Specification是什么？
+ * ## Specification是什么? 
  *
  * * 1.Specification是维护了NamedContextFactory当中某个特定的childContext对应的的配置类列表, 可以配置要进行apply的childContext的name; 
  * * 2.如果name以"default."作为开头, 那么它会应用给所有的childContext当中; 如果不是以"default."作为开头, 那么将只会应用给指定的childContext.

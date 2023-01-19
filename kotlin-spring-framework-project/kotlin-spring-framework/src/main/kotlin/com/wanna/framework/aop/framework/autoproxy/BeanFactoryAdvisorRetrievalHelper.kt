@@ -2,7 +2,7 @@ package com.wanna.framework.aop.framework.autoproxy
 
 import com.wanna.framework.aop.Advisor
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 这个组件用来协助去BeanFactory当中去寻找所有的候选的Advisor的Bean的列表

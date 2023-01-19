@@ -23,7 +23,7 @@ open class WarLauncher : ExecutableArchiveLauncher() {
      * 如果不是文件夹, 要的是"WEB-INF/lib/"和"WEB-INF/lib-provided/"下的(目录本身不要)
      *
      * @param entry 待匹配的ArchiveEntry
-     * @return 它是否是一个合格的嵌套Archive？
+     * @return 它是否是一个合格的嵌套Archive?
      */
     override fun isNestedArchive(entry: Archive.Entry) =
         if (entry.isDirectory()) entry.getName() == "WEB-INF/classes/" else

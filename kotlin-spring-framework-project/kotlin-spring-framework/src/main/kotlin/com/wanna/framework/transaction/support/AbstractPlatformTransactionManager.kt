@@ -3,7 +3,7 @@ package com.wanna.framework.transaction.support
 import com.wanna.framework.transaction.PlatformTransactionManager
 import com.wanna.framework.transaction.TransactionDefinition
 import com.wanna.framework.transaction.TransactionStatus
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * PlatformTransactionManager的抽象实现, 为所有的平台事务管理器提供模板方法的实现
@@ -17,7 +17,7 @@ abstract class AbstractPlatformTransactionManager : PlatformTransactionManager {
         private val logger = LoggerFactory.getLogger(AbstractPlatformTransactionManager::class.java)
     }
 
-    // 是否允许事务的嵌套？默认为true
+    // 是否允许事务的嵌套? 默认为true
     private var nestedTransactionAllowed: Boolean = true
 
     // 默认的超时时间
@@ -113,7 +113,7 @@ abstract class AbstractPlatformTransactionManager : PlatformTransactionManager {
      *
      * @param definition 事务属性信息
      * @param transaction 事务对象
-     * @param newTransaction 当前是否是一个新的事务？
+     * @param newTransaction 当前是否是一个新的事务? 
      * @param suspendedResources 之前挂起事务的资源
      * @return 创建好的TransactionStatus
      */
@@ -188,7 +188,7 @@ abstract class AbstractPlatformTransactionManager : PlatformTransactionManager {
      *
      * @param definition 事务属性信息
      * @param transaction 事务对象
-     * @param debugEnabled 是否开启了debug的日志？
+     * @param debugEnabled 是否开启了debug的日志? 
      * @return TransactionStatus
      */
     protected open fun handleExistingTransaction(
@@ -215,7 +215,7 @@ abstract class AbstractPlatformTransactionManager : PlatformTransactionManager {
     }
 
     /**
-     * 是否之前已经存在过事务了？
+     * 是否之前已经存在过事务了? 
      *
      * @param transaction 事务对象
      * @return 如果之前已经存在了事务, 那么return true; 没有存在则return false

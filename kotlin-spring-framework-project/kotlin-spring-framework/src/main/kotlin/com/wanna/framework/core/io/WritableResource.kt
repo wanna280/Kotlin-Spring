@@ -14,7 +14,7 @@ import java.nio.channels.WritableByteChannel
 interface WritableResource : Resource {
 
     /**
-     * 当前资源是否可以写？
+     * 当前资源是否可以写?
      */
     fun isWritable(): Boolean
 

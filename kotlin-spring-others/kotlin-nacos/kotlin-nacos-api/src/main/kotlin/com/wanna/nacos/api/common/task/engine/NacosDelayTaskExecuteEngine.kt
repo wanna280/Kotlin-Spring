@@ -3,7 +3,7 @@ package com.wanna.nacos.api.common.task.engine
 import com.wanna.nacos.api.common.executor.NameThreadFactory
 import com.wanna.nacos.api.common.task.AbstractDelayTask
 import com.wanna.nacos.api.common.task.NacosTaskProcessor
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService

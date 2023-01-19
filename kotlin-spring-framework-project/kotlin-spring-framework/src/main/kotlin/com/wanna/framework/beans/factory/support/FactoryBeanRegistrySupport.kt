@@ -30,7 +30,7 @@ open class FactoryBeanRegistrySupport : DefaultSingletonBeanRegistry() {
      *
      * @param factoryBean FactoryBean
      * @param beanName beanName(不包含"&"的beanName)
-     * @param shouldProcess 是否应该被后置处理？如果应该的话, 那么会使用BeanPostProcessor去进行后置处理(完成代理工作)
+     * @param shouldProcess 是否应该被后置处理? 如果应该的话, 那么会使用BeanPostProcessor去进行后置处理(完成代理工作)
      */
     open fun getObjectFromFactoryBean(factoryBean: FactoryBean<*>, beanName: String, shouldProcess: Boolean): Any {
         // 1.如果该FactoryBean是单例的, 并且已经包含了该SingletonBean的话...

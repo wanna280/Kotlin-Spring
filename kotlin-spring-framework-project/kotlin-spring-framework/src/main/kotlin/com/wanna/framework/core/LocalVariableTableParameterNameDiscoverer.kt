@@ -85,7 +85,7 @@ open class LocalVariableTableParameterNameDiscoverer : ParameterNameDiscoverer {
             private const val STATIC_CLASS_INIT = "<clinit>"
 
             /**
-             * 判断一个方法是否是桥接方法？
+             * 判断一个方法是否是桥接方法?
              *
              * @param access 访问标识符
              */
@@ -93,7 +93,7 @@ open class LocalVariableTableParameterNameDiscoverer : ParameterNameDiscoverer {
                 ((access and Opcodes.ACC_SYNTHETIC) or (access and Opcodes.ACC_BRIDGE)) > 0
 
             /**
-             * 方法是否是Static的？
+             * 方法是否是Static的?
              *
              * @param access 访问标识符
              */
@@ -143,10 +143,10 @@ open class LocalVariableTableParameterNameDiscoverer : ParameterNameDiscoverer {
         // 该方法的参数名列表
         private val parameterNames = arrayOfNulls<String>(args.size)
 
-        // 局部变量表当中的每个参数所在的索引？
+        // 局部变量表当中的每个参数所在的索引?
         private val lvtSlotIndex = computeLvtSlotIndex(isStatic, args)
 
-        // 是否已经有局部变量表的相关信息了？
+        // 是否已经有局部变量表的相关信息了?
         private var hasLvtInfo = false
 
         /**
@@ -219,7 +219,7 @@ open class LocalVariableTableParameterNameDiscoverer : ParameterNameDiscoverer {
         }
 
         /**
-         * 判断它是否是一个宽的类型？Long/Double属于宽类型
+         * 判断它是否是一个宽的类型? Long/Double属于宽类型
          *
          * @return 如果是宽类型, return true; 不然return false
          */

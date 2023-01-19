@@ -23,7 +23,7 @@ import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 import com.wanna.framework.web.ui.ModelMap
 import com.wanna.framework.web.ui.View
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * DispatcherHandler的具体实现
@@ -68,22 +68,22 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     }
 
     /**
-     * 是否要从Spring BeanFactory当中去探测HandlerAdapter？
+     * 是否要从Spring BeanFactory当中去探测HandlerAdapter? 
      */
     var detectAllHandlerAdapters = true
 
     /**
-     * 是否要从Spring BeanFactory当中去探测所有的HandlerMapping？默认为true
+     * 是否要从Spring BeanFactory当中去探测所有的HandlerMapping? 默认为true
      */
     var detectAllHandlerMappings = true
 
     /**
-     * 是否要从Spring BeanFactory当中探测所有的HandlerExceptionResolver？默认为true
+     * 是否要从Spring BeanFactory当中探测所有的HandlerExceptionResolver? 默认为true
      */
     var detectAllHandlerExceptionHandlers = true
 
     /**
-     * 是否从Spring BeanFactory当中要探测所有的视图解析器？默认为true
+     * 是否从Spring BeanFactory当中要探测所有的视图解析器? 默认为true
      */
     var detectAllViewResolvers = true
 

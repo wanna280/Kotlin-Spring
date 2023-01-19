@@ -1,9 +1,12 @@
 package com.wanna.framework.context.stereotype
 
 /**
- * 标识这是Spring容器中的Bean
+ * 标识这是一个Spring Bean
  *
  * @param value beanName
+ * @see Service
+ * @see Controller
+ * @see Repository
  */
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 annotation class Component(

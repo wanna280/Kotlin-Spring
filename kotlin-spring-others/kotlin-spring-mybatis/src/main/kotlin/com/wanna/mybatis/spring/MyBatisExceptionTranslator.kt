@@ -16,7 +16,7 @@ import javax.sql.DataSource
  * @version v1.0
  * @date 2022/10/15
  * @param dataSource dataSource
- * @param exceptionTranslatorLazyInit SQLExceptionTranslator是否需要懒加载？
+ * @param exceptionTranslatorLazyInit SQLExceptionTranslator是否需要懒加载?
  */
 open class MyBatisExceptionTranslator
     (private val dataSource: DataSource, exceptionTranslatorLazyInit: Boolean = true) :

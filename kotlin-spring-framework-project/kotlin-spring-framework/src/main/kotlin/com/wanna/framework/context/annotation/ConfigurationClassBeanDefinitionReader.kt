@@ -17,7 +17,7 @@ import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.StringUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 这是一个配置类的BeanDefinitionReader, 负责从ConfigurationClass当中去读取BeanDefinition
@@ -82,7 +82,7 @@ open class ConfigurationClassBeanDefinitionReader(
     protected open fun loadBeanDefinitionsForConfigurationClass(
         configurationClass: ConfigurationClass, trackedConditionEvaluator: TrackedConditionEvaluator
     ) {
-        // 比较所有导入当前的配置类的配置类是否都已经被移除掉了？如果都已经被移除掉了, 那么当前的配置类也应该被移除掉！
+        // 比较所有导入当前的配置类的配置类是否都已经被移除掉了? 如果都已经被移除掉了, 那么当前的配置类也应该被移除掉！
         // 如果该配置类应该被skip掉, 那么它应该从BeanDefinitionRegistry当中移除掉
         if (trackedConditionEvaluator.shouldSkip(configurationClass)) {
             if (configurationClass.beanName != null && configurationClass.beanName!!.isEmpty()) {
@@ -183,11 +183,11 @@ open class ConfigurationClassBeanDefinitionReader(
     }
 
     /**
-     * 如果之前已经存在过该beanName的BeanDefinition, 需要去判断是否应该替换掉之前的BeanDefinition？
+     * 如果之前已经存在过该beanName的BeanDefinition, 需要去判断是否应该替换掉之前的BeanDefinition? 
      *
      * @param beanMethod 现在的BeanMethod
      * @param beanName 现在的beanName
-     * @return 是否应该替换之前的？return true标识pass掉, return false则替换掉...
+     * @return 是否应该替换之前的? return true标识pass掉, return false则替换掉...
      */
     protected open fun isOverriddenByExistingDefinition(beanMethod: BeanMethod, beanName: String): Boolean {
         // 如果之前根本就没有存在过该beanName的BeanDefinition, 直接return false, 去注册BeanMethod
@@ -198,7 +198,7 @@ open class ConfigurationClassBeanDefinitionReader(
 
         // 1.如果之前也是一个ConfigurationClassBeanDefinition, 说明之前也是在@Bean这里添加的一个Bean...
         if (existBeanDef is ConfigurationClassBeanDefinition) {
-            // 判断之前的配置类名和现在的配置类名是否相同？如果相同的话, return true, 应该pass掉...
+            // 判断之前的配置类名和现在的配置类名是否相同? 如果相同的话, return true, 应该pass掉...
             // 因为配置类处理过程当中, 是从子类向父类方向去进行扫描的, 因此BeanMethod的遍历顺序也应该是这样的
             // 如果当前BeanMethod和之前的BeanMethod在同一个类当中, 说明之前注册的是子类的BeanMethod, 现在是父类的BeanMethod
             // 在这种情况下, 我们不应该去替换掉之前的BeanMethod, 因为我们要以子类的最终实现为准, 而不是使用父类的实现
@@ -296,7 +296,7 @@ open class ConfigurationClassBeanDefinitionReader(
 
     /**
      * 这是一个支持轨迹追踪的ConditionEvaluator(条件计算器), 它通过组合ConditionEvaluator完成计算工作;
-     * 它支持去判断导入这个配置类的所有的配置类是否都被Skip掉了？如果所有的配置类都被Skip掉了, 那么当前的配置类也应该被Skip掉
+     * 它支持去判断导入这个配置类的所有的配置类是否都被Skip掉了? 如果所有的配置类都被Skip掉了, 那么当前的配置类也应该被Skip掉
      *
      * @see com.wanna.framework.context.annotation.ConditionEvaluator
      */
@@ -314,7 +314,7 @@ open class ConfigurationClassBeanDefinitionReader(
                 // fixed:如果是被导入的配置类才需要匹配所有导入当前配置类的配置类, 不然应该跳过这个环节
                 if (configurationClass.isImportedBy()) {
                     var allSkipped = true
-                    // 判断所有导入这个配置类的配置类, 是否都已经被跳过了？使用递归的方式去进行判断
+                    // 判断所有导入这个配置类的配置类, 是否都已经被跳过了? 使用递归的方式去进行判断
                     // 如果所有都被跳过了, 那么这个配置类也应该被skip掉;
                     // 只要导入这个配置类的其中一个配置类还在, 那么就有可能不被skip掉
                     for (importedBy in configurationClass.getImportedBy()) {
@@ -328,7 +328,7 @@ open class ConfigurationClassBeanDefinitionReader(
                         skip = true
                     }
                 }
-                // 如果不是全部都被skip掉了, 那么需要计算一下是否应该被匹配？
+                // 如果不是全部都被skip掉了, 那么需要计算一下是否应该被匹配? 
                 if (skip == null) {
                     skip = conditionEvaluator.shouldSkip(configurationClass.metadata, REGISTER_BEAN)
                 }

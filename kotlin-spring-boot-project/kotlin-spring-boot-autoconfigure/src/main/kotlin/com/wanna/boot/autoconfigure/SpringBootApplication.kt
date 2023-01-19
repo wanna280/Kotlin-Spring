@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
 /**
  * 标识这是一个SpringBootApplication, 它支持完成自动配置以及包的扫描
  *
- * @param proxyBeanMethods 是否要代理目标类？
+ * @param proxyBeanMethods 是否要代理目标类? 
  * @param nameGenerator BeanNameGenerator
  * @param scanBasePackages ComponentScan要去进行扫描的包
  * @param scanBasePackageClasses ComponentScan要去进行扫描的包(以类的方式给出)

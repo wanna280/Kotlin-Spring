@@ -97,7 +97,7 @@ open class BeansEndpoint(private val context: ConfigurableApplicationContext) {
             }
 
             /**
-             * 判断一个Bean是否是有资格去进行暴露的？
+             * 判断一个Bean是否是有资格去进行暴露的? 
              * (Note: 对于一个基础设施Bean, 我们不去进行暴露给用户)
              *
              * @param beanFactory beanFactory

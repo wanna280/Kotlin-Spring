@@ -5,7 +5,7 @@ import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.io.support.ResourcePatternUtils
 import com.wanna.framework.util.ResourceUtils
 import com.wanna.framework.util.StringUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import java.net.URISyntaxException
@@ -225,7 +225,7 @@ open class DefaultBeanDefinitionDocumentReader : BeanDefinitionDocumentReader {
         // 真正的资源
         val actualResources = LinkedHashSet<Resource>()
 
-        // 判断该位置是一个绝对路径还是一个相对路径？
+        // 判断该位置是一个绝对路径还是一个相对路径?
         var absoluteLocation = false
         try {
             absoluteLocation = ResourcePatternUtils.isUrl(location) || ResourceUtils.toURI(location).isAbsolute

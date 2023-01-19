@@ -1,6 +1,6 @@
 # 1. Nacos的服务自动注册与发现
 
-## 1.1 Nacos如何实现服务的自动注册？
+## 1.1 Nacos如何实现服务的自动注册? 
 
 
 在SpringCloud当中, 提供了服务自动注册的模板类`AbstractAutoServiceRegistration`, 这个类负责监听WebServerInitializedEvent事件, 并去自动处理服务的注册.
@@ -13,7 +13,7 @@
 
 ![SpringCloud的服务注册](images/SpringCloud的服务注册.png)
 
-## 1.2 Nacos怎么整合SpringCloud注册一个实例？
+## 1.2 Nacos怎么整合SpringCloud注册一个实例? 
 
 Nacos的注册实例, 其实在`NacosServiceRegistry`的register方法当中
 

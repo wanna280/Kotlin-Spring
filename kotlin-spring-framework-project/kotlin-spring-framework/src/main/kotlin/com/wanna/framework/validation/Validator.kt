@@ -8,7 +8,7 @@ package com.wanna.framework.validation
 interface Validator {
 
     /**
-     * 是否支持这样的JavaBean的类型的参数检验？
+     * 是否支持这样的JavaBean的类型的参数检验? 
      *
      * @param clazz JavaBean的类型
      */

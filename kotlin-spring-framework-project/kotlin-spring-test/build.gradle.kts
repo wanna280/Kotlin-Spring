@@ -1,6 +1,7 @@
 dependencies {
 
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-framework"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-jcl"))
 
     compileOnly("junit:junit:4.12")
     compileOnly("org.junit.jupiter:junit-jupiter-api:$junitVersion")

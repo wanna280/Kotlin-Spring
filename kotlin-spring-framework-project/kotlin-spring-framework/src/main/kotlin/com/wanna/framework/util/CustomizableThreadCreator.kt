@@ -25,7 +25,7 @@ open class CustomizableThreadCreator : Serializable {
     private var threadPriority = 5
 
     /**
-     * 要去进行创建的线程是否是守护线程？
+     * 要去进行创建的线程是否是守护线程?
      */
     private var daemon = false
 

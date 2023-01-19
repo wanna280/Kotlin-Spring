@@ -77,7 +77,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     private var beanClass: Class<*>? = null
 
     /**
-     * 在进行autowire时, 它是否是优先注入的Bean？
+     * 在进行autowire时, 它是否是优先注入的Bean?
      */
     private var primary = false
 
@@ -109,7 +109,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     private var role = ROLE_APPLICATION
 
     /**
-     * 它是否是抽象的？
+     * 它是否是抽象的?
      */
     private var abstractFlag = false
 
@@ -179,28 +179,28 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     private var description: String? = null
 
     /**
-     * 判断当前BeanDefinition是否是单例的？
+     * 判断当前BeanDefinition是否是单例的?
      *
      * @return 如果是单例的, return true; 否则return false
      */
     override fun isSingleton() = scope == DEFAULT_SCOPE || scope == SCOPE_SINGLETON
 
     /**
-     * 判断当前BeanDefinition是否是原型Bean？
+     * 判断当前BeanDefinition是否是原型Bean?
      *
      * @return 如果是原型的return true, 如果不是原型的, return false
      */
     override fun isPrototype() = scope == SCOPE_PROTOTYPE
 
     /**
-     * 判断当前BeanDefinition是否是一个PrimaryBean？
+     * 判断当前BeanDefinition是否是一个PrimaryBean?
      *
      * @return 如果它是primary的, return true, 否则return false
      */
     override fun isPrimary() = this.primary
 
     /**
-     * 实在它是否为Primary的？
+     * 实在它是否为Primary的?
      *
      * @param primary primary
      */
@@ -312,23 +312,23 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     /**
      * 设置当前BeanDefinition是否是Autowire的候选Bean
      *
-     * @param candidate 是否是autowire的候选Bean？true/false
+     * @param candidate 是否是autowire的候选Bean? true/false
      */
     override fun setAutowireCandidate(candidate: Boolean) {
         this.autowireCandidate = candidate
     }
 
     /**
-     * 设置该BeanDefinition是否是抽象的？
+     * 设置该BeanDefinition是否是抽象的?
      *
-     * @param abstractFlag 是否是抽象的？
+     * @param abstractFlag 是否是抽象的?
      */
     override fun setAbstract(abstractFlag: Boolean) {
         this.abstractFlag = abstractFlag
     }
 
     /**
-     * 判断该BeanDefinition是否是抽象的？
+     * 判断该BeanDefinition是否是抽象的?
      *
      * @return 如果beanClass是抽象的, return true; 否则return false
      */
@@ -360,7 +360,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     override fun getMethodOverrides() = this.methodOverrides
 
     /**
-     * 当前的BeanDefinition当中, 是否有需要去进行运行时进行重写的方法？
+     * 当前的BeanDefinition当中, 是否有需要去进行运行时进行重写的方法?
      * 如果有需要去进行运行时重写的方法, 那么会使用CGLIB完成代理的方式去进行重写
      *
      * @return 如果有运行时进行重写的方法, return true; 否则return false
@@ -375,7 +375,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     override fun getPropertyValues(): MutablePropertyValues = this.propertyValues
 
     /**
-     * 判断当前BeanDefinition当中是否有PropertyValue？
+     * 判断当前BeanDefinition当中是否有PropertyValue?
      *
      * @return 如果已经添加了PropertyValue, 那么return true; 否则return false
      */
@@ -389,14 +389,14 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     override fun getConstructorArgumentValues() = this.constructorArgumentValues
 
     /**
-     * 是否存在有构造器参数？
+     * 是否存在有构造器参数?
      *
      * @return 如果存在有, return true; 否则return false
      */
     override fun hasConstructorArgumentValues(): Boolean = !constructorArgumentValues.isEmpty()
 
     /**
-     * 是否是懒加载的？如果是非懒加载的, 那么在SpringBeanFactory启动时, 就会完成实例化和初始化工作; 
+     * 是否是懒加载的? 如果是非懒加载的, 那么在SpringBeanFactory启动时, 就会完成实例化和初始化工作;
      * 如果设置为懒加载, 那么只有在你第一次去进行getBean时, 才会完成该Bean的初始化工作
      */
     override fun isLazyInit() = lazyInit

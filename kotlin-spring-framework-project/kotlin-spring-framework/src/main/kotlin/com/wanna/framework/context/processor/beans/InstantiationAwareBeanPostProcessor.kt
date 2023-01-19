@@ -31,7 +31,7 @@ interface InstantiationAwareBeanPostProcessor : BeanPostProcessor {
      *
      * @param bean bean
      * @param beanName beanName
-     * @return 是否还要继续下一个BeanPostProcessor, 让它来干涉该Bean的创建？如果return false, 停止后续的BeanPostProcessor; return true则继续
+     * @return 是否还要继续下一个BeanPostProcessor, 让它来干涉该Bean的创建? 如果return false, 停止后续的BeanPostProcessor; return true则继续
      */
     fun postProcessAfterInstantiation(beanName: String, bean: Any): Boolean {
         return true

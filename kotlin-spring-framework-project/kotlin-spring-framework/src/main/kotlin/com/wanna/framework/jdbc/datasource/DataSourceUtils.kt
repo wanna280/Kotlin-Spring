@@ -2,7 +2,7 @@ package com.wanna.framework.jdbc.datasource
 
 import com.wanna.framework.transaction.TransactionDefinition
 import com.wanna.framework.transaction.support.TransactionSynchronizationManager
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.sql.Connection
 import java.sql.SQLException
 import javax.sql.DataSource
@@ -99,7 +99,7 @@ object DataSourceUtils {
     fun doReleaseConnection(connection: Connection?, dataSource: DataSource?) {
         connection ?: return
         if (dataSource != null) {
-            // 从事务同步管理器当中去获取到Connection, 去进行释放连接？
+            // 从事务同步管理器当中去获取到Connection, 去进行释放连接?
             val connectionHolder = TransactionSynchronizationManager.getResource(dataSource) as ConnectionHolder?
             if (connectionHolder != null && connectionHolder.connection == connection) {
                 connectionHolder.released()

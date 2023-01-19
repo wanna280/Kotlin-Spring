@@ -47,7 +47,7 @@ class ModelAndView {
     fun isEmpty(): Boolean = this.view == null && this.modelMap == null
 
     /**
-     * 存在的视图是否是一个视图引用？
+     * 存在的视图是否是一个视图引用? 
      *
      * @return 如果是String说明是视图引用, 不然说明不是
      */

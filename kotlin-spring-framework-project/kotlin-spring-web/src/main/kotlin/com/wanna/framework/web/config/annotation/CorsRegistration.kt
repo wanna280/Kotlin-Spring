@@ -8,7 +8,7 @@ import com.wanna.framework.web.cors.CorsConfiguration
  * @see CorsConfiguration
  * @see CorsRegistry
  *
- * @param pathPattern 对请求当中的哪些路径允许CROS的跨域请求？
+ * @param pathPattern 对请求当中的哪些路径允许CROS的跨域请求?
  */
 open class CorsRegistration(val pathPattern: String) {
 
@@ -17,7 +17,7 @@ open class CorsRegistration(val pathPattern: String) {
     private val config = CorsConfiguration().applyPermitDefaultValues()
 
     /**
-     * 它允许哪些Origin去进行CORS操作？不支持使用表达式.如果想要使用表达式, 那么需要使用"allowedOriginPatterns"方法
+     * 它允许哪些Origin去进行CORS操作? 不支持使用表达式.如果想要使用表达式, 那么需要使用"allowedOriginPatterns"方法
      *
      * @param origins 你想配置的允许进行CORS的Origin, 可以为"*"通配(默认)
      * @see allowedOriginPatterns

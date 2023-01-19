@@ -63,7 +63,7 @@ abstract class FilteringSpringBootCondition : SpringBootCondition(), AutoConfigu
      * 将指定的classNames, 经过filter的过滤之后, 剩下的符合条件的className将会被返回
      *
      * @param classNames 原始的classNames(可以为null)
-     * @param filter 如何去过滤？可以使用PRESENT/MISSING两种方式去过滤
+     * @param filter 如何去过滤? 可以使用PRESENT/MISSING两种方式去过滤
      * @return 如果原始classNames不为空, 那么返回经过filter过滤之后的classNames; 如果原始classNames为空, 那么return 空的List
      */
     protected fun filter(@Nullable classNames: Collection<String>?, filter: ClassNameFilter, classLoader: ClassLoader) =

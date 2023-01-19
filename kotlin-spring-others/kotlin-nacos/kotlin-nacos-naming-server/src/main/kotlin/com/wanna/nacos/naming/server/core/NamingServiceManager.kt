@@ -3,7 +3,7 @@ package com.wanna.nacos.naming.server.core
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.nacos.naming.server.core.NamingServiceManager.NamingInstanceAction.ADD
 import com.wanna.nacos.naming.server.core.NamingServiceManager.NamingInstanceAction.REMOVE
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -69,7 +69,7 @@ open class NamingServiceManager {
         // 如果之前不存在当前Service的话, 创建一个空的NamingService
         createEmptyServiceIfNecessary(namespaceId, serviceName)
 
-        // 检验一下Service是否已经创建成功？获取Service失败时抛出异常
+        // 检验一下Service是否已经创建成功? 获取Service失败时抛出异常
         getService(namespaceId, serviceName)
             ?: throw IllegalStateException("NamingService没有找到[namespaceId=$namespaceId, serviceName=$serviceName]")
 
@@ -131,7 +131,7 @@ open class NamingServiceManager {
      * 从当前给定的NamingService当中去移除指定的NamingInstance列表
      *
      * @param service 要进行操作的NamingService
-     * @param ephemeral 要操作的是临时节点？还是持久节点？
+     * @param ephemeral 要操作的是临时节点? 还是持久节点? 
      * @param ips 要从NamingService当中移除的实例列表
      */
     private fun removeInstance(service: NamingService, ephemeral: Boolean, vararg ips: NamingInstance) {
@@ -146,7 +146,7 @@ open class NamingServiceManager {
      * 获取到指定的NamingService当中移除了指定的实例列表(ips)之后的NamingInstance列表
      *
      * @param service 要去进行操作的NamingService
-     * @param ephemeral 要操作的是临时节点？还是持久节点
+     * @param ephemeral 要操作的是临时节点? 还是持久节点
      * @param ips 要从NamingService当中移除的实例列表
      * @return 从NamingService当中的所有实例列表当中, 移除了指定的实例列表(ips)之后的结果
      */
@@ -161,7 +161,7 @@ open class NamingServiceManager {
      * 更新当前NamingService下的NamingInstance列表, 可以是ADD/REMOVE两种类型的操作
      *
      * @param service NamingService
-     * @param ephemeral 要更新临时节点还是非临时节点？
+     * @param ephemeral 要更新临时节点还是非临时节点? 
      * @param action 操作类型(ADD/REMOVE)
      * @param ips 要进行操作的NamingInstance列表(可以是要进行删除的NamingInstance列表, 也可以是要进行添加的NamingInstance列表)
      * @return ADD/REMOVE之后的NamingInstance列表
@@ -174,7 +174,7 @@ open class NamingServiceManager {
         // 查询到当前Service下的所有Cluster下的所有的NamingInstance列表
         val allIps = service.allIps(ephemeral)
 
-        // 根据所有的实例列表, 去构建InstanceMap, key-ip&port, value-NamingInstance, 方便去进行判断之前是否已经存在有该实例？
+        // 根据所有的实例列表, 去构建InstanceMap, key-ip&port, value-NamingInstance, 方便去进行判断之前是否已经存在有该实例? 
         val currentNamingInstancesMap = HashMap<String, NamingInstance>()
         allIps.forEach { currentNamingInstancesMap[it.toIpAddress()] = it }
 

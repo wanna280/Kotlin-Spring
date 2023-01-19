@@ -3,8 +3,8 @@ package com.wanna.framework.core.type.filter
 import com.wanna.framework.core.type.classreading.MetadataReader
 import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 import com.wanna.framework.lang.Nullable
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 类型的继承关系的匹配的Filter

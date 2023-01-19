@@ -9,9 +9,13 @@ package com.wanna.framework.core.environment
  * @see CommandLineArgs
  */
 open class SimpleCommandLinePropertySource(vararg args: String) :
-    CommandLinePropertySource<CommandLineArgs>(SimpleCommandLineArgsParser().parse(*args)) {
+    CommandLinePropertySource<CommandLineArgs>(SimpleCommandLineArgsParser.parse(*args)) {
 
     companion object {
+
+        /**
+         * PropertySource Name of SimpleCommandLinePropertySource
+         */
         const val COMMAND_LINE_PROPERTY_SOURCE_NAME = "commandLineArgs"
     }
 

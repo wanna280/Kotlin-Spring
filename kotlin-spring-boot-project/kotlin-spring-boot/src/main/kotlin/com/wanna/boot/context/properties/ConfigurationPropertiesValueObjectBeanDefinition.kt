@@ -1,9 +1,8 @@
 package com.wanna.boot.context.properties
 
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.support.definition.GenericBeanDefinition
-import com.wanna.framework.util.ClassUtils
-import org.slf4j.LoggerFactory
 
 /**
  * 它是一个ValueObject(值对象)的ConfigurationProperties的BeanDefinition, 主要提供Supplier去进行ConfigurationProperties绑定;

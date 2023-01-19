@@ -18,7 +18,7 @@ interface Lifecycle {
     fun stop()
 
     /**
-     * 当前的LifecycleBean是否正在运行当中？
+     * 当前的LifecycleBean是否正在运行当中? 
      *
      * @return 如果正在运行中, return true; 如果已经关闭了那么return false
      */

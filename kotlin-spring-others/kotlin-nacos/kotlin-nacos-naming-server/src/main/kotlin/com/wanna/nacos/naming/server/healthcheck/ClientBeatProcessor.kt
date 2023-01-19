@@ -1,7 +1,7 @@
 package com.wanna.nacos.naming.server.healthcheck
 
 import com.wanna.nacos.naming.server.core.NamingService
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 客户端心跳的处理器, 主要是处理客户端发送过来的心跳信息, 将NamingInstance的最后一次心跳的时间设置为当前时间;

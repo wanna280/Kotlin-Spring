@@ -15,8 +15,8 @@ import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.util.StringUtils
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import java.lang.reflect.Constructor
 import java.lang.reflect.Modifier
 import java.util.*
@@ -48,7 +48,7 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
 
 
     /**
-     * 是否开启了循环依赖？默认设置为true
+     * 是否开启了循环依赖? 默认设置为true
      */
     private var allowCircularReferences: Boolean = true
 
@@ -121,7 +121,7 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
     protected open fun resolveBeforeInstantiation(beanName: String, mbd: RootBeanDefinition): Any? {
         var bean: Any? = null
 
-        // 判断有没有可能在初始化之前解析到Bean？最初被初始化为true, 如果第一次解析的时候为bean=null, 那么设为false, 后续就不用再去进行解析了
+        // 判断有没有可能在初始化之前解析到Bean? 最初被初始化为true, 如果第一次解析的时候为bean=null, 那么设为false, 后续就不用再去进行解析了
         if (!mbd.beforeInstantiationResolved) {
             // 如果该mbd不是被合成的, 并且拥有InstantiationAwareBeanPostProcessor的话, 那么需要解析出来targetType去进行真正的解析
             // Note: 在这里需要确保使用到真实的目标targetType去进行解析
@@ -199,8 +199,8 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
         // 但是这里, 在A完成注入和初始化之后, 返回的exposedBean, 并不是代理对象A', 而是未代理的对象A; 因此我们应该从缓存当中获取早期引用A'作为真实的Bean
         // 而不是使用最开始的exposedBean作为要去进行使用的Bean, 不然有可能出现, 把未完成代理的对象加入到缓存当中去覆盖了之前的已经完成代理的对象...
 
-        // 为什么说, 完成注入和初始化的是A对象, 而不是A'对象？因为A'是调用getEarlyReference去生成的, 我原来的A的操作是不受任何的影响的(除了A不会在初始化过程中生成代理),
-        // 因此注入和初始化都是操作的A对象, 而不是A'对象; 那么, 既然代理对象没有完成注入和初始化, 代理对象是否是半成品对象, 导致最终的运行结果不正确？
+        // 为什么说, 完成注入和初始化的是A对象, 而不是A'对象? 因为A'是调用getEarlyReference去生成的, 我原来的A的操作是不受任何的影响的(除了A不会在初始化过程中生成代理),
+        // 因此注入和初始化都是操作的A对象, 而不是A'对象; 那么, 既然代理对象没有完成注入和初始化, 代理对象是否是半成品对象, 导致最终的运行结果不正确? 
         // 不会！因为创建代理时, 将A包装到TargetSource里了, 而在运行时调用代理方法, 都是通过TargetSource.getTarget去获取到的A对象去进行委托完成, 而不是使用A'去进行的操作;
         // 也就是说, 在代理对象内调用this, 其实获取到的是A对象, 而不是代理对象A', 这也是为什么在@Transational方法里调用this.XXX(也是一个@Transactional方法)时不生效的原因
         if (earlySingletonExposure) {
@@ -242,8 +242,8 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
             return instantiateUsingFactoryMethod(beanName, mbd)
         }
 
-        var resolved = false  // 是否已经完成了Constructor解析工作？
-        var autowireIfNecessary = false  // 是否需要进行Autowire？判断是否有解析出来的参数即可判断
+        var resolved = false  // 是否已经完成了Constructor解析工作? 
+        var autowireIfNecessary = false  // 是否需要进行Autowire? 判断是否有解析出来的参数即可判断
 
         // 如果没有给定具体的参数, 那么可以尝试先去缓存当中获取, 如果给定了具体的参数, 那么肯定就不能走缓存了...
         if (args == null) {
@@ -841,7 +841,7 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
     }
 
     /**
-     * 获取当前BeanFactory是否允许循环引用？
+     * 获取当前BeanFactory是否允许循环引用? 
      *
      * @return 如果允许循环依赖, 那么return true; 如果不允许的话, 那么return false
      */

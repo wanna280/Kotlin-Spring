@@ -4,7 +4,7 @@ import com.wanna.nacos.api.PropertyKeyConst
 import com.wanna.nacos.api.exception.NacosException
 import com.wanna.nacos.api.utils.IPUtils
 import com.wanna.nacos.client.utils.ParamUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.io.Closeable
 import java.util.*
 import java.util.concurrent.ScheduledThreadPoolExecutor

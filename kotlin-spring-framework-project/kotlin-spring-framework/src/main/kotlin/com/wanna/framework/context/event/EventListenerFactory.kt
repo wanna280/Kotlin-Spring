@@ -11,7 +11,7 @@ import java.lang.reflect.Method
 interface EventListenerFactory {
 
     /**
-     * 是否支持将给定的方法包装成为EventListener？
+     * 是否支持将给定的方法包装成为EventListener?
      *
      * @param method 你想要去包装成为EventListener的方法
      * @return 如果支持去进行包装, return true; 否则return false

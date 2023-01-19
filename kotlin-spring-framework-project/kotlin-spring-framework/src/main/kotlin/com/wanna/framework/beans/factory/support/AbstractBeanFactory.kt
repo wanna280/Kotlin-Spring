@@ -19,7 +19,7 @@ import com.wanna.framework.util.BeanFactoryUtils
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.beans.PropertyEditor
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
@@ -123,11 +123,11 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      * @param parentBeanFactory parentBeanFactory
      */
     override fun setParentBeanFactory(parentBeanFactory: BeanFactory?) {
-        // 如果之前设置过parentBeanFactory, 现在又想设置新的parent去进行替换？那么肯定是不行...
+        // 如果之前设置过parentBeanFactory, 现在又想设置新的parent去进行替换? 那么肯定是不行...
         if (this.parentBeanFactory != null && parentBeanFactory != parentBeanFactory) {
             throw IllegalStateException("之前已经设置过parentBeanFactory[$parentBeanFactory], 不能设置新的parent[$parentBeanFactory]")
         }
-        // 如果parent==this？肯定不允许发生这种情况...不然处理parent时, 直接StackOverflow...
+        // 如果parent==this? 肯定不允许发生这种情况...不然处理parent时, 直接StackOverflow...
         if (this.parentBeanFactory == this) {
             throw IllegalStateException("parentBeanFactory不能为自身")
         }
@@ -210,7 +210,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
             }
             beanInstance = getObjectForBeanInstance(sharedInstance, name, beanName, null)
         } else {
-            // 快速地去检查当前原型Bean是否已经正在创建当中了？只要已经在创建当中了, 那么我们就可以认为已经发生了循环依赖了
+            // 快速地去检查当前原型Bean是否已经正在创建当中了? 只要已经在创建当中了, 那么我们就可以认为已经发生了循环依赖了
             // 但是对于原型Bean的循环依赖, 无法解决, 因此我们在这里直接抛出BeanCurrentlyInCreationException异常...
             if (isPrototypeCurrentlyInCreation(beanName)) {
                 throw BeanCurrentlyInCreationException("原型Bean[$beanName]当前正在创建当中", null, beanName)
@@ -371,7 +371,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     }
 
     /**
-     * 当前原型Bean是否正在创建当中？
+     * 当前原型Bean是否正在创建当中?
      */
     @Suppress("UNCHECKED_CAST")
     protected open fun isPrototypeCurrentlyInCreation(beanName: String): Boolean {
@@ -527,7 +527,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     }
 
     /**
-     * 给定一个beanName, 从容器当中去获取BeanDefinition, 去判断是否是单例的？
+     * 给定一个beanName, 从容器当中去获取BeanDefinition, 去判断是否是单例的?
      *
      * @throws NoSuchBeanDefinitionException 如果容器当中不存在这样的BeanDefinition
      */
@@ -535,7 +535,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     override fun isSingleton(beanName: String) = getBeanDefinition(beanName).isSingleton()
 
     /**
-     * 给定一个beanName, 从容器当中去获取BeanDefinition, 去判断是否是原型的？
+     * 给定一个beanName, 从容器当中去获取BeanDefinition, 去判断是否是原型的?
      *
      * @throws NoSuchBeanDefinitionException 如果容器当中不存在这样的BeanDefinition
      */
@@ -544,25 +544,25 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
 
 
     /**
-     * 判断容器当中的beanName对应的类型是否和type匹配？(支持去匹配FactoryBeanObject)
+     * 判断容器当中的beanName对应的类型是否和type匹配? (支持去匹配FactoryBeanObject)
      *
      * @param name beanName
-     * @param type beanName应该匹配的类型？
-     * @return 是否类型匹配？
+     * @param type beanName应该匹配的类型?
+     * @return 是否类型匹配?
      */
     override fun isTypeMatch(name: String, type: Class<*>): Boolean {
         return isTypeMatch(name, type, false)
     }
 
     /**
-     * 判断容器当中的beanName对应的类型是否和type匹配？(支持去匹配FactoryBeanObject)
+     * 判断容器当中的beanName对应的类型是否和type匹配? (支持去匹配FactoryBeanObject)
      *
      * 这个方法实现巨复杂(目前并未实现完全), 应该研究研究！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！！
      *
      * @param name beanName
-     * @param type beanName应该匹配的类型？
-     * @param allowFactoryBeanInit 是否允许FactoryBean去进行初始化？
-     * @return 是否类型匹配？
+     * @param type beanName应该匹配的类型?
+     * @param allowFactoryBeanInit 是否允许FactoryBean去进行初始化?
+     * @return 是否类型匹配?
      */
     protected open fun isTypeMatch(name: String, type: Class<*>, allowFactoryBeanInit: Boolean): Boolean {
         val beanName = transformedBeanName(name)
@@ -629,7 +629,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     }
 
     /**
-     * 从MergedBeanDefinition当中去判断, 它是否是一个FactoryBean？
+     * 从MergedBeanDefinition当中去判断, 它是否是一个FactoryBean?
      *
      * @param name name
      * @param mbd MergedBeanDefinition
@@ -801,7 +801,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     protected open fun getMergedLocalBeanDefinition(beanName: String): RootBeanDefinition {
         val rootBeanDefinition = mergedBeanDefinitions[beanName]
         // 先进行一次检查(fast check), 避免立刻加锁进行操作
-        // 检查该BeanDefinition是否已经过期/是否还没完成Merge？
+        // 检查该BeanDefinition是否已经过期/是否还没完成Merge?
         if (rootBeanDefinition != null && !rootBeanDefinition.stale) {
             return rootBeanDefinition
         }
@@ -870,9 +870,9 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     }
 
     /**
-     * 是否需要去注册destory的回调？
-     * (1)支持AutoCloseable/DisposableBean以及BeanDefinition当中的destoryMethod等？
-     * (2)遍历所有的DestructionAwareBeanPostProcessor来判断是否需要注册注册？
+     * 是否需要去注册destory的回调?
+     * (1)支持AutoCloseable/DisposableBean以及BeanDefinition当中的destoryMethod等?
+     * (2)遍历所有的DestructionAwareBeanPostProcessor来判断是否需要注册注册?
      *
      * @param bean bean
      * @param mbd
@@ -977,7 +977,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     /**
      * 注册BeanFactory当中配置的所有的自定义的PropertyEditor到给定的PropertyEditorRegistry当中
      *
-     * @param registry 想要把PropertyEditor注册到哪个PropertyEditorRegistry当中？
+     * @param registry 想要把PropertyEditor注册到哪个PropertyEditorRegistry当中?
      */
     protected open fun registerCustomEditors(registry: PropertyEditorRegistry) {
         // apply所有的PropertyEditor的注册器到PropertyEditorRegistry当中
@@ -1031,7 +1031,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
 
     /**
      * 获取BeanPostProcessor的Cache, 它主要的作用是将各种类型的BeanPostProcessor去进行分类;
-     * 如果之前已经构建好了, 那么直接进行return即可, 如果之前没有构建好？需要重新对各个类型的BeanPostProcessor去进行分类,
+     * 如果之前已经构建好了, 那么直接进行return即可, 如果之前没有构建好? 需要重新对各个类型的BeanPostProcessor去进行分类,
      * 从而构建出来一个新的BeanPostProcessorCache去进行返回;
      *
      * Note: 在每次对BeanPostProcessor的列表去进行操作时, 应该reset BeanPostProcessorCache(把引用设置为null)
