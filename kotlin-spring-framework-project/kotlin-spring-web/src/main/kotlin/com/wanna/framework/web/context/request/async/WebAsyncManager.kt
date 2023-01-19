@@ -2,8 +2,8 @@ package com.wanna.framework.web.context.request.async
 
 import com.wanna.framework.core.task.AsyncTaskExecutor
 import com.wanna.framework.core.task.SimpleAsyncTaskExecutor
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import java.util.concurrent.Callable
 
 /**

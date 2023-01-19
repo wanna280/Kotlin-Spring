@@ -4,6 +4,7 @@ dependencies {
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-framework"))
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-web"))
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-test"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-jcl"))
 
     implementation("junit:junit:4.12")
     implementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")

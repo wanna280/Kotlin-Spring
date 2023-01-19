@@ -5,7 +5,7 @@ import com.wanna.framework.transaction.support.TransactionSynchronizationManager
 import org.apache.ibatis.session.ExecutorType
 import org.apache.ibatis.session.SqlSession
 import org.apache.ibatis.session.SqlSessionFactory
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * SqlSession的单例工具类, 提供从Spring的TransactionManager当中去进行SqlSession的获取、注册、关闭等操作

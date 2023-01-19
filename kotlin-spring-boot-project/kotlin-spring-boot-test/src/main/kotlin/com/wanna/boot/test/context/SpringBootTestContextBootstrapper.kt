@@ -6,7 +6,7 @@ import com.wanna.framework.test.context.ContextLoader
 import com.wanna.framework.test.context.MergedContextConfiguration
 import com.wanna.framework.test.context.TestContextBootstrapper
 import com.wanna.framework.test.context.support.DefaultTestContextBootstrapper
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * SpringBoot的[TestContextBootstrapper]实现

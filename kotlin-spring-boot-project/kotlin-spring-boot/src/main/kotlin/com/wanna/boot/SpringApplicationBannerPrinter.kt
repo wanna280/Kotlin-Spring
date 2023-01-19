@@ -3,7 +3,7 @@ package com.wanna.boot
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.io.ResourceLoader
-import org.slf4j.Logger
+import com.wanna.common.logging.Logger
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.PrintStream

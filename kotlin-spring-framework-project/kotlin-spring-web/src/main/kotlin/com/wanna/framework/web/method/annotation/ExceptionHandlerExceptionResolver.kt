@@ -14,7 +14,7 @@ import com.wanna.framework.web.method.HandlerMethod
 import com.wanna.framework.web.method.support.*
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
 /**

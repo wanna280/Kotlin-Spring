@@ -1,7 +1,7 @@
 package com.wanna.boot.web.servlet
 
 import com.wanna.framework.lang.Nullable
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.beans.Introspector
 import javax.servlet.Registration
 import javax.servlet.ServletContext

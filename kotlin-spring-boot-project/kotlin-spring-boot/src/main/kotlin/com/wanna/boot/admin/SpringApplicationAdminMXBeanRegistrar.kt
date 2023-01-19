@@ -17,7 +17,7 @@ import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.lang.management.ManagementFactory
 import javax.management.ObjectName
 

@@ -1,7 +1,7 @@
 package com.wanna.boot.devtools.restart
 
 import com.wanna.boot.devtools.settings.DevToolsSettings
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.io.File
 import java.lang.management.ManagementFactory
 import java.net.URL

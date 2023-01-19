@@ -5,7 +5,7 @@ import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.io.support.ResourcePatternUtils
 import com.wanna.framework.util.ResourceUtils
 import com.wanna.framework.util.StringUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 import java.net.URISyntaxException

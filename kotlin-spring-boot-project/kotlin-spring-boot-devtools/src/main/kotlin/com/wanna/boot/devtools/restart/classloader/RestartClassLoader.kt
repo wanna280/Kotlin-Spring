@@ -1,7 +1,7 @@
 package com.wanna.boot.devtools.restart.classloader
 
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import java.net.URL
 import java.net.URLClassLoader
 

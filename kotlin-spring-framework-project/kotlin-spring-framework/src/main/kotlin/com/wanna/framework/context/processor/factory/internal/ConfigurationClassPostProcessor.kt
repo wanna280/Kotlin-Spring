@@ -26,7 +26,7 @@ import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.util.ClassUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * SpringBeanFactory的配置类处理器, 用来扫描Spring当中的配置类, 包括对@Configuration/@Component/@Bean等注解的处理

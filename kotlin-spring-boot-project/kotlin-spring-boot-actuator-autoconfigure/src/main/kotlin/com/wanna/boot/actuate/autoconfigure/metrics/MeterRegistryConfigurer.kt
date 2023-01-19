@@ -5,7 +5,7 @@ import io.micrometer.core.instrument.Metrics
 import io.micrometer.core.instrument.binder.MeterBinder
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
 import io.micrometer.core.instrument.config.MeterFilter
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 根据提供的[MeterBinder]、[MeterFilter]以及[MeterRegistryCustomizer], 提供对于给定的[MeterRegistry]的自定义

@@ -4,8 +4,8 @@ import com.wanna.framework.beans.factory.InitializingBean
 import com.wanna.framework.beans.factory.support.DisposableBean
 import com.wanna.framework.context.aware.BeanNameAware
 import com.wanna.framework.lang.Nullable
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import java.util.concurrent.*
 
 /**

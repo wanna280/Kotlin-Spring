@@ -7,7 +7,7 @@ import com.wanna.framework.core.io.UrlResource
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.AntPathMatcher
 import com.wanna.framework.util.PathMatcher
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.io.File
 import java.io.IOException
 import java.io.InputStream

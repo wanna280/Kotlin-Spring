@@ -2,6 +2,8 @@ package com.wanna.boot
 
 import com.wanna.boot.context.properties.bind.Bindable
 import com.wanna.boot.context.properties.bind.Binder
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContext
@@ -25,8 +27,6 @@ import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StopWatch
 import com.wanna.framework.util.StringUtils.collectionToCommaDelimitedString
 import com.wanna.framework.web.context.support.StandardServletEnvironment
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.util.*
 
 /**
@@ -964,7 +964,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      */
     protected open fun getApplicationLogger(): Logger {
         if (this.mainApplicationClass != null) {
-            return LoggerFactory.getLogger(this.mainApplicationClass)
+            return LoggerFactory.getLogger(this.mainApplicationClass!!)
         }
         return this.logger
     }

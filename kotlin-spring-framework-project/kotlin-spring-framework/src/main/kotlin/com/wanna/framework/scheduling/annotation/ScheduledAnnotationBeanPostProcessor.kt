@@ -22,7 +22,7 @@ import com.wanna.framework.scheduling.config.*
 import com.wanna.framework.scheduling.support.ScheduledMethodRunnable
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.util.StringUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.lang.reflect.Method
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap

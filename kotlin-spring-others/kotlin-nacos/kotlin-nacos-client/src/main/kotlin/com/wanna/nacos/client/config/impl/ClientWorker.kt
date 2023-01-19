@@ -9,7 +9,7 @@ import com.wanna.nacos.client.config.filter.impl.ConfigResponse
 import com.wanna.nacos.client.config.http.HttpAgent
 import com.wanna.nacos.client.config.http.ServerHttpAgent
 import com.wanna.nacos.client.utils.ParamUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.io.Closeable
 import java.net.URLDecoder
 import java.util.*

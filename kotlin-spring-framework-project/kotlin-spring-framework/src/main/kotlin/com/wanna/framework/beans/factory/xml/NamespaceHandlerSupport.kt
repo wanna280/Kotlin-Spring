@@ -1,8 +1,8 @@
 package com.wanna.framework.beans.factory.xml
 
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import org.w3c.dom.Attr
 import org.w3c.dom.Element
 import org.w3c.dom.Node

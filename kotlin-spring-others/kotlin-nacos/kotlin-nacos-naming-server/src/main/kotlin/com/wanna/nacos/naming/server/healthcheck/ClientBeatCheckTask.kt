@@ -3,7 +3,7 @@ package com.wanna.nacos.naming.server.healthcheck
 import com.wanna.framework.web.client.RestTemplate
 import com.wanna.nacos.naming.server.core.NamingInstance
 import com.wanna.nacos.naming.server.core.NamingService
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 这是一个客户端心跳检测的任务, 负责修改当前NamingService下的各个NamingInstance实例的健康状态, 以及进行实例的删除

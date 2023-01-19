@@ -1,8 +1,8 @@
 package com.wanna.framework.core.environment
 
 import com.wanna.framework.lang.Nullable
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 这是一个[PropertySource], 对属性的来源进行的一层抽象;

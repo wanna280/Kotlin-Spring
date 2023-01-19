@@ -3,7 +3,7 @@ package com.wanna.nacos.naming.server.core
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.nacos.naming.server.core.NamingServiceManager.NamingInstanceAction.ADD
 import com.wanna.nacos.naming.server.core.NamingServiceManager.NamingInstanceAction.REMOVE
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
 /**

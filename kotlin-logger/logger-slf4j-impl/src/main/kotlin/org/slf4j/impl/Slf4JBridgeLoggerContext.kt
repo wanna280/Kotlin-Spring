@@ -1,7 +1,6 @@
 package org.slf4j.impl
 
 import com.wanna.logger.impl.AbstractLoggerContext
-import com.wanna.logger.impl.appender.support.ConsoleLoggerAppender
 import org.slf4j.ILoggerFactory
 
 /**

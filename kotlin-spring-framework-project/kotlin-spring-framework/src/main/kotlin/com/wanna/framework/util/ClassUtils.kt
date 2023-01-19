@@ -5,7 +5,7 @@ import com.wanna.framework.constants.CLASS_ARRAY_TYPE
 import com.wanna.framework.constants.NUMBER_ARRAY_TYPE
 import com.wanna.framework.constants.STRING_ARRAY_TYPE
 import com.wanna.framework.lang.Nullable
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.lang.reflect.Method
 import java.util.*
 

@@ -13,7 +13,7 @@ import com.wanna.framework.core.type.filter.TypeFilter
 import com.wanna.framework.util.BeanUtils
 import com.wanna.mybatis.spring.SqlSessionTemplate
 import org.apache.ibatis.session.SqlSessionFactory
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.util.Optional
 
 /**

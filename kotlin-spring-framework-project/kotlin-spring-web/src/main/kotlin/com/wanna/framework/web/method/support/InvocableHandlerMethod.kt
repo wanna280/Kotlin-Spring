@@ -10,7 +10,7 @@ import com.wanna.framework.web.bind.support.WebDataBinderFactory
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.context.request.ServerWebRequest
 import com.wanna.framework.web.method.HandlerMethod
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.util.concurrent.Callable

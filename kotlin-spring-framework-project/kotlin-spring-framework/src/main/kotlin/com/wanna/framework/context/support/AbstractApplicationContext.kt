@@ -33,7 +33,7 @@ import com.wanna.framework.core.io.support.ResourcePatternResolver
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ReflectionUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.io.IOException
 import java.util.concurrent.atomic.AtomicBoolean
 

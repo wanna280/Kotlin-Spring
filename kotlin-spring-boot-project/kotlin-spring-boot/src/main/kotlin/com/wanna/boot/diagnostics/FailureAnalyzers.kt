@@ -2,7 +2,7 @@ package com.wanna.boot.diagnostics
 
 import com.wanna.boot.SpringBootExceptionReporter
 import com.wanna.framework.context.ConfigurableApplicationContext
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * SpringBoot的Failure分析器

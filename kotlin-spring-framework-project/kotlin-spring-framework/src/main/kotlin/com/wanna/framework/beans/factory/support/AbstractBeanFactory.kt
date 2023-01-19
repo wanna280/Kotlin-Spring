@@ -19,7 +19,7 @@ import com.wanna.framework.util.BeanFactoryUtils
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.beans.PropertyEditor
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList

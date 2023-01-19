@@ -12,7 +12,7 @@ import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.lang.StringBuilder
 import java.lang.reflect.Modifier
 import java.util.Optional

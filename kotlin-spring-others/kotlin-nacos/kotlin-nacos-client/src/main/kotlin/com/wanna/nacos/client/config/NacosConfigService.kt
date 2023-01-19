@@ -13,7 +13,7 @@ import com.wanna.nacos.client.config.filter.impl.ConfigResponse
 import com.wanna.nacos.client.config.http.HttpAgent
 import com.wanna.nacos.client.config.http.ServerHttpAgent
 import com.wanna.nacos.client.config.impl.ClientWorker
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.util.*
 import kotlin.collections.LinkedHashMap
 

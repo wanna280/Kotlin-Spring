@@ -13,7 +13,7 @@ import com.wanna.framework.beans.method.ReplaceOverride
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.StringUtils
 import com.wanna.framework.util.StringUtils.commaDelimitedListToStringArray
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import org.w3c.dom.Element
 import org.w3c.dom.Node
 import java.util.*

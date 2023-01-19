@@ -3,7 +3,7 @@ package com.wanna.boot.context.config
 import com.wanna.boot.ConfigurableBootstrapContext
 import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.util.*
 
 /**

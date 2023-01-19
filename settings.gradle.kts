@@ -6,6 +6,7 @@ include(":kotlin-spring-framework-project:kotlin-spring-framework")
 include(":kotlin-spring-framework-project:kotlin-spring-instrument")
 include(":kotlin-spring-framework-project:kotlin-spring-web")
 include(":kotlin-spring-framework-project:kotlin-spring-test")
+include(":kotlin-spring-framework-project:kotlin-spring-jcl")
 
 
 // for spring boot subprojects

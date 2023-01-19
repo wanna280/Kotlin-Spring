@@ -6,7 +6,7 @@ import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.nio.charset.StandardCharsets
 
 /**

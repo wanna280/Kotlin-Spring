@@ -1,7 +1,7 @@
 package com.wanna.boot.web.servlet
 
 import com.wanna.framework.core.Ordered
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import javax.servlet.ServletContext
 
 /**

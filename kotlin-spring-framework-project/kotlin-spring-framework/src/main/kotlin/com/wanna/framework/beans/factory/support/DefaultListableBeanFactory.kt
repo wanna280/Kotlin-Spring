@@ -19,7 +19,7 @@ import com.wanna.framework.core.comparator.OrderComparator
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.BeanFactoryUtils
 import com.wanna.framework.util.ClassUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer

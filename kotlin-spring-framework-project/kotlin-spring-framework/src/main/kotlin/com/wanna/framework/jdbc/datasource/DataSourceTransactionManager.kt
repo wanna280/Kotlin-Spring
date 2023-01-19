@@ -5,7 +5,7 @@ import com.wanna.framework.transaction.TransactionSystemException
 import com.wanna.framework.transaction.support.AbstractPlatformTransactionManager
 import com.wanna.framework.transaction.support.DefaultTransactionStatus
 import com.wanna.framework.transaction.support.TransactionSynchronizationManager
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.Statement

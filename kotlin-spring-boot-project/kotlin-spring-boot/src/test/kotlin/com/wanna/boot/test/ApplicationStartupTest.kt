@@ -6,7 +6,7 @@ import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.core.metrics.DefaultApplicationStartup
 import com.wanna.framework.core.metrics.StartupStep
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.util.function.Supplier
 
 /**

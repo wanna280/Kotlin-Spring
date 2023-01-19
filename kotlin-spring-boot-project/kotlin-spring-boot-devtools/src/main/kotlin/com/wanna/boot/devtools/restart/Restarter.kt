@@ -9,8 +9,8 @@ import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.lang.Nullable
 import com.wanna.boot.devtools.settings.DevToolsSettings
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import java.beans.Introspector
 import java.net.URL
 import java.util.concurrent.Callable

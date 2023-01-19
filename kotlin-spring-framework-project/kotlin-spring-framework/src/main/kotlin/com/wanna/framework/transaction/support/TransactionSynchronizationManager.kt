@@ -1,7 +1,7 @@
 package com.wanna.framework.transaction.support
 
 import com.wanna.framework.core.NamedThreadLocal
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 事务同步管理器, 维护了事务相关的一系列的ThreadLocal资源

@@ -1,6 +1,6 @@
 package com.wanna.boot.logging
 
-import org.slf4j.Logger
+import com.wanna.common.logging.Logger
 import java.util.function.Supplier
 
 /**

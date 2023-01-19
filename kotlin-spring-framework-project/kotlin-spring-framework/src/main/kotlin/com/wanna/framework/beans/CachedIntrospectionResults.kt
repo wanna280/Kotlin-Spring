@@ -2,7 +2,7 @@ package com.wanna.framework.beans
 
 import com.wanna.framework.core.convert.TypeDescriptor
 import com.wanna.framework.lang.Nullable
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.beans.BeanInfo
 import java.beans.Introspector
 import java.beans.PropertyDescriptor

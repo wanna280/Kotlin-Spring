@@ -3,7 +3,7 @@ package com.wanna.framework.transaction.support
 import com.wanna.framework.transaction.PlatformTransactionManager
 import com.wanna.framework.transaction.TransactionDefinition
 import com.wanna.framework.transaction.TransactionStatus
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * PlatformTransactionManager的抽象实现, 为所有的平台事务管理器提供模板方法的实现

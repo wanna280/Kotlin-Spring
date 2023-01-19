@@ -4,7 +4,7 @@ import com.wanna.framework.beans.factory.BeanCurrentlyInCreationException
 import com.wanna.framework.beans.factory.ObjectFactory
 import com.wanna.framework.beans.factory.config.SingletonBeanRegistry
 import com.wanna.framework.lang.Nullable
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 

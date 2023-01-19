@@ -2,7 +2,7 @@ package com.wanna.framework.jdbc.datasource
 
 import com.wanna.framework.transaction.TransactionDefinition
 import com.wanna.framework.transaction.support.TransactionSynchronizationManager
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.sql.Connection
 import java.sql.SQLException
 import javax.sql.DataSource

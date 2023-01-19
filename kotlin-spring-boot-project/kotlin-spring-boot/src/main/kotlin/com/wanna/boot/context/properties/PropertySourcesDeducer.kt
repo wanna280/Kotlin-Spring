@@ -7,7 +7,7 @@ import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.environment.MutablePropertySources
 import com.wanna.framework.core.environment.PropertySources
 import com.wanna.framework.lang.Nullable
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import kotlin.jvm.Throws
 
 /**

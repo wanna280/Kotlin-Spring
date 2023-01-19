@@ -9,7 +9,7 @@ import com.wanna.framework.core.task.TaskExecutor
 import com.wanna.framework.core.task.support.TaskExecutorAdapter
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.lang.reflect.Method
 import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture

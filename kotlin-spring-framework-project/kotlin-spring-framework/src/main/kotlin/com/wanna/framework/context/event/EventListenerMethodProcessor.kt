@@ -11,7 +11,7 @@ import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ReflectionUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.lang.reflect.Method
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap

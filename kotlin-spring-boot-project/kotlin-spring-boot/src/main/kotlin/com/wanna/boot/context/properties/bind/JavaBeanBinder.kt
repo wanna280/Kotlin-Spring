@@ -6,7 +6,7 @@ import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ReflectionUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.beans.Introspector
 import java.lang.reflect.Field
 import java.lang.reflect.Method

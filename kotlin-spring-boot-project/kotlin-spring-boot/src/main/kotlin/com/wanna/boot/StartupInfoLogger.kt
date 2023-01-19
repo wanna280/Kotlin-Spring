@@ -2,7 +2,7 @@ package com.wanna.boot
 
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.StopWatch
-import org.slf4j.Logger
+import com.wanna.common.logging.Logger
 import java.lang.management.ManagementFactory
 
 /**

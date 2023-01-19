@@ -9,7 +9,7 @@ import com.wanna.framework.test.context.*
 import com.wanna.framework.test.context.support.ContextLoaderUtils.resolveContextConfigurationAttributes
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * [TestContextBootstrapper]的抽象模板实现, 负责解析testClass上的相关注解, 去最终构建出来[TestContext];

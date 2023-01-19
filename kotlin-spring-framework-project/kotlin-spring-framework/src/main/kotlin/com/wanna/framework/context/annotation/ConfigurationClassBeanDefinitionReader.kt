@@ -17,7 +17,7 @@ import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.StringUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  * 这是一个配置类的BeanDefinitionReader, 负责从ConfigurationClass当中去读取BeanDefinition

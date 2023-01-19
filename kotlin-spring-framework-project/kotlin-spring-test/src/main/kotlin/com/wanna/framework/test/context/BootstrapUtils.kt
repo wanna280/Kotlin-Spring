@@ -7,7 +7,7 @@ import com.wanna.framework.test.context.support.DefaultTestContextBootstrapper
 import com.wanna.framework.test.context.web.WebAppConfiguration
 import com.wanna.framework.test.context.web.WebTestContextBootstrapper
 import com.wanna.framework.util.BeanUtils
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
  *
