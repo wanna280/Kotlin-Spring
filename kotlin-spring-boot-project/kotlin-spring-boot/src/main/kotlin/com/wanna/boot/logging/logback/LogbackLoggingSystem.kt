@@ -22,20 +22,23 @@ import org.slf4j.LoggerFactory
  */
 open class LogbackLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSystem(classLoader) {
 
-    /**
-     * 维护LogLevel与Logback的Level之间的映射关系
-     */
-    private val logLevels = LogLevels<Level>()
+    companion object {
+        /**
+         * 维护LogLevel与Logback的Level之间的映射关系
+         */
+        @JvmStatic
+        private val LEVELS = LogLevels<Level>()
 
-    init {
-        logLevels.map(LogLevel.FATAL, Level.ERROR)
-        logLevels.map(LogLevel.ERROR, Level.ERROR)
-        logLevels.map(LogLevel.WARN, Level.WARN)
-        logLevels.map(LogLevel.INFO, Level.INFO)
-        logLevels.map(LogLevel.DEBUG, Level.DEBUG)
-        logLevels.map(LogLevel.TRACE, Level.ALL)
-        logLevels.map(LogLevel.TRACE, Level.TRACE)
-        logLevels.map(LogLevel.OFF, Level.OFF)
+        init {
+            LEVELS.map(LogLevel.FATAL, Level.ERROR)
+            LEVELS.map(LogLevel.ERROR, Level.ERROR)
+            LEVELS.map(LogLevel.WARN, Level.WARN)
+            LEVELS.map(LogLevel.INFO, Level.INFO)
+            LEVELS.map(LogLevel.DEBUG, Level.DEBUG)
+            LEVELS.map(LogLevel.TRACE, Level.ALL)
+            LEVELS.map(LogLevel.TRACE, Level.TRACE)
+            LEVELS.map(LogLevel.OFF, Level.OFF)
+        }
     }
 
     /**
@@ -56,7 +59,7 @@ open class LogbackLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSyste
     override fun setLogLevel(loggerName: String, @Nullable logLevel: LogLevel?) {
         val logger = getLogger(loggerName)
         if (logger != null) {
-            logger.level = logLevels.convertSystemToNative(logLevel)
+            logger.level = LEVELS.convertSystemToNative(logLevel)
         }
     }
 
@@ -65,7 +68,7 @@ open class LogbackLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSyste
      *
      * @return supported LogLevel
      */
-    override fun getSupportedLogLevels(): Set<LogLevel> = logLevels.getSupported()
+    override fun getSupportedLogLevels(): Set<LogLevel> = LEVELS.getSupported()
 
     /**
      * 获取Logback的所有的Logger的配置信息
@@ -78,6 +81,7 @@ open class LogbackLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSyste
         for (logger in loggerContext.loggerList) {
             result.add(getLoggerConfiguration(logger)!!)
         }
+        result.sortWith(CONFIGURATION_COMPARATOR) // sort
         return result
     }
 
@@ -103,6 +107,10 @@ open class LogbackLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSyste
     override fun loadDefaults(context: LoggingInitializationContext, @Nullable logFile: LogFile?) {
         val loggerContext = getLoggerContext()
         val config = LogbackConfigurator(loggerContext)
+
+        // 将Logback的相关系统属性, 去添加到LoggerContext当中去...
+        LogbackLoggingSystemProperties(context.environment, loggerContext::putProperty).apply(logFile)
+
         DefaultLogbackConfiguration(logFile).apply(config)
     }
 
@@ -129,8 +137,8 @@ open class LogbackLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSyste
     private fun getLoggerConfiguration(@Nullable logger: Logger?): LoggerConfiguration? {
         logger ?: return null
         return LoggerConfiguration(
-            logger.name, logLevels.convertNativeToSystem(logger.level),
-            logLevels.convertNativeToSystem(logger.effectiveLevel)
+            logger.name, LEVELS.convertNativeToSystem(logger.level),
+            LEVELS.convertNativeToSystem(logger.effectiveLevel)
         )
     }
 

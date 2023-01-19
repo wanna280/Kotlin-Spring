@@ -1,5 +1,6 @@
 com.wanna.boot.logging.LoggingSystemFactory=\
-  com.wanna.boot.logging.logback.LogbackLoggingSystem$Factory
+  com.wanna.boot.logging.logback.LogbackLoggingSystem$Factory,\
+  com.wanna.boot.logging.java.JavaLoggingSystem$Factory
 
 # Run Listener
 com.wanna.boot.SpringApplicationRunListener=\

@@ -1,5 +1,7 @@
 package com.wanna.framework.util
 
+import java.io.FileNotFoundException
+import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URI
 import java.net.URL
@@ -28,6 +30,38 @@ object ResourceUtils {
      * 类型为"file"的URL协议
      */
     const val URL_PROTOCOL_FILE = "file"
+
+
+    /**
+     * 获取到给定的资源路径的URL
+     *
+     * @param resource resource
+     * @return URL
+     * @throws IOException 读取资源失败
+     */
+    @Throws(IOException::class)
+    @JvmStatic
+    fun getURL(resource: String): URL {
+        if (resource.startsWith(CLASSPATH_URL_PREFIX)) {
+            val location = resource.substring(CLASSPATH_URL_PREFIX.length)
+            val classLoader = ClassUtils.getDefaultClassLoader()
+            return classLoader.getResource(location)
+                ?: throw FileNotFoundException("class path resource $location cannot be resolved to URL because it does not exist")
+        } else {
+            return toURL(resource)
+        }
+    }
+
+    /**
+     * 将资源路径转换为[URL]
+     *
+     * @param resourceLocation 资源路径
+     * @return URL
+     */
+    @JvmStatic
+    fun toURL(resourceLocation: String): URL {
+        return URL(resourceLocation)
+    }
 
     @JvmStatic
     fun toURI(url: URL): URI = toURI(url.toString())

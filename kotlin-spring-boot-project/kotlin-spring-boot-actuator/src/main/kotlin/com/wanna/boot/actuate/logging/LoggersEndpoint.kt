@@ -40,7 +40,7 @@ open class LoggersEndpoint(private val loggingSystem: LoggingSystem, private val
      * 根据LoggerName/LoggerGroupName, 去获取到该Logger的LogLevel的描述信息
      *
      * @param name loggerName/groupName
-     * @return 该Logger的描述信息
+     * @return 该Logger/LoggerGroup的日志级别的描述信息
      */
     @Nullable
     @ReadOperation
@@ -54,19 +54,20 @@ open class LoggersEndpoint(private val loggingSystem: LoggingSystem, private val
     }
 
     /**
-     * 配置给定的Logger/LoggerGroup的LogLevel
+     * 配置给定的Logger/LoggerGroup的LogLevel, 可以实现运行时修改Logger的日志级别的功能
      *
      * @param name loggerName/groupName
      * @param logLevel 要去进行配置的LogLevel
      */
     @WriteOperation
     open fun configureLogLevel(@Selector name: String, @Nullable logLevel: LogLevel?) {
+        // 先尝试获取LoggerGroup, 如果存在的话, 那么就去设置LoggerGroup的LogLevel
         val loggerGroup = this.loggerGroups.get(name)
         if (loggerGroup != null && loggerGroup.hasMember()) {
             loggerGroup.configureLogLevel(logLevel, this.loggingSystem::setLogLevel)
             return
         }
-        // 设置Logger的LogLevel
+        // 如果不是LoggerGroup的话, 那么直接去设置Logger的LogLevel
         this.loggingSystem.setLogLevel(name, logLevel)
     }
 

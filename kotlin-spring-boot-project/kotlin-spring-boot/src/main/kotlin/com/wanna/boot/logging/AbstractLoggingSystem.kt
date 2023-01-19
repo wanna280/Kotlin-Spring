@@ -23,6 +23,15 @@ import com.wanna.framework.util.StringUtils
  */
 abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSystem() {
 
+    companion object {
+
+        /**
+         * [LoggerConfiguration]的比较器
+         */
+        @JvmStatic
+        val CONFIGURATION_COMPARATOR: Comparator<LoggerConfiguration> = LoggerConfigurationComparator(ROOT_LOGGER_NAME)
+    }
+
 
     /**
      * 执行对于[LoggingSystem]的初始化, 主要是去进行日志组件相关的配置文件的加载
@@ -200,7 +209,7 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
     }
 
     /**
-     * 将[LoggingSystem]的Properties配置信息, 去应用给给定的[LogFile]当中
+     * 将[LoggingSystem]的Properties配置信息和[LogFile]对于日志文件的配置信息, 应用到SystemProperties当中
      *
      * @param environment Environment
      * @param logFile LogFile
