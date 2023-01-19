@@ -3,14 +3,12 @@ package com.wanna.boot.logging.logback
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.LoggerContext
-import com.wanna.boot.logging.AbstractLoggingSystem
-import com.wanna.boot.logging.LogLevel
-import com.wanna.boot.logging.LoggingSystem
-import com.wanna.boot.logging.LoggingSystemFactory
+import com.wanna.boot.logging.*
 import com.wanna.framework.core.Order
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.StringUtils
 import org.slf4j.LoggerFactory
 
 /**
@@ -19,8 +17,10 @@ import org.slf4j.LoggerFactory
  * @author jianchao.jia
  * @version v1.0
  * @date 2023/1/18
+ *
+ * @param classLoader ClassLoader to use
  */
-open class LogbackLoggingSystem(private val classLoader: ClassLoader) : AbstractLoggingSystem() {
+open class LogbackLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSystem(classLoader) {
 
     /**
      * 维护LogLevel与Logback的Level之间的映射关系
@@ -38,6 +38,14 @@ open class LogbackLoggingSystem(private val classLoader: ClassLoader) : Abstract
         logLevels.map(LogLevel.OFF, Level.OFF)
     }
 
+    /**
+     * Logback的标准配置文件的位置
+     *
+     * @return logback的标准配置文件的位置
+     */
+    override fun getStandardConfigLocations(): Array<String> {
+        return arrayOf("logback-test.groovy", "logback-test.xml", "logback.groovy", "logback.xml")
+    }
 
     /**
      * 设置给定loggerName对应的Logger的日志级别
@@ -47,7 +55,65 @@ open class LogbackLoggingSystem(private val classLoader: ClassLoader) : Abstract
      */
     override fun setLogLevel(loggerName: String, logLevel: LogLevel) {
         val logger = getLogger(loggerName)
-        logger.level = logLevels.convertSystemToNative(logLevel)
+        if (logger != null) {
+            logger.level = logLevels.convertSystemToNative(logLevel)
+        }
+    }
+
+    /**
+     * 获取Logback的[LoggingSystem]所支持的[LogLevel]
+     *
+     * @return supported LogLevel
+     */
+    override fun getSupportedLogLevels(): Set<LogLevel> = logLevels.getSupported()
+
+    /**
+     * 获取Logback的所有的Logger的配置信息
+     *
+     * @return 所有的Logger的配置信息
+     */
+    override fun getLoggerConfigurations(): List<LoggerConfiguration> {
+        val result = ArrayList<LoggerConfiguration>()
+        val loggerContext = getLoggerContext()
+        for (logger in loggerContext.loggerList) {
+            result.add(getLoggerConfiguration(logger)!!)
+        }
+        return result
+    }
+
+    /**
+     * 获取到指定的Logger的配置信息
+     *
+     * @param loggerName loggerName
+     * @return 该Logger的配置信息
+     */
+    @Nullable
+    override fun getLoggerConfiguration(loggerName: String): LoggerConfiguration? {
+        val name = getLoggerName(loggerName)
+        val loggerContext = getLoggerContext()
+        return getLoggerConfiguration(loggerContext.exists(name))
+    }
+
+    private fun getLoggerName(name: String): String {
+        if (!StringUtils.hasLength(name) || name == ROOT_LOGGER_NAME) {
+            return ROOT_LOGGER_NAME
+        }
+        return name
+    }
+
+    /**
+     * 获取到给定的Logger的配置信息
+     *
+     * @param logger Logger
+     * @return 该Logger的配置信息
+     */
+    @Nullable
+    private fun getLoggerConfiguration(@Nullable logger: Logger?): LoggerConfiguration? {
+        logger ?: return null
+        return LoggerConfiguration(
+            logger.name, logLevels.convertNativeToSystem(logger.level),
+            logLevels.convertNativeToSystem(logger.effectiveLevel)
+        )
     }
 
     /**
@@ -56,7 +122,8 @@ open class LogbackLoggingSystem(private val classLoader: ClassLoader) : Abstract
      * @param loggerName LoggerName
      * @return Logger
      */
-    private fun getLogger(loggerName: String): Logger {
+    @Nullable
+    private fun getLogger(loggerName: String): Logger? {
         val loggerContext = getLoggerContext()
         return loggerContext.getLogger(loggerName)
     }

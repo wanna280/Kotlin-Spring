@@ -41,7 +41,7 @@ abstract class LoggingSystem {
      * @param configLocation 配置文件路径
      * @param logFile LogFile
      */
-    open fun initialize(context: LoggingInitializationContext, configLocation: String, logFile: LogFile) {}
+    open fun initialize(context: LoggingInitializationContext, @Nullable configLocation: String?, logFile: LogFile) {}
 
     /**
      * 获取当前的[LoggingSystem]所支持的[LogLevel]
@@ -65,7 +65,7 @@ abstract class LoggingSystem {
      *
      * @return Logger的配置信息
      */
-    open fun getLoggerConfigurations(): Set<LoggerConfiguration> {
+    open fun getLoggerConfigurations(): List<LoggerConfiguration> {
         throw UnsupportedOperationException("Unable to get logger configurations")
     }
 
@@ -88,13 +88,12 @@ abstract class LoggingSystem {
          * @see System.getProperty
          */
         @JvmField
-        val SYSTEM_PROPERTY = LoggingSystem::class.java.name
+        val SYSTEM_PROPERTY: String = LoggingSystem::class.java.name
 
         /**
          * Root Logger Name
          */
-        @JvmField
-        val ROOT_LOGGER_NAME = "ROOT"
+        const val ROOT_LOGGER_NAME = "ROOT"
 
         /**
          * 使用NoOp的LoggingSystem实现
@@ -157,7 +156,7 @@ abstract class LoggingSystem {
     private class NoOpLoggingSystem : LoggingSystem() {
         override fun beforeInitialize() {}
         override fun setLogLevel(loggerName: String, logLevel: LogLevel) {}
-        override fun getLoggerConfigurations(): Set<LoggerConfiguration> = emptySet()
+        override fun getLoggerConfigurations(): List<LoggerConfiguration> = emptyList()
         override fun getLoggerConfiguration(loggerName: String): LoggerConfiguration? = null
     }
 }

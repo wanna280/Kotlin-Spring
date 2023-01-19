@@ -10,4 +10,12 @@ import com.wanna.framework.core.environment.ConfigurableEnvironment
  */
 open class LoggingSystemProperties(environment: ConfigurableEnvironment) {
 
+    open fun apply() {
+        apply(null)
+    }
+
+    open fun apply(logFile: LogFile?) {
+
+    }
+
 }
