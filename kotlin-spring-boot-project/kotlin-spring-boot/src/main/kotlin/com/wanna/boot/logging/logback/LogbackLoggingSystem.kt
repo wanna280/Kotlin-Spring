@@ -53,7 +53,7 @@ open class LogbackLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSyste
      * @param logLevel system logLevel
      * @param loggerName loggerName
      */
-    override fun setLogLevel(loggerName: String, logLevel: LogLevel) {
+    override fun setLogLevel(loggerName: String, @Nullable logLevel: LogLevel?) {
         val logger = getLogger(loggerName)
         if (logger != null) {
             logger.level = logLevels.convertSystemToNative(logLevel)
@@ -94,6 +94,24 @@ open class LogbackLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSyste
         return getLoggerConfiguration(loggerContext.exists(name))
     }
 
+    /**
+     * 加载SpringBoot对于Logback的自定义的配置信息的加载
+     *
+     * @param context context
+     * @param logFile LogFile
+     */
+    override fun loadDefaults(context: LoggingInitializationContext, @Nullable logFile: LogFile?) {
+        val loggerContext = getLoggerContext()
+        val config = LogbackConfigurator(loggerContext)
+        DefaultLogbackConfiguration(logFile).apply(config)
+    }
+
+    /**
+     * 针对给定的name去为它获取到对应的LoggerName
+     *
+     * @param name name
+     * @return LoggerName
+     */
     private fun getLoggerName(name: String): String {
         if (!StringUtils.hasLength(name) || name == ROOT_LOGGER_NAME) {
             return ROOT_LOGGER_NAME
@@ -125,7 +143,7 @@ open class LogbackLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSyste
     @Nullable
     private fun getLogger(loggerName: String): Logger? {
         val loggerContext = getLoggerContext()
-        return loggerContext.getLogger(loggerName)
+        return loggerContext.getLogger(getLoggerName(loggerName))
     }
 
     /**

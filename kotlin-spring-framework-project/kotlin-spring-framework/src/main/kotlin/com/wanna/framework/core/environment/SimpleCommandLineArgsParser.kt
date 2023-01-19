@@ -1,12 +1,20 @@
 package com.wanna.framework.core.environment
 
 /**
- * 这是一个简单的CommandLine的Args解析器, 对传递的命令行参数去进行解析
+ * 这是一个简单的命令行参数的解析器的工具类实现, 对传递的命令行参数去进行解析成为[CommandLineArgs]
  *
  * @see CommandLineArgs
+ * @see SimpleCommandLinePropertySource
  */
-class SimpleCommandLineArgsParser {
+object SimpleCommandLineArgsParser {
 
+    /**
+     * 将给定的命令参数, 去进行解析成为[CommandLineArgs]
+     *
+     * @param args 原始的命令行参数列表
+     * @return 解析得到的[CommandLineArgs]
+     */
+    @JvmStatic
     fun parse(vararg args: String): CommandLineArgs {
         val commandLineArgs = CommandLineArgs()
         for (arg in args) {

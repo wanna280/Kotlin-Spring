@@ -79,6 +79,7 @@ abstract class AbstractPropertyResolver : ConfigurablePropertyResolver {
 
     override fun containsProperty(key: String): Boolean = getProperty(key) != null
 
+    @Nullable
     override fun getProperty(key: String): String? = getProperty(key, String::class.java)
 
     override fun getProperty(key: String, defaultValue: String): String = getProperty(key) ?: defaultValue
@@ -90,10 +91,12 @@ abstract class AbstractPropertyResolver : ConfigurablePropertyResolver {
         getProperty(key) ?: throw IllegalStateException("无法找到属性值[key=$key], 最终解析到的结果为null")
 
     override fun <T : Any> getRequiredProperty(key: String, requiredType: Class<T>): T =
-        getProperty(key, requiredType) ?: throw IllegalStateException("无法找到属性值[key=$key], 最终解析到的结果为null")
+        getProperty(key, requiredType)
+            ?: throw IllegalStateException("无法找到属性值[key=$key], 最终解析到的结果为null")
 
     override fun resolveRequiredPlaceholders(text: String): String =
-        resolvePlaceholders(text) ?: throw IllegalStateException("无法找到解析占位符text=$text], 最终解析到的结果为null")
+        resolvePlaceholders(text)
+            ?: throw IllegalStateException("无法找到解析占位符text=$text], 最终解析到的结果为null")
 
     override fun resolvePlaceholders(text: String): String? {
         return placeholderHelper.replacePlaceholder(text, this::getPropertyAsRawString)

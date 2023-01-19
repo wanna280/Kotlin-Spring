@@ -11,6 +11,7 @@ import com.wanna.framework.core.environment.EnvironmentCapable
 import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
+import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 
 /**
@@ -79,7 +80,7 @@ open class ConditionEvaluator(
     private fun getCondition(conditionClassName: String, classLoader: ClassLoader?): Condition {
         val classLoaderToUse = classLoader ?: ClassUtils.getDefaultClassLoader()
         val conditionClass = ClassUtils.forName<Condition>(conditionClassName, classLoaderToUse)
-        return ClassUtils.newInstance(conditionClass)
+        return BeanUtils.instantiateClass(conditionClass)
     }
 
     /**

@@ -30,6 +30,18 @@ abstract class LoggingSystem {
     }
 
     /**
+     * 获取到应用程序关闭的ShutdownHandler
+     *
+     * @return ShutdownHandler Runnable
+     */
+    open fun getShutdownHandler(): Runnable? = null
+
+    /**
+     * 清理当前[LoggingSystem]
+     */
+    open fun cleanUp() {}
+
+    /**
      * 在初始化之前, 需要去做的相关工作, 会在[initialize]方法执行之前被回调
      */
     open fun beforeInitialize() {}
@@ -41,7 +53,12 @@ abstract class LoggingSystem {
      * @param configLocation 配置文件路径
      * @param logFile LogFile
      */
-    open fun initialize(context: LoggingInitializationContext, @Nullable configLocation: String?, logFile: LogFile) {}
+    open fun initialize(
+        context: LoggingInitializationContext,
+        @Nullable configLocation: String?,
+        @Nullable logFile: LogFile?
+    ) {
+    }
 
     /**
      * 获取当前的[LoggingSystem]所支持的[LogLevel]
@@ -56,7 +73,7 @@ abstract class LoggingSystem {
      * @param loggerName 要去修改日志级别的Logger
      * @param logLevel 要去使用的日志级别
      */
-    open fun setLogLevel(loggerName: String, logLevel: LogLevel) {
+    open fun setLogLevel(loggerName: String, @Nullable logLevel: LogLevel?) {
         throw UnsupportedOperationException("Unable to set log level")
     }
 
@@ -155,8 +172,10 @@ abstract class LoggingSystem {
      */
     private class NoOpLoggingSystem : LoggingSystem() {
         override fun beforeInitialize() {}
-        override fun setLogLevel(loggerName: String, logLevel: LogLevel) {}
+        override fun setLogLevel(loggerName: String, @Nullable logLevel: LogLevel?) {}
         override fun getLoggerConfigurations(): List<LoggerConfiguration> = emptyList()
+
+        @Nullable
         override fun getLoggerConfiguration(loggerName: String): LoggerConfiguration? = null
     }
 }

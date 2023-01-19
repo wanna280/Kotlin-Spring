@@ -277,7 +277,7 @@ object ClassUtils {
     /**
      * 获取一个短的类名, 也就是一个类的去掉包名之后的类名
      * 比如：
-     * * 1."com.wanna.User"会被转换为"User", 
+     * * 1."com.wanna.User"会被转换为"User",
      * * 2."com.wanna.User$Default"会被转换为"User$Default"
      *
      * @param clazz 想要获取短类名的clazz
@@ -289,7 +289,7 @@ object ClassUtils {
     /**
      * 获取一个短的类名, 也就是一个类的去掉包名之后的类名
      * 比如：
-     * * 1."com.wanna.User"会被转换为"User", 
+     * * 1."com.wanna.User"会被转换为"User",
      * * 2."com.wanna.User$Default"会被转换为"User$Default"
      *
      * @param clazzName 想要获取短类名的className
@@ -511,17 +511,6 @@ object ClassUtils {
         } catch (ex: ClassNotFoundException) {
             return false
         }
-    }
-
-    /**
-     * 使用指定的类的无参数构造器去实例化一个对象
-     *
-     * @param clazz 想要去进行实例化的类
-     * @return 实例化完成的Java对象
-     */
-    @JvmStatic
-    fun <T> newInstance(clazz: Class<T>): T {
-        return clazz.getDeclaredConstructor().newInstance()
     }
 
     /**

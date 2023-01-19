@@ -13,4 +13,5 @@ com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
   com.wanna.boot.actuate.autoconfigure.metrics.MetricsEndpointAutoConfiguration,\
   com.wanna.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration,\
   com.wanna.boot.actuate.autoconfigure.web.mappings.mvc.MappingsEndpointAutoConfiguration,\
-  com.wanna.boot.actuate.autoconfigure.metrics.tasks.TaskExecutorMetricsAutoConfiguration
+  com.wanna.boot.actuate.autoconfigure.metrics.tasks.TaskExecutorMetricsAutoConfiguration,\
+  com.wanna.boot.actuate.autoconfigure.logging.LoggersEndpointAutoConfiguration

@@ -7,18 +7,34 @@ import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
 
 /**
+ * 为[LoggingSystem]提供了抽象的实现, 提供了对于为日志组件去提供日志文件的加载的相关的功能支持;
+ *
+ * * 1.如果自己指定了配置文件的路径, 将会按照"logging.config"配置的配置文件路径去进行加载配置文件
+ * * 2.如果没有指定配置文件的路径的话, 那么将会按照如下的顺序尝试去进行加载:
+ *      * 2.1 按照日志组件默认的配置文件去进行加载, 例如"logback.xml";
+ *      * 2.2 按照Spring自定义的配置文件去进行加载, 例如"logback-spring.xml";
+ *      * 2.3 按照SpringBoot自定义的默认的配置信息去进行加载.
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2023/1/18
+ *
+ * @param classLoader ClassLoader to use
  */
 abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSystem() {
 
 
+    /**
+     * 执行对于[LoggingSystem]的初始化, 主要是去进行日志组件相关的配置文件的加载
+     *
+     * @param context context
+     * @param configLocation 配置文件的所在位置
+     * @param logFile LogFile
+     */
     override fun initialize(
         context: LoggingInitializationContext,
         @Nullable configLocation: String?,
-        logFile: LogFile
+        @Nullable logFile: LogFile?
     ) {
         // 如果手动指定了配置文件的位置的话, 那么使用指定的配置文件
         if (StringUtils.hasLength(configLocation)) {
@@ -31,7 +47,7 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
     }
 
     /**
-     * 使用特定的配置文件去完成初始化
+     * 如果明确给定了日志文件的话, 那么使用给定的配置文件去完成初始化
      *
      * @param context context
      * @param configLocation 配置文件的路径
@@ -40,34 +56,49 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
     private fun initializeWithSpecificConfig(
         context: LoggingInitializationContext,
         configLocation: String,
-        logFile: LogFile
+        @Nullable logFile: LogFile?
     ) {
         loadConfiguration(context, configLocation, logFile)
     }
 
     /**
-     * 使用约定的配置文件, 去完成初始化
+     * 如果没有明确给定日志文件的话, 那么应该使用约定的配置文件, 去完成初始化
      *
      * @param context context
      * @param logFile logFile
      */
     private fun initializeWithConventions(context: LoggingInitializationContext, @Nullable logFile: LogFile?) {
+        // 1.先尝试去加载日志组件自身的默认配置文件
         var config = getSelfInitializationConfig()
         if (config != null && logFile == null) {
-            // 如果之前, 自我初始化已经完成了, 那么尝试去进行重新初始化, 因为有可能属性发生了变化
+            // 如果这里可以加载到配置问价, 说明日志组件在之前就自我初始化已经完成了,
+            // 那么需要尝试去进行重新初始化, 因为有可能属性发生了变化
             reinitialize(context)
             return
         }
+
+        // 2. 如果没有加载到默认的日志组件的配置文件, 那么尝试去加载Spring的配置文件
         if (config == null) {
             config = getSpringInitializationConfig()
         }
+
+        // 3.如果加载到了Spring的配置文件, 那么需要去进行配置文件的加载
         if (config != null) {
             loadConfiguration(context, config, logFile)
             return
         }
+
+        // 4.如果仍然没有加载到配置文件, 那么尝试去加载SpringBoot去定义的默认的配置信息...
         loadDefaults(context, logFile)
     }
 
+    /**
+     * 加载配置文件
+     *
+     * @param context context
+     * @param configLocation 配置文件的路径
+     * @param logFile logFile
+     */
     protected open fun loadConfiguration(
         context: LoggingInitializationContext,
         configLocation: String,
@@ -76,10 +107,21 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
 
     }
 
+    /**
+     * 如果没有找到日志组件的配置文件的话, 那么尝试去加载SpringBoot去定义的默认的配置信息
+     *
+     * @param context context
+     * @param logFile LogFile
+     */
     protected open fun loadDefaults(context: LoggingInitializationContext, @Nullable logFile: LogFile?) {
 
     }
 
+    /**
+     * 如果在初始化之前就已经完成了日志组件的初始化了, 那么需要尝试去进行重新初始化, 因为很可能很多配置信息已经发生了变更
+     *
+     * @param context context
+     */
     protected open fun reinitialize(context: LoggingInitializationContext) {
 
     }
@@ -138,7 +180,7 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
             val extension = StringUtils.getFilenameExtension(locations[index])
                 ?: throw IllegalStateException("file extension name not exists, path=${locations[index]}")
             locations[index] =
-                locations[index].substring(0, locations[0].length - extension.length - 1) + "-spring." + extension
+                locations[index].substring(0, locations[index].length - extension.length - 1) + "-spring." + extension
         }
         return locations
     }
@@ -183,12 +225,16 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
             nativeToSystem[nativeLevel] = systemLevel
         }
 
-        fun convertNativeToSystem(nativeLevel: T): LogLevel {
-            return nativeToSystem[nativeLevel] ?: throw IllegalStateException("no such native level")
+        @Nullable
+        fun convertNativeToSystem(nativeLevel: T?): LogLevel? {
+            nativeLevel ?: return null
+            return nativeToSystem[nativeLevel]
         }
 
-        fun convertSystemToNative(systemLevel: LogLevel): T {
-            return systemToNative[systemLevel] ?: throw IllegalStateException("no such system level")
+        @Nullable
+        fun convertSystemToNative(systemLevel: LogLevel?): T? {
+            systemLevel ?: return null
+            return systemToNative[systemLevel]
         }
 
         fun getSupported(): Set<LogLevel> = systemToNative.keys.toSet()
