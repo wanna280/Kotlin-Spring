@@ -11,7 +11,7 @@ import com.wanna.framework.lang.Nullable
  *
  * @param name loggerName
  * @param configuredLevel 被配置的LogLevel
- * @param effectiveLevel 有效的LogLevel
+ * @param effectiveLevel 有效的LogLevel(如果没有被配置LogLevel, 将会继承它的parent Logger的LogLevel)
  */
 data class LoggerConfiguration(
     val name: String,

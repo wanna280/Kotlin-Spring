@@ -3,13 +3,16 @@ package com.wanna.boot.logging.logback
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.LoggerContext
+import ch.qos.logback.classic.util.ContextInitializer
 import com.wanna.boot.logging.*
 import com.wanna.framework.core.Order
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.ResourceUtils
 import com.wanna.framework.util.StringUtils
 import org.slf4j.LoggerFactory
+import java.net.URL
 
 /**
  * 基于Logback日志组件的[LoggingSystem]实现
@@ -53,7 +56,7 @@ open class LogbackLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSyste
     /**
      * 设置给定loggerName对应的Logger的日志级别
      *
-     * @param logLevel system logLevel
+     * @param logLevel system logLevel to set
      * @param loggerName loggerName
      */
     override fun setLogLevel(loggerName: String, @Nullable logLevel: LogLevel?) {
@@ -66,7 +69,7 @@ open class LogbackLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSyste
     /**
      * 获取Logback的[LoggingSystem]所支持的[LogLevel]
      *
-     * @return supported LogLevel
+     * @return supported LogLevels
      */
     override fun getSupportedLogLevels(): Set<LogLevel> = LEVELS.getSupported()
 
@@ -112,6 +115,61 @@ open class LogbackLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSyste
         LogbackLoggingSystemProperties(context.environment, loggerContext::putProperty).apply(logFile)
 
         DefaultLogbackConfiguration(logFile).apply(config)
+    }
+
+    /**
+     * 执行加载Logback的配置文件
+     *
+     * @param context context
+     * @param configLocation 要去进行加载的配置文件路径
+     * @param logFile LogFile(日志文件的路径/文件名)
+     */
+    override fun loadConfiguration(
+        context: LoggingInitializationContext,
+        configLocation: String,
+        @Nullable logFile: LogFile?
+    ) {
+        // 将Environment当中对于Logger的相关配置信息, 去应用到SystemProperties当中去...
+        applySystemProperties(context.environment, logFile)
+
+        val loggerContext = getLoggerContext()
+        // stop and reset Logback LoggerContext
+        stopAndReset(loggerContext)
+        try {
+            configureByResourceUrl(context, loggerContext, ResourceUtils.getURL(configLocation))
+        } catch (ex: Exception) {
+            throw IllegalStateException("Could not initialize Logback logging from $configLocation", ex)
+        }
+    }
+
+    /**
+     * 关闭之前的Logback的[LoggerContext]并进行重设, 在这里会去reset所有的Logger信息
+     *
+     * @param loggerContext LoggerContext
+     */
+    private fun stopAndReset(loggerContext: LoggerContext) {
+        loggerContext.stop()
+        loggerContext.reset()
+    }
+
+    /**
+     * 根据配置文件的ResourceURL, 去对[LoggerContext]去进行配置
+     *
+     * @param context context
+     * @param loggerContext LoggerContext
+     * @param url Logback的配置文件所在的资源URL
+     */
+    private fun configureByResourceUrl(context: LoggingInitializationContext, loggerContext: LoggerContext, url: URL) {
+        // 如果是XML的话, 那么走SpringBoot自定义的JoranConfigurator
+        if (url.toString().endsWith("xml")) {
+            val configurator = SpringBootJoranConfigurator(context)
+            configurator.context = loggerContext
+            configurator.doConfigure(url)
+
+            // 如果不是XML的话, 那么走Logback的ContextInitializer的configure逻辑去丢出来异常...
+        } else {
+            ContextInitializer(loggerContext).configureByResource(url)
+        }
     }
 
     /**
