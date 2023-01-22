@@ -1,5 +1,6 @@
 package com.wanna.boot.logging
 
+import com.wanna.boot.logging.java.JavaLoggingSystem
 import com.wanna.boot.logging.logback.LogbackLoggingSystem
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.lang.Nullable
@@ -16,6 +17,7 @@ import java.util.*
  * @version v1.0
  * @date 2023/1/18
  *
+ * @see JavaLoggingSystem
  * @see LogbackLoggingSystem
  */
 abstract class LoggingSystem {

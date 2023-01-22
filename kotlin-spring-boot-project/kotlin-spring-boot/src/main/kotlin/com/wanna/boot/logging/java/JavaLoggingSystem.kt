@@ -28,7 +28,7 @@ open class JavaLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSystem(c
 
     companion object {
         /**
-         * 维护LogLevel与Logback的Level之间的映射关系
+         * 维护LogLevel与JUL Logger之间的日志级别的Level之间的映射关系
          */
         @JvmStatic
         private val LEVELS = LogLevels<Level>()

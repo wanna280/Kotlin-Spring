@@ -15,9 +15,10 @@ import javax.annotation.Nullable
  * @date 2023/1/20
  *
  * @param environment Environment
+ * @param setter 对于Logger相关的属性值, 需要被设置到哪里? 不指定时, 是将它去设置到SystemProperties当中去
  */
 open class LogbackLoggingSystemProperties(environment: ConfigurableEnvironment, setter: BiConsumer<String, String?>) :
-    LoggingSystemProperties(environment) {
+    LoggingSystemProperties(environment, setter) {
 
     override fun apply(@Nullable logFile: LogFile?, propertyResolver: PropertyResolver) {
         super.apply(logFile, propertyResolver)

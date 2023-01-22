@@ -1,11 +1,10 @@
 package com.wanna.boot.env
 
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.core.environment.PropertySource
 import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.io.support.PropertiesLoaderUtils
-import com.wanna.common.logging.Logger
-import com.wanna.common.logging.LoggerFactory
-import java.util.Collections
+import java.util.*
 
 /**
  * 这是一个Properties的PropertySourceLoader, 主要负责去使用Jdk提供的Properties去加载".properties"配置文件信息
@@ -20,11 +19,11 @@ open class PropertiesPropertySourceLoader : PropertySourceLoader {
          * Logger
          */
         @JvmStatic
-        private val logger: Logger = LoggerFactory.getLogger(PropertiesPropertySourceLoader::class.java)
+        private val logger = LoggerFactory.getLogger(PropertiesPropertySourceLoader::class.java)
     }
 
     /**
-     * 支持去处理properties和xml的文件扩展名
+     * 获取到支持去进行处理的配置文件的扩展名, 当前[PropertySourceLoader]支持去处理properties和xml的文件扩展名
      *
      * @return "xml" and "properties"
      */
@@ -33,9 +32,9 @@ open class PropertiesPropertySourceLoader : PropertySourceLoader {
     /**
      * 执行对于".properties"配置文件的加载, 并将配置文件去加载得到PropertySource列表
      *
-     * @param name name
-     * @param resource 要去进行加载的Resource资源
-     * @return 加载Resource得到的PropertySource列表
+     * @param name PropertySource name
+     * @param resource 资源[Resource]
+     * @return 根据给定的[Resource]去加载得到的的PropertySource列表
      */
     @Suppress("UNCHECKED_CAST")
     override fun load(name: String, resource: Resource): List<PropertySource<*>> {

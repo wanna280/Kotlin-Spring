@@ -212,7 +212,7 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
      * 将[LoggingSystem]的Properties配置信息和[LogFile]对于日志文件的配置信息, 应用到SystemProperties当中
      *
      * @param environment Environment
-     * @param logFile LogFile
+     * @param logFile LogFile(日志文件的路径/文件名)
      */
     protected fun applySystemProperties(environment: ConfigurableEnvironment, @Nullable logFile: LogFile?) {
         LoggingSystemProperties(environment).apply(logFile)
