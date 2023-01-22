@@ -58,7 +58,7 @@ IDEA底层就是使用的 Kotlin去进行开发的.
 * kotlin-spring-boot-gradle-plugin, 提供对于spring-boot的Gradle打包插件.(待完成)
 * kotlin-spring-boot-test, 整合kotlin-spring-test, 为spring-boot的测试实现提供支持.
 
-### 1.2.3 kotlin-spring-cloud-project,
+### 1.2.3 kotlin-spring-cloud-project
 
 这一部分主要提供spring-cloud相关功能的模块.
 
@@ -79,7 +79,7 @@ IDEA底层就是使用的 Kotlin去进行开发的.
 这一部分主要提供spring整合别的第三方的实现.
 
 * kotlin-spring-shell, 基于spring去实现Shell命令行工具, 去处理相关命令.
-* kotlin-spring-mybatis, 将mybatis整合到当前的spring工程当中, 提供数据访问.
+* kotlin-spring-mybatis, 将mybatis整合到当前的spring工程当中, 提供DAO层的数据访问.
 * kotlin-nacos, 基于spring-boot去实现mini的nacos(待完成).
     * kotlin-nacos-naming-server, 实现nacos的服务的注册与发现.
     * kotlin-nacos-config-server, 实现nacos的配置中心的相关功能.
