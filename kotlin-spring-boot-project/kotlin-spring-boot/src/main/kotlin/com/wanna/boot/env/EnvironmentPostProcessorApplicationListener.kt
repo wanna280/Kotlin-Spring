@@ -10,6 +10,8 @@ import com.wanna.framework.util.ClassUtils
 
 /**
  * 这是一个环境的ApplicationListener, 它支持在SpringApplication启动当中, 对环境的相关事件去进行处理
+ *
+ * @see ApplicationEnvironmentPreparedEvent
  */
 open class EnvironmentPostProcessorApplicationListener : SmartApplicationListener {
     override fun onApplicationEvent(event: ApplicationEvent) {
