@@ -17,23 +17,39 @@ open class PathPatternsRequestCondition(private val patterns: Set<PathPattern>) 
     override fun getContent() = patterns
     override fun getToStringInfix() = " && "
 
+    /**
+     * 联合别的[PathPatternsRequestCondition], 将该path去添加到当前的[PathPatternsRequestCondition]之后,
+     * 通常情况下this为类上的path, other为方法上的path
+     *
+     * @param other other path patterns
+     * @return combined path patterns condition
+     */
     override fun combine(other: PathPatternsRequestCondition): PathPatternsRequestCondition {
+        // 如果other为空, 那么直接return this即可
         if (other.isEmpty()) {
             return this
         }
-        val paths = HashSet<String>()
-        other.paths.forEach { o -> this.paths.forEach { paths += "$o$it" } }
+        val patterns = LinkedHashSet<PathPattern>()
 
-        // bugfix: 如果方法上的@RequestMapping上没有配置路径的话, 那么我们需要沿用类上的@RequestMapping的路径
-        // 这里this为方法上的Mapping, other类上是Mapping
+        // 如果其中一个的path为空, 那么返回另外一个的path...
         if (this.paths.isEmpty()) {
-            paths += other.paths
+            patterns += other.patterns
+        } else if (other.paths.isEmpty()) {
+            patterns += this.patterns
+
+            // 如果两者都不为空, 那么叉乘去生成combine的path...
+        } else {
+            for (pattern in this.patterns) {
+                for (otherPattern in other.patterns) {
+                    patterns += pattern.combine(otherPattern)
+                }
+            }
         }
-        return PathPatternsRequestCondition(*paths.toTypedArray())
+        return PathPatternsRequestCondition(patterns)
     }
 
     /**
-     * 获取匹配的结果, 我们使用AntMatcher去进行路径的匹配; 
+     * 获取匹配的结果, 我们使用AntMatcher去进行路径的匹配;
      *
      * @return 如果给定的request的路径合法的话, return this; 不合法的话, return null
      */

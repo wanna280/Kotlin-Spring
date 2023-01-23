@@ -43,6 +43,7 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
     /**
      * beanName of this HandlerMapping
      */
+    @Nullable
     private var beanName: String? = null
 
     /**
@@ -88,8 +89,13 @@ abstract class AbstractHandlerMapping : HandlerMapping, Ordered, BeanNameAware, 
     @Nullable
     override fun getHandler(request: HttpServerRequest): HandlerExecutionChain? {
         // 1.尝试去寻找Handler, 如果没有合适的Handler的话, 采用默认的Handler, 如果也没有的话, return null
-        var handler = getHandlerInternal(request) ?: getDefaultHandler() ?: return null
-        // 如果返回的Handler是String, 那么去进行getBean
+        var handler = getHandlerInternal(request)
+        if (handler == null) {
+            handler = getDefaultHandler()
+        }
+        handler ?: return null
+
+        // 如果返回的Handler是String, 那么把它作为beanName, 从ApplicationContext当中去进行getBean
         handler = if (handler is String) obtainApplicationContext().getBean(handler) else handler
 
         // 获取HandlerExecutionChain(HandlerInterceptors & Handler)
