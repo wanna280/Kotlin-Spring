@@ -11,6 +11,6 @@ dependencies {
 
     // for Test
     testImplementation(project(":kotlin-logger:logger-slf4j-impl"))
-    testImplementation("com.alibaba:druid:1.2.10")
-    testImplementation("mysql:mysql-connector-java:8.0.29")
+    testImplementation("com.alibaba:druid:$druidVersion")
+    testImplementation("mysql:mysql-connector-java:$mysqlVersion")
 }
