@@ -6,7 +6,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.function.Function
 
 /**
- * 支持并发访问的LRU Cache, 基于[ConcurrentHashMap]去维护缓存, 基于[ConcurrentLinkedDeque]去维护访问顺序
+ * 支持并发访问的LRU Cache, 基于[ConcurrentHashMap]去维护缓存, 基于[ConcurrentLinkedDeque]去维护访问顺序;
+ *
+ * Caffeine Cache的作者在Github当中开源了一个性能比较好的ConcurrentLinkedHashMap
  *
  * @author jianchao.jia
  * @version v1.0
@@ -14,6 +16,8 @@ import java.util.function.Function
  *
  * @param sizeLimit 缓存的最大Size限制
  * @param generator 对于给定的Key, 如何去进行Value的生成
+ *
+ * @see [ConcurrentLinkedHashMap](https://github.com/ben-manes/concurrentlinkedhashmap)
  */
 open class ConcurrentLruCache<K : Any, V : Any>(val sizeLimit: Int, private val generator: Function<K, V>) {
 
