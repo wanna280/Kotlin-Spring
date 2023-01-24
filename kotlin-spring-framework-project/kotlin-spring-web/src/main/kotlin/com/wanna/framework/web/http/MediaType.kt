@@ -1,6 +1,8 @@
 package com.wanna.framework.web.http
 
-import org.springframework.util.*
+import com.wanna.framework.util.StringUtils
+import org.springframework.util.MimeType
+import org.springframework.util.MimeTypeUtils
 import java.io.Serializable
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
@@ -29,8 +31,10 @@ class MediaType : MimeType, Serializable {
         super.checkParameters(parameter, value0)
         if (PARAM_QUALITY_FACTOR == parameter) {
             value0 = unquote(value0)
-            val d = value.toDouble()
-            Assert.isTrue(d in 0.0..1.0, "Invalid quality value \"$value\": should be between 0.0 and 1.0")
+            val d = value0.toDouble()
+            if (d !in 0.0..1.0) {
+                throw IllegalStateException("Invalid quality value \"$value0\": should be between 0.0 and 1.0")
+            }
         }
     }
 
@@ -133,16 +137,8 @@ class MediaType : MimeType, Serializable {
         }
 
         fun parseMediaType(mediaType: String): MediaType {
-            val type: MimeType = try {
-                MimeTypeUtils.parseMimeType(mediaType)
-            } catch (ex: InvalidMimeTypeException) {
-                throw RuntimeException()
-            }
-            return try {
-                MediaType(type)
-            } catch (ex: IllegalArgumentException) {
-                throw IllegalArgumentException()
-            }
+            val type: MimeType = MimeTypeUtils.parseMimeType(mediaType)
+            return MediaType(type)
         }
 
         fun parseMediaTypes(mediaTypes: String?): List<MediaType> {
@@ -161,7 +157,7 @@ class MediaType : MimeType, Serializable {
         }
 
         fun parseMediaTypes(mediaTypes: List<String>): List<MediaType> {
-            return if (CollectionUtils.isEmpty(mediaTypes)) {
+            return if (mediaTypes.isEmpty()) {
                 emptyList()
             } else if (mediaTypes.size == 1) {
                 parseMediaTypes(mediaTypes[0])
@@ -198,15 +194,13 @@ class MediaType : MimeType, Serializable {
             }
         }
 
-        fun sortByQualityValue(mediaTypes: List<MediaType?>) {
-            Assert.notNull(mediaTypes, "'mediaTypes' must not be null")
+        fun sortByQualityValue(mediaTypes: List<MediaType>) {
             if (mediaTypes.size > 1) {
                 mediaTypes.sortedWith(QUALITY_VALUE_COMPARATOR)
             }
         }
 
-        fun sortBySpecificityAndQuality(mediaTypes: List<MediaType?>) {
-            Assert.notNull(mediaTypes, "'mediaTypes' must not be null")
+        fun sortBySpecificityAndQuality(mediaTypes: List<MediaType>) {
             if (mediaTypes.size > 1) {
                 mediaTypes.sortedWith(SPECIFICITY_COMPARATOR.thenComparing(QUALITY_VALUE_COMPARATOR))
             }
