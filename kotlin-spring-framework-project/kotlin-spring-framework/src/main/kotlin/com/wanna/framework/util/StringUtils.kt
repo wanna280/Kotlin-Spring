@@ -2,6 +2,8 @@ package com.wanna.framework.util
 
 import com.wanna.framework.lang.Nullable
 import java.beans.Introspector
+import java.util.*
+import kotlin.collections.ArrayDeque
 
 /**
  * 这是一个String的工具类
@@ -150,6 +152,40 @@ object StringUtils {
     }
 
     /**
+     * 将字符串, 按照给定分隔符去分隔成为列表
+     *
+     * @param str 待拆分的字符串
+     * @param delimiters 字符串分隔符
+     * @param trimTokens 是否需要将拆分之后的元素去进行trim
+     * @param ignoreEmptyTokens 是否需要忽略空字符串的元素?
+     * @return 拆分之后得到的结果
+     *
+     * @see StringTokenizer
+     */
+    @JvmStatic
+    fun tokenizeToStringArray(
+        @Nullable str: String?,
+        delimiters: String,
+        trimTokens: Boolean,
+        ignoreEmptyTokens: Boolean
+    ): Array<String> {
+        str ?: return emptyArray()
+
+        val tokenizer = StringTokenizer(str, delimiters)
+        val tokens = ArrayList<String>()
+        while (tokenizer.hasMoreTokens()) {
+            var token = tokenizer.nextToken()
+            if (trimTokens) {
+                token = token.trim()
+            }
+            if (!ignoreEmptyTokens || token.isNotEmpty()) {
+                tokens += token
+            }
+        }
+        return tokens.toTypedArray()
+    }
+
+    /**
      * 获取干净的path
      *
      * @param path path
@@ -214,9 +250,9 @@ object StringUtils {
             }
         }
 
-        // 如果path当中没有".", 也没有"..", 那么直接return
+        // 如果path当中没有".", 也没有"..", 那么直接return normalizedPath...
         if (pathArray.size == pathElements.size) {
-            return pathToUse
+            return normalizedPath
         }
 
         // 将给定的".."全部添加到最前面去

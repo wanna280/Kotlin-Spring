@@ -1,7 +1,8 @@
 package com.wanna.nacos.config.test.server
 
+import com.wanna.boot.autoconfigure.SpringBootApplication
 import com.wanna.boot.runSpringApplication
-import com.wanna.nacos.config.server.NacosConfigServer
+import com.wanna.framework.context.annotation.ComponentScan
 
 /**
  *
@@ -9,6 +10,12 @@ import com.wanna.nacos.config.server.NacosConfigServer
  * @version v1.0
  * @date 2023/1/16
  */
+@SpringBootApplication
+@ComponentScan(["com.google"])
+class AppTest {
+
+}
+
 fun main() {
-    runSpringApplication<NacosConfigServer>()
+    runSpringApplication<AppTest>()
 }

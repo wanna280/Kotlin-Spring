@@ -25,7 +25,7 @@ open class BeansEndpoint(private val context: ConfigurableApplicationContext) {
         val contexts = HashMap<String, ContextBeans>()
         var context: ConfigurableApplicationContext? = this.context
         while (context != null) {
-            contexts[context.getId() ?: ""] = ContextBeans.describing(context)
+            contexts[context.getId()] = ContextBeans.describing(context)
             val parent = context.getParent()
             context = if (parent is ConfigurableApplicationContext) parent else null
         }

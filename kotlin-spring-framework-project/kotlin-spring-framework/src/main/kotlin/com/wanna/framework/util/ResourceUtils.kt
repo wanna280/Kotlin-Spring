@@ -31,6 +31,21 @@ object ResourceUtils {
      */
     const val URL_PROTOCOL_FILE = "file"
 
+    /**
+     * 类型为"jar"的URL协议
+     */
+    const val URL_PROTOCOL_JAR = "jar"
+
+    /**
+     * 类型为"war"的URL协议
+     */
+    const val URL_PROTOCOL_WAR = "war"
+
+    /**
+     * 类型为"zip"的URL协议
+     */
+    const val URL_PROTOCOL_ZIP = "zip"
+
 
     /**
      * 获取到给定的资源路径的URL
@@ -120,4 +135,32 @@ object ResourceUtils {
     fun isFileURL(url: URL): Boolean {
         return Objects.equals(url.protocol, URL_PROTOCOL_FILE)
     }
+
+    /**
+     * 判断给定的资源URL是否是一个Jar的URL? (对于"jar"/"war"/"zip"都算)
+     *
+     * @param url 资源url
+     * @return 如果给定的资源URL它是在一个Jar包内, 那么return true; 否则return false
+     */
+    @JvmStatic
+    fun isJarURL(url: URL): Boolean {
+        return url.protocol == URL_PROTOCOL_WAR
+                || url.protocol == URL_PROTOCOL_JAR
+                || url.protocol == URL_PROTOCOL_ZIP
+    }
+
+    /**
+     * 根据给定的root作为基础URL, 去创建一个[relativePath]作为偏移的URL
+     *
+     * @param root 基础root URL
+     * @param relativePath 相对偏移路径
+     * @return 生成的相对偏移的路径
+     */
+    @JvmStatic
+    fun createRelative(root: URL, relativePath: String): URL {
+        // # can appear in filenames, java.net.URL should not treat it as a fragment
+        val subPath = StringUtils.replace(relativePath, "#", "%23")
+        return URL(root, subPath)
+    }
+
 }

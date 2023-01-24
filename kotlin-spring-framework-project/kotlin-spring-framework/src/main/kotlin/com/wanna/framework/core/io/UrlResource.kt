@@ -1,6 +1,7 @@
 package com.wanna.framework.core.io
 
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ResourceUtils
 import java.io.IOException
 import java.io.InputStream
 import java.net.HttpURLConnection
@@ -14,11 +15,16 @@ import java.net.URL
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/10/1
+ *
+ * @see uri
  */
-open class UrlResource(private var url: URL?, private var uri: URI?) : AbstractFileResolvingResource() {
-    constructor(url: URL?) : this(url, null)
+open class UrlResource(
+    @Nullable private var url: URL?,
+    @Nullable private var uri: URI?
+) : AbstractFileResolvingResource() {
+    constructor(@Nullable url: URL?) : this(url, null)
 
-    constructor(uri: URI?) : this(uri?.toURL(), uri)
+    constructor(@Nullable uri: URI?) : this(uri?.toURL(), uri)
 
     /**
      * 给定一个path去构建URL并构建出来URLResource
@@ -57,6 +63,31 @@ open class UrlResource(private var url: URL?, private var uri: URI?) : AbstractF
             }
             throw ex
         }
+    }
+
+    /**
+     * 创建一个基于当前Resource的相对路径下的资源
+     *
+     * @param relativePath 相对当前资源的路径
+     * @return 根据相对路径解析到的资源
+     * @throws IOException 如果根据该相对路径无法解析到资源的话
+     */
+    override fun createRelative(relativePath: String): Resource {
+        return UrlResource(createRelativeURL(relativePath))
+    }
+
+    /**
+     * 基于当前Resource的URL, 创建一个相对路径的URL
+     *
+     * @param relativePath 相对路径
+     * @return 解析得到的相对于当前的URL
+     */
+    protected open fun createRelativeURL(relativePath: String): URL {
+        var relativePathToUse = relativePath
+        if (relativePathToUse.startsWith("/")) {
+            relativePathToUse = relativePathToUse.substring(1)
+        }
+        return ResourceUtils.createRelative(this.getURL(), relativePathToUse)
     }
 
     /**

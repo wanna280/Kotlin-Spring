@@ -23,8 +23,7 @@ open class PathPattern(pattern: String, private val antMatcher: AntPathMatcher =
      * @param path 要提取的路径
      * @return 模板参数Map<String,String>
      */
-    @Nullable
-    open fun extractUriTemplateVariables(path: String): Map<String, String>? {
+    open fun extractUriTemplateVariables(path: String): Map<String, String> {
         return antMatcher.extractUriTemplateVariables(pattern, path)
     }
 
