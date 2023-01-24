@@ -1,8 +1,8 @@
 package com.wanna.framework.web.http
 
+import com.wanna.framework.util.MimeType
+import com.wanna.framework.util.MimeTypeUtils
 import com.wanna.framework.util.StringUtils
-import org.springframework.util.MimeType
-import org.springframework.util.MimeTypeUtils
 import java.io.Serializable
 import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
