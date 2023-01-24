@@ -201,8 +201,9 @@ open class AntPathMatcher(@Nullable pathSeparator: String? = null) : PathMatcher
             return true
         }
 
-        // ----------第二遍匹配, 从后往前匹配...
+        // Note: 当来到这里的时候, patternDirs[patternIdxStart]一定为"**"(对于别的情况, 在之前都已经返回了...)
 
+        // ----------第二遍匹配, 从后往前匹配...
         while (pathIdxStart <= pathIdxEnd && patternIdxStart <= patternIdxEnd) {
             val patternDir = patternDirs[patternIdxEnd]
             // 如果pattern遇到了"**", 那么break
@@ -238,29 +239,37 @@ open class AntPathMatcher(@Nullable pathSeparator: String? = null) : PathMatcher
 
         // ----------第三遍匹配..
 
-        while (pathIdxStart < patternIdxEnd && pathIdxStart <= pathIdxEnd) {
+        // Note: 当来到这里的时候, patternDirs[patternIdxStart]一定为"**"(对于别的情况, 在之前都已经返回了...)
+
+        while (patternIdxStart < patternIdxEnd && pathIdxStart <= pathIdxEnd) {
             var patternIdxTemp = -1
+
+            // 从patternIdxStart+1的位置开始往后去进行搜索, 找到后一个"**"所在的位置...
             for (i in patternIdxStart + 1..patternIdxEnd) {
                 if (patternDirs[i] == "**") {
                     patternIdxTemp = i
                     break
                 }
             }
+
+            // 如果pattern当中的后一个"**"和前一个"**"紧紧挨着, 也就是"**/**"这种情况, 那么跳过前面的一个"**"即可
             if (patternIdxTemp == patternIdxStart + 1) {
-                // '**/**' situation, so skip one
                 patternIdxStart++
                 continue
             }
 
-            // Find the pattern between padIdxStart & padIdxTmp in str between
-            // strIdxStart & strIdxEnd
-            val patLength: Int = patternIdxTemp - patternIdxStart - 1
+            // patternIdxTemp的位置是下一个"**"的位置, patternIdxStart记录的是上一个"**"的位置, 例如"**/c/d/**"这种情况
+            // 对于patLength记录的是就是两者之间的距离, 也就是"/c/d/"这一段的距离...
+            val patLength = patternIdxTemp - patternIdxStart - 1
+
+            // strLength用于记录一下此时path还未进行匹配的部分pathDir, 还剩下的长度有多长
             val strLength = pathIdxEnd - pathIdxStart + 1
             var foundIdx = -1
 
-            strLoop@ for (i in 0..strLength - patLength) {
+            strLoop@
+            for (i in 0..strLength - patLength) {
                 for (j in 0 until patLength) {
-                    val subPat: String = patternDirs[patternIdxStart + j + 1]
+                    val subPat = patternDirs[patternIdxStart + j + 1]
                     val subStr = pathDirs[pathIdxStart + i + j]
                     if (!matchStrings(subPat, subStr, uriTemplateVariables)) {
                         continue@strLoop
@@ -274,9 +283,13 @@ open class AntPathMatcher(@Nullable pathSeparator: String? = null) : PathMatcher
                 return false
             }
 
-            patternIdxStart = patternIdxTemp
-            pathIdxStart = foundIdx + patLength
+            // 跳转到去匹配下一个表达式"**"的地方, 例如pattern="/a/**/**/c/**/**/e", path="/a/b/b/c/d/d/e"
 
+            // 对于patternIdxStart, 直接跳转到patternIdxTemp的地方去即可, 这个地方正好就是下一个"**"的位置...
+            patternIdxStart = patternIdxTemp
+
+            // 对于path, 也去往前去进行跳转
+            pathIdxStart = foundIdx + patLength
         }
 
         for (i in patternIdxStart..patternIdxEnd) {

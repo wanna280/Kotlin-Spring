@@ -12,8 +12,55 @@ import com.wanna.framework.util.AntPathMatcher
 class AntMatcherTest {
 }
 
+private val antPathMatcher = AntPathMatcher()
+private val springAntMatcher = org.springframework.util.AntPathMatcher()
+
 fun main() {
-    val antPathMatcher = AntPathMatcher()
-    val uriTemplates = antPathMatcher.extractUriTemplateVariables("/a/b/{name}", "/a/b/wanna")
-    println(uriTemplates)
+    assert(
+        antPathMatcher.extractUriTemplateVariables("/a/b/{name}", "/a/b/wanna")
+                ==
+                springAntMatcher.extractUriTemplateVariables("/a/b/{name}", "/a/b/wanna")
+    )
+
+    assert(
+        antPathMatcher.match("/a/b/*", "/a/b/wanna")
+                ==
+                springAntMatcher.match("/a/b/*", "/a/b/wanna")
+    )
+
+    assert(
+        antPathMatcher.match("/a/b/**", "/a/b/wanna")
+                ==
+                springAntMatcher.match("/a/b/**", "/a/b/wanna")
+    )
+
+    assert(
+        antPathMatcher.match("/a/b/**", "/a/b")
+                ==
+                springAntMatcher.match("/a/b/**", "/a/b")
+    )
+
+    assert(
+        antPathMatcher.match("/a/b/**", "/a/b/")
+                ==
+                springAntMatcher.match("/a/b/**", "/a/b/")
+    )
+
+    assert(
+        antPathMatcher.match("/a/b/*/d", "/a/b/c/d")
+                ==
+                springAntMatcher.match("/a/b/*/d", "/a/b/c/d")
+    )
+
+    assert(
+        antPathMatcher.match("/a/b/**/**/d", "/a/b/c/d")
+                ==
+                springAntMatcher.match("/a/b/**/**/d", "/a/b/c/d")
+    )
+
+    assert(
+        antPathMatcher.match("/a/**/**/c/**/**/e", "/a/b/b/c/d/d/e")
+                ==
+                springAntMatcher.match("/a/**/**/c/**/**/e", "/a/b/b/c/d/d/e")
+    )
 }
