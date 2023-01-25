@@ -49,11 +49,8 @@ open class LocalDevToolsAutoConfiguration {
          */
         @Bean
         open fun restartingClassPathChangedEventListener(factory: FileSystemWatcherFactory): ApplicationListener<ClassPathChangedEvent> {
-            return ApplicationListener { event ->
-                if (event.restartRequired) {
-                    Restarter.getInstance()!!.restart(FileWatchingFailureHandler(factory))  // 重启SpringApplication
-                }
-            }
+            // Note: 这里不要使用lambda表达式, 可以使用匿名内部类, 因为lambda表达式会导致泛型推断不出来...
+            return RestartingClassPathChangedEventListener(factory)
         }
 
         /**
@@ -113,6 +110,20 @@ open class LocalDevToolsAutoConfiguration {
         @ConditionalOnMissingBean
         open fun patternClassPathRestartStrategy(): PatternClassPathRestartStrategy {
             return PatternClassPathRestartStrategy(properties.restart.exclude)
+        }
+
+        /**
+         * 监听[ClassPathChangedEvent]事件, 去重新启动SpringApplication
+         *
+         * @param factory FileSystemWatcherFactory
+         */
+        private class RestartingClassPathChangedEventListener(private val factory: FileSystemWatcherFactory) :
+            ApplicationListener<ClassPathChangedEvent> {
+            override fun onApplicationEvent(event: ClassPathChangedEvent) {
+                if (event.restartRequired) {
+                    Restarter.getInstance()!!.restart(FileWatchingFailureHandler(factory))  // 重启SpringApplication
+                }
+            }
         }
     }
 }
