@@ -28,28 +28,30 @@ open class LocalDevToolsAutoConfiguration {
     @EnableConfigurationProperties([DevToolsProperties::class])
     @Configuration(proxyBeanMethods = false)
     open class RestartConfiguration {
+
+        /**
+         * 自动注入DevTools的配置信息
+         */
         @Autowired
         private lateinit var properties: DevToolsProperties
 
         /**
-         * 给Spring BeanFactory添加一个处理ClassPathChangedEvent的监听器,
+         * 给Spring BeanFactory添加一个处理[ClassPathChangedEvent]的监听器,
          * 负责在ClassPath下的文件发生变化时提供去重启整个SpringApplication
          *
-         * @return 处理ClassPathChangedEvent的ApplicationListener
+         * @return 处理[ClassPathChangedEvent]的ApplicationListener
          */
         @Bean
         open fun restartingClassPathChangedEventListener(factory: FileSystemWatcherFactory): ApplicationListener<ClassPathChangedEvent> {
-            return object : ApplicationListener<ClassPathChangedEvent> {
-                override fun onApplicationEvent(event: ClassPathChangedEvent) {
-                    if (event.restartRequired) {
-                        Restarter.getInstance()!!.restart(FileWatchingFailureHandler(factory))  // 重启SpringApplication
-                    }
+            return ApplicationListener { event ->
+                if (event.restartRequired) {
+                    Restarter.getInstance()!!.restart(FileWatchingFailureHandler(factory))  // 重启SpringApplication
                 }
             }
         }
 
         /**
-         * 给Spring BeanFactory当中去添加一个ClassPath下的文件系统的Watcher
+         * 给Spring BeanFactory当中去添加一个ClassPath下的文件系统的Watcher, 监听文件的变化
          *
          * @param factory 提供FileSystemWatcher的Factory
          * @param pathRestartStrategy Restart策略(只有在改变的文件符合该策略的规则时才去进行重启)
@@ -59,7 +61,8 @@ open class LocalDevToolsAutoConfiguration {
         open fun classFilePathSystemWatcher(
             factory: FileSystemWatcherFactory, pathRestartStrategy: ClassPathRestartStrategy
         ): ClassPathFileSystemWatcher {
-            val urls = Restarter.getInstance()!!.getInitialUrls() ?: throw IllegalStateException("无法获取到InitialUrls")
+            val urls =
+                Restarter.getInstance()!!.getInitialUrls() ?: throw IllegalStateException("无法获取到InitialUrls")
             val classPathFileSystemWatcher =
                 ClassPathFileSystemWatcher(factory.getFileSystemWatcher(), urls, pathRestartStrategy)
 

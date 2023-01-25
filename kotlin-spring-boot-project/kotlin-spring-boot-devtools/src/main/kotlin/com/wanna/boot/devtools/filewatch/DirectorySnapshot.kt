@@ -13,14 +13,21 @@ import javax.annotation.Nullable
  */
 open class DirectorySnapshot(val directory: File) {
     companion object {
-        // ("."/"..")文件夹的情况, 它不是个真正的文件夹
+        /**
+         * ("."/"..")文件夹的情况, 它不是个真正的文件夹
+         */
+        @JvmField
         val DOTS = setOf(".", "..")
     }
 
-    // date
+    /**
+     * Date
+     */
     val date = Date()
 
-    // 该文件夹下的所有文件的快照信息
+    /**
+     * 该文件夹下的所有文件的快照信息
+     */
     private var files: Set<FileSnapshot>
 
     init {

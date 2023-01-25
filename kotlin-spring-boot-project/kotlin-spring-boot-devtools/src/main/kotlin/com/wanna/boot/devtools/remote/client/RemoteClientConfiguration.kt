@@ -75,10 +75,15 @@ open class RemoteClientConfiguration {
         open fun classFilePathSystemWatcher(
             factory: FileSystemWatcherFactory, pathRestartStrategy: ClassPathRestartStrategy
         ): ClassPathFileSystemWatcher {
+            // 获取到需要去重新加载的目录的URL列表
             val urls = DefaultRestartInitializer().getInitialUrls(Thread.currentThread()) ?: emptyArray()
+
+            // 创建一个ClassPath下的文件的Watcher, 去监听本地文件的变化
             val classPathFileSystemWatcher =
                 ClassPathFileSystemWatcher(factory.getFileSystemWatcher(), urls, pathRestartStrategy)
-            // 对于RemoteClient来说, 当发布ClassPathChangedEvent来说, 别去重启Watcher！！！
+
+
+            // 对于RemoteClient来说, 当发布ClassPathChangedEvent来说, 别去重启Watcher!!!
             // 因为对于RemoteClient来说, 它不会接收ClassPathChangedEvent而重启,
             // Watcher需要继续工作, 当客户端文件发生变更时, 继续将文件上传给RemoteServer
             classPathFileSystemWatcher.stopWatcherOnRestart = false

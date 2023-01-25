@@ -1,5 +1,6 @@
 package com.wanna.boot.devtools.filewatch
 
+import com.wanna.framework.lang.Nullable
 import java.io.File
 import java.io.FileFilter
 import java.util.concurrent.atomic.AtomicInteger
@@ -182,7 +183,8 @@ class FileSystemWatcher(
     }
 
     /**
-     * 维护了一个去处理文件的快照的变更的Watcher
+     * 维护了一个去处理文件的快照的变更的Watcher线程, 负责在后台轮询检查是否有文件发生了变更?
+     * 如果确实有发生变更的话, 需要通知[FileChangeListener]去处理变更的情况
      *
      * @param remainingScans 剩余的要去执行"scan"的次数
      * @param listeners 监听文件变化的监听器列表
@@ -198,8 +200,12 @@ class FileSystemWatcher(
         private val quietPeriod: Long,
         private var directories: Map<File, DirectorySnapshot>,
         private val snapshotStateRepository: SnapshotStateRepository,
-        private val triggerFilter: FileFilter?
+        @Nullable private val triggerFilter: FileFilter?
     ) : Runnable {
+
+        /**
+         * 轮询去检查文件是否发生了变化?
+         */
         override fun run() {
             var remainingScans = this.remainingScans.get()
             while (remainingScans > 0 || remainingScans == -1) {
@@ -221,7 +227,7 @@ class FileSystemWatcher(
          *
          * @throws IllegalStateException 如果在睡眠的过程当中被interrupt
          */
-        @kotlin.jvm.Throws(InterruptedException::class)
+        @Throws(InterruptedException::class)
         private fun scan() {
             Thread.sleep(pollInterval - quietPeriod)
             var previous: Map<File, DirectorySnapshot>

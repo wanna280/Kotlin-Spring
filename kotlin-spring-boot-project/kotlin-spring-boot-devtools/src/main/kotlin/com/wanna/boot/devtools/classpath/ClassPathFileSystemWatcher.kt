@@ -1,7 +1,6 @@
 package com.wanna.boot.devtools.classpath
 
 import com.wanna.boot.devtools.filewatch.FileSystemWatcher
-import com.wanna.boot.devtools.restart.Restarter
 import com.wanna.framework.beans.factory.InitializingBean
 import com.wanna.framework.beans.factory.support.DisposableBean
 import com.wanna.framework.context.ApplicationContext
@@ -22,10 +21,14 @@ class ClassPathFileSystemWatcher(
     private val restartStrategy: ClassPathRestartStrategy?
 ) : InitializingBean, DisposableBean, ApplicationContextAware {
 
-    // 在重启(发布ClassPathChangedEvent)时, 是否需要stopWatcher?
+    /**
+     * 在重启(发布ClassPathChangedEvent)时, 是否需要stopWatcher?
+     */
     var stopWatcherOnRestart: Boolean = true
 
-    // ApplicationContext
+    /**
+     * ApplicationContext
+     */
     private var applicationContext: ApplicationContext? = null
 
     init {
@@ -64,7 +67,7 @@ class ClassPathFileSystemWatcher(
     }
 
     /**
-     * 来自Spring的DisposableBean的destroy方法, 
+     * 来自Spring的DisposableBean的destroy方法,
      * 在SpringBeanFactory关闭时, 我们需要去关闭FileSystemWatcher
      *
      * @see FileSystemWatcher.stop
