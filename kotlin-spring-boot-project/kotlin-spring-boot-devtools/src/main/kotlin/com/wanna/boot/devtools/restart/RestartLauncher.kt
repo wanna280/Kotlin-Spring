@@ -1,6 +1,7 @@
 package com.wanna.boot.devtools.restart
 
 import com.wanna.boot.devtools.restart.classloader.RestartClassLoader
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 
@@ -22,7 +23,10 @@ open class RestartLauncher(
     uncaughtExceptionHandler: UncaughtExceptionHandler
 ) : Thread() {
 
-    // 记录重启SpringApplication的过程当中出现的Error
+    /**
+     * 记录重启SpringApplication的过程当中出现异常情况
+     */
+    @Nullable
     var error: Throwable? = null
 
     init {
@@ -42,7 +46,7 @@ open class RestartLauncher(
         try {
             val mainClass = ClassUtils.forName<Any>(this.mainClassName, this.contextClassLoader)
             val mainMethod = ReflectionUtils.findMethod(mainClass, "main", Array<String>::class.java)!!
-            ReflectionUtils.invokeMethod(mainMethod, mainClass, *this.args)
+            ReflectionUtils.invokeMethod(mainMethod, mainClass, this.args)
         } catch (ex: Throwable) {
             this.error = ex  // record error
             uncaughtExceptionHandler.uncaughtException(this, ex)
