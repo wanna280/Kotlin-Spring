@@ -141,8 +141,52 @@ open class MimeType(val type: String, val subtype: String, val parameters: Map<S
         return false
     }
 
+    /**
+     * 检查当前[MimeType]是否包含别的[MimeType]?
+     *
+     * * 1."* / *"包含所有的[MimeType];
+     * * 2."text / *"包含"text/html", 也包含"text/plain".
+     *
+     * @param other 别的[MimeType]
+     * @return 如果当前[MimeType]包含other这个[MimeType], 那么return true; 否则return false
+     */
     open fun includes(@Nullable other: MimeType?): Boolean {
-        // TODO
+        other ?: return false
+        // 如果是"*/*", return true, 包含任何MimeType
+        if (isWildcardType) {
+            return true
+        }
+
+        // 如果两者type相同, 那么才需要去比较(type都不同的话, 一定不包含)
+        if (type == other.type) {
+            // 如果subtype也相同, 直接return true
+            if (subtype == other.subtype) {
+                return true
+            }
+
+            // 如果subtype当中含有"*"/"*+"的话, 那么还可能需要匹配一下
+            if (this.isWildcardSubtype) {
+                val thisPlusIndex = subtype.lastIndexOf('+')
+
+                // 如果没有"+"的话, 那么说明subtype是"*", 直接return true
+                if (thisPlusIndex == -1) {
+                    return true
+                }
+                val otherPlusIndex = other.subtype.lastIndexOf('+')
+
+                // 如果两者都有"+", 我们才需要去进行diff, 实际上只有类似"application/*+xml"包含"application/soap+xml"这一种情况
+                // 此时需要比较"+"之后的内容是否完全相同, this的"+"之前是否是"*", 只有两种情况完全成立才算是包含...
+                if (otherPlusIndex != -1) {
+                    val thisSubtypeNoSuffix = subtype.substring(0, thisPlusIndex)
+
+                    val thiSubtypeSuffix = subtype.substring(thisPlusIndex + 1)
+                    val otherSubtypeSuffix = subtype.substring(otherPlusIndex + 1)
+                    if (thiSubtypeSuffix == otherSubtypeSuffix && thisSubtypeNoSuffix == WILDCARD_TYPE) {
+                        return true
+                    }
+                }
+            }
+        }
         return false
     }
 
