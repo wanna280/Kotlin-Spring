@@ -57,6 +57,11 @@ object ResourceUtils {
     const val JAR_URL_PREFIX = "jar:"
 
     /**
+     * War包的URL前缀
+     */
+    const val WAR_URL_PREFIX = "war:"
+
+    /**
      * Jar包的扩展名
      */
     const val JAR_FILE_EXTENSION = ".jar"

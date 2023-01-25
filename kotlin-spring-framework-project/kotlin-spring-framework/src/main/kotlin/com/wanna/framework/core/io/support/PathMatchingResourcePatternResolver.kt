@@ -127,19 +127,25 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
             val locationPatternWithoutPrefix =
                 locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length)
 
-            // 如果路径当中含有表达式的话, 那么走带表达式的匹配的逻辑
+            // 如果给定的locationPattern当中含有表达式的话, 那么走带表达式的匹配的逻辑
             if (getPathMatcher().isPattern(locationPatternWithoutPrefix)) {
 
                 // 根据含有"classpath*:"的原始的表达式去进行表达式匹配
                 return findPathMatchingResources(locationPattern)
 
-                // 如果路径当中不包含表达式的话, 那么直接通过ClassLoader.getResources去进行获取
+                // 如果locationPattern当中不包含表达式的话, 那么直接通过ClassLoader.getResources去进行获取
             } else {
                 return findAllClassPathResources(locationPatternWithoutPrefix)
             }
         } else {
+            // 如果是Tomcat的"war:"的locationPattern, 那么需要切取"*/"之后的部分去判断是否存在有表达式
+            // 否则的话, 把protocol(例如"classpath"/"file")去掉就行了
+            val prefixEnd =
+                if (locationPattern.startsWith(WAR_URL_SEPARATOR)) locationPattern.indexOf(WAR_URL_SEPARATOR) + 1
+                else locationPattern.indexOf(":") + 1
+
             // 如果不是以"classpath*"开头, 但是也是含有表达式的话, 那么需要根据表达式寻找到和表达式匹配的单个Resource...
-            if (getPathMatcher().isPattern(locationPattern)) {
+            if (getPathMatcher().isPattern(locationPattern.substring(prefixEnd))) {
 
                 return findPathMatchingResources(locationPattern)
                 // 如果没有表达式的话, 那么直接根据Location去加载Resource
@@ -521,7 +527,7 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
             }
         }
 
-        // 如果是SystemClassLoader(AppClassLoader), 那么需要添加Manifest当中的Entry到结果当中
+        // 如果是SystemClassLoader(AppClassLoader), 那么需要添加Manifest("java.class.path")当中的Entry到结果当中
         if (classLoader == ClassLoader.getSystemClassLoader()) {
             addClassPathManifestEntries(result)
         }
