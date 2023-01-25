@@ -16,14 +16,26 @@ import java.net.URL
  * @version v1.0
  * @date 2022/10/1
  *
- * @see uri
+ * @see URI
+ * @see URL
  */
 open class UrlResource(
     @Nullable private var url: URL?,
     @Nullable private var uri: URI?
 ) : AbstractFileResolvingResource() {
+
+    /**
+     * 提供一个基于[URL]去构建[UrlResource]的构造器
+     *
+     * @param url URL
+     */
     constructor(@Nullable url: URL?) : this(url, null)
 
+    /**
+     * 提供一个基于[URI]去构建[UrlResource]的构造器
+     *
+     * @param uri URI
+     */
     constructor(@Nullable uri: URI?) : this(uri?.toURL(), uri)
 
     /**
@@ -33,8 +45,14 @@ open class UrlResource(
      * @throws MalformedURLException 如果给定的path不合法
      */
     @Throws(MalformedURLException::class)
-    constructor(path: String) : this(URL(path))
+    constructor(path: String) : this(ResourceUtils.toURL(path))
 
+    /**
+     * 根据protocol和path去构建[UrlResource]
+     *
+     * @param protocol protocol
+     * @param path path
+     */
     constructor(protocol: String, path: String) : this(protocol, path, null)
 
     /**
@@ -51,8 +69,18 @@ open class UrlResource(
         URI(protocol, path, fragment)
     )
 
+    /**
+     * 获取到URLResource的描述信息
+     *
+     * @return description
+     */
     override fun getDescription() = "URL [ $url ]"
 
+    /**
+     * 获取到当前[UrlResource]的输入流
+     *
+     * @return InputStream of this UrlResource
+     */
     override fun getInputStream(): InputStream {
         val connection = getURL().openConnection()
         try {
@@ -96,7 +124,7 @@ open class UrlResource(
      * @return URL
      * @throws IllegalStateException 如果URL为空
      */
-    override fun getURL() = this.url ?: throw IllegalStateException("URL不能为空")
+    override fun getURL() = this.url ?: throw IllegalStateException("URL cannot be null")
 
     /**
      * 重写父类逻辑, 优先使用子类的URI作为URL, 子类没有再沿用父类的逻辑

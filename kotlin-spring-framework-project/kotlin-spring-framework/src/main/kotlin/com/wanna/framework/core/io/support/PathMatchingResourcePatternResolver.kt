@@ -63,7 +63,7 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
          */
         @JvmStatic
         private fun stripLeadingSlash(path: String): String {
-            return if (path.startsWith('/')) path.substring(0) else path
+            return if (path.startsWith('/')) path.substring(1) else path
         }
     }
 
@@ -120,15 +120,17 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
      * @return 根据给定的资源表达式, 去解析到的资源文件列表
      */
     override fun getResources(locationPattern: String): Array<Resource> {
-        // 如果以"classpath*"开头的话, 说明需要去进行多个Resource的加载...
+        // 如果给定的locationPattern是以"classpath*:"开头的话, 说明需要去进行多个Resource的加载...
         if (locationPattern.startsWith(CLASSPATH_ALL_URL_PREFIX)) {
+
+            // 去掉开头的"classpath*:"
             val locationPatternWithoutPrefix =
                 locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length)
 
             // 如果路径当中含有表达式的话, 那么走带表达式的匹配的逻辑
             if (getPathMatcher().isPattern(locationPatternWithoutPrefix)) {
 
-                // 根据含有"classpath*"的表达式去进行匹配
+                // 根据含有"classpath*:"的原始的表达式去进行表达式匹配
                 return findPathMatchingResources(locationPattern)
 
                 // 如果路径当中不包含表达式的话, 那么直接通过ClassLoader.getResources去进行获取
@@ -437,7 +439,7 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
      */
     @Throws(IOException::class)
     protected open fun findAllClassPathResources(location: String): Array<Resource> {
-        // 去掉路径开头的"/"
+        // 对于location可以使用"/META-INF/"这样的格式, 这里手动给去掉开头的"/"就行...
         val path = stripLeadingSlash(location)
 
         // 使用ClassLoader.getResources去解析到对应的资源...
@@ -562,8 +564,8 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
                     // '#'可能出现在目录/文件名当中, 但是java.net.URL不应该把它当做一个fragment
                     filePath = StringUtils.replace(filePath, "#", "%23")
 
-                    // 构建一个Jar包的路径
-                    val urlResource = UrlResource(JAR_URL_PREFIX + filePath + JAR_URL_SEPARATOR)
+                    // 手动去构建一个Jar包的路径("jar:file:{filePath}!/")作为urlResource
+                    val urlResource = UrlResource(JAR_URL_PREFIX + FILE_URL_PREFIX + filePath + JAR_URL_SEPARATOR)
 
                     // 很可能在URLClassLoader.getURLs当中已经添加过了, 因此这里需要去进行去重的检查...
                     if (!result.contains(urlResource) && !hasDuplicate(filePath, result) && urlResource.exists()) {
