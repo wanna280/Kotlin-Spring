@@ -25,6 +25,12 @@ import java.io.File
 @Configuration(proxyBeanMethods = false)
 open class LocalDevToolsAutoConfiguration {
 
+    /**
+     * 本地的DevTools的配置类, 导入本地DevTools的支持的相关Spring Bean
+     *
+     * @see FileSystemWatcherFactory
+     * @see ClassPathFileSystemWatcher
+     */
     @EnableConfigurationProperties([DevToolsProperties::class])
     @Configuration(proxyBeanMethods = false)
     open class RestartConfiguration {
@@ -80,26 +86,23 @@ open class LocalDevToolsAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean
         open fun fileSystemWatcherFactory(): FileSystemWatcherFactory {
-            return object : FileSystemWatcherFactory {
-                override fun getFileSystemWatcher(): FileSystemWatcher {
-                    // 创建FileSystemWatcher
-                    val fileSystemWatcher =
-                        FileSystemWatcher(
-                            true, properties.restart.pollInterval, properties.restart.quietPeriod,
-                            SnapshotStateRepository.STATIC
-                        )
+            return FileSystemWatcherFactory { // 创建FileSystemWatcher
+                val fileSystemWatcher =
+                    FileSystemWatcher(
+                        true, properties.restart.pollInterval, properties.restart.quietPeriod,
+                        SnapshotStateRepository.STATIC
+                    )
 
-                    // 添加SourceDirectory
-                    properties.restart.additionalPaths.forEach {
-                        fileSystemWatcher.addSourceDirectory(File(it))
-                    }
-                    // 如果配置文件当中, 指定了触发的Restart文件的话, 需要添加TriggerFileFilter
-                    val triggerFile = properties.restart.triggerFile
-                    if (StringUtils.hasText(triggerFile)) {
-                        fileSystemWatcher.setTriggerFilter(TriggerFileFilter(triggerFile!!))
-                    }
-                    return fileSystemWatcher
+                // 添加SourceDirectory
+                properties.restart.additionalPaths.forEach {
+                    fileSystemWatcher.addSourceDirectory(File(it))
                 }
+                // 如果配置文件当中, 指定了触发的Restart文件的话, 需要添加TriggerFileFilter
+                val triggerFile = properties.restart.triggerFile
+                if (StringUtils.hasText(triggerFile)) {
+                    fileSystemWatcher.setTriggerFilter(TriggerFileFilter(triggerFile!!))
+                }
+                fileSystemWatcher
             }
         }
 

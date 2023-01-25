@@ -11,6 +11,7 @@ import com.wanna.boot.devtools.filewatch.FileSystemWatcher
 import com.wanna.boot.devtools.filewatch.FileSystemWatcherFactory
 import com.wanna.boot.devtools.filewatch.SnapshotStateRepository
 import com.wanna.boot.devtools.restart.DefaultRestartInitializer
+import com.wanna.boot.devtools.restart.classloader.ClassLoaderFiles
 import com.wanna.framework.beans.factory.annotation.Value
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.Bean
@@ -30,6 +31,8 @@ open class RemoteClientConfiguration {
 
     /**
      * ClientHttpRequestFactory, 提供HTTP请求的发送的客户端功能
+     *
+     * @return ClientHttpRequestFactory
      */
     @Bean
     @ConditionalOnMissingBean
@@ -46,11 +49,14 @@ open class RemoteClientConfiguration {
      */
     @Configuration(proxyBeanMethods = false)
     open class RemoteRestartClientConfiguration {
+        /**
+         * 自动注入DevTools的配置信息
+         */
         @Autowired
         private lateinit var properties: DevToolsProperties
 
         /**
-         * ClassPath的变更的Uploader, 负责将变更情况包装成为ClassLoaderFiles直接上传给RemoteServer
+         * ClassPath的变更的Uploader, 负责将本地的文件变更情况包装成为[ClassLoaderFiles]直接上传给RemoteServer
          *
          * @param remoteUrl remoteUrl(需要去进行指定)
          * @param clientHttpRequestFactory 发生HTTP请求Client的Factory
@@ -91,7 +97,7 @@ open class RemoteClientConfiguration {
         }
 
         /**
-         * FileSystemWatcher的Factory, 负责提供FileSystemWatcher
+         * FileSystemWatcher的Factory, 负责提供FileSystemWatcher的创建
          *
          * @see FileSystemWatcher
          * @see FileSystemWatcherFactory
@@ -99,26 +105,25 @@ open class RemoteClientConfiguration {
         @Bean
         @ConditionalOnMissingBean
         open fun fileSystemWatcherFactory(): FileSystemWatcherFactory {
-            return object : FileSystemWatcherFactory {
-                override fun getFileSystemWatcher(): FileSystemWatcher {
-                    // 创建FileSystemWatcher
-                    val fileSystemWatcher =
-                        FileSystemWatcher(
-                            true, properties.restart.pollInterval, properties.restart.quietPeriod,
-                            SnapshotStateRepository.STATIC
-                        )
-                    // 如果配置文件当中, 指定了触发的Restart文件的话, 需要添加TriggerFileFilter
-                    val triggerFile = properties.restart.triggerFile
-                    if (StringUtils.hasText(triggerFile)) {
-                        fileSystemWatcher.setTriggerFilter(TriggerFileFilter(triggerFile!!))
-                    }
-                    return fileSystemWatcher
+            return FileSystemWatcherFactory { // 创建FileSystemWatcher
+                val fileSystemWatcher =
+                    FileSystemWatcher(
+                        true, properties.restart.pollInterval, properties.restart.quietPeriod,
+                        SnapshotStateRepository.STATIC
+                    )
+                // 如果配置文件当中, 指定了触发的Restart文件的话, 需要添加TriggerFileFilter
+                val triggerFile = properties.restart.triggerFile
+                if (StringUtils.hasText(triggerFile)) {
+                    fileSystemWatcher.setTriggerFilter(TriggerFileFilter(triggerFile!!))
                 }
+                fileSystemWatcher
             }
         }
 
         /**
-         * 基于路径匹配的重启策略
+         * 给Spring BeanFactory当中去导入一个基于路径匹配的重启策略的Bean
+         *
+         * @return PatternClassPathRestartStrategy
          */
         @Bean
         @ConditionalOnMissingBean
