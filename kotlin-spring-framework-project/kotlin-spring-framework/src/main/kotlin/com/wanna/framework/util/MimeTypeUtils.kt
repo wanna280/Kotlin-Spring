@@ -91,7 +91,7 @@ object MimeTypeUtils {
             throw InvalidMimeTypeException(mimeType, "does not contain subtype after '/'")
         }
         val type = fullType.substring(0, subIndex)
-        val subtype = fullType.substring(subIndex)
+        val subtype = fullType.substring(subIndex + 1)
 
         // 如果type="*", 那么subtype必须为"*", 不允许出现"*/json"这种情况...
         if (type == MimeType.WILDCARD_TYPE && subtype != MimeType.WILDCARD_TYPE) {
