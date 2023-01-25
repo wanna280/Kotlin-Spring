@@ -46,6 +46,31 @@ object ResourceUtils {
      */
     const val URL_PROTOCOL_ZIP = "zip"
 
+    /**
+     * 文件的URL的前缀
+     */
+    const val FILE_URL_PREFIX = "file:"
+
+    /**
+     * Jar包的URL的前缀
+     */
+    const val JAR_URL_PREFIX = "jar:"
+
+    /**
+     * Jar包的扩展名
+     */
+    const val JAR_FILE_EXTENSION = ".jar"
+
+    /**
+     * Jar包的URL分隔符
+     */
+    const val JAR_URL_SEPARATOR = "!/"
+
+    /**
+     * Tomcat的War包的URL分隔符
+     */
+    const val WAR_URL_SEPARATOR = "*/"
+
 
     /**
      * 获取到给定的资源路径的URL

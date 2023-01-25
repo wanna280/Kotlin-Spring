@@ -2,24 +2,26 @@ package com.wanna.framework.core.io.support
 
 import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.core.io.*
+import com.wanna.framework.core.io.support.ResourcePatternResolver.Companion.CLASSPATH_ALL_URL_PREFIX
 import com.wanna.framework.lang.Nullable
-import com.wanna.framework.util.AntPathMatcher
+import com.wanna.framework.util.*
 import com.wanna.framework.util.PathMatcher
-import com.wanna.framework.util.ResourceUtils
-import com.wanna.framework.util.StringUtils
+import com.wanna.framework.util.ResourceUtils.FILE_URL_PREFIX
+import com.wanna.framework.util.ResourceUtils.JAR_URL_PREFIX
+import com.wanna.framework.util.ResourceUtils.JAR_URL_SEPARATOR
+import com.wanna.framework.util.ResourceUtils.URL_PROTOCOL_JAR
+import com.wanna.framework.util.ResourceUtils.WAR_URL_SEPARATOR
 import java.io.IOException
-import java.net.JarURLConnection
-import java.net.URI
-import java.net.URL
-import java.nio.file.Files
-import java.nio.file.Path
+import java.net.*
+import java.nio.file.*
 import java.util.function.Predicate
 import java.util.jar.JarFile
 import java.util.stream.Stream
+import java.util.zip.ZipException
 
 /**
  * 支持路径表达式的[Resource]的解析的[ResourceLoader], 支持去处理类似"classpath:/**/xxx.xml"这样的表达式,
- * 支持在路径当中写"*"/"**"等格式的通配符
+ * 支持在路径当中写"*"/"**"等格式的通配符, 也就是支持使用Ant表达式的方式去对资源去进行匹配
  *
  * @author jianchao.jia
  * @version v1.0
@@ -48,7 +50,10 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
         }
     }
 
-    private val pathMatcher: PathMatcher = AntPathMatcher()
+    /**
+     * 提供资源路径的匹配的Ant表达式的匹配器
+     */
+    private var pathMatcher: PathMatcher = AntPathMatcher()
 
 
     /**
@@ -71,18 +76,26 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
      */
     open fun getPathMatcher(): PathMatcher = this.pathMatcher
 
-    override fun getResources(locationPattern: String): Array<Resource> {
-        return getResources1(locationPattern)
+    /**
+     * 自定义[PathMatcher], 提供资源表达式的解析工作
+     *
+     * @param pathMatcher PathMatcher
+     */
+    open fun setPathMatcher(pathMatcher: PathMatcher) {
+        this.pathMatcher = pathMatcher
     }
 
     /**
-     * TODO
+     * 根据给定的资源路径的Ant表达式, 去执行资源的解析
+     *
+     * @param locationPattern 资源路径的Ant表达式
+     * @return 根据给定的资源表达式, 去解析到的资源文件列表
      */
-    private fun getResources1(locationPattern: String): Array<Resource> {
+    override fun getResources(locationPattern: String): Array<Resource> {
         // 如果以"classpath*"开头的话, 说明需要去进行多个Resource的加载...
-        if (locationPattern.startsWith(ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX)) {
+        if (locationPattern.startsWith(CLASSPATH_ALL_URL_PREFIX)) {
             val locationPatternWithoutPrefix =
-                locationPattern.substring(ResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX.length)
+                locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length)
 
             // 如果路径当中含有表达式的话, 那么走带表达式的匹配的逻辑
             if (getPathMatcher().isPattern(locationPatternWithoutPrefix)) {
@@ -95,8 +108,7 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
                 return findAllClassPathResources(locationPatternWithoutPrefix)
             }
         } else {
-
-            // 如果含有表达式的话, 那么需要寻找路径匹配的Resource...
+            // 如果不是以"classpath*"开头, 但是也是含有表达式的话, 那么需要根据表达式寻找到和表达式匹配的单个Resource...
             if (getPathMatcher().isPattern(locationPattern)) {
 
                 return findPathMatchingResources(locationPattern)
@@ -110,7 +122,7 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
     /**
      * 将含有表达式的路径匹配的路径表达式, 和候选的所有的资源信息, 去进行匹配
      *
-     * @param locationPattern 资源路径表达式
+     * @param locationPattern 资源路径表达式(Ant表达式)
      * @return 根据该表达式去解析得到的Resource
      */
     private fun findPathMatchingResources(locationPattern: String): Array<Resource> {
@@ -134,6 +146,8 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
                 result += doFindPathMatchingFileResources(rootDirResource, subPattern)
             }
         }
+
+        // trace 根据资源表达式去解析得到的资源列表信息...
         if (logger.isTraceEnabled) {
             logger.trace("Resolved location pattern [$locationPattern] to resources $result")
         }
@@ -145,8 +159,8 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
      *
      * @param rootDirResource rootDirResource
      * @param rootDirUrl rootDirUrl
-     * @param subPattern subPattern
-     * @return 解析表达式最终得到的资源列表
+     * @param subPattern subPattern(Ant表达式)
+     * @return 通过rootDir下的所有的Resource, 和给定的subPattern去进行匹配, 最终得到的资源列表
      */
     protected open fun doFindPathMatchingJarResources(
         rootDirResource: Resource,
@@ -154,28 +168,70 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
         subPattern: String
     ): Set<Resource> {
         val connection = rootDirUrl.openConnection()
-        var jarFile: JarFile? = null
-        var jarFileUrl: String? = null
-        var rootEntryPath: String? = null
+
+
+        val jarFile: JarFile  // Jar包对应的JarFile对象
+        val jarFileUrl: String  // Jar包所处的路径url
+        var rootEntryPath: String  // rootDir相比Jar包的根路径的偏移路径
+
+        var closeJarFile = true
+        // 如果该Connection是一个JarURLConnection, 那么我们可以直接通过它去获取到
+        // 该rootDir所在的JarFile, 以及rootDir所在的JarFileEntry...
         if (connection is JarURLConnection) {
             jarFile = connection.jarFile
             jarFileUrl = connection.jarFileURL.toExternalForm()
             val jarEntry = connection.jarEntry
             rootEntryPath = jarEntry?.name ?: ""
+
+            closeJarFile = !connection.useCaches
         } else {
-            // TODO
+            // 如果Connection并不是一个JarURLConnection的话...
+            // 我们直接假设URL都是以"jar:path!/entry"(或"war:path*/entry")的方式去进行格式化的
+            val urlFile = rootDirUrl.file
+            try {
+                var separatorIndex = urlFile.indexOf(WAR_URL_SEPARATOR)
+                if (separatorIndex == -1) {
+                    separatorIndex = urlFile.indexOf(JAR_URL_SEPARATOR)
+                }
+                if (separatorIndex != -1) {
+                    jarFileUrl = urlFile.substring(0, separatorIndex)
+                    rootEntryPath = urlFile.substring(separatorIndex + 2)  // 不管是jar/war的分隔符, 长度都为2
+                    jarFile = getJarFile(jarFileUrl)
+                } else {
+                    jarFile = JarFile(urlFile)
+                    jarFileUrl = urlFile
+                    rootEntryPath = ""
+                }
+
+            } catch (ex: ZipException) {
+                // 如果构建JarFile出现了问题, skip掉...
+                if (logger.isDebugEnabled) {
+                    logger.debug("Skipping invalid jar classpath entry [$urlFile]", ex)
+                }
+                return emptySet()
+            }
         }
 
         try {
-            val result = LinkedHashSet<Resource>()
+            // trace记录一下, 在哪个Jar包当中去进行Resource的搜索?
+            if (logger.isTraceEnabled) {
+                logger.trace("Looking for matching resources in jar file [$jarFileUrl]")
+            }
+
+            // 如果rootEntryPath的末尾不含有"/"的话, 那么在这去补充一个"/"(对于sun包的JAR不会返回"/", 对于JRockit的JRE会返回"/")
+            if (StringUtils.hasText(rootEntryPath) && !rootEntryPath.endsWith("/")) {
+                rootEntryPath += "/"
+            }
+
+            val result = LinkedHashSet<Resource>(8)
 
             // 列举出来该Jar包当中的所有的JarEntry
-            for (jarEntry in jarFile!!.entries().asIterator()) {
+            for (jarEntry in jarFile.entries().asIterator()) {
                 // 获取到当前Entry所在的路径
                 val entryPath = jarEntry.name
 
                 // 如果当前entryPath确实是以我们想要的rootEntryPath作为前缀, 那么我们才需要去进行处理
-                if (entryPath.startsWith(rootEntryPath!!)) {
+                if (entryPath.startsWith(rootEntryPath)) {
 
                     // 把前缀去掉, 只要后缀, 使用后缀, 让它去和subPattern去进行匹配...
                     val relativePath = entryPath.substring(rootEntryPath.length)
@@ -185,40 +241,65 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
                 }
             }
             return result
-        } catch (ex: Exception) {
-            ex.printStackTrace()
-            // TODO
+        } finally {
+            // 如果不是走的JarFile的缓存的话, 那么需要在这里去关闭JarFile
+            if (closeJarFile) {
+                jarFile.close()
+            }
         }
-        return emptySet()
     }
 
     /**
-     * 列举出来rootDir下的所有的Resource, 分别去执行对于文件资源的路径表达式匹配 (TODO 异常完善, Resource完善)
+     * 列举出来rootDir下的所有的Resource文件, 分别去执行对于文件资源的路径表达式匹配,
+     * 并返回和给定的subPattern完全匹配的那些Resource
      *
      * @param rootDirResource rootDirResource
-     * @param subPattern subPattern
+     * @param subPattern subPattern(Ant表达式)
      * @return 解析表达式最终得到的资源列表
+     *
      * @see Files.walk
+     * @see PathMatcher.match
      */
     protected open fun doFindPathMatchingFileResources(rootDirResource: Resource, subPattern: String): Set<Resource> {
+        // 获取到rootDirResource的URI
         val rootDirUri: URI
         try {
             rootDirUri = rootDirResource.getURI()
         } catch (ex: Exception) {
+            // 如果因为异常获取不到就算了...
+            if (logger.isInfoEnabled) {
+                logger.info("Failed to resolve $rootDirResource as URI", ex)
+            }
             return emptySet()
         }
+
+        // 如果rootDirUri是绝对路径的话, 那么直接使用它作为Path
         var rootPath: Path? = null
         if (rootDirUri.isAbsolute && !rootDirUri.isOpaque) {
             try {
-                rootPath = Path.of(rootDirUri)
+                try {
+                    rootPath = Path.of(rootDirUri)
+                } catch (ex: FileSystemNotFoundException) {
+                    // 如果文件系统没有找到的话, 那么尝试利用它去创建一个新的文件系统???
+                    FileSystems.newFileSystem(rootDirUri, emptyMap<String, Any>(), ClassUtils.getDefaultClassLoader())
+
+                    // 创建完成文件系统之后, 重新尝试获取rootPath
+                    rootPath = Path.of(rootDirUri)
+                }
             } catch (ex: Exception) {
-                // TODO
+                // 如果获取rootPath失败, 那么打个debug log, fallback, 尝试使用Resource.getFile去作为路径
+                if (logger.isDebugEnabled) {
+                    logger.debug("Failed to resolve $rootDirUri in file system", ex)
+                }
             }
         }
+
+        // 如果从URI当中不是绝对路径的话, 那么尝试从rootDirResource的File当中去进行获取Path作为fallback...
         if (rootPath == null) {
             rootPath = Path.of(rootDirResource.getFile().path)
         }
 
+        // 清理一下path, 并保证它末尾有"/", 因为它必须得是一个文件夹
         var rootDir = StringUtils.cleanPath(rootPath.toString())
         if (!rootDir.endsWith("/")) {
             rootDir += "/"
@@ -234,6 +315,12 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
                 StringUtils.cleanPath(path.toString())
             )
         }
+
+        // trace记录一下在某个文件夹下去搜索表达式匹配的文件...
+        if (logger.isTraceEnabled) {
+            logger.trace("Searching directory [${rootPath!!.toAbsolutePath()}] for files matching pattern [$resourcePattern]")
+        }
+
         val result = LinkedHashSet<Resource>()
 
         // 迭代rootPath下的所有File, 利用PathMatcher对它进行匹配...
@@ -251,8 +338,12 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
                 }
             }
         } catch (ex: Exception) {
+            // 如果搜索某些文件失败的话, 那么就直接返回了, 剩下的不去搜索了...
             if (logger.isDebugEnabled) {
-                logger.debug("", ex)
+                logger.debug(
+                    "Failed to complete search in directory [${rootPath!!.toAbsolutePath()}] for files matching pattern [$subPattern]",
+                    ex
+                )
             }
         } finally {
             stream?.close()
@@ -287,6 +378,25 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
      */
     protected open fun isJarResource(resource: Resource): Boolean {
         return false
+    }
+
+    /**
+     * 根据给定的JarFileUrl, 去获取到[JarFile]对象
+     *
+     * @param jarFileUrl jarFileUrl
+     * @return 解析得到的[JarFile]对象
+     */
+    protected open fun getJarFile(jarFileUrl: String): JarFile {
+        // 如果url以"file:"开头, 那么按照文件的方式去进行解析
+        if (jarFileUrl.startsWith(FILE_URL_PREFIX)) {
+            try {
+                return JarFile(ResourceUtils.toURI(jarFileUrl).schemeSpecificPart)
+            } catch (ex: Exception) {
+                return JarFile(jarFileUrl.substring(FILE_URL_PREFIX.length))
+            }
+        }
+        // 如果url不是以"file:"开头, 那么
+        return JarFile(jarFileUrl)
     }
 
     /**
@@ -326,9 +436,89 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
             val url = resources.nextElement()
             result.add(convertClassLoaderURL(url))
         }
-        // TODO, no path?
+
+        // 如果path为""的话, 那么上面的结果看起来并不完整, 还需要添加ClassPath的根路径
+        if (!StringUtils.hasText(path)) {
+            addAllClassLoaderJarRoots(classLoader, result)
+        }
 
         return result
+    }
+
+    /**
+     * 添加所有的ClassLoader的Jar包根目录
+     *
+     * @param classLoader ClassLoader
+     * @param result Resource结果列表
+     */
+    protected open fun addAllClassLoaderJarRoots(@Nullable classLoader: ClassLoader?, result: MutableSet<Resource>) {
+        // 如果是URLClassLoader, 那么我们将它的所有URL去转换成为Resource
+        if (classLoader is URLClassLoader) {
+            try {
+                for (url in classLoader.urLs) {
+                    try {
+                        val jarResource: UrlResource
+                        if (url.protocol == URL_PROTOCOL_JAR) {
+                            jarResource = UrlResource(url)
+                        } else {
+                            jarResource =
+                                UrlResource(JAR_URL_PREFIX + url + JAR_URL_SEPARATOR)
+                        }
+
+                        // 如果存在的话, 那么收集到result当中...
+                        if (jarResource.exists()) {
+                            result += jarResource
+                        }
+                    } catch (ex: MalformedURLException) {
+                        if (logger.isDebugEnabled) {
+                            logger.debug(
+                                "Cannot search for matching files underneath [$url] because it cannot be converted to a valid 'jar:' URL: ${ex.message}",
+                                ex
+                            )
+                        }
+                    }
+                }
+
+            } catch (ex: Exception) {
+                // 如果该ClassLoader不支持使用getURLs方法的话...
+                if (logger.isDebugEnabled) {
+                    logger.debug(
+                        "Cannot introspect jar files since ClassLoader [$classLoader] does not support 'getURLs()'",
+                        ex
+                    )
+                }
+            }
+        }
+
+        // 如果是SystemClassLoader(AppClassLoader), 那么需要添加Manifest当中的Entry到结果当中
+        if (classLoader == ClassLoader.getSystemClassLoader()) {
+            addClassPathManifestEntries(result)
+        }
+
+
+        // 尝试从它的parent ClassLoader去进行寻找
+        if (classLoader != null) {
+            try {
+                addAllClassLoaderJarRoots(classLoader.parent, result)
+            } catch (ex: Exception) {
+                // 有可能ClassLoader不支持getParent, 那么pass掉就行...
+                if (logger.isDebugEnabled) {
+                    logger.debug(
+                        "Cannot introspect jar files in parent ClassLoader since [$classLoader] does not support 'getParent()",
+                        ex
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * 添加在Manifest当中去找到的Entry列表到结果当中
+     *
+     * @param result 用于收集最终的Resource的结果的列表
+     */
+    protected open fun addClassPathManifestEntries(result: MutableSet<Resource>) {
+
     }
 
     /**
