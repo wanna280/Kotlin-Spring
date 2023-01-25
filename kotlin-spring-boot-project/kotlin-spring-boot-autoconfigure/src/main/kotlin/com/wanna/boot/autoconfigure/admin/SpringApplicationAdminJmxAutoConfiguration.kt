@@ -27,7 +27,7 @@ open class SpringApplicationAdminJmxAutoConfiguration {
         /**
          * 默认是SpringBoot Admin的MXBean的ObjectName
          */
-        private const val DEFAULT_JMX_NAME = "org.springframework.boot:type=Admin,name=SpringApplication"
+        private const val DEFAULT_JMX_NAME = "com.wanna.boot:type=Admin,name=SpringApplication"
     }
 
     /**

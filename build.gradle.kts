@@ -24,20 +24,12 @@ allprojects {
     }
 
     dependencies {
-        implementation("org.springframework:spring-core:$springCoreVersion") {
-            // 不需要jcl依赖, 但是因为我们用到了Spring的一些工具类, 因此没有这个依赖的话, 会出现链接错误
-//            exclude(group = "org.springframework", module = "spring-jcl")
-        }
-
         implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
         implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
-        implementation("org.slf4j:slf4j-api:$slf4jApiVersion")
-        compileOnly("javax.validation:validation-api:2.0.1.Final")  // for  validate
-        compileOnly("javax.inject:javax.inject:1")
-        compileOnly("com.google.code.findbugs:jsr305:3.0.2")
+        compileOnly("javax.validation:validation-api:$javaxValidationVersion")  // for  validation
+        compileOnly("javax.inject:javax.inject:$javaxInjectVersion")
+        compileOnly("com.google.code.findbugs:jsr305:$googleJsr305Version")
         implementation("javax.annotation:javax.annotation-api:$javaxAnnotationVersion")
-        testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-        testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
     }
 
     // Note: AllProjects会在父工程当中执行, 它无法获取到子工程的插件当中的Task, 因为执行当前脚本时, 子工程的脚本还没执行

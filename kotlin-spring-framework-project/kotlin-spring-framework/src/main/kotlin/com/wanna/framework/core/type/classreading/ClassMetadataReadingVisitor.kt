@@ -89,7 +89,7 @@ open class ClassMetadataReadingVisitor : ClassVisitor(SpringAsmInfo.ASM_VERSION)
      * @param name name
      * @param descriptor descriptor
      */
-    override fun visitOuterClass(owner: String, name: String, descriptor: String?) {
+    override fun visitOuterClass(owner: String, @Nullable name: String?, @Nullable descriptor: String?) {
         this.enclosingClassName = getClassName(owner)
     }
 
@@ -97,8 +97,16 @@ open class ClassMetadataReadingVisitor : ClassVisitor(SpringAsmInfo.ASM_VERSION)
      * 访问内部类的相关信息
      *
      * @param name name
+     * @param outerName 外部类类名
+     * @param innerName 内部类类名
+     * @param access 访问标识符
      */
-    override fun visitInnerClass(name: String, outerName: String?, innerName: String?, access: Int) {
+    override fun visitInnerClass(
+        name: String,
+        @Nullable outerName: String?,
+        @Nullable innerName: String?,
+        access: Int
+    ) {
         outerName ?: return
         val fqName = getClassName(name)
         val fqOuterName = getClassName(outerName)

@@ -5,7 +5,7 @@ import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.http.MediaType
 
 /**
- * 它是内容协商管理器, 组合了多个内容协商策略去进行判断支持的响应方式;
+ * 它是HTTP协议的内容协商管理器, 组合了多个内容协商策略去进行判断支持的响应方式;
  * 它主要是负责去解析请求的客户端究竟想要接收什么类型的响应, 比如可以从请求头当中去进行解析,
  * 也可以从请求参数当中去进行解析
  *

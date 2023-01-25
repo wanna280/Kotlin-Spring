@@ -22,6 +22,7 @@ import java.lang.reflect.Method
  *
  * @see RequestMapping
  * @see Controller
+ * @see RequestMappingInfoHandlerMapping
  */
 open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), EmbeddedValueResolverAware {
 
@@ -41,8 +42,7 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
 
     /**
      * 怎么判断它是否是一个Handler? 只需要类上加了@Controller/@RequestMapping注解, 它就是一个Handler;
-     * 这里使用的hasAnnotation的API, 可以向目标类的父类当中去进行搜索;
-     * 对于一个Controller产生了代理的情况下, 这种情况是很必要的！！！
+     * 这里使用的hasAnnotation的API, 可以向目标类的父类当中去进行搜索; 对于一个Controller产生了代理的情况下, 这种情况是很必要的!!!
      *
      * @param beanType beanType
      * @return 它是否是一个Handler(如果标注了@Controller/@RequestMapping注解return true)
@@ -69,6 +69,7 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
      * @param handlerType handlerType
      * @return 如果方法上找到了@RequestMapping注解, return封装好的RequestMappingInfo; 不然return null
      */
+    @Nullable
     override fun getMappingForMethod(method: Method, handlerType: Class<*>): RequestMappingInfo? {
         // 从方法上找到@RequestMapping注解
         val info = getRequestMappingInfo(method)
@@ -77,7 +78,7 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
             val typeInfo = getRequestMappingInfo(handlerType)
             // 如果类上也有@RequestMapping的话, 需要联合两个RequestMappingInfo去作为最终的RequestMappingInfo
             if (typeInfo != null) {
-                return combine(info, typeInfo)
+                return combine(typeInfo, info)
             }
         }
         return info
@@ -147,6 +148,7 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
      * 如果必要的话, 使用嵌入式的值解析器, 去解析Cors注解的值
      *
      * @param value value
+     * @return 解析结果(无法解析的话, return "")
      */
     private fun resolveCorsAnnotationValue(value: String): String {
         return if (this.embeddedValueResolver != null) this.embeddedValueResolver?.resolveStringValue(value) ?: ""
@@ -156,16 +158,19 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
     /**
      * 联合两个RequestMappingInfo当中的相关信息, 合并成为一个最终的RequestMappingInfo
      *
-     * @param info info1
-     * @param newInfo info2
-     * @return 联合之后的新的RequestMappingInfo
+     * @param classMapping 类上的RequestMappingInfo信息
+     * @param methodMapping 方法上的RequestMappingInfo信息
+     * @return 联合类上的RequestMapping和方法上的RequestMapping之后的新的RequestMappingInfo
      */
-    protected open fun combine(info: RequestMappingInfo, newInfo: RequestMappingInfo): RequestMappingInfo {
-        val combinedMethods = info.methodsCondition.combine(newInfo.methodsCondition)
-        val combinedPath = info.pathPatternsCondition.combine(newInfo.pathPatternsCondition)
-        val combinedParam = info.paramsCondition.combine(newInfo.paramsCondition)
-        val combinedHeader = info.headersCondition.combine(newInfo.headersCondition)
-        val combinedProduces = info.producesCondition.combine(newInfo.producesCondition)
+    protected open fun combine(
+        classMapping: RequestMappingInfo,
+        methodMapping: RequestMappingInfo
+    ): RequestMappingInfo {
+        val combinedMethods = classMapping.methodsCondition.combine(methodMapping.methodsCondition)
+        val combinedPath = classMapping.pathPatternsCondition.combine(methodMapping.pathPatternsCondition)
+        val combinedParam = classMapping.paramsCondition.combine(methodMapping.paramsCondition)
+        val combinedHeader = classMapping.headersCondition.combine(methodMapping.headersCondition)
+        val combinedProduces = classMapping.producesCondition.combine(methodMapping.producesCondition)
         return RequestMappingInfo(combinedMethods, combinedPath, combinedParam, combinedHeader, combinedProduces)
     }
 
