@@ -11,6 +11,7 @@ import com.wanna.framework.util.ResourceUtils.JAR_URL_PREFIX
 import com.wanna.framework.util.ResourceUtils.JAR_URL_SEPARATOR
 import com.wanna.framework.util.ResourceUtils.URL_PROTOCOL_JAR
 import com.wanna.framework.util.ResourceUtils.WAR_URL_SEPARATOR
+import java.io.File
 import java.io.IOException
 import java.net.*
 import java.nio.file.*
@@ -27,6 +28,11 @@ import java.util.zip.ZipException
  * @version v1.0
  * @date 2022/10/2
  * @param resourceLoader 执行单个资源加载的ResourceLoader, 默认情况下使用的就是DefaultResourceLoader
+ *
+ * @see ResourcePatternResolver
+ * @see ResourceLoader
+ * @see PathMatcher
+ * @see AntPathMatcher
  */
 open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoader = DefaultResourceLoader()) :
     ResourcePatternResolver {
@@ -64,8 +70,19 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
     constructor(classLoader: ClassLoader) : this(DefaultResourceLoader(classLoader))
 
 
-    override fun getResource(location: String) = resourceLoader.getResource(location)
+    /**
+     * 根据没有表达式的直接路径, 去进行[Resource]的获取
+     *
+     * @param location 资源路径
+     * @return 根据给定的资源路径, 去解析到的[Resource]
+     */
+    override fun getResource(location: String): Resource = resourceLoader.getResource(location)
 
+    /**
+     * 获取到当前[ResourceLoader]进行[Resource]的加载时所使用到的ClassLoader
+     *
+     * @return ClassLoader to use
+     */
     @Nullable
     override fun getClassLoader(): ClassLoader? = resourceLoader.getClassLoader()
 
@@ -446,7 +463,7 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
     }
 
     /**
-     * 添加所有的ClassLoader的Jar包根目录
+     * 添加所有的ClassLoader的Jar包根目录到result列表当中
      *
      * @param classLoader ClassLoader
      * @param result Resource结果列表
@@ -470,6 +487,7 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
                             result += jarResource
                         }
                     } catch (ex: MalformedURLException) {
+                        // 如果遇到了URL相关异常的话...skip
                         if (logger.isDebugEnabled) {
                             logger.debug(
                                 "Cannot search for matching files underneath [$url] because it cannot be converted to a valid 'jar:' URL: ${ex.message}",
@@ -480,7 +498,7 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
                 }
 
             } catch (ex: Exception) {
-                // 如果该ClassLoader不支持使用getURLs方法的话...
+                // 如果该ClassLoader不支持使用getURLs方法的话...skip
                 if (logger.isDebugEnabled) {
                     logger.debug(
                         "Cannot introspect jar files since ClassLoader [$classLoader] does not support 'getURLs()'",
@@ -513,12 +531,44 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
     }
 
     /**
-     * 添加在Manifest当中去找到的Entry列表到结果当中
+     * 在"java.class.path"这个Manifest的系统属性当中给定的Jar包路径,
+     * 并将这些Jar包转换成为[Resource]收集到result列表当中
      *
-     * @param result 用于收集最终的Resource的结果的列表
+     * @param result 用于收集最终的Resource结果的列表
      */
     protected open fun addClassPathManifestEntries(result: MutableSet<Resource>) {
+        try {
+            val javaClassPath = System.getProperty("java.class.path", "")
+            val pathSeparator = System.getProperty("path.separator")
+            for (path in javaClassPath.split(pathSeparator)) {
+                try {
+                    var filePath = File(path).absolutePath
+                    if (filePath.indexOf(':') == 1) {
+                        // 可能是Windows的盘符("C:"), 需要将首字母小写, 用于去进行去重的检查
+                        filePath = StringUtils.capitalize(filePath)
+                    }
 
+                    // '#'可能出现在目录/文件名当中, 但是java.net.URL不应该把它当做一个fragment
+                    filePath = StringUtils.replace(filePath, "#", "%23")
+
+                    // 构建一个Jar包的路径
+                    val urlResource = UrlResource(JAR_URL_PREFIX + filePath + JAR_URL_SEPARATOR)
+
+                    // 很可能在URLClassLoader.getURLs当中已经添加过了, 因此这里需要去进行去重的检查...
+                    if (!result.contains(urlResource) && !hasDuplicate(filePath, result) && urlResource.exists()) {
+                        result += urlResource
+                    }
+                } catch (ex: MalformedURLException) {
+                    if (logger.isDebugEnabled) {
+                        logger.debug("Cannot search for matching files underneath [$path] because it cannot be converted to a valid 'jar:' URL: ${ex.message}")
+                    }
+                }
+            }
+        } catch (ex: Exception) {
+            if (logger.isDebugEnabled) {
+                logger.debug("Failed to evaluate 'java.class.path' manifest entries", ex)
+            }
+        }
     }
 
     /**
@@ -529,5 +579,25 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
      */
     protected open fun convertClassLoaderURL(url: URL): Resource {
         return UrlResource(url)
+    }
+
+    /**
+     * 检查给定的filePath的异构的情况, 在result当中是否已经存在有该[Resource]?
+     *
+     * @param filePath filePath(可能以"/"开头, 也可以不以"/"开头)
+     * @param result Resource结果列表
+     * @return 如果result列表已经存在有filePath对应的Resource的话, 那么return true; 否则return false
+     */
+    private fun hasDuplicate(filePath: String, result: MutableSet<Resource>): Boolean {
+        if (result.isEmpty()) {
+            return false
+        }
+        val duplicatePath = if (filePath.startsWith("/")) filePath.substring(1) else "/$filePath"
+        return try {
+            result.contains(UrlResource(JAR_URL_PREFIX + FILE_URL_PREFIX + duplicatePath + JAR_URL_SEPARATOR))
+        } catch (ex: Exception) {
+            // 出现异常就pass, 我们只是进行重复的检查罢了...
+            false
+        }
     }
 }
