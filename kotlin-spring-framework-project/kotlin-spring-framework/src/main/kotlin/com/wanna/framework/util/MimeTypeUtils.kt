@@ -49,14 +49,12 @@ object MimeTypeUtils {
         if (!StringUtils.hasText(mimeType)) {
             throw InvalidMimeTypeException(mimeType ?: "null", "'mimeType' must not be empty")
         }
-        mimeType!!
-
         // 对于multipart文件上传请求的MimeType, 不要走缓存, 执行实时解析, 有一个随机边界(random boundaries)
-        if (mimeType.startsWith("multipart")) {
+        if (mimeType!!.startsWith("multipart")) {
             return parseMimeTypeInternal(mimeType)
         }
         // 对于正常的mimeType, 那么直接走缓存当中去进行获取
-        return cachedMimeTypes.get(mimeType)
+        return cachedMimeTypes[mimeType]
     }
 
     /**

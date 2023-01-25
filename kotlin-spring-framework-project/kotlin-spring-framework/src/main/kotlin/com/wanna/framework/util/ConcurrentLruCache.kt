@@ -63,7 +63,7 @@ open class ConcurrentLruCache<K : Any, V : Any>(val sizeLimit: Int, private val 
      * @param key key
      * @return 根据Key从缓存当中去获取到的元素Value
      */
-    open fun get(key: K): V {
+    open operator fun get(key: K): V {
         // 1.如果sizeLimit=0, 说明不允许缓存, 那么直接使用generator去进行生成和返回
         if (sizeLimit == 0) {
             return generator.apply(key)
