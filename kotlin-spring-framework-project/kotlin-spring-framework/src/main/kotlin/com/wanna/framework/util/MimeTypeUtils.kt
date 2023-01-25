@@ -42,14 +42,18 @@ object MimeTypeUtils {
      * 将给定的[mimeType]字符串去解析成为MimeType
      *
      * @param mimeType 待解析的mimeType字符串
-     * @return 解析得到MimeType
+     * @return 解析得到的MimeType
+     *
+     * @throws InvalidMimeTypeException 如果解析MimeType的过程中遇到了不合法的情况
      */
+    @Throws(InvalidMimeTypeException::class)
     @JvmStatic
     fun parseMimeType(@Nullable mimeType: String?): MimeType {
         if (!StringUtils.hasText(mimeType)) {
             throw InvalidMimeTypeException(mimeType ?: "null", "'mimeType' must not be empty")
         }
-        // 对于multipart文件上传请求的MimeType, 不要走缓存, 执行实时解析, 有一个随机边界(random boundaries)
+        // 对于multipart文件上传请求的MimeType, 不要走缓存, 需要去进行执行实时解析,
+        // 因为在文件上传请求的MimeType的参数当中会存在有一个随机参数值(random boundaries), 需要去进行实时解析
         if (mimeType!!.startsWith("multipart")) {
             return parseMimeTypeInternal(mimeType)
         }
@@ -61,8 +65,10 @@ object MimeTypeUtils {
      * 将给定的[mimeType]字符串去解析成为MimeType
      *
      * @param mimeType 待解析的mimeType字符串
-     * @return 解析得到MimeType
+     * @return 解析得到的MimeType
+     * @throws InvalidMimeTypeException 如果解析MimeType的过程中遇到了不合法的情况
      */
+    @Throws(InvalidMimeTypeException::class)
     @JvmStatic
     private fun parseMimeTypeInternal(mimeType: String): MimeType {
         // 切取";"前面的这部分去作为fullType(格式为type/subtype), 去掉前后多余的空白符
@@ -168,8 +174,8 @@ object MimeTypeUtils {
     }
 
     /**
-     * 将给定的[MimeType]列表, 多个[MimeType]生成的字符串之间使用","去合成成为字符串,
-     * 和[parseMimeTypes]方法之间是互逆操作
+     * 将给定的[MimeType]列表当中的多个[MimeType]生成的字符串之间使用","去合成成为字符串,
+     * 这个方法实现的想过, 本质上和[parseMimeTypes]方法之间是互逆操作
      *
      * @param mimeTypes 待转成字符串的[MimeType]列表
      * @return 将多个[MimeType]去聚合成为字符串的结果
