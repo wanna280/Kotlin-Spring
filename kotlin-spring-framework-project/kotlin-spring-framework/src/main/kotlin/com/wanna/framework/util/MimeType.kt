@@ -63,6 +63,7 @@ open class MimeType(val type: String, val subtype: String, val parameters: Map<S
     /**
      * 已经解析完成的字符集的缓存
      */
+    @Transient
     @Nullable
     var charset: Charset? = null
         private set
@@ -329,6 +330,57 @@ open class MimeType(val type: String, val subtype: String, val parameters: Map<S
             this.toStringValue = value
         }
         return value
+    }
+
+    /**
+     * equals, 也采用type/subtype/parameters去进行生成
+     *
+     * @param other 要去进行比较的另外一个对象
+     * @return 如果两者相等, return true; 否则return false
+     */
+    override fun equals(@Nullable other: Any?): Boolean {
+        if (this === other) return true
+        return other is MimeType && type == other.type && subtype == other.subtype && parametersAreEqual(other)
+    }
+
+    /**
+     * 比较两者的参数是否都是相等的?
+     *
+     * @param other other
+     * @return 如果两者参数相等, 那么return true; 否则return false
+     */
+    private fun parametersAreEqual(other: MimeType): Boolean {
+        // shortcut, check size
+        if (this.parameters.size != other.parameters.size) {
+            return false
+        }
+
+        // check all entry equals
+        for ((key, value) in parameters.entries) {
+            if (!other.parameters.containsKey(key)) {
+                return false
+            }
+            if (PARAM_CHARSET == key) {
+                if (charset != other.charset) {
+                    return false
+                }
+            } else if (value != other.parameters[key]) {
+                return false
+            }
+        }
+        return true
+    }
+
+    /**
+     * hashCode, 采用type/subtype/parameters去进行生成
+     *
+     * @return hashCode
+     */
+    override fun hashCode(): Int {
+        var result = type.hashCode()
+        result = 31 * result + subtype.hashCode()
+        result = 31 * result + parameters.hashCode()
+        return result
     }
 
     /**
