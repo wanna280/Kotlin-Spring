@@ -8,8 +8,7 @@ import com.wanna.framework.web.http.MediaType
  *
  * @see ContentNegotiationManager
  */
-@FunctionalInterface
-interface ContentNegotiationStrategy {
+fun interface ContentNegotiationStrategy {
     companion object {
         @JvmStatic
         val MEDIA_TYPE_ALL_LIST = arrayListOf(MediaType.ALL)
