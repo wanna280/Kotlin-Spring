@@ -32,6 +32,10 @@ import java.nio.charset.Charset
  * @see MimeTypeUtils
  * @see com.wanna.framework.web.http.MediaType
  * @see com.wanna.framework.web.accept.ContentNegotiationManager
+ *
+ * @param type type大类型, 例如"text", "application"
+ * @param subtype subtype子类型, 例如"html", "xml", "json"
+ * @param parameters 更多的参数信息, 比如"quality", "charset"
  */
 open class MimeType(val type: String, val subtype: String, val parameters: Map<String, String>) : Serializable {
 
@@ -172,7 +176,7 @@ open class MimeType(val type: String, val subtype: String, val parameters: Map<S
     }
 
     /**
-     * 获取获取到当前MimeType的结构后缀.
+     * 获取获取到当前[MimeType]的结构后缀.
      *
      * 对于"application/soap+xml"这种情况, 需要返回subtype的后缀, 得到"xml";
      * 如果是"application/json"这种情况, 直接得到null, 因为该MimeType不含有结构后缀.
@@ -189,6 +193,28 @@ open class MimeType(val type: String, val subtype: String, val parameters: Map<S
     }
 
     /**
+     * 将当前[MimeType]的toString的结果添加到给定的[builder]当中
+     *
+     * @param builder 待添加字符串的StringBuilder
+     */
+    protected open fun appendTo(builder: StringBuilder) {
+        builder.append(this.type).append('/').append(this.subtype)
+        for (parameter in parameters) {
+            builder.append(';').append(parameter.key).append('=').append(parameter.value)
+        }
+    }
+
+    /**
+     * 将给定的字符串的引号去掉
+     *
+     * @param str str
+     * @return 去掉引号之后的字符串
+     */
+    protected open fun unquote(str: String): String {
+        return if (isQuotedString(str)) str.substring(1, str.length - 1) else str
+    }
+
+    /**
      * 检查给定的字符串是否被添加了引号, 从而导致被引号所包围? 可能是单引号/双引号
      *
      * @param str 待检查的字符串
@@ -200,16 +226,6 @@ open class MimeType(val type: String, val subtype: String, val parameters: Map<S
         }
         return (str.startsWith('"') && str.endsWith('"'))
                 || (str.startsWith('\'') && str.endsWith('\''))
-    }
-
-    /**
-     * 将给定的字符串的引号去掉
-     *
-     * @param str str
-     * @return 去掉引号之后的字符串
-     */
-    protected open fun unquote(str: String): String {
-        return if (isQuotedString(str)) str.substring(1, str.length - 1) else str
     }
 
 
@@ -230,28 +246,56 @@ open class MimeType(val type: String, val subtype: String, val parameters: Map<S
     }
 
     /**
-     * 将当前[MimeType]的toString的结果添加到给定的[builder]当中
-     *
-     * @param builder 待添加字符串的StringBuilder
-     */
-    protected open fun appendTo(builder: StringBuilder) {
-        builder.append(this.type).append('/').append(this.subtype)
-        for (parameter in parameters) {
-            builder.append(';').append(parameter.key).append('=').append(parameter.value)
-        }
-    }
-
-    /**
      * 对[MimeType]的具体程度去进行排序的比较器
      */
     open class SpecificityComparator<T : MimeType> : Comparator<T> {
-        override fun compare(o1: T, o2: T): Int {
-            // TODO
-            return 1
+
+        /**
+         * 返回-1代表mimeType1优先级高, 返回1代表mimeType2优先级高
+         *
+         * @param mimeType1 mimeType1
+         * @param mimeType2 mimeType2
+         */
+        override fun compare(mimeType1: T, mimeType2: T): Int {
+            // 如果mimeType1是"*/*", 但是mimeType2不是"*/*", 这种肯定mimeType2优先级更高
+            if (mimeType1.isWildcardType && !mimeType2.isWildcardType) {
+                return 1
+
+                // 如果mimeType2是"*/*", 但是mimeType1不是"*/*", 这种肯定mimeType1优先级更高
+            } else if (mimeType2.isWildcardType && !mimeType1.isWildcardType) {
+                return -1
+
+                // 如果mimeType1和mimeType2的type都不相同(例如"audio/basic" == "text/html", 特殊地, "*/*" == "*/*"), 那么没法比较, 认为两者相等
+            } else if (mimeType2.type != mimeType1.type) {
+                return 0
+
+                // 如果mimeType1和mimeType2的type相同, 那么比较一下subtype
+            } else {
+                if (mimeType1.isWildcardSubtype && !mimeType2.isWildcardSubtype) {
+                    return 1
+                } else if (mimeType2.isWildcardSubtype && !mimeType1.isWildcardSubtype) {
+                    return -1
+                } else if (mimeType1.subtype != mimeType2.subtype) {
+                    return 0
+                }
+
+                // 如果type和subtype都完全相同, 那么比较参数
+                return compareParameters(mimeType1, mimeType2)
+            }
         }
 
-        protected open fun compareParameters(mediaType1: T, mediaType2: T): Int {
-            return 1
+        /**
+         * 在mimeType1和mimeType2的type和subtype都相同的情况下, 需要去比较参数,
+         * 默认实现的比较方式为参数越多, 优先级越低.
+         *
+         * @param mimeType1 mimeType1
+         * @param mimeType2 mimeType2
+         * @return mimeType1和mimeType2, 两者按照参数去进行比较之后的结果
+         */
+        protected open fun compareParameters(mimeType1: T, mimeType2: T): Int {
+            val paramsSize1 = mimeType1.parameters.size
+            val paramsSize2 = mimeType2.parameters.size
+            return paramsSize2.compareTo(paramsSize1)
         }
     }
 

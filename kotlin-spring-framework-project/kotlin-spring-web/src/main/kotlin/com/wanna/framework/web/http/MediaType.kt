@@ -10,12 +10,15 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 
 /**
- * HTTP协议当中需要用到的MediaType媒体类型, 它用于去决定浏览器将以什么形式、什么编码对资源进行解析;
- * 对于一个MediaType, 主要包含4个部分组成, type/subtype/charset/qualityValue,
+ * HTTP协议当中需要用到的MediaType媒体类型, 它用于去决定浏览器将以什么形式、什么编码对资源进行解析.
+ *
+ * [MediaType]实际上也是一个[MimeType], 在[MimeType]的基础上新增了q参数, 因此它支持去对[MediaType]按照权值去进行排序.
+ *
+ * 对于一个[MediaType], 主要包含4个部分组成, type/subtype/charset/qualityValue,
  * 实际上, 对于charset和qualityValue这两个参数都是存放在parameters当中.
  *
- * @param type type, 例如"text", "application"
- * @param subtype subtype, 例如"html", "xml", "json"
+ * @param type type大类型, 例如"text", "application"
+ * @param subtype subtype子类型, 例如"html", "xml", "json"
  * @param parameters 更多的参数信息, 比如"quality", "charset"
  *
  * @see com.wanna.framework.web.accept.ContentNegotiationManager
@@ -29,7 +32,8 @@ open class MediaType(type: String, subtype: String, parameters: Map<String, Stri
     }
 
     /**
-     * MediaType的权值
+     * MediaType的权值, 采用计算属性的方式去对外提供值.
+     * 可以通过"q"这个参数去进行指定权值, 如果不指定的话, 那么默认值为1.0(最高权值)
      */
     val qualityValue: Double
         get() {
@@ -125,6 +129,8 @@ open class MediaType(type: String, subtype: String, parameters: Map<String, Stri
 
         /**
          * MediaType的权值参数名
+         *
+         * @see MediaType.qualityValue
          */
         private const val PARAM_QUALITY_FACTOR = "q"
 
@@ -238,47 +244,85 @@ open class MediaType(type: String, subtype: String, parameters: Map<String, Stri
 
         /**
          * 按照权值去对[MediaType]去进行排序的比较器
+         *
+         * * 1.按照qualityValue去作为作为优先级去进行排序
+         * * 2.如果优先级相同, 那么比较type, 含有"*"通配符的优先级更低, 如果两者都含/都不含有通配符的话,
+         * 但是两者的type确实不同, 那么算两者相等, 因为其实已经没法比了(例如"audio/basic" == "text/html")
+         * * 3.如果优先级相同, type也相同的话, 那么就得对subtype按照type的比较的同样的比较方式去进行比较
+         * * 4.如果优先级相同, type相同, subtype也相同, 那么按照参数的数量去进行比较, 参数越多的优先级越低
          */
         @JvmField
         val QUALITY_VALUE_COMPARATOR = Comparator { mediaType1: MediaType, mediaType2: MediaType ->
             val quality1 = mediaType1.qualityValue
             val quality2 = mediaType2.qualityValue
             val qualityComparison = quality2.compareTo(quality1)
+
+            // 如果两者的权值不相等的话, 那么直接返回使用权值的比较结果即可(例如"audio/*;q=0.7" < "audio/*;q=0.3")
             if (qualityComparison != 0) {
-                return@Comparator qualityComparison // audio/*;q=0.7 < audio/*;q=0.3
-            } else if (mediaType1.isWildcardType && !mediaType2.isWildcardType) {  // */* < audio/*
+                return@Comparator qualityComparison
+
+                // 如果mediaType1是"*/*", 但是mediaType2不是"*/*"的话, 那么mediaType2肯定要大一些...(例如"*/*" < "audio/*")
+            } else if (mediaType1.isWildcardType && !mediaType2.isWildcardType) {
                 return@Comparator 1
-            } else if (mediaType2.isWildcardType && !mediaType1.isWildcardType) {  // audio/* > */*
+
+                // 如果mediaType1不是"*/*", 但是mediaType2是"*/*"的话, 那么mediaType1肯定要大一些...(例如"audio/*" > "*/*")
+            } else if (mediaType2.isWildcardType && !mediaType1.isWildcardType) {
                 return@Comparator -1
-            } else if (mediaType1.type != mediaType2.type) {  // audio/basic == text/html
+
+                // 如果两者的type不同的话, 那么它们算是相同优先级的(例如"audio/basic" == "text/html", 特殊地, "*/*" == "*/*")
+            } else if (mediaType1.type != mediaType2.type) {
                 return@Comparator 0
-            } else {  // mediaType1.getType().equals(mediaType2.getType())
-                if (mediaType1.isWildcardSubtype && !mediaType2.isWildcardSubtype) {  // audio/* < audio/basic
+
+                // 如果两者的type相等, 那么就得比较subtype...
+            } else {
+                // 如果mediaType1的subtype含有"*", 但是mediaType2的subType不含有"*", 那么肯定是mediaType2比较大(例如"audio/*" < "audio/basic")
+                if (mediaType1.isWildcardSubtype && !mediaType2.isWildcardSubtype) {
                     return@Comparator 1
-                } else if (mediaType2.isWildcardSubtype && !mediaType1.isWildcardSubtype) {  // audio/basic > audio/*
+
+                    // 如果mediaType1的subType不含有"*", 但是mediaType2的subtype含有"*", 那么肯定是mediaType1比较大(例如"audio/basic" > "audio/*")
+                } else if (mediaType2.isWildcardSubtype && !mediaType1.isWildcardSubtype) {
                     return@Comparator -1
-                } else if (mediaType1.subtype != mediaType2.subtype) {  // audio/basic == audio/wave
+
+                    // 如果两者的subtype不同的话, 那么两者算是相同优先级的(例如"audio/basic" == "audio/wave", 特殊地, "audio/*" == "audio/*")
+                } else if (mediaType1.subtype != mediaType2.subtype) {
                     return@Comparator 0
+
+                    // 如果subtype也相同的话, 那么参数越少则优先级越高(例如"audio/basic;level=1" < "audio/basic")
                 } else {
                     val paramsSize1 = mediaType1.parameters.size
                     val paramsSize2 = mediaType2.parameters.size
-                    return@Comparator paramsSize2.compareTo(paramsSize1) // audio/basic;level=1 < audio/basic
+                    return@Comparator paramsSize2.compareTo(paramsSize1)
                 }
             }
         }
 
         /**
-         * 按照[MediaType]的具体程度去对[MediaType]去进行排序的比较器
+         * 按照[MediaType]的具体程度去对[MediaType]去进行排序的比较器.
+         *
+         * * 1.比较type, 含有"*"通配符的优先级更低, 如果两者都含/都不含有通配符的话,
+         * 但是两者的type确实不同, 那么算两者相等, 因为其实已经没法比了(例如"audio/basic" == "text/html")
+         * * 2.如果两者type相同的话, 那么就得对subtype按照type的比较的同样的比较方式去进行比较
+         * * 3.如果type相同, subtype也相同, 那么先按照qualityValue去进行比较
+         * * 4.如果type相同, subtype相同, qualityValue也相同的话, 那么按照参数的数量去进行比较, 参数越多的优先级越低
          */
         @JvmStatic
         val SPECIFICITY_COMPARATOR: Comparator<MediaType> = object : SpecificityComparator<MediaType>() {
-            override fun compareParameters(mediaType1: MediaType, mediaType2: MediaType): Int {
-                val quality1 = mediaType1.qualityValue
-                val quality2 = mediaType2.qualityValue
+
+            /**
+             * 在mimeType1和mimeType2的type和subtype都相同的情况下, 需要去比较参数,
+             * 这里我们尝试优先根据qualityValue去进行比较, 如果两者的qualityValue也相同的话, 那么再沿用父类的比较参数的方式去进行比较
+             *
+             * @param mimeType1 mimeType1
+             * @param mimeType2 mimeType2
+             * @return mimeType1和mimeType2, 两者按照参数去进行比较之后的结果
+             */
+            override fun compareParameters(mimeType1: MediaType, mimeType2: MediaType): Int {
+                val quality1 = mimeType1.qualityValue
+                val quality2 = mimeType2.qualityValue
                 val qualityComparison = quality2.compareTo(quality1)
-                return if (qualityComparison != 0) {
-                    qualityComparison // audio/*;q=0.7 < audio/*;q=0.3
-                } else super.compareParameters(mediaType1, mediaType2)
+                return if (qualityComparison != 0) {  // 如果优先级可以决定出来优先级, 那么使用优先级去进行比较即可(例如"audio/*;q=0.7" < "audio/*;q=0.3")
+                    qualityComparison
+                } else super.compareParameters(mimeType1, mimeType2)
             }
         }
 
@@ -286,19 +330,31 @@ open class MediaType(type: String, subtype: String, parameters: Map<String, Stri
          * 根据给定的MediaType字符串, 去解析成为[MediaType]
          *
          * @param value mediaType字符串
-         * @return 解析得到的MediaType对象
+         * @return 解析得到的[MediaType]对象
          */
         @JvmStatic
         fun valueOf(value: String): MediaType {
             return parseMediaType(value)
         }
 
+        /**
+         * 将给定的[mediaType]字符串去解析成为[MediaType]
+         *
+         * @param mediaType mediaType字符串
+         * @return 解析得到的[MediaType]对象
+         */
         @JvmStatic
         fun parseMediaType(mediaType: String): MediaType {
             val type = MimeTypeUtils.parseMimeType(mediaType)
             return MediaType(type)
         }
 
+        /**
+         * 将给定的[mediaTypes]字符串去解析成为[MediaType]列表
+         *
+         * @param mediaTypes 待解析的mediaType列表字符串(多个mediaType之间按照","去进行拆分)
+         * @return 解析得到的[MediaType]列表
+         */
         @JvmStatic
         fun parseMediaTypes(@Nullable mediaTypes: String?): List<MediaType> {
             if (!StringUtils.hasLength(mediaTypes)) {
@@ -314,6 +370,13 @@ open class MediaType(type: String, subtype: String, parameters: Map<String, Stri
             return result
         }
 
+        /**
+         * 将给定的[mediaTypes]字符串列表去解析成为[MediaType]列表,
+         * 一个字符串当中如果含有","的话, 那么也支持去解析成为多个[MediaType].
+         *
+         * @param mediaTypes 待解析的mediaType列表字符串列表
+         * @return 解析得到的最终的[MediaType]列表
+         */
         @JvmStatic
         fun parseMediaTypes(mediaTypes: List<String>): List<MediaType> {
             return if (mediaTypes.isEmpty()) {
@@ -323,7 +386,7 @@ open class MediaType(type: String, subtype: String, parameters: Map<String, Stri
             } else {
                 val result = ArrayList<MediaType>(8)
                 for (mediaType in mediaTypes) {
-                    result.addAll(parseMediaTypes(mediaType))
+                    result += parseMediaTypes(mediaType)
                 }
                 result
             }
