@@ -96,6 +96,24 @@ open class MediaType(type: String, subtype: String, parameters: Map<String, Stri
     }
 
     /**
+     * 当前[MimeType]是否比另外一个[MimeType]更加具体?
+     *
+     * @param other other MimeType
+     * @return 如果当前更加具体return true; 否则return false
+     */
+    override fun isMoreSpecific(other: MimeType): Boolean {
+        // 如果other也是MediaType的话, 那么先按照权值去进行比较
+        if (other is MediaType) {
+            if (this.qualityValue > other.qualityValue) {
+                return true
+            } else if (this.qualityValue < other.qualityValue) {
+                return false
+            }
+        }
+        return super.isMoreSpecific(other)
+    }
+
+    /**
      * 将给定的[MediaType]的qualityValue, 拷贝到当前的[MediaType]当中, 从而去实现合并, 得到新的[MediaType]
      *
      * @param mediaType 需要提供qualityValue的MediaType

@@ -147,6 +147,48 @@ open class MimeType(val type: String, val subtype: String, val parameters: Map<S
     }
 
     /**
+     * 当前[MimeType]是否比另外一个[MimeType]更加具体?
+     *
+     * @param other other MimeType
+     * @return 如果当前更加具体return true; 否则return false
+     */
+    open fun isMoreSpecific(other: MimeType): Boolean {
+        // 如果this是"*/*", 但是other不是"*/*", other更具体
+        if (this.isWildcardType && !other.isWildcardType) {
+            return false
+
+            // 如果other是"*/*", 但是this不是"*/*", this更具体
+        } else if (other.isWildcardType && !this.isWildcardType) {
+            return true
+
+        } else {
+            // 如果this的subtype是"*", 但是other的subtype不是"*"的话, 那么other更具体
+            if (this.isWildcardSubtype && !other.isWildcardSubtype) {
+                return false
+
+                // 如果other的subtype是"*", 但是this的subtype不是"*"的话, 那么this更具体
+            } else if (other.isWildcardSubtype && !this.isWildcardSubtype) {
+                return true
+
+                // 如果两者的type和subtype完全一样, 那么按照参数数量去进行比较
+            } else if (this.type == other.type && this.subtype == other.subtype) {
+                val paramsSize1 = this.parameters.size
+                val paramsSize2 = other.parameters.size
+                return paramsSize1 - paramsSize2 > 0
+            }
+            return false
+        }
+    }
+
+    /**
+     * 检查另外一个[MimeType]是否比当前[MimeType]更加具体?
+     *
+     * @param other 别的[MimeType]
+     * @return 如果别的更加具体return true; 否则return false
+     */
+    open fun isLessSpecific(other: MimeType): Boolean = other.isMoreSpecific(this)
+
+    /**
      * 检查当前的[MimeType]是否包含在给定的[MimeType]的列表当中?
      * 只有在当前的[MimeType]对象和别的[MimeType]对象之间type和subtype都相等的情况下才算是匹配
      *
