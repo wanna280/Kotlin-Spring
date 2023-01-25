@@ -45,7 +45,18 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
         private val logger = LoggerFactory.getLogger(PathMatchingResourcePatternResolver::class.java)
 
         /**
-         * 去掉path开头的'/'
+         * 获取到Java的ClassPath的系统属性名
+         */
+        private const val JAVA_CLASS_PATH_PROPERTY_NAME = "java.class.path"
+
+        /**
+         * 路径的分隔符的系统属性名
+         */
+        private const val PATH_SEPARATOR = "path.separator"
+
+
+        /**
+         * 如果给定的path以"/"作为开头的话, 那么需要去掉path开头的"/"
          *
          * @param path path
          * @return 如果path以"/"作为开头, 需要去掉"/"; 否则直接return path即可
@@ -538,8 +549,8 @@ open class PathMatchingResourcePatternResolver(val resourceLoader: ResourceLoade
      */
     protected open fun addClassPathManifestEntries(result: MutableSet<Resource>) {
         try {
-            val javaClassPath = System.getProperty("java.class.path", "")
-            val pathSeparator = System.getProperty("path.separator")
+            val javaClassPath = System.getProperty(JAVA_CLASS_PATH_PROPERTY_NAME, "")
+            val pathSeparator = System.getProperty(PATH_SEPARATOR)
             for (path in javaClassPath.split(pathSeparator)) {
                 try {
                     var filePath = File(path).absolutePath
