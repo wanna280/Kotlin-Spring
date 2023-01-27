@@ -3,7 +3,8 @@ package com.wanna.framework.web.client
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.web.bind.annotation.RequestMethod
-import com.wanna.framework.web.http.MediaType
+import com.wanna.framework.web.http.HttpEntity
+import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.ResponseEntity
 import com.wanna.framework.web.http.client.ClientHttpRequest
 import com.wanna.framework.web.http.client.ClientHttpResponse
@@ -92,7 +93,7 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
 
     override fun <T : Any> postForObject(
         url: String,
-        requestBody: Any?,
+        @Nullable requestBody: Any?,
         responseType: Class<T>,
         uriVariables: Map<String, String>
     ): T? {
@@ -126,7 +127,7 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
 
 
     override fun <T : Any> execute(
-        url: URI,
+        uri: URI,
         method: RequestMethod,
         @Nullable requestCallback: RequestCallback?,
         @Nullable responseExtractor: ResponseExtractor<T>?
@@ -134,7 +135,7 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
         // 使用ClientHttpRequestFactory创建ClientHttpRequest
         // 如果当前RestTemplate当中存在有拦截器的话, 那么创建的将会是InterceptingClientHttpRequest; 
         // 如果当前RestTemplate当中不存在有拦截器的话, 那么创建的将会是来自于各个HttpClient(比如ApacheHttpClient)的ClientHttpRequest
-        val clientRequest: ClientHttpRequest = createRequest(url, method)
+        val clientRequest: ClientHttpRequest = createRequest(uri, method)
 
         // 如果必要的话, 使用给定的RequestCallback对ClientHttpRequest去进行处理
         requestCallback?.doWithRequest(clientRequest)
@@ -151,22 +152,35 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
     }
 
     /**
-     * 含有HttpEntity的RequestCallback, 用来将HttpEntity写出到Request当中
+     * 获取到含有HttpEntity的[RequestCallback], 用来实现将HttpEntity写出到Request当中
      *
-     * @param requestBody requestBody
+     * @param requestBody RequestBody(可以是[HttpEntity])
+     * @return 执行HttpEntity作为RequestBody的写出的[RequestCallback]
      */
-    private fun httpEntityRequestCallback(requestBody: Any?): RequestCallback {
+    private fun httpEntityRequestCallback(@Nullable requestBody: Any?): RequestCallback {
         return HttpEntityRequestCallback(requestBody)
     }
 
     /**
      * 将响应转换为Entity的Response提取器
+     *
+     * @param responseType ResponseBody类型
      */
     private inner class ResponseEntityResponseExtractor<T : Any>(responseType: Class<T>) :
         ResponseExtractor<ResponseEntity<T>> {
+
+        /**
+         * 利用[HttpMessageConverter]去进行ResponseEntity的提取
+         */
         private val delegate = HttpMessageConverterExtractor(messageConverters, responseType)
 
-        override fun extractData(response: ClientHttpResponse): ResponseEntity<T>? {
+        /**
+         * 执行提取操作, 将Response去提取成为[ResponseEntity]对象
+         *
+         * @param response response
+         * @return ResponseEntity
+         */
+        override fun extractData(response: ClientHttpResponse): ResponseEntity<T> {
             return ResponseEntity(response.getStatusCode(), response.getHeaders(), delegate.extractData(response))
         }
     }
@@ -174,15 +188,67 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
     /**
      * 将HttpEntity使用MessageConverter以合适的格式写出到Request当中的RequestCallback
      *
-     * @param requestBody requestBody的Entity数据
+     * @param requestBody requestBody的Entity数据(可以是[HttpEntity])
      */
-    private inner class HttpEntityRequestCallback(private val requestBody: Any?) : RequestCallback {
+    private inner class HttpEntityRequestCallback(@Nullable requestBody: Any?) : RequestCallback {
+
+        /**
+         * RequestEntity, 封装RequestBody的对象内容以及HttpHeaders信息
+         */
+        private val requestEntity: HttpEntity<*>
+
+        init {
+            // 根据requestBody的类型, 构建出来不同的HttpEntity...
+            if (requestBody is HttpEntity<*>) {
+                requestEntity = requestBody
+            } else if (requestBody != null) {
+                requestEntity = HttpEntity(HttpHeaders(), requestBody)
+            } else {
+                requestEntity = HttpEntity.EMPTY
+            }
+        }
+
+
+        /**
+         * 对[ClientHttpRequest]去进行处理, 将RequestBody的数据借助[HttpMessageConverter]去进行写出
+         *
+         * @param request request
+         */
         override fun doWithRequest(request: ClientHttpRequest) {
-            if (requestBody != null) {
-                messageConverters.forEach {
-                    if (it.canWrite(requestBody::class.java, MediaType.APPLICATION_JSON)) {
+            val requestBody = requestEntity.body
+
+            // 如果不存在RequestBody, merge一下RequestEntity当中的HttpHeaders即可
+            if (requestBody == null) {
+                val httpHeaders = request.getHeaders()
+                val requestHeaders = requestEntity.headers
+                // 将RequestEntity的requestHeaders当中的内容转移到httpHeaders当中去
+                if (requestHeaders.isNotEmpty()) {
+                    requestHeaders.forEach(httpHeaders::put)
+                }
+                // 将contentLength设置为0
+                if (httpHeaders.getContentLength() < 0) {
+                    httpHeaders.setContentLength(0L)
+                }
+
+
+                // 如果存在有RequestBody的话, 那么需要使用MessageConverter去进行写出
+            } else {
+                val httpHeaders = request.getHeaders()
+                val requestHeaders = requestEntity.headers
+
+                // 从HttpEntity当中去获取到ContentType, 利用MessageConverter去进行消息的写出
+                val contentType = requestHeaders.getContentType()
+                for (converter in messageConverters) {
+                    if (converter.canRead(requestBody::class.java, contentType)) {
+
+                        // 将RequestEntity的requestHeaders当中的内容merge到httpHeaders当中去
+                        if (requestHeaders.isNotEmpty()) {
+                            requestHeaders.forEach(httpHeaders::put)
+                        }
+
                         @Suppress("UNCHECKED_CAST")
-                        (it as HttpMessageConverter<Any>).write(requestBody, MediaType.APPLICATION_JSON, request)
+                        (converter as HttpMessageConverter<Any>).write(requestBody, contentType, request)
+                        return
                     }
                 }
             }

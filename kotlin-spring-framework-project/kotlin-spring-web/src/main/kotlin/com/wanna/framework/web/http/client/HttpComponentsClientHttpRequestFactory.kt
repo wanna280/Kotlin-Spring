@@ -8,7 +8,21 @@ import org.apache.http.client.methods.HttpPost
 import org.apache.http.impl.client.HttpClients
 import java.net.URI
 
-class HttpComponentsClientHttpRequestFactory : ClientHttpRequestFactory {
+/**
+ * 基于Apache/HttpComponent去作为HttpClient, 从而实现[ClientHttpRequestFactory]
+ *
+ * @see ClientHttpRequestFactory
+ * @see HttpComponentsClientHttpRequest
+ */
+open class HttpComponentsClientHttpRequestFactory : ClientHttpRequestFactory {
+
+    /**
+     * 为给定的URI和请求方式, 去创建出来一个[ClientHttpRequest]
+     *
+     * @param uri URI
+     * @param method 请求方式
+     * @return ClientHttpRequest
+     */
     override fun createRequest(uri: URI, method: RequestMethod): ClientHttpRequest {
         val httpClient = HttpClients.createDefault()
         val httpRequest = when (method) {

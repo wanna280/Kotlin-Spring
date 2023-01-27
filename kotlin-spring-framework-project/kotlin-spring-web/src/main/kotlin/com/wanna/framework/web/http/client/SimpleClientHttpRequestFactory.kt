@@ -109,17 +109,32 @@ open class SimpleClientHttpRequestFactory : ClientHttpRequestFactory {
      * 准备[HttpURLConnection], 提供模板方法, 子类可以根据模板方法去进行自定义
      *
      * @param connection HttpURLConnection
-     * @param httpMethod HTTP请求方式
+     * @param httpMethod HTTP请求方式(GET/POST/DELETE/PUT/PATCH等)
      */
     @Throws(IOException::class)
     protected open fun prepareConnection(connection: HttpURLConnection, httpMethod: String) {
+        // 初始化相关超时时间参数
         if (this.connectTimeout > 0) {
             connection.connectTimeout = connectTimeout
         }
         if (this.readTimeout > 0) {
             connection.readTimeout = readTimeout
         }
+
+        // 设置请求方式
         connection.requestMethod = httpMethod
+
+        // 对于POST/PUT/PATCH/DELETE请求, 可能发生写(可能获取OutputStream)
+        val mayWrite = httpMethod.equals(RequestMethod.POST.name, true)
+                || httpMethod.equals(RequestMethod.PUT.name, true)
+                || httpMethod.equals(RequestMethod.PATCH.name, true)
+                || httpMethod.equals(RequestMethod.DELETE.name, true)
+
+        // 只有某些请求方式, 才可能发生写(可能获取OutputStream)
+        connection.doOutput = mayWrite
+
+        // 可能发生读(可能获取InputStream)
+        connection.doInput = true
 
     }
 }
