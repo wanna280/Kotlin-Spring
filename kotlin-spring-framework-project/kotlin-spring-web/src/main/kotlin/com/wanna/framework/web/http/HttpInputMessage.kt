@@ -9,5 +9,11 @@ import java.io.InputStream
  * * 2.对于Server而言, 可以从InputStream当中解析到Client发送的RequestBody
  */
 interface HttpInputMessage : HttpMessage {
+
+    /**
+     * 获取到InputMessage, 也就是HTTP请求的输入流
+     *
+     * @return InputStream
+     */
     fun getBody(): InputStream
 }

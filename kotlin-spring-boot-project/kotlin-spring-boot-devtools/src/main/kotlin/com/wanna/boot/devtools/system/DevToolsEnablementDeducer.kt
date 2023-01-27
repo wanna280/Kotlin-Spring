@@ -7,11 +7,15 @@ package com.wanna.boot.devtools.system
  */
 object DevToolsEnablementDeducer {
 
-    // 应该去进行跳过的栈轨迹元素的前缀, 来自于"test"框架
+    /**
+     * 应该去进行跳过的栈轨迹元素的前缀, 来自于"test"框架, 对于测试框架的情况下, 我们不应该使用DevTools
+     */
+    @JvmStatic
     private val SKIPPED_STACK_ELEMENTS = setOf(
         "org.junit.runners.",
         "org.junit.platform.",
-        "cucumber.runtime."
+        "cucumber.runtime.",
+        "com.wanna.boot.test."
     )
 
     /**

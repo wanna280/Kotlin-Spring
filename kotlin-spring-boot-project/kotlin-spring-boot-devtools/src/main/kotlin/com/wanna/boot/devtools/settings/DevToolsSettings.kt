@@ -1,6 +1,7 @@
 package com.wanna.boot.devtools.settings
 
 import com.wanna.framework.core.io.support.PropertiesLoaderUtils
+import com.wanna.framework.lang.Nullable
 import java.net.URL
 import java.util.*
 import java.util.regex.Pattern
@@ -12,10 +13,14 @@ import java.util.regex.Pattern
  * @see com.wanna.boot.devtools.restart.DefaultRestartInitializer
  */
 class DevToolsSettings {
-    // 重启时应该包含进来的正则表达式
+    /**
+     * 重启时应该包含进来的正则表达式
+     */
     private val restartIncludePatterns = ArrayList<Pattern>()
 
-    // 重启时应该排除的正则表达式
+    /**
+     * 重启时应该排除的正则表达式
+     */
     private val restartExcludePatterns = ArrayList<Pattern>()
 
     /**
@@ -73,12 +78,22 @@ class DevToolsSettings {
             .toMap()  // 转为Map
 
     companion object {
-        // DevToolsSetting的资源路径
+        /**
+         * DevToolsSetting的资源路径
+         */
         const val SETTINGS_RESOURCE_LOCATION = "META-INF/spring-devtools.properties"
 
-        // 单例的DevToolsSettings对象
+        /**
+         * 单例的DevToolsSettings对象
+         */
+        @Nullable
         private var setting: DevToolsSettings? = null
 
+        /**
+         * 获取到单例的[DevToolsSettings]配置信息
+         *
+         * @return DevToolsSettings
+         */
         @JvmStatic
         fun get(): DevToolsSettings {
             if (this.setting == null) {
@@ -87,9 +102,19 @@ class DevToolsSettings {
             return this.setting!!
         }
 
+        /**
+         * 加载得到[DevToolsSettings]
+         *
+         * @return DevToolsSettings
+         */
         @JvmStatic
         private fun load(): DevToolsSettings = load(SETTINGS_RESOURCE_LOCATION)
 
+        /**
+         * 加载目标配置文件, 并得到[DevToolsSettings]
+         *
+         * @return DevToolsSettings
+         */
         @JvmStatic
         private fun load(location: String): DevToolsSettings {
             val devToolsSettings = DevToolsSettings()

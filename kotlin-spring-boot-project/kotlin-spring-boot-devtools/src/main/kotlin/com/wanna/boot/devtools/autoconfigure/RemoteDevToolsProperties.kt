@@ -11,16 +11,24 @@ class RemoteDevToolsProperties {
         const val DEFAULT_SECRET_HEADER_NAME = "X-AUTH-TOKEN"
     }
 
-    // RemoteServer的ContextPath
+    /**
+     * RemoteServer的ContextPath
+     */
     var contextPath: String = DEFAULT_CONTEXT_PATH
 
-    // 携带Secret的headerName
+    /**
+     * 携带Secret的headerName
+     */
     var secretHeaderName: String = DEFAULT_SECRET_HEADER_NAME
 
-    // 需要携带的Secret
+    /**
+     * 需要携带的Secret
+     */
     var secret: String = ""
 
-    // 是否要开启Restart? 
+    /**
+     * 是否要启用Restart?
+     */
     var restart = Restart()
 
     class Restart {

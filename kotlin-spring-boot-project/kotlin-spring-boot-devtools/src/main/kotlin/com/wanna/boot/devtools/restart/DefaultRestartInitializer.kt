@@ -1,26 +1,28 @@
 package com.wanna.boot.devtools.restart
 
+import com.wanna.boot.devtools.settings.DevToolsSettings
 import com.wanna.boot.devtools.system.DevToolsEnablementDeducer
+import com.wanna.framework.lang.Nullable
 import java.net.URL
 
 /**
- * RestartInitializer的默认实现, 提供要去监听的文件变化的URL, 只在"main"线程的情况下去进行初始化,
+ * [RestartInitializer]的默认实现, 提供要去监听的文件变化的URL, 只在"main"线程的情况下去进行初始化,
  * 并且应该确保使用的是main方法的方式去进行启动的方式才生效, 对于使用庞大的jar包和"test"工程的,
  * 我们都不应该去作为要去进行检查的情况(当然, 也可以自定义要添加进来的jar包)
  *
  * @see RestartInitializer
  * @see ChangeableUrls
- * @see com.wanna.boot.devtools.settings.DevToolsSettings.Companion.SETTINGS_RESOURCE_LOCATION
+ * @see DevToolsSettings.SETTINGS_RESOURCE_LOCATION
  */
 open class DefaultRestartInitializer : RestartInitializer {
 
     /**
-     * 获取DevTools的初始化的要去进行处理的初始化URL, 返回的这些URL当中的类, 将会被监听/重新加载
+     * 获取DevTools的初始化的要去进行处理的初始化URL, 对于返回的这些URL当中的类, 将会被监听/重新加载
      *
      * @param thread thread
      * @return 如果需要启用DevTools, 那么return URLs; 如果不需要则return null
      */
-    @com.wanna.framework.lang.Nullable
+    @Nullable
     override fun getInitialUrls(thread: Thread): Array<URL>? {
         // 如果给定的线程不是主线程, 那么return null
         if (!isMainThread(thread)) {

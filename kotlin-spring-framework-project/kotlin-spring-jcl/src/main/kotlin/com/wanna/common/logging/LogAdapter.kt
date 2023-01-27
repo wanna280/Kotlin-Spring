@@ -253,7 +253,9 @@ object LogAdapter {
                 val messageBuilder = StringBuilder(message)
                 for (arg in args) {
                     val index = messageBuilder.indexOf("{}")
-                    messageBuilder.replace(index, index + 2, arg.toString())
+                    if (index != -1) {
+                        messageBuilder.replace(index, index + 2, arg.toString())
+                    }
                 }
                 val logRecord = LogRecord(level, messageBuilder.toString())
                 logRecord.loggerName = logger.name

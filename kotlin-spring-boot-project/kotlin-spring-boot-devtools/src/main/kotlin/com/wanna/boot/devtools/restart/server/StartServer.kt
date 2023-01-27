@@ -5,6 +5,11 @@ import com.wanna.boot.devtools.restart.classloader.ClassLoaderFiles
 
 open class StartServer {
 
+    /**
+     * 更新并重启
+     *
+     * @param classLoaderFiles 远程传输过来的文件信息
+     */
     open fun updateAndRestart(classLoaderFiles: ClassLoaderFiles) {
         restart(classLoaderFiles)
     }
@@ -15,7 +20,12 @@ open class StartServer {
      * @param classLoaderFiles ClassLoaderFiles
      */
     protected open fun restart(classLoaderFiles: ClassLoaderFiles) {
-        Restarter.getInstance()!!.addClassLoaderFiles(classLoaderFiles)
-        Restarter.getInstance()!!.restart()
+        val restarter = Restarter.getInstance()!!
+
+        // 添加远程传递过来的ClassLoaderFiles
+        restarter.addClassLoaderFiles(classLoaderFiles)
+
+        // 执行restart
+        restarter.restart()
     }
 }

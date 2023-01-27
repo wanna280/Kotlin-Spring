@@ -8,7 +8,7 @@ dependencies {
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-jcl"))
     implementation(project(":kotlin-spring-boot-project:kotlin-spring-boot"))
     implementation(project(":kotlin-spring-boot-project:kotlin-spring-boot-autoconfigure"))
-    implementation(project(":kotlin-logger:logger-slf4j-impl"))
+
     implementation("com.alibaba.nacos:nacos-client:$nacosClientVersion")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // jackson
 
@@ -16,4 +16,5 @@ dependencies {
     testImplementation(project(":kotlin-spring-framework-project:kotlin-spring-web"))
     testImplementation(project(":kotlin-spring-cloud-project:kotlin-spring-cloud-ribbon"))
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
+    testImplementation(project(":kotlin-logger:logger-slf4j-impl"))
 }

@@ -10,22 +10,42 @@ import java.net.URI
  *
  * @param requestFactory RequestFactory
  * @param interceptors 拦截器列表
+ *
+ * @see InterceptingClientHttpRequest
  */
 open class InterceptingClientHttpRequestFactory(
     private val requestFactory: ClientHttpRequestFactory,
     private val interceptors: List<ClientHttpRequestInterceptor>
 ) : ClientHttpRequestFactory {
 
-    override fun createRequest(url: URI, method: RequestMethod): ClientHttpRequest {
-        return createRequest(url, method, interceptors, requestFactory)
+    /**
+     * 创建带有拦截功能的处理的[ClientHttpRequest]
+     *
+     * @param uri URI
+     * @param method HTTP请求方式
+     * @return 带有拦截功能的[ClientHttpRequest]
+     */
+    override fun createRequest(uri: URI, method: RequestMethod): ClientHttpRequest {
+        return createRequest(uri, method, interceptors, requestFactory)
     }
 
+    /**
+     * 创建带有拦截功能的[ClientHttpRequest]
+     *
+     * @param uri URI
+     * @param method HTTP请求方式
+     * @param interceptors 要使用的拦截器列表
+     * @param requestFactory RequestFactory
+     *
+     * @see InterceptingClientHttpRequest
+     *
+     */
     open fun createRequest(
-        url: URI,
+        uri: URI,
         method: RequestMethod,
         interceptors: List<ClientHttpRequestInterceptor>,
         requestFactory: ClientHttpRequestFactory
     ): ClientHttpRequest {
-        return InterceptingClientHttpRequest(requestFactory, url, method, interceptors)
+        return InterceptingClientHttpRequest(requestFactory, uri, method, interceptors)
     }
 }

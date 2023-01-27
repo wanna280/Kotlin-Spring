@@ -1,12 +1,13 @@
 package com.wanna.boot.devtools.restart.classloader
 
+import com.wanna.boot.devtools.logger.DevToolsLoggerFactory
 import com.wanna.common.logging.Logger
-import com.wanna.common.logging.LoggerFactory
 import java.net.URL
 import java.net.URLClassLoader
 
 /**
- * 负责处理"SpringBoot-Devtools"的重启的ClassLoader
+ * 负责处理"SpringBoot-Devtools"的重启的ClassLoader, 优先从[updatedFiles]当中去进行字节码的获取,
+ * 如果从这里获取不到, 那么才走父类的正常的类加载的逻辑, 保证发生变更的文件可以被优先处理到
  *
  * @param urls 当前的RestartClassLoader需要去进行负责加载的URL列表, 对于不在这个url当中的类, 交给parentClassLoader去进行加载
  * @param parent parent ClassLoader(如果当前的类加载器找不到要去进行加载的类, 直接交给父类去进行加载)
@@ -18,7 +19,7 @@ open class RestartClassLoader(
     urls: Array<URL>,
     parent: ClassLoader,
     private val updatedFiles: ClassLoaderFileRepository = ClassLoaderFileRepository.NONE,
-    private val logger: Logger = LoggerFactory.getLogger(RestartClassLoader::class.java)
+    private val logger: Logger = DevToolsLoggerFactory.getLogger(RestartClassLoader::class.java)
 ) : URLClassLoader(urls, parent) {
 
     init {
@@ -69,7 +70,7 @@ open class RestartClassLoader(
     override fun findClass(name: String): Class<*> {
         val path = name.replace(".", "/") + ".class"
 
-        // 检查UpdatedFiles当中是否才能在有该文件? 如果没有直接调用super
+        // 检查UpdatedFiles当中是否存在有该文件? 如果没有直接调用super
         val file = updatedFiles.getFile(path) ?: return super.findClass(name)
 
         // 如果该文件是被删除了, 那么丢出ClassNotFoundException
@@ -77,7 +78,7 @@ open class RestartClassLoader(
             throw ClassNotFoundException(name)
         }
 
-        // 如果文件不是被删除了, 那么我们直接根据传输的ByteArray去进行defineClass
+        // 如果文件不是被删除了, 那么我们直接根据传输的文件内容的ByteArray去进行defineClass
         return defineClass(name, file.contents, 0, file.contents.size)
     }
 }

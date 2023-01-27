@@ -1,20 +1,22 @@
 package com.wanna.boot.devtools.restart
 
+import com.wanna.boot.devtools.logger.DevToolsLoggerFactory
 import com.wanna.boot.devtools.settings.DevToolsSettings
-import com.wanna.common.logging.LoggerFactory
 import java.io.File
 import java.lang.management.ManagementFactory
 import java.net.URL
 import java.net.URLClassLoader
 
 /**
- * 从给定的URL当中, 去判断有哪些URL是要去交给RestartClassLoader去进行类加载的? 
+ * 从给定的URL当中, 去判断有哪些URL是要去交给RestartClassLoader去进行类加载的?
  *
  * @param urls 候选的需要去进行过滤的URL
  */
 class ChangeableUrls(urls: Array<URL>) : Iterable<URL> {
 
-    // "DevTools"去进行Restart时, 应该使用的URL的列表
+    /**
+     * "DevTools"去进行Restart时, 应该使用的URL的列表
+     */
     private val urls = ArrayList<URL>()
 
     init {
@@ -27,22 +29,31 @@ class ChangeableUrls(urls: Array<URL>) : Iterable<URL> {
             (settings.isRestartInclude(it) || isDirectoryUrl(it.toString())) && !settings.isRestartExclude(it)
         }.toList()
 
+        // trace log重启重启时要去进行重新加载的URL列表...
         if (logger.isDebugEnabled) {
             logger.debug("匹配到需要去进行重新加载的URL列表为:[${this.urls}]")
         }
     }
 
+    /**
+     * 迭代要去进行重新加载的[URL]列表
+     *
+     * @return Urls that should apply to restart
+     */
     override fun iterator(): Iterator<URL> = urls.iterator()
 
     companion object {
-        // Logger
-        private val logger = LoggerFactory.getLogger(ChangeableUrls::class.java)
+        /**
+         * Logger
+         */
+        @JvmStatic
+        private val logger = DevToolsLoggerFactory.getLogger(ChangeableUrls::class.java)
 
         /**
-         * 从一个ClassLoader当中去获取到应该apply到Restart的URL
+         * 从一个[ClassLoader]当中去获取到应该用于去进行Restart的URL列表
          *
-         * @param classLoader ClassLoader
-         * @return 要去进行使用的URL
+         * @param classLoader 进行候选的用于Restarter的URL探测的ClassLoader
+         * @return 要去进行使用到的用于重启的URL列表信息
          */
         @JvmStatic
         fun fromClassLoader(classLoader: ClassLoader): ChangeableUrls {
@@ -50,7 +61,7 @@ class ChangeableUrls(urls: Array<URL>) : Iterable<URL> {
             // 如果它是一个URLClassLoader的话, 那么直接获取它的URL
             if (classLoader is URLClassLoader) {
                 urls += classLoader.urLs
-                // 如果它不是一个URL, 那么获取Runtime的ClassPath去进行推测作为URL
+                // 如果它不是一个URL, 那么获取Runtime的ClassPath去进行推测作为URL(获取"java.class.path"系统属性的值)
             } else {
                 urls += ManagementFactory.getRuntimeMXBean().classPath
                     .split(File.pathSeparator)

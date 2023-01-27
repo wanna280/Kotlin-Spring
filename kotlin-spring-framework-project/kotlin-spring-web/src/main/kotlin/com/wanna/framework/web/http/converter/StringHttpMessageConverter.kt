@@ -18,15 +18,17 @@ import java.nio.charset.StandardCharsets
 open class StringHttpMessageConverter(defaultCharset: Charset = DEFAULT_CHARSET) :
     AbstractHttpMessageConverter<String>() {
     companion object {
-        // 默认的字符集
+        /**
+         * 默认的字符集
+         */
         @JvmStatic
         val DEFAULT_CHARSET: Charset = StandardCharsets.ISO_8859_1
     }
 
     init {
         // init SupportedMediaTypes
-        setSupportedMediaTypes(MediaType.TEXT_PLAIN, MediaType.ALL)
-        setDefaultCharset(defaultCharset)
+        this.setSupportedMediaTypes(MediaType.TEXT_PLAIN, MediaType.ALL)
+        this.setDefaultCharset(defaultCharset)
     }
 
     override fun supports(clazz: Class<*>) = clazz == String::class.java

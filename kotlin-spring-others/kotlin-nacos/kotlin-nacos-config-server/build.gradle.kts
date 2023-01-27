@@ -6,7 +6,6 @@ dependencies {
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-web"))
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-framework"))
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-jcl"))
-
     implementation(project(":kotlin-spring-others:kotlin-nacos:kotlin-nacos-api"))
 
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // jackson
@@ -14,8 +13,9 @@ dependencies {
     implementation("io.netty:netty-codec-http:$nettyVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
 
-    implementation(project(":kotlin-logger:logger-slf4j-impl"))
 
+    // for test
+    testImplementation(project(":kotlin-logger:logger-slf4j-impl"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }

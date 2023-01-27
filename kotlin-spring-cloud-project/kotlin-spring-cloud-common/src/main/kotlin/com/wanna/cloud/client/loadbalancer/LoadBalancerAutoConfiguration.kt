@@ -3,6 +3,7 @@ package com.wanna.cloud.client.loadbalancer
 import com.wanna.boot.autoconfigure.condition.ConditionalOnBean
 import com.wanna.boot.autoconfigure.condition.ConditionalOnClass
 import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
+import com.wanna.boot.web.client.RestTemplateCustomizer
 import com.wanna.framework.beans.SmartInitializingSingleton
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.Bean
@@ -74,12 +75,10 @@ open class LoadBalancerAutoConfiguration {
 
         @Bean
         open fun restTemplateCustomizer(loadBalancerInterceptor: LoadBalancerInterceptor): RestTemplateCustomizer {
-            return object : RestTemplateCustomizer {
-                override fun customize(restTemplate: RestTemplate) {
-                    val interceptors = ArrayList(restTemplate.getInterceptors())
-                    interceptors.add(loadBalancerInterceptor)
-                    restTemplate.setInterceptors(interceptors)
-                }
+            return RestTemplateCustomizer { restTemplate ->
+                val interceptors = ArrayList(restTemplate.getInterceptors())
+                interceptors.add(loadBalancerInterceptor)
+                restTemplate.setInterceptors(interceptors)
             }
         }
     }

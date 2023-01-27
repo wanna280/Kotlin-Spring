@@ -34,14 +34,22 @@ import java.lang.reflect.Type
 abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArgumentResolver {
 
     companion object {
-        // 它支持的请求方式, 包括Post/Put/Patch三种方式
+        /**
+         * [AbstractMessageConverterMethodArgumentResolver]支持的请求方式, 包括Post/Put/Patch三种方式
+         */
+        @JvmField
         val SUPPORTED_METHODS = setOf(RequestMethod.POST, RequestMethod.PUT, RequestMethod.PATCH)
 
-        // 空参数标识
+        /**
+         * 空参数标识
+         */
+        @JvmField
         val NO_VALUE = Any()
     }
 
-    // Http消息转换器(MessageConverter)列表
+    /**
+     * Http消息转换器(MessageConverter)列表, 提供对于HTTP的RequestBody/ResponseBody的读取和写入
+     */
     protected val messageConverters = ArrayList<HttpMessageConverter<*>>()
 
     /**
@@ -110,10 +118,11 @@ abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArg
         val message: EmptyBodyCheckingHttpInputMessage
         try {
             message = EmptyBodyCheckingHttpInputMessage(inputMessage)
-            this.messageConverters.forEach {
+            for (messageConverter in this.messageConverters) {
                 if (message.hasBody()) {
-                    if (it.canRead(targetClass, mediaType)) {
-                        body = (it as HttpMessageConverter<T>).read(targetClass, message)
+                    if (messageConverter.canRead(targetClass, mediaType)) {
+                        body = (messageConverter as HttpMessageConverter<T>).read(targetClass, message)
+                        break  // break!!!
                     }
                 }
             }
@@ -182,13 +191,16 @@ abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArg
     private class EmptyBodyCheckingHttpInputMessage(inputMessage: HttpInputMessage) : HttpInputMessage {
 
         companion object {
-            // 一个空的InputStream, 使用ByteArrayInputStream去进行构造
+            /**
+             * 一个空的InputStream常量, 使用ByteArrayInputStream去进行构造
+             */
+            @JvmStatic
             private val EMPTY_INPUT_STREAM: InputStream = ByteArrayInputStream(ByteArray(0))
         }
 
         private var headers = inputMessage.getHeaders()
 
-        private var body: InputStream? = null
+        private val body: InputStream?
 
         init {
             val inputStream = inputMessage.getBody()
