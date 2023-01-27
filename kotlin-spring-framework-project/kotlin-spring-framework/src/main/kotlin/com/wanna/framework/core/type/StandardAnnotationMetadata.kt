@@ -1,74 +1,50 @@
 package com.wanna.framework.core.type
 
 import com.wanna.framework.core.annotation.MergedAnnotations
-import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ReflectionUtils
-import java.lang.reflect.Modifier
 
 /**
  * 这是一个标准的的AnnotationMetadata的实现
  *
  * @param introspectedClass 要去描述的目标类
  */
-open class StandardAnnotationMetadata(val introspectedClass: Class<*>) : AnnotationMetadata {
+open class StandardAnnotationMetadata(introspectedClass: Class<*>) : StandardClassMetadata(introspectedClass),
+    AnnotationMetadata {
 
     /**
      * MergedAnnotations
      */
     private val annotations = MergedAnnotations.from(introspectedClass)
 
-    override fun getAnnotations() = this.annotations
+    /**
+     * 获取到一个类上的注解的merge结果[MergedAnnotations]
+     *
+     * @return MergedAnnotations
+     */
+    override fun getAnnotations(): MergedAnnotations = this.annotations
 
     override fun getAnnotatedMethods(annotationName: String): Set<MethodMetadata> {
-        val methodMetadatas = LinkedHashSet<MethodMetadata>()
+        val methods = LinkedHashSet<MethodMetadata>()
         ReflectionUtils.doWithLocalMethods(introspectedClass) {
             it.annotations.forEach { ann ->
                 if (ann.annotationClass.java.name == annotationName) {
-                    methodMetadatas += StandardMethodMetadata(it)
+                    methods += StandardMethodMetadata(it)
                 }
             }
         }
-        return methodMetadatas
+        return methods
     }
-
-    override fun getClassName(): String = introspectedClass.name
-
-    override fun getPackageName(): String = introspectedClass.packageName
-
-    override fun isInterface(): Boolean = introspectedClass.isInterface
-
-    override fun isAnnotation(): Boolean = introspectedClass.isAnnotation
-
-    override fun isAbstract(): Boolean = Modifier.isAbstract(introspectedClass.modifiers)
-
-    override fun isConcrete(): Boolean = !isConcrete()
-
-    override fun isFinal(): Boolean = Modifier.isFinal(introspectedClass.modifiers)
-
-    override fun hasEnclosingClass(): Boolean = introspectedClass.enclosingClass != null
-
-    @Nullable
-    override fun getEnclosingClassName(): String? = introspectedClass.enclosingClass.name
-
-    override fun hasSuperClass(): Boolean = introspectedClass.superclass != null
-
-    @Nullable
-    override fun getSuperClassName(): String? = introspectedClass.superclass.name
-
-    override fun getInterfaceNames(): Array<String> = introspectedClass.interfaces.map { it.name }.toTypedArray()
-
-    override fun getMemberClassNames(): Array<String> = introspectedClass.declaredClasses.map { it.name }.toTypedArray()
-
-    override fun isIndependentInnerClass(): Boolean =
-        hasEnclosingClass() && Modifier.isStatic(introspectedClass.modifiers)
 
     companion object {
         /**
-         * 给定一个clazz, 去进行构建
+         * 为一个类去进行构建[StandardAnnotationMetadata]的工厂方法
+         *
+         * @param introspectedClass 要去进行描述的类
+         * @return StandardAnnotationMetadata
          */
         @JvmStatic
-        fun from(clazz: Class<*>): StandardAnnotationMetadata {
-            return StandardAnnotationMetadata(clazz)
+        fun from(introspectedClass: Class<*>): StandardAnnotationMetadata {
+            return StandardAnnotationMetadata(introspectedClass)
         }
     }
 }
