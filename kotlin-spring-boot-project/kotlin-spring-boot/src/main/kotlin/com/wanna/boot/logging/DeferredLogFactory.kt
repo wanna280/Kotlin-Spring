@@ -5,10 +5,14 @@ import com.wanna.common.logging.LoggerFactory
 import java.util.function.Supplier
 
 /**
+ * 获取到用于进行延时输出的[Logger]
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2023/1/18
+ *
+ * @see DeferredLogs
+ * @see DeferredLog
  */
 interface DeferredLogFactory {
 
