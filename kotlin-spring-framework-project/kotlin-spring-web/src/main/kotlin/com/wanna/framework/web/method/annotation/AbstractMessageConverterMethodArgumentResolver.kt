@@ -191,13 +191,16 @@ abstract class AbstractMessageConverterMethodArgumentResolver : HandlerMethodArg
     private class EmptyBodyCheckingHttpInputMessage(inputMessage: HttpInputMessage) : HttpInputMessage {
 
         companion object {
-            // 一个空的InputStream, 使用ByteArrayInputStream去进行构造
+            /**
+             * 一个空的InputStream常量, 使用ByteArrayInputStream去进行构造
+             */
+            @JvmStatic
             private val EMPTY_INPUT_STREAM: InputStream = ByteArrayInputStream(ByteArray(0))
         }
 
         private var headers = inputMessage.getHeaders()
 
-        private var body: InputStream? = null
+        private val body: InputStream?
 
         init {
             val inputStream = inputMessage.getBody()

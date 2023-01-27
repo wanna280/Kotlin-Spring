@@ -1,15 +1,15 @@
 package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
-import com.wanna.framework.web.HandlerMapping
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.HandlerMapping.Companion.PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE
 import com.wanna.framework.web.accept.ContentNegotiationManager
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.context.request.ServerWebRequest
+import com.wanna.framework.web.http.HttpOutputMessage
 import com.wanna.framework.web.http.MediaType
 import com.wanna.framework.web.http.converter.HttpMediaTypeNotAcceptableException
 import com.wanna.framework.web.http.converter.HttpMessageConverter
-import com.wanna.framework.web.http.converter.HttpMessageNotReadableException
 import com.wanna.framework.web.http.converter.HttpMessageNotWritableException
 import com.wanna.framework.web.http.server.ServerHttpRequest
 import com.wanna.framework.web.http.server.ServerHttpResponse
@@ -29,7 +29,9 @@ import com.wanna.framework.web.server.HttpServerRequest
 abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverterMethodArgumentResolver(),
     HandlerMethodReturnValueHandler {
 
-    // 内容协商管理器, 负责去获取客户端想要去进行接收的媒体类型
+    /**
+     * 内容协商管理器, 负责从HTTP Header/Http Param当中去获取客户端想要去进行接收的媒体类型(MediaType)
+     */
     private var contentNegotiationManager = ContentNegotiationManager()
 
     /**
@@ -40,7 +42,7 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
      * @param nativeWebRequest NativeWebRequest(request and response)
      */
     protected open fun <T> writeWithMessageConverters(
-        value: T?, returnType: MethodParameter, nativeWebRequest: NativeWebRequest
+        @Nullable value: T?, returnType: MethodParameter, nativeWebRequest: NativeWebRequest
     ) {
         val inputMessage = createInputMessage(nativeWebRequest)
         val outputMessage = createOutputMessage(nativeWebRequest)
@@ -59,7 +61,10 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
      */
     @Suppress("UNCHECKED_CAST")
     protected open fun <T> writeWithMessageConverters(
-        value: T?, returnType: MethodParameter, inputMessage: ServerHttpRequest, outputMessage: ServerHttpResponse
+        @Nullable value: T?,
+        returnType: MethodParameter,
+        inputMessage: ServerHttpRequest,
+        outputMessage: ServerHttpResponse
     ) {
         val parameterType = returnType.getParameterType()
 
@@ -74,7 +79,7 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
 
         var selectedMediaType: MediaType? = null
 
-        // 如果用户有自定义的ContentType了, 那么直接沿用你给定的ContentType, 不必再去进行推断
+        // 如果用户有自定义的ContentType了, 那么直接沿用用户自己给定的ContentType, 不必再去进行推断
         if (contentType != null) {
             selectedMediaType = contentType
 
@@ -84,6 +89,9 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
             val mediaTypesToUse = ArrayList<MediaType>()
             for (requestType in acceptableMediaTypes) {
                 for (producibleMediaType in producibleMediaTypes) {
+
+                    // 检查客户端想要的MediaType(Accept), 和服务端可以产生的MediaType(Content-Type)之间, 它们是否兼容?
+                    // 例如"application/*"和"application/json"兼容, 和"application/xml"也兼容...
                     if (requestType.isCompatibleWith(producibleMediaType)) {
                         mediaTypesToUse += getMostSpecificMediaType(requestType, producibleMediaType)
                     }
@@ -93,6 +101,8 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
             // 根据MediaType的具体程度以及权重去进行MediaType的排序
             MediaType.sortBySpecificityAndQuality(mediaTypesToUse)
 
+
+            // 选取一个优先级最高的, 并且是具体的(不含"*"通配符)MediaType作为最终要去进行使用的MediaType
             for (mediaType in mediaTypesToUse) {
                 if (mediaType.isConcrete) {
                     selectedMediaType = mediaType
@@ -121,7 +131,7 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
         if (value != null) {
             val producibleTypes =
                 inputMessage.getRequest().getAttribute(PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE) as Collection<MediaType>?
-            if (contentType != null && producibleTypes != null && producibleTypes.isNotEmpty()) {
+            if (contentType != null && !producibleTypes.isNullOrEmpty()) {
                 throw HttpMessageNotWritableException("找不到合适的MessageConverter去进行将$parameterType 去转换为ContentType=$contentType")
             }
             throw HttpMediaTypeNotAcceptableException(
@@ -132,20 +142,20 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
     }
 
     /**
-     * 创建HttpOutputMessage输出流, 处理请求时, 可以将要响应给客户端的数据写入到输出流当中, 后续请求当中, 自动完成写出
+     * 创建[HttpOutputMessage]输出流, 处理请求时, 可以将要响应给客户端的数据写入到输出流当中, 后续请求当中, 自动完成写出
      *
      * @param nativeWebRequest NativeWebRequest(request and response)
-     * @return 输出流
+     * @return 执行对于Response的输出的输出流
      */
     protected open fun createOutputMessage(nativeWebRequest: NativeWebRequest): ServerHttpResponse {
         return ServerHttpResponse(nativeWebRequest)
     }
 
     /**
-     * 使用内容协商管理器从request当中去解析到获取到客户端想要接收的MediaType列表
+     * 使用内容协商管理器从request当中去解析到获取到客户端想要接收的[MediaType]列表
      *
-     * @param request
-     * @return 获取客户段可以接收的MediaType列表
+     * @param request request
+     * @return 获取客户端可以接收的MediaType列表
      */
     private fun getAcceptableMediaTypes(request: HttpServerRequest): List<MediaType> {
         return this.contentNegotiationManager.resolveMediaTypes(ServerWebRequest(request))
@@ -166,7 +176,7 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
         // 1.尝试从request当中去进行搜索, 如果request属性当中已经存在了的话, 那么直接沿用request
         @Suppress("UNCHECKED_CAST")
         val mediaTypes = request.getAttribute(PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE) as Collection<MediaType>?
-        if (mediaTypes != null && mediaTypes.isNotEmpty()) {
+        if (!mediaTypes.isNullOrEmpty()) {
             return ArrayList(mediaTypes)
         }
 
@@ -176,16 +186,16 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
             produceTypes += it.getSupportedMediaTypes(valueType)
         }
 
-        // if empty set to all
+        // if empty set to all("*/*")
         return if (produceTypes.isEmpty()) listOf(MediaType.ALL) else produceTypes
     }
 
     /**
-     * 根据想要接收的媒体类型以及可以产出的媒体类型, 获取更加具体的媒体类型
+     * 根据客户端想要接收的媒体类型以及服务端可以产出的媒体类型, 获取更加具体的媒体类型
      *
-     * @param acceptType 可以接收的类型
-     * @param produceType 可以产出的类型
-     * @return 更加具体的媒体类型
+     * @param acceptType 客户端可以接收的MediaType
+     * @param produceType 服务端可以产出的MediaType
+     * @return 两者之中, 相对来说更加具体一些的MediaType
      */
     private fun getMostSpecificMediaType(acceptType: MediaType, produceType: MediaType): MediaType {
         val produceToUse = produceType.copyQualityValue(acceptType)
