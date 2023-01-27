@@ -5,6 +5,7 @@ dependencies {
     // compileOnly
     compileOnly("org.apache.httpcomponents:httpclient:$apacheHttpClientVersion")  // apache httpcomponents
     compileOnly("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // jackson
+    compileOnly("com.google.code.gson:gson:$gsonVersion")  // gson
     compileOnly("javax.servlet:javax.servlet-api:$servletApiVersion") // servlet-api
 
 
