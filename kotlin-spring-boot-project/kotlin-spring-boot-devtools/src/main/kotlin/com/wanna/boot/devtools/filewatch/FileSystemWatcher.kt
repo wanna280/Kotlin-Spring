@@ -6,14 +6,16 @@ import java.io.FileFilter
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * 基于文件系统的方式, 观察指定的文件/文件夹的变化情况的Watcher
+ * 观察文件系统下, 指定的文件/文件夹的变化情况的Watcher, 当文件发生变化时, 支持去自动通知相关的[FileChangeListener]去进行处理
  *
- * @param daemon Watcher是否要使用daemon线程?
- * @param pollInterval poll的间隔
+ * @param daemon 执行观察的Watcher线程是否需要使用daemon线程?
+ * @param pollInterval Watcher线程的poll(轮询)的时间间隔(单位为ms)
  * @param quietPeriod quiet的间隔(在扫描完一次目录之后, 需要休息一段时间再去进行继续扫描)
  * @param snapshotStateRepository 存放快照的仓库
+ *
+ * @see FileChangeListener
  */
-class FileSystemWatcher(
+open class FileSystemWatcher(
     private val daemon: Boolean = true,
     private val pollInterval: Long = DEFAULT_POLL_INTERVAL,
     private val quietPeriod: Long = DEFAULT_QUIET_PERIOD,
@@ -37,7 +39,7 @@ class FileSystemWatcher(
     private val listeners = ArrayList<FileChangeListener>()
 
     /**
-     * Monitor锁
+     * Monitor锁, 在利用[FileSystemWatcher]去执行的相关操作时, 都得加上锁保证并发安全
      */
     private val monitor = Any()
 
@@ -52,33 +54,34 @@ class FileSystemWatcher(
     private val directories: MutableMap<File, DirectorySnapshot?> = LinkedHashMap()
 
     /**
-     *  Watcher剩下的扫描次数(如果为-1, 代表一直扫描; 如果＞0代表剩余的扫描次数, 默认为-1)
+     * Watcher线程剩下的扫描次数(如果为-1, 代表一直扫描; 如果＞0代表剩余的扫描次数, 默认为-1)
      */
     private val remainingScans = AtomicInteger(-1)
 
     /**
-     *  触发Restart的FileFilter, 只有符合该Filter的条件的文件才需要Restart
-     *  (如果不进行指定, 那么任何一个文件的改变, 都将作为触发的条件)
+     * 触发Restart的File过滤器, 只有文件符合该Filter的要求的清空下才需要去执行Restart
+     * (如果不进行指定, 那么任何一个文件的改变, 都将作为触发的条件)
      */
+    @Nullable
     private var triggerFilter: FileFilter? = null
 
     /**
      * 检查当前Watcher线程是否已经启动了
      *
-     * @throws IllegalStateException 如果一个线程已经启动过了
+     * @throws IllegalStateException 如果一个Watcher线程已经启动过了
      */
     @Throws(IllegalStateException::class)
     private fun checkStarted() {
         this.watchThread ?: return  // 如果watcher线程为null, 直接return
-        throw IllegalStateException("已经有Watcher线程启动了, 不能再去进行操作")  // 如果已经初始化过watcher线程, 那么丢出异常
+        throw IllegalStateException("FileSystemWatcher already started")  // 如果已经初始化过watcher线程, 那么丢出异常
     }
 
     /**
-     * 添加Listener, 当文件发生改变时会被自动触发
+     * 添加监听文件的变化的Listener, 当文件发生改变时会被自动通知到
      *
-     * @param listener 你想要添加的Listener
+     * @param listener FileChange Listener
      */
-    fun addListener(listener: FileChangeListener) {
+    open fun addListener(listener: FileChangeListener) {
         synchronized(this.monitor) {
             checkStarted()
             listeners += listener
@@ -90,22 +93,22 @@ class FileSystemWatcher(
      *
      * @param triggerFilter triggerFileFilter
      */
-    fun setTriggerFilter(triggerFilter: FileFilter) {
+    open fun setTriggerFilter(triggerFilter: FileFilter) {
         synchronized(this.monitor) {
             this.triggerFilter = triggerFilter
         }
     }
 
     /**
-     * 添加一个要去进行观察的sourceDirectory
+     * 添加一个要去进行观察的文件夹
      *
      * @param source sourceDirectory
      * @throws IllegalStateException 如果source不是一个目录
      */
     @Throws(IllegalStateException::class)
-    fun addSourceDirectory(source: File) {
+    open fun addSourceDirectory(source: File) {
         if (!source.isDirectory) {
-            throw IllegalStateException("给定source不是一个目录, 而是一个文件")
+            throw IllegalStateException("Directory '$source' must not be a file")
         }
         synchronized(this.monitor) {
             checkStarted()
@@ -114,14 +117,16 @@ class FileSystemWatcher(
     }
 
     /**
-     * 添加多个SourceDirectory
+     * 添加多个要去进行观察的文件夹
      *
-     * @param directories 要去添加的目录列表(必须保证每个File都是Directory)
+     * @param directories 要去添加的目录列表(必须保证每个File都是一个文件夹)
      * @throws IllegalStateException 如果给定的File列表存在有不是文件夹的情况
      */
     @Throws(IllegalStateException::class)
-    fun addSourceDirectories(directories: Iterable<File>) {
-        directories.forEach(this::addSourceDirectory)
+    open fun addSourceDirectories(directories: Iterable<File>) {
+        synchronized(this.monitor) {
+            directories.forEach(this::addSourceDirectory)
+        }
     }
 
     /**
@@ -130,7 +135,7 @@ class FileSystemWatcher(
      * @see Watcher
      */
     @Suppress("UNCHECKED_CAST")
-    fun start() {
+    open fun start() {
         synchronized(this.monitor) {
 
             // 因为addSourceDirectory时, 只是生成了Key, Value=null, 并未完成填充
@@ -138,20 +143,23 @@ class FileSystemWatcher(
             createOrRestoreInitialSnapshots()
 
             // 创建一个Watcher线程去负责处理文件的变更情况
-            if (this.watchThread == null) {
+            var watchThread = this.watchThread
+            if (watchThread == null) {
                 val watcher = Watcher(
                     this.remainingScans,
                     ArrayList(this.listeners),
                     this.pollInterval,
                     this.quietPeriod,
-                    directories as Map<File, DirectorySnapshot>,
+                    LinkedHashMap(this.directories as Map<File, DirectorySnapshot>),
                     snapshotStateRepository,
                     this.triggerFilter
                 )
-                this.watchThread = Thread(watcher)
-                this.watchThread!!.name = "File Watcher"
-                this.watchThread!!.isDaemon = daemon
-                this.watchThread!!.start()
+                watchThread = Thread(watcher)
+                watchThread.name = "File Watcher"
+                watchThread.isDaemon = daemon
+                watchThread.start()
+
+                this.watchThread = watchThread
             }
         }
     }
@@ -169,7 +177,7 @@ class FileSystemWatcher(
     /**
      * 关闭Watcher线程, 停止去进行处理文件的改变情况
      */
-    fun stop() = stopAfter(0)
+    open fun stop() = stopAfter(0)
 
     /**
      * 在完成几次"scan"之后自动退出
@@ -205,7 +213,7 @@ class FileSystemWatcher(
      *
      * @param remainingScans 剩余的要去执行"scan"的次数
      * @param listeners 监听文件变化的监听器列表
-     * @param pollInterval poll的间隔时间
+     * @param pollInterval 线程poll轮询的间隔时间
      * @param quietPeriod 扫描完成之后安静的时间
      * @param directories 目录的快照信息
      * @param triggerFilter 触发Restart的Filter
@@ -261,6 +269,8 @@ class FileSystemWatcher(
             // 如果当前的文件夹下的信息相比最初的文件夹下的信息发生了变化的话, 那么需要更新snapshot
             // 就算是这个过程当中文件出现ABA的情况, 也不应该去进行update(因为完全没有必要更新)
             if (isDifferent(this.directories, current)) {
+
+                // 更新当前快照信息, 并触发所有的监听文件变化的Listener...
                 updateSnapshots(current.values)
             }
         }
@@ -268,9 +278,9 @@ class FileSystemWatcher(
         /**
          * 比较之前的和现在的目录下的的触发文件的内容是否不相同?
          *
-         * @param previous 先前的Snapshot信息
-         * @param current 当前的Snapshot信息
-         * @return 如果确实存在不同, 那么return true; 否则return false
+         * @param previous 先前的文件夹的Snapshot快照信息
+         * @param current 当前的文件夹的Snapshot快照信息
+         * @return 如果之前和现在的文件夹的快照信息, 确实是存在有不同, 那么return true; 否则return false
          */
         private fun isDifferent(
             previous: Map<File, DirectorySnapshot>,
@@ -283,10 +293,14 @@ class FileSystemWatcher(
             // 遍历所有的目录, 挨个去进行比较, 判断当前文件夹下的触发文件是否发生了变更
             // (如果filter==null, 那么所有的文件都会被当作触发文件)
             previous.forEach { (file, previousSnapshot) ->
+
+                // 如果该文件夹下的快照信息发生了变化, 那么说明发生了变化, return true
                 if (!previousSnapshot.equals(current[file], this.triggerFilter)) {
                     return true
                 }
             }
+
+            // 如果检查完所有的文件, 发现所有的文件夹的快照信息都没发生变化的话, 那么return false
             return false
         }
 
@@ -294,11 +308,13 @@ class FileSystemWatcher(
          * 如果文件夹下的文件信息发生了变化, 那么需要去更新维护的文件夹的Snapshot信息,
          * 并将变更的文件列表, 去告知所有的监听器, 让它们去对文件发生变更的事件去进行处理
          *
-         * @param snapshots current DirectorySnapshots
+         * @param snapshots 当前的文件夹的快照信息
          */
         private fun updateSnapshots(snapshots: Collection<DirectorySnapshot?>) {
             val updated = LinkedHashMap<File, DirectorySnapshot>()
             val changeSet = LinkedHashSet<ChangedFiles>()
+
+            // 统计出来所有的目录下, 发生变更的文件情况...
             snapshots.filterNotNull().forEach {
                 updated[it.directory] = it
                 val previous = this.directories[it.directory]

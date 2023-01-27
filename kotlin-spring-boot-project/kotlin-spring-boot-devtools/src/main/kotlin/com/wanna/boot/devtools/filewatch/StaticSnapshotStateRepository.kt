@@ -9,6 +9,10 @@ import com.wanna.framework.lang.Nullable
  */
 object StaticSnapshotStateRepository : SnapshotStateRepository {
 
+    /**
+     * 保存的快照信息
+     */
+    @Volatile
     @Nullable
     private var state: Any? = null
 

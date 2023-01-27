@@ -45,7 +45,7 @@ interface SnapshotStateRepository {
     /**
      * 保存快照信息
      *
-     * @param state state
+     * @param state 当前的快照信息
      */
-    fun save(state: Any?)
+    fun save(@Nullable state: Any?)
 }
