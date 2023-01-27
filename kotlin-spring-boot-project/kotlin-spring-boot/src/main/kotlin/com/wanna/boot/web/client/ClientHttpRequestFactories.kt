@@ -10,6 +10,7 @@ import org.apache.http.client.HttpClient
 import org.apache.http.config.SocketConfig
 import org.apache.http.impl.client.HttpClientBuilder
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
+import java.lang.reflect.Method
 import java.time.Duration
 import java.util.function.Supplier
 
@@ -185,8 +186,70 @@ object ClientHttpRequestFactories {
             requestFactorySupplier: Supplier<T>,
             settings: ClientHttpRequestFactorySettings
         ): T {
-            // TODO
-            return requestFactorySupplier.get()
+            // 使用Supplier去获取到RequestFactory
+            val requestFactory = requestFactorySupplier.get()
+
+            // 对RequestFactory的配置信息去执行自定义...
+            configure(requestFactory, settings)
+            return requestFactory
+        }
+
+        /**
+         * 基于反射调用[ClientHttpRequestFactory]的Setter, 从而完成配置信息的设置
+         *
+         * @param requestFactory RequestFactory
+         * @param settings settings
+         */
+        private fun configure(requestFactory: ClientHttpRequestFactory, settings: ClientHttpRequestFactorySettings) {
+            if (settings.connectionTimeout != null) {
+                setConnectTimeout(requestFactory, settings.connectionTimeout)
+            }
+            if (settings.readTimeout != null) {
+                setReadTimeout(requestFactory, settings.readTimeout)
+            }
+            if (settings.bufferRequestBody != null) {
+                setBufferRequestBody(requestFactory, settings.bufferRequestBody)
+            }
+        }
+
+        private fun setConnectTimeout(requestFactory: ClientHttpRequestFactory, connectionTimeout: Duration) {
+            val method = findMethod(requestFactory, "setConnectionTimeout", Int::class.java)
+            invokeMethod(requestFactory, method, connectionTimeout.toMillis())
+        }
+
+        private fun setReadTimeout(requestFactory: ClientHttpRequestFactory, readTimeout: Duration) {
+            val method = findMethod(requestFactory, "setReadTimeout", Int::class.java)
+            invokeMethod(requestFactory, method, readTimeout.toMillis())
+        }
+
+        private fun setBufferRequestBody(requestFactory: ClientHttpRequestFactory, bufferRequestBody: Boolean) {
+            val method = findMethod(requestFactory, "setBufferRequestBody", Boolean::class.java)
+            invokeMethod(requestFactory, method, bufferRequestBody)
+        }
+
+        private fun findMethod(
+            requestFactory: ClientHttpRequestFactory,
+            methodName: String,
+            vararg parameters: Class<*>
+        ): Method {
+            val method = ReflectionUtils.findMethod(requestFactory::class.java, methodName, *parameters)
+                ?: throw IllegalStateException("Request factory ${requestFactory.javaClass.name} does not have a suitable $methodName method")
+
+            if (method.isAnnotationPresent(Deprecated::class.java)) {
+                throw IllegalStateException("Request factory ${requestFactory.javaClass.name} has the $methodName method marked as deprecated")
+            }
+            return method
+        }
+
+        /**
+         * 反射执行目标方法
+         *
+         * @param requestFactory RequestFactory
+         * @param method 要执行的目标方法
+         * @param parameters 执行目标方法需要的参数列表
+         */
+        private fun invokeMethod(requestFactory: ClientHttpRequestFactory, method: Method, vararg parameters: Any?) {
+            ReflectionUtils.invokeMethod(method, requestFactory, *parameters)
         }
     }
 }
