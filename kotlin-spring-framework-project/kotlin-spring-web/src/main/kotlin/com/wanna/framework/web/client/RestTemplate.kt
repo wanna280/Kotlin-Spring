@@ -42,12 +42,17 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
     /**
      * MessageConverter列表, 提供消息的转换
      */
-    private val messageConverters = ArrayList<HttpMessageConverter<*>>()
+    private var messageConverters = ArrayList<HttpMessageConverter<*>>()
 
     /**
      * URI模板的处理器
      */
     var uriTemplateHandler: UriTemplateHandler = DefaultUriBuilderFactory()
+
+    /**
+     * Response的异常处理器
+     */
+    var errorHandler: ResponseErrorHandler? = null
 
     init {
         // add StringHttpMessageConverter
@@ -58,6 +63,22 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
             messageConverters.add(MappingJackson2HttpMessageConverter())
         }
     }
+
+    /**
+     * 设置用于消息转换的[HttpMessageConverter]列表
+     *
+     * @param messageConverters MessageMessageConverters
+     */
+    open fun setHttpMessageConverters(messageConverters: Collection<HttpMessageConverter<*>>) {
+        this.messageConverters = ArrayList(messageConverters)
+    }
+
+    /**
+     * 获取到用于消息转换的[HttpMessageConverter]列表
+     *
+     * @return 用于消息转换的HttpMessageConverter列表
+     */
+    open fun getHttpMessageConverters(): List<HttpMessageConverter<*>> = this.messageConverters
 
     override fun <T : Any> getForObject(
         url: String, responseType: Class<T>, uriVariables: Map<String, String>

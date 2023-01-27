@@ -47,7 +47,7 @@ abstract class InterceptingHttpAccessor : HttpAccessor() {
      *
      * @return 拦截器列表
      */
-    open fun getInterceptors(): List<ClientHttpRequestInterceptor> = this.interceptors
+    open fun getInterceptors(): MutableList<ClientHttpRequestInterceptor> = this.interceptors
 
     /**
      * 在获取[ClientHttpRequestFactory]时, 如果必要的话, 使用带拦截功能的RequestFactory去进行包装一层
