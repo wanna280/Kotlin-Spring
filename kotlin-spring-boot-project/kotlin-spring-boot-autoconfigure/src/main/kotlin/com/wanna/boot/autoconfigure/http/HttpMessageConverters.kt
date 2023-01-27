@@ -25,6 +25,13 @@ open class HttpMessageConverters(
      */
     constructor(vararg additionalConverters: HttpMessageConverter<*>) : this(true, additionalConverters.toList())
 
+    /**
+     * 提供一个基于[HttpMessageConverter]的集合的构造器
+     *
+     * @param additionalConverters 额外的HttpMessageConverters
+     */
+    constructor(additionalConverters: Collection<HttpMessageConverter<*>>) : this(true, additionalConverters)
+
     private val messageConverters = ArrayList<HttpMessageConverter<*>>()
 
     init {
