@@ -1,5 +1,6 @@
 package com.wanna.boot.devtools.restart
 
+import com.wanna.boot.devtools.settings.DevToolsSettings
 import com.wanna.boot.devtools.system.DevToolsEnablementDeducer
 import com.wanna.framework.lang.Nullable
 import java.net.URL
@@ -11,12 +12,12 @@ import java.net.URL
  *
  * @see RestartInitializer
  * @see ChangeableUrls
- * @see com.wanna.boot.devtools.settings.DevToolsSettings.Companion.SETTINGS_RESOURCE_LOCATION
+ * @see DevToolsSettings.SETTINGS_RESOURCE_LOCATION
  */
 open class DefaultRestartInitializer : RestartInitializer {
 
     /**
-     * 获取DevTools的初始化的要去进行处理的初始化URL, 返回的这些URL当中的类, 将会被监听/重新加载
+     * 获取DevTools的初始化的要去进行处理的初始化URL, 对于返回的这些URL当中的类, 将会被监听/重新加载
      *
      * @param thread thread
      * @return 如果需要启用DevTools, 那么return URLs; 如果不需要则return null

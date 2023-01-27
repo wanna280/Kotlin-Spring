@@ -17,9 +17,18 @@ import java.net.URISyntaxException
  */
 open class RemoteUrlPropertyExtractor : ApplicationListener<ApplicationEnvironmentPreparedEvent> {
     companion object {
+
+        /**
+         * 命令行的NonOptionArgs的属性名
+         */
         private const val NON_OPTION_ARGS = CommandLinePropertySource.DEFAULT_NO_OPTION_ARGS_PROPERTY_NAME
     }
 
+    /**
+     * 在Spring的[ApplicationEnvironmentPreparedEvent]事件触发时, 说明Environment已经准备好了, 可以去探测remoteUrl了
+     *
+     * @param event event
+     */
     override fun onApplicationEvent(event: ApplicationEnvironmentPreparedEvent) {
         val environment = event.environment
         // 获取NonOptionArgs作为Url

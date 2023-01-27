@@ -1,5 +1,6 @@
 package com.wanna.boot.devtools.restart
 
+import com.wanna.framework.lang.Nullable
 import java.net.URL
 
 /**
@@ -9,11 +10,11 @@ import java.net.URL
  */
 interface RestartInitializer {
     /**
-     * 给定一个具体的线程, 去获取到初始化的URL
+     * 给定一个具体的线程, 从该线程的ContextClassLoader当中去获取到用于Restart的初始化URL列表
      *
      * @param thread Thread
      * @return initialUrls(如果为null代表不去进行启用DevTools)
      */
-    @com.wanna.framework.lang.Nullable
+    @Nullable
     fun getInitialUrls(thread: Thread): Array<URL>?
 }

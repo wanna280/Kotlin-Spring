@@ -1,11 +1,11 @@
 package com.wanna.boot.devtools.restart
 
 import com.wanna.boot.context.event.ApplicationStartingEvent
+import com.wanna.boot.devtools.logger.DevToolsLoggerFactory
 import com.wanna.boot.devtools.restart.classloader.ClassLoaderFiles
 import com.wanna.boot.devtools.restart.classloader.RestartClassLoader
 import com.wanna.boot.devtools.settings.DevToolsSettings
 import com.wanna.common.logging.Logger
-import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.beans.factory.ObjectFactory
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
@@ -47,14 +47,14 @@ open class Restarter(
     )
 
     /**
-     *  当前的Restarter当中需要去进行维护的RootContext列表, 使用COW去实现线程安全的访问
+     * 当前的Restarter当中需要去进行维护的Root ApplicationContext列表, 使用COW去实现线程安全的访问
      */
     private val rootContexts = CopyOnWriteArrayList<ConfigurableApplicationContext>()
 
     /**
      * Logger
      */
-    private val logger: Logger = LoggerFactory.getLogger(Restarter::class.java)
+    private val logger: Logger = DevToolsLoggerFactory.getLogger(Restarter::class.java)
 
     /**
      * 是否启用了Restart功能? 如果设置为false, 则不会去进行重启

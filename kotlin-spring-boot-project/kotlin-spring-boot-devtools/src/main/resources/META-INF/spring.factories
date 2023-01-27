@@ -2,7 +2,8 @@ com.wanna.framework.context.ApplicationContextInitializer=\
   com.wanna.boot.devtools.restart.RestartScopeInitializer
 
 com.wanna.framework.context.event.ApplicationListener=\
-  com.wanna.boot.devtools.restart.RestartApplicationListener
+  com.wanna.boot.devtools.restart.RestartApplicationListener,\
+  com.wanna.boot.devtools.logger.DevToolsLoggerFactory$Listener
 
 com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
   com.wanna.boot.devtools.autoconfigure.LocalDevToolsAutoConfiguration,\

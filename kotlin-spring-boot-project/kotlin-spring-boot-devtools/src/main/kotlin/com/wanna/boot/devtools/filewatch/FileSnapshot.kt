@@ -5,16 +5,22 @@ import java.io.File
 /**
  * 维护了一个文件的Snapshot(快照)信息
  *
- * @param file 要去进行描述的文件
+ * @param file 要去进行快照的描述的秒文件
  */
 open class FileSnapshot(val file: File) {
-    // 文件的长度
+    /**
+     * 文件的长度
+     */
     val length = file.length()
 
-    // 上次修改时间
+    /**
+     * 上次修改时间
+     */
     val lastModified = file.lastModified()
 
-    // 文件是否已经存在? 
+    /**
+     * 文件是否已经存在?
+     */
     val exists = file.exists()
 
     override fun equals(other: Any?): Boolean {

@@ -12,7 +12,7 @@ import com.wanna.framework.util.ReflectionUtils
  * @param mainClassName mainClassName, 住启动类
  * @param args main方法的启动参数
  * @param contextClassLoader Thread的ContextClassLoader
- * @param uncaughtExceptionHandler ExceptionHandler
+ * @param uncaughtExceptionHandler 处理未被catch住的情况下, 线程应该怎么处理抛出来的异常的ExceptionHandler
  *
  * @see RestartClassLoader
  */

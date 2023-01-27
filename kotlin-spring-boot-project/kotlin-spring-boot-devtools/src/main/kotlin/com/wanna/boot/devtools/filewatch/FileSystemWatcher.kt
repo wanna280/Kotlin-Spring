@@ -20,29 +20,46 @@ class FileSystemWatcher(
     private val snapshotStateRepository: SnapshotStateRepository = SnapshotStateRepository.NONE
 ) {
     companion object {
-        // 默认的轮询时间(ms)
+        /**
+         * 默认的轮询时间(ms)
+         */
         private const val DEFAULT_POLL_INTERVAL = 1000L
 
-        // 默认的安静的间隔(ms)
+        /**
+         * 默认的安静的间隔(ms)
+         */
         private const val DEFAULT_QUIET_PERIOD = 400L
     }
 
-    // 当文件发生变化时, 需要回调的所有监听器
+    /**
+     * 当文件发生变化时, 需要回调的所有的监听文件变化的监听器
+     */
     private val listeners = ArrayList<FileChangeListener>()
 
-    // Monitor锁
+    /**
+     * Monitor锁
+     */
     private val monitor = Any()
 
-    // 负责去进行观察的线程(Watcher线程), 在启动时会自动初始化
+    /**
+     * 负责去进行观察的线程(Watcher线程), 在启动时会自动初始化
+     */
     private var watchThread: Thread? = null
 
-    // Watcher要去进行检测是否有发生文件变更的目录信息
+    /**
+     * Watcher要去进行检测是否有发生文件变更的目录信息
+     */
     private val directories: MutableMap<File, DirectorySnapshot?> = LinkedHashMap()
 
-    // Watcher剩下的扫描次数(如果为-1, 代表一直扫描; 如果＞0代表剩余的扫描次数, 默认为-1)
+    /**
+     *  Watcher剩下的扫描次数(如果为-1, 代表一直扫描; 如果＞0代表剩余的扫描次数, 默认为-1)
+     */
     private val remainingScans = AtomicInteger(-1)
 
-    // 触发Restart的FileFilter, 只有符合该Filter的条件的文件才需要Restart(如果不进行指定, 那么任何一个文件的改变, 都将作为触发的条件)
+    /**
+     *  触发Restart的FileFilter, 只有符合该Filter的条件的文件才需要Restart
+     *  (如果不进行指定, 那么任何一个文件的改变, 都将作为触发的条件)
+     */
     private var triggerFilter: FileFilter? = null
 
     /**

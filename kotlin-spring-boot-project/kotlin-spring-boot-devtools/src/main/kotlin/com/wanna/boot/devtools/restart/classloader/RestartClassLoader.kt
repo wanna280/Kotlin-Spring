@@ -1,7 +1,7 @@
 package com.wanna.boot.devtools.restart.classloader
 
+import com.wanna.boot.devtools.logger.DevToolsLoggerFactory
 import com.wanna.common.logging.Logger
-import com.wanna.common.logging.LoggerFactory
 import java.net.URL
 import java.net.URLClassLoader
 
@@ -19,7 +19,7 @@ open class RestartClassLoader(
     urls: Array<URL>,
     parent: ClassLoader,
     private val updatedFiles: ClassLoaderFileRepository = ClassLoaderFileRepository.NONE,
-    private val logger: Logger = LoggerFactory.getLogger(RestartClassLoader::class.java)
+    private val logger: Logger = DevToolsLoggerFactory.getLogger(RestartClassLoader::class.java)
 ) : URLClassLoader(urls, parent) {
 
     init {

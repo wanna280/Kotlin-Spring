@@ -1,7 +1,7 @@
 package com.wanna.boot.devtools.restart.server
 
+import com.wanna.boot.devtools.logger.DevToolsLoggerFactory
 import com.wanna.boot.devtools.restart.classloader.ClassLoaderFiles
-import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
@@ -15,7 +15,7 @@ class HttpStartServer(private val server: StartServer) {
          * Logger
          */
         @JvmStatic
-        private val logger = LoggerFactory.getLogger(HttpStartServer::class.java)
+        private val logger = DevToolsLoggerFactory.getLogger(HttpStartServer::class.java)
     }
 
     fun handle(request: HttpServerRequest, response: HttpServerResponse) {

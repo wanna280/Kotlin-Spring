@@ -1,7 +1,7 @@
 package com.wanna.boot.devtools.restart
 
+import com.wanna.boot.devtools.logger.DevToolsLoggerFactory
 import com.wanna.boot.devtools.settings.DevToolsSettings
-import com.wanna.common.logging.LoggerFactory
 import java.io.File
 import java.lang.management.ManagementFactory
 import java.net.URL
@@ -47,7 +47,7 @@ class ChangeableUrls(urls: Array<URL>) : Iterable<URL> {
          * Logger
          */
         @JvmStatic
-        private val logger = LoggerFactory.getLogger(ChangeableUrls::class.java)
+        private val logger = DevToolsLoggerFactory.getLogger(ChangeableUrls::class.java)
 
         /**
          * 从一个[ClassLoader]当中去获取到应该用于去进行Restart的URL列表
