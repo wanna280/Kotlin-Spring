@@ -1147,4 +1147,13 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      * @return additional profiles
      */
     open fun getAdditionalProfiles(): Set<String> = this.additionalProfiles
+
+    /**
+     * 设置当前SpringApplication需要使用的[Banner]
+     *
+     * @param banner banner to use
+     */
+    open fun setBanner(banner: Banner) {
+        this.banner = banner
+    }
 }

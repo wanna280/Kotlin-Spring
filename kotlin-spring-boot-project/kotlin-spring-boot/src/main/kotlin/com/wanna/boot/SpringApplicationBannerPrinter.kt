@@ -1,9 +1,10 @@
 package com.wanna.boot
 
+import com.wanna.common.logging.Logger
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.io.ResourceLoader
-import com.wanna.common.logging.Logger
+import com.wanna.framework.lang.Nullable
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.PrintStream
@@ -19,7 +20,7 @@ import java.io.PrintStream
  */
 open class SpringApplicationBannerPrinter(
     private val resourceLoader: ResourceLoader,
-    private val fallbackBanner: Banner?
+    @Nullable private val fallbackBanner: Banner?
 ) {
     companion object {
 
