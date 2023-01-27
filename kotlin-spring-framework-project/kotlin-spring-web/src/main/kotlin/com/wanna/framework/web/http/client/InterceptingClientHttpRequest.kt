@@ -20,7 +20,19 @@ class InterceptingClientHttpRequest(
     private val method: RequestMethod,
     private val interceptors: List<ClientHttpRequestInterceptor>
 ) : AbstractBufferingClientHttpRequest() {
+
+    /**
+     * 获取HTTP请求方式
+     *
+     * @return RequestMethod
+     */
     override fun getMethod() = method
+
+    /**
+     * 获取HTTP请求的URI
+     *
+     * @return URI
+     */
     override fun getURI() = uri
 
     /**
@@ -37,10 +49,20 @@ class InterceptingClientHttpRequest(
      * 拦截器的执行器链条, 它负责控制拦截器链的向下执行的过程的流转...
      */
     inner class InterceptingRequestExecution : ClientHttpRequestExecution {
-        // 通常拦截器的链条是做成一个interceptorIndex去控制拦截器链条的流转的方式
-        // Note: 拦截器的链条的实现, 也可以使用Iterator的实现方式, 使用hasNext去进行判断是否是最后一个拦截器
+        /**
+         * 通常拦截器的链条是做成一个interceptorIndex去控制拦截器链条的流转的方式.
+         *
+         * Note: 拦截器的链条的实现, 也可以使用Iterator的实现方式, 使用hasNext去进行判断是否是最后一个拦截器
+         */
         private val iterator = interceptors.iterator()
 
+        /**
+         * 利用拦截器去拦截目标[ClientHttpRequest]的执行
+         *
+         * @param request 待拦截的[ClientHttpRequest]
+         * @param body RequestBody
+         * @return ClientHttpResponse
+         */
         override fun execute(request: ClientHttpRequest, body: ByteArray): ClientHttpResponse {
             return if (iterator.hasNext()) {
                 iterator.next().intercept(request, body, this)
