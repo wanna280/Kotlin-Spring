@@ -63,6 +63,10 @@ private constructor(path: String, @Nullable classLoader: ClassLoader?, @Nullable
      * 获取ClassPath下的资源的[InputStream]
      *
      * @return InputStream of ClassPath Resource
+     *
+     * @see ClassLoader.getResourceAsStream
+     * @see Class.getResourceAsStream
+     * @see ClassLoader.getSystemResourceAsStream
      */
     override fun getInputStream(): InputStream {
         val stream = if (clazz != null) {
