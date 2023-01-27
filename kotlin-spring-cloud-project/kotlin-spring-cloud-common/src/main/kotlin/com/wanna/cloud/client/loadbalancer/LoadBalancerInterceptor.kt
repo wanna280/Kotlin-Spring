@@ -19,7 +19,7 @@ open class LoadBalancerInterceptor(
         request: ClientHttpRequest, body: ByteArray, execution: ClientHttpRequestExecution
     ): ClientHttpResponse {
         // 获取原始的request当中的uri中的host, 作为serviceName, eg:"http://wanna/user", 我们要获取到的serviceName=wanna
-        val serviceName = request.getUri().host.toString()
+        val serviceName = request.getURI().host.toString()
         // 使用LoadBalancer去发送请求, 第一个参数是serviceName, 第二个参数是要执行请求的方式的回调
         // 使用第二个callback回调函数, 可以execute, 获取到ClientHttpResponse, 去进行return, 作为整个方法(loadBalancerClient.execute)的返回值
         return this.loadBalancerClient.execute(serviceName, requestFactory.createRequest(request, body, execution))

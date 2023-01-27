@@ -20,5 +20,5 @@ class ServiceRequestWrapper(
     override fun getMethod() = request.getMethod()
     override fun execute() = request.execute()
     // replace old uri(serviceName) to new uri(host)
-    override fun getUri() = loadBalancerClient.reconstructURI(serviceInstance, request.getUri())
+    override fun getURI() = loadBalancerClient.reconstructURI(serviceInstance, request.getURI())
 }

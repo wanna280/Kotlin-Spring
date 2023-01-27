@@ -9,13 +9,13 @@ import org.apache.http.impl.client.HttpClients
 import java.net.URI
 
 class HttpComponentsClientHttpRequestFactory : ClientHttpRequestFactory {
-    override fun createRequest(url: URI, method: RequestMethod): ClientHttpRequest {
+    override fun createRequest(uri: URI, method: RequestMethod): ClientHttpRequest {
         val httpClient = HttpClients.createDefault()
         val httpRequest = when (method) {
-            RequestMethod.GET -> HttpGet(url)
-            RequestMethod.POST -> HttpPost(url)
-            RequestMethod.DELETE -> HttpDelete(url)
-            RequestMethod.HEAD -> HttpHead(url)
+            RequestMethod.GET -> HttpGet(uri)
+            RequestMethod.POST -> HttpPost(uri)
+            RequestMethod.DELETE -> HttpDelete(uri)
+            RequestMethod.HEAD -> HttpHead(uri)
             else -> throw IllegalStateException("不支持这种请求方式!!!")
         }
         return HttpComponentsClientHttpRequest(httpClient, httpRequest, method)

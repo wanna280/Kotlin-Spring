@@ -16,8 +16,8 @@ open class InterceptingClientHttpRequestFactory(
     private val interceptors: List<ClientHttpRequestInterceptor>
 ) : ClientHttpRequestFactory {
 
-    override fun createRequest(url: URI, method: RequestMethod): ClientHttpRequest {
-        return createRequest(url, method, interceptors, requestFactory)
+    override fun createRequest(uri: URI, method: RequestMethod): ClientHttpRequest {
+        return createRequest(uri, method, interceptors, requestFactory)
     }
 
     open fun createRequest(

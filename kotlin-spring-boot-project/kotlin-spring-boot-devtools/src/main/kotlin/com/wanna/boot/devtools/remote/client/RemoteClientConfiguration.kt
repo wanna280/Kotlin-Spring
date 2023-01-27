@@ -18,7 +18,7 @@ import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.util.StringUtils
 import com.wanna.framework.web.http.client.ClientHttpRequestFactory
-import com.wanna.framework.web.http.client.HttpComponentsClientHttpRequestFactory
+import com.wanna.framework.web.http.client.SimpleClientHttpRequestFactory
 
 /**
  * "DevTools"的RemoteClient的配置类, 提供监控本地文件, 当本地文件发生变更时,
@@ -37,7 +37,7 @@ open class RemoteClientConfiguration {
     @Bean
     @ConditionalOnMissingBean
     open fun remoteClientHttpRequestFactory(): ClientHttpRequestFactory {
-        return HttpComponentsClientHttpRequestFactory()
+        return SimpleClientHttpRequestFactory()
     }
 
     /**

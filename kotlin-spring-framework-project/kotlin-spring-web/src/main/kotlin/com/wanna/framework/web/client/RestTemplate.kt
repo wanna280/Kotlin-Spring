@@ -13,8 +13,9 @@ import com.wanna.framework.web.http.converter.ByteArrayHttpMessageConverter
 import com.wanna.framework.web.http.converter.HttpMessageConverter
 import com.wanna.framework.web.http.converter.StringHttpMessageConverter
 import com.wanna.framework.web.http.converter.json.MappingJackson2HttpMessageConverter
+import com.wanna.framework.web.util.DefaultUriBuilderFactory
+import com.wanna.framework.web.util.UriTemplateHandler
 import java.net.URI
-import java.net.URLEncoder
 
 /**
  * RestTemplate, 它是Spring-Web当中提供的一个Http请求的客户端;
@@ -41,6 +42,11 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
      * MessageConverter列表, 提供消息的转换
      */
     private val messageConverters = ArrayList<HttpMessageConverter<*>>()
+
+    /**
+     * URI模板的处理器
+     */
+    var uriTemplateHandler: UriTemplateHandler = DefaultUriBuilderFactory()
 
     init {
         // add StringHttpMessageConverter
@@ -113,20 +119,9 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
         uriVariables: Map<String, String>,
         requestCallback: RequestCallback
     ): T? {
-        val uri = createUri(url, uriVariables)
+        // 使用URI TemplateHandler去构建出来URI
+        val uri = uriTemplateHandler.expand(url, uriVariables)
         return execute(uri, method, requestCallback, responseExtractor)
-    }
-
-    private fun createUri(url: String, uriVariables: Map<String, String>): URI {
-        val builder = StringBuilder(url)
-        if (uriVariables.isNotEmpty()) {
-            builder.append("?")
-        }
-        uriVariables.forEach { (name, value) -> builder.append(name).append("=").append(value).append("&") }
-        return URI(
-            if (uriVariables.isNotEmpty()) builder.substring(0, builder.length - 1)
-            else URLEncoder.encode(builder.toString(), "UTF-8")
-        )
     }
 
 

@@ -21,7 +21,7 @@ class InterceptingClientHttpRequest(
     private val interceptors: List<ClientHttpRequestInterceptor>
 ) : AbstractBufferingClientHttpRequest() {
     override fun getMethod() = method
-    override fun getUri() = uri
+    override fun getURI() = uri
 
     /**
      * 真正执行目标方法, 创建一个拦截器链去执行目标方法, 先去apply所有的拦截器, 再去发送目标请求
@@ -46,7 +46,7 @@ class InterceptingClientHttpRequest(
                 iterator.next().intercept(request, body, this)
             } else {
                 // 这里因为往下传递的request其实是InterceptingClientHttpRequest对象, 因此, 我们必须将request当中的数据全部合并到delegate当中
-                val delegate = requestFactory.createRequest(request.getUri(), request.getMethod())
+                val delegate = requestFactory.createRequest(request.getURI(), request.getMethod())
 
                 // copy headers to delegate
                 request.getHeaders().forEach { delegate.getHeaders().addAll(it.key, it.value) }

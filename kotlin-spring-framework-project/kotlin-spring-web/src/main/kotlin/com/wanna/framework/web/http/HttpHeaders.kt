@@ -27,6 +27,11 @@ open class HttpHeaders : MultiValueMap<String, String> {
          */
         const val CONTENT_TYPE = "Content-Type"
 
+        /**
+         * 报文的长度
+         */
+        const val CONTENT_LENGTH = "Content-Length"
+
         const val HOST = "Host"
 
         const val USER_AGENT = "UserAgent"
@@ -108,7 +113,7 @@ open class HttpHeaders : MultiValueMap<String, String> {
          * 在非长连接下, 每次传输报文数据时, 都需要进行TCP的三次握手和四次挥手, 而四次挥手可以去标识着该报文已经结束, 因此性能低下.
          * 正常情况下, 如果是长连接的话, 应该要告诉浏览器当前HTTP文档的结束位置在哪, 一般情况下需要添加"Content-Length=xxx"这个Header
          * 但是这样意味着, 服务器要对数据去进行长度的统计, 再去进行发送, 从而耗费了不必要的性能, 因此才有了分块("chuck")传输
-         * 分块传输的目的, 就是告诉浏览器, 当前的文档从哪里结束? 
+         * 分块传输的目的, 就是告诉浏览器, 当前的文档从哪里结束?
          * Note: 如果"Content-Length"太短, 会导致文档被提前截断; "Content-Length"太长, 会导致浏览器的pending(因为接收不到来自服务器的数据, 所以一直等待)
          *
          * 下面是一个Demo的Http报文的格式：
@@ -314,7 +319,7 @@ open class HttpHeaders : MultiValueMap<String, String> {
     }
 
     /**
-     * HttpHeaders当中是否有包含"Access-Control-Allow-Origin"呢? 
+     * HttpHeaders当中是否有包含"Access-Control-Allow-Origin"呢?
      *
      * @return 如果有包含""Access-Control-Allow-Origin"", return其值; 没有则return null
      */
@@ -357,6 +362,22 @@ open class HttpHeaders : MultiValueMap<String, String> {
     open fun setContentType(contentType: MediaType) {
         this.set(CONTENT_TYPE, contentType.toString())
     }
+
+    /**
+     * 设置HTTP报文内容的长度
+     *
+     * @param contentLength 内容长度
+     */
+    open fun setContentLength(contentLength: Long) {
+        this.set(CONTENT_LENGTH, contentLength.toString())
+    }
+
+    /**
+     * 获取HTTP报文内容的长度
+     *
+     * @return contentLength
+     */
+    open fun getContentLength(): Long = getFirst(CONTENT_LENGTH)?.toLong() ?: -1
 
     /**
      * toString
