@@ -3,7 +3,6 @@ package com.wanna.framework.core.type
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.lang.Nullable
-import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.Modifier
 
@@ -22,8 +21,7 @@ open class StandardAnnotationMetadata(val introspectedClass: Class<*>) : Annotat
     override fun getAnnotations() = this.annotations
 
     override fun isAnnotated(annotationName: String): Boolean {
-        val annotationClass = ClassUtils.getAnnotationClassFromString<Annotation>(annotationName)
-        return AnnotatedElementUtils.getMergedAnnotation(introspectedClass, annotationClass) != null
+        return AnnotatedElementUtils.isAnnotated(introspectedClass, annotationName)
     }
 
     override fun getAnnotatedMethods(annotationName: String): Set<MethodMetadata> {
