@@ -10,7 +10,9 @@ import com.wanna.framework.core.type.AnnotationMetadata
 interface AnnotatedBeanDefinition : BeanDefinition {
 
     /**
-     * 获取注解的相Metadata信息
+     * 获取注解的Metadata信息
+     *
+     * @return 注解的元信息
      */
     fun getMetadata(): AnnotationMetadata
 }
