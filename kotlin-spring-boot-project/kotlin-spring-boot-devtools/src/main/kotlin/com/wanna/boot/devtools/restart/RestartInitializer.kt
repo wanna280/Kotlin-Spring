@@ -8,7 +8,16 @@ import java.net.URL
  *
  * @see DefaultRestartInitializer
  */
-interface RestartInitializer {
+fun interface RestartInitializer {
+
+    companion object {
+        /**
+         * NONE实例
+         */
+        @JvmField
+        val NONE = RestartInitializer { null }
+    }
+
     /**
      * 给定一个具体的线程, 从该线程的ContextClassLoader当中去获取到用于Restart的初始化URL列表
      *
