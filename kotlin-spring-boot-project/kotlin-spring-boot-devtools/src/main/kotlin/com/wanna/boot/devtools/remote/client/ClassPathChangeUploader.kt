@@ -14,15 +14,18 @@ import java.net.URL
 
 /**
  * RemoteClient的ClassPath发生改变的Uploader, 负责将本地的文件的变更上传给RemoteServer;
- * 负责接收本地的文件的变更情况(ClassPathChangedEvent), 并将封装成为ClassLoaderFiles,
+ * 负责接收本地的文件的变更情况(ClassPathChangedEvent), 并将封装成为[ClassLoaderFiles],
  * 并完成序列化, 并将数据写入到RequestBody, 并该序列化完成的数据直接去上传给RemoteServer
  *
  * @see ClassPathChangedEvent
  */
 open class ClassPathChangeUploader(url: String, private val clientHttpRequestFactory: ClientHttpRequestFactory) :
     ApplicationListener<ClassPathChangedEvent> {
-    // RemoteServer的URI
-    private var uri = URL(url).toURI()
+
+    /**
+     * RemoteServer的URI
+     */
+    private val uri = URL(url).toURI()
 
     override fun onApplicationEvent(event: ClassPathChangedEvent) {
         // 将本地的发生变更的文件列表, 转换成为ClassLoaderFiles

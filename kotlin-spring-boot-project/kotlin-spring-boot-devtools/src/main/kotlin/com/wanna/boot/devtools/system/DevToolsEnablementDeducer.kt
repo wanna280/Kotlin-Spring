@@ -14,7 +14,8 @@ object DevToolsEnablementDeducer {
     private val SKIPPED_STACK_ELEMENTS = setOf(
         "org.junit.runners.",
         "org.junit.platform.",
-        "cucumber.runtime."
+        "cucumber.runtime.",
+        "com.wanna.boot.test."
     )
 
     /**
