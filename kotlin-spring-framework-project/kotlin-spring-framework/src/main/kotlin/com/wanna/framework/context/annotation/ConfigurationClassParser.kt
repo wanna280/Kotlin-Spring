@@ -19,6 +19,7 @@ import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.DefaultPropertySourceFactory
 import com.wanna.framework.core.io.support.PropertySourceFactory
 import com.wanna.framework.core.type.AnnotationMetadata
+import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.core.type.StandardAnnotationMetadata
 import com.wanna.framework.core.type.classreading.MetadataReader
 import com.wanna.framework.core.type.classreading.MetadataReaderFactory
@@ -197,9 +198,11 @@ open class ConfigurationClassParser(
      * 将一个配置类去作为sourceClass
      *
      * @param clazz clazz
+     * @param filter 对配置类去进行匹配的断言Filter
      * @return SourceClass
      */
     private fun asSourceClass(clazz: Class<*>, filter: Predicate<String>): SourceClass {
+        // 如果该类被Filter过滤掉, 那么直接pass...
         if (filter.test(clazz.name)) {
             return objectSourceClass
         }
@@ -229,11 +232,12 @@ open class ConfigurationClassParser(
      * @return SourceClass
      */
     private fun asSourceClass(className: String, filter: Predicate<String>): SourceClass {
+        // 如果该类被Filter过滤掉, 那么直接pass...
         if (filter.test(className)) {
             return objectSourceClass
         }
 
-        // 对于JavaType, 别使用ASM去进行加载
+        // 对于JavaType, 永远别尝试使用ASM去进行类的加载...
         if (className.startsWith("java")) {
             try {
                 return SourceClass(ClassUtils.forName<Any>(className, this.resourceLoader.getClassLoader()))
@@ -247,10 +251,10 @@ open class ConfigurationClassParser(
     }
 
     /**
-     * 解析配置类
+     * 执行解析配置类, 需要递归处理该配置类的所有的父类
      *
      * @param configClass 目标配置类
-     * @param filter 去进行排除掉的filter
+     * @param filter 对配置类去进行匹配的断言Filter
      */
     private fun processConfigurationClass(configClass: ConfigurationClass, filter: Predicate<String>) {
         // 如果条件计算器计算得知需要去进行pass掉, 那么在这里直接pass掉, 它要导入的所有组件都pass掉
@@ -278,9 +282,9 @@ open class ConfigurationClassParser(
      * 交给这个方法, 去进行真正地去处理一个配置类
      *
      * @param configClass 目标配置类(用于存放BeanMethod/ImportResource/ImportBeanDefinitionRegistrar/PropertySource等), 不会进行匹配的操作
-     * @param sourceClass 源类(有可能它目标配置类的父类的情况...), 用来完成所有的匹配工作
-     * @param filter 用来去进行排除的Filter, 符合filter的要求(filter.test==true)的将会被排除掉
-     * @return 如果有父类的话, return 父类; 如果没有父类的话, return null
+     * @param sourceClass 源类(目标配置类的直接/间接父类), 对它去进行注解的扫描并将扫描的结果存放到[configClass]当中
+     * @param filter 用来去对配置类进行排除的Filter, 符合filter的要求(filter.test==true)的将会被排除掉
+     * @return 如果[sourceClass]还存在有父类的话, 返回父类的[SourceClass]; 如果没有父类的话, return null
      */
     @Nullable
     private fun doProcessConfigurationClass(
@@ -306,6 +310,9 @@ open class ConfigurationClassParser(
         // 处理@Bean注解
         processBeanMethods(configClass, sourceClass)
 
+        // 递归处理sourceClass的所有的接口上的@Bean注解的方法
+        processInterfaces(configClass, sourceClass)
+
         // 如果还有superClass, 那么return superClass(并不一定是真的Class, 可能还是通过MetadataReader提供访问的SourceClass)
         if (sourceClass.metadata.hasSuperClass()) {
             val superClassName = sourceClass.metadata.getSuperClassName()
@@ -325,12 +332,11 @@ open class ConfigurationClassParser(
      *
      * @param configClass 标注了`@Component`注解的目标配置类
      * @param sourceClass 源类(有可能为configClass/configClass的父类)
-     * @param filter 排除的filter
+     * @param filter 执行对于配置类的过滤的断言Filter
      */
     private fun processMemberClasses(
         configClass: ConfigurationClass, sourceClass: SourceClass, filter: Predicate<String>
     ) {
-
         // 获取该类的所有的MemberClass
         val memberClasses = sourceClass.getMemberClasses()
         if (memberClasses.isNotEmpty()) {
@@ -443,16 +449,50 @@ open class ConfigurationClassParser(
     }
 
     /**
-     * 处理@Bean注解的标注的方法, 将所有的@Bean方法加入到候选列表当中
+     * 对[SourceClass]的所有的接口, 去进行处理, 将接口当中的[Bean]的方法去收集到[configClass]当中
      *
-     * @param configClass 要处理的目标配置类
+     * @param configClass ConfigurationClass
+     * @param sourceClass 当前正在处理的SourceClass
+     */
+    private fun processInterfaces(configClass: ConfigurationClass, sourceClass: SourceClass) {
+        for (itf in sourceClass.getInterfaces()) {
+
+            // 从该接口当中去提取到所有的@Bean方法...
+            val beanMethods = retrieveBeanMethodMetadata(itf)
+            for (beanMethod in beanMethods) {
+                if (!beanMethod.isAbstract()) {
+                    // 添加Java8+当中新增的实现的默认的@Bean方法
+                    configClass.addBeanMethod(BeanMethod(beanMethod, configClass))
+                }
+            }
+
+            // 将接口作为SourceClass去进行递归处理
+            processInterfaces(configClass, itf)
+        }
+    }
+
+    /**
+     * 处理`@Bean`注解的标注的方法, 将所有的`@Bean`方法加入到候选列表当中
+     *
+     * @param configClass ConfigurationClass, 用于收集@Bean方法
+     * @param sourceClass 正在处理的SourceClass
      */
     private fun processBeanMethods(configClass: ConfigurationClass, sourceClass: SourceClass) {
-        val original = sourceClass.metadata
-        val beanMethods = original.getAnnotatedMethods(Bean::class.java.name)
-        beanMethods.forEach {
-            configClass.addBeanMethod(BeanMethod(it, configClass))
+        val beanMethods = retrieveBeanMethodMetadata(sourceClass)
+        for (metadata in beanMethods) {
+            configClass.addBeanMethod(BeanMethod(metadata, configClass))
         }
+    }
+
+    /**
+     * 从给定的[SourceClass]当中去提取出来所有的标注了`@Bean`注解的方法
+     *
+     * @param sourceClass SourceClass
+     * @return 从该类当中提取到的[Bean]方法列表
+     */
+    private fun retrieveBeanMethodMetadata(sourceClass: SourceClass): Set<MethodMetadata> {
+        val metadata = sourceClass.metadata
+        return metadata.getAnnotatedMethods(Bean::class.java.name)
     }
 
     /**
@@ -628,12 +668,14 @@ open class ConfigurationClassParser(
 
     /**
      * 描述了要去进行解析的一个配置类的相关信息, 对于一个配置类来说, 可能会存在有多个父类,
-     * 对于它以及它的所有的父类, 都应该当做一个SourceClass去进行处理.
-     * 正常来讲, source是应该放一个Class的, 但是很可惜的是, 我们做不到,
-     * 我们不应该这么早的去进行类加载, 我们需要尽可能采用MetadataReader去进行读取类的相关信息,
-     * 对于MetadataReader将会尽可能采用读取Class文件的方式去完成实现, 可以实现不进行类的加载
+     * 对于一个配置类以及它的所有的父类, 最终都应该当做一个[SourceClass]去进行递归处理.
      *
-     * @param source source
+     * 正常来讲, [source]应该是一个Class的, 但是很可惜的是, 现在时机太早了, 我们根本无法做到, 我们不应该这么早的去进行类加载,
+     * 因此在这里我们换种方式, 尽可能不去进行类加载, 我们需要尽可能使用ASM的方式, 利用[MetadataReader]去进行读取类的相关信息,
+     * 对于[MetadataReader]将会尽可能采用ASM读取Class文件的方式去进行实现, 可以实现不进行类的加载就读取到的类的相关信息
+     *
+     * @param source source(Class/MetadataReader)
+     * @see MetadataReader
      */
     private inner class SourceClass(val source: Any) {
         /**
@@ -643,10 +685,10 @@ open class ConfigurationClassParser(
             if (source is Class<*>) AnnotationMetadata.introspect(source) else (source as MetadataReader).annotationMetadata
 
         /**
-         * 将SourceClass转换为ConfigurationClass(配置类对象)
+         * 将[SourceClass]转换为[ConfigurationClass]
          *
          * @param importedBy 它是被哪个类导入进来的?
-         * @return 构建好的ConfigurationClass
+         * @return 基于当前[SourceClass]去构建好的ConfigurationClass
          */
         fun asConfigClass(importedBy: ConfigurationClass): ConfigurationClass {
             return if (source is Class<*>) {
@@ -670,9 +712,11 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 进行当前SourceClass的类加载(某些操作下, 我们确实没有办法没有类的情况下去进行操作, 还是得借助类加载来做)
+         * 进行当前[SourceClass]的类加载
+         * (某些特殊的操作下, 我们确实没有办法没有类的情况下去进行操作, 还是得借助类加载来做)
          *
-         * @return Class
+         * @return 将当前[SourceClass]去加载得到的Class
+         * @see ConfigurationClassParser.processImports
          */
         fun loadClass(): Class<*> {
             if (this.source is Class<*>) {
@@ -685,12 +729,14 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 获取当前的SourceClass上的全部直接标注的注解
+         * 获取当前的[SourceClass]上的全部直接标注的注解, 将注解也去转换成为一个[SourceClass]去进行包装
          *
-         * @return 当前SourceClass上的注解列表
+         * @return 当前[SourceClass]上标注的注解列表
          */
         fun getAnnotations(): Collection<SourceClass> {
             val result = LinkedHashSet<SourceClass>()
+
+            // 如果是Class的话, 那么直接getDeclaredAnnotations
             if (this.source is Class<*>) {
                 for (annotation in source.declaredAnnotations) {
                     val annotationType = annotation.annotationClass.java
@@ -698,6 +744,8 @@ open class ConfigurationClassParser(
                         result += asSourceClass(annotationType, DEFAULT_EXCLUSION_FILTER)
                     }
                 }
+
+                // 如果当前不是Class的话, 那么使用MetadataReader去获取Metadata的注解信息...
             } else {
                 for (annotationType in this.metadata.getAnnotationTypes()) {
                     if (!annotationType.startsWith("java")) {
@@ -710,7 +758,8 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 返回当前SourceClass的SuperClass的描述信息的SourceClass
+         * 返回当前[SourceClass]的SuperClass(直接父类), 并包装成为[SourceClass],
+         * source还是得以[MetadataReader]的方式去进行读取, 我们无法完成类加载.
          *
          * @return SourceClass of SuperClass
          */
@@ -729,12 +778,14 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 获取当前SourceClass的成员类列表
+         * 获取当前[SourceClass]的成员类列表
          *
-         * @return SourceClass的成员类列表
+         * @return [SourceClass]的成员类列表
          */
         fun getMemberClasses(): Collection<SourceClass> {
             var sourceToProcess = this.source
+
+            // 如果是Class的话, 那么我们尝试去获取到所有的定义的类
             if (sourceToProcess is Class<*>) {
                 val declaredClasses = sourceToProcess.declaredClasses
                 try {
@@ -750,7 +801,7 @@ open class ConfigurationClassParser(
             }
             sourceToProcess as MetadataReader
 
-            // 使用ASM的方式, 去读取成员类的信息
+            // 如果使用Class读取失败, 或者根本不是一个Class的话, 那么需要使用MetadataReader, 去使用ASM的方式去读取成员类的信息
             val memberClassNames = sourceToProcess.classMetadata.getMemberClassNames()
             val members = ArrayList<SourceClass>(memberClassNames.size)
             for (memberClassName in memberClassNames) {
@@ -768,17 +819,21 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 获取当前SourceClass的接口列表
+         * 获取当前[SourceClass]的直接接口列表, 并包装成为[SourceClass]
          *
-         * @return 当前SourceClass的接口列表
+         * @return 当前[SourceClass]的接口列表
          */
         fun getInterfaces(): Set<SourceClass> {
             val result = LinkedHashSet<SourceClass>()
+
+            // 如果是Class的话, 可以直接读取接口列表
             if (source is Class<*>) {
                 val interfaces = source.interfaces
                 for (clazz in interfaces) {
                     result += asSourceClass(clazz, DEFAULT_EXCLUSION_FILTER)
                 }
+
+                // 如果是MetadataReader的话, 那么也还是得使用ASM的方式去进行获取所有的接口
             } else {
                 for (interfaceName in metadata.getInterfaceNames()) {
                     result += asSourceClass(interfaceName, DEFAULT_EXCLUSION_FILTER)
@@ -787,11 +842,26 @@ open class ConfigurationClassParser(
             return result
         }
 
+        /**
+         * toString, 直接使用source去进行生成即可
+         *
+         * @return toString
+         */
         override fun toString(): String = "$source"
 
-        override fun equals(other: Any?): Boolean =
+        /**
+         * equals, 采用[metadata]的类名去进行生成
+         *
+         * @param other other
+         */
+        override fun equals(@Nullable other: Any?): Boolean =
             this === other || other is SourceClass && other.metadata.getClassName() == this.metadata.getClassName()
 
+        /**
+         * hashCode, 采用[metadata]的类名去进行生成
+         *
+         * @return hashCode
+         */
         override fun hashCode(): Int = metadata.getClassName().hashCode()
     }
 
