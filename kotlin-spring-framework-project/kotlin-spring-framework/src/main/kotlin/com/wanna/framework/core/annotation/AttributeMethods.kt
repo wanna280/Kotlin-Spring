@@ -2,6 +2,7 @@ package com.wanna.framework.core.annotation
 
 import com.wanna.framework.constants.CLASS_ARRAY_TYPE
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.Method
 import java.util.concurrent.ConcurrentHashMap
 
@@ -26,31 +27,64 @@ class AttributeMethods(
 
     /**
      * 记录某个位置(index)的注解方法, 当依赖不存在时, 能否丢出来异常? 为true代表可以丢, 为false代表不能丢异常
-     * (对于Class[], Class, Enum这三种情况, 缺失的情况, 才需要丢出来异常)
+     * (对于注解的属性的类型是Class[], Class, Enum这三种情况, 缺失的情况, 才需要丢出来异常)
      */
     private val canThrowTypeNotPresentException = BooleanArray(attributeMethods.size)
 
+    /**
+     * 是否存在有存在有默认值的注解属性方法(只要其中一个属性有默认值就算)
+     */
+    val hasDefaultValueMethod: Boolean
+
+    /**
+     * 是否存在有嵌套的注解的情况? (注解的属性当中存在有注解)
+     */
+    val foundNestedAnnotation: Boolean
+
     init {
+        var foundDefaultValueMethod = false
+        var foundNestedAnnotation = false
         for (index in attributeMethods.indices) {
             val method = attributeMethods[index]
-            val returnType = method.returnType
+            val type = method.returnType
 
-            // TODO
+            // 如果该属性方法, 存在有默认值的话, 那么记录一下
+            if (!foundDefaultValueMethod && method.defaultValue != null) {
+                foundDefaultValueMethod = true
+            }
 
-            // 对于注解的属性类型, 是Class[], Class, Enum这三种情况, 依赖缺失的情况, 才需要丢出来异常
+            // 如果该属性的类型是注解, 或者是注解数组的话, 那么记录一下
+            if (!foundNestedAnnotation && (type.isAnnotation || type.isArray && type.componentType.isAnnotation)) {
+                foundNestedAnnotation = true
+            }
+
+            ReflectionUtils.makeAccessible(method) // setAccessible
+            // 对于注解的属性类型类型, 是Class[], Class, Enum这三种情况, 依赖缺失的情况, 才需要丢出来异常
             canThrowTypeNotPresentException[index] =
-                returnType == CLASS_ARRAY_TYPE || returnType == Class::class.java || returnType == Enum::class.java
+                type == CLASS_ARRAY_TYPE || type == Class::class.java || type == Enum::class.java
         }
+        this.hasDefaultValueMethod = foundDefaultValueMethod
+        this.foundNestedAnnotation = foundNestedAnnotation
     }
 
     /**
-     * 对注解去进行检验, 检验该注解当中定义的属性, 是否都是合法的?
-     * 因为很多时候, 有可能会遇到, 一个类上标注了A注解, 但是A注解的属性当中, 用到了一个类B,
-     * 但是类B很可能并不在我们的依赖当中, 此时就会产生[ClassNotFoundException]/[LinkageError],
-     * 但是很多时候, 我们允许去进行这样的配置, 我们很可能会继续尝试使用ASM去进行该注解当中的属性的读取
+     * 对注解去进行检验, 检验访问该注解当中定义的属性, 是否都不会发生[TypeNotPresentException]异常.
+     * 特别是Google App Engine(GAE)环境当中, 对于属性值的检验会比较晚, 不会像大多数的环境下, 在执行
+     * [Class.getAnnotations]时就丢出来[TypeNotPresentException]异常
+     *
+     * 例如在下面的代码当中, 如果ObjectMapper类不存在的话, 那么[Class.getAnnotations]去访问注解时, 就会产生[ClassNotFoundException]/[LinkageError],
+     * 但是很多时候, 我们是允许去进行这样的配置的, 比如很多情况下我们很可能会继续尝试使用ASM去进行该注解当中的属性的读取
+     *
+     * ```kotlin
+     * @ConditionalOnClass([ObjectMapper::class])
+     * open class JacksonAutoConfiguration
+     * ```
      *
      * @param annotation 待检验的注解对象
+     * @throws IllegalStateException 如果存在有无法去进行读取的属性方法
+     * @see isValid
      */
+    @Throws(IllegalStateException::class)
     fun validate(annotation: Annotation) {
         // first, 先检验一下Annotation和this.annotationType之间是否匹配?
         assertAnnotation(annotation)
@@ -66,6 +100,32 @@ class AttributeMethods(
                 throw IllegalStateException("Could not obtain annotation attribute value for '${get(i).name}' declared on '$annotationType'")
             }
         }
+    }
+
+    /**
+     * 对注解去进行检验, 检查该注解当中定义的属性, 是否都是可以去进行安全访问的, 不会引发[TypeNotPresentException]
+     *
+     * @param annotation 待检验的注解对象
+     * @return 如果该注解当中的全部属性都可以去进行安全访问, return true; 否则return false
+     * @see validate
+     */
+    fun isValid(annotation: Annotation): Boolean {
+        // first, 先检验一下Annotation和this.annotationType之间是否匹配?
+        assertAnnotation(annotation)
+
+        for (i in 0 until size) {
+            // 如果该位置, 就算缺了, 也不能丢出来异常的话, 那么直接pass掉
+            if (!canThrowTypeNotPresentException(i)) {
+                continue
+            }
+            try {
+                AnnotationUtils.invokeAnnotationMethod(attributeMethods[i], annotation)
+            } catch (ex: Throwable) {
+                // cannot access, return false
+                return false
+            }
+        }
+        return true
     }
 
     /**

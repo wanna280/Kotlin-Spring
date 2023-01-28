@@ -236,8 +236,10 @@ object AnnotationUtils {
      * 比如类上存在有"@ConditionalOnClass([Gson::class])", 这个Gson类就很可能不在我们的VM当中
      *
      * @param annotation 待检验的注解对象
+     * @throws IllegalStateException 如果该注解当中遇到了无法去进行访问的注解属性
      */
     @JvmStatic
+    @Throws(IllegalStateException::class)
     fun validateAnnotation(annotation: Annotation) {
         AttributeMethods.forAnnotationType(annotation.annotationClass.java).validate(annotation)
     }
