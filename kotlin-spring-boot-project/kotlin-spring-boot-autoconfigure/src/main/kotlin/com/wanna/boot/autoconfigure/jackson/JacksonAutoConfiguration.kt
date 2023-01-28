@@ -18,7 +18,7 @@ import com.wanna.framework.web.http.converter.json.Jackson2ObjectMapperBuilder
  * @version v1.0
  * @date 2023/1/28
  */
-@ConditionalOnClass(name = ["com.fasterxml.jackson.databind.ObjectMapper"])
+@ConditionalOnClass([ObjectMapper::class])
 @Configuration(proxyBeanMethods = false)
 open class JacksonAutoConfiguration {
 

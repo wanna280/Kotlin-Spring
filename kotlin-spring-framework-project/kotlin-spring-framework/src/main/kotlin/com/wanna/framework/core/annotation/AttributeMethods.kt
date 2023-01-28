@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
  * @version v1.0
  * @date 2022/9/21
  *
- * @param annotationType 要封装的是哪个注解的方法? 
+ * @param annotationType 要封装的是哪个注解的方法?
  * @param attributeMethods 注解内部的属性方法
  */
 class AttributeMethods(
@@ -69,7 +69,7 @@ class AttributeMethods(
         /**
          * 提供一个基于给定一个注解, 去构建出来的AttributeMethods对象的工厂方法
          *
-         * @param annotationType 想要为哪个注解去构建AttributeMethods? 
+         * @param annotationType 想要为哪个注解去构建AttributeMethods?
          * @return 构建出来的AttributesMethods(如果给定的annotationType为null, 那么return null)
          */
         @JvmStatic
@@ -81,7 +81,7 @@ class AttributeMethods(
         /**
          * 为给定的注解类型去构建出来AttributeMethods
          *
-         * @param annotationType 想要为哪个注解去构建AttributeMethods? 
+         * @param annotationType 想要为哪个注解去构建AttributeMethods?
          * @return 构建出来的AttributesMethods
          */
         @JvmStatic
@@ -94,7 +94,7 @@ class AttributeMethods(
         }
 
         /**
-         * 判断给定的方法是否是一个注解的属性方法? 
+         * 判断给定的方法是否是一个注解的属性方法?
          *
          * @param method 待进行判断的方法
          * @return 如果它是一个属性方法, 那么return true; 否则return false
@@ -102,6 +102,24 @@ class AttributeMethods(
         @JvmStatic
         private fun isAttributeMethod(method: Method): Boolean =
             method.parameterCount == 0 && method.returnType != Unit::class.java
+    }
+
+    /**
+     * 对注解去进行检验, 检验该注解当中定义的属性, 是否都是合法的?
+     * 因为很多时候, 有可能会遇到, 一个类上标注了A注解, 但是A注解的属性当中, 用到了一个类B,
+     * 但是类B很可能并不在我们的依赖当中, 此时就会产生[ClassNotFoundException]/[LinkageError],
+     * 但是很多时候, 我们允许去进行这样的配置, 我们很可能会继续尝试使用ASM去进行该注解当中的属性的读取
+     *
+     * @param annotation 待检验的注解对象
+     */
+    fun validate(annotation: Annotation) {
+        for (i in 0 until size) {
+            try {
+                AnnotationUtils.invokeAnnotationMethod(attributeMethods[i], annotation)
+            } catch (ex: Throwable) {
+                throw IllegalStateException("Could not obtain annotation attribute value for '${get(i).name}' declared on '$annotationType'")
+            }
+        }
     }
 
     /**

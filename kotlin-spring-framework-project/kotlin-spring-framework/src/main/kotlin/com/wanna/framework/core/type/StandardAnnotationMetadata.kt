@@ -35,6 +35,14 @@ open class StandardAnnotationMetadata(introspectedClass: Class<*>) : StandardCla
         return methods
     }
 
+    /**
+     * toString, 采用[introspectedClass]的类名去进行生成
+     *
+     * @return toString
+     */
+    override fun toString(): String = introspectedClass.name
+
+
     companion object {
         /**
          * 为一个类去进行构建[StandardAnnotationMetadata]的工厂方法

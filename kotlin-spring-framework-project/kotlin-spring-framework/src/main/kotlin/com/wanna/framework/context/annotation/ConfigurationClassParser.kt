@@ -1,5 +1,6 @@
 package com.wanna.framework.context.annotation
 
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
@@ -27,16 +28,11 @@ import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
-import com.wanna.common.logging.LoggerFactory
 import java.io.FileNotFoundException
 import java.net.SocketException
 import java.net.UnknownHostException
 import java.util.*
 import java.util.function.Predicate
-import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
-import kotlin.collections.LinkedHashSet
-import kotlin.math.log
 
 /**
  * 这是一个配置类的解析器, 用来扫描配置类相关的注解, 将其注册到容器当中
@@ -86,7 +82,7 @@ open class ConfigurationClassParser(
     )
 
     /**
-     * 条件计算器, 通过@Conditional注解去计算该Bean是否应该被导入到容器当中? 
+     * 条件计算器, 通过@Conditional注解去计算该Bean是否应该被导入到容器当中?
      */
     private val conditionEvaluator = ConditionEvaluator(this.registry, this.environment, resourceLoader)
 
@@ -110,6 +106,11 @@ open class ConfigurationClassParser(
      * Import栈, 一方面注册importedClass与导入它的配置类的元信息, 一方面记录Import过程当中的栈轨迹(判断是否发生了循环导入)
      */
     private val importStack = ImportStack()
+
+    /**
+     * Object类的SourceClass
+     */
+    private val objectSourceClass = SourceClass(Any::class.java)
 
     /**
      * 获取导入被@Import配置类的信息的注册中心(导入栈), 用来处理ImportAware接口的注入Metadata信息
@@ -184,12 +185,12 @@ open class ConfigurationClassParser(
         processConfigurationClass(ConfigurationClass(beanClass, beanName), DEFAULT_EXCLUSION_FILTER)
     }
 
-    private fun asSourceClass(configClass: ConfigurationClass): SourceClass {
+    private fun asSourceClass(configClass: ConfigurationClass, filter: Predicate<String>): SourceClass {
         val metadata = configClass.metadata
         if (metadata is StandardAnnotationMetadata) {
-            return asSourceClass(metadata.introspectedClass)
+            return asSourceClass(metadata.introspectedClass, filter)
         }
-        return asSourceClass(metadata.getClassName())
+        return asSourceClass(metadata.getClassName(), filter)
     }
 
     /**
@@ -198,17 +199,40 @@ open class ConfigurationClassParser(
      * @param clazz clazz
      * @return SourceClass
      */
-    private fun asSourceClass(clazz: Class<*>): SourceClass {
-        return SourceClass(clazz)
+    private fun asSourceClass(clazz: Class<*>, filter: Predicate<String>): SourceClass {
+        if (filter.test(clazz.name)) {
+            return objectSourceClass
+        }
+        try {
+            // 对该类上的注解, 去进行逐一检验, 避免出现了注解的属性当中配置了一些当前VM当中不存在的类
+            // 比如"@ConditionalOnClass([Gson::class])", 这个Gson类就很可能不在我们的VM当中
+            for (annotation in clazz.declaredAnnotations) {
+                AnnotationUtils.validateAnnotation(annotation)
+            }
+
+            return SourceClass(clazz)
+        } catch (ex: Throwable) {
+            // trace记录一下...
+            if (logger.isTraceEnabled) {
+                logger.trace("Sanity test meet invalid annotation attributes, enforce to use asm via class name", ex)
+            }
+            // 如果检验注解失败的话, 那么只能尝试强制使用ASM去读取该类的信息...
+            return asSourceClass(clazz.name, filter)
+        }
     }
 
     /**
      * 将className去作为SourceClass
      *
      * @param className className
+     * @param filter 执行配置类的过滤的过滤器断言
      * @return SourceClass
      */
-    private fun asSourceClass(className: String): SourceClass {
+    private fun asSourceClass(className: String, filter: Predicate<String>): SourceClass {
+        if (filter.test(className)) {
+            return objectSourceClass
+        }
+
         // 对于JavaType, 别使用ASM去进行加载
         if (className.startsWith("java")) {
             try {
@@ -244,7 +268,7 @@ open class ConfigurationClassParser(
 
         // 把ConfigurationClass转为sourceClass去进行匹配...sourceClass有可能为它的父类这种情况...
         // 这里需要递归处理它的所有父类, 都当做配置类去进行处理, 但是它的父类当中的所有BeanMethod、ImportResource、ImportBeanDefinitionRegistrar都保存到configClass当中
-        var sourceClass: SourceClass? = asSourceClass(configClass)  // 最开始, 把configClass当做sourceClass即可
+        var sourceClass: SourceClass? = asSourceClass(configClass, filter)  // 最开始, 把configClass当做sourceClass即可
         do {
             sourceClass = doProcessConfigurationClass(configClass, sourceClass!!, filter)
         } while (sourceClass != null)
@@ -258,6 +282,7 @@ open class ConfigurationClassParser(
      * @param filter 用来去进行排除的Filter, 符合filter的要求(filter.test==true)的将会被排除掉
      * @return 如果有父类的话, return 父类; 如果没有父类的话, return null
      */
+    @Nullable
     private fun doProcessConfigurationClass(
         configClass: ConfigurationClass, sourceClass: SourceClass, filter: Predicate<String>
     ): SourceClass? {
@@ -479,21 +504,23 @@ open class ConfigurationClassParser(
                     val selector = ParserStrategyUtils.instanceClass<ImportSelector>(
                         candidateClass, this.environment, this.registry, this.resourceLoader
                     )
+
+                    // 如果selector使用了排除的Filter, 那么需要将它与exclusionFilter进行或运算
+                    // 表示只要其中一个符合, 那么就不匹配...
+                    val selectorExclusionFilter = selector.getExclusionFilter()
+                    var exclusionFilterToUse = exclusionFilter
+                    if (selectorExclusionFilter != null) {
+                        exclusionFilterToUse = exclusionFilterToUse.or(selectorExclusionFilter)
+                    }
+
                     // 如果它是一个延时处理的ImportSelector, 那么需要缓存起来, 后续一起去进行处理
                     if (selector is DeferredImportSelector) {
                         deferredImportSelectorHandler.add(configClass, selector)
                     } else {
-                        // 如果selector使用了排除的Filter, 那么需要将它与exclusionFilter进行或运算
-                        // 表示只要其中一个符合, 那么就不匹配...
-                        val selectorExclusionFilter = selector.getExclusionFilter()
-                        var filterToUse = exclusionFilter
-                        if (selectorExclusionFilter != null) {
-                            filterToUse = filterToUse.or(selectorExclusionFilter)
-                        }
                         val imports = selector.selectImports(currentSourceClass.metadata)
-                        val sourceClasses = asSourceClasses(imports, filterToUse)
+                        val sourceClasses = asSourceClasses(imports, exclusionFilterToUse)
                         // 递归处理Import导入的Selector
-                        processImports(configClass, currentSourceClass, sourceClasses, filterToUse)
+                        processImports(configClass, currentSourceClass, sourceClasses, exclusionFilterToUse)
                     }
                     // 如果它是一个ImportBeanDefinitionRegistrar(不会注册到容器当中)
                 } else if (candidate.isAssignable(ImportBeanDefinitionRegistrar::class.java)) {
@@ -525,9 +552,7 @@ open class ConfigurationClassParser(
      * @return ImportSelector导入的配置类列表
      */
     private fun asSourceClasses(imports: Array<String>, exclusionFilter: Predicate<String>): Collection<SourceClass> {
-        return imports.filter { !exclusionFilter.test(it) }  // 丢掉不合法的
-            .map { SourceClass(ClassUtils.forName<Any>(it)) }  // 转为className转为SourceClass
-            .toList()
+        return imports.map { asSourceClass(it, exclusionFilter) }
     }
 
     /**
@@ -569,8 +594,9 @@ open class ConfigurationClassParser(
             if (!mergedAnnotation.present) {
                 return
             }
-            for (clazz in mergedAnnotation.getClassArray(MergedAnnotation.VALUE)) {
-                imported += SourceClass(clazz)
+
+            for (importedClass in mergedAnnotation.getClassArray(MergedAnnotation.VALUE)) {
+                imported += asSourceClass(importedClass, DEFAULT_EXCLUSION_FILTER)
             }
         }
     }
@@ -619,7 +645,7 @@ open class ConfigurationClassParser(
         /**
          * 将SourceClass转换为ConfigurationClass(配置类对象)
          *
-         * @param importedBy 它是被哪个类导入进来的? 
+         * @param importedBy 它是被哪个类导入进来的?
          * @return 构建好的ConfigurationClass
          */
         fun asConfigClass(importedBy: ConfigurationClass): ConfigurationClass {
@@ -631,7 +657,7 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 判断它是否和某个类型匹配? 
+         * 判断它是否和某个类型匹配?
          *
          * @param parentClass 父类
          * @return 当前clazz是否是parentClass的子类
@@ -669,13 +695,13 @@ open class ConfigurationClassParser(
                 for (annotation in source.declaredAnnotations) {
                     val annotationType = annotation.annotationClass.java
                     if (!annotationType.name.startsWith("java")) {
-                        result += asSourceClass(annotationType)
+                        result += asSourceClass(annotationType, DEFAULT_EXCLUSION_FILTER)
                     }
                 }
             } else {
                 for (annotationType in this.metadata.getAnnotationTypes()) {
                     if (!annotationType.startsWith("java")) {
-                        result += asSourceClass(annotationType)
+                        result += asSourceClass(annotationType, DEFAULT_EXCLUSION_FILTER)
                     }
                 }
             }
@@ -691,12 +717,15 @@ open class ConfigurationClassParser(
         fun getSuperClass(): SourceClass {
             // 如果source就是Class的话, 那么我们直接使用superClass去构建SourceClass
             if (this.source is Class<*>) {
-                return asSourceClass(this.source.superclass)
+                return asSourceClass(this.source.superclass, DEFAULT_EXCLUSION_FILTER)
             }
 
             // 如果source是MetadataReader的话, 那么我们只有它的superClassName, 这里别去进行类加载
             // 我们也采用MetadataReader的方式去暴露SourceClass
-            return asSourceClass((source as MetadataReader).classMetadata.getSuperClassName()!!)
+            return asSourceClass(
+                (source as MetadataReader).classMetadata.getSuperClassName()!!,
+                DEFAULT_EXCLUSION_FILTER
+            )
         }
 
         /**
@@ -711,7 +740,7 @@ open class ConfigurationClassParser(
                 try {
                     val members = ArrayList<SourceClass>(declaredClasses.size)
                     for (declaredClass in declaredClasses) {
-                        members.add(asSourceClass(declaredClass))
+                        members.add(asSourceClass(declaredClass, DEFAULT_EXCLUSION_FILTER))
                     }
                     return members // return members
                 } catch (ex: NoClassDefFoundError) {
@@ -726,7 +755,7 @@ open class ConfigurationClassParser(
             val members = ArrayList<SourceClass>(memberClassNames.size)
             for (memberClassName in memberClassNames) {
                 try {
-                    members += asSourceClass(memberClassName)
+                    members += asSourceClass(memberClassName, DEFAULT_EXCLUSION_FILTER)
                 } catch (ex: Exception) {
                     // 如果连使用ASM都无法解析到该类的话, 那么log输出一下
                     if (logger.isDebugEnabled) {
@@ -748,11 +777,11 @@ open class ConfigurationClassParser(
             if (source is Class<*>) {
                 val interfaces = source.interfaces
                 for (clazz in interfaces) {
-                    result += asSourceClass(clazz)
+                    result += asSourceClass(clazz, DEFAULT_EXCLUSION_FILTER)
                 }
             } else {
                 for (interfaceName in metadata.getInterfaceNames()) {
-                    result += asSourceClass(interfaceName)
+                    result += asSourceClass(interfaceName, DEFAULT_EXCLUSION_FILTER)
                 }
             }
             return result
@@ -800,7 +829,7 @@ open class ConfigurationClassParser(
          */
         override fun getImportingClassFor(importedClass: String): AnnotationMetadata? {
             val metadata = imports[importedClass]
-            return if (metadata == null || metadata.isEmpty()) return null else metadata.last()
+            return if (metadata.isNullOrEmpty()) return null else metadata.last()
         }
 
         /**
@@ -879,11 +908,15 @@ open class ConfigurationClassParser(
             this.groupings.forEach { (_, grouping) ->
                 // 遍历该分组下的所有的DeferredImportSelector列表, 去完成Selector的处理
                 grouping.getImports().forEach { entry ->
+                    val exclusionFilter = grouping.getCandidateFilter()
+
                     val configClass = configurationClasses[entry.metadata]!!
                     // 调用ConfigurationClassParser的processImports方法, 去使用正常的方式去地处理@Import注解
                     this@ConfigurationClassParser.processImports(
-                        configClass, asSourceClass(configClass), listOf(asSourceClass(entry.importClassName))
-                    ) { false }
+                        configClass, asSourceClass(configClass, exclusionFilter),
+                        listOf(asSourceClass(entry.importClassName, exclusionFilter)),
+                        exclusionFilter
+                    )
                 }
             }
         }
@@ -927,7 +960,7 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 获取所有要去进行导入的自动配置类
+         * 获取所有要去进行导入的自动配置类的Entry
          *
          * @return 自动配置类的Entry列表
          */
@@ -936,6 +969,23 @@ open class ConfigurationClassParser(
                 this.group.process(selector.configClass.metadata, selector.deferredImportSelector)
             }
             return this.group.selectImports()
+        }
+
+        /**
+         * 获取候选配置类的Filter断言, 将当前分组下的所有的[ImportSelector]的ExclusionFilter去进行merge
+         *
+         * @return 用于匹配匹配类的Filter断言
+         */
+        fun getCandidateFilter(): Predicate<String> {
+            var mergedFilter: Predicate<String> = DEFAULT_EXCLUSION_FILTER
+
+            for (deferredImportSelector in deferredImportSelectors) {
+                val exclusionFilter = deferredImportSelector.deferredImportSelector.getExclusionFilter()
+                if (exclusionFilter != null) {
+                    mergedFilter = mergedFilter.or(exclusionFilter)
+                }
+            }
+            return mergedFilter
         }
     }
 

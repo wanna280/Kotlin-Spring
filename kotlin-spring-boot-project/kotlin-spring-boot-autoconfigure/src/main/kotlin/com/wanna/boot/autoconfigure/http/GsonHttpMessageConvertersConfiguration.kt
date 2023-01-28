@@ -1,5 +1,6 @@
 package com.wanna.boot.autoconfigure.http
 
+import com.google.gson.Gson
 import com.wanna.boot.autoconfigure.condition.ConditionalOnClass
 import com.wanna.framework.context.annotation.Configuration
 
@@ -10,7 +11,7 @@ import com.wanna.framework.context.annotation.Configuration
  * @version v1.0
  * @date 2023/1/28
  */
-@ConditionalOnClass(name = ["com.google.gson.Gson"])
+@ConditionalOnClass([Gson::class])
 @Configuration(proxyBeanMethods = false)
 open class GsonHttpMessageConvertersConfiguration {
 

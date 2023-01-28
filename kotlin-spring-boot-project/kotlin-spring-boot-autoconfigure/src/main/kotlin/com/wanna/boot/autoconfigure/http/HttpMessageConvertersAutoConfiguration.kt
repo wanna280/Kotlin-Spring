@@ -1,6 +1,10 @@
 package com.wanna.boot.autoconfigure.http
 
+import com.wanna.boot.autoconfigure.AutoConfigureAfter
 import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
+import com.wanna.boot.autoconfigure.gson.GsonAutoConfiguration
+import com.wanna.boot.autoconfigure.jackson.JacksonAutoConfiguration
+import com.wanna.boot.autoconfigure.jsonb.JsonbAutoConfiguration
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
@@ -14,6 +18,7 @@ import com.wanna.framework.web.http.converter.HttpMessageConverter
  * @version v1.0
  * @date 2023/1/28
  */
+@AutoConfigureAfter([JacksonAutoConfiguration::class, GsonAutoConfiguration::class, JsonbAutoConfiguration::class])
 @Import([JacksonHttpMessageConvertersConfiguration::class, GsonHttpMessageConvertersConfiguration::class, JsonbHttpMessageConvertersConfiguration::class])
 @Configuration(proxyBeanMethods = false)
 open class HttpMessageConvertersAutoConfiguration {
