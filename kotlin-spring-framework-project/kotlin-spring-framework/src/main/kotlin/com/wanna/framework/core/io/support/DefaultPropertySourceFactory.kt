@@ -7,7 +7,7 @@ import com.wanna.framework.lang.Nullable
 import java.util.*
 
 /**
- * 这是一个PropertySourceFactory的默认实现
+ * 这是一个[PropertySourceFactory]的默认实现
  *
  * @see PropertiesLoaderUtils
  * @see PropertySourceFactory

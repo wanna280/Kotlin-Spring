@@ -55,13 +55,14 @@ open class ConfigurationClassParser(
         private val logger = LoggerFactory.getLogger(ConfigurationClass::class.java)
 
         /**
-         * 默认情况下的PropertySourceFactory, 用于去创建PropertySource
+         * 默认情况下的[PropertySourceFactory], 用于去创建PropertySource, 并注册到Spring的[Environment]当中
          */
         @JvmStatic
         private val DEFAULT_PROPERTY_SOURCE_FACTORY = DefaultPropertySourceFactory()
 
         /**
-         * DeferredImportSelectorHolder的比较器, 因为对DeferredImportSelector包装了一层, 因此需要包装一层
+         * DeferredImportSelectorHolder的比较器, 因为对[DeferredImportSelector]包装了一层,
+         * 因此对于Comparator也需要去进行适配一层
          */
         @JvmStatic
         private val DEFERRED_IMPORT_SELECTOR_COMPARATOR = Comparator<DeferredImportSelectorHolder> { o1, o2 ->
@@ -69,7 +70,7 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 默认的用来去进行排除的Filter
+         * 默认的用来去对配置类去进行排除的断言Filter, 被这个Filter匹配上的配置类, 将不会被注册...
          */
         @JvmStatic
         private val DEFAULT_EXCLUSION_FILTER =
@@ -116,11 +117,15 @@ open class ConfigurationClassParser(
 
     /**
      * 获取导入被@Import配置类的信息的注册中心(导入栈), 用来处理ImportAware接口的注入Metadata信息
+     *
+     * @return ImportRegistry
      */
     open fun getImportRegistry(): ImportRegistry = this.importStack
 
     /**
-     * 获取解析完成的配置类列表
+     * 获取当前[ConfigurationClassParser]去解析完成的配置类列表
+     *
+     * @return 解析完成的配置类列表
      */
     open fun getConfigurationClasses(): Set<ConfigurationClass> = this.configClasses.keys
 
@@ -187,11 +192,22 @@ open class ConfigurationClassParser(
         processConfigurationClass(ConfigurationClass(beanClass, beanName), DEFAULT_EXCLUSION_FILTER)
     }
 
+    /**
+     * 将给定的[ConfigurationClass]去转换成为[SourceClass]
+     *
+     * @param configClass ConfigurationClass
+     * @param filter 配置类的过滤的断言Filter, 匹配上的配置类将不会被注册
+     * @return 将该配置类去转换之后得到的[SourceClass]
+     */
     private fun asSourceClass(configClass: ConfigurationClass, filter: Predicate<String>): SourceClass {
         val metadata = configClass.metadata
+
+        // 如果是StandardAnnotationMetadata, 那么使用Class去创建SourceClass
         if (metadata is StandardAnnotationMetadata) {
             return asSourceClass(metadata.introspectedClass, filter)
         }
+
+        // 如果不是StandardAnnotationMetadaa, 那么使用className, 基于MetadataReader去创建SourceClass
         return asSourceClass(metadata.getClassName(), filter)
     }
 
