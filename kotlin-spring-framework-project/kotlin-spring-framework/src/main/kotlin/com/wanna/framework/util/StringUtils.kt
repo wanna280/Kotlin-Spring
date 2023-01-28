@@ -186,6 +186,20 @@ object StringUtils {
     }
 
     /**
+     * 将字符串, 按照给定分隔符去分隔成为列表(对每个元素去进行trim, 并忽略掉空的元素)
+     *
+     * @param str 待拆分的字符串
+     * @param delimiters 字符串分隔符
+     * @return 拆分之后得到的结果
+     *
+     * @see StringTokenizer
+     */
+    @JvmStatic
+    fun tokenizeToStringArray(str: String, delimiters: String): Array<String> {
+        return tokenizeToStringArray(str, delimiters, true, true)
+    }
+
+    /**
      * 获取干净的path
      *
      * @param path path

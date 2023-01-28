@@ -21,6 +21,7 @@ import com.wanna.framework.web.handler.SimpleUrlHandlerMapping
 import com.wanna.framework.web.handler.ViewResolver
 import com.wanna.framework.web.http.converter.ByteArrayHttpMessageConverter
 import com.wanna.framework.web.http.converter.HttpMessageConverter
+import com.wanna.framework.web.http.converter.ResourceHttpMessageConverter
 import com.wanna.framework.web.http.converter.StringHttpMessageConverter
 import com.wanna.framework.web.http.converter.json.MappingJackson2HttpMessageConverter
 import com.wanna.framework.web.method.DefaultRequestToViewNameTranslator
@@ -351,6 +352,7 @@ open class WebMvcConfigurationSupport : ApplicationContextAware {
     protected open fun applyDefaultMessageConverters(converters: MutableList<HttpMessageConverter<*>>) {
         converters += ByteArrayHttpMessageConverter()  // support ByteArray
         converters += StringHttpMessageConverter()  // support String
+        converters += ResourceHttpMessageConverter() // support Resource
 
 
         if (jackson2Present) {
