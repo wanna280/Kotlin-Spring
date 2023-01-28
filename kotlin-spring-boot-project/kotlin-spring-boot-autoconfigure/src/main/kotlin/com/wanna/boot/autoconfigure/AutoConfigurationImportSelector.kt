@@ -1,5 +1,6 @@
 package com.wanna.boot.autoconfigure
 
+import com.wanna.boot.autoconfigure.AutoConfigurationImportSelector.ConfigurationClassFilter
 import com.wanna.boot.autoconfigure.EnableAutoConfiguration.Companion.ENABLED_OVERRIDE_PROPERTY
 import com.wanna.boot.autoconfigure.SharedMetadataReaderFactoryContextInitializer.Companion.BEAN_NAME
 import com.wanna.framework.beans.BeanFactoryAware
@@ -19,6 +20,7 @@ import com.wanna.framework.core.type.classreading.CachingMetadataReaderFactory
 import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
+import java.util.function.Predicate
 
 /**
  * 这是一个完成自动配置的ImportSelector, 作用是从SpringFactories当中去加载通过EnableAutoConfiguration导入的相关配置类,
@@ -34,16 +36,31 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     EnvironmentAware, Ordered {
 
     companion object {
+        /**
+         * 空的[AutoConfigurationEntry]实例对象
+         */
         @JvmField
         val EMPTY_ENTRY = AutoConfigurationEntry(emptyList(), emptySet())
     }
 
-    private lateinit var beanFactory: BeanFactory
+    /**
+     * BeanFactory
+     */
+    private var beanFactory: BeanFactory? = null
 
-    private lateinit var environment: Environment
+    /**
+     * Environment
+     */
+    private var environment: Environment? = null
 
-    private lateinit var classLoader: ClassLoader
+    /**
+     * ClassLoader
+     */
+    private var classLoader: ClassLoader? = null
 
+    /**
+     * Order
+     */
     private var order: Int = Ordered.ORDER_LOWEST - 1
 
     /**
@@ -57,6 +74,25 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
      */
     @Nullable
     override fun getGroup(): Class<out DeferredImportSelector.Group>? = AutoConfigurationGroup::class.java
+
+
+    /**
+     * 获取到要去进行排除的类的Filter断言
+     *
+     * @return 用于去进行配置类的排除的Filter
+     */
+    override fun getExclusionFilter(): Predicate<String> = Predicate { this.shouldExclude(it) }
+
+    /**
+     * 检查给定的这个配置类, 是否应该被排除掉?
+     *
+     * @param configurationClassName 配置类名
+     * @return 如果应该排除, 那么return true; 否则return false
+     */
+    private fun shouldExclude(configurationClassName: String): Boolean {
+        // 把该配置类, 交给ConfigurationClassFilter去进行决策...是否需要去进行排除掉?
+        return getConfigurationClassFilter().filter(listOf(configurationClassName)).isEmpty()
+    }
 
     /**
      * select Imports
@@ -145,7 +181,7 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
      * 从注解和配置文件当中去获取到要进行排除的EnableAutoCondition的配置类
      */
     protected open fun getExcludes(
-        metadata: AnnotationMetadata, attributes: AnnotationAttributes?
+        metadata: AnnotationMetadata, @Nullable attributes: AnnotationAttributes?
     ): MutableSet<String> {
         return HashSet()
     }
@@ -163,7 +199,7 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
             // 这里一般情况下, 会加载到OnBeanCondition/OnClassCondition等AutoConfigurationImportFilter...
             val importFilters =
                 SpringFactoriesLoader.loadFactories(AutoConfigurationImportFilter::class.java, classLoader)
-            configurationClassFilter = ConfigurationClassFilter(classLoader, importFilters)
+            configurationClassFilter = ConfigurationClassFilter(classLoader!!, importFilters)
             this.configurationClassFilter = configurationClassFilter
         }
         return configurationClassFilter
@@ -178,7 +214,7 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
     protected open fun isEnabled(metadata: AnnotationMetadata): Boolean {
         if (this::class.java == AutoConfigurationImportSelector::class.java) {
             // 如果从环境当中获取到属性值不为false, 则说明要开启自动配置, return true(默认也是return true)
-            return environment.getProperty(ENABLED_OVERRIDE_PROPERTY, Boolean::class.java, true)
+            return environment?.getProperty(ENABLED_OVERRIDE_PROPERTY, Boolean::class.java, true) ?: true
         }
         return true
     }
@@ -350,14 +386,14 @@ open class AutoConfigurationImportSelector : DeferredImportSelector, BeanClassLo
      * 对于一个Bean, 如果必要的话, 需要去执行Aware接口当中的方法
      */
     private fun invokeAwareMethods(instance: Any) {
-        if (instance is BeanFactoryAware) {
-            instance.setBeanFactory(this.beanFactory)
+        if (instance is BeanFactoryAware && this.beanFactory != null) {
+            instance.setBeanFactory(this.beanFactory!!)
         }
-        if (instance is EnvironmentAware) {
-            instance.setEnvironment(this.environment)
+        if (instance is EnvironmentAware && this.environment != null) {
+            instance.setEnvironment(this.environment!!)
         }
-        if (instance is BeanClassLoaderAware) {
-            instance.setBeanClassLoader(this.classLoader)
+        if (instance is BeanClassLoaderAware && this.classLoader != null) {
+            instance.setBeanClassLoader(this.classLoader!!)
         }
     }
 

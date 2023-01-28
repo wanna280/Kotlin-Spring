@@ -39,8 +39,11 @@ interface DeferredImportSelector : ImportSelector {
          */
         fun selectImports(): Iterable<Entry>
 
+        /**
+         * GroupEntry
+         */
         class Entry(val metadata: AnnotationMetadata, val importClassName: String) {
-
+            override fun toString(): String = importClassName
         }
 
     }

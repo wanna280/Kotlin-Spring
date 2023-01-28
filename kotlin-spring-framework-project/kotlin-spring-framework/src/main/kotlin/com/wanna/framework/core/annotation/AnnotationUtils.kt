@@ -1,12 +1,14 @@
 package com.wanna.framework.core.annotation
 
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.context.annotation.AnnotationAttributes
 import com.wanna.framework.core.annotation.MergedAnnotations.SearchStrategy
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
-import com.wanna.common.logging.LoggerFactory
+import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Method
+import java.lang.reflect.Proxy
 
 /**
  * 注解相关的工具类
@@ -227,6 +229,40 @@ object AnnotationUtils {
     @JvmStatic
     private fun <A : Annotation> isSingleLevelPresent(mergedAnnotation: MergedAnnotation<A>): Boolean {
         return mergedAnnotation.distance == 0 || mergedAnnotation.distance == 1
+    }
+
+    /**
+     * 对注解去进行检验, 避免出现了注解的属性当中配置了一些当前VM当中不存在的类,
+     * 比如类上存在有"@ConditionalOnClass([Gson::class])", 这个Gson类就很可能不在我们的VM当中
+     *
+     * @param annotation 待检验的注解对象
+     * @throws IllegalStateException 如果该注解当中遇到了无法去进行访问的注解属性
+     */
+    @JvmStatic
+    @Throws(IllegalStateException::class)
+    fun validateAnnotation(annotation: Annotation) {
+        AttributeMethods.forAnnotationType(annotation.annotationClass.java).validate(annotation)
+    }
+
+    /**
+     * 执行注解方法
+     *
+     * @param method 注解方法
+     * @param annotation 注解对象
+     */
+    @Nullable
+    @JvmStatic
+    fun invokeAnnotationMethod(method: Method, annotation: Any): Any? {
+        if (Proxy.isProxyClass(annotation::class.java)) {
+            try {
+                val invocationHandler = Proxy.getInvocationHandler(annotation)
+                invocationHandler.invoke(annotation, method, emptyArray())
+            } catch (ex: Throwable) {
+                // ignore, 尝试使用反射去进行执行目标方法
+            }
+        }
+        // 反射执行目标方法
+        return ReflectionUtils.invokeMethod(method, annotation)
     }
 
 

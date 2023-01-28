@@ -11,6 +11,7 @@ import com.wanna.framework.core.environment.EnvironmentCapable
 import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 
@@ -36,7 +37,7 @@ open class ConditionEvaluator(
      *
      * @param metadata 方法/类的注解信息的描述
      */
-    open fun shouldSkip(metadata: AnnotatedTypeMetadata?): Boolean {
+    open fun shouldSkip(@Nullable metadata: AnnotatedTypeMetadata?): Boolean {
         return shouldSkip(metadata, null)
     }
 
@@ -45,7 +46,7 @@ open class ConditionEvaluator(
      * @param metadata 类/方法当中的注解信息的描述
      * @param phase 当前处于哪个阶段? 是解析配置类还是注册Bean?
      */
-    open fun shouldSkip(metadata: AnnotatedTypeMetadata?, phase: ConfigurationPhase?): Boolean {
+    open fun shouldSkip(@Nullable metadata: AnnotatedTypeMetadata?, @Nullable phase: ConfigurationPhase?): Boolean {
         // 如果没有给定metadata, 或者metadata当中没有标注@Conditional注解, 那么肯定不应该跳过, return false
         if (metadata == null || !metadata.isAnnotated(Conditional::class.java.name)) {
             return false

@@ -1,6 +1,5 @@
 package com.wanna.framework.context.annotation
 
-import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.core.io.DescriptiveResource
 import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.type.AnnotationMetadata
@@ -41,7 +40,7 @@ open class ConfigurationClass(val metadata: AnnotationMetadata, var resource: Re
      * @param clazz Class
      * @param beanName beanName
      */
-    constructor(clazz: Class<*>, beanName: String?) : this(
+    constructor(clazz: Class<*>, @Nullable beanName: String?) : this(
         AnnotationMetadata.introspect(clazz), DescriptiveResource(clazz.name), beanName
     )
 
@@ -90,8 +89,6 @@ open class ConfigurationClass(val metadata: AnnotationMetadata, var resource: Re
             this.importedBy.add(importedBy)
         }
     }
-
-    constructor(beanDefinition: BeanDefinition, beanName: String?) : this(beanDefinition.getBeanClass()!!, beanName)
 
 
     /**

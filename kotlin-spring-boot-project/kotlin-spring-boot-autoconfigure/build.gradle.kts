@@ -9,6 +9,8 @@ dependencies {
     compileOnly("org.aspectj:aspectjweaver:$aspectJVersion")
     compileOnly("javax.servlet:javax.servlet-api:$servletApiVersion") // servlet-api
     compileOnly("org.apache.tomcat.embed:tomcat-embed-core:$tomcatCoreVersion")
+    compileOnly("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // jackson
+    compileOnly("com.google.code.gson:gson:$gsonVersion")  // gson
 
 
     implementation("com.google.guava:guava:$guavaVersion")

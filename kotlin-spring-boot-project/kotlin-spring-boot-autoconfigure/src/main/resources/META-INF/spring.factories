@@ -15,4 +15,8 @@ com.wanna.boot.autoconfigure.EnableAutoConfiguration=\
   com.wanna.boot.autoconfigure.web.mvc.NettyMvcAutoConfiguration,\
   com.wanna.boot.autoconfigure.web.servlet.ServletMvcAutoConfiguration,\
   com.wanna.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration,\
-  com.wanna.boot.autoconfigure.web.client.RestTemplateAutoConfiguration
+  com.wanna.boot.autoconfigure.web.client.RestTemplateAutoConfiguration,\
+  com.wanna.boot.autoconfigure.jackson.JacksonAutoConfiguration,\
+  com.wanna.boot.autoconfigure.gson.GsonAutoConfiguration,\
+  com.wanna.boot.autoconfigure.jsonb.JsonbAutoConfiguration,\
+  com.wanna.boot.autoconfigure.http.HttpMessageConvertersAutoConfiguration

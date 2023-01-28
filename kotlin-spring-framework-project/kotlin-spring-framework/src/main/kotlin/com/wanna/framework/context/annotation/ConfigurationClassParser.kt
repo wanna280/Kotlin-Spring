@@ -1,5 +1,6 @@
 package com.wanna.framework.context.annotation
 
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
 import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
@@ -18,6 +19,7 @@ import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.DefaultPropertySourceFactory
 import com.wanna.framework.core.io.support.PropertySourceFactory
 import com.wanna.framework.core.type.AnnotationMetadata
+import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.core.type.StandardAnnotationMetadata
 import com.wanna.framework.core.type.classreading.MetadataReader
 import com.wanna.framework.core.type.classreading.MetadataReaderFactory
@@ -27,16 +29,12 @@ import com.wanna.framework.util.AnnotationConfigUtils
 import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
-import com.wanna.common.logging.LoggerFactory
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.net.SocketException
 import java.net.UnknownHostException
 import java.util.*
 import java.util.function.Predicate
-import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
-import kotlin.collections.LinkedHashSet
-import kotlin.math.log
 
 /**
  * 这是一个配置类的解析器, 用来扫描配置类相关的注解, 将其注册到容器当中
@@ -57,13 +55,14 @@ open class ConfigurationClassParser(
         private val logger = LoggerFactory.getLogger(ConfigurationClass::class.java)
 
         /**
-         * 默认情况下的PropertySourceFactory, 用于去创建PropertySource
+         * 默认情况下的[PropertySourceFactory], 用于去创建PropertySource, 并注册到Spring的[Environment]当中
          */
         @JvmStatic
         private val DEFAULT_PROPERTY_SOURCE_FACTORY = DefaultPropertySourceFactory()
 
         /**
-         * DeferredImportSelectorHolder的比较器, 因为对DeferredImportSelector包装了一层, 因此需要包装一层
+         * DeferredImportSelectorHolder的比较器, 因为对[DeferredImportSelector]包装了一层,
+         * 因此对于Comparator也需要去进行适配一层
          */
         @JvmStatic
         private val DEFERRED_IMPORT_SELECTOR_COMPARATOR = Comparator<DeferredImportSelectorHolder> { o1, o2 ->
@@ -71,7 +70,7 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 默认的用来去进行排除的Filter
+         * 默认的用来去对配置类去进行排除的断言Filter, 被这个Filter匹配上的配置类, 将不会被注册...
          */
         @JvmStatic
         private val DEFAULT_EXCLUSION_FILTER =
@@ -86,7 +85,7 @@ open class ConfigurationClassParser(
     )
 
     /**
-     * 条件计算器, 通过@Conditional注解去计算该Bean是否应该被导入到容器当中? 
+     * 条件计算器, 通过@Conditional注解去计算该Bean是否应该被导入到容器当中?
      */
     private val conditionEvaluator = ConditionEvaluator(this.registry, this.environment, resourceLoader)
 
@@ -112,12 +111,21 @@ open class ConfigurationClassParser(
     private val importStack = ImportStack()
 
     /**
+     * Object类的SourceClass
+     */
+    private val objectSourceClass = SourceClass(Any::class.java)
+
+    /**
      * 获取导入被@Import配置类的信息的注册中心(导入栈), 用来处理ImportAware接口的注入Metadata信息
+     *
+     * @return ImportRegistry
      */
     open fun getImportRegistry(): ImportRegistry = this.importStack
 
     /**
-     * 获取解析完成的配置类列表
+     * 获取当前[ConfigurationClassParser]去解析完成的配置类列表
+     *
+     * @return 解析完成的配置类列表
      */
     open fun getConfigurationClasses(): Set<ConfigurationClass> = this.configClasses.keys
 
@@ -184,32 +192,69 @@ open class ConfigurationClassParser(
         processConfigurationClass(ConfigurationClass(beanClass, beanName), DEFAULT_EXCLUSION_FILTER)
     }
 
-    private fun asSourceClass(configClass: ConfigurationClass): SourceClass {
+    /**
+     * 将给定的[ConfigurationClass]去转换成为[SourceClass]
+     *
+     * @param configClass ConfigurationClass
+     * @param filter 配置类的过滤的断言Filter, 匹配上的配置类将不会被注册
+     * @return 将该配置类去转换之后得到的[SourceClass]
+     */
+    private fun asSourceClass(configClass: ConfigurationClass, filter: Predicate<String>): SourceClass {
         val metadata = configClass.metadata
+
+        // 如果是StandardAnnotationMetadata, 那么使用Class去创建SourceClass
         if (metadata is StandardAnnotationMetadata) {
-            return asSourceClass(metadata.introspectedClass)
+            return asSourceClass(metadata.introspectedClass, filter)
         }
-        return asSourceClass(metadata.getClassName())
+
+        // 如果不是StandardAnnotationMetadaa, 那么使用className, 基于MetadataReader去创建SourceClass
+        return asSourceClass(metadata.getClassName(), filter)
     }
 
     /**
      * 将一个配置类去作为sourceClass
      *
      * @param clazz clazz
+     * @param filter 对配置类去进行匹配的断言Filter
      * @return SourceClass
      */
-    private fun asSourceClass(clazz: Class<*>): SourceClass {
-        return SourceClass(clazz)
+    private fun asSourceClass(clazz: Class<*>, filter: Predicate<String>): SourceClass {
+        // 如果该类被Filter过滤掉, 那么直接pass...
+        if (filter.test(clazz.name)) {
+            return objectSourceClass
+        }
+        try {
+            // 对该类上的注解, 去进行逐一检验, 避免出现了注解的属性当中配置了一些当前VM当中不存在的类
+            // 比如"@ConditionalOnClass([Gson::class])", 这个Gson类就很可能不在我们的VM当中
+            for (annotation in clazz.declaredAnnotations) {
+                AnnotationUtils.validateAnnotation(annotation)
+            }
+
+            return SourceClass(clazz)
+        } catch (ex: Throwable) {
+            // trace记录一下...
+            if (logger.isTraceEnabled) {
+                logger.trace("Sanity test meet invalid annotation attributes, enforce to use asm via class name", ex)
+            }
+            // 如果检验注解失败的话, 那么只能尝试强制使用ASM去读取该类的信息...
+            return asSourceClass(clazz.name, filter)
+        }
     }
 
     /**
      * 将className去作为SourceClass
      *
      * @param className className
+     * @param filter 执行配置类的过滤的过滤器断言
      * @return SourceClass
      */
-    private fun asSourceClass(className: String): SourceClass {
-        // 对于JavaType, 别使用ASM去进行加载
+    private fun asSourceClass(className: String, filter: Predicate<String>): SourceClass {
+        // 如果该类被Filter过滤掉, 那么直接pass...
+        if (filter.test(className)) {
+            return objectSourceClass
+        }
+
+        // 对于JavaType, 永远别尝试使用ASM去进行类的加载...
         if (className.startsWith("java")) {
             try {
                 return SourceClass(ClassUtils.forName<Any>(className, this.resourceLoader.getClassLoader()))
@@ -223,10 +268,10 @@ open class ConfigurationClassParser(
     }
 
     /**
-     * 解析配置类
+     * 执行解析配置类, 需要递归处理该配置类的所有的父类
      *
      * @param configClass 目标配置类
-     * @param filter 去进行排除掉的filter
+     * @param filter 对配置类去进行匹配的断言Filter
      */
     private fun processConfigurationClass(configClass: ConfigurationClass, filter: Predicate<String>) {
         // 如果条件计算器计算得知需要去进行pass掉, 那么在这里直接pass掉, 它要导入的所有组件都pass掉
@@ -244,7 +289,7 @@ open class ConfigurationClassParser(
 
         // 把ConfigurationClass转为sourceClass去进行匹配...sourceClass有可能为它的父类这种情况...
         // 这里需要递归处理它的所有父类, 都当做配置类去进行处理, 但是它的父类当中的所有BeanMethod、ImportResource、ImportBeanDefinitionRegistrar都保存到configClass当中
-        var sourceClass: SourceClass? = asSourceClass(configClass)  // 最开始, 把configClass当做sourceClass即可
+        var sourceClass: SourceClass? = asSourceClass(configClass, filter)  // 最开始, 把configClass当做sourceClass即可
         do {
             sourceClass = doProcessConfigurationClass(configClass, sourceClass!!, filter)
         } while (sourceClass != null)
@@ -254,10 +299,11 @@ open class ConfigurationClassParser(
      * 交给这个方法, 去进行真正地去处理一个配置类
      *
      * @param configClass 目标配置类(用于存放BeanMethod/ImportResource/ImportBeanDefinitionRegistrar/PropertySource等), 不会进行匹配的操作
-     * @param sourceClass 源类(有可能它目标配置类的父类的情况...), 用来完成所有的匹配工作
-     * @param filter 用来去进行排除的Filter, 符合filter的要求(filter.test==true)的将会被排除掉
-     * @return 如果有父类的话, return 父类; 如果没有父类的话, return null
+     * @param sourceClass 源类(目标配置类的直接/间接父类), 对它去进行注解的扫描并将扫描的结果存放到[configClass]当中
+     * @param filter 用来去对配置类进行排除的Filter, 符合filter的要求(filter.test==true)的将会被排除掉
+     * @return 如果[sourceClass]还存在有父类的话, 返回父类的[SourceClass]; 如果没有父类的话, return null
      */
+    @Nullable
     private fun doProcessConfigurationClass(
         configClass: ConfigurationClass, sourceClass: SourceClass, filter: Predicate<String>
     ): SourceClass? {
@@ -281,6 +327,9 @@ open class ConfigurationClassParser(
         // 处理@Bean注解
         processBeanMethods(configClass, sourceClass)
 
+        // 递归处理sourceClass的所有的接口上的@Bean注解的方法
+        processInterfaces(configClass, sourceClass)
+
         // 如果还有superClass, 那么return superClass(并不一定是真的Class, 可能还是通过MetadataReader提供访问的SourceClass)
         if (sourceClass.metadata.hasSuperClass()) {
             val superClassName = sourceClass.metadata.getSuperClassName()
@@ -300,12 +349,11 @@ open class ConfigurationClassParser(
      *
      * @param configClass 标注了`@Component`注解的目标配置类
      * @param sourceClass 源类(有可能为configClass/configClass的父类)
-     * @param filter 排除的filter
+     * @param filter 执行对于配置类的过滤的断言Filter
      */
     private fun processMemberClasses(
         configClass: ConfigurationClass, sourceClass: SourceClass, filter: Predicate<String>
     ) {
-
         // 获取该类的所有的MemberClass
         val memberClasses = sourceClass.getMemberClasses()
         if (memberClasses.isNotEmpty()) {
@@ -418,16 +466,83 @@ open class ConfigurationClassParser(
     }
 
     /**
-     * 处理@Bean注解的标注的方法, 将所有的@Bean方法加入到候选列表当中
+     * 对[SourceClass]的所有的接口, 去进行处理, 将接口当中的[Bean]的方法去收集到[configClass]当中
      *
-     * @param configClass 要处理的目标配置类
+     * @param configClass ConfigurationClass
+     * @param sourceClass 当前正在处理的SourceClass
+     */
+    private fun processInterfaces(configClass: ConfigurationClass, sourceClass: SourceClass) {
+        for (itf in sourceClass.getInterfaces()) {
+
+            // 从该接口当中去提取到所有的@Bean方法...
+            val beanMethods = retrieveBeanMethodMetadata(itf)
+            for (beanMethod in beanMethods) {
+                if (!beanMethod.isAbstract()) {
+                    // 添加Java8+当中新增的实现的默认的@Bean方法
+                    configClass.addBeanMethod(BeanMethod(beanMethod, configClass))
+                }
+            }
+
+            // 将接口作为SourceClass去进行递归处理
+            processInterfaces(configClass, itf)
+        }
+    }
+
+    /**
+     * 处理`@Bean`注解的标注的方法, 将所有的`@Bean`方法加入到候选列表当中
+     *
+     * @param configClass ConfigurationClass, 用于收集@Bean方法
+     * @param sourceClass 正在处理的SourceClass
      */
     private fun processBeanMethods(configClass: ConfigurationClass, sourceClass: SourceClass) {
-        val original = sourceClass.metadata
-        val beanMethods = original.getAnnotatedMethods(Bean::class.java.name)
-        beanMethods.forEach {
-            configClass.addBeanMethod(BeanMethod(it, configClass))
+        val beanMethods = retrieveBeanMethodMetadata(sourceClass)
+        for (metadata in beanMethods) {
+            configClass.addBeanMethod(BeanMethod(metadata, configClass))
         }
+    }
+
+    /**
+     * 从给定的[SourceClass]当中去提取出来所有的标注了`@Bean`注解的方法
+     *
+     * @param sourceClass SourceClass
+     * @return 从该类当中提取到的[Bean]方法列表
+     */
+    private fun retrieveBeanMethodMetadata(sourceClass: SourceClass): Set<MethodMetadata> {
+        val metadata = sourceClass.metadata
+        var beanMethods = metadata.getAnnotatedMethods(Bean::class.java.name)
+
+        // 如果Metadata是StandardAnnotationMetadata的话, 那么说明是使用的反射的方式去获取到的@Bean方法
+        // 但是不幸的是, JVM标准的反射返回的方法顺序不固定, 甚至有可能在相同的JVM下运行相同的应用, 都能拿到不同的结果
+        // 我们尝试使用ASM的方式去获取到用户定义的顺序...(实在无法获取到就不管了, 就用标准反射的结果就行了...)
+        if (beanMethods.size > 1 && metadata is StandardAnnotationMetadata) {
+            try {
+                val asm = metadataReaderFactory.getMetadataReader(metadata.getClassName()).annotationMetadata
+                val asmMethods = asm.getAnnotatedMethods(Bean::class.java.name)
+                if (asmMethods.size >= beanMethods.size) {
+                    // ASM的方法和JDK标准反射的方法去进行匹配, 将对应的ASM方法存起来作为最终结果
+                    val selectedMethods = LinkedHashSet<MethodMetadata>()
+                    for (asmMethod in asmMethods) {
+                        for (beanMethod in beanMethods) {
+                            if (beanMethod.getMethodName() == asmMethod.getMethodName()) {
+                                selectedMethods += asmMethod
+                                break
+                            }
+                        }
+                    }
+
+                    // 如果所有的方法都通过ASM的方式去找到了, 那么使用ASM的结果去作为最终的结果...
+                    // 否则的话, 仍旧使用原来的标准反射的方式去寻找到的结果去进行返回
+                    if (selectedMethods.size == beanMethods.size) {
+                        beanMethods = selectedMethods
+                    }
+                }
+            } catch (ex: IOException) {
+                logger.debug("Failed to read class file via ASM for determining @Bean method order")
+                // ignore, 我们还有标准反射的@Bean方法可以用呢...
+            }
+        }
+
+        return beanMethods
     }
 
     /**
@@ -479,21 +594,23 @@ open class ConfigurationClassParser(
                     val selector = ParserStrategyUtils.instanceClass<ImportSelector>(
                         candidateClass, this.environment, this.registry, this.resourceLoader
                     )
+
+                    // 如果selector使用了排除的Filter, 那么需要将它与exclusionFilter进行或运算
+                    // 表示只要其中一个符合, 那么就不匹配...
+                    val selectorExclusionFilter = selector.getExclusionFilter()
+                    var exclusionFilterToUse = exclusionFilter
+                    if (selectorExclusionFilter != null) {
+                        exclusionFilterToUse = exclusionFilterToUse.or(selectorExclusionFilter)
+                    }
+
                     // 如果它是一个延时处理的ImportSelector, 那么需要缓存起来, 后续一起去进行处理
                     if (selector is DeferredImportSelector) {
                         deferredImportSelectorHandler.add(configClass, selector)
                     } else {
-                        // 如果selector使用了排除的Filter, 那么需要将它与exclusionFilter进行或运算
-                        // 表示只要其中一个符合, 那么就不匹配...
-                        val selectorExclusionFilter = selector.getExclusionFilter()
-                        var filterToUse = exclusionFilter
-                        if (selectorExclusionFilter != null) {
-                            filterToUse = filterToUse.or(selectorExclusionFilter)
-                        }
                         val imports = selector.selectImports(currentSourceClass.metadata)
-                        val sourceClasses = asSourceClasses(imports, filterToUse)
+                        val sourceClasses = asSourceClasses(imports, exclusionFilterToUse)
                         // 递归处理Import导入的Selector
-                        processImports(configClass, currentSourceClass, sourceClasses, filterToUse)
+                        processImports(configClass, currentSourceClass, sourceClasses, exclusionFilterToUse)
                     }
                     // 如果它是一个ImportBeanDefinitionRegistrar(不会注册到容器当中)
                 } else if (candidate.isAssignable(ImportBeanDefinitionRegistrar::class.java)) {
@@ -525,9 +642,7 @@ open class ConfigurationClassParser(
      * @return ImportSelector导入的配置类列表
      */
     private fun asSourceClasses(imports: Array<String>, exclusionFilter: Predicate<String>): Collection<SourceClass> {
-        return imports.filter { !exclusionFilter.test(it) }  // 丢掉不合法的
-            .map { SourceClass(ClassUtils.forName<Any>(it)) }  // 转为className转为SourceClass
-            .toList()
+        return imports.map { asSourceClass(it, exclusionFilter) }
     }
 
     /**
@@ -569,8 +684,9 @@ open class ConfigurationClassParser(
             if (!mergedAnnotation.present) {
                 return
             }
-            for (clazz in mergedAnnotation.getClassArray(MergedAnnotation.VALUE)) {
-                imported += SourceClass(clazz)
+
+            for (importedClass in mergedAnnotation.getClassArray(MergedAnnotation.VALUE)) {
+                imported += asSourceClass(importedClass, DEFAULT_EXCLUSION_FILTER)
             }
         }
     }
@@ -602,12 +718,14 @@ open class ConfigurationClassParser(
 
     /**
      * 描述了要去进行解析的一个配置类的相关信息, 对于一个配置类来说, 可能会存在有多个父类,
-     * 对于它以及它的所有的父类, 都应该当做一个SourceClass去进行处理.
-     * 正常来讲, source是应该放一个Class的, 但是很可惜的是, 我们做不到,
-     * 我们不应该这么早的去进行类加载, 我们需要尽可能采用MetadataReader去进行读取类的相关信息,
-     * 对于MetadataReader将会尽可能采用读取Class文件的方式去完成实现, 可以实现不进行类的加载
+     * 对于一个配置类以及它的所有的父类, 最终都应该当做一个[SourceClass]去进行递归处理.
      *
-     * @param source source
+     * 正常来讲, [source]应该是一个Class的, 但是很可惜的是, 现在时机太早了, 我们根本无法做到, 我们不应该这么早的去进行类加载,
+     * 因此在这里我们换种方式, 尽可能不去进行类加载, 我们需要尽可能使用ASM的方式, 利用[MetadataReader]去进行读取类的相关信息,
+     * 对于[MetadataReader]将会尽可能采用ASM读取Class文件的方式去进行实现, 可以实现不进行类的加载就读取到的类的相关信息
+     *
+     * @param source source(Class/MetadataReader)
+     * @see MetadataReader
      */
     private inner class SourceClass(val source: Any) {
         /**
@@ -617,10 +735,10 @@ open class ConfigurationClassParser(
             if (source is Class<*>) AnnotationMetadata.introspect(source) else (source as MetadataReader).annotationMetadata
 
         /**
-         * 将SourceClass转换为ConfigurationClass(配置类对象)
+         * 将[SourceClass]转换为[ConfigurationClass]
          *
-         * @param importedBy 它是被哪个类导入进来的? 
-         * @return 构建好的ConfigurationClass
+         * @param importedBy 它是被哪个类导入进来的?
+         * @return 基于当前[SourceClass]去构建好的ConfigurationClass
          */
         fun asConfigClass(importedBy: ConfigurationClass): ConfigurationClass {
             return if (source is Class<*>) {
@@ -631,7 +749,7 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 判断它是否和某个类型匹配? 
+         * 判断它是否和某个类型匹配?
          *
          * @param parentClass 父类
          * @return 当前clazz是否是parentClass的子类
@@ -644,9 +762,11 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 进行当前SourceClass的类加载(某些操作下, 我们确实没有办法没有类的情况下去进行操作, 还是得借助类加载来做)
+         * 进行当前[SourceClass]的类加载
+         * (某些特殊的操作下, 我们确实没有办法没有类的情况下去进行操作, 还是得借助类加载来做)
          *
-         * @return Class
+         * @return 将当前[SourceClass]去加载得到的Class
+         * @see ConfigurationClassParser.processImports
          */
         fun loadClass(): Class<*> {
             if (this.source is Class<*>) {
@@ -659,23 +779,27 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 获取当前的SourceClass上的全部直接标注的注解
+         * 获取当前的[SourceClass]上的全部直接标注的注解, 将注解也去转换成为一个[SourceClass]去进行包装
          *
-         * @return 当前SourceClass上的注解列表
+         * @return 当前[SourceClass]上标注的注解列表
          */
         fun getAnnotations(): Collection<SourceClass> {
             val result = LinkedHashSet<SourceClass>()
+
+            // 如果是Class的话, 那么直接getDeclaredAnnotations
             if (this.source is Class<*>) {
                 for (annotation in source.declaredAnnotations) {
                     val annotationType = annotation.annotationClass.java
                     if (!annotationType.name.startsWith("java")) {
-                        result += asSourceClass(annotationType)
+                        result += asSourceClass(annotationType, DEFAULT_EXCLUSION_FILTER)
                     }
                 }
+
+                // 如果当前不是Class的话, 那么使用MetadataReader去获取Metadata的注解信息...
             } else {
                 for (annotationType in this.metadata.getAnnotationTypes()) {
                     if (!annotationType.startsWith("java")) {
-                        result += asSourceClass(annotationType)
+                        result += asSourceClass(annotationType, DEFAULT_EXCLUSION_FILTER)
                     }
                 }
             }
@@ -684,34 +808,40 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 返回当前SourceClass的SuperClass的描述信息的SourceClass
+         * 返回当前[SourceClass]的SuperClass(直接父类), 并包装成为[SourceClass],
+         * source还是得以[MetadataReader]的方式去进行读取, 我们无法完成类加载.
          *
          * @return SourceClass of SuperClass
          */
         fun getSuperClass(): SourceClass {
             // 如果source就是Class的话, 那么我们直接使用superClass去构建SourceClass
             if (this.source is Class<*>) {
-                return asSourceClass(this.source.superclass)
+                return asSourceClass(this.source.superclass, DEFAULT_EXCLUSION_FILTER)
             }
 
             // 如果source是MetadataReader的话, 那么我们只有它的superClassName, 这里别去进行类加载
             // 我们也采用MetadataReader的方式去暴露SourceClass
-            return asSourceClass((source as MetadataReader).classMetadata.getSuperClassName()!!)
+            return asSourceClass(
+                (source as MetadataReader).classMetadata.getSuperClassName()!!,
+                DEFAULT_EXCLUSION_FILTER
+            )
         }
 
         /**
-         * 获取当前SourceClass的成员类列表
+         * 获取当前[SourceClass]的成员类列表
          *
-         * @return SourceClass的成员类列表
+         * @return [SourceClass]的成员类列表
          */
         fun getMemberClasses(): Collection<SourceClass> {
             var sourceToProcess = this.source
+
+            // 如果是Class的话, 那么我们尝试去获取到所有的定义的类
             if (sourceToProcess is Class<*>) {
                 val declaredClasses = sourceToProcess.declaredClasses
                 try {
                     val members = ArrayList<SourceClass>(declaredClasses.size)
                     for (declaredClass in declaredClasses) {
-                        members.add(asSourceClass(declaredClass))
+                        members.add(asSourceClass(declaredClass, DEFAULT_EXCLUSION_FILTER))
                     }
                     return members // return members
                 } catch (ex: NoClassDefFoundError) {
@@ -721,12 +851,12 @@ open class ConfigurationClassParser(
             }
             sourceToProcess as MetadataReader
 
-            // 使用ASM的方式, 去读取成员类的信息
+            // 如果使用Class读取失败, 或者根本不是一个Class的话, 那么需要使用MetadataReader, 去使用ASM的方式去读取成员类的信息
             val memberClassNames = sourceToProcess.classMetadata.getMemberClassNames()
             val members = ArrayList<SourceClass>(memberClassNames.size)
             for (memberClassName in memberClassNames) {
                 try {
-                    members += asSourceClass(memberClassName)
+                    members += asSourceClass(memberClassName, DEFAULT_EXCLUSION_FILTER)
                 } catch (ex: Exception) {
                     // 如果连使用ASM都无法解析到该类的话, 那么log输出一下
                     if (logger.isDebugEnabled) {
@@ -739,30 +869,49 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 获取当前SourceClass的接口列表
+         * 获取当前[SourceClass]的直接接口列表, 并包装成为[SourceClass]
          *
-         * @return 当前SourceClass的接口列表
+         * @return 当前[SourceClass]的接口列表
          */
         fun getInterfaces(): Set<SourceClass> {
             val result = LinkedHashSet<SourceClass>()
+
+            // 如果是Class的话, 可以直接读取接口列表
             if (source is Class<*>) {
                 val interfaces = source.interfaces
                 for (clazz in interfaces) {
-                    result += asSourceClass(clazz)
+                    result += asSourceClass(clazz, DEFAULT_EXCLUSION_FILTER)
                 }
+
+                // 如果是MetadataReader的话, 那么也还是得使用ASM的方式去进行获取所有的接口
             } else {
                 for (interfaceName in metadata.getInterfaceNames()) {
-                    result += asSourceClass(interfaceName)
+                    result += asSourceClass(interfaceName, DEFAULT_EXCLUSION_FILTER)
                 }
             }
             return result
         }
 
+        /**
+         * toString, 直接使用source去进行生成即可
+         *
+         * @return toString
+         */
         override fun toString(): String = "$source"
 
-        override fun equals(other: Any?): Boolean =
+        /**
+         * equals, 采用[metadata]的类名去进行生成
+         *
+         * @param other other
+         */
+        override fun equals(@Nullable other: Any?): Boolean =
             this === other || other is SourceClass && other.metadata.getClassName() == this.metadata.getClassName()
 
+        /**
+         * hashCode, 采用[metadata]的类名去进行生成
+         *
+         * @return hashCode
+         */
         override fun hashCode(): Int = metadata.getClassName().hashCode()
     }
 
@@ -800,7 +949,7 @@ open class ConfigurationClassParser(
          */
         override fun getImportingClassFor(importedClass: String): AnnotationMetadata? {
             val metadata = imports[importedClass]
-            return if (metadata == null || metadata.isEmpty()) return null else metadata.last()
+            return if (metadata.isNullOrEmpty()) return null else metadata.last()
         }
 
         /**
@@ -879,11 +1028,15 @@ open class ConfigurationClassParser(
             this.groupings.forEach { (_, grouping) ->
                 // 遍历该分组下的所有的DeferredImportSelector列表, 去完成Selector的处理
                 grouping.getImports().forEach { entry ->
+                    val exclusionFilter = grouping.getCandidateFilter()
+
                     val configClass = configurationClasses[entry.metadata]!!
                     // 调用ConfigurationClassParser的processImports方法, 去使用正常的方式去地处理@Import注解
                     this@ConfigurationClassParser.processImports(
-                        configClass, asSourceClass(configClass), listOf(asSourceClass(entry.importClassName))
-                    ) { false }
+                        configClass, asSourceClass(configClass, exclusionFilter),
+                        listOf(asSourceClass(entry.importClassName, exclusionFilter)),
+                        exclusionFilter
+                    )
                 }
             }
         }
@@ -927,7 +1080,7 @@ open class ConfigurationClassParser(
         }
 
         /**
-         * 获取所有要去进行导入的自动配置类
+         * 获取所有要去进行导入的自动配置类的Entry
          *
          * @return 自动配置类的Entry列表
          */
@@ -936,6 +1089,23 @@ open class ConfigurationClassParser(
                 this.group.process(selector.configClass.metadata, selector.deferredImportSelector)
             }
             return this.group.selectImports()
+        }
+
+        /**
+         * 获取候选配置类的Filter断言, 将当前分组下的所有的[ImportSelector]的ExclusionFilter去进行merge
+         *
+         * @return 用于匹配匹配类的Filter断言
+         */
+        fun getCandidateFilter(): Predicate<String> {
+            var mergedFilter: Predicate<String> = DEFAULT_EXCLUSION_FILTER
+
+            for (deferredImportSelector in deferredImportSelectors) {
+                val exclusionFilter = deferredImportSelector.deferredImportSelector.getExclusionFilter()
+                if (exclusionFilter != null) {
+                    mergedFilter = mergedFilter.or(exclusionFilter)
+                }
+            }
+            return mergedFilter
         }
     }
 

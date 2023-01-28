@@ -2,7 +2,6 @@ package com.wanna.framework.beans.factory.support.definition
 
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.classreading.MetadataReader
-import com.wanna.framework.core.type.classreading.SimpleMetadataReader
 
 /**
  * 这是在扫描的过程中创建的beanDefinition, 扫描过程中拿到的BeanDefinition,
@@ -18,18 +17,7 @@ open class ScannedGenericBeanDefinition protected constructor() : AnnotatedBeanD
     private var metadata: AnnotationMetadata? = null
 
     /**
-     * 旧逻辑, 基于beanClass的方式去进行构建
-     *
-     * @param beanClass beanClass
-     */
-    constructor(beanClass: Class<*>) : this() {
-        this.metadata = AnnotationMetadata.introspect(beanClass)
-        this.setBeanClass(beanClass)
-        this.setBeanClassName(beanClass.name)
-    }
-
-    /**
-     * 基于MetadataReader的方式去构建
+     * 基于[MetadataReader]的方式去构建[ScannedGenericBeanDefinition]
      *
      * @param metadataReader MetadataReader
      */
@@ -42,11 +30,6 @@ open class ScannedGenericBeanDefinition protected constructor() : AnnotatedBeanD
 
         // set BeanClassName
         this.setBeanClassName(metadataReader.annotationMetadata.getClassName())
-
-        // 如果必要的话, 先setBeanClass, 避免出问题...后续再完善
-        if (metadataReader is SimpleMetadataReader) {
-            this.setBeanClass(metadataReader.classLoader.loadClass(metadataReader.annotationMetadata.getClassName()))
-        }
     }
 
 
