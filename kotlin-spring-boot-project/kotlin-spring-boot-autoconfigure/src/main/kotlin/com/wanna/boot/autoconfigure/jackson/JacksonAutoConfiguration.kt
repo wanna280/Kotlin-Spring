@@ -25,7 +25,7 @@ open class JacksonAutoConfiguration {
     /**
      * Jackson的ObjectMapper的配置类
      */
-    @ConditionalOnClass(name = ["com.wanna.framework.web.http.converter.json.Jackson2ObjectMapperBuilder"])
+    @ConditionalOnClass(value = [Jackson2ObjectMapperBuilder::class])
     @Configuration(proxyBeanMethods = false)
     open class JacksonObjectMapperConfiguration {
         @Bean
@@ -39,7 +39,7 @@ open class JacksonAutoConfiguration {
     /**
      * Jackson的ObjectMapperBuilder的配置类
      */
-    @ConditionalOnClass(name = ["com.wanna.framework.web.http.converter.json.Jackson2ObjectMapperBuilder"])
+    @ConditionalOnClass(value = [Jackson2ObjectMapperBuilder::class])
     @Configuration(proxyBeanMethods = false)
     open class JacksonObjectMapperBuilderConfiguration {
         @Bean
