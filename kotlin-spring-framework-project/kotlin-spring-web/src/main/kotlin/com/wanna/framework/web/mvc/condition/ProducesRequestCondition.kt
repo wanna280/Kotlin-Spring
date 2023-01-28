@@ -21,20 +21,28 @@ open class ProducesRequestCondition(
 ) : AbstractRequestCondition<ProducesRequestCondition>() {
 
     companion object {
-        // Default ContentNegotiationManager
-        @JvmStatic
+        /**
+         * Default ContentNegotiationManager
+         */
+        @JvmField
         val DEFAULT_CONTENT_NEGOTIATION_MANAGER: ContentNegotiationManager = ContentNegotiationManager()
 
-        // MediaType的属性名
+        /**
+         * MediaType的属性名
+         */
         @JvmStatic
         private val MEDIA_TYPES_ATTRIBUTE = ProducesRequestCondition::class.java.name + ".MEDIA_TYPES"
 
-        // 空的ProducesCondition
+        /**
+         * 空的ProducesCondition
+         */
         @JvmStatic
         private val EMPTY_CONDITION = ProducesRequestCondition()
     }
 
-    // 提供一个变长参数的构造方法
+    /**
+     * 提供一个变长参数的构造方法
+     */
     constructor(vararg produces: String) : this(produces.toList(), DEFAULT_CONTENT_NEGOTIATION_MANAGER)
 
     override fun getContent() = this.produces
