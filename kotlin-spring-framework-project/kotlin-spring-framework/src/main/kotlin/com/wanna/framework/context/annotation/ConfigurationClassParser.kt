@@ -30,6 +30,7 @@ import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StringUtils
 import java.io.FileNotFoundException
+import java.io.IOException
 import java.net.SocketException
 import java.net.UnknownHostException
 import java.util.*
@@ -492,7 +493,40 @@ open class ConfigurationClassParser(
      */
     private fun retrieveBeanMethodMetadata(sourceClass: SourceClass): Set<MethodMetadata> {
         val metadata = sourceClass.metadata
-        return metadata.getAnnotatedMethods(Bean::class.java.name)
+        var beanMethods = metadata.getAnnotatedMethods(Bean::class.java.name)
+
+        // 如果Metadata是StandardAnnotationMetadata的话, 那么说明是使用的反射的方式去获取到的@Bean方法
+        // 但是不幸的是, JVM标准的反射返回的方法顺序不固定, 甚至有可能在相同的JVM下运行相同的应用, 都能拿到不同的结果
+        // 我们尝试使用ASM的方式去获取到用户定义的顺序...(实在无法获取到就不管了, 就用标准反射的结果就行了...)
+        if (beanMethods.size > 1 && metadata is StandardAnnotationMetadata) {
+            try {
+                val asm = metadataReaderFactory.getMetadataReader(metadata.getClassName()).annotationMetadata
+                val asmMethods = asm.getAnnotatedMethods(Bean::class.java.name)
+                if (asmMethods.size >= beanMethods.size) {
+                    // ASM的方法和JDK标准反射的方法去进行匹配, 将对应的ASM方法存起来作为最终结果
+                    val selectedMethods = LinkedHashSet<MethodMetadata>()
+                    for (asmMethod in asmMethods) {
+                        for (beanMethod in beanMethods) {
+                            if (beanMethod.getMethodName() == asmMethod.getMethodName()) {
+                                selectedMethods += asmMethod
+                                break
+                            }
+                        }
+                    }
+
+                    // 如果所有的方法都通过ASM的方式去找到了, 那么使用ASM的结果去作为最终的结果...
+                    // 否则的话, 仍旧使用原来的标准反射的方式去寻找到的结果去进行返回
+                    if (selectedMethods.size == beanMethods.size) {
+                        beanMethods = selectedMethods
+                    }
+                }
+            } catch (ex: IOException) {
+                logger.debug("Failed to read class file via ASM for determining @Bean method order")
+                // ignore, 我们还有标准反射的@Bean方法可以用呢...
+            }
+        }
+
+        return beanMethods
     }
 
     /**
