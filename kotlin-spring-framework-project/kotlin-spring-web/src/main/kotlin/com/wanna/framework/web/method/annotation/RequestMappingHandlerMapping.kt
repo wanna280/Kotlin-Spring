@@ -27,8 +27,7 @@ import java.lang.reflect.Method
 open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), EmbeddedValueResolverAware {
 
     /**
-     * 嵌入式值解析器, 用于提供占位符的解析工作,
-     * 对RequestMapping当中配置的路径, 支持从配置文件当中去进行获取, 例如"${user.path}"
+     * 嵌入式值解析器, 用于提供占位符的解析工作, 对RequestMapping当中配置的路径, 支持从SpringEnvironment当中去进行获取
      *
      * @see StringValueResolver
      */
@@ -62,12 +61,12 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
     }
 
     /**
-     * 给定handlerMethod和handlerType, 返回Mapping(RequestMappingInfo), 这里因为方法上和类上都有可能有@RequestMapping注解,
+     * 给定handlerMethod和handlerType, 返回Mapping([RequestMappingInfo]), 这里因为方法上和类上都有可能有@RequestMapping注解,
      * 因此, 我们需要去进行合并, 但是由于合并的算法不会写, 目前仅仅提供了路径的前缀功能, 别的功能算法不会写！！！
      *
      * @param method method
      * @param handlerType handlerType
-     * @return 如果方法上找到了@RequestMapping注解, return封装好的RequestMappingInfo; 不然return null
+     * @return 如果方法上找到了@RequestMapping注解, return封装好的[RequestMappingInfo]; 不然return null
      */
     @Nullable
     override fun getMappingForMethod(method: Method, handlerType: Class<*>): RequestMappingInfo? {
@@ -156,11 +155,11 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
     }
 
     /**
-     * 联合两个RequestMappingInfo当中的相关信息, 合并成为一个最终的RequestMappingInfo
+     * 联合两个[RequestMappingInfo]当中的相关信息, 合并成为一个最终的[RequestMappingInfo]
      *
-     * @param classMapping 类上的RequestMappingInfo信息
-     * @param methodMapping 方法上的RequestMappingInfo信息
-     * @return 联合类上的RequestMapping和方法上的RequestMapping之后的新的RequestMappingInfo
+     * @param classMapping 类上的[RequestMappingInfo]信息
+     * @param methodMapping 方法上的[RequestMappingInfo]信息
+     * @return 联合类上的[RequestMapping]和方法上的[RequestMapping]之后的新的[RequestMappingInfo]
      */
     protected open fun combine(
         classMapping: RequestMappingInfo,
@@ -171,15 +170,19 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
         val combinedParam = classMapping.paramsCondition.combine(methodMapping.paramsCondition)
         val combinedHeader = classMapping.headersCondition.combine(methodMapping.headersCondition)
         val combinedProduces = classMapping.producesCondition.combine(methodMapping.producesCondition)
-        return RequestMappingInfo(combinedMethods, combinedPath, combinedParam, combinedHeader, combinedProduces)
+        val combinedConsumes = classMapping.consumesCondition.combine(methodMapping.consumesCondition)
+        return RequestMappingInfo(
+            combinedMethods, combinedPath, combinedParam, combinedHeader, combinedProduces, combinedConsumes
+        )
     }
 
     /**
-     * 从方法/类上解析@RequestMapping注解, 并封装成为RequestMappingInfo对象
+     * 从给定的方法/类上去解析`@RequestMapping`注解, 并封装成为RequestMappingInfo对象
      *
-     * @param element 目标方法/目标类
-     * @return 如果找到了@RequestMapping, 那么返回包装好的RequestMappingInfo对象; 找不到return null
+     * @param element 要去进行寻找@RequestMapping注解的目标方法/目标类
+     * @return 如果找到了@RequestMapping注解的话, 那么返回包装好的[RequestMappingInfo]对象; 找不到return null
      */
+    @Nullable
     protected open fun getRequestMappingInfo(element: AnnotatedElement): RequestMappingInfo? {
         val requestMapping =
             AnnotatedElementUtils.getMergedAnnotation(element, RequestMapping::class.java) ?: return null
@@ -187,7 +190,8 @@ open class RequestMappingHandlerMapping : RequestMappingInfoHandlerMapping(), Em
             .methods(*requestMapping.method)
             .paths(*resolveEmbeddedValuesInPatterns(requestMapping.path))
             .params(*requestMapping.params)
-            .headers(*requestMapping.header)
+            .headers(*requestMapping.headers)
+            .consumes(*requestMapping.consumes)
             .produces(*requestMapping.produces)
             .build()
     }
