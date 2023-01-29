@@ -13,5 +13,5 @@ dependencies {
     implementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
 
-    testImplementation(project(":kotlin-logger:logger-slf4j-impl"))
+    testImplementation(project(":kotlin-logger-project:kotlin-logger-slf4j-impl"))
 }

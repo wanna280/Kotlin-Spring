@@ -9,7 +9,7 @@ dependencies {
     compileOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
     // for test
-    testImplementation(project(":kotlin-logger:logger-slf4j-impl"))
+    testImplementation(project(":kotlin-logger-project:kotlin-logger-slf4j-impl"))
     testImplementation("junit:junit:$junit4Version")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-engine:$junitVersion")

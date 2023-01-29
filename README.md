@@ -76,7 +76,7 @@ IDEA底层就是使用的 Kotlin去进行开发的.
     * kotlin-spring-cloud-nacos-discovery, 提供nacos作为注册中心的实现, 支持服务的自动注册,
       应用启动时会将服务暴露到nacos当中.
 
-### 1.2.4 kotlin-spring-others
+### 1.2.4 kotlin-spring-others-project
 
 这一部分主要提供spring整合别的第三方的实现.
 
@@ -86,13 +86,13 @@ IDEA底层就是使用的 Kotlin去进行开发的.
     * kotlin-nacos-naming-server, 实现nacos的服务的注册与发现.
     * kotlin-nacos-config-server, 实现nacos的配置中心的相关功能.
 
-### 1.2.5 kotlin-logger
+### 1.2.5 kotlin-logger-project
 
 主要实现自定义的日志组件, 整体设计参考Slf4j和Logback, 很多地方待完善, 目前并未完善.
 
-* logger-api, 类似Slf4j的API的方式去定义Logger规范.
-* logger-impl, 类似Logback的方式去实现日志组件(待完善).
-* logger-slf4j-impl, 将自己的logger组件整合给Slf4j, 可以使用Slf4j的方式去使用到我们自定义的组件.
+* kotlin-logger-api, 类似Slf4j的API的方式去定义Logger规范.
+* kotlin-logger-impl, 类似Logback的方式去实现日志组件(待完善).
+* kotlin-logger-slf4j-impl, 将自己的logger组件整合给Slf4j, 可以使用Slf4j的方式去使用到我们自定义的组件.
 
 ### 1.2.6 kotlin-metrics-project
 

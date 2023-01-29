@@ -10,5 +10,5 @@ dependencies {
     implementation(project(":kotlin-spring-boot-project:kotlin-spring-boot-autoconfigure"))
 
     // for Test
-    testImplementation(project(":kotlin-logger:logger-slf4j-impl"))
+    testImplementation(project(":kotlin-logger-project:kotlin-logger-slf4j-impl"))
 }

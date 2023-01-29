@@ -11,5 +11,5 @@ dependencies {
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-jcl"))
     implementation(project(":kotlin-spring-boot-project:kotlin-spring-boot"))
     implementation(project(":kotlin-spring-boot-project:kotlin-spring-boot-autoconfigure"))
-    implementation(project(":kotlin-logger:logger-slf4j-impl"))
+    implementation(project(":kotlin-logger-project:kotlin-logger-slf4j-impl"))
 }

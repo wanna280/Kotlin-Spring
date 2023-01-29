@@ -19,5 +19,5 @@ dependencies {
     testImplementation(project(":kotlin-spring-framework-project:kotlin-spring-web"))
     testImplementation(project(":kotlin-spring-cloud-project:kotlin-spring-cloud-ribbon"))
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
-    testImplementation(project(":kotlin-logger:logger-slf4j-impl"))
+    testImplementation(project(":kotlin-logger-project:kotlin-logger-slf4j-impl"))
 }

@@ -15,7 +15,7 @@ dependencies {
     // 添加这些依赖, 在test时才能正常启动
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
     testImplementation(project(":kotlin-spring-cloud-project:kotlin-spring-cloud-ribbon"))
-    testImplementation(project(":kotlin-logger:logger-slf4j-impl"))
+    testImplementation(project(":kotlin-logger-project:kotlin-logger-slf4j-impl"))
 }
 
 tasks.getByName<Test>("test") {

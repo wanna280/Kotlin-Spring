@@ -1,4 +1,4 @@
 dependencies {
     implementation("org.fusesource.jansi:jansi:$jansiVersion")
-    implementation(project(":kotlin-logger:logger-api"))
+    implementation(project(":kotlin-logger-project:kotlin-logger-api"))
 }

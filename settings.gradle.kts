@@ -34,19 +34,19 @@ include(":kotlin-spring-cloud-project:kotlin-spring-cloud-openfeign")
 
 
 // for spring others
-include(":kotlin-spring-others:kotlin-spring-mybatis")
-include(":kotlin-spring-others:kotlin-spring-shell")
-include(":kotlin-spring-others:kotlin-nacos:kotlin-nacos-config-server")
-include(":kotlin-spring-others:kotlin-nacos:kotlin-nacos-naming-server")
-include(":kotlin-spring-others:kotlin-nacos:kotlin-nacos-api")
-include(":kotlin-spring-others:kotlin-nacos:kotlin-nacos-client")
+include(":kotlin-spring-others-project:kotlin-spring-mybatis")
+include(":kotlin-spring-others-project:kotlin-spring-shell")
+include(":kotlin-spring-others-project:kotlin-nacos:kotlin-nacos-config-server")
+include(":kotlin-spring-others-project:kotlin-nacos:kotlin-nacos-naming-server")
+include(":kotlin-spring-others-project:kotlin-nacos:kotlin-nacos-api")
+include(":kotlin-spring-others-project:kotlin-nacos:kotlin-nacos-client")
 
 
 // for logger impl
-include(":kotlin-logger:logger-api")
-include(":kotlin-logger:logger-impl")
-include(":kotlin-logger:logger-temp")
-include(":kotlin-logger:logger-slf4j-impl")
+include(":kotlin-logger-project:kotlin-logger-api")
+include(":kotlin-logger-project:kotlin-logger-impl")
+include(":kotlin-logger-project:kotlin-logger-temp")
+include(":kotlin-logger-project:kotlin-logger-slf4j-impl")
 
 
 // for metrics project

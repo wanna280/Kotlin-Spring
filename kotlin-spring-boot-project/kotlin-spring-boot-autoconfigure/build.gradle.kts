@@ -22,5 +22,5 @@ dependencies {
     testImplementation("org.apache.tomcat.embed:tomcat-embed-core:$tomcatCoreVersion")
     testImplementation("io.netty:netty-codec-http:$nettyVersion")
     testImplementation("org.aspectj:aspectjweaver:$aspectJVersion")
-    testImplementation(project(":kotlin-logger:logger-slf4j-impl"))
+    testImplementation(project(":kotlin-logger-project:kotlin-logger-slf4j-impl"))
 }

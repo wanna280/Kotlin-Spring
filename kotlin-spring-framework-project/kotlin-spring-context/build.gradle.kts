@@ -13,7 +13,7 @@ dependencies {
 
 
     // for test
-    testImplementation(project(":kotlin-logger:logger-slf4j-impl"))
+    testImplementation(project(":kotlin-logger-project:kotlin-logger-slf4j-impl"))
     testImplementation("com.alibaba:druid:$druidVersion")
     testImplementation("mysql:mysql-connector-java:$mysqlVersion")
 }
