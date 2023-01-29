@@ -5,7 +5,7 @@ import com.wanna.framework.core.annotation.AliasFor
 import kotlin.reflect.KClass
 
 @Repeatable
-@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.TYPE, AnnotationTarget.CLASS)
+@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
 annotation class ImportResource(
     @get:AliasFor("locations")
     val value: Array<String> = [],

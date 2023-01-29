@@ -2,7 +2,7 @@ package com.wanna.boot.autoconfigure.condition
 
 import com.wanna.framework.context.annotation.Conditional
 
-@Target(AnnotationTarget.TYPE, AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
+@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
 @Conditional(OnPropertyCondition::class)
 annotation class ConditionalOnProperty(
     val value: Array<String> = [],

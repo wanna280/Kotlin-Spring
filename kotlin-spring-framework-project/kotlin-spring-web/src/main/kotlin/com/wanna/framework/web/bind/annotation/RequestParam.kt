@@ -13,7 +13,7 @@ import com.wanna.framework.web.method.annotation.RequestParamMethodArgumentResol
  * @param required 该请求参数是否是必须的?
  * @param defaultValue 如果请求当中不存在该header的参数, 将要使用什么作为默认值
  */
-@Target(AnnotationTarget.TYPE_PARAMETER, AnnotationTarget.VALUE_PARAMETER)
+@Target( AnnotationTarget.VALUE_PARAMETER)
 annotation class RequestParam(
     @get:AliasFor("value")
     val name: String = "",

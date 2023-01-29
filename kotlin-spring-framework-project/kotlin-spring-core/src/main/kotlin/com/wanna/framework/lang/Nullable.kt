@@ -9,7 +9,7 @@ import javax.annotation.meta.When
 @Target(
     AnnotationTarget.FUNCTION,
     AnnotationTarget.FIELD,
-    AnnotationTarget.TYPE_PARAMETER,
+    
     AnnotationTarget.VALUE_PARAMETER,
     AnnotationTarget.PROPERTY
 )

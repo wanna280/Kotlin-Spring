@@ -7,7 +7,6 @@ package com.wanna.framework.context.annotation
     AnnotationTarget.FUNCTION,
     AnnotationTarget.CONSTRUCTOR,
     AnnotationTarget.FIELD,
-    AnnotationTarget.TYPE_PARAMETER,
     AnnotationTarget.VALUE_PARAMETER
 )
 annotation class Autowired(val required: Boolean = true)
