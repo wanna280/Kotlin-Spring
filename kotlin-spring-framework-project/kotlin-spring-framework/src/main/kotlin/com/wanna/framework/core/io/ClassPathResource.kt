@@ -11,7 +11,7 @@ import java.net.URL
 import java.nio.file.Files
 
 /**
- * ClassPath的资源实现, 基于类加载器去加载资源
+ * 基于ClassPath作为路径, 去进行[Resource]的资源实现, 基于Java的[ClassLoader]类加载器去加载资源
  *
  * @author jianchao.jia
  * @version v1.0
@@ -19,7 +19,9 @@ import java.nio.file.Files
  *
  * @param path 要去进行加载的资源路径classpath
  * @param classLoader 执行资源的加载ClassLoader
- * @param clazz 执行资源的加载的类(将会使用该类的ClassLoader去进行加载, 并且以该类的所在的包去作为baseDir, 去进行**相对路径**的资源寻找)
+ * @param clazz 执行资源的加载的类(将会使用该类的ClassLoader去进行加载),
+ * * 1.如果指定的是相对路径(例如"test.txt"), 那么会以该类的所在的包去作为baseDir, 去进行**相对路径**的资源寻找
+ * * 2.如果指定的是绝对路径, 例如"/a/b/test.txt", 那么就是直接使用ClassLoader去进行资源的寻找, 不会拼接baseDir
  */
 open class ClassPathResource(
     path: String,
@@ -28,9 +30,9 @@ open class ClassPathResource(
 ) : AbstractFileResolvingResource(), WritableResource {
 
     /**
-     * 提供一个基于Class的构建方法, 资源加载时将会使用该类的ClassLoader去进行加载, 并且以该类的所在的包去作为baseDir, 去进行**相对路径**的资源寻找
+     * 提供一个基于Class的构建方法, 资源加载时将会使用该类的ClassLoader去进行加载
      *
-     * @param path 资源路径classpath
+     * @param path 资源路径classpath(可以是相对clazz的相对路径, 也可以是以"/"开头的classpath绝对路径)
      * @param clazz 进行资源加载的类
      */
     constructor(path: String, clazz: Class<*>) : this(path, null, clazz)
@@ -44,7 +46,7 @@ open class ClassPathResource(
     constructor(path: String, @Nullable classLoader: ClassLoader?) : this(path, classLoader, null)
 
     /**
-     * 提供一个只给定path的构建方法, 使用默认的ClassLoader去进行加载
+     * 提供一个只给定path的构建方法, 使用默认的[ClassLoader]去进行[Resource]加载
      *
      * @param path 资源路径classpath
      */
@@ -179,6 +181,8 @@ open class ClassPathResource(
 
     /**
      * 采用clazz&path&classLoader去进行hashCode的生成
+     *
+     * @return hashCode
      */
     override fun hashCode(): Int {
         var result = clazz?.hashCode() ?: 0

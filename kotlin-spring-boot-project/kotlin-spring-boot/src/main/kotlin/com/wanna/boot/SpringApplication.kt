@@ -586,7 +586,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      * @param type 要从SpringFactories当中去进行获取的type
      * @return 从SpringFactories当中加载到的对象列表
      */
-    private fun <T> getSpringFactoriesInstances(
+    private fun <T : Any> getSpringFactoriesInstances(
         type: Class<T>,
     ): MutableCollection<T> = getSpringFactoriesInstances(type, emptyArray())
 
@@ -598,13 +598,11 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
      * @param args parameterTypes对应的构造器参数对象
      * @return 从SpringFactories当中加载到的对象列表
      */
-    private fun <T> getSpringFactoriesInstances(
+    private fun <T : Any> getSpringFactoriesInstances(
         type: Class<T>, parameterTypes: Array<Class<*>>, vararg args: Any
     ): MutableCollection<T> {
         val classLoader = getClassLoader()
-        val names: Set<String> = java.util.LinkedHashSet(
-            SpringFactoriesLoader.loadFactoryNames(type, classLoader)
-        )
+        val names: Set<String> = LinkedHashSet(SpringFactoriesLoader.loadFactoryNames(type, classLoader))
         val instances = SpringFactoriesLoader.createSpringFactoryInstances(
             type, parameterTypes, classLoader, arrayOf(*args), names
         )

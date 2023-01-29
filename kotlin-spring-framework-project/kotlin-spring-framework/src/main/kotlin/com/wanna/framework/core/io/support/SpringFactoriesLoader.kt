@@ -20,7 +20,7 @@ object SpringFactoriesLoader {
     private val cache = ConcurrentHashMap<ClassLoader, MutableMap<String, MutableList<String>>>()
 
     @JvmStatic
-    fun <T> loadFactories(factoryType: Class<T>): MutableList<T> {
+    fun <T : Any> loadFactories(factoryType: Class<T>): MutableList<T> {
         return loadFactories(factoryType, null)
     }
 
@@ -28,7 +28,7 @@ object SpringFactoriesLoader {
      * 支持指定特定的类加载器去加载SpringFactories实例
      */
     @JvmStatic
-    fun <T> loadFactories(factoryType: Class<T>, classLoader: ClassLoader?): MutableList<T> {
+    fun <T : Any> loadFactories(factoryType: Class<T>, classLoader: ClassLoader?): MutableList<T> {
         val classLoaderToUse: ClassLoader = classLoader ?: SpringFactoriesLoader::class.java.classLoader
         // 根据类型加载该类型的所有的实现类的类名列表
         val factoryNames = LinkedHashSet(loadFactoryNames(factoryType))
@@ -50,7 +50,7 @@ object SpringFactoriesLoader {
      * @param args 构造器参数列表
      */
     @JvmStatic
-    fun <T> createSpringFactoryInstances(
+    fun <T : Any> createSpringFactoryInstances(
         type: Class<T>,
         parameterTypes: Array<Class<*>>,
         classLoader: ClassLoader?,

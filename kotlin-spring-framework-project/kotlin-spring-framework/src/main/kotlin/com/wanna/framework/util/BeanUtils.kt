@@ -11,14 +11,22 @@ import java.beans.PropertyDescriptor
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import kotlin.reflect.KParameter
 import kotlin.reflect.full.primaryConstructor
+import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.javaConstructor
+import kotlin.reflect.jvm.kotlinFunction
 
+/**
+ * BeanUtils, 提供一些关于JavaBeans的相关便捷static方法, 可以用来去实例化JavaBean,
+ * 获取JavaBean的属性信息, 拷贝Bean属性, ....
+ */
 object BeanUtils {
 
     /**
      * 参数名发现器, 提供方法/构造器当中的参数名的获取
      */
+    @JvmStatic
     private val parameterNameDiscoverer = DefaultParameterNameDiscoverer()
 
     /**
@@ -39,11 +47,13 @@ object BeanUtils {
     /**
      * Key-包装类型, Value-基础类型
      */
+    @JvmStatic
     private val primitiveWrapperTypeMap = LinkedHashMap<Class<*>, Class<*>>(8)
 
     /**
      * Key-基础类型, Value-包装类型
      */
+    @JvmStatic
     private val primitiveTypeToWrapperMap = LinkedHashMap<Class<*>, Class<*>>(8)
 
     init {
@@ -67,23 +77,32 @@ object BeanUtils {
      * @return 实例化完成的对象
      */
     @JvmStatic
-    fun <T> instantiateClass(ctor: Constructor<T>, vararg args: Any?): T {
+    fun <T : Any> instantiateClass(ctor: Constructor<T>, vararg args: Any?): T {
         try {
-            val parameterCount = ctor.parameterCount
-            if (parameterCount == 0) {
-                return ctor.newInstance()
-            }
-            val argsWithDefaultValue: Array<Any?> = arrayOfNulls(parameterCount)
-            for (i in 0 until parameterCount) {
-                if (args[i] == null) {
-                    val parameterType = ctor.parameterTypes[i]
-                    argsWithDefaultValue[i] =
-                        if (parameterType.isPrimitive) DEFAULT_TYPE_VALUES[parameterType] else null
-                } else {
-                    argsWithDefaultValue[i] = args[i]
+            ReflectionUtils.makeAccessible(ctor)
+
+            // 如果是Kotlin的类, 那么优先尝试去走Kotlin的实例化方式
+            if (KotlinDetector.isKotlinReflectPresent() && KotlinDetector.isKotlinType(ctor.declaringClass)) {
+                return KotlinDelegate.instantiateClass(ctor, *args)
+
+                // 否则, 走Java的实例化方式...
+            } else {
+                val parameterCount = ctor.parameterCount
+                if (parameterCount == 0) {
+                    return ctor.newInstance()
                 }
+                val argsWithDefaultValue: Array<Any?> = arrayOfNulls(parameterCount)
+                for (i in 0 until parameterCount) {
+                    if (args[i] == null) {
+                        val parameterType = ctor.parameterTypes[i]
+                        argsWithDefaultValue[i] =
+                            if (parameterType.isPrimitive) DEFAULT_TYPE_VALUES[parameterType] else null
+                    } else {
+                        argsWithDefaultValue[i] = args[i]
+                    }
+                }
+                return ctor.newInstance(*argsWithDefaultValue)
             }
-            return ctor.newInstance(*argsWithDefaultValue)
         } catch (ex: Exception) {
             ReflectionUtils.handleReflectionException(ex)
         }
@@ -449,6 +468,51 @@ object BeanUtils {
             } catch (ex: UnsupportedOperationException) {
                 return null
             }
+        }
+
+        /**
+         * 使用给定构造器对应的Kotlin方式去进行对象的实例化
+         *
+         * @param ctor Java构造器
+         * @param args 构造器实例化时需要用到的参数列表
+         * @return 根据给定的Java构造器[ctor], 去进行实例化之后得到的对象
+         */
+        @JvmStatic
+        fun <T : Any> instantiateClass(ctor: Constructor<T>, vararg args: Any?): T {
+            val kotlinConstructor = ctor.kotlinFunction
+
+            // 如果无法获取到KFunction, 那么还是使用Java的构造器去进行实例化...
+            if (kotlinConstructor === null) {
+                return ctor.newInstance(*args)
+            }
+
+            // 如果构造器不是public的, 或者类不是public的, 那么先设置accessible
+            if (!Modifier.isPublic(ctor.modifiers) || !Modifier.isPublic(ctor.declaringClass.modifiers)) {
+                kotlinConstructor.isAccessible = true
+            }
+
+            val parameters = kotlinConstructor.parameters
+            if (args.size > parameters.size) {
+                throw IllegalStateException("Number of provided arguments must be less than or equal to the number of constructor parameters")
+            }
+
+            // 如果该构造器为无参数构造器, 直接call...
+            if (parameters.isEmpty()) {
+                return kotlinConstructor.call()
+            }
+
+            // 如果为有参数构造器的话, 那么需要构建出来参数列表(Key-KParameter, Value-参数值)
+            val argParameters = LinkedHashMap<KParameter, Any?>()
+            for (i in args.indices) {
+
+                // 如果该参数可选, 并且也确实没给, 那么pass...¬
+                if (!(parameters[i].isOptional && args[i] === null)) {
+                    argParameters[parameters[i]] = args[i]
+                }
+            }
+
+            // 使用KFunction, 根据给定的参数列表去完成实例化...
+            return kotlinConstructor.callBy(argParameters)
         }
     }
 

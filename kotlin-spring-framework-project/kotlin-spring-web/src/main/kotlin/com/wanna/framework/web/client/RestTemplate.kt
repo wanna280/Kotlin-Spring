@@ -12,6 +12,7 @@ import com.wanna.framework.web.http.client.InterceptingClientHttpRequestFactory
 import com.wanna.framework.web.http.client.support.InterceptingHttpAccessor
 import com.wanna.framework.web.http.converter.ByteArrayHttpMessageConverter
 import com.wanna.framework.web.http.converter.HttpMessageConverter
+import com.wanna.framework.web.http.converter.ResourceHttpMessageConverter
 import com.wanna.framework.web.http.converter.StringHttpMessageConverter
 import com.wanna.framework.web.http.converter.json.MappingJackson2HttpMessageConverter
 import com.wanna.framework.web.util.DefaultUriBuilderFactory
@@ -59,6 +60,9 @@ open class RestTemplate : RestOperations, InterceptingHttpAccessor() {
         this.messageConverters.add(StringHttpMessageConverter())
         // add ByteArrayHttpMessageConverter
         this.messageConverters.add(ByteArrayHttpMessageConverter())
+
+        // add ResourceHttpMessageConverter
+        this.messageConverters.add(ResourceHttpMessageConverter())
         if (jackson2Present) {
             messageConverters.add(MappingJackson2HttpMessageConverter())
         }

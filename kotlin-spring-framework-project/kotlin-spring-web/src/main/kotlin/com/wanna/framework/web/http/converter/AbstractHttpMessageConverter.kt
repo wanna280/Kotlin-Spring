@@ -135,9 +135,10 @@ abstract class AbstractHttpMessageConverter<T> : HttpMessageConverter<T> {
     }
 
     /**
-     * 是否支持这样的类型数据?
+     * 是否去处理支持[clazz]这样的Java对象类型数据?
      *
      * @param clazz JavaBean类型
+     * @return 如果支持去进行这样的Java对象数据的处理, 那么return true; 否则return false
      */
     protected abstract fun supports(clazz: Class<*>): Boolean
 

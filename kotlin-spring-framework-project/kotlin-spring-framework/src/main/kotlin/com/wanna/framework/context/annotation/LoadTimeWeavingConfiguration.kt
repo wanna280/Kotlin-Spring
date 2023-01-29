@@ -45,12 +45,12 @@ open class LoadTimeWeavingConfiguration : BeanClassLoaderAware, ImportAware {
     }
 
     /**
-     * 给容器中导入一个InstrumentationLoadTimeWeaver组件, 去支持AspectJ的编织
+     * 给容器中导入一个[InstrumentationLoadTimeWeaver]组件, 去支持AspectJ的编织
      *
      * @return LoadTimeWeaver
      */
     @Bean(ConfigurableApplicationContext.LOAD_TIME_WEAVER_BEAN_NAME)
-    fun loadTimeWeaver(): LoadTimeWeaver {
+    open fun loadTimeWeaver(): LoadTimeWeaver {
         var loadTimeWeaverToUse: LoadTimeWeaver? = null
 
         // 如果配置了自定义的LoadTimeWeaver的话, 那么获取自己配置的LoadTimeWeaver
