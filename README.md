@@ -10,7 +10,7 @@
 这门语言是由Jetbrains去进行开发的. 熟悉Intellij IDEA的小伙伴, 也许见过这门语言, 但是并未使用过.在新建一个Java类的地方, 有一个新建Kotlin类的地方! 而且Intellij
 IDEA底层就是使用的 Kotlin去进行开发的.
 
-![img.png](images/img.png)
+![img.png](docs/images/img.png)
 
 * 2.Kotlin一度被很多程序员称为是最好的Java! 它几乎100%兼容Java, Kotlin上所引用的库, 很多都是来自于Java的库,
   因此在看Kotlin代码时,
@@ -32,7 +32,7 @@ IDEA底层就是使用的 Kotlin去进行开发的.
 
 这一部分主要实现spring-framework的部分, 主要包括下面的几个部分组成。
 
-![img.png](images/img_spring_framework.png)
+![img.png](docs/images/img_spring_framework.png)
 
 * kotlin-spring-core, Spring的核心依赖，主要是为Spring别的模块去提供相关工具类。
 * kotlin-spring-beans, Spring当中关于Bean和BeanFactory的IOC核心实现。
@@ -49,7 +49,7 @@ IDEA底层就是使用的 Kotlin去进行开发的.
 
 这一部分主要实现spring-boot当中相关的模块, 比如自动装配、actuator监控、devtools热部署等.
 
-![img.png](images/img_spring_boot.png)
+![img.png](docs/images/img_spring_boot.png)
 
 * kotlin-spring-boot, 提供spring-boot的底层实现支持.
 * kotlin-spring-boot-autoconfigure, 提供spring-boot的自动装配的支持,需要配合kotlin-spring-boot以及整个kotlin-spring-framework完成.
@@ -64,7 +64,7 @@ IDEA底层就是使用的 Kotlin去进行开发的.
 
 这一部分主要提供spring-cloud相关功能的模块.
 
-![img.png](images/img_spring_cloud.png)
+![img.png](docs/images/img_spring_cloud.png)
 
 * kotlin-spring-cloud-common, spring-cloud的公共依赖.
 * kotlin-spring-cloud-context, spring-cloud的context依赖, 提供spring配置文件的自动刷新等相关功能,
