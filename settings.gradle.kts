@@ -2,11 +2,14 @@ rootProject.name = "kotlin-spring"
 
 
 // for springframework project
-include(":kotlin-spring-framework-project:kotlin-spring-framework")
+include(":kotlin-spring-framework-project:kotlin-spring-core")
+include(":kotlin-spring-framework-project:kotlin-spring-context")
+include(":kotlin-spring-framework-project:kotlin-spring-aop")
+include(":kotlin-spring-framework-project:kotlin-spring-beans")
 include(":kotlin-spring-framework-project:kotlin-spring-instrument")
-include(":kotlin-spring-framework-project:kotlin-spring-web")
 include(":kotlin-spring-framework-project:kotlin-spring-test")
 include(":kotlin-spring-framework-project:kotlin-spring-jcl")
+include(":kotlin-spring-framework-project:kotlin-spring-web")
 
 
 // for spring boot subprojects

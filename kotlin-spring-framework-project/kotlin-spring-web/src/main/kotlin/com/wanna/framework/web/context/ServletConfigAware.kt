@@ -1,6 +1,6 @@
 package com.wanna.framework.web.context
 
-import com.wanna.framework.context.aware.Aware
+import com.wanna.framework.beans.factory.Aware
 import javax.servlet.ServletConfig
 
 /**

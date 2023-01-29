@@ -3,7 +3,7 @@ package com.wanna.framework.test.context.support
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.test.context.ActiveProfiles
 import com.wanna.framework.test.context.ActiveProfilesResolver
-import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.beans.BeanUtils
 import com.wanna.framework.util.StringUtils
 
 /**

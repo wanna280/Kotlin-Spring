@@ -1,6 +1,6 @@
 package com.wanna.framework.web.handler
 
-import com.wanna.framework.context.aware.BeanNameAware
+import com.wanna.framework.beans.factory.BeanNameAware
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.HandlerExecutionChain

@@ -2,7 +2,7 @@ package com.wanna.boot.autoconfigure
 
 import com.wanna.boot.SpringBootConfiguration
 import com.wanna.boot.context.TypeExcludeFilter
-import com.wanna.framework.context.annotation.BeanNameGenerator
+import com.wanna.framework.beans.factory.support.BeanNameGenerator
 import com.wanna.framework.context.annotation.ComponentScan
 import com.wanna.framework.context.annotation.ComponentScan.Filter
 import com.wanna.framework.context.annotation.Configuration

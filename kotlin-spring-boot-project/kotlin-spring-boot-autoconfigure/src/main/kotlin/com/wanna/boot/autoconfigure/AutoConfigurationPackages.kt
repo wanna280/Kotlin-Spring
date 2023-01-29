@@ -5,7 +5,7 @@ import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.GenericBeanDefinition
 import com.wanna.framework.context.annotation.ImportBeanDefinitionRegistrar
-import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
+import com.wanna.framework.beans.factory.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.util.ClassUtils
 import java.util.function.Supplier

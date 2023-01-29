@@ -10,7 +10,7 @@ import com.wanna.framework.context.annotation.ClassPathBeanDefinitionScanner
 import com.wanna.framework.core.type.filter.AnnotationTypeFilter
 import com.wanna.framework.core.type.filter.AssignableTypeFilter
 import com.wanna.framework.core.type.filter.TypeFilter
-import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.beans.BeanUtils
 import com.wanna.mybatis.spring.SqlSessionTemplate
 import org.apache.ibatis.session.SqlSessionFactory
 import com.wanna.common.logging.LoggerFactory

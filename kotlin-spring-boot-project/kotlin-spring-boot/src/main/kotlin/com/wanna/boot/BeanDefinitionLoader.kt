@@ -1,9 +1,9 @@
 package com.wanna.boot
 
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
+import com.wanna.framework.beans.factory.support.BeanNameGenerator
 import com.wanna.framework.beans.factory.xml.XmlBeanDefinitionReader
 import com.wanna.framework.context.annotation.AnnotatedBeanDefinitionReader
-import com.wanna.framework.context.annotation.BeanNameGenerator
 import com.wanna.framework.context.annotation.ClassPathBeanDefinitionScanner
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.io.ClassPathResource

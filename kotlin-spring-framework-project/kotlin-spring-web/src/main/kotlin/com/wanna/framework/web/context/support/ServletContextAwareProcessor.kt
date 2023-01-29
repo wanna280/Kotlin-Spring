@@ -1,6 +1,6 @@
 package com.wanna.framework.web.context.support
 
-import com.wanna.framework.context.processor.beans.BeanPostProcessor
+import com.wanna.framework.beans.factory.config.BeanPostProcessor
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.context.ServletConfigAware
 import com.wanna.framework.web.context.ServletContextAware

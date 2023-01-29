@@ -1,7 +1,7 @@
 package com.wanna.boot.actuate.autoconfigure.metrics
 
 import com.wanna.framework.context.ApplicationContext
-import com.wanna.framework.context.processor.beans.BeanPostProcessor
+import com.wanna.framework.beans.factory.config.BeanPostProcessor
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.binder.MeterBinder
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry

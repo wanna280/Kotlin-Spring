@@ -7,7 +7,7 @@ import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.test.context.*
 import com.wanna.framework.test.context.support.ContextLoaderUtils.resolveContextConfigurationAttributes
-import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.beans.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.common.logging.LoggerFactory
 

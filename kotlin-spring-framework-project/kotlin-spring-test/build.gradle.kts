@@ -1,5 +1,7 @@
 dependencies {
-    implementation(project(":kotlin-spring-framework-project:kotlin-spring-framework"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-core"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-beans"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-context"))
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-jcl"))
 
     compileOnly("junit:junit:$junit4Version")

@@ -4,7 +4,7 @@ import com.wanna.boot.logging.java.JavaLoggingSystem
 import com.wanna.boot.logging.logback.LogbackLoggingSystem
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.lang.Nullable
-import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.beans.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.util.StringUtils

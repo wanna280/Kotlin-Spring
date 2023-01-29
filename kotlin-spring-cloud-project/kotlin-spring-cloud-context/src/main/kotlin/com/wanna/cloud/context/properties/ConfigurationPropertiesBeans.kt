@@ -7,7 +7,7 @@ import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.ConfigurableApplicationContext
-import com.wanna.framework.context.processor.beans.BeanPostProcessor
+import com.wanna.framework.beans.factory.config.BeanPostProcessor
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.lang.Nullable
 

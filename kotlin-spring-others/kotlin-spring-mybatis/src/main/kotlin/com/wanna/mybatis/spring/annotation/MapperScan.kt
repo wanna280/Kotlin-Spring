@@ -1,6 +1,6 @@
 package com.wanna.mybatis.spring.annotation
 
-import com.wanna.framework.context.annotation.BeanNameGenerator
+import com.wanna.framework.beans.factory.support.BeanNameGenerator
 import com.wanna.framework.context.annotation.Import
 import com.wanna.mybatis.spring.mapper.MapperFactoryBean
 import kotlin.reflect.KClass

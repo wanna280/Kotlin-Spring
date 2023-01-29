@@ -4,7 +4,7 @@ import com.wanna.boot.autoconfigure.AutoConfigurationImportFilter
 import com.wanna.boot.autoconfigure.AutoConfigurationMetadata
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
-import com.wanna.framework.context.aware.BeanClassLoaderAware
+import com.wanna.framework.beans.factory.BeanClassLoaderAware
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 

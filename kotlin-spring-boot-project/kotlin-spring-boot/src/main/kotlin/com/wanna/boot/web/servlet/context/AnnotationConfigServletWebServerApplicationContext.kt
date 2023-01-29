@@ -1,12 +1,12 @@
 package com.wanna.boot.web.servlet.context
 
+import com.wanna.framework.beans.factory.support.BeanNameGenerator
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.annotation.AnnotatedBeanDefinitionReader
 import com.wanna.framework.context.annotation.AnnotationConfigRegistry
-import com.wanna.framework.context.annotation.BeanNameGenerator
+import com.wanna.framework.context.annotation.AnnotationConfigUtils
 import com.wanna.framework.context.annotation.ClassPathBeanDefinitionScanner
 import com.wanna.framework.core.environment.ConfigurableEnvironment
-import com.wanna.framework.util.AnnotationConfigUtils
 
 /**
  * Servlet环境下的WebServer的aApplicationContext
@@ -15,23 +15,18 @@ import com.wanna.framework.util.AnnotationConfigUtils
  * @version v1.0
  * @date 2022/12/11
  */
-open class AnnotationConfigServletWebServerApplicationContext(_beanFactory: DefaultListableBeanFactory) :
-    ServletWebServerApplicationContext(_beanFactory), AnnotationConfigRegistry {
+open class AnnotationConfigServletWebServerApplicationContext @JvmOverloads constructor(beanFactory: DefaultListableBeanFactory = DefaultListableBeanFactory()) :
+    ServletWebServerApplicationContext(beanFactory), AnnotationConfigRegistry {
 
     /**
      * 注解的BeanDefinition的Reader
      */
-    private var reader: AnnotatedBeanDefinitionReader = AnnotatedBeanDefinitionReader(this)
+    private var reader = AnnotatedBeanDefinitionReader(this)
 
     /**
      * 类路径下的BeanDefinition的Scanner
      */
     private var scanner: ClassPathBeanDefinitionScanner = ClassPathBeanDefinitionScanner(this, true)
-
-    /**
-     * 无参构造器, 创建默认的Environment和BeanFactory, 但是并不完成刷新工作, 使用者自行完成ApplicationContext的刷新
-     */
-    constructor() : this(DefaultListableBeanFactory())
 
     /**
      * 注册配置类到容器中, 创建默认的Environment和BeanFactory, 并完成ApplicationContext的刷新

@@ -3,12 +3,12 @@ package com.wanna.framework.test.context.support
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.ApplicationContext
-import com.wanna.framework.context.annotation.BeanDefinitionReader
+import com.wanna.framework.beans.factory.support.BeanDefinitionReader
 import com.wanna.framework.context.support.GenericApplicationContext
 import com.wanna.framework.test.context.ContextConfigurationAttributes
 import com.wanna.framework.test.context.MergedContextConfiguration
 import com.wanna.framework.test.context.SmartContextLoader
-import com.wanna.framework.util.AnnotationConfigUtils
+import com.wanna.framework.context.annotation.AnnotationConfigUtils
 
 /**
  * 创建一个[GenericApplicationContext]作为[ApplicationContext]的[SmartContextLoader]

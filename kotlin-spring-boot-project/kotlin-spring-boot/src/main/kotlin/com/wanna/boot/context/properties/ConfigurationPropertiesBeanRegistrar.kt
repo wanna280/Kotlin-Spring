@@ -5,7 +5,7 @@ import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.GenericBeanDefinition
-import com.wanna.framework.context.annotation.AnnotationAttributes
+import com.wanna.framework.core.annotation.AnnotationAttributes
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.lang.Nullable
 

@@ -2,7 +2,7 @@ package com.wanna.spring.shell.annotation
 
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.annotation.Autowired
-import com.wanna.framework.context.processor.beans.BeanPostProcessor
+import com.wanna.framework.beans.factory.config.BeanPostProcessor
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.spring.shell.Command

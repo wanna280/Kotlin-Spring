@@ -34,8 +34,10 @@ IDEA底层就是使用的 Kotlin去进行开发的.
 
 ![img.png](images/img_spring_framework.png)
 
-* kotlin-spring-framework, 这个模块当中主要是提供Spring当中的IOC、AOP等相关内容提供底层的实现支持(在spring当中,
-  这里是很多个模块, 这里仅采用一个大的模块).
+* kotlin-spring-core, Spring的核心依赖，主要是为Spring别的模块去提供相关工具类。
+* kotlin-spring-beans, Spring当中关于Bean和BeanFactory的IOC核心实现。
+* kotlin-spring-aop, Spring AOP的核心实现。
+* kotlin-spring-context, Spring关于ApplicationContext实现的核心实现。
 * kotlin-spring-instrument, 这个模块当中主要包含spring当中对于运行时编织的JavaAgent实现(
   比如AspectJ的LoadTimeWeave).
 * kotlin-spring-web, 这个模块当中主要提供了基于Netty去仿照DispatcherServlet的实现, 实现SpringMVC相关的功能;

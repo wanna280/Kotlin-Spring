@@ -1,9 +1,9 @@
 package com.wanna.framework.web.server.servlet
 
+import com.wanna.framework.beans.BeanUtils
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.lang.Nullable
-import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.web.context.ConfigurableWebApplicationContext
 import com.wanna.framework.web.context.ConfigurableWebEnvironment

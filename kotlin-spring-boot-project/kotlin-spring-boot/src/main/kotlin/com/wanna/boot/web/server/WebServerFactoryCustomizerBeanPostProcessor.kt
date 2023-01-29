@@ -3,7 +3,7 @@ package com.wanna.boot.web.server
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.ListableBeanFactory
-import com.wanna.framework.context.processor.beans.BeanPostProcessor
+import com.wanna.framework.beans.factory.config.BeanPostProcessor
 
 /**
  * 这是一个对WebServerFactory去进行自定义的BeanPostProcessor
