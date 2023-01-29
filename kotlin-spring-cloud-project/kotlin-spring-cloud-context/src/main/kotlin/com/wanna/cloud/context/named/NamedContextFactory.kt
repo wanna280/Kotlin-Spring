@@ -4,7 +4,7 @@ import com.wanna.framework.beans.factory.support.DisposableBean
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.annotation.AnnotationConfigApplicationContext
-import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
+import com.wanna.framework.beans.factory.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.context.support.PropertySourcesPlaceholderConfigurer
 import com.wanna.framework.core.environment.MapPropertySource
 import java.util.concurrent.ConcurrentHashMap

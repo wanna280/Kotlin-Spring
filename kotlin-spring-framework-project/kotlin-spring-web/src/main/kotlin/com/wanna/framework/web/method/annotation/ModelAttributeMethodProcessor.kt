@@ -1,8 +1,8 @@
 package com.wanna.framework.web.method.annotation
 
+import com.wanna.framework.beans.BeanUtils
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.lang.Nullable
-import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.web.bind.WebDataBinder
 import com.wanna.framework.web.bind.WebRequestDataBinder
 import com.wanna.framework.web.bind.annotation.ModelAttribute

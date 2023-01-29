@@ -5,7 +5,7 @@ import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.core.KotlinDetector
 import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.lang.Nullable
-import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.beans.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import java.lang.reflect.Constructor
 import java.lang.reflect.Modifier

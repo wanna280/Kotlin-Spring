@@ -1,7 +1,7 @@
 package com.wanna.boot.web.client
 
 import com.wanna.framework.lang.Nullable
-import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.beans.BeanUtils
 import com.wanna.framework.web.client.ResponseErrorHandler
 import com.wanna.framework.web.client.RestTemplate
 import com.wanna.framework.web.http.client.ClientHttpRequest

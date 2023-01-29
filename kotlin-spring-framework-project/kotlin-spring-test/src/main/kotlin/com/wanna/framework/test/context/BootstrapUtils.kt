@@ -6,7 +6,7 @@ import com.wanna.framework.test.context.support.DefaultBootstrapContext
 import com.wanna.framework.test.context.support.DefaultTestContextBootstrapper
 import com.wanna.framework.test.context.web.WebAppConfiguration
 import com.wanna.framework.test.context.web.WebTestContextBootstrapper
-import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.beans.BeanUtils
 import com.wanna.common.logging.LoggerFactory
 
 /**

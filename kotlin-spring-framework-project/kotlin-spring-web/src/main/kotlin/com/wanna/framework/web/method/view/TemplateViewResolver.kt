@@ -3,7 +3,7 @@ package com.wanna.framework.web.method.view
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.ResourceLoaderAware
-import com.wanna.framework.context.aware.BeanClassLoaderAware
+import com.wanna.framework.beans.factory.BeanClassLoaderAware
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.lang.Nullable

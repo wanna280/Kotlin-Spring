@@ -1,5 +1,6 @@
 package com.wanna.framework.web.config.annotation
 
+import com.wanna.framework.beans.BeanUtils
 import com.wanna.framework.beans.factory.annotation.Qualifier
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
@@ -8,7 +9,6 @@ import com.wanna.framework.context.format.FormatterRegistry
 import com.wanna.framework.context.format.support.DefaultFormattingConversionService
 import com.wanna.framework.context.format.support.FormattingConversionService
 import com.wanna.framework.lang.Nullable
-import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.validation.Errors
 import com.wanna.framework.validation.Validator

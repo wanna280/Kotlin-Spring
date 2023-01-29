@@ -7,10 +7,10 @@ import com.wanna.framework.beans.factory.support.DisposableBean
 import com.wanna.framework.context.annotation.Autowired
 import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.format.FormatterRegistry
-import com.wanna.framework.context.processor.beans.BeanPostProcessor
+import com.wanna.framework.beans.factory.config.BeanPostProcessor
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.core.convert.converter.Converter
-import com.wanna.framework.util.AnnotationConfigUtils
+import com.wanna.framework.context.annotation.AnnotationConfigUtils
 import com.wanna.framework.web.HandlerInterceptor
 import com.wanna.framework.web.bind.annotation.RestController
 import com.wanna.framework.web.config.annotation.InterceptorRegistry

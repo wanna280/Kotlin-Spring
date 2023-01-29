@@ -1,5 +1,8 @@
 dependencies {
-    implementation(project(":kotlin-spring-framework-project:kotlin-spring-framework"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-core"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-beans"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-aop"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-context"))
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-jcl"))
 
     // compileOnly
@@ -10,5 +13,5 @@ dependencies {
 
 
     testImplementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // for test
-    testImplementation(project(":kotlin-logger:logger-slf4j-impl"))
+    testImplementation(project(":kotlin-logger-project:kotlin-logger-slf4j-impl"))
 }

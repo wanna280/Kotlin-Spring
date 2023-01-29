@@ -1,6 +1,6 @@
 package com.wanna.boot.context.properties
 
-import com.wanna.framework.context.exception.BeanCreationException
+import com.wanna.framework.beans.factory.exception.BeanCreationException
 
 /**
  * 在对于一个[ConfigurationPropertiesBean]去执行属性的绑定过程当中遇到了绑定异常

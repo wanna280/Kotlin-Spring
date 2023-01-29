@@ -4,12 +4,14 @@ import com.wanna.boot.context.properties.bind.Bindable
 import com.wanna.boot.context.properties.bind.Binder
 import com.wanna.common.logging.Logger
 import com.wanna.common.logging.LoggerFactory
+import com.wanna.framework.beans.BeanUtils
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
+import com.wanna.framework.beans.factory.support.BeanNameGenerator
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.framework.context.ConfigurableApplicationContext
-import com.wanna.framework.context.annotation.BeanNameGenerator
+import com.wanna.framework.context.annotation.AnnotationConfigUtils
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.context.support.AbstractApplicationContext
 import com.wanna.framework.context.support.GenericApplicationContext
@@ -21,8 +23,6 @@ import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.io.support.SpringFactoriesLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.lang.Nullable
-import com.wanna.framework.util.AnnotationConfigUtils
-import com.wanna.framework.util.BeanUtils
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.StopWatch
 import com.wanna.framework.util.StringUtils.collectionToCommaDelimitedString

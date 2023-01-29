@@ -4,7 +4,7 @@ import com.wanna.boot.context.properties.source.ConfigurationPropertyName
 import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.lang.Nullable
-import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.beans.BeanUtils
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.common.logging.LoggerFactory
 import java.beans.Introspector

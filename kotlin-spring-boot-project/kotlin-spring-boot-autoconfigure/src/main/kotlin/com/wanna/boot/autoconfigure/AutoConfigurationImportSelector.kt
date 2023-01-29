@@ -6,11 +6,11 @@ import com.wanna.boot.autoconfigure.SharedMetadataReaderFactoryContextInitialize
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.context.ResourceLoaderAware
-import com.wanna.framework.context.annotation.AnnotationAttributes
+import com.wanna.framework.core.annotation.AnnotationAttributes
 import com.wanna.framework.context.annotation.DeferredImportSelector
-import com.wanna.framework.context.aware.BeanClassLoaderAware
+import com.wanna.framework.beans.factory.BeanClassLoaderAware
 import com.wanna.framework.context.aware.EnvironmentAware
-import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
+import com.wanna.framework.beans.factory.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.io.ResourceLoader

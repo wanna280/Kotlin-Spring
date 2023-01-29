@@ -2,7 +2,7 @@ package com.wanna.framework.web.server.servlet
 
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
-import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
+import com.wanna.framework.beans.factory.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.web.DispatcherHandler
 import com.wanna.framework.web.DispatcherHandlerImpl
 import com.wanna.framework.web.server.HttpServerRequest

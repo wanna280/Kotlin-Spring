@@ -34,8 +34,10 @@ IDEA底层就是使用的 Kotlin去进行开发的.
 
 ![img.png](images/img_spring_framework.png)
 
-* kotlin-spring-framework, 这个模块当中主要是提供Spring当中的IOC、AOP等相关内容提供底层的实现支持(在spring当中,
-  这里是很多个模块, 这里仅采用一个大的模块).
+* kotlin-spring-core, Spring的核心依赖，主要是为Spring别的模块去提供相关工具类。
+* kotlin-spring-beans, Spring当中关于Bean和BeanFactory的IOC核心实现。
+* kotlin-spring-aop, Spring AOP的核心实现。
+* kotlin-spring-context, Spring关于ApplicationContext实现的核心实现。
 * kotlin-spring-instrument, 这个模块当中主要包含spring当中对于运行时编织的JavaAgent实现(
   比如AspectJ的LoadTimeWeave).
 * kotlin-spring-web, 这个模块当中主要提供了基于Netty去仿照DispatcherServlet的实现, 实现SpringMVC相关的功能;
@@ -74,7 +76,7 @@ IDEA底层就是使用的 Kotlin去进行开发的.
     * kotlin-spring-cloud-nacos-discovery, 提供nacos作为注册中心的实现, 支持服务的自动注册,
       应用启动时会将服务暴露到nacos当中.
 
-### 1.2.4 kotlin-spring-others
+### 1.2.4 kotlin-spring-others-project
 
 这一部分主要提供spring整合别的第三方的实现.
 
@@ -84,13 +86,13 @@ IDEA底层就是使用的 Kotlin去进行开发的.
     * kotlin-nacos-naming-server, 实现nacos的服务的注册与发现.
     * kotlin-nacos-config-server, 实现nacos的配置中心的相关功能.
 
-### 1.2.5 kotlin-logger
+### 1.2.5 kotlin-logger-project
 
 主要实现自定义的日志组件, 整体设计参考Slf4j和Logback, 很多地方待完善, 目前并未完善.
 
-* logger-api, 类似Slf4j的API的方式去定义Logger规范.
-* logger-impl, 类似Logback的方式去实现日志组件(待完善).
-* logger-slf4j-impl, 将自己的logger组件整合给Slf4j, 可以使用Slf4j的方式去使用到我们自定义的组件.
+* kotlin-logger-api, 类似Slf4j的API的方式去定义Logger规范.
+* kotlin-logger-impl, 类似Logback的方式去实现日志组件(待完善).
+* kotlin-logger-slf4j-impl, 将自己的logger组件整合给Slf4j, 可以使用Slf4j的方式去使用到我们自定义的组件.
 
 ### 1.2.6 kotlin-metrics-project
 

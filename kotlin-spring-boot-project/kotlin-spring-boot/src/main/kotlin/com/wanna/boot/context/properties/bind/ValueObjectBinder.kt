@@ -7,7 +7,7 @@ import com.wanna.framework.core.MethodParameter
 import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.annotation.*
 import com.wanna.framework.lang.Nullable
-import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.beans.BeanUtils
 import java.lang.reflect.Constructor
 import java.lang.reflect.Modifier
 import java.util.*
