@@ -5,7 +5,7 @@ package com.wanna.framework.context.annotation
  *
  * @see AspectJAutoProxyRegistrar
  */
-@Target(AnnotationTarget.TYPE, AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
+@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
 @Import([AspectJAutoProxyRegistrar::class])
 annotation class EnableAspectJAutoProxy(
 

@@ -15,7 +15,7 @@ import kotlin.reflect.KClass
  * @param exclude 要排除的配置类列表(Class)
  * @param excludeNames 要排除的配置类列表(className)
  */
-@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.TYPE, AnnotationTarget.CLASS)
+@Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
 @Inherited
 @Import([AutoConfigurationImportSelector::class])
 @AutoConfigurationPackage

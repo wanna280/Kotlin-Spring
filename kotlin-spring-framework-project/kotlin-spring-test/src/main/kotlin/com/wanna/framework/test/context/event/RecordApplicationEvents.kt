@@ -22,6 +22,6 @@ import java.lang.annotation.Inherited
  * }
  * ```
  */
-@Target(AnnotationTarget.TYPE, AnnotationTarget.CLASS, AnnotationTarget.ANNOTATION_CLASS)
+@Target(AnnotationTarget.CLASS, AnnotationTarget.ANNOTATION_CLASS)
 @Inherited
 annotation class RecordApplicationEvents()

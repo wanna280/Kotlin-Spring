@@ -14,7 +14,7 @@ package com.wanna.framework.web.bind.annotation
  *
  * @see com.wanna.framework.web.method.annotation.ServerCookieValueMethodArgumentResolver
  */
-@Target(AnnotationTarget.TYPE_PARAMETER, AnnotationTarget.VALUE_PARAMETER)
+@Target( AnnotationTarget.VALUE_PARAMETER)
 annotation class CookieValue(
     val value: String = "",
     val name: String = "",
