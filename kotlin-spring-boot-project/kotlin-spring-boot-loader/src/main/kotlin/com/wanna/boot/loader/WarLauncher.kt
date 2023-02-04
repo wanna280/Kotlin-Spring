@@ -12,15 +12,16 @@ import com.wanna.boot.loader.archive.Archive
 open class WarLauncher : ExecutableArchiveLauncher() {
 
     /**
-     * 获取用于去寻找内部的ArchiveEntry的路径前缀
+     * 对于War包启动的方式, 需要去进行搜索的归档文件的Entry的前缀为"WEB-INF/",
+     * 只有这样的Entry, 才是我们需要去进行搜索的Entry
      *
-     * @return ArchiveEntry所在路径的前缀
+     * @return "WEB-INF/"
      */
     override fun getArchiveEntryPathPrefix() = "WEB-INF/"
 
     /**
-     * 如果是文件夹, 只要"WEB-INF/classes"去作为一个归档;
-     * 如果不是文件夹, 要的是"WEB-INF/lib/"和"WEB-INF/lib-provided/"下的(目录本身不要)
+     * * 1.如果给定的归档文件的Entry是文件夹, 只要"WEB-INF/classes"去作为一个归档;
+     * * 2.如果给定的归档文件的Entry不是文件夹, 要的是"WEB-INF/lib/"和"WEB-INF/lib-provided/"下的(这两个目录本身不要)
      *
      * @param entry 待匹配的ArchiveEntry
      * @return 它是否是一个合格的嵌套Archive?
@@ -34,6 +35,7 @@ open class WarLauncher : ExecutableArchiveLauncher() {
          * Main方法, 用于启动整个War包的应用, 它会被Java应用自动回调到
          *
          * @param args 命令行参数列表
+         * @throws Exception 如果启动War包应用失败
          */
         @JvmStatic
         @Throws(Exception::class)

@@ -3,6 +3,7 @@ package com.wanna.boot.loader.jar
 import com.wanna.boot.loader.data.RandomAccessData
 import com.wanna.boot.loader.jar.Bytes.littleEndianValue
 import java.io.IOException
+import javax.annotation.Nullable
 
 /**
  * ZIP压缩包的结束标识, 也就是EOCD("End of central directory record"),
@@ -37,15 +38,16 @@ internal class CentralDirectoryEndRecord(data: RandomAccessData) {
     /**
      * 当前归档文件的Zip64End部分, 如果它是一个Zip32文件的话, 它为null
      */
+    @Nullable
     private val zip64End: Zip64End?
 
     /**
-     * EOCD数据块(ByteArray), 可能读取的比较多(256), 只有末尾的部分才算是真正的EOCD
+     * EOCD数据块(ByteArray), 可能读取的数据会比较多(256), 但是只有末尾的部分才算是真正的EOCD
      */
     private var block: ByteArray
 
     /**
-     * 从Block数据块的哪个位置开始才是EOCD? 
+     * 从Block数据块的哪个位置开始才是EOCD?
      */
     private var offset: Int
 
@@ -62,7 +64,7 @@ internal class CentralDirectoryEndRecord(data: RandomAccessData) {
         while (!isValid) {
             size++
             if (size > block.size) {
-                if (size >= MAXIMUM_SIZE || size > data.getSize()) {
+                if (size >= MAXIMUM_SIZE || size > data.size) {
                     throw IOException(
                         "Unable to find ZIP central directory records after reading $size bytes"
                     )
@@ -74,7 +76,7 @@ internal class CentralDirectoryEndRecord(data: RandomAccessData) {
 
         // 因为EOCD是在ZipFile的最后的部分, 因此我们得往前去进行推移, 才能得到EOCD的开始部分
         // 通过length-EOCD_Size, 得到EOCD的开始部分的index, 也就是startOfCentralDirectoryEndRecord
-        val startOfCentralDirectoryEndRecord = data.getSize() - size
+        val startOfCentralDirectoryEndRecord = data.size - size
 
         // 解析Zip64的Locator, 通过它获取到Zip64的偏移量
         val zip64Locator = Zip64Locator.find(data, startOfCentralDirectoryEndRecord)
@@ -91,19 +93,20 @@ internal class CentralDirectoryEndRecord(data: RandomAccessData) {
     @Throws(IOException::class)
     private fun createBlockFromEndOfData(data: RandomAccessData, size: Int): ByteArray {
         // 要读取的块的大小, 为min(length, dataSize)的最小值
-        val length = data.getSize().coerceAtMost(size.toLong()).toInt()
+        val length = data.size.coerceAtMost(size.toLong()).toInt()
 
         // 读取数据的开始位置为dataSize-length, 也就是距离末尾length长度的位置
-        return data.read(data.getSize() - length, length.toLong())
+        return data.read(data.size - length, length.toLong())
     }
 
-    // Total size must be the structure size + comment
+    /**
+     * Total size must be the structure size + comment
+     */
     private val isValid: Boolean
         get() {
             if (block.size < MINIMUM_SIZE || littleEndianValue(block, offset + 0, 4) != SIGNATURE.toLong()) {
                 return false
             }
-            // Total size must be the structure size + comment
             val commentLength = littleEndianValue(block, offset + COMMENT_LENGTH_OFFSET, 2)
             return size.toLong() == MINIMUM_SIZE + commentLength
         }
@@ -132,7 +135,7 @@ internal class CentralDirectoryEndRecord(data: RandomAccessData) {
 
         // 计算得到真正的偏移量(这里计算方式为, 数据总长度-CentralDirectory之后的总长度, 最终得到的值是, prefix的长度+ZipEntry列表的总长度)
         // dataSize(文件总长度)-size(EOCD的长度)-length(CentralDirectory的长度)-zip64EndSize-zip64LocatorSize
-        val actualOffset = data.getSize() - size - length - zip64EndSize - zip64LocSize
+        val actualOffset = data.size - size - length - zip64EndSize - zip64LocSize
 
         // 正常情况下, actualOffset=specifiedOffset
         // 但是当存在有prefix的情况下, actualOffset=prefixLength+specifiedOffset, ZipEntry的真正的开始位置需要去掉prefixLength
@@ -264,6 +267,7 @@ internal class CentralDirectoryEndRecord(data: RandomAccessData) {
              */
             const val ZIP64_LOCOFF = 8 // offset of zip64 end
 
+            @Nullable
             @Throws(IOException::class)
             fun find(data: RandomAccessData, centralDirectoryEndOffset: Long): Zip64Locator? {
 

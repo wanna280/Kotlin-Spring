@@ -12,6 +12,7 @@ import java.nio.file.attribute.PosixFilePermissions
 import java.util.*
 import java.util.jar.JarEntry
 import java.util.jar.Manifest
+import javax.annotation.Nullable
 
 /**
  * Jar包格式的Java归档文件, 通过内部组合一个JarFile去完成功能的实现
@@ -28,10 +29,13 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
 
         private const val BUFFER_SIZE = 32 * 1024
 
+        @JvmStatic
         private val NO_FILE_ATTRIBUTES = arrayOf<FileAttribute<*>>()
 
+        @JvmStatic
         private val DIRECTORY_PERMISSIONS = EnumSet.of(OWNER_READ, OWNER_WRITE, OWNER_EXECUTE)
 
+        @JvmStatic
         private val FILE_PERMISSIONS = EnumSet.of(OWNER_READ, OWNER_WRITE)
     }
 
@@ -39,6 +43,7 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
     /**
      * JarFile URL
      */
+    @Nullable
     private var url: URL? = null
 
     /**
@@ -46,6 +51,7 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
      *
      * @see Path
      */
+    @Nullable
     private var tempUnpackDirectory: Path? = null
 
     constructor(file: File) : this(JarFile(file)) {
@@ -57,14 +63,14 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
     }
 
     /**
-     * JarEntry的迭代器
+     * 获取到当前Jar归档文件当中的JarEntry列表的迭代器
      *
-     * @return Entry迭代器
+     * @return JarEntry列表的迭代器
      */
     override fun iterator(): Iterator<Archive.Entry> = EntryIterator(jarFile.iterator(), null, null)
 
     /**
-     * 在关闭的方法当中, 需要去关闭JarFile
+     * 在关闭的方法当中, 需要去关闭[JarFile]
      *
      * @see JarFile.close
      */
@@ -78,9 +84,9 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
     override fun getUrl() = url ?: jarFile.getUrl()
 
     /**
-     * 获取当前Archive归档文件内部嵌套的归档文件列表
+     * 获取当前Jar包的Archive归档文件内部嵌套的归档文件列表
      *
-     * @param searchFilter 搜索的Filter
+     * @param searchFilter ArchiveEntry的搜索的Filter
      * @param includeFilter 需要包含进来的Filter
      * @return 搜索到的内部嵌套的Archive归档文件列表
      */
@@ -90,10 +96,11 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
     ): Iterator<Archive> = NestedArchiveIterator(this.jarFile.iterator(), searchFilter, includeFilter)
 
     /**
-     * 获取当前Jar包的Manifest
+     * 获取当前Jar包的Manifest信息("MANIFEST.SF")
      *
-     * @return Manifest
+     * @return 当前Jar包归档文件的Manifest(如果不存在Manifest的话, return null)
      */
+    @Nullable
     override fun getManifest(): Manifest? = jarFile.manifest
 
     /**

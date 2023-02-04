@@ -3,7 +3,6 @@ package com.wanna.boot.loader
 import com.wanna.boot.loader.archive.Archive
 
 /**
- *
  * 用于完成Jar包的启动的启动器
  *
  * @author jianchao.jia
@@ -13,15 +12,16 @@ import com.wanna.boot.loader.archive.Archive
 open class JarLauncher : ExecutableArchiveLauncher() {
 
     /**
-     * 获取用于去寻找内部的ArchiveEntry的路径前缀
+     * 对于Jar包启动的方式, 需要去进行搜索的归档文件的Entry的前缀为"BOOT-INF/",
+     * 只有这样的Entry, 才是我们需要去进行搜索的Entry
      *
-     * @return ArchiveEntry所在路径的前缀
+     * @return "BOOT-INF/"
      */
     override fun getArchiveEntryPathPrefix() = "BOOT-INF/"
 
     /**
-     * 如果是文件夹, 只要"BOOT-INF/classes"去作为一个归档;
-     * 如果不是文件夹, 要的是"BOOT-INF/lib/"下的(目录本身不要)
+     * * 1.如果给定的归档文件的Entry是文件夹, 只要"BOOT-INF/classes"去作为一个归档;
+     * * 2.如果给定的归档文件的Entry不是文件夹, 要的是"BOOT-INF/lib/"下的Entry(对于"BOOT-INF/lib"这个目录本身不要)
      *
      * @param entry 待匹配的ArchiveEntry
      * @return 它是否是一个合格的嵌套Archive?

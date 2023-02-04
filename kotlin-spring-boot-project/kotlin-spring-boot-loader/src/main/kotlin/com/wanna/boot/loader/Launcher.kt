@@ -27,8 +27,9 @@ abstract class Launcher {
      * 供子类当中去创建main方法, 并去完成进行调用
      *
      * @param args 启动应用时需要用到的方法参数列表(命令行参数)
+     * @throws Exception 如果启动应用失败
      */
-    @kotlin.jvm.Throws(Exception::class)
+    @Throws(Exception::class)
     protected open fun launch(args: Array<String>) {
         // 如果当前不是一个解压的包的话, 那么需要注册URLProtocolHandler
         if (!isExploded()) {
@@ -84,7 +85,7 @@ abstract class Launcher {
     abstract fun getMainClass(): String
 
     /**
-     * 获取ClassPath下的Archive的迭代器
+     * 获取ClassPath下的Archive归档文件的迭代器
      *
      * @return Archive归档文件的迭代器
      */
@@ -122,7 +123,7 @@ abstract class Launcher {
         // 获取当前类的ProtectionDomain
         val protectionDomain = javaClass.protectionDomain
 
-        // 获取代码的位置, 比如"/xxx/xxx/main/"
+        // 获取代码的位置, 比如"/xxx/xxx/main/"(或者是/path/to/xxx.jar)
         val codeSource = protectionDomain.codeSource
 
         // 将代码的位置去转换成为URI
@@ -139,7 +140,7 @@ abstract class Launcher {
     }
 
     /**
-     * 该归档文件是否是被解压之后的? 
+     * 该归档文件是否是被解压之后的?
      *
      * @return 如果是被解压之后的, 那么return true
      */

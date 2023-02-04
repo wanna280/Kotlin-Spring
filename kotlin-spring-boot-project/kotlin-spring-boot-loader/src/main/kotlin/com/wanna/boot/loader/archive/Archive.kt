@@ -1,10 +1,10 @@
 package com.wanna.boot.loader.archive
 
+import com.wanna.boot.loader.Launcher
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.jar.Manifest
-import com.wanna.boot.loader.Launcher
 
 /**
  * 用于描述一个Java的归档文件(比如Jar包/Zip包), 它能支持被Launcher去进行启动
@@ -77,7 +77,7 @@ interface Archive : Iterable<Archive.Entry> {
     /**
      * 用于去过滤Archive的Entry的Filter
      */
-    interface EntryFilter {
+    fun interface EntryFilter {
 
         /**
          * 对ArchiveEntry去进行过滤

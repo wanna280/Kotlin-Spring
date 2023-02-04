@@ -5,6 +5,7 @@ import java.net.MalformedURLException
 import java.net.URISyntaxException
 import java.net.URL
 import java.util.stream.Collectors
+import javax.annotation.Nullable
 
 /**
  * 维护了ClassPath的索引的文件("classpath.idx")的描述, 维护了一个应用当中依赖的所有的Jar包的列表
@@ -43,7 +44,7 @@ class ClassPathIndexFile(val root: File, _lines: List<String>) {
     fun size(): Int = lines.size
 
     /**
-     * 判断当前的ClassPathIndexFile是否包含了给定的Entry? 
+     * 判断当前的ClassPathIndexFile是否包含了给定的Entry?
      *
      * @param name entryName
      * @return 如果包含的话, 那么return true; 否则return false
@@ -73,18 +74,21 @@ class ClassPathIndexFile(val root: File, _lines: List<String>) {
 
     companion object {
         @JvmStatic
+        @Nullable
         fun loadIfPossible(root: URL, location: String): ClassPathIndexFile? {
             return loadIfPossible(asFile(root), location)
         }
 
         @JvmStatic
-        @kotlin.jvm.Throws(IOException::class)
+        @Nullable
+        @Throws(IOException::class)
         private fun loadIfPossible(root: File, location: String): ClassPathIndexFile? {
             return loadIfPossible(root, File(root, location))
         }
 
         @JvmStatic
-        @kotlin.jvm.Throws(IOException::class)
+        @Nullable
+        @Throws(IOException::class)
         private fun loadIfPossible(root: File, indexFile: File): ClassPathIndexFile? {
             if (indexFile.exists() && indexFile.isFile) {
                 FileInputStream(indexFile).use { inputStream ->
@@ -101,7 +105,7 @@ class ClassPathIndexFile(val root: File, _lines: List<String>) {
          * 从给定的输入流当中去按行去进行文件的读取
          *
          * @param inputStream inputStream
-         * @return 读取到的行的列表
+         * @return 从给定的输入流当中去读取到的字符串行的列表
          */
         @JvmStatic
         private fun loadLines(inputStream: InputStream): List<String> {

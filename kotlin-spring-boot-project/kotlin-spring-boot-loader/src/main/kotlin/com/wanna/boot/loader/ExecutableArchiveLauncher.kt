@@ -69,23 +69,19 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
     }
 
     /**
-     * 获取ClassPath下的的Archive的迭代器, 从归档文件内部去寻找嵌套的归档文件
+     * 获取ClassPath下的的Archive归档文件的迭代器, 从归档文件内部去寻找嵌套的归档文件
      *
-     * @return 内部搜索到的归档文件Archive的迭代器
+     * @return 内部搜索到的归档文件Archive列表的迭代器
      */
     override fun getClassPathArchivesIterator(): Iterator<Archive> {
 
         // 用于搜索的EntryFilter, 主要是检查是否是"BOOT-INF/"或者是"WEB-INF/"开头的文件
-        val searchFilter = object : Archive.EntryFilter {
-            override fun matches(entry: Archive.Entry) = isSearchCandidate(entry)
-        }
+        val searchFilter = Archive.EntryFilter { entry -> isSearchCandidate(entry) }
 
         // 这里需要搜索的是没有在ClassPathIndex当中的归档
         // 对于JarLauncher来说, !isEntryIndexed()一定为true, 因此相当于这个条件直接忽略掉...
         // 对于WarLauncher来说, 就需要排除掉ClassPathIndex当中的...
-        val includeFilter = object : Archive.EntryFilter {
-            override fun matches(entry: Archive.Entry) = isNestedArchive(entry) && !isEntryIndexed(entry)
-        }
+        val includeFilter = Archive.EntryFilter { entry -> isNestedArchive(entry) && !isEntryIndexed(entry) }
 
         // 从当前Archive归档文件的内部, 去搜索得到当前归档文件内部嵌套的归档文件列表
         var archives = archive.getNestedArchives(searchFilter, includeFilter)
@@ -98,7 +94,7 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
     }
 
     /**
-     * 检查一个归档文件的Entry是否是一个需要去进行搜索的Entry
+     * 检查一个归档文件当中的一个的Entry, 是否是一个我们需要去进行搜索的Entry
      *
      * @param entry 待匹配的Entry
      * @return 如果该归档文件匹配的话, return true; 否则return false
@@ -192,9 +188,9 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
     }
 
     /**
-     * 获取用于去寻找内部的ArchiveEntry的路径前缀
+     * 获取用于去寻找内部的Archive归档文件Entry的路径前缀, 只有前缀匹配的情况下, 我们才需要去进行搜索
      *
-     * @return ArchiveEntry所在路径的前缀
+     * @return 需要去进行搜索Archive归档文件的Entry的路径前缀
      */
     abstract fun getArchiveEntryPathPrefix(): String
 

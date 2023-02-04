@@ -82,7 +82,7 @@ internal class CentralDirectoryParser {
     @Throws(IOException::class)
     private fun parseEntries(endRecord: CentralDirectoryEndRecord, centralDirectoryData: RandomAccessData) {
         // 将CentralDirectory当中的数据全部读取出来放到ByteArray当中
-        val bytes = centralDirectoryData.read(0, centralDirectoryData.getSize())
+        val bytes = centralDirectoryData.read(0, centralDirectoryData.size)
         val fileHeader = CentralDirectoryFileHeader()
 
         // FileHeader偏移量, 初始化为0, 代表只想了CentralDirectory当中的第一个FileHeader
@@ -120,7 +120,7 @@ internal class CentralDirectoryParser {
         return if (offset == 0L) data
 
         // 如果offset不为0的话, 那么说明存在有prefix, 需要把prefix的长度去掉
-        else data.getSubsection(offset, data.getSize() - offset)
+        else data.getSubsection(offset, data.size - offset)
     }
 
     /**

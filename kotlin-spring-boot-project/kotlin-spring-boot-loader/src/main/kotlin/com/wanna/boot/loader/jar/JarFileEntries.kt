@@ -11,10 +11,11 @@ import java.util.*
 import java.util.jar.Attributes
 import java.util.jar.JarInputStream
 import java.util.zip.ZipEntry
+import javax.annotation.Nullable
 
 
 /**
- * 维护了JarFile内部的JarEntry列表, 提供了JarEntry的访问
+ * 维护了[JarFile]内部的[JarEntry]列表, 提供了[JarFile]内部的[JarEntry]的访问
  *
  * @author jianchao.jia
  * @version v1.0
@@ -22,14 +23,27 @@ import java.util.zip.ZipEntry
  * @param jarFile 当前JarEntries所在的JarFile
  * @param filter 用于过滤JarFile当中的JarEntry的过滤器, 只有符合条件的情况下, 才会被收集起来
  */
-internal class JarFileEntries
-    (private val jarFile: JarFile, private val filter: JarEntryFilter?) : CentralDirectoryVisitor, Iterable<JarEntry> {
+internal class JarFileEntries(private val jarFile: JarFile, @Nullable private val filter: JarEntryFilter?) :
+    CentralDirectoryVisitor, Iterable<JarEntry> {
 
     companion object {
+
+        @JvmStatic
         private val NO_VALIDATION = Runnable {}
+
+        /**
+         * META-INF的前缀
+         */
         private const val META_INF_PREFIX = "META-INF/"
+
+        @JvmStatic
         private val MULTI_RELEASE = Attributes.Name("Multi-Release")
         private const val BASE_VERSION = 8
+
+        /**
+         * 获取当前运行时的Java版本
+         */
+        @JvmStatic
         private val RUNTIME_VERSION = Runtime.version().feature()
 
         /**
@@ -64,7 +78,7 @@ internal class JarFileEntries
     }
 
     /**
-     * 当前JarFileEntries对应的CentralDirectory数据
+     * 当前[JarFileEntries]对应的CentralDirectory数据
      */
     private lateinit var centralDirectoryData: RandomAccessData
 
@@ -74,6 +88,9 @@ internal class JarFileEntries
     var size = 0
         private set  // 私有化Setter
 
+    /**
+     * 三个数组同步初始化, 并基于hashCodes数组去完成排序, 去提供对于各个JarEntry的索引的建立
+     */
     private lateinit var hashCodes: IntArray
     private lateinit var positions: IntArray
     private lateinit var centralDirectoryOffsets: Offsets
@@ -106,9 +123,9 @@ internal class JarFileEntries
         })
 
     /**
-     * 获取用于迭代JarEntry的迭代器
+     * 获取用于迭代[JarEntry]列表的迭代器
      *
-     * @return 迭代JarEntry的迭代器
+     * @return 迭代[JarEntry]列表的迭代器
      */
     override fun iterator(): Iterator<JarEntry> = EntryIterator(NO_VALIDATION)
 
@@ -121,10 +138,10 @@ internal class JarFileEntries
     fun iterator(validator: Runnable): Iterator<JarEntry> = EntryIterator(validator)
 
     /**
-     * 判断当前JarEntries当中是否包含有给定的文件名的JarEntry
+     * 判断当前[JarFileEntries]当中是否包含有给定的文件的entryName的[JarEntry]
      *
      * @param name entryName(fileName)
-     * @return 如果包含的话, return true; 否则return false
+     * @return 如果包含这样的JarEntry的话, return true; 否则return false
      */
     fun containsEntry(name: CharSequence): Boolean = getEntry(name, FileHeader::class.java, true) != null
 
@@ -134,6 +151,7 @@ internal class JarFileEntries
      * @param name entryName
      * @return 获取到的JarEntry(获取不到return null)
      */
+    @Nullable
     fun getEntry(name: CharSequence): JarEntry? = getEntry(name, JarEntry::class.java, true)
 
     /**
@@ -142,6 +160,7 @@ internal class JarFileEntries
      * @param name 文件名
      * @return 该文件EntryData的输入流
      */
+    @Nullable
     @Throws(IOException::class)
     fun getInputStream(name: String): InputStream? = getInputStream(getEntry(name, FileHeader::class.java, false))
 
@@ -151,8 +170,9 @@ internal class JarFileEntries
      * @param entry FileHeader
      * @return 该文件EntryData的输入流
      */
+    @Nullable
     @Throws(IOException::class)
-    fun getInputStream(entry: FileHeader?): InputStream? {
+    fun getInputStream(@Nullable entry: FileHeader?): InputStream? {
         entry ?: return null
         var inputStream = getEntryData(entry).getInputStream()
 
@@ -164,11 +184,12 @@ internal class JarFileEntries
     }
 
     /**
-     * 根据文件名, 去找到合适文件的数据(EntryData)
+     * 根据文件的entryName, 去找到合适文件的数据(EntryData)
      *
-     * @param name 文件名
-     * @return 根据该文件名找到的文件数据(EntryData)
+     * @param name 文件的entryName
+     * @return 根据该文件entryName找到的文件数据(EntryData)
      */
+    @Nullable
     @Throws(IOException::class)
     fun getEntryData(name: String): RandomAccessData? {
         // 首先, 我们根据name去找到FileHeader
@@ -291,10 +312,10 @@ internal class JarFileEntries
     }
 
     /**
-     * 根据FileHeader去获取到该Entry的数据
+     * 根据[FileHeader]去获取到该[JarEntry]的数据
      *
      * @param entry entry FileHeader
-     * @return 读取到的Entry数据
+     * @return 读取到的JarEntry数据
      */
     @Throws(IOException::class)
     private fun getEntryData(entry: FileHeader): RandomAccessData {
@@ -322,19 +343,22 @@ internal class JarFileEntries
     }
 
     /**
-     * 根据文件名、type去获取到FileHeader
+     * 根据文件名entryName&type去获取到FileHeader
      *
-     * @param name 文件名
+     * @param name 文件名entryName
      * @param type type(CentralDirectoryFileHeader/JarEntry)
      * @param cacheEntry 是否需要把搜索结果添加到entryCache当中?
      * @return FileHeader
+     *
+     * @param T FileHeader类型(CentralDirectoryFileHeader/JarEntry)
      */
+    @Nullable
     private fun <T : FileHeader> getEntry(name: CharSequence, type: Class<T>, cacheEntry: Boolean): T? {
         // 根据name和type去获取到对应的FileHeader
         val entry: T? = doGetEntry(name, type, cacheEntry, null)
 
         // 如果它不是一个META-INF的FileHeader, 并且是个多发行版的Jar包?
-        if (!isMetaInfEntry(name) && isMultiReleaseJar!!) {
+        if (!isMetaInfEntry(name) && isMultiReleaseJar) {
             var version = RUNTIME_VERSION
             val nameAlias = if (entry is JarEntry) entry.asciiBytesName else AsciiBytes(name.toString())
             while (version > BASE_VERSION) {
@@ -349,23 +373,24 @@ internal class JarFileEntries
     }
 
     /**
-     * 当前给定的这个文件名是否是"META-INF/"下的Entry?
+     * 当前给定的这个文件名entryName是否是"META-INF/"路径下的Entry?
      *
-     * @param name 文件名
-     * @return 如果以"META-INF/"开头, return true; 否则return false
+     * @param name 文件名entryName
+     * @return 如果以该entryName是以"META-INF/"开头, return true; 否则return false
      */
     private fun isMetaInfEntry(name: CharSequence): Boolean = name.toString().startsWith(META_INF_PREFIX)
 
     /**
-     * 根据fileName和type, 去获取到Entry
+     * 根据fileName和type, 去获取到JarEntry
      *
      * @param name fileName
      * @param type type(CentralDirectoryFileHeader/JarEntry)
      * @param cacheEntry 是否需要把搜索结果添加到entryCache当中?
      */
+    @Nullable
     private fun <T : FileHeader> doGetEntry(
         name: CharSequence, type: Class<T>, cacheEntry: Boolean,
-        nameAlias: AsciiBytes?
+        @Nullable nameAlias: AsciiBytes?
     ): T? {
 
         // 生成该name的hashCode
@@ -392,9 +417,10 @@ internal class JarFileEntries
      * @param cacheEntry 是否需要把搜索结果添加到entryCache当中?
      * @param nameAlias nameAlias
      */
+    @Nullable
     private fun <T : FileHeader> getEntry(
         hashCode: Int, name: CharSequence, suffix: Char, type: Class<T>,
-        cacheEntry: Boolean, nameAlias: AsciiBytes?
+        cacheEntry: Boolean, @Nullable nameAlias: AsciiBytes?
     ): T? {
 
         // 根据hashCode, 从数组当中去获取到第一个hashCode为该值的元素(使用二分查找)
@@ -473,16 +499,20 @@ internal class JarFileEntries
     }
 
     /**
-     * 获取hashCodes数组当中, 第一个元素为hashCode的元素的索引值
+     * 获取[hashCodes]数组当中, 第一个元素为hashCode的元素的索引值
      *
      * @param hashCode 要去进行搜寻的hashCode
-     * @return 从hashCodes数组当中搜索得到的hashCode相等的第一个元素(使用二分查找的方式)
+     * @return 从hashCodes数组当中搜索得到的hashCode相等的第一个元素(使用二分查找的方式), 如果找不到hashCode匹配的元素, 那么return -1
      */
     private fun getFirstIndex(hashCode: Int): Int {
         var index = Arrays.binarySearch(hashCodes, 0, size, hashCode)
+
+        // 如果搜索不到结果, 那么return -1
         if (index < 0) {
             return -1
         }
+
+        // 如果该位置并不是第一个hashCode匹配的元素, 那么尝试往前去进行寻找
         while (index > 0 && hashCodes[index - 1] == hashCode) {
             index--
         }
@@ -500,6 +530,7 @@ internal class JarFileEntries
      * @param name name
      * @return 经过Filter转换之后的name(主要是针对文件夹的情况, 需要把前缀给切割掉, 比如"BOOT-INF/classes/com/wanna/App.class"转换成为"com/wanna/App.class")
      */
+    @Nullable
     private fun applyFilter(name: AsciiBytes): AsciiBytes? = if (filter != null) filter.apply(name) else name
 
     @Suppress("UNCHECKED_CAST")
@@ -527,7 +558,7 @@ internal class JarFileEntries
 
 
     /**
-     * 提供遍历一个Jar包当中的所有的JarEntry的迭代器
+     * 提供遍历一个Jar包当中的[JarEntry]列表的迭代器
      *
      * @param validator 完成检验的Validator(Runnable)
      */

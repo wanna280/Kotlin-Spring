@@ -1,15 +1,16 @@
 package com.wanna.boot.loader.jar
 
-import java.net.MalformedURLException
 import java.io.IOException
+import java.net.MalformedURLException
 import java.net.URL
 import java.security.CodeSigner
 import java.security.cert.Certificate
 import java.util.jar.Attributes
 import java.util.jar.JarEntry
+import javax.annotation.Nullable
 
 /**
- * [JarEntry]的变体, 供[JarFile]使用
+ * [JarEntry]的变体, 供SpringBootLoader内部的[JarFile]去进行使用
  *
  * @author jianchao.jia
  * @version v1.0
@@ -58,6 +59,7 @@ class JarEntry(jarFile: JarFile, val index: Int, header: CentralDirectoryFileHea
 
     override fun hasName(name: CharSequence, suffix: Char) = headerName!!.matches(name, suffix)
 
+    @Nullable
     @Throws(IOException::class)
     override fun getAttributes(): Attributes? = jarFile.manifest?.getAttributes(name)
 

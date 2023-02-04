@@ -16,6 +16,7 @@ import java.util.jar.Manifest
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
 import java.util.zip.ZipEntry
+import javax.annotation.Nullable
 
 
 /**
@@ -24,10 +25,20 @@ import java.util.zip.ZipEntry
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/10/4
+ *
+ * @param rootFile 提供对于rootJar包的随机访问
+ * @param pathFromRoot 相对root的偏移的相对路径
+ * @param filter 要去对JarEntry进行过滤的过滤器
+ * @param type 要去进行构建的Jar包的类型(直接Jar包/嵌套文件夹/嵌套Jar包)
+ * @param manifestSupplier 提供对于Manifest的获取的Supplier
  */
-class JarFile private constructor(
-    rootFile: RandomAccessDataFile, pathFromRoot: String, data: RandomAccessData?, filter: JarEntryFilter?,
-    type: JarFileType, manifestSupplier: Supplier<Manifest>?
+open class JarFile private constructor(
+    rootFile: RandomAccessDataFile,
+    pathFromRoot: String,
+    @Nullable data: RandomAccessData?,
+    @Nullable filter: JarEntryFilter?,
+    type: JarFileType,
+    @Nullable manifestSupplier: Supplier<Manifest>?
 ) : AbstractJarFile(rootFile.file), Iterable<java.util.jar.JarEntry> {
 
     companion object {
@@ -37,7 +48,11 @@ class JarFile private constructor(
         private const val MANIFEST_NAME = "META-INF/MANIFEST.MF"
         private const val PROTOCOL_HANDLER = "java.protocol.handler.pkgs"
         private const val HANDLERS_PACKAGE = "com.wanna.boot.loader"
+
+        @JvmStatic
         private val META_INF = AsciiBytes("META-INF/")
+
+        @JvmStatic
         private val SIGNATURE_FILE_EXTENSION = AsciiBytes(".SF")
 
         /**
@@ -92,8 +107,7 @@ class JarFile private constructor(
     var data: RandomAccessData
 
     /**
-     * Jar包的文件类型
-     *
+     * Jar包的文件类型, 主要包含下面几种类型
      * * DIRECT-直接Jar包
      * * NESTED_DIRECTORY-嵌套的文件夹
      * * NESTED_JAR-嵌套的Jar包
@@ -261,13 +275,13 @@ class JarFile private constructor(
     override fun getPermission() = FilePermission(rootJarFile.file.path, READ_ACTION)
 
     /**
-     * 获取当前JarFile的Manifest, 通过读取"META-INF/MANIFEST.SF"文件获取
+     * 获取当前[JarFile]的[Manifest]信息, 通过读取"META-INF/MANIFEST.SF"文件获取
      *
      * @return Manifest
      */
     @Throws(IOException::class)
     override fun getManifest(): Manifest? {
-        var manifest = if (manifest != null) manifest!!.get() else null
+        var manifest = manifest?.get()
         if (manifest == null) {
             manifest = try {
                 manifestSupplier.get()
@@ -307,42 +321,45 @@ class JarFile private constructor(
     override fun iterator(): Iterator<java.util.jar.JarEntry> = entries.iterator { ensureOpen() }
 
     /**
-     * 根据文件名, 从Jar包内部去获取到JarEntry
+     * 根据文件的entryName, 从Jar包内部去获取到对应的JarEntry
      *
-     * @param name 文件名
+     * @param name entryName
      * @return JarEntry
      */
-    fun getJarEntry(name: CharSequence): JarEntry? = entries.getEntry(name)
+    @Nullable
+    open fun getJarEntry(name: CharSequence): JarEntry? = entries.getEntry(name)
 
     /**
-     * 根据文件名, 从Jar包内部去获取到JarEntry
+     * 根据文件的entryName, 从Jar包内部去获取到[JarEntry]
      *
      * @param name 文件名
      * @return JarEntry
      */
-    override fun getJarEntry(name: String): JarEntry? = getEntry(name) as JarEntry?
+    @Nullable
+    override fun getJarEntry(name: String): JarEntry? = getEntry(name)
 
     /**
      * 根据文件名, 判断Jar包当中是否存在有该JarEntry?
      *
-     * @param name 文件名
-     * @return 如果存在, return true; 不存在return false
+     * @param name 文件的entryName
+     * @return 如果存在给定的entryName的文件的话, return true; 不存在return false
      */
-    fun containsEntry(name: String): Boolean = entries.containsEntry(name)
+    open fun containsEntry(name: String): Boolean = entries.containsEntry(name)
 
     /**
-     * 根据文件名, 从Jar包内部去获取到JarEntry
+     * 根据文件的entryName, 从Jar包内部去获取到JarEntry
      *
-     * @param name 文件名
-     * @return JarEntry
+     * @param name 文件entryName
+     * @return 根据entryName获取到的JarEntry(获取不到的话, return null)
      */
-    override fun getEntry(name: String): ZipEntry? {
+    @Nullable
+    override fun getEntry(name: String): JarEntry? {
         ensureOpen()
         return entries.getEntry(name)
     }
 
     /**
-     * 获取当前JarFile的输入流
+     * 获取当前[JarFile]的数据的读取的输入流
      *
      * @return 输入流
      */
@@ -368,17 +385,17 @@ class JarFile private constructor(
      * @return InputStream
      */
     @Throws(IOException::class)
-    fun getInputStream(name: String): InputStream? = entries.getInputStream(name)
+    open fun getInputStream(name: String): InputStream? = entries.getInputStream(name)
 
 
     /**
-     * 根据一个JarEntry去将它转换成为一个JarFile
+     * 根据一个[JarEntry]去将它转换成为一个[JarFile]
      *
      * @return JarFile
      */
     @Synchronized
     @Throws(IOException::class)
-    fun getNestedJarFile(entry: ZipEntry): JarFile = getNestedJarFile(entry as JarEntry)
+    open fun getNestedJarFile(entry: ZipEntry): JarFile = getNestedJarFile(entry as JarEntry)
 
 
     /**
@@ -429,7 +446,7 @@ class JarFile private constructor(
     }
 
     /**
-     * 从一个FileEntry去创建JarFile
+     * 从一个[JarEntry]去创建[JarFile]
      *
      * @param entry JarEntry
      * @return JarFile
@@ -442,7 +459,11 @@ class JarFile private constructor(
                     + "jar files must be stored without compression. Please check the "
                     + "mechanism used to create your executable jar file")
         }
+
+        // 根据给定的JarEntry, 去获取到用于去进行数据的读取的RandomAccessData
         val entryData = entries.getEntryData(entry.name)
+
+        // 构建出来新的JarFile对象
         return JarFile(
             rootJarFile, pathFromRoot + "!/" + entry.name, entryData,
             JarFileType.NESTED_JAR
@@ -450,10 +471,11 @@ class JarFile private constructor(
     }
 
     /**
-     * 获取当前JarFile的Comment
+     * 获取当前JarFile的Comment信息
      *
      * @return comment
      */
+    @Nullable
     override fun getComment(): String? {
         ensureOpen()
         return comment
@@ -470,7 +492,9 @@ class JarFile private constructor(
     }
 
     /**
-     * 关闭当前JarFile的输入流
+     * 关闭当前[JarFile]的输入流
+     *
+     * @throws IOException 如果关闭JarFile失败
      */
     @Throws(IOException::class)
     override fun close() {
@@ -489,7 +513,7 @@ class JarFile private constructor(
     }
 
     /**
-     * 获取当前JarFile的URL, 如果之前没有的话, 那么我们需要先生成再去进行保存;
+     * 获取当前[JarFile]的URL, 如果之前没有的话, 那么我们需要先生成再去进行保存;
      * 这个方法返回的URL, 将会被用于类加载器的类加载工作
      *
      * @return JarFile URL
@@ -513,7 +537,7 @@ class JarFile private constructor(
 
     override fun getName(): String = rootJarFile.file.toString() + pathFromRoot
 
-    fun getCertification(entry: JarEntry): JarEntryCertification {
+    open fun getCertification(entry: JarEntry): JarEntryCertification {
         return try {
             entries.getCertification(entry)
         } catch (ex: IOException) {
