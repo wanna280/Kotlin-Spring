@@ -4,6 +4,8 @@ plugins {
     `maven-publish`
 }
 
+
+
 allprojects {
     group = "com.wanna"
     version = "1.0-SNAPSHOT"
@@ -20,6 +22,21 @@ allprojects {
         plugin("kotlin")
         plugin(com.wanna.plugin.BuildPlugin::class.java)
     }
+
+    // 配置maven发布插件的配置, 必须放到apply之后
+    publishing {
+        publications {
+            create<MavenPublication>("maven") {
+                afterEvaluate {
+                    groupId = this.group.toString()
+                    artifactId = this.name
+                    version = this.version.toString()
+                }
+                from(components["java"])
+            }
+        }
+    }
+
 
     dependencies {
         implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
