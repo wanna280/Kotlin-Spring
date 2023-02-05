@@ -377,7 +377,7 @@ object ClassUtils {
                 val nestedClassName =
                     clazzName.substring(0, dotIndex) + NESTED_CLASS_SEPARATOR + clazzName.substring(dotIndex + 1)
                 try {
-                    return forName<T>(nestedClassName, classLoader)
+                    return Class.forName(nestedClassName, false, classLoader) as Class<T>  // use Class.forName
                 } catch (ex: ClassNotFoundException) {
                     // 对于解析内部类的fallback的情况, 我们不进行处理, 别把外层的原始异常吃掉了... 需要直接把原始的异常丢出去
                 }
