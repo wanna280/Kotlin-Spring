@@ -3,7 +3,6 @@ package com.wanna.boot.gradle.tasks.bundling
 import org.apache.commons.compress.archivers.zip.UnixStat
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream
-import java.io.FileInputStream
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import javax.annotation.Nullable
@@ -24,11 +23,8 @@ class LoaderZipEntries @JvmOverloads constructor(@Nullable private val entryTime
      */
     fun writeTo(out: ZipArchiveOutputStream): WrittenEntries {
         val writtenEntries = WrittenEntries()
-
-        val loaderJarFile = FileInputStream("/Users/jianchaojia/Desktop/Code/java/Project/Kotlin-Spring/kotlin-spring-boot-project/kotlin-spring-boot-tools/kotlin-spring-boot-loader/build/libs/kotlin-spring-boot-loader-1.0-SNAPSHOT.jar")
-
-//        val loaderJarFile = javaClass.getResourceAsStream("/META-INF/loader/kotlin-spring-boot-loader.jar")
-//            ?: throw IllegalStateException("cannot find spring-boot-loader jar")
+        val loaderJarFile = javaClass.getResourceAsStream("/META-INF/loader/kotlin-spring-boot-loader.jar")
+            ?: throw IllegalStateException("cannot find spring-boot-loader jar")
 
         ZipInputStream(loaderJarFile).use {
             var entry = it.nextEntry
