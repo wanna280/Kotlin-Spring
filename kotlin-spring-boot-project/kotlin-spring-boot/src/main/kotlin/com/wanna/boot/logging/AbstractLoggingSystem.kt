@@ -164,8 +164,8 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
     @Nullable
     private fun findConfig(locations: Array<String>): String? {
         for (location in locations) {
-            if (ClassPathResource("classpath:$location", this.classLoader).exists()) {
-                return location
+            if (ClassPathResource(location, this.classLoader).exists()) {
+                return "classpath:$location"
             }
         }
         return null
