@@ -26,3 +26,4 @@ const val logbackVersion = "1.4.5"  // logback Version
 const val druidVersion = "1.2.10" // druid Version
 const val mysqlVersion = "8.0.29" // mysql Version
 const val asmVersion = "7.1"  // asm Version
+const val commonCompressVersion = "1.22"  // common Compress for JarCopy

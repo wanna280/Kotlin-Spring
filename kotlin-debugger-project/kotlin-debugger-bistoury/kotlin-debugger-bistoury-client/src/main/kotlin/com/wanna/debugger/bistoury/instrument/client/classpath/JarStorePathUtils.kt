@@ -92,7 +92,7 @@ object JarStorePathUtils {
      */
     private fun getSpringBootManifest(): SpringBootManifest {
         if (this.springBootManifest == null) {
-            val manifestFiles = File(getJarStorePath()).listFiles(FileFilter { "MANIFEST.SF" == it.name })
+            val manifestFiles = File(getJarStorePath()).listFiles(FileFilter { "MANIFEST.MF" == it.name })
             if (manifestFiles.isNullOrEmpty()) {
                 this.springBootManifest = DEFAULT_SPRING_BOOT_MANIFEST
             } else {

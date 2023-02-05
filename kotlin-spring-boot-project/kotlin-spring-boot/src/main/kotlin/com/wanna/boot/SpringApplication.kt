@@ -482,7 +482,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
 
         }
         if (logger.isErrorEnabled) {
-            logger.error("Spring应用运行失败", failure)
+            logger.error("Spring Application start failed", failure)
         }
     }
 

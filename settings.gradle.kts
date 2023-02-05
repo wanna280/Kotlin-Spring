@@ -18,7 +18,10 @@ include(":kotlin-spring-boot-project:kotlin-spring-boot-autoconfigure")
 include(":kotlin-spring-boot-project:kotlin-spring-boot-actuator")
 include(":kotlin-spring-boot-project:kotlin-spring-boot-actuator-autoconfigure")
 include(":kotlin-spring-boot-project:kotlin-spring-boot-devtools")
-include(":kotlin-spring-boot-project:kotlin-spring-boot-loader")
+include(":kotlin-spring-boot-project:kotlin-spring-boot-tools")
+include(":kotlin-spring-boot-project:kotlin-spring-boot-tools:kotlin-spring-boot-loader")
+include(":kotlin-spring-boot-project:kotlin-spring-boot-tools:kotlin-spring-boot-loader-tools")
+include(":kotlin-spring-boot-project:kotlin-spring-boot-tools:kotlin-spring-boot-gradle-plugin")
 include(":kotlin-spring-boot-project:kotlin-spring-boot-test")
 
 

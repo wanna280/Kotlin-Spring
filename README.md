@@ -40,7 +40,7 @@ IDEA底层就是使用的 Kotlin去进行开发的.
 * kotlin-spring-context, Spring关于ApplicationContext实现的核心实现。
 * kotlin-spring-instrument, 这个模块当中主要包含spring当中对于运行时编织的JavaAgent实现(
   比如AspectJ的LoadTimeWeave).
-* kotlin-spring-web, 这个模块当中主要提供了基于Netty去仿照DispatcherServlet的实现, 实现SpringMVC相关的功能;
+* kotlin-spring-web, 这个模块当中主要提供了基于Netty去仿照DispatcherServlet的实现, 实现SpringMVC相关的功能
   以及一些关于Web客户端的相关支持.
 * kotlin-spring-test, 这个模块当中主要用于spring整合JUnit4和JUnit5去为单元测试提供支持.
 * kotlin-spring-jcl, 这个模块当中, 主要提供对于底层日志组件的桥接，用于为框架当中的日志输出选择合适的日志组件。
@@ -52,12 +52,12 @@ IDEA底层就是使用的 Kotlin去进行开发的.
 ![img.png](docs/images/img_spring_boot.png)
 
 * kotlin-spring-boot, 提供spring-boot的底层实现支持.
-* kotlin-spring-boot-autoconfigure, 提供spring-boot的自动装配的支持,需要配合kotlin-spring-boot以及整个kotlin-spring-framework完成.
+* kotlin-spring-boot-autoconfigure, 提供spring-boot的自动装配的支持, 需要配合kotlin-spring-boot以及整个kotlin-spring-framework完成.
 * kotlin-spring-boot-actuator, 提供spring-boot的监控的基础设施的endpoint相关的实现.
 * kotlin-spring-boot-actuator-autoconfigure, 提供spring-boot-actuator的自动装配功能, 自动完成Endpoint的暴露.
 * kotlin-spring-boot-devtools, 提供对spring-boot的热部署的实现的支持, 支持本地的热部署, 也支持基于文件的上传的方式去实现远程的热部署.
 * kotlin-spring-boot-loader, 提供对于spring-boot的嵌入式Jar包的加载.
-* kotlin-spring-boot-gradle-plugin, 提供对于spring-boot的Gradle打包插件.(待完成)
+* kotlin-spring-boot-gradle-plugin, 提供对于spring-boot的Gradle打包插件.
 * kotlin-spring-boot-test, 整合kotlin-spring-test, 为spring-boot的测试实现提供支持.
 
 ### 1.2.3 kotlin-spring-cloud-project
