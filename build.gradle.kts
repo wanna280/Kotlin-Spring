@@ -1,7 +1,7 @@
 plugins {
     kotlin("jvm") version kotlinVersion
     java
-    maven
+    `maven-publish`
 }
 
 allprojects {
@@ -10,15 +10,13 @@ allprojects {
 
     repositories {
         mavenCentral()
-        jcenter()
         google()
         mavenLocal()
     }
 
     apply {
         plugin("java")
-        plugin("maven")
-        plugin("maven-publish")
+        plugin("maven-publish")  // Gradle7.0+, maven插件被移除, 现在使用maven-publish插件
         plugin("kotlin")
         plugin(com.wanna.plugin.BuildPlugin::class.java)
     }
