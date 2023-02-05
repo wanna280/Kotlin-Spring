@@ -179,7 +179,7 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
     protected abstract fun getStandardConfigLocations(): Array<String>
 
     /**
-     * 获取该日志组件对应的Spring的配置文件路径裂帛啊呸(在文件扩展名之前添加"-spring", 比如"logback.xml"->"logback-spring.xml")
+     * 获取该日志组件对应的Spring的配置文件路径(在文件扩展名之前添加"-spring", 比如"logback.xml"->"logback-spring.xml")
      *
      * @return 解析得到该日志组件对应的Spring的配置文件路径列表
      */
