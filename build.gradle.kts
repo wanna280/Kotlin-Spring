@@ -67,9 +67,4 @@ allprojects {
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
         kotlinOptions.jvmTarget = "1.8"  // set JvmTarget=1.8
     }
-
-    // 新增产物的构件, 添加KotlinSourcesJar任务, 将源码jar包也一起去进行构建到maven仓库
-    artifacts {
-        archives(tasks.getByName("kotlinSourcesJar"))
-    }
 }
