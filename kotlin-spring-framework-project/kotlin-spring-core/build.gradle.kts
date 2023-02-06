@@ -23,11 +23,11 @@ tasks.register<ShadowJar>("kotlinSpringCglibRepackJar") {
     // Note: 只有设置Configuration才能输出文件!!!!!!不设置啥也没有
     this.configurations = shadowJar.configurations
 
-    // 将"net.sf.cglib"去重定向到"com.wanna.framework.core.cglib"下
-    relocate("net.sf.cglib", "com.wanna.framework.core.cglib")
+    // 将"net.sf.cglib"去重定向到"com.wanna.framework.cglib"下
+    relocate("net.sf.cglib", "com.wanna.framework.cglib")
 
     // 将"org.objectweb.asm"去重定向到"com.wanna.framework.core.asm"下
-    relocate("org.objectweb.asm", "com.wanna.framework.core.asm")
+    relocate("org.objectweb.asm", "com.wanna.framework.asm")
 }
 
 

@@ -1,4 +1,4 @@
-package com.wanna.framework.core.asm
+package com.wanna.framework.asm
 
 import org.objectweb.asm.Opcodes
 

@@ -1,6 +1,6 @@
 package com.wanna.framework.core
 
-import com.wanna.framework.core.asm.SpringAsmInfo
+import com.wanna.framework.asm.SpringAsmInfo
 import com.wanna.framework.util.ClassUtils
 import org.objectweb.asm.*
 import java.io.IOException

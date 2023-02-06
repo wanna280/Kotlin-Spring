@@ -1,6 +1,6 @@
 package com.wanna.boot.loader.tools
 
-import com.wanna.framework.core.asm.SpringAsmInfo
+import com.wanna.framework.asm.SpringAsmInfo
 import org.objectweb.asm.*
 import java.io.File
 import java.io.FileFilter

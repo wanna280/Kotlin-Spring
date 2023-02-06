@@ -2,7 +2,7 @@ package com.wanna.framework.core.type.classreading
 
 import com.wanna.framework.core.annotation.AnnotationFilter
 import com.wanna.framework.core.annotation.MergedAnnotation
-import com.wanna.framework.core.asm.SpringAsmInfo
+import com.wanna.framework.asm.SpringAsmInfo
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import org.objectweb.asm.AnnotationVisitor

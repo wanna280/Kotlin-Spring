@@ -1,4 +1,4 @@
-package com.wanna.framework.core.cglib.core
+package com.wanna.framework.cglib.core
 
 import net.sf.cglib.core.DefaultNamingPolicy
 
