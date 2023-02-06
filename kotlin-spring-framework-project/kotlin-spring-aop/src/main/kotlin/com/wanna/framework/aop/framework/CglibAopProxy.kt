@@ -1,7 +1,7 @@
 package com.wanna.framework.aop.framework
 
 import com.wanna.framework.aop.ReflectiveMethodInvocation
-import com.wanna.framework.aop.cglib.SpringNamingPolicy
+import com.wanna.framework.core.cglib.core.SpringNamingPolicy
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import net.sf.cglib.proxy.Enhancer
@@ -36,7 +36,7 @@ open class CglibAopProxy(private val config: AdvisedSupport) : AopProxy {
         if (classLoader != null) {
             enhancer.classLoader = classLoader  // set ClassLoader
         }
-        enhancer.namingPolicy = SpringNamingPolicy.INSTANCE  // set NamingPolicy
+        enhancer.namingPolicy = SpringNamingPolicy  // set NamingPolicy
         enhancer.setCallback(DynamicAdvisedInterceptor(this.config))
         enhancer.setSuperclass(proxySuperClass)
         enhancer.setInterfaces(config.getInterfaces().toTypedArray())
@@ -66,23 +66,23 @@ open class CglibAopProxy(private val config: AdvisedSupport) : AopProxy {
     }
 
     private class CglibMethodInvocation(
-        _proxy: Any,
-        _target: Any?,
-        _method: Method,
-        _args: Array<Any?>?,
-        _targetClass: Class<*>?,
-        _interceptorsAndDynamicMethodMatchers: List<Any>,
-        _methodProxy: MethodProxy
+        proxy: Any,
+        target: Any?,
+        method: Method,
+        args: Array<Any?>?,
+        targetClass: Class<*>?,
+        interceptorsAndDynamicMethodMatchers: List<Any>,
+        methodProxy: MethodProxy
     ) : ReflectiveMethodInvocation(
-        _proxy, _target, _method, _args, _targetClass, _interceptorsAndDynamicMethodMatchers
+        proxy, target, method, args, targetClass, interceptorsAndDynamicMethodMatchers
     ) {
         private var methodProxy: MethodProxy? = null
 
         init {
 
             // 如果是不是Object类的方法才使用methodProxy去进行执行
-            methodProxy =
-                if (Modifier.isPublic(_method.modifiers) && !ReflectionUtils.isObjectMethod(_method)) _methodProxy else null
+            this.methodProxy =
+                if (Modifier.isPublic(method.modifiers) && !ReflectionUtils.isObjectMethod(method)) methodProxy else null
         }
 
         override fun invokeJoinpoint(): Any? {
