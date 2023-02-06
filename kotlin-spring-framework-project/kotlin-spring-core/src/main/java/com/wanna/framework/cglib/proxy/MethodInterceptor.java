@@ -1,8 +1,6 @@
 package com.wanna.framework.cglib.proxy;
 
 
-import net.sf.cglib.proxy.Callback;
-import net.sf.cglib.proxy.MethodProxy;
 
 /**
  * @author jianchao.jia

@@ -45,6 +45,9 @@ tasks.getByName<Jar>("jar") {
         exclude("com/wanna/framework/cglib/proxy/MethodProxy*.class")
         exclude("com/wanna/framework/cglib/proxy/MethodInterceptor*.class")
         exclude("com/wanna/framework/cglib/proxy/Callback*.class")
+        exclude("com/wanna/framework/cglib/proxy/CallbackFilter*.class")
+        exclude("com/wanna/framework/cglib/proxy/Factory*.class")
+        exclude("com/wanna/framework/cglib/proxy/NoOp*.class")
 
         exclude("com/wanna/framework/cglib/core/ReflectUtils*.class")
         exclude("com/wanna/framework/cglib/core/ClassGenerator*.class")

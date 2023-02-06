@@ -6,7 +6,7 @@ import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.beans.method.LookupOverride
 import com.wanna.framework.beans.method.ReplaceOverride
-import net.sf.cglib.proxy.*
+import com.wanna.framework.cglib.proxy.*
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 
