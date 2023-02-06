@@ -1,4 +1,6 @@
 dependencies {
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-core"))
+    implementation("org.ow2.asm:asm:$asmVersion")
     implementation("org.apache.commons:commons-compress:$commonCompressVersion")
 }
 
