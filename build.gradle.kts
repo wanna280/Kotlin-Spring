@@ -28,9 +28,13 @@ allprojects {
         publications {
             create<MavenPublication>("maven") {
                 afterEvaluate {
+                    // 配置发布到Maven仓库时, 需要使用的GAV坐标
                     groupId = this.group.toString()
                     artifactId = this.name
                     version = this.version.toString()
+
+                    // 将Kotlin的源码包添加到发布到Maven仓库的构建, 实现打Jar包的同时打源码包
+                    artifact(tasks.getByName("kotlinSourcesJar"))
                 }
                 from(components["java"])
             }
