@@ -8,6 +8,10 @@ plugins {
 dependencies {
     implementation("cglib:cglib:$cglibVersion")
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-jcl"))
+
+    compileOnly(fileTree("${project.buildDir}/libs") {
+        this.include("*.jar")
+    })
 }
 
 
@@ -37,5 +41,13 @@ tasks.getByName<Jar>("jar") {
     dependsOn(kotlinSpringCglibRepackJar)
     from(zipTree(kotlinSpringCglibRepackJar.archiveFile.get().asFile.absolutePath)) {
         include("com/wanna/**")
+        exclude("com/wanna/framework/cglib/proxy/Enhancer*.class")
+        exclude("com/wanna/framework/cglib/proxy/MethodProxy*.class")
+        exclude("com/wanna/framework/cglib/proxy/MethodInterceptor*.class")
+        exclude("com/wanna/framework/cglib/proxy/Callback*.class")
+
+        exclude("com/wanna/framework/cglib/core/ReflectUtils*.class")
+        exclude("com/wanna/framework/cglib/core/ClassGenerator*.class")
+        exclude("com/wanna/framework/cglib/core/AbstractClassGenerator*.class")
     }
 }

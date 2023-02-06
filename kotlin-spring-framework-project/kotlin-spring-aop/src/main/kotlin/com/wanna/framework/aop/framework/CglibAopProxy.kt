@@ -2,11 +2,11 @@ package com.wanna.framework.aop.framework
 
 import com.wanna.framework.aop.ReflectiveMethodInvocation
 import com.wanna.framework.cglib.core.SpringNamingPolicy
+import com.wanna.framework.cglib.proxy.Enhancer
+import com.wanna.framework.cglib.proxy.MethodInterceptor
+import com.wanna.framework.cglib.proxy.MethodProxy
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
-import net.sf.cglib.proxy.Enhancer
-import net.sf.cglib.proxy.MethodInterceptor
-import net.sf.cglib.proxy.MethodProxy
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
