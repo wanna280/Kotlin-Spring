@@ -47,7 +47,7 @@ tasks.getByName<Jar>("jar") {
         exclude("com/wanna/framework/cglib/proxy/CallbackFilter*.class")
         exclude("com/wanna/framework/cglib/proxy/Factory*.class")
 
-        exclude("com/wanna/framework/cglib/proxy/Callback.class"  // 这里别加*, 会导致干掉太多类
+        exclude("com/wanna/framework/cglib/proxy/Callback.class")  // 这里别加*, 会导致干掉太多类
         exclude("com/wanna/framework/cglib/proxy/NoOp.class")  // 这里别加*, 会导致干掉太多类
 
         exclude("com/wanna/framework/cglib/core/ReflectUtils*.class")
