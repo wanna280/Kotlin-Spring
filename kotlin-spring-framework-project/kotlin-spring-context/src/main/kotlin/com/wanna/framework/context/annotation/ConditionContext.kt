@@ -4,22 +4,50 @@ import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.io.ResourceLoader
+import javax.annotation.Nullable
 
 /**
- * 这是一个用来判断Condition的相关上下文环境
+ * 为[Condition]去进行条件匹配时, 需要用到的上下文环境信息
  *
  * @see Conditional
  * @see Condition
  */
 interface ConditionContext {
 
+    /**
+     * 获取[BeanDefinitionRegistry]
+     *
+     * @return BeanDefinitionRegistry
+     */
     fun getRegistry(): BeanDefinitionRegistry
 
+
+    /**
+     * 获取[ConfigurableListableBeanFactory]
+     *
+     * @return BeanFactory
+     */
+    @Nullable
     fun getBeanFactory(): ConfigurableListableBeanFactory?
 
+    /**
+     * 获取[Environment]
+     *
+     * @return Environment
+     */
     fun getEnvironment(): Environment
 
-    fun getClassLoader() : ClassLoader
+    /**
+     * 获取[ClassLoader]
+     *
+     * @return BeanClassLoader
+     */
+    fun getClassLoader(): ClassLoader
 
-    fun getResourceLoader() : ResourceLoader
+    /**
+     * 获取到用于资源加载的[ResourceLoader]
+     *
+     * @return ResourceLoader
+     */
+    fun getResourceLoader(): ResourceLoader
 }
