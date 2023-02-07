@@ -1,8 +1,7 @@
 package com.wanna.framework.core
 
-import com.wanna.framework.asm.SpringAsmInfo
+import com.wanna.framework.asm.*
 import com.wanna.framework.util.ClassUtils
-import org.objectweb.asm.*
 import java.io.IOException
 import java.lang.reflect.Constructor
 import java.lang.reflect.Executable
@@ -24,6 +23,7 @@ open class LocalVariableTableParameterNameDiscoverer : ParameterNameDiscoverer {
         /**
          * 标识没有任何的debug info的Flag, 代码当中没有debug info, 自然也就无法从局部变量表当中去进行参数的获取
          */
+        @JvmStatic
         private val NO_DEBUG_INFO_MAP = emptyMap<Executable, Array<String>>()
     }
 

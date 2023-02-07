@@ -1,10 +1,9 @@
 package com.wanna.framework.core.type.classreading
 
-import com.wanna.framework.asm.SpringAsmInfo
 import com.wanna.framework.core.type.ClassMetadata
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
-import org.objectweb.asm.*
+import com.wanna.framework.asm.*
 
 /**
  * 基于ASM的方式去提供ClassMetadata的读取的Visitor

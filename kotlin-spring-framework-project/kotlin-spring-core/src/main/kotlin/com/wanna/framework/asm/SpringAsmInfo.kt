@@ -1,6 +1,5 @@
 package com.wanna.framework.asm
 
-import org.objectweb.asm.Opcodes
 
 /**
  * Spring使用的ASM的信息

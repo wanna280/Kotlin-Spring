@@ -1,7 +1,6 @@
 package com.wanna.boot.loader.tools
 
-import com.wanna.framework.asm.SpringAsmInfo
-import org.objectweb.asm.*
+import com.wanna.framework.asm.*
 import java.io.File
 import java.io.FileFilter
 import java.io.FileInputStream
@@ -117,6 +116,7 @@ object MainClassFinder {
      * @param prefix root目录, 需要去进行去掉的前缀
      * @return 计算得到的className
      */
+    @JvmStatic
     private fun convertToClassName(name: String, prefix: String): String {
         var nameToUse = name
 
@@ -140,6 +140,7 @@ object MainClassFinder {
      * @param inputStream ".class"文件的输入流
      * @return 基于ASM的方式去计算得到的类的元信息(计算失败, return null)
      */
+    @JvmStatic
     @Nullable
     private fun createClassDescriptor(inputStream: InputStream): ClassDescriptor? {
         try {

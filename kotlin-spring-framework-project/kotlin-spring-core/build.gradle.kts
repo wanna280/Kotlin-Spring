@@ -59,5 +59,6 @@ tasks.getByName<Jar>("jar") {
         exclude("com/wanna/framework/cglib/core/ReflectUtils*.class")
         exclude("com/wanna/framework/cglib/core/ClassGenerator.class")
         exclude("com/wanna/framework/cglib/core/AbstractClassGenerator*.class")
+        exclude("com/wanna/framework/asm/**")
     }
 }
