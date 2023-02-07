@@ -9,6 +9,8 @@ dependencies {
 
     implementation(project(":kotlin-spring-cloud-project:kotlin-spring-cloud-context"))
     implementation(project(":kotlin-spring-cloud-project:kotlin-spring-cloud-common"))
+
+    implementation("org.slf4j:slf4j-api:$slf4jApiVersion")
     implementation("com.alibaba.nacos:nacos-client:$nacosClientVersion")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // jackson
 

@@ -4,7 +4,6 @@ dependencies {
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-core"))
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-aop"))
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-beans"))
-    implementation("cglib:cglib:$cglibVersion")
 
     // for compile
     compileOnly(project(":kotlin-spring-framework-project:kotlin-spring-instrument"))  // compileOnly

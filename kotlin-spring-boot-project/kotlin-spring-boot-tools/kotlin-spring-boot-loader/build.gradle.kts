@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
-    id("com.github.johnrengelman.shadow") version ("6.1.0")
+    id("com.github.johnrengelman.shadow") version (shadowJarVersion)
 }
 
 // ShadowJar这个任务, 默认会将所有的Jar包都解压, 得到最终的一个大的Jar包(archiveFileName=kotlin-spring-boot-loader-1.0-SNAPSHOT-all.jar)
