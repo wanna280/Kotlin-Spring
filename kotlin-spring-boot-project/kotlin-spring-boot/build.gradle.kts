@@ -8,6 +8,7 @@ dependencies {
 
     // compileOnly
     compileOnly(project(":kotlin-spring-framework-project:kotlin-spring-web"))
+    compileOnly("org.apache.httpcomponents:httpclient:$apacheHttpClientVersion")  // apache httpcomponents
     compileOnly("javax.servlet:javax.servlet-api:$servletApiVersion") // servlet-api
     compileOnly("org.apache.tomcat.embed:tomcat-embed-core:$tomcatCoreVersion") // tomcat-core
     compileOnly("ch.qos.logback:logback-classic:$logbackVersion")  // logback
