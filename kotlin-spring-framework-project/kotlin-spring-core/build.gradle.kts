@@ -40,18 +40,24 @@ tasks.getByName<Jar>("jar") {
     val kotlinSpringCglibRepackJar = tasks.getByName<ShadowJar>("kotlinSpringCglibRepackJar")
     dependsOn(kotlinSpringCglibRepackJar)
     from(zipTree(kotlinSpringCglibRepackJar.archiveFile.get().asFile.absolutePath)) {
-        include("com/wanna/**")
+
+        // include "com/wanna/framework/**"
+        include("com/wanna/framework/**")
+
+        // Note: 下面加"*"是为了除掉一些内部类
+
         exclude("com/wanna/framework/cglib/proxy/Enhancer*.class")
         exclude("com/wanna/framework/cglib/proxy/MethodProxy*.class")
-        exclude("com/wanna/framework/cglib/proxy/MethodInterceptor*.class")
-        exclude("com/wanna/framework/cglib/proxy/CallbackFilter*.class")
-        exclude("com/wanna/framework/cglib/proxy/Factory*.class")
+        exclude("com/wanna/framework/cglib/proxy/MethodInterceptor.class")
+        exclude("com/wanna/framework/cglib/proxy/CallbackFilter.class")
+        exclude("com/wanna/framework/cglib/proxy/Factory.class")
 
-        exclude("com/wanna/framework/cglib/proxy/Callback.class")  // 这里别加*, 会导致干掉太多类
-        exclude("com/wanna/framework/cglib/proxy/NoOp.class")  // 这里别加*, 会导致干掉太多类
+        exclude("com/wanna/framework/cglib/proxy/Callback.class")
+        exclude("com/wanna/framework/cglib/proxy/NoOp$*.class")
+        exclude("com/wanna/framework/cglib/proxy/NoOp.class")
 
         exclude("com/wanna/framework/cglib/core/ReflectUtils*.class")
-        exclude("com/wanna/framework/cglib/core/ClassGenerator*.class")
+        exclude("com/wanna/framework/cglib/core/ClassGenerator.class")
         exclude("com/wanna/framework/cglib/core/AbstractClassGenerator*.class")
     }
 }
