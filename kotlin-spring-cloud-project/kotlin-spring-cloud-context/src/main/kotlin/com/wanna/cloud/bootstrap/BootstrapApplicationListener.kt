@@ -1,12 +1,12 @@
 package com.wanna.cloud.bootstrap
 
-import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.boot.ApplicationType
 import com.wanna.boot.Banner
 import com.wanna.boot.SpringApplication
 import com.wanna.boot.builder.SpringApplicationBuilder
 import com.wanna.boot.context.event.ApplicationEnvironmentPreparedEvent
 import com.wanna.framework.beans.factory.ListableBeanFactory
+import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
@@ -82,7 +82,7 @@ open class BootstrapApplicationListener : ApplicationListener<ApplicationEnviron
         // 用来进行Bootstrap的Map, 当做Bootstrap的PropertySource
         val bootstrapMap = HashMap<String, Any>()
         bootstrapMap["spring.config.name"] = configName  // configName
-        bootstrapMap["spring.main.web-application-type"] = "none"  // webType
+        bootstrapMap["spring.main.application-type"] = "NONE"  // webType
 
         // 从Root Environment当中去解析cloud的配置文件的路径...并入到Bootstrap的PropertySources当中去
         // 因为Bootstrap的相关的ApplicationListener在解析过程当中, 确实有可能需要用到这些属性
@@ -102,8 +102,11 @@ open class BootstrapApplicationListener : ApplicationListener<ApplicationEnviron
         environment.getPropertySources().forEach(bootstrapProperties::addLast)
 
         // 构建Bootstrap的SpringApplicationBuilder...并且替换掉默认的BootstrapEnvironment, 因为如果是使用别的类型(比如reactive)将会失败....
-        val builder = SpringApplicationBuilder().bannerMode(Banner.Mode.NO)
-            .web(ApplicationType.NONE).logStartupInfo(false).environment(bootstrapEnvironment)
+        val builder = SpringApplicationBuilder()
+            .bannerMode(Banner.Mode.NO)
+            .web(ApplicationType.NONE)
+            .logStartupInfo(false)
+            .environment(bootstrapEnvironment)
 
         // 如果Builder推断不出来MainApplicationClass, 那么需要将Root Application的mainApplicationClass设置进去...
         if (builder.getMainApplicationClass() == null) {
