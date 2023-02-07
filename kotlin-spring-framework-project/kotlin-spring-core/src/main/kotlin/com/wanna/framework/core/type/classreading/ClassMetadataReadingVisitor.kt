@@ -1,9 +1,9 @@
 package com.wanna.framework.core.type.classreading
 
+import com.wanna.framework.asm.*
 import com.wanna.framework.core.type.ClassMetadata
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
-import com.wanna.framework.asm.*
 
 /**
  * 基于ASM的方式去提供ClassMetadata的读取的Visitor
@@ -131,39 +131,42 @@ open class ClassMetadataReadingVisitor : ClassVisitor(SpringAsmInfo.ASM_VERSION)
         // no-op
     }
 
+    @Nullable
     override fun visitField(
         access: Int,
         name: String?,
         descriptor: String?,
         signature: String?,
         value: Any?
-    ): FieldVisitor {
+    ): FieldVisitor? {
         // no-op
         return EmptyFieldVisitor()
     }
 
+    @Nullable
     override fun visitMethod(
         access: Int,
         name: String,
         descriptor: String,
         signature: String?,
-        @Nullable exceptions: Array<out String>?
-    ): MethodVisitor {
+        @Nullable exceptions: Array<String>?
+    ): MethodVisitor? {
         // no-op
         return EmptyMethodVisitor()
     }
 
+    @Nullable
     override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor? {
         // no-op
         return EmptyAnnotationVisitor()
     }
 
 
-    override fun visitSource(source: String?, debug: String?) {
+    override fun visitSource(@Nullable source: String?, @Nullable debug: String?) {
         // no-op
     }
 
-    override fun visitAttribute(attribute: Attribute?) {
+    override fun visitAttribute(@Nullable attribute: Attribute?) {
         // no-op
     }
 
@@ -171,7 +174,7 @@ open class ClassMetadataReadingVisitor : ClassVisitor(SpringAsmInfo.ASM_VERSION)
      * 空操作的AnnotationVisitor
      */
     private class EmptyAnnotationVisitor : AnnotationVisitor(SpringAsmInfo.ASM_VERSION) {
-        override fun visitAnnotation(name: String?, descriptor: String?): AnnotationVisitor = this
+        override fun visitAnnotation(@Nullable name: String?, @Nullable descriptor: String?): AnnotationVisitor = this
         override fun visitArray(name: String?): AnnotationVisitor = this
     }
 

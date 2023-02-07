@@ -4,13 +4,15 @@ import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinit
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 
 /**
- * 注解版的Scope的解析器, 解析@Scope注解当中的相关环境, 并封装成为ScopeMetadata
+ * 注解版的Scope的解析器, 解析`@Scope`注解当中的相关环境, 并封装成为[ScopeMetadata]
  *
  * @see Scope
  * @see ScopeMetadataResolver
+ *
+ * @param defaultProxyMode 默认的ScopeMode
  */
-open class AnnotationScopeMetadataResolver(val defaultProxyMode: ScopedProxyMode) : ScopeMetadataResolver {
-    constructor() : this(ScopedProxyMode.NO)
+open class AnnotationScopeMetadataResolver @JvmOverloads constructor(private val defaultProxyMode: ScopedProxyMode = ScopedProxyMode.NO) :
+    ScopeMetadataResolver {
 
     /**
      * Scope注解
