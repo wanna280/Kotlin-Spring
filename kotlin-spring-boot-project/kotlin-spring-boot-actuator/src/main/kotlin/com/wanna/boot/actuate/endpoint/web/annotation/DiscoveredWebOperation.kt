@@ -7,8 +7,6 @@ import com.wanna.boot.actuate.endpoint.invoke.OperationInvoker
 import com.wanna.boot.actuate.endpoint.invoke.reflect.OperationMethod
 import com.wanna.boot.actuate.endpoint.web.WebOperation
 import com.wanna.boot.actuate.endpoint.web.WebOperationRequestPredicate
-import java.lang.StringBuilder
-import java.lang.reflect.Method
 import java.lang.reflect.Parameter
 
 open class DiscoveredWebOperation(
@@ -18,8 +16,10 @@ open class DiscoveredWebOperation(
     private val invoker: OperationInvoker
 ) : WebOperation {
 
-    // OperationId
-    private var id: String = getId(endpointId, operationMethod)
+    /**
+     * OperationId
+     */
+    private val id: String = getId(endpointId, operationMethod)
 
     /**
      * 获取该Operation的Id, 根据endpointId和方法参数名去进行拼接
@@ -76,7 +76,7 @@ open class DiscoveredWebOperation(
     private fun dashName(parameter: Parameter): String = "-" + parameter.name
 
     /**
-     * 判断目标方法上是否有@Selector注解? 
+     * 判断目标方法上是否有@Selector注解?
      *
      * @param parameter 要匹配@Selector注解的方法参数
      * @return 如果该方法参数有@Selector注解, 那么return true, 否则return false
