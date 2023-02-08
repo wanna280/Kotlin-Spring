@@ -17,7 +17,7 @@ interface MethodMatcher {
          * 对于方法匹配直接返回True的实例
          */
         @JvmField
-        val TRUE = TrueMethodMatcher.INSTANCE
+        val TRUE = TrueMethodMatcher
     }
 
     /**

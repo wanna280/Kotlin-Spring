@@ -11,9 +11,11 @@ import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
 /**
- * 基于Cglib的动态代理, 需要使用基于ASM技术去实现的Enhancer去进行创建代理
+ * 基于Cglib的动态代理, 需要使用基于ASM技术去实现的[Enhancer]去进行创建代理
  *
  * @param config AdvisedSupport, 维护了代理需要用到的相关的各个组件
+ *
+ * @see Enhancer
  */
 open class CglibAopProxy(private val config: AdvisedSupport) : AopProxy {
     override fun getProxy(): Any {
@@ -76,18 +78,15 @@ open class CglibAopProxy(private val config: AdvisedSupport) : AopProxy {
     ) : ReflectiveMethodInvocation(
         proxy, target, method, args, targetClass, interceptorsAndDynamicMethodMatchers
     ) {
-        private var methodProxy: MethodProxy? = null
-
-        init {
-
-            // 如果是不是Object类的方法才使用methodProxy去进行执行
-            this.methodProxy =
-                if (Modifier.isPublic(method.modifiers) && !ReflectionUtils.isObjectMethod(method)) methodProxy else null
-        }
+        /**
+         * 如果是不是Object类的方法才使用methodProxy去进行执行
+         */
+        private val methodProxy =
+            if (Modifier.isPublic(method.modifiers) && !ReflectionUtils.isObjectMethod(method)) methodProxy else null
 
         override fun invokeJoinpoint(): Any? {
             return if (methodProxy != null) {
-                methodProxy!!.invoke(this.getTarget(), this.getArguments())
+                methodProxy.invoke(this.getTarget(), this.getArguments())
             } else {
                 super.invokeJoinpoint()
             }

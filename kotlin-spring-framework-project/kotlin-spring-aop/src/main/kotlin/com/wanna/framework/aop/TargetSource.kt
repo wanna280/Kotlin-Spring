@@ -1,5 +1,7 @@
 package com.wanna.framework.aop
 
+import com.wanna.framework.lang.Nullable
+
 /**
  * 这是对Target对象的来源进行提供的方式, 是对执行代理方法的target对象的来源的抽象,
  * 对于普通的代理来说, 一般使用单例的TargetSource即可
@@ -21,6 +23,7 @@ interface TargetSource {
      *
      * @return targetClass
      */
+    @Nullable
     fun getTargetClass(): Class<*>?
 
     fun isStatic(): Boolean
@@ -30,6 +33,7 @@ interface TargetSource {
      *
      * @return target
      */
+    @Nullable
     fun getTarget(): Any?
 
     /**
@@ -37,5 +41,5 @@ interface TargetSource {
      *
      * @param target target
      */
-    fun releaseTarget(target: Any?)
+    fun releaseTarget(@Nullable target: Any?)
 }

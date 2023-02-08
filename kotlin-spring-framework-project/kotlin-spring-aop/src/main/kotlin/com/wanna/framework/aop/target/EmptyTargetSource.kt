@@ -1,30 +1,22 @@
 package com.wanna.framework.aop.target
 
 import com.wanna.framework.aop.TargetSource
+import com.wanna.framework.lang.Nullable
 
 /**
- * 这是一个空的TargetSource
+ * 空的TargetSource单例对象
+ *
+ * @see TargetSource
  */
-open class EmptyTargetSource : TargetSource {
+object EmptyTargetSource : TargetSource {
 
-    companion object {
-        @JvmField
-        val INSTANCE = EmptyTargetSource()
-    }
+    @Nullable
+    override fun getTargetClass(): Class<*>? = null
 
-    override fun getTargetClass(): Class<*>? {
-        return null
-    }
+    override fun isStatic(): Boolean = false
 
-    override fun isStatic(): Boolean {
-        return false
-    }
+    @Nullable
+    override fun getTarget(): Any? = null
 
-    override fun getTarget(): Any? {
-        return null
-    }
-
-    override fun releaseTarget(target: Any?) {
-
-    }
+    override fun releaseTarget(@Nullable target: Any?) {}
 }
