@@ -18,19 +18,27 @@ open class AdvisedSupport : ProxyConfig(), Advised {
 
     companion object {
         @JvmField
-        val EMPTY_TARGET_SOURCE = EmptyTargetSource.INSTANCE
+        val EMPTY_TARGET_SOURCE = EmptyTargetSource
     }
 
-    // 这是一个构建SpringAOP的拦截器链的工厂
+    /**
+     * 这是一个构建SpringAOP的拦截器链的工厂
+     */
     private var advisorChainFactory = DefaultAdvisorChainFactory()
 
-    // targetSource
+    /**
+     * targetSource
+     */
     private var targetSource: TargetSource = EMPTY_TARGET_SOURCE
 
-    // 接口列表
+    /**
+     * 接口列表
+     */
     private val interfaces: MutableList<Class<*>> = ArrayList()
 
-    // Advisor列表
+    /**
+     * Advisor列表
+     */
     private val advisors: MutableList<Advisor> = ArrayList()
 
     open fun setTargetSource(targetSource: TargetSource?) {
@@ -71,6 +79,8 @@ open class AdvisedSupport : ProxyConfig(), Advised {
 
     /**
      * 获取TargetSource
+     *
+     * @return TargetSource
      */
     open fun getTargetSource(): TargetSource {
         return this.targetSource

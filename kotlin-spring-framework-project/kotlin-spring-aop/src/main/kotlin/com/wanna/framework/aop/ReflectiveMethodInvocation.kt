@@ -17,10 +17,14 @@ open class ReflectiveMethodInvocation(
     private val interceptorsAndDynamicMethodMatchers: List<Any>
 ) : ProxyMethodInvocation {
 
-    // 用户自定义属性, 为了减少不必要的内存占用, 不进行初始化
+    /**
+     * 用户自定义属性(为了减少不必要的内存占用, 不进行初始化)
+     */
     private var userAttributes: MutableMap<String, Any>? = null
 
-    // 当前的拦截器索引index, 初始化为-1, 每执行一次, index++
+    /**
+     * 当前的拦截器索引index, 初始化为-1, 每执行一次, index++
+     */
     private var currentInterceptorIndex = -1
 
     override fun getProxy(): Any {
