@@ -2,6 +2,8 @@ package com.wanna.boot.context.properties
 
 import com.wanna.boot.context.properties.bind.Bindable
 import com.wanna.framework.aop.support.AopUtils
+import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
@@ -10,9 +12,11 @@ import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.validation.annotation.Validated
 import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Method
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * 这是对标注了`！ConfigurationProperties`注解的一个Bean的相关信息去进行的封装
@@ -129,11 +133,49 @@ open class ConfigurationPropertiesBean(
             if (applicationContext.containsBeanDefinition(beanName) && applicationContext is ConfigurableApplicationContext) {
                 val definition = applicationContext.getBeanFactory().getMergedBeanDefinition(beanName)
                 if (definition is RootBeanDefinition) {
-                    return definition.getResolvedFactoryMethod()
+                    val factoryMethod = definition.getResolvedFactoryMethod()
+                    if (factoryMethod != null) {
+                        return factoryMethod
+                    }
                 }
-                return null
+
+                // fixed: fallback to use reflection to find factory method
+                // 有些时候, 对于FactoryMethod在这里还没完成解析, 我们得有一个fallback逻辑, 尝试使用反射的方式去进行寻找
+                // 因为触发时机太早了, 但是我们不能放弃FactoryMethod的寻找, 我们在这里去进行fallback, 使用反射的方式去进行寻找
+                return findFactoryMethodUsingReflection(definition, applicationContext.getBeanFactory())
             }
             return null
+        }
+
+        /**
+         * fallback的寻找FactoryMethod的方式, 我们可以使用反射的方式, 去为给定的[BeanDefinition]对应的Bean, 去寻找到合适的FactoryMethod
+         *
+         * @param beanDefinition BeanDefinition
+         * @param beanFactory BeanFactory
+         * @return 寻找到的合适的FactoryMethod(可能寻找不到合适的FactoryMethod, 为null)
+         */
+        @Nullable
+        private fun findFactoryMethodUsingReflection(
+            beanDefinition: BeanDefinition,
+            beanFactory: ConfigurableListableBeanFactory
+        ): Method? {
+            val factoryBeanName = beanDefinition.getFactoryBeanName() ?: return null
+            val factoryMethodName = beanDefinition.getFactoryMethodName() ?: return null
+
+            // 解析@Bean方法所在的类beanClass
+            var factoryType = beanFactory.getType(factoryBeanName)!!
+            if (factoryType.name.contains(ClassUtils.CGLIB_CLASS_SEPARATOR)) {
+                factoryType = factoryType.superclass
+            }
+
+            // 从beanClass的所有的方法当中去进行寻找
+            val factoryMethod = AtomicReference<Method?>()
+            ReflectionUtils.doWithMethods(factoryType) {
+                if (it.name == factoryMethodName) {
+                    factoryMethod.set(it)
+                }
+            }
+            return factoryMethod.get()
         }
 
         /**

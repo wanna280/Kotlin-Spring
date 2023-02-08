@@ -19,8 +19,8 @@ import com.wanna.framework.core.annotation.AliasFor
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 annotation class ConfigurationProperties(
-    @get:AliasFor("value")
+    @get:AliasFor("prefix", annotation = ConfigurationProperties::class)
+    val value: String = "",
+    @get:AliasFor("value", annotation = ConfigurationProperties::class)
     val prefix: String = "",
-    @get:AliasFor("prefix")
-    val value: String = ""
 )
