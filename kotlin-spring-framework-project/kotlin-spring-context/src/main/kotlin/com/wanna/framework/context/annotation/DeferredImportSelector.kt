@@ -25,7 +25,7 @@ interface DeferredImportSelector : ImportSelector {
     interface Group {
 
         /**
-         * 对于给定的AnnotationMetadata和DeferredImportSelector去进行处理
+         * 对于给定的[AnnotationMetadata]和[DeferredImportSelector]去进行处理
          *
          * @param metadata AnnotationMetadata
          * @param selector DeferredImportSelector
