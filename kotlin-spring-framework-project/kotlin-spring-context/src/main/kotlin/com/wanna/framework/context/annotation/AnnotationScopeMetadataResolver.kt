@@ -23,7 +23,7 @@ open class AnnotationScopeMetadataResolver @JvmOverloads constructor(private val
         if (definition is AnnotatedBeanDefinition) {
             val attributes = definition.getMetadata().getAnnotations().get(scopeAnnotationType)
             if (attributes.present) {
-                val scopeName = attributes.getString("scopeName")
+                val scopeName = attributes.getString("value")  // getValue
                 var proxyMode = attributes.getEnum("proxyMode", ScopedProxyMode::class.java)
                 if (proxyMode == ScopedProxyMode.DEFAULT) {
                     proxyMode = defaultProxyMode
