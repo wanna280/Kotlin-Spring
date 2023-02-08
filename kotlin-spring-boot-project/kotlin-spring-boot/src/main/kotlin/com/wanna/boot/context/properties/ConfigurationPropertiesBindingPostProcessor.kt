@@ -2,13 +2,14 @@ package com.wanna.boot.context.properties
 
 import com.wanna.framework.beans.factory.InitializingBean
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
+import com.wanna.framework.beans.factory.config.BeanPostProcessor
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.GenericBeanDefinition
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
-import com.wanna.framework.beans.factory.config.BeanPostProcessor
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.PriorityOrdered
+import javax.annotation.Nullable
 
 /**
  * 这是一个处理@ConfigurationPropertie的绑定的BeanPostProcessor, 它负责根据解析@ConfigurationProperties注解
@@ -28,7 +29,7 @@ open class ConfigurationPropertiesBindingPostProcessor : BeanPostProcessor, Appl
         val BEAN_NAME: String = ConfigurationPropertiesBindingPostProcessor::class.java.name
 
         /**
-         * (1)将[ConfigurationPropertiesBindingPostProcessor]注册到SpringBeanFactory当中; 
+         * (1)将[ConfigurationPropertiesBindingPostProcessor]注册到SpringBeanFactory当中;
          * (2)将[ConfigurationPropertiesBinder]注册到SpringBeanFactory当中
          *
          * @param registry BeanDefinitionRegistry
@@ -47,6 +48,11 @@ open class ConfigurationPropertiesBindingPostProcessor : BeanPostProcessor, Appl
             ConfigurationPropertiesBinder.register(registry)
         }
     }
+
+    /**
+     * 优先级, 设置为最高的优先级, 保证它可以最早地去生效
+     */
+    override fun getOrder() = Ordered.ORDER_HIGHEST + 1
 
     /**
      * ApplicationContext
@@ -78,11 +84,12 @@ open class ConfigurationPropertiesBindingPostProcessor : BeanPostProcessor, Appl
     }
 
     /**
-     * 如果必要的话, 将解析完成的[ConfigurationPropertiesBean]的实例对象, 使用[ConfigurationPropertiesBinder]去进行完成属性绑定工作
+     * 如果必要的话, 将解析完成的[ConfigurationPropertiesBean]的实例对象,
+     * 使用[ConfigurationPropertiesBinder]去进行完成属性绑定工作
      *
      * @param bean ConfigurationPropertiesBean
      */
-    private fun bind(bean: ConfigurationPropertiesBean?) {
+    private fun bind(@Nullable bean: ConfigurationPropertiesBean?) {
         // 如果该Bean没有标注@ConfigurationProperties注解, 那么pass
         bean ?: return
         // 如果该Bean标注了@ConfigurationProperties注解, 那么把它注册到Binder当中
@@ -94,7 +101,7 @@ open class ConfigurationPropertiesBindingPostProcessor : BeanPostProcessor, Appl
     }
 
     /**
-     * 在初始化Bean时, 获取BeanDefinitionRegistry和ConfigurationPropertiesBinder
+     * 在初始化Bean时, 获取[BeanDefinitionRegistry]和[ConfigurationPropertiesBinder]完成属性初始化
      */
     override fun afterPropertiesSet() {
         this.registry = this.applicationContext.getAutowireCapableBeanFactory() as BeanDefinitionRegistry
@@ -109,9 +116,4 @@ open class ConfigurationPropertiesBindingPostProcessor : BeanPostProcessor, Appl
     override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext
     }
-
-    /**
-     * 优先级, 设置为最高的优先级, 保证它可以最早地去生效
-     */
-    override fun getOrder() = Ordered.ORDER_HIGHEST + 1
 }

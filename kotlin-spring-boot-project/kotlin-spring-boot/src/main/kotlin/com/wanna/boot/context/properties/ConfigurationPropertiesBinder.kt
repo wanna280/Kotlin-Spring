@@ -5,6 +5,7 @@ import com.wanna.boot.context.properties.bind.Binder
 import com.wanna.boot.context.properties.bind.PropertySourcesPlaceholdersResolver
 import com.wanna.boot.context.properties.source.ConfigurationPropertySource
 import com.wanna.boot.context.properties.source.ConfigurationPropertySources
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
@@ -15,7 +16,6 @@ import com.wanna.framework.context.support.PropertySourcesPlaceholderConfigurer
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.environment.ConfigurableEnvironment
 import com.wanna.framework.core.environment.PropertySources
-import com.wanna.common.logging.LoggerFactory
 
 /**
  * 这是一个ConfigurationProperties的Binder, 负责完成@ConfigurationProperties的绑定工作
@@ -46,6 +46,7 @@ open class ConfigurationPropertiesBinder @Autowired private constructor(private 
      * @param bean 要去进行绑定的ConfigurationPropertiesBean
      */
     open fun bindOrCreate(bean: ConfigurationPropertiesBean): Any? {
+        // Note: 这里的注解是经过merge进行合成的, prefix也可以获取到value属性
         return getBinder().bindOrCreate(bean.getAnnotation().prefix, bean.asTarget())
     }
 
@@ -56,6 +57,7 @@ open class ConfigurationPropertiesBinder @Autowired private constructor(private 
      * @return 绑定结果BindResult
      */
     open fun bind(bean: ConfigurationPropertiesBean): BindResult<Any> {
+        // Note: 这里的注解是经过merge进行合成的, prefix也可以获取到value属性
         return getBinder().bind(bean.getAnnotation().prefix, bean.asTarget())
     }
 

@@ -1,13 +1,17 @@
 package com.wanna.boot.context.properties
 
 import com.wanna.boot.context.properties.bind.Bindable
+import com.wanna.framework.aop.support.AopUtils
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.core.ResolvableType
+import com.wanna.framework.core.annotation.MergedAnnotation
+import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.validation.annotation.Validated
+import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Method
 
 /**
@@ -31,12 +35,12 @@ open class ConfigurationPropertiesBean(
 ) {
 
     /**
-     * 决定当前ConfigurationPropertiesBean的属性绑定方式, 是采用Setter的方式去进行注入还是使用构造器的方式去进行注入
+     * 决定当前[ConfigurationPropertiesBean]的属性绑定方式, 是采用Setter的方式去进行注入还是使用构造器的方式去进行注入
      */
     private val bindMethod = BindMethod.forType(bindTarget.type.resolve(Any::class.java))
 
     /**
-     * 获取ConfigurationPropertiesBean的BeanName
+     * 获取[ConfigurationPropertiesBean]的BeanName
      */
     open fun getName() = name
 
@@ -49,32 +53,35 @@ open class ConfigurationPropertiesBean(
 
     /**
      * 获取包装的Bean, 可以为null; 表示运行时在去进行实例化(构造器绑定方式)
+     *
+     * @return wrapped bean
      */
+    @Nullable
     open fun getInstance(): Any? = instance
 
     /**
-     * 获取@ConfigurationProperties注解信息
+     * 获取当前[ConfigurationPropertiesBean]上的[ConfigurationProperties]注解信息
      *
      * @return `@ConfigurationProperties`注解
      */
     open fun getAnnotation() = annotation
 
     /**
-     * 获取绑定方式, 是采用JavaBean的Setter还是构造器的方式去完成绑定? 
+     * 获取绑定方式, 是采用JavaBean的Setter还是构造器的方式去完成绑定?
      *
      * @return BindMethod(Setter/Constructor)
      */
     open fun getBindMethod() = bindMethod
 
     /**
-     * 获取ConfigurationPropertiesBean的BeanType
+     * 获取[ConfigurationPropertiesBean]的BeanType
      *
      * @return beanType of ConfigurationPropertiesBean
      */
     open fun getBeanType() = this.beanType
 
     /**
-     * 提供一些静态方法去进行ConfigurationPropertiesBean的构建
+     * 提供一些静态方法去进行[ConfigurationPropertiesBean]的构建
      */
     companion object {
         /**
@@ -93,8 +100,9 @@ open class ConfigurationPropertiesBean(
         }
 
         /**
-         * 为给定的ValueObject去创建[ConfigurationPropertiesBean], 主要是去解析给定的beanClass当中的@ConfigurationProperties注解;
-         * 对于ValueObject, 不可能从@Bean的FactoryMethod当中创建, 因此FactoryMethod=null; 对于ValueObject因为运行时才创建对象, 因此bean=null;
+         * 为给定的ValueObject去创建[ConfigurationPropertiesBean], 主要是去解析给定的beanClass当中的`@ConfigurationProperties`注解;
+         * 对于ValueObject, 不可能从@Bean的FactoryMethod当中创建, 因此FactoryMethod=null;
+         * 对于ValueObject因为运行时才创建对象, 因此bean=null;
          *
          * @param beanClass beanClass
          * @param beanName beanName
@@ -108,7 +116,7 @@ open class ConfigurationPropertiesBean(
         }
 
         /**
-         * 判断该Bean是否是通过FactoryMethod(@Bean方法)被导入进来的? 
+         * 判断该Bean是否是通过FactoryMethod(@Bean方法)被导入进来的?
          *
          * @param beanName beanName
          * @param applicationContext ApplicationContext
@@ -129,7 +137,7 @@ open class ConfigurationPropertiesBean(
         }
 
         /**
-         * 寻找@ConfigurationProperties注解, 如果必要的话创建ConfigurationPropertiesBean
+         * 从给定的Bean的类/方法上, 尝试去寻找`@ConfigurationProperties`注解, 如果必要的话创建一个[ConfigurationPropertiesBean]
          *
          * @param bean bean
          * @param beanName beanName
@@ -142,11 +150,11 @@ open class ConfigurationPropertiesBean(
         private fun create(
             beanName: String, @Nullable bean: Any?, beanClass: Class<*>, @Nullable factory: Method?
         ): ConfigurationPropertiesBean? {
-            // 从FactoryMethod/beanClass当中去检查@ConfigurationProperties注解
+            // 从FactoryMethod/beanClass当中去检查@ConfigurationProperties注解(经过merge)
             val annotation = findAnnotation(ConfigurationProperties::class.java, bean, beanClass, factory)
                 ?: return null
 
-            // 从FactoryMethod/beanClass当中去找一下@Validated注解
+            // 从FactoryMethod/beanClass当中去找一下@Validated注解(经过merge)
             val validated = findAnnotation(Validated::class.java, bean, beanClass, factory)
 
             // 构建绑定时, 需要用到的注解信息的列表
@@ -174,23 +182,46 @@ open class ConfigurationPropertiesBean(
          * @param instance 实例对象
          * @param type 要去进行寻找注解的类
          * @param factory 要去进行寻找注解的工厂方法
-         * @return 从factory/method上去找到了给定的注解的话, 就返回注解对象; 没有找到return null
+         * @return 从类/方法上去找到了给定的注解的话, 就返回合成之后得到的MergedAnnotation注解对象; 没有找到该类型的注解的话return null
          */
         @Nullable
         @JvmStatic
         private fun <A : Annotation> findAnnotation(
             annotationType: Class<A>, @Nullable instance: Any?, type: Class<*>, @Nullable factory: Method?
         ): A? {
-            var annotation: A? = null
+            var mergedAnnotation: MergedAnnotation<A> = MergedAnnotation.missing()
             // 1.从FactoryMethod(@Bean方法)当中去寻找该注解
             if (factory != null) {
-                annotation = factory.getAnnotation(annotationType)
+                mergedAnnotation = findMergedAnnotation(factory, annotationType)
             }
             // 2.去beanClass当中寻找该注解
-            if (annotation == null) {
-                annotation = type.getAnnotation(annotationType)
+            if (!mergedAnnotation.present) {
+                mergedAnnotation = findMergedAnnotation(type, annotationType)
             }
-            return annotation
+
+            // 3.如果当前是个AOP代理的对象, 那么尝试从parentClass当中去进行获取
+            if (!mergedAnnotation.present && AopUtils.isAopProxy(instance)) {
+                mergedAnnotation = findMergedAnnotation(AopUtils.getTargetClass(instance!!), annotationType)
+            }
+            return if (mergedAnnotation.present) mergedAnnotation.synthesize() else null
+        }
+
+        /**
+         * 从给定的[AnnotatedElement]上, 去进行注解的寻找, 构建得到[MergedAnnotation]去进行返回
+         *
+         * @param element 待寻找注解的元素(类/方法)
+         * @param annotationType 要去进行寻找的注解类型
+         * @return 从给定的目标类/方法上去寻找到的注解, 去进行Merge之后得到的[MergedAnnotation], 如果不存在该注解的话, 那么return [MergedAnnotation.missing]
+         */
+        @JvmStatic
+        private fun <A : Annotation> findMergedAnnotation(
+            @Nullable element: AnnotatedElement?,
+            annotationType: Class<A>
+        ): MergedAnnotation<A> {
+            element ?: return MergedAnnotation.missing()
+            return MergedAnnotations
+                .from(element, MergedAnnotations.SearchStrategy.TYPE_HIERARCHY)
+                .get(annotationType)
         }
     }
 
