@@ -11,6 +11,7 @@ import javax.annotation.meta.When
 @Target(
     AnnotationTarget.FUNCTION,
     AnnotationTarget.FIELD,
+    AnnotationTarget.VALUE_PARAMETER,
     AnnotationTarget.PROPERTY
 )
 @Nonnull(`when` = When.MAYBE)
