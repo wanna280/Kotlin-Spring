@@ -1,5 +1,13 @@
 package com.wanna.framework.util
 
+/**
+ * 多值Map的适配器, 为所有的子类去提供模板方法实现
+ *
+ * @param targetMap 承载数据的最终Map
+ *
+ * @param K keyType
+ * @param V valueType
+ */
 open class MultiValueMapAdapter<K, V>(private val targetMap: MutableMap<K, MutableList<V>>) : MultiValueMap<K, V> {
 
     override fun getFirst(key: K): V? {

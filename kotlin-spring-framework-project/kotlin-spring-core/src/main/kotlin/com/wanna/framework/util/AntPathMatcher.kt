@@ -17,20 +17,15 @@ import java.util.regex.Pattern
  *
  * @see PathMatcher
  *
- * @param pathSeparator 路径分隔符, 默认为null
+ * @param pathSeparator 路径的分隔符, 默认采用"/"去进行分隔
  */
-open class AntPathMatcher(@Nullable pathSeparator: String? = null) : PathMatcher {
+open class AntPathMatcher @JvmOverloads constructor(@Nullable pathSeparator: String? = null) : PathMatcher {
     companion object {
         /**
          * 默认的路径分隔符
          */
         const val DEFAULT_PATH_SEPARATOR = "/"
     }
-
-    /**
-     * 提供一个无参数的构造器, 对于路径的分隔符, 则采用"/"去进行分隔
-     */
-    constructor() : this(null)
 
     /**
      * 路径的分隔符, 默认为"/"
