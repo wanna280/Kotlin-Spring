@@ -1,6 +1,7 @@
 package com.wanna.framework.core.annotation
 
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ObjectUtils
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.util.StringUtils
 import java.lang.reflect.Method
@@ -536,8 +537,32 @@ class AnnotationTypeMapping(
                     val attribute = attributes[this.indexes[i]]
                     val value = valueExtractor.extract(attribute, annotation)
 
-                    // TODO
+                    // 如果该注解属性是默认值的话, 那么需要跳过当前的属性
+                    // 比如prefix和value互相为镜像, 如果prefix="xxx", value="",
+                    // 那么此时如果已经初始化过prefix, 此时又遇到了value=""的话, 那么value我们应该跳过...
+                    val isDefaultValue = value == null || isEquivalentToDefaultValue(attribute, value, valueExtractor)
+                    if (isDefaultValue || ObjectUtils.nullSafeEquals(lastValue, value)) {
 
+                        // 如果之前还没完成过result初始化的话, 那么暂时使用默认值去进行初始化
+                        if (result == -1) {
+                            result = indexes[i]
+                        }
+                        continue
+                    }
+
+                    // 如果多个镜像的注解属性的属性值不相同的话, 肯定不允许这种情况发生, 丢出去异常
+                    // 比如一个注解当中, prefix和value互相为镜像, 但是prefix="xxx", value="yyy", 那么就应该丢出来异常, 不允许这样的方式去进行配置
+                    if (lastValue != null && !ObjectUtils.nullSafeEquals(lastValue, value)) {
+                        val on = if (source == null) "" else " declared on $source"
+                        throw AnnotationConfigurationException(
+                            String.format(
+                                "Different @AliasFor mirror values for annotation [%s]%s; attribute '%s' " +
+                                        "and its alias '%s' are declared with values of [%s] and [%s].",
+                                annotationType.name, on, attributes[result].name, attribute.name,
+                                ObjectUtils.nullSafeToString(lastValue), ObjectUtils.nullSafeToString(value)
+                            )
+                        )
+                    }
                     result = this.indexes[i]
                     lastValue = value
                 }
@@ -546,4 +571,99 @@ class AnnotationTypeMapping(
             }
         }
     }
+
+
+    companion object {
+        /**
+         * 检查给定的[value], 是否是给定的[attribute]属性的默认值?
+         *
+         * @param attribute 注解属性
+         * @param value 待进行匹配的注解属性值
+         * @param valueExtractor 注解的属性值的提取器
+         * @return  如果value和attribute方法的默认值相等, return true; 否则return false
+         */
+        @JvmStatic
+        private fun isEquivalentToDefaultValue(
+            attribute: Method,
+            @Nullable value: Any?,
+            valueExtractor: ValueExtractor
+        ): Boolean {
+            return areEquivalent(attribute.defaultValue, value, valueExtractor)
+        }
+
+        /**
+         * 检查给定的两个属性值, 是否相同?
+         */
+        @JvmStatic
+        @Suppress("UNCHECKED_CAST")
+        private fun areEquivalent(
+            @Nullable value: Any?,
+            @Nullable extractedValue: Any?,
+            valueExtractor: ValueExtractor
+        ): Boolean {
+
+            // 如果两个对象引用相等/equals, 那么直接return true
+            if (ObjectUtils.nullSafeEquals(value, extractedValue)) {
+                return true
+            }
+
+            // 如果value是Class, extractedValue是String的话, 那么可以需要尝试使用className去进行匹配一下
+            if (value is Class<*> && extractedValue is String) {
+                return areEquivalent(value, extractedValue)
+            }
+
+            // 如果value是Class[], extractedValue是String[]的话, 那么同样可以需要尝试使用className去进行匹配一下
+            if (value is Array<*> && value.isArrayOf<Class<*>>() && extractedValue is Array<*> && extractedValue.isArrayOf<String>()) {
+                return areEquivalent(value as Array<Class<*>>, extractedValue as Array<String>)
+            }
+
+            // 如果value是一个注解的话, 那么...
+            if (value is Annotation) {
+                return areEquivalent(value, extractedValue, valueExtractor)
+            }
+            return false
+        }
+
+        @JvmStatic
+        private fun areEquivalent(
+            annotation: Annotation,
+            @Nullable extractedValue: Any?,
+            valueExtractor: ValueExtractor
+        ): Boolean {
+            val attributes = AttributeMethods.forAnnotationType(annotation.annotationClass.java)
+            for (i in 0..attributes.size) {
+                val attribute = attributes[i]
+                val value1 = AnnotationUtils.invokeAnnotationMethod(attribute, annotation)
+                val value2: Any?
+                if (extractedValue is TypeMappedAnnotation<*>) {
+                    value2 = extractedValue.getValue(attribute.name).or(null)
+                } else {
+                    value2 = valueExtractor.extract(attribute, extractedValue)
+                }
+                if (!areEquivalent(value1, value2, valueExtractor)) {
+                    return false
+                }
+            }
+            return true
+        }
+
+        @JvmStatic
+        private fun areEquivalent(clazzArray: Array<Class<*>>, stringArray: Array<String>): Boolean {
+            if (clazzArray.size != stringArray.size) {
+                return false
+            }
+            for (index in clazzArray.indices) {
+                if (!areEquivalent(clazzArray[index], stringArray[index])) {
+                    return false
+                }
+            }
+            return true
+        }
+
+        @JvmStatic
+        private fun areEquivalent(clazz: Class<*>, name: String): Boolean {
+            return clazz.name == name
+        }
+    }
+
 }
