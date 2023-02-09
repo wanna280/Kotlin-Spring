@@ -33,9 +33,9 @@ import java.util.*
  * 这是一个SpringApplication的启动类, 交由它去进行引导整个SpringApplication的启动
  *
  * @param resourceLoader 资源加载器, 提供资源的加载
- * @param primarySources 启动类列表
+ * @param primarySources 需要使用的主启动类列表
  */
-open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg primarySources: Class<*>) {
+open class SpringApplication(@Nullable private var resourceLoader: ResourceLoader?, vararg primarySources: Class<*>) {
     companion object {
 
         /**
@@ -159,26 +159,22 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 提供一个不用ResourceLoader的构造器, 只去指定primarySources
+     * 提供一个不用特殊去指定[ResourceLoader]的构造器, 只去指定primarySources即可
      *
      * @param primarySources 主启动类
      */
-    constructor(vararg primarySources: Class<*>) : this(null as ResourceLoader?, *primarySources)
-
-    /**
-     * 提供一个无参数构造器
-     */
-    constructor() : this(primarySources = emptyArray())
+    @JvmOverloads
+    constructor(vararg primarySources: Class<*> = emptyArray()) : this(null as ResourceLoader?, *primarySources)
 
     /**
      * primarySources
      */
-    private var primarySources: MutableSet<Class<*>> = LinkedHashSet(primarySources.toList())
+    private var primarySources = LinkedHashSet(primarySources.toList())
 
     /**
      * sources
      */
-    private var sources: MutableCollection<Any> = LinkedHashSet()
+    private var sources = LinkedHashSet<Any>()
 
     /**
      * Application的监听器列表
@@ -767,8 +763,10 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
     }
 
     /**
-     * 如果SpringApplication配置了Environment, 那么使用自定义的Environment;
-     * 如果没有配置Environment, 那么就根据applicationType去新创建一个Environment对象
+     * 如果[SpringApplication]有去进行手动配置了[Environment], 那么使用自定义的[Environment],
+     * 如果没有配置自定义的[Environment], 那么就根据applicationType去新创建一个[Environment]对象
+     *
+     * @return Environment
      */
     private fun getOrCreateEnvironment(): ConfigurableEnvironment {
         if (this.environment != null) {
@@ -777,7 +775,7 @@ open class SpringApplication(private var resourceLoader: ResourceLoader?, vararg
         return when (applicationType) {
             ApplicationType.NONE -> StandardEnvironment()
             ApplicationType.SERVLET -> StandardServletEnvironment()
-            ApplicationType.MVC -> StandardEnvironment()
+            ApplicationType.MVC -> StandardMvcEnvironment()
         }
     }
 

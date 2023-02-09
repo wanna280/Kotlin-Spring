@@ -37,7 +37,9 @@ enum class ApplicationType {
         private const val DISPATCHER_HANDLER_MARKER = "com.wanna.framework.web.DispatcherHandler"
 
         /**
-         * 从ClassPath当中去推断应用的类型
+         * 从ClassPath当中去推断当前应用的类型
+         *
+         * @return ApplicationType
          */
         @JvmStatic
         fun deduceFromClassPath(): ApplicationType {
