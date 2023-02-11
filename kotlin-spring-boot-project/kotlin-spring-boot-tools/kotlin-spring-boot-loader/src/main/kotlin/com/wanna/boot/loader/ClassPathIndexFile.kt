@@ -13,15 +13,16 @@ import javax.annotation.Nullable
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/9/26
+ *
  * @param root RootFile
- * @param _lines 文件当中的行的列表(需要经过转换)
+ * @param lines 文件当中的行的列表(需要经过转换)
  */
-class ClassPathIndexFile(val root: File, _lines: List<String>) {
+class ClassPathIndexFile(private val root: File, lines: List<String>) {
 
     /**
      * 对每一行的数据去进行转换
      */
-    private val lines: List<String> = _lines.map(this::extractName)
+    private val lines: List<String> = lines.map(this::extractName)
 
     /**
      * 将ClassPathIndexFile当中的一行去提取成为Jar包的Name

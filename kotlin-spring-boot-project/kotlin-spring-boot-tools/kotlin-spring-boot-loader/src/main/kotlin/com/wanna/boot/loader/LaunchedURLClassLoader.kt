@@ -6,6 +6,7 @@ import java.io.IOException
 import java.net.URL
 import java.net.URLClassLoader
 import java.util.*
+import javax.annotation.Nullable
 
 /**
  * SpringBoot当中用于去加载SpringBoot应用当中的相关的类的ClassLoader
@@ -21,7 +22,8 @@ open class LaunchedURLClassLoader(
     parent: ClassLoader
 ) : URLClassLoader(urls, parent) {
 
-    override fun findResource(name: String?): URL? {
+    @Nullable
+    override fun findResource(name: String): URL? {
         if (exploded) {
             return super.findResource(name)
         }
@@ -34,7 +36,7 @@ open class LaunchedURLClassLoader(
     }
 
     @Throws(IOException::class)
-    override fun findResources(name: String?): Enumeration<URL> {
+    override fun findResources(name: String): Enumeration<URL> {
         if (exploded) {
             return super.findResources(name)
         }
@@ -46,12 +48,11 @@ open class LaunchedURLClassLoader(
         }
     }
 
-    override fun loadClass(name: String?): Class<*> {
-        name ?: throw IllegalStateException("className不能为null")
+    override fun loadClass(name: String): Class<*> {
         Handler.setUseFastConnectionExceptions(true)
         try {
             return super.loadClass(name)
-        }finally {
+        } finally {
             Handler.setUseFastConnectionExceptions(false)
         }
     }
