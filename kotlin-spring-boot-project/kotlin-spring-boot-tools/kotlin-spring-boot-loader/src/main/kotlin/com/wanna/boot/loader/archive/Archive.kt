@@ -7,12 +7,15 @@ import java.net.URL
 import java.util.jar.Manifest
 
 /**
- * 用于描述一个Java的归档文件(比如Jar包/Zip包), 它能支持被Launcher去进行启动
+ * 用于描述一个Java的归档文件(比如Jar包/Zip包), 它能支持被Launcher去进行引导和启动
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/9/26
+ *
  * @see Launcher
+ * @see JarFileArchive
+ * @see ExplodedArchive
  */
 interface Archive : Iterable<Archive.Entry> {
 
@@ -57,21 +60,20 @@ interface Archive : Iterable<Archive.Entry> {
      */
     fun getNestedArchives(searchFilter: EntryFilter, includeFilter: EntryFilter): Iterator<Archive>
 
+    /**
+     * 描述的是Jar/War包当中的一个文件/文件夹, 称为一个Entry, 也就是对应的JarFile当中的JarEntry
+     */
     interface Entry {
 
         /**
          * 判断当前的Entry是否是一个目录?
-         *
-         * @return 如果当前Entry是一个目录, 那么return true; 否则return false
          */
-        fun isDirectory(): Boolean
+        val isDirectory: Boolean
 
         /**
-         * 获取当前Entry的Name
-         *
-         * @return 当前Entry的Name
+         * 当前Entry的name
          */
-        fun getName(): String
+        val name: String
     }
 
     /**

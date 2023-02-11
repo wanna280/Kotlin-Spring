@@ -3,14 +3,16 @@ package com.wanna.boot.loader
 import com.wanna.boot.loader.archive.Archive
 import com.wanna.boot.loader.archive.ExplodedArchive
 import java.net.URL
+import javax.annotation.Nullable
 
 /**
- * 所有的可执行的Java归档文件的启动器的基础类,
- * 它的子类包括[JarLauncher]和[WarLauncher]等这些实现类
+ * 所有的可执行的Java归档文件(Archive)的启动器的基础类,
+ * 它的实现类主要包括[JarLauncher]和[WarLauncher]等几种类型
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/9/26
+ *
  * @see JarLauncher
  * @see WarLauncher
  */
@@ -61,6 +63,7 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
      * @param archive 需要用来去获取ClassPathIndex的归档文件
      * @return ClassPathIndexFile
      */
+    @Nullable
     protected open fun getClassPathIndex(archive: Archive): ClassPathIndexFile? {
         // 只有ExplodedArchive, 才需要去加载ClassPathIndexFile
         return if (archive is ExplodedArchive) {
@@ -100,7 +103,7 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
      * @return 如果该归档文件匹配的话, return true; 否则return false
      */
     protected open fun isSearchCandidate(entry: Archive.Entry): Boolean =
-        entry.getName().startsWith(getArchiveEntryPathPrefix())
+        entry.name.startsWith(getArchiveEntryPathPrefix())
 
     /**
      * 检查给定的ArchiveEntry是否是一个嵌套的归档文件?
@@ -133,7 +136,7 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
     }
 
     /**
-     * 对ClassPath下搜索的嵌套归档文件去进行后置处理
+     * 对ClassPath下搜索的嵌套归档文件去进行后置处理, 模板方法, 子类可以通过这个方法去进行一些额外的添加/删除
      *
      * @param archives 搜索得到的归档文件的列表
      */
@@ -148,7 +151,7 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
      * @return 如果它在ClassPathIndex当中, 那么return true; 否则return false
      */
     protected open fun isEntryIndexed(entry: Archive.Entry): Boolean =
-        classPathIndex?.containsEntry(entry.getName()) ?: false
+        classPathIndex?.containsEntry(entry.name) ?: false
 
     /**
      * 重写父类的创建ClassLoader的逻辑
@@ -193,6 +196,15 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
      * @return 需要去进行搜索Archive归档文件的Entry的路径前缀
      */
     abstract fun getArchiveEntryPathPrefix(): String
+
+    /**
+     * 检查当前Launcher所引导的Archive应用是否是一个解压缩的归档文件
+     *
+     * @return 如果所引导的Archive是War Exploded类型的Archive, return true; 不然return false
+     */
+    override fun isExploded(): Boolean {
+        return this.archive.isExploded()
+    }
 
     /**
      * 获取MainClass, 从Manifest当中去进行获取到"Start-Class"属性,

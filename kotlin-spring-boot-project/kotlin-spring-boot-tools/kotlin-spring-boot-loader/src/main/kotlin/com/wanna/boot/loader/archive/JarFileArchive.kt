@@ -119,7 +119,7 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
         try {
             return JarFileArchive(jarFile.getNestedJarFile(jarEntry))
         } catch (ex: Exception) {
-            throw IllegalStateException("无法根据给定的entry[${entry.getName()}]去创建JarFile", ex)
+            throw IllegalStateException("无法根据给定的entry[${entry.name}]去创建JarFile", ex)
         }
     }
 
@@ -245,6 +245,7 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
          *
          * @return 如果找到了符合条件的元素, 那么return Entry; 否则return null
          */
+        @Nullable
         private fun poll(): Archive.Entry? {
             while (iterator.hasNext()) {
                 val entry = JarFileEntry(iterator.next())
@@ -273,8 +274,8 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
      */
     private inner class NestedArchiveIterator(
         iterator: Iterator<JarEntry>,
-        searchFilter: Archive.EntryFilter?,
-        includeFilter: Archive.EntryFilter?
+        @Nullable searchFilter: Archive.EntryFilter?,
+        @Nullable includeFilter: Archive.EntryFilter?
     ) : AbstractIterator<Archive>(iterator, searchFilter, includeFilter) {
         override fun adapt(entry: Archive.Entry) = getNestedArchive(entry)
     }
@@ -300,7 +301,7 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
      * @param jarEntry JarEntry
      */
     private class JarFileEntry(val jarEntry: JarEntry) : Archive.Entry {
-        override fun isDirectory(): Boolean = jarEntry.isDirectory
-        override fun getName(): String = jarEntry.name
+        override val isDirectory: Boolean = jarEntry.isDirectory
+        override val name: String = jarEntry.name
     }
 }

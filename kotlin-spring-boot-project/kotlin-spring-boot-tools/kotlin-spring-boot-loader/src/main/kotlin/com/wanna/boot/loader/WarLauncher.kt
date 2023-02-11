@@ -27,8 +27,8 @@ open class WarLauncher : ExecutableArchiveLauncher() {
      * @return 它是否是一个合格的嵌套Archive?
      */
     override fun isNestedArchive(entry: Archive.Entry) =
-        if (entry.isDirectory()) entry.getName() == "WEB-INF/classes/" else
-            entry.getName().startsWith("WEB-INF/lib/") || entry.getName().startsWith("WEB-INF/lib-provided/")
+        if (entry.isDirectory) entry.name == "WEB-INF/classes/" else
+            entry.name.startsWith("WEB-INF/lib/") || entry.name.startsWith("WEB-INF/lib-provided/")
 
     companion object {
         /**

@@ -27,7 +27,7 @@ open class JarLauncher : ExecutableArchiveLauncher() {
      * @return 它是否是一个合格的嵌套Archive?
      */
     override fun isNestedArchive(entry: Archive.Entry) =
-        if (entry.isDirectory()) entry.getName() == "BOOT-INF/classes/" else entry.getName().startsWith("BOOT-INF/lib/")
+        if (entry.isDirectory) entry.name == "BOOT-INF/classes/" else entry.name.startsWith("BOOT-INF/lib/")
 
     companion object {
         /**
