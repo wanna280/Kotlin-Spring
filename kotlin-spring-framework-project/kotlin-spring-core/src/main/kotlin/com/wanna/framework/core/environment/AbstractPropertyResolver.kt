@@ -17,7 +17,7 @@ import com.wanna.framework.util.SystemPropertyUtils
 abstract class AbstractPropertyResolver : ConfigurablePropertyResolver {
 
     /**
-     * 占位符的前缀(本来应该使用${, 但是Kotlin当中有自己的${, 这里改用%{去进行替代)
+     * 占位符的前缀
      */
     private var placeholderPredix = SystemPropertyUtils.PLACEHOLDER_PREFIX
 

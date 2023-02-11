@@ -63,7 +63,7 @@ open class RemoteClientConfiguration {
          */
         @Bean
         open fun classPathChangeUploader(
-            @Value("%{remoteUrl}") remoteUrl: String,
+            @Value("${'$'}{remoteUrl}") remoteUrl: String,
             clientHttpRequestFactory: ClientHttpRequestFactory
         ): ClassPathChangeUploader {
             val url = remoteUrl + properties.remote.contextPath + "/restart"

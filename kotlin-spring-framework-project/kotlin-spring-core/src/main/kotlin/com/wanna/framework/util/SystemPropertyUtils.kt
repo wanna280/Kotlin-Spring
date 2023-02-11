@@ -9,9 +9,18 @@ package com.wanna.framework.util
  */
 object SystemPropertyUtils {
 
-    const val PLACEHOLDER_PREFIX = "%{"
+    /**
+     * 占位符前缀'${'
+     */
+    const val PLACEHOLDER_PREFIX = "${'$'}{"
 
+    /**
+     * 占位符后缀'}'
+     */
     const val PLACEHOLDER_SUFFIX = "}"
 
+    /**
+     * 占位符的值分隔符':'
+     */
     const val VALUE_SEPARATOR = ":"
 }

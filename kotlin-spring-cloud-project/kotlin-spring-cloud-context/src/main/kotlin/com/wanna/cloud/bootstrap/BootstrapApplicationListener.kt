@@ -54,7 +54,7 @@ open class BootstrapApplicationListener : ApplicationListener<ApplicationEnviron
 
         // 从Root Environment当中去解析Bootstrap容器的配置文件名, 默认值为bootstrap(此时因为比较早期, application配置文件还没加载, 只能通过命令行参数等方式去进行配置)
         // 也就是说支持从bootstrap.yaml/bootstrap.properties等配置文件当中的内容去进行加载, 并放入到Environment当中
-        val configName = environment.resolvePlaceholders("%{spring.cloud.bootstrap.name:bootstrap}")!!
+        val configName = environment.resolvePlaceholders("${'$'}{spring.cloud.bootstrap.name:bootstrap}")!!
 
         // 构建&刷新Bootstrap容器ApplicationContext, 并将得到的环境(Environment)和Root容器的环境(Environment)去进行合并...
         val context = bootstrapServiceContext(environment, event.application, configName)
@@ -112,8 +112,8 @@ open class BootstrapApplicationListener : ApplicationListener<ApplicationEnviron
 
         // 从Root Environment当中去解析cloud的配置文件的路径...并merge到Bootstrap容器Environment的PropertySources当中去
         // 因为Bootstrap容器相关的ApplicationListener在解析过程当中, 确实有可能需要用到这些属性去进行配置文件的加载
-        val cloudConfigLocation = environment.resolvePlaceholders("%{spring.cloud.bootstrap.location:}")
-        val additionConfigLocation = environment.resolvePlaceholders("%{spring.cloud.bootstrap.additional-location:}")
+        val cloudConfigLocation = environment.resolvePlaceholders("${'$'}{spring.cloud.bootstrap.location:}")
+        val additionConfigLocation = environment.resolvePlaceholders("${'$'}{spring.cloud.bootstrap.additional-location:}")
         if (StringUtils.hasText(cloudConfigLocation)) {
             bootstrapMap["spring.config.location"] = cloudConfigLocation!!
         }

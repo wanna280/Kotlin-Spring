@@ -13,7 +13,7 @@ import java.util.*
 @EnableAspectJAutoProxy
 class App() {
 
-    @Value("%{java.version}")
+    @Value("${'$'}{java.version}")
     val value: String? = null
 
     @Bean

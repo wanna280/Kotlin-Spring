@@ -33,7 +33,7 @@ open class RibbonClientConfiguration : EnvironmentAware {
 
     private var environment: Environment? = null
 
-    @Value("%{ribbon.client.name}")
+    @Value("${'$'}{ribbon.client.name}")
     private var clientName: String = "client"
 
     /**

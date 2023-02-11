@@ -43,16 +43,16 @@ open class NacosConfigProperties {
         val environment = this.environment
         if (environment != null) {
             this.serverAddr =
-                environment.resolvePlaceholders("%{spring.cloud.nacos.config.serverAddr:$DEFAULT_SERVER_ADDR}")!!
-            this.prefix = environment.resolvePlaceholders("%{spring.cloud.nacos.config.prefix:}")!!
+                environment.resolvePlaceholders("${'$'}{spring.cloud.nacos.config.serverAddr:$DEFAULT_SERVER_ADDR}")!!
+            this.prefix = environment.resolvePlaceholders("${'$'}{spring.cloud.nacos.config.prefix:}")!!
             this.group =
-                environment.resolvePlaceholders("%{spring.cloud.nacos.config.group:$DEFAULT_NACOS_GROUP}")!!
+                environment.resolvePlaceholders("${'$'}{spring.cloud.nacos.config.group:$DEFAULT_NACOS_GROUP}")!!
             this.timeout =
-                environment.resolvePlaceholders("%{spring.cloud.nacos.config.timeout:$DEFAULT_TIMEOUT}")!!.toLong()
+                environment.resolvePlaceholders("${'$'}{spring.cloud.nacos.config.timeout:$DEFAULT_TIMEOUT}")!!.toLong()
             this.fileExtension =
-                environment.resolveRequiredPlaceholders("%{spring.cloud.nacos.config.fileExtension:$DEFAULT_FILE_EXTENSION}")
-            this.username = environment.resolveRequiredPlaceholders("%{spring.cloud.nacos.config.username:}")
-            this.password = environment.resolveRequiredPlaceholders("%{spring.cloud.nacos.config.password:}")
+                environment.resolveRequiredPlaceholders("${'$'}{spring.cloud.nacos.config.fileExtension:$DEFAULT_FILE_EXTENSION}")
+            this.username = environment.resolveRequiredPlaceholders("${'$'}{spring.cloud.nacos.config.username:}")
+            this.password = environment.resolveRequiredPlaceholders("${'$'}{spring.cloud.nacos.config.password:}")
         }
         val properties = Properties()
         properties["serverAddr"] = this.serverAddr
