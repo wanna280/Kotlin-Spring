@@ -17,7 +17,21 @@ import java.util.regex.Pattern
 import javax.annotation.Nullable
 
 /**
- * 基于Properties配置文件的方式去对应用去进行启动的[Launcher]
+ * 基于Properties裂行配置文件的方式去对应用去进行启动的[Launcher], 用户可以在Properties文件当中去指定
+ * 存放Archive归档文件(JAR/WAR)的classpath以及应用程序的主启动类mainClass
+ *
+ * 使用这种方式去进行启动应用, 相比于基于一个可执行的JAR包的方式, 可以变得更加灵活和可控.
+ *
+ * 当前的[Launcher]支持在一个".properties"配置文件当中去配置Loader的相关配置信息, 默认是在当前的classpath下
+ * 和当前的工作目录下去进行寻找"loader.properties"配置文件去进行启动. 如果想要去进行自定义配置文件的文件名,
+ * 那么也可以使用"loader.config.name"系统属性去进行自定义, 例如通过下面这样的VM参数"-Dloader.config.name=xxx",
+ * 即可让配置文件变成xxx, 这样当前的[Launcher]就可以去寻找"xxx.properties"去作为启动的相关配置信息.
+ *
+ * 通过"loader.path"属性, 可以配置一些使用","去进行分隔的一系列目录, 这些目录下的文件资源或者是"*.jar"/".zip"当中的嵌套的Archive,
+ * 也都会被添加到classpath当中去, 对于"BOOT-INF/classes/"和"BOOT-INF/lib/"目录, 通常情况下, 都是会启用的.
+ *
+ * 通过"loader.main"属性, 用于去配置一个用于程序的启动的主启动类(必须包含有main方法), 如果没有配置"loader.main"属性的话,
+ * 那么将会从尝试"MANIFEST.MF"文件当中去提取"Start-Class"属性去作为主启动类.
  *
  * @author jianchao.jia
  * @version v1.0
@@ -111,40 +125,43 @@ open class PropertiesLauncher : Launcher() {
     }
 
     /**
-     * HomeDirectory, 可以通过"loader.home"去进行指定, 默认为"user.dir"用户家目录
+     * Loader的工作目录(HomeDirectory), 可以通过"loader.home"去进行指定, 默认为"user.dir"用户家目录
      */
     private val home: File
 
     /**
-     * 存放相关配置信息的Properties
+     * 存放相关配置信息的Properties(默认是从"loader.properties"去加载得到)
      */
     private val properties = Properties()
 
     /**
-     * paths
+     * paths, 维护了需要去进行加载的类的路径列表, 其实就是用户自定义的classpath, 可以通过"loader.path"去进行配置
      */
     private var paths: List<String> = ArrayList<String>()
 
+    /**
+     * parent Archive
+     */
     private val parent: Archive
 
     /**
-     * ClassPath Archives
+     * ClassPath下的Archive归档文件列表
      */
     @Nullable
     private var classPathArchives: ClassPathArchives? = null
 
-
     init {
         try {
-
-            // 1.初始化Launcher的HomeDirectory
+            // 1.初始化Loader的HomeDirectory
             this.home = this.getHomeDirectory()
 
             // 2.加载Loader的.properties配置文件
             initializeProperties()
 
-            // 3.初始化Paths
+            // 3.初始化Paths, 找到用户需要去进行加载的类的来源的目录
             initializePaths()
+
+            // 4.创建parent Archive
             this.parent = super.createArchive()
         } catch (ex: Exception) {
             throw IllegalStateException(ex)
@@ -197,7 +214,7 @@ open class PropertiesLauncher : Launcher() {
 
 
     /**
-     * 获取到Loader的Home目录
+     * 获取到Loader的Home工作目录
      *
      * * 1.如果有指定"loader.home"系统属性的话, 那么使用该属性值去作为HomeDirectory
      * * 2.如果没有指定"loader.home"系统属性的话, 那么使用"user.dir"属性值(用户家目录)去作为HomeDirectory
@@ -213,6 +230,9 @@ open class PropertiesLauncher : Launcher() {
         }
     }
 
+    /**
+     * 初始化Loader要去进行加载的类的路径
+     */
     private fun initializePaths() {
         val path = getProperty(LOADER_PATH)
         if (path != null) {
@@ -221,13 +241,25 @@ open class PropertiesLauncher : Launcher() {
         debug("Nested archive paths: $paths")
     }
 
+    /**
+     * 将用户给定的使用","去进行分割的自定义的路径列表, 去解析成为列表
+     *
+     * @param commaSeparatedPaths 使用","去分隔的多个路径
+     * @return 使用","去拆分得到的路径列表
+     */
     private fun parsePathsProperty(commaSeparatedPaths: String): List<String> {
         val paths = ArrayList<String>()
+
+        // 对于用户给定的所有的路径去进行拆分
         for (path in commaSeparatedPaths.split(",")) {
             var pathToUse = cleanupPath(path)
+
+            // 如果path=""的话, 说明需要使用root目录("/")
             pathToUse = pathToUse.ifBlank { "/" }
             paths += pathToUse
         }
+
+        // 如果没有结果的话, 那么将lib目录去作为要去进行加载的路径
         if (paths.isEmpty()) {
             paths += "lib"
         }
