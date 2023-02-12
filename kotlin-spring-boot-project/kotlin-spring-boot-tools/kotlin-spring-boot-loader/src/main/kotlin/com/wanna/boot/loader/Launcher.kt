@@ -6,6 +6,7 @@ import com.wanna.boot.loader.archive.JarFileArchive
 import com.wanna.boot.loader.jar.JarFile
 import java.io.File
 import java.net.URL
+import javax.annotation.Nullable
 
 /**
  * 用于启动整个应用的Launcher启动器
@@ -151,6 +152,7 @@ abstract class Launcher {
      *
      * @return Archive归档文件对象
      */
-    protected abstract fun getArchive(): Archive
+    @Nullable
+    protected open fun getArchive(): Archive? = null
 
 }

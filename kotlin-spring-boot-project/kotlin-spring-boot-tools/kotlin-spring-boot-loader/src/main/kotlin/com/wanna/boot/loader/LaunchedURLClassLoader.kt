@@ -14,13 +14,20 @@ import javax.annotation.Nullable
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/9/26
+ *
+ * @param exploded 是否是一个WarExploded的Archive?
+ * @param archive Archive
+ * @param urls 需要去进行加载的URL列表
+ * @param parent parentClassLoader
  */
 open class LaunchedURLClassLoader(
-    val exploded: Boolean,
-    val archive: Archive,
-    val urls: Array<URL>,
+    private val exploded: Boolean,
+    @Nullable private val archive: Archive?,
+    private val urls: Array<URL>,
     parent: ClassLoader
 ) : URLClassLoader(urls, parent) {
+
+    constructor(urls: Array<URL>, parent: ClassLoader) : this(false, null, urls, parent)
 
     @Nullable
     override fun findResource(name: String): URL? {

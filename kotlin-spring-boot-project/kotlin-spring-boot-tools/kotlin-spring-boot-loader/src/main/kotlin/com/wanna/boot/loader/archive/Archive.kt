@@ -17,7 +17,7 @@ import java.util.jar.Manifest
  * @see JarFileArchive
  * @see ExplodedArchive
  */
-interface Archive : Iterable<Archive.Entry> {
+interface Archive : Iterable<Archive.Entry>, AutoCloseable {
 
     /**
      * 获取当前归档文件的URL
@@ -45,9 +45,9 @@ interface Archive : Iterable<Archive.Entry> {
     fun isExploded(): Boolean = false
 
     /**
-     * 如果必要的话, 需要去释放当前归档文件相关的资源
+     * 如果必要的话, 需要去释放当前Archive归档文件相关的资源
      */
-    fun close() {
+    override fun close() {
         // do something...
     }
 
