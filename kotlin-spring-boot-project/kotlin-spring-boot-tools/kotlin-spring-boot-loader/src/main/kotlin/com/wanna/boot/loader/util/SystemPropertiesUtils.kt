@@ -1,6 +1,5 @@
 package com.wanna.boot.loader.util
 
-import com.wanna.boot.loader.util.SystemPropertiesUtils.PlaceholderResolver
 import java.util.*
 import javax.annotation.Nullable
 
@@ -93,7 +92,7 @@ object SystemPropertiesUtils {
     }
 
     /**
-     * 给定一个[Properties], 从[Properties]当中去获取属性, 去完成最终的占位符解析
+     * 从SystemProperties以及给定的[Properties]当中去获取属性, 去完成对给定的文本的占位符解析
      *
      * @param text 要去进行解析的目标占位符文本
      * @param properties 要解析的占位符的属性来源
@@ -102,7 +101,11 @@ object SystemPropertiesUtils {
      */
     @JvmStatic
     fun replacePlaceholder(text: String, properties: Properties): String {
-        return replacePlaceholder(text, properties::getProperty)
+        // 1.优先从SystemProperties当中去进行获取
+        // 2.fallback从给定的Properties当中去进行获取
+        return replacePlaceholder(text) {
+            getProperty(it) ?: properties.getProperty(it)
+        }
     }
 
     /**
@@ -116,19 +119,6 @@ object SystemPropertiesUtils {
     @JvmStatic
     fun replacePlaceholder(text: String, placeholderResolver: PlaceholderResolver): String {
         return parseStringValue(text, placeholderResolver, LinkedHashSet())
-    }
-
-    /**
-     * 解析占位符, 本来需要传入的是一个PlaceholderResolver, 为了能直接提供一个Kotlin函数引用, 在这里使用适配器模式去做一层适配
-     *
-     * @param text 要去进行解析的目标占位符文本
-     * @param placeholderResolver 占位符解析的策略接口, 从哪获取属性的回调方法?
-     * @return 解析完成的占位符
-     * @see parseStringValue
-     */
-    @JvmStatic
-    fun replacePlaceholder(text: String, placeholderResolver: (String) -> String?): String {
-        return replacePlaceholder(text, PlaceholderResolver { placeholderResolver.invoke(it) })
     }
 
     /**

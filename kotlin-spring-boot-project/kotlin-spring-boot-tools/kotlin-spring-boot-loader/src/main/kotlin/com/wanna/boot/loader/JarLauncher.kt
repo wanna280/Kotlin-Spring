@@ -10,7 +10,6 @@ import com.wanna.boot.loader.archive.Archive
  * @date 2022/9/26
  */
 open class JarLauncher : ExecutableArchiveLauncher() {
-
     /**
      * 对于Jar包启动的方式, 需要去进行搜索的归档文件的Entry的前缀为"BOOT-INF/",
      * 只有这样的Entry, 才是我们需要去进行搜索的Entry
@@ -26,10 +25,19 @@ open class JarLauncher : ExecutableArchiveLauncher() {
      * @param entry 待匹配的ArchiveEntry
      * @return 它是否是一个合格的嵌套Archive?
      */
-    override fun isNestedArchive(entry: Archive.Entry) =
-        if (entry.isDirectory) entry.name == "BOOT-INF/classes/" else entry.name.startsWith("BOOT-INF/lib/")
+    override fun isNestedArchive(entry: Archive.Entry) = NESTED_ARCHIVE_ENTRY_FILTER.matches(entry)
+
 
     companion object {
+
+        /**
+         * 对于嵌套的Archive归档文件的SearchFilter
+         */
+        @JvmField
+        val NESTED_ARCHIVE_ENTRY_FILTER = Archive.EntryFilter { entry ->
+            if (entry.isDirectory) entry.name == "BOOT-INF/classes/" else entry.name.startsWith("BOOT-INF/lib/")
+        }
+
         /**
          * Main方法, 用于启动整个Jar包的应用, 它会被Java应用自动回调到
          *
