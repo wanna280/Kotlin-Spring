@@ -4,28 +4,32 @@ import com.wanna.framework.util.PropertyPlaceholderHelper.PlaceholderResolver
 import java.util.*
 
 /**
- * 这是一个属性值的占位符的解析器的工具类, 可以用它完成占位符的解析
+ * 属性值的占位符的解析器的工具类, 可以用它完成占位符的解析
+ *
+ * @param prefix 占位符前缀
+ * @param suffix 占位符后缀
+ * @param valueSeparator 默认值的分隔符
  *
  * @see PlaceholderResolver
  */
-open class PropertyPlaceholderHelper(
+open class PropertyPlaceholderHelper @JvmOverloads constructor(
     private val prefix: String, private val suffix: String, private val valueSeparator: String? = null
 ) {
-    // 简单前缀, 如果是"${}"则为"{", 如果是"%[]"则为"[", 如果是"%()"则为"("
+    /**
+     * 简单前缀, 如果是"${}"则为"{", 如果是"$[]"则为"[", 如果是"$()"则为"("
+     */
     private val simplePrefix = wellKnownSimplePrefix[suffix] ?: prefix
 
     companion object {
-        // 已经知道的简单前缀
-        private val wellKnownSimplePrefix = HashMap<String, String>(3)
-        init {
-            wellKnownSimplePrefix["}"] = "{"
-            wellKnownSimplePrefix["]"] = "]"
-            wellKnownSimplePrefix[")"] = "("
-        }
+        /**
+         * 已经明确知道的简单前缀
+         */
+        @JvmStatic
+        private val wellKnownSimplePrefix = mapOf("}" to "{", "]" to "[", ")" to "(")
     }
 
     /**
-     * 给定一个Properties, 从Properties当中去获取属性, 去完成最终的占位符解析
+     * 给定一个[Properties], 从[Properties]当中去获取属性, 去完成最终的占位符解析
      *
      * @param text 要去进行解析的目标占位符文本
      * @param properties 要解析的占位符的属性来源
@@ -57,9 +61,7 @@ open class PropertyPlaceholderHelper(
      * @see parseStringValue
      */
     open fun replacePlaceholder(text: String, placeholderResolver: (String) -> String?): String {
-        return replacePlaceholder(text, object : PlaceholderResolver {
-            override fun resolvePlaceholder(text: String) = placeholderResolver.invoke(text)
-        })
+        return replacePlaceholder(text, PlaceholderResolver { placeholderResolver.invoke(it) })
     }
 
     /**
@@ -180,7 +182,14 @@ open class PropertyPlaceholderHelper(
      * 这是一个策略接口, 它是一个占位符的解析器Resolver, 完成属性值的获取, 通过key去获取value的方式;
      * 供外部为占位符的解析去提供属性的来源的回调方法
      */
-    interface PlaceholderResolver {
+    fun interface PlaceholderResolver {
+
+        /**
+         * 执行占位符的解析
+         *
+         * @param text 待解析的占位符
+         * @return 解析占位符的结果
+         */
         fun resolvePlaceholder(text: String): String?
     }
 
