@@ -144,7 +144,7 @@ open class ExplodedArchive @JvmOverloads constructor(private val root: File, pri
          * 当前正在处理的[FileEntry]
          */
         @Nullable
-        private var current: FileEntry? = poll()
+        private var current: FileEntry? = null
 
         /**
          * 维护遍历所有的文件的栈, 提供对于内部的文件的迭代, 采用BFS的方式去进行迭代和处理
@@ -154,6 +154,9 @@ open class ExplodedArchive @JvmOverloads constructor(private val root: File, pri
         init {
             // 初始化对象时, 先给栈当中去放入一些root目录下的文件列表
             stack.add(listFiles(root))
+
+            // fixed: 在这里去进行poll, 避免产生poll时, stack还未完成初始化工作
+            this.current = poll()
         }
 
         /**
@@ -188,7 +191,9 @@ open class ExplodedArchive @JvmOverloads constructor(private val root: File, pri
         private fun poll(): FileEntry? {
             while (stack.isNotEmpty()) {
                 while (stack.peek().hasNext()) {
-                    val file = stack.poll().next()
+
+                    // fixed: 在这个循环当中遍历的都是stack.peek元素, 不应该使用poll
+                    val file = stack.peek().next()
 
                     // 如果是fileName"."或者是"..", 那么跳过
                     if (SKIPPED_NAMES.contains(file.name)) {

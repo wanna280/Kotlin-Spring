@@ -378,7 +378,8 @@ open class PropertiesLauncher : Launcher() {
 
         // 再次尝试, 从Properties当中去进行getProperty
         if (properties.containsKey(propertyKey)) {
-            val value = SystemPropertiesUtils.resolvePlaceholders(properties, propertyKey)
+            val property = properties.getProperty(propertyKey)
+            val value = SystemPropertiesUtils.resolvePlaceholders(properties, property)
             debug("Property '$propertyKey' from properties '$value'")
             return value
         }
@@ -614,7 +615,8 @@ open class PropertiesLauncher : Launcher() {
      * @param message message
      */
     private fun debug(message: String) {
-        if (getProperty(LOADER_DEBUG) == "true") {
+        // Note: 这里只能使用System.getProperty, 不然会导致无限递归导致SOF
+        if (System.getProperty(LOADER_DEBUG) == "true") {
             println(message)
         }
     }
