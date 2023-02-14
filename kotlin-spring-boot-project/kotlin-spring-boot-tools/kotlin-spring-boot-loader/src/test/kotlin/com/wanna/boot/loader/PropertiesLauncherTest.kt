@@ -20,6 +20,7 @@ class PropertiesLauncherTest {
 
 fun useSystemProperties() {
     System.setProperty("loader.main", "com.wanna.boot.loader.PropertiesLauncherTest")
+    System.setProperty("loader.classLoader", "com.wanna.boot.loader.PropertiesLauncherClassLoader")
     PropertiesLauncher.main()
 }
 

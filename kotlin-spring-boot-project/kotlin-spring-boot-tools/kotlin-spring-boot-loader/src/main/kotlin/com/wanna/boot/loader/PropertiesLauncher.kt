@@ -66,7 +66,7 @@ open class PropertiesLauncher : Launcher() {
         private val NO_PARAMS = emptyArray<Class<*>>()
 
         /**
-         * 当前是否是Debug程序
+         * 当前是否是Debug程序, 在Debug的情况下, 可以输出引导应用启动过程当中, 输出的更多的日志信息
          */
         private const val LOADER_DEBUG = "loader.debug"
 
@@ -76,12 +76,12 @@ open class PropertiesLauncher : Launcher() {
         const val LOADER_MAIN = "loader.main"
 
         /**
-         * Loader要使用的ClassLoader
+         * Loader要使用的自定义的ClassLoader, 不使用自定义ClassLoader的话, 直接使用Launcher所创建的[LaunchedURLClassLoader]即可
          */
         private const val LOADER_CLASSLOADER = "loader.classLoader"
 
         /**
-         * Loader要额外使用的参数列表(多个参数之间使用','去进行分隔)
+         * Loader要额外使用的命令行参数列表(多个参数之间使用','去进行分隔), 将会被merge到命令行参数当中去进行启动
          */
         private const val LOADER_ARGS = "loader.args"
 
@@ -91,7 +91,8 @@ open class PropertiesLauncher : Launcher() {
         private const val LOADER_HOME = "loader.home"
 
         /**
-         * LoaderPath
+         * LoaderPath, 对于启动应用需要使用的依赖的路径, 对于这些路径下的类/Jar包将会作为应用程序的Classpath;
+         * 可以配置绝对路径, 比如"/tmp/lib", 也可以配置相对路径, 例如"lib"(会以"loader.home"去作为基准地址去进行寻找)
          */
         private const val LOADER_PATH = "loader.path"
 
@@ -116,11 +117,30 @@ open class PropertiesLauncher : Launcher() {
         @JvmStatic
         private val WORD_SEPARATOR = Pattern.compile("\\W+")
 
+        /**
+         * 嵌套Archive的分隔符
+         */
+        @JvmStatic
+        private val NESTED_ARCHIVE_SEPARATOR = "!" + File.separator
 
+
+        /**
+         * 基于[PropertiesLauncher]去引导应用程序的启动的主入口main方法
+         *
+         * @param args 命令行参数
+         * @throws Exception 如果启动应用程序失败
+         */
+        @Throws(Exception::class)
         @JvmStatic
         fun main(vararg args: String) {
+            // 创建PropertiesLauncher, 完成配置文件的加载
             val propertiesLauncher = PropertiesLauncher()
-            propertiesLauncher.launch(arrayOf(*args))
+
+            // 将loader.args属性当中的参数, 去merge到原始的命令行参数之前
+            val argsToUse = propertiesLauncher.getArgs(arrayOf(*args))
+
+            // 使用Launcher.launch去引导应用程序的启动
+            propertiesLauncher.launch(argsToUse)
         }
     }
 
@@ -145,7 +165,7 @@ open class PropertiesLauncher : Launcher() {
     private val parent: Archive
 
     /**
-     * ClassPath下的Archive归档文件列表
+     * ClassPath下的[Archive]归档文件列表, 对于这些[Archive], 将会被[LaunchedURLClassLoader]去进行类的加载
      */
     @Nullable
     private var classPathArchives: ClassPathArchives? = null
@@ -193,6 +213,7 @@ open class PropertiesLauncher : Launcher() {
         val loader = LaunchedURLClassLoader(urls.toTypedArray(), javaClass.classLoader)
         debug("Classpath for custom loaders: $urls")
 
+        // 使用自定义的ClassLoader去包装LaunchedURLClassLoader
         val customClassLoader = wrapWithCustomClassLoader(loader, classLoaderName)
         debug("Using custom class loader: $classLoaderName")
         return customClassLoader
@@ -231,7 +252,22 @@ open class PropertiesLauncher : Launcher() {
     }
 
     /**
-     * 初始化Loader要去进行加载的类的路径
+     * 根据原始的命令行参数, 去添加"loader.args"当中去进行配置的参数去进行merge
+     *
+     * Note: "loader.args"参数会在前面, 原始的命令行参数会在后面, 保证命令行给定的参数可以有更高优先级
+     *
+     * @param args 原始的命令行参数
+     * @return merge完成"loader.args"的配置当中的参数列表之后得到的最终命令行参数
+     */
+    protected open fun getArgs(args: Array<String>): Array<String> {
+        // 解析loader.args参数
+        val loaderArgs = getProperty(LOADER_ARGS) ?: return args
+        val defaultArgs = loaderArgs.split("\\s+")
+        return (defaultArgs + args).toTypedArray()
+    }
+
+    /**
+     * 初始化Loader要去进行加载的类的资源路径
      */
     private fun initializePaths() {
         val path = getProperty(LOADER_PATH)
@@ -607,6 +643,8 @@ open class PropertiesLauncher : Launcher() {
 
     private fun loadResource(resource: InputStream) {
         this.properties.load(resource)
+
+        // TODO resolve Placeholder
     }
 
     /**
@@ -617,6 +655,7 @@ open class PropertiesLauncher : Launcher() {
     private fun debug(message: String) {
         // Note: 这里只能使用System.getProperty, 不然会导致无限递归导致SOF
         if (System.getProperty(LOADER_DEBUG) == "true") {
+            // Note: 这里没有Logger, 也无法使用Logger, 只能使用System.out输出一下...
             println(message)
         }
     }
@@ -627,11 +666,18 @@ open class PropertiesLauncher : Launcher() {
      */
     private inner class ClassPathArchives : Iterable<Archive> {
 
+        /**
+         * 收集出来所有应该被作为ClassPath下的[Archive]归档文件
+         */
         private val classpathArchives = ArrayList<Archive>()
 
+        /**
+         * 统计得到所有[Archive]当中, 对于[JarFileArchive]类型的列表, 统一管理, 方便统一close
+         */
         private val jarFileArchives = ArrayList<JarFileArchive>()
 
         init {
+            // 根据所有的"loader.path"去进行配置的路径, 去进行Archive的解析
             for (path in this@PropertiesLauncher.paths) {
                 for (archive in getClassPathArchives(path)) {
                     addClassPathArchive(archive)
@@ -642,8 +688,108 @@ open class PropertiesLauncher : Launcher() {
             addNestedEntries()
         }
 
+        /**
+         * 根据给定的path, 去解析得到[Archive]列表
+         *
+         * @param path path
+         * @return 该路径下的解析得到的Archive列表
+         */
         private fun getClassPathArchives(path: String): List<Archive> {
-            return emptyList()
+            val root = cleanupPath(handleUrl(path))
+            val lib = ArrayList<Archive>()
+
+            var file = File(root)
+            if (root != "/") {
+                // 如果root不是一个绝对路径的话, 那么使用home作为相对路径的基地址, 去进行路径的计算
+                if (!isAbsolutePath(root)) {
+                    file = File(this@PropertiesLauncher.home, root)
+                }
+
+                // 如果给的是一个文件夹的话, 那么创建一个ExplodedArchive(解压缩的之后的包)
+                if (file.isDirectory) {
+                    debug("Adding classpath entries from $file")
+                    val archive = ExplodedArchive(file, false)
+                    lib += archive
+                }
+            }
+
+            // 如果给定的路径, 是一个非嵌套的Jar包的话, 那么执行解析并收集起来...
+            val archive = getArchive(file)
+            if (archive != null) {
+                debug("Adding classpath entries from archive ${archive.getUrl()}$root")
+                lib += archive
+            }
+
+            // 如果给定的路径, 是一个嵌套的Jar包的话, 那么执行解析并收集起来
+            val nestedArchives = getNestedArchives(root)
+            if (!nestedArchives.isNullOrEmpty()) {
+                debug("Adding classpath entries from nested $root")
+                lib += nestedArchives
+            }
+            return lib
+        }
+
+        /**
+         * 判断给定的路径, 是否是一个绝对路径?
+         *
+         * @param root path
+         * @return 如果是绝对路径, return true; 否则return false
+         */
+        private fun isAbsolutePath(root: String): Boolean {
+            // 对于Windows操作系统含有":", 例如"C:"表示C盘下的目录, 对于Macos/Linux等系统, 应该以"/"开头
+            return root.contains(":") || root.startsWith("/")
+        }
+
+        /**
+         * 如果给定的[File]是文件类型是".jar"/".zip", 那么返回该文件对应的[JarFileArchive]
+         *
+         * @param file File
+         * @return 如果是Jar包的话, 那么返回JarFileArchive, 否则return null
+         */
+        @Nullable
+        private fun getArchive(file: File): Archive? {
+            // 如果是嵌套的Archive, 那么跳过, 在这里暂时不处理
+            if (isNestedArchivePath(file)) {
+                return null
+            }
+            val name = file.name.lowercase(Locale.ENGLISH)
+            if (name.endsWith(".zip") || name.endsWith(".jar")) {
+                return getJarFileArchive(file)
+            }
+            return null
+        }
+
+        /**
+         * 根据给定的path, 去获取到嵌套的[Archive]
+         *
+         * @param path path
+         * @return 根据path去解析得到的嵌套的Archive列表(or null)
+         */
+        @Nullable
+        private fun getNestedArchives(path: String): List<Archive>? {
+            return null
+        }
+
+        /**
+         * 根据给定的[File]去构建[JarFileArchive], 并将该[JarFileArchive]去缓存起来统一管理
+         *
+         * @param file File
+         * @return JarFileArchive
+         */
+        private fun getJarFileArchive(file: File): JarFileArchive {
+            val jarFileArchive = JarFileArchive(file)
+            this.jarFileArchives += jarFileArchive
+            return jarFileArchive
+        }
+
+        /**
+         * 判断给定的[File]路径是否是一个内部嵌套的Archive
+         *
+         * @param file file
+         * @return 如果路径当中含有"!/", 那么就说明是嵌套的Archive
+         */
+        private fun isNestedArchivePath(file: File): Boolean {
+            return file.path.contains(NESTED_ARCHIVE_SEPARATOR)
         }
 
         private fun addClassPathArchive(archive: Archive) {
@@ -655,7 +801,9 @@ open class PropertiesLauncher : Launcher() {
         }
 
         /**
-         * 添加内部嵌套的Archive
+         * 添加parent对应的Archive内部嵌套的Archive, 因为当前[PropertiesLauncher]所在的Jar,
+         * 一般是会被解压去放入到用户的应用程序的最终FatJar当中的, 在FatJar当中, 就往往
+         * 会有"BOOT-INF/classes/"和"BOOT-INF/lib/"目录, 需要把这些去添加到ClassPath下
          */
         private fun addNestedEntries() {
             // parent Archive当中可能存在有"BOOT-INF/classes/"或者是"BOOT-INF/lib/"这样的目录

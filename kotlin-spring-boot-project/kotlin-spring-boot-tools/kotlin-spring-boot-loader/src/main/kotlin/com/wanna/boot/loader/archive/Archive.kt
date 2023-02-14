@@ -5,6 +5,7 @@ import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
 import java.util.jar.Manifest
+import javax.annotation.Nullable
 
 /**
  * 用于描述一个Java的归档文件(比如Jar包/Zip包), 它能支持被Launcher去进行引导和启动
@@ -34,6 +35,7 @@ interface Archive : Iterable<Archive.Entry>, AutoCloseable {
      * @return Manifest
      * @throws IOException 如果找不到Manifest文件的话
      */
+    @Nullable
     @Throws(IOException::class)
     fun getManifest(): Manifest?
 

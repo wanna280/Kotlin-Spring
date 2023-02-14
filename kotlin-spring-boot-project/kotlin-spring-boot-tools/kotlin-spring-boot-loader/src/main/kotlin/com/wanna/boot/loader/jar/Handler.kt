@@ -16,6 +16,8 @@ import kotlin.collections.set
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/10/5
+ *
+ * @param jarFile JarFile
  */
 class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : URLStreamHandler() {
     companion object {
@@ -39,17 +41,29 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
          * Jar包的分隔符
          */
         private const val SEPARATOR = "!/"
+
+        @JvmStatic
         private val SEPARATOR_PATTERN = Pattern.compile(SEPARATOR, Pattern.LITERAL)
+
         private const val CURRENT_DIR = "/./"
+
+        @JvmStatic
         private val CURRENT_DIR_PATTERN = Pattern.compile(CURRENT_DIR, Pattern.LITERAL)
+
         private const val PARENT_DIR = "/../"
+
         private const val PROTOCOL_HANDLER = "java.protocol.handler.pkgs"
+
+        @JvmStatic
         private val FALLBACK_HANDLERS = arrayOf("sun.net.www.protocol.jar.Handler")
+
+        @JvmStatic
         private var jarContextUrl: URL? = null
 
         /**
          * RootFile的缓存, 软引用
          */
+        @JvmStatic
         private var rootFileCache: SoftReference<MutableMap<File, JarFile>> = SoftReference(null)
 
         @JvmStatic
@@ -136,7 +150,7 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
         }
 
     /**
-     * 根据给定的的URL, 去开启URLConnection
+     * 根据给定的的URL, 去开启[URLConnection]
      *
      * @param url URL
      * @return URLConnection
