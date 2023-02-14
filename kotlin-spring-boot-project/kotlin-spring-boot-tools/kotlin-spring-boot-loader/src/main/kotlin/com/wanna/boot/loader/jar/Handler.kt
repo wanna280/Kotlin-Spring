@@ -1,6 +1,7 @@
 package com.wanna.boot.loader.jar
 
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.lang.ref.SoftReference
 import java.net.*
@@ -11,13 +12,17 @@ import java.util.regex.Pattern
 import kotlin.collections.set
 
 /**
- * 为SpringBoot的Loader提供Jar包的读取的[URLStreamHandler]
+ * 为SpringBoot的Loader提供Jar包的读取的[URLStreamHandler],
+ * 对于Java原生的[URLStreamHandler]并不支持去进行嵌套的Jar包的URL的读取,
+ * 但是实际上, 我们需要用到嵌套Jar包的URL的读取, 因为对于SpringBoot最终打出来的Jar包,
+ * 是一个FatJar, 存在有Jar包嵌套的情况, 因此我们需要自定义[URLStreamHandler],
+ * 去为嵌套的Jar包的解析提供支持, 不然对于嵌套的Jar包我们无法去进行读取
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2022/10/5
  *
- * @param jarFile JarFile
+ * @param jarFile 需要去提供数据的读取的JarFile
  */
 class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : URLStreamHandler() {
     companion object {
@@ -66,6 +71,14 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
         @JvmStatic
         private var rootFileCache: SoftReference<MutableMap<File, JarFile>> = SoftReference(null)
 
+        /**
+         * 在根据[URL]去解析[JarURLConnection]时, 如果遇到找不到的情况, 是否需要去进行快速丢出来[FileNotFoundException]?
+         *
+         * * 1.如果设置为true, 那么将会快速丢出来[FileNotFoundException]异常
+         * * 2.如果设置为false, 那么将会暂时返回一个空的[JarURLConnection]
+         *
+         * @param useFastConnectionExceptions 是否需要快速异常的模式?
+         */
         @JvmStatic
         fun setUseFastConnectionExceptions(useFastConnectionExceptions: Boolean) =
             JarURLConnection.setUseFastExceptions(useFastConnectionExceptions)

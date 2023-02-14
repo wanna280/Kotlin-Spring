@@ -5,9 +5,10 @@ import java.io.*
 import java.net.*
 import java.security.Permission
 import java.util.jar.JarEntry
+import javax.annotation.Nullable
 
 /**
- * 为[JarFile.getUrl]方法返回的URL去提供支持的[java.net.JarURLConnection]
+ * 为[JarFile.getUrl]方法返回的URL去提供支持的[java.net.JarURLConnection],
  *
  * @author jianchao.jia
  * @version v1.0
@@ -15,20 +16,41 @@ import java.util.jar.JarEntry
  * @see Handler
  * @see JarFile
  */
-internal class JarURLConnection constructor(
+class JarURLConnection constructor(
     url: URL,
     private val jarFile: AbstractJarFile?,
     private val jarEntryName: JarEntryName?,
 ) : java.net.JarURLConnection(EMPTY_JAR_URL) {
     companion object {
+
+        /**
+         * 在根据[URL]去解析[JarURLConnection]时, 如果遇到找不到的情况, 是否需要去进行快速丢出来[FileNotFoundException]?
+         *
+         * * 1.如果为true, 那么将会快速丢出来[FileNotFoundException]异常
+         * * 2.如果为false, 那么将会暂时返回一个空的[JarURLConnection]
+         */
+        @JvmStatic
         private val useFastExceptions = ThreadLocal<Boolean>()
+
+        /**
+         * 找不到目标文件的异常
+         */
+        @JvmStatic
         private val FILE_NOT_FOUND_EXCEPTION = FileNotFoundException("Jar file or entry not found")
+
+        /**
+         * 找不到Connection的异常, 使用[IllegalStateException]去包装一层[FILE_NOT_FOUND_EXCEPTION]
+         */
+        @JvmStatic
         private val NOT_FOUND_CONNECTION_EXCEPTION = IllegalStateException(FILE_NOT_FOUND_EXCEPTION)
 
+        /**
+         * Jar包嵌套的分隔符
+         */
         private const val SEPARATOR = "!/"
 
         @JvmField
-        var EMPTY_JAR_URL = URL("jar:", null, 0, "file:!/", object : URLStreamHandler() {
+        val EMPTY_JAR_URL = URL("jar:", null, 0, "file:!/", object : URLStreamHandler() {
             @Throws(IOException::class)
             override fun openConnection(u: URL): URLConnection? {
                 // Stub URLStreamHandler to prevent the wrong JAR Handler from being
@@ -37,10 +59,20 @@ internal class JarURLConnection constructor(
             }
         })
 
+        @JvmStatic
         private val EMPTY_JAR_ENTRY_NAME = JarEntryName(StringSequence(""))
+
+        @JvmStatic
         private val NOT_FOUND_CONNECTION = notFound()
 
-
+        /**
+         * 在根据[URL]去解析[JarURLConnection]时, 如果遇到找不到的情况, 是否需要去进行快速丢出来[FileNotFoundException]?
+         *
+         * * 1.如果设置为true, 那么将会快速丢出来[FileNotFoundException]异常
+         * * 2.如果设置为false, 那么将会暂时返回一个空的[JarURLConnection]
+         *
+         * @param useFastExceptions 是否需要进行快速异常的模式?
+         */
         @JvmStatic
         fun setUseFastExceptions(useFastExceptions: Boolean) = this.useFastExceptions.set(useFastExceptions)
 
@@ -51,7 +83,7 @@ internal class JarURLConnection constructor(
             val spec = StringSequence(url.file)
             var index = indexOfRootSpec(spec, jarFile.pathFromRoot)
             if (index == -1) {
-                return if (java.lang.Boolean.TRUE == useFastExceptions.get()) NOT_FOUND_CONNECTION
+                return if (useFastExceptions.get() == true) NOT_FOUND_CONNECTION
                 else JarURLConnection(url, null, EMPTY_JAR_ENTRY_NAME)
             }
             var separator: Int
@@ -63,7 +95,7 @@ internal class JarURLConnection constructor(
                 index = separator + SEPARATOR.length
             }
             val jarEntryName = JarEntryName[spec, index]
-            return if (java.lang.Boolean.TRUE == useFastExceptions.get() && !jarEntryName.isEmpty
+            return if (useFastExceptions.get() == true && !jarEntryName.isEmpty
                 && !jarFile.containsEntry(jarEntryName.toString())
             ) {
                 NOT_FOUND_CONNECTION
@@ -86,8 +118,8 @@ internal class JarURLConnection constructor(
         }
 
         @Throws(IOException::class)
-        private fun notFound(jarFile: JarFile?, jarEntryName: JarEntryName?): JarURLConnection {
-            return if (java.lang.Boolean.TRUE == useFastExceptions.get()) NOT_FOUND_CONNECTION
+        private fun notFound(@Nullable jarFile: JarFile?, @Nullable jarEntryName: JarEntryName?): JarURLConnection {
+            return if (useFastExceptions.get() == true) NOT_FOUND_CONNECTION
             else JarURLConnection(EMPTY_JAR_URL, jarFile, jarEntryName)
         }
     }
@@ -166,7 +198,7 @@ internal class JarURLConnection constructor(
 
     @Throws(FileNotFoundException::class)
     private fun throwFileNotFound(entry: Any?, jarFile: AbstractJarFile) {
-        if (java.lang.Boolean.TRUE == useFastExceptions.get()) {
+        if (useFastExceptions.get() == true) {
             throw FILE_NOT_FOUND_EXCEPTION
         }
         throw FileNotFoundException("JAR entry " + entry + " not found in " + jarFile.name)
@@ -224,7 +256,7 @@ internal class JarURLConnection constructor(
     /**
      * A JarEntryName parsed from a URL String.
      */
-    internal class JarEntryName(spec: StringSequence) {
+    class JarEntryName(spec: StringSequence) {
         private val name: StringSequence = decode(spec)
         var contentType: String? = null
             get() {
