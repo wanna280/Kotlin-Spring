@@ -164,7 +164,8 @@ open class PropertiesLauncher : Launcher() {
     private val properties = Properties()
 
     /**
-     * paths, 维护了需要去进行加载的类的路径列表, 其实就是用户自定义的classpath, 可以通过"loader.path"去进行配置
+     * paths, 维护了需要去进行加载的类的路径列表,
+     * 其实就是用户自定义的classpath, 可以通过"loader.path"去进行配置
      */
     private var paths: List<String> = ArrayList<String>()
 
@@ -316,22 +317,33 @@ open class PropertiesLauncher : Launcher() {
     }
 
     /**
-     * 将路径去进行清理干净
+     * 将给定的路径去进行清理干净
+     *
+     * * 1.如果是".jar"/".zip"的话, 那么直接return
+     * * 2.如果是目录, 但是没有添加后缀"/"的话, 那么需要补上后缀"/"(经常存在有目录不加"/"后缀的情况)
      *
      * @param path 待处理的path
      * @return clean path
      */
     private fun cleanupPath(path: String): String {
         var pathToUse = path.trim()
+
+        // 去掉"./", 因为"./"代表当前目录
         if (pathToUse.startsWith("./")) {
             pathToUse = pathToUse.substring(2)
         }
+
+        // 如果是".zip"/".jar"开头的话, 那么直接return ...
         val lowercasePath = path.lowercase(Locale.ENGLISH)
         if (lowercasePath.endsWith(".jar") || lowercasePath.endsWith(".zip")) {
             return pathToUse
         }
+
+        // 如果路径是以"/*"开头的话, 那么需要把"/*"去掉(Tomcat使用)
         if (pathToUse.endsWith("/*")) {
             return pathToUse.substring(2)
+
+            // 如果路径没有"/"的话, 那么需要给路径的后缀添加上"/"
         } else {
             if (!pathToUse.endsWith("/") && pathToUse != ".") {
                 pathToUse = "$pathToUse/"
@@ -607,7 +619,7 @@ open class PropertiesLauncher : Launcher() {
     }
 
     /**
-     * 对URL去进行处理
+     * 对URL去进行处理, 如果给定的path是"file:"开头的话, 那么需要把前缀去掉; 如果是"file://"开头的话, 那么需要把"//"也给去掉
      *
      * @param path path
      * @return 处理之后得到的Url
@@ -739,15 +751,15 @@ open class PropertiesLauncher : Launcher() {
                 }
             }
 
-            // 添加内部嵌套的Archive
+            // 添加"BOOT-INF/classes/"和"BOOT-INF/lib/"到ClassPath当中
             addNestedEntries()
         }
 
         /**
-         * 根据给定的path, 去解析得到[Archive]列表
+         * 根据给定的路径path, 从该路径下去解析得到需要去进行加载的[Archive]列表去作为应用程序的ClassPath
          *
          * @param path path
-         * @return 该路径下的解析得到的Archive列表
+         * @return 应用程序的ClassPath的Archive依赖列表
          */
         private fun getClassPathArchives(path: String): List<Archive> {
             val root = cleanupPath(handleUrl(path))
@@ -897,12 +909,24 @@ open class PropertiesLauncher : Launcher() {
             return file.path.contains(NESTED_ARCHIVE_SEPARATOR)
         }
 
+        /**
+         * 将给定的Archive去收集到[classpathArchives]当中
+         *
+         * @param archive 要去进行收集到ClassPath当中的Archive
+         */
         private fun addClassPathArchive(archive: Archive) {
+            // 收集起来给定的Archive
+            this.classpathArchives += archive
+
+            // 如果给定的不是一个ExplodedArchive, 那么收集起来即可
             if (archive !is ExplodedArchive) {
-                this.classpathArchives += archive
                 return
             }
-            this.classpathArchives += archive
+
+            // 如果给定的是一个ExplodedArchive的话, 那么还需要去进行递归收集
+            for (nestedArchive in archive.getNestedArchives({ true }, ArchiveEntryFilter())) {
+                this.classpathArchives += nestedArchive
+            }
         }
 
         /**
@@ -926,10 +950,19 @@ open class PropertiesLauncher : Launcher() {
             }
         }
 
+        /**
+         * 提供对于ClassPath下的[Archive]的迭代
+         *
+         * @return ClassPath Archives
+         */
         override fun iterator(): Iterator<Archive> {
             return this.classpathArchives.iterator()
         }
 
+        /**
+         * 关闭当前[ClassPathArchives], 因为之前我们收集了很多的[JarFileArchive],
+         * 我们需要将这些资源的IO流去进行关闭, 避免产生资源的泄露的情况
+         */
         @Throws(IOException::class)
         fun close() {
             for (jarFileArchive in this.jarFileArchives) {

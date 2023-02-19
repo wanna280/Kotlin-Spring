@@ -86,18 +86,18 @@ abstract class Launcher {
     abstract fun getMainClass(): String
 
     /**
-     * 获取ClassPath下的Archive归档文件的迭代器
+     * 获取ClassPath的Archive归档文件的迭代器, 用于去为[ClassLoader]提供类加载的字节码
      *
-     * @return Archive归档文件的迭代器
+     * @return ClassPath的Archive列表
      */
     @Throws(Exception::class)
     protected abstract fun getClassPathArchivesIterator(): Iterator<Archive>
 
     /**
-     * 根据搜索得到的嵌套的归档文件列表, 去创建ClassLoader
+     * 根据搜索得到的嵌套的Archive归档文件列表, 去创建ClassLoader
      *
      * @param archives 搜索得到的嵌套归档文件对象列表
-     * @return 创建好的ClassLoader(LaunchedURLClassLoader)
+     * @return 创建好的ClassLoader(默认为LaunchedURLClassLoader)
      */
     protected open fun createClassLoader(archives: Iterator<Archive>): ClassLoader {
         val urls = ArrayList<URL>()
@@ -106,19 +106,19 @@ abstract class Launcher {
     }
 
     /**
-     * 根据URL去创建ClassLoader
+     * 根据给定的这些URL列表去创建[ClassLoader], [ClassLoader]需要负责去加载这些[URL]下的资源
      *
      * @param urls URLs
-     * @return 创建好的ClassLoader
+     * @return 提供应用程序启动的类的加载的ClassLoader
      */
     protected open fun createClassLoader(urls: Array<URL>): ClassLoader {
         return LaunchedURLClassLoader(isExploded(), getArchive(), urls, this::class.java.classLoader)
     }
 
     /**
-     * 创建Java的Archive归档对象
+     * 根据当前类所在的位置, 去创建出来Java的Archive归档对象
      *
-     * @return 创建好的Archive对象
+     * @return 当前Launcher类所在的Archive(比如JarFileArchive)
      */
     protected open fun createArchive(): Archive {
         // 获取当前类的ProtectionDomain
@@ -143,7 +143,7 @@ abstract class Launcher {
     /**
      * 该归档文件是否是被解压之后的?
      *
-     * @return 如果是被解压之后的, 那么return true
+     * @return 如果是War Exploded, 那么return true; 否则return false
      */
     protected open fun isExploded(): Boolean = false
 
