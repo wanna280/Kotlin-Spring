@@ -156,7 +156,7 @@ open class JarFile private constructor(
         private set
 
     /**
-     * 当前JarFile的评论信息
+     * 当前JarFile的comment注释信息
      */
     private var comment: String? = null
 
@@ -207,6 +207,7 @@ open class JarFile private constructor(
                 rootJarFile.close()
                 super.close()
             } catch (ioe: IOException) {
+                // ignore
             }
             throw ex
         }
@@ -235,7 +236,7 @@ open class JarFile private constructor(
      *
      * @param file File
      */
-    internal constructor(file: RandomAccessDataFile) : this(file, "", file, JarFileType.DIRECT)
+    constructor(file: RandomAccessDataFile) : this(file, "", file, JarFileType.DIRECT)
 
     /**
      * 为直接创建JarFile和从嵌套ArchiveEntry去提供私有构造器
@@ -399,7 +400,7 @@ open class JarFile private constructor(
 
 
     /**
-     * 根据给定的JarEntry去生成一个嵌套的JarFile
+     * 根据给定的[JarEntry]去生成一个嵌套的JarFile
      *
      * @param entry JarEntry
      * @return JarFile
@@ -427,18 +428,20 @@ open class JarFile private constructor(
     }
 
     /**
-     * 从一个目录的JarEntry去创建JarFile
+     * 从一个目录的[JarEntry]去构建[JarFile]
      *
      * @param entry JarEntry
      * @return JarFile
      */
     @Throws(IOException::class)
     private fun createJarFileFromDirectoryEntry(entry: JarEntry): JarFile {
+
+        // 基于JarFileEntry, 去对entryName去进行过滤
         val entryName = entry.asciiBytesName
-        val filter: JarEntryFilter = object : JarEntryFilter {
-            override fun apply(name: AsciiBytes) =
-                if (name.startsWith(entryName) && name != entryName) name.substring(entryName.length()) else null
-        }
+        val filter =
+            JarEntryFilter { name -> if (name.startsWith(entryName) && name != entryName) name.substring(entryName.length()) else null }
+
+        // 创建一个JarFile, 去包装给定的Entry, entryName拼接上"!/", 看起来就像一个真的JarFile了
         return JarFile(
             rootJarFile, pathFromRoot + "!/" + entry.name.substring(0, entryName.length() - 1),
             data, filter, JarFileType.NESTED_DIRECTORY, manifestSupplier
@@ -446,14 +449,15 @@ open class JarFile private constructor(
     }
 
     /**
-     * 从一个[JarEntry]去创建[JarFile]
+     * 从一个[JarEntry]的文件去创建[JarFile], 也就是将一个嵌套的Jar包的Entry去转换成为[JarFile]
      *
-     * @param entry JarEntry
+     * @param entry JarEntry(Entry的具体类型是一个JarFile)
      * @return JarFile
      */
     @Throws(IOException::class)
     private fun createJarFileFromFileEntry(entry: JarEntry): JarFile {
         // 如果需要对内部的文件去进行创建JarFile(Jar包), 那么内部的JarFile(Jar包)的存放方式只能是直接存放, 不能被压缩过...
+        // 如果内部存放了压缩的Jar包的话, 那么需要丢出来异常, 不允许出现这种情况, 这也是为什么自己手动压缩一个Jar包不合法的原因
         check(entry.method == ZipEntry.STORED) {
             ("Unable to open nested entry '" + entry.name + "'. It has been compressed and nested "
                     + "jar files must be stored without compression. Please check the "

@@ -16,7 +16,7 @@ import javax.annotation.Nullable
  * @version v1.0
  * @date 2022/10/4
  */
-class JarEntry(jarFile: JarFile, val index: Int, header: CentralDirectoryFileHeader, nameAlias: AsciiBytes?) :
+class JarEntry(jarFile: JarFile, val index: Int, header: CentralDirectoryFileHeader, @Nullable nameAlias: AsciiBytes?) :
     JarEntry(nameAlias?.toString() ?: header.getName().toString()), FileHeader {
     val asciiBytesName: AsciiBytes
     private val headerName: AsciiBytes?
