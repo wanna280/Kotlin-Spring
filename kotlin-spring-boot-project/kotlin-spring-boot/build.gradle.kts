@@ -1,8 +1,11 @@
 dependencies {
+
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-core"))
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-beans"))
+    compileOnly(project(":kotlin-spring-framework-project:kotlin-spring-aop"))
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-context"))
     implementation(project(":kotlin-spring-framework-project:kotlin-spring-jcl"))
+    implementation("org.slf4j:slf4j-api:$slf4jApiVersion")
 
     // compileOnly
     compileOnly(project(":kotlin-spring-framework-project:kotlin-spring-web"))

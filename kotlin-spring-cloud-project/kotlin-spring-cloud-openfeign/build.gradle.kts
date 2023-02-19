@@ -13,7 +13,7 @@ dependencies {
     implementation("com.netflix.ribbon:ribbon-loadbalancer:$ribbonVersion")
     implementation("com.netflix.ribbon:ribbon-core:$ribbonVersion")
     implementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // jackson
-
+    implementation("org.slf4j:slf4j-api:$slf4jApiVersion")
     implementation("io.github.openfeign:feign-httpclient:$feignHttpClientVersion")
     implementation("io.github.openfeign:feign-core:$feignVersion")
 

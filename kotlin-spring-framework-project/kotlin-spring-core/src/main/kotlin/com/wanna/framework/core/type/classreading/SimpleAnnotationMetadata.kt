@@ -5,7 +5,7 @@ import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
-import org.objectweb.asm.Opcodes
+import com.wanna.framework.asm.*
 
 /**
  * AnnotationMetadata的简单实现

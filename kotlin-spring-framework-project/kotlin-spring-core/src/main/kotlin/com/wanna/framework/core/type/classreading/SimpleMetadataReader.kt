@@ -3,10 +3,8 @@ package com.wanna.framework.core.type.classreading
 import com.wanna.framework.core.io.Resource
 import com.wanna.framework.core.type.AnnotationMetadata
 import com.wanna.framework.core.type.ClassMetadata
-import org.objectweb.asm.ClassReader
-import java.io.BufferedInputStream
+import com.wanna.framework.asm.ClassReader
 import java.io.IOException
-import kotlin.jvm.Throws
 
 /**
  * [MetadataReader]的简单实现

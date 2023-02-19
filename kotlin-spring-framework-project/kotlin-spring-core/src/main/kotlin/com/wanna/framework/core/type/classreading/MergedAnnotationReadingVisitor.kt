@@ -1,16 +1,15 @@
 package com.wanna.framework.core.type.classreading
 
+import com.wanna.framework.asm.*
 import com.wanna.framework.core.annotation.AnnotationFilter
 import com.wanna.framework.core.annotation.MergedAnnotation
-import com.wanna.framework.core.asm.SpringAsmInfo
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
-import org.objectweb.asm.AnnotationVisitor
-import org.objectweb.asm.Type
 import java.util.function.Consumer
 
 /**
- * MergedAnnotation的读取的AnnotationVisitor, 将一个注解信息转换成为一个MergedAnnotation对象
+ * [MergedAnnotation]的读取的[AnnotationVisitor], 将一个注解信息基于ASM的方式去进行元信息的读取,
+ * 最终转换成为一个[MergedAnnotation]对象
  *
  * @author jianchao.jia
  * @version v1.0
@@ -39,19 +38,23 @@ open class MergedAnnotationReadingVisitor<A : Annotation>(
     /**
      * 访问注解当中的一个普通的属性时, 我们需要去将该属性去收集起来
      *
-     * @param name 属性名
+     * @param name 简单属性类型的属性名
      * @param value 属性值
      */
     override fun visit(@Nullable name: String?, value: Any) {
         name ?: return
-        attributes[name] = value
+        if (value is Type) {
+            attributes[name] = value.className
+        } else {
+            attributes[name] = value
+        }
     }
 
     /**
-     * 访问注解当中的一个Array的属性时, 我们需要返回一个数组的AnnotationVisitor去提供数组当中的元素的访问
+     * 访问注解当中的一个Array的属性时, 我们需要返回一个数组的[AnnotationVisitor]去提供数组当中的元素的访问
      *
-     * @param name 属性名
-     * @return 提供注解当中的数组类型当中的属性的访问的AnnotationVisitor
+     * @param name 数组类型的属性名
+     * @return 提供注解当中的数组类型当中的属性的访问的[AnnotationVisitor]
      */
     @Nullable
     override fun visitArray(name: String): AnnotationVisitor? {
@@ -61,7 +64,7 @@ open class MergedAnnotationReadingVisitor<A : Annotation>(
     /**
      * 当访问注解当中的一个枚举值类型时, 我们将它转换成为一个Enum对象并收集到Attributes当中去
      *
-     * @param name 属性名
+     * @param name 枚举类型的属性名
      * @param descriptor Enum类型的描述符
      * @param value 枚举值的字符串(可以根据descriptor去获取到枚举类型从而去转换为枚举对象)
      */
@@ -83,7 +86,7 @@ open class MergedAnnotationReadingVisitor<A : Annotation>(
     }
 
     /**
-     * 当访问注解当中的注解类型的属性值时, 我们需要提供一个AnnotationVisitor去merge其中的信息
+     * 当访问注解当中的注解类型的属性值时, 我们需要提供一个[AnnotationVisitor]去merge其中的信息
      *
      * @param name 属性名
      * @param descriptor 注解类型的Descriptor
@@ -123,7 +126,7 @@ open class MergedAnnotationReadingVisitor<A : Annotation>(
     }
 
     /**
-     * 提供对于注解的数组属性的访问的AnnotationVisitor
+     * 提供对于注解的数组属性的访问的[AnnotationVisitor]
      *
      * @param consumer 当访问完该数组属性时, 需要去进行执行的操作
      */
@@ -244,7 +247,7 @@ open class MergedAnnotationReadingVisitor<A : Annotation>(
         }
 
         /**
-         * 构建MergedAnnotationReadingVisitor的AnnotationVisitor工厂方法
+         * 构建[MergedAnnotationReadingVisitor]的[AnnotationVisitor]工厂方法
          *
          * @param classLoader ClassLoader
          * @param source source
@@ -252,14 +255,13 @@ open class MergedAnnotationReadingVisitor<A : Annotation>(
          * @param consumer 在收集完所有的注解属性之后, 需要执行的操作的Consumer
          * @return AnnotationVisitor
          */
-        @Nullable
         @JvmStatic
         fun <A : Annotation> get(
             classLoader: ClassLoader,
             @Nullable source: Any?,
             annotationType: Class<A>,
             consumer: Consumer<MergedAnnotation<A>>
-        ): AnnotationVisitor? {
+        ): AnnotationVisitor {
             return MergedAnnotationReadingVisitor(classLoader, source, annotationType, consumer)
         }
     }

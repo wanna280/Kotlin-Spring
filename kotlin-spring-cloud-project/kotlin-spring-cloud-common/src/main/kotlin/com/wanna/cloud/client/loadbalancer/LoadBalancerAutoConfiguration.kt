@@ -23,8 +23,11 @@ import com.wanna.framework.web.client.RestTemplate
 @Configuration(proxyBeanMethods = false)
 open class LoadBalancerAutoConfiguration {
 
+    /**
+     * 注入所有要去进行LoadBalance的RestTemplate
+     */
     @Autowired
-    @LoadBalanced  // 注入所有要去进行LoadBalance的RestTemplate
+    @LoadBalanced
     private val restTemplates: List<RestTemplate> = emptyList()
 
     /**
@@ -35,32 +38,36 @@ open class LoadBalancerAutoConfiguration {
      */
     @Bean
     open fun loadBalancedRestTemplateInitializer(@Autowired(required = false) restTemplateCustomizers: List<RestTemplateCustomizer>): SmartInitializingSingleton {
-        return object : SmartInitializingSingleton {
-            override fun afterSingletonsInstantiated() {
-                restTemplates.forEach { restTemplate ->
-                    restTemplateCustomizers.forEach { customizer ->
-                        customizer.customize(restTemplate)
-                    }
+        return SmartInitializingSingleton {
+            restTemplates.forEach { restTemplate ->
+                restTemplateCustomizers.forEach { customizer ->
+                    customizer.customize(restTemplate)
                 }
             }
         }
     }
 
+
     /**
-     * 给RestTemplate去添加LoadBalancerInterceptor的配置类, 方便去拦截RestTemplate, 对RestTemplate去添加拦截器; 
+     * LoadBalancerRequest的Factory, 提供去创建LoadBalancerRequest, 供LoadBalancerRequest去进行执行
+     *
+     * @param loadBalancerClient LoadBalancerClient
+     * @return 支持负载均衡的处理的RequestFactory
+     */
+    @ConditionalOnBean(value = [LoadBalancerClient::class])
+    @Bean
+    @ConditionalOnMissingBean
+    open fun loadBalancerRequestFactory(loadBalancerClient: LoadBalancerClient): LoadBalancerRequestFactory {
+        return LoadBalancerRequestFactory(loadBalancerClient)
+    }
+
+    /**
+     * 给[RestTemplate]去添加[LoadBalancerInterceptor]的配置类, 方便去拦截[RestTemplate], 对[RestTemplate]去添加拦截器;
      * 从注册中心当中获取实例, 并将request的URI去进行替换, 从而去实现真正的负载均衡的Http请求的发送
      */
+    @ConditionalOnBean(value = [LoadBalancerClient::class])
     @Configuration(proxyBeanMethods = false)
     open class LoadBalancerInterceptorConfig {
-
-        /**
-         * LoadBalancerRequest的Factory, 提供去创建LoadBalancerRequest, 供LoadBalancerRequest去进行执行
-         */
-        @Bean
-        @ConditionalOnMissingBean
-        open fun loadBalancerRequestFactory(loadBalancerClient: LoadBalancerClient): LoadBalancerRequestFactory {
-            return LoadBalancerRequestFactory(loadBalancerClient)
-        }
 
         /**
          * LoadBalancer的拦截器, 给RestTemplate当中要去进行导入的拦截器, 替换掉目标请求的URI成为ServiceInstance的URI
@@ -73,6 +80,9 @@ open class LoadBalancerAutoConfiguration {
             return LoadBalancerInterceptor(loadBalancerClient, requestFactory)
         }
 
+        /**
+         * [RestTemplate]的自定义化器, 给
+         */
         @Bean
         open fun restTemplateCustomizer(loadBalancerInterceptor: LoadBalancerInterceptor): RestTemplateCustomizer {
             return RestTemplateCustomizer { restTemplate ->

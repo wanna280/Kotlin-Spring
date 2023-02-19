@@ -1,5 +1,6 @@
 package com.wanna.framework.util
 
+import com.wanna.framework.lang.Nullable
 import java.io.Serializable
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -32,6 +33,7 @@ open class CustomizableThreadCreator : Serializable {
     /**
      * ThreadGroup
      */
+    @Nullable
     private var threadGroup: ThreadGroup? = null
 
 
@@ -58,10 +60,11 @@ open class CustomizableThreadCreator : Serializable {
 
     open fun isDaemon(): Boolean = this.daemon
 
-    open fun setThreadGroup(threadGroup: ThreadGroup?) {
+    open fun setThreadGroup(@Nullable threadGroup: ThreadGroup?) {
         this.threadGroup = threadGroup
     }
 
+    @Nullable
     open fun getThreadGroup(): ThreadGroup? = this.threadGroup
 
     /**

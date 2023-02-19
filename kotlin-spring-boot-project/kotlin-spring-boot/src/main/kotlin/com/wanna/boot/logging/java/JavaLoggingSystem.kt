@@ -87,7 +87,7 @@ open class JavaLoggingSystem(classLoader: ClassLoader) : AbstractLoggingSystem(c
         try {
             var configuration = String(ResourceUtils.getURL(location).openStream().readAllBytes())
             if (logFile != null) {
-                configuration = configuration.replace("%{LOG_PATH}", logFile.toString())
+                configuration = configuration.replace("${'$'}{LOG_PATH}", logFile.toString())
             }
             LogManager.getLogManager().readConfiguration(configuration.byteInputStream())
         } catch (ex: Exception) {

@@ -3,8 +3,8 @@ package com.wanna.boot.autoconfigure.condition
 import com.wanna.boot.autoconfigure.AutoConfigurationImportFilter
 import com.wanna.boot.autoconfigure.AutoConfigurationMetadata
 import com.wanna.framework.beans.BeanFactoryAware
-import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.BeanClassLoaderAware
+import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 
@@ -44,7 +44,7 @@ abstract class FilteringSpringBootCondition : SpringBootCondition(), AutoConfigu
             matches[index] = outcomes[index] == null || outcomes[index]!!.match
             // 如果匹配失败, 并且outcome不为空的话, 需要记录日志信息
             if (matches[index] == false && outcomes[index] != null) {
-                logOutcome(autoConfigurationClasses[index], outcomes[index]!!)
+                logOutcome(autoConfigurationClasses[index].toString(), outcomes[index]!!)
             }
         }
         return matches as Array<Boolean>  // cast to not null array

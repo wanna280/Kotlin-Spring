@@ -28,7 +28,7 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
         /**
          * [LoggerConfiguration]的比较器
          */
-        @JvmStatic
+        @JvmField
         val CONFIGURATION_COMPARATOR: Comparator<LoggerConfiguration> = LoggerConfigurationComparator(ROOT_LOGGER_NAME)
     }
 
@@ -80,8 +80,10 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
         // 1.先尝试去加载日志组件自身的默认配置文件
         var config = getSelfInitializationConfig()
         if (config != null && logFile == null) {
-            // 如果这里可以加载到配置问价, 说明日志组件在之前就自我初始化已经完成了,
-            // 那么需要尝试去进行重新初始化, 因为有可能属性发生了变化
+            // 如果这里可以加载到配置文件的话, 说明日志组件在之前就自我初始化已经完成了,
+            // 那么需要尝试去进行重新初始化, 因为有可能属性发生了变化,
+            // 因为在这之前, 可能Logback已经被初始化过了, 但是Spring环境信息改变了,
+            // 我们应该尝试去刷新日志组件的相关的配置信息, 让正确的配置信息可以生效...
             reinitialize(context)
             return
         }
@@ -91,7 +93,7 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
             config = getSpringInitializationConfig()
         }
 
-        // 3.如果加载到了Spring的配置文件, 那么需要去进行配置文件的加载
+        // 3.如果加载到了Spring的配置文件, 那么需要去进行Spring自定义的配置文件的加载
         if (config != null) {
             loadConfiguration(context, config, logFile)
             return
@@ -136,7 +138,7 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
     }
 
     /**
-     * 获取日志组件本身的用于去进行初始化的配置文件的路径
+     * 获取日志组件本身的用于去进行初始化的配置文件的路径(比如logback的"logback.xml")
      *
      * @return 日志组件的默认配置文件当中, 用于去初始化日志组件本身的配置文件路径(如果用户没有指定配置文件的话, return null)
      */
@@ -146,9 +148,9 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
     }
 
     /**
-     * 获取Spring针对当前日志组件, 去进行初始化的配置文件
+     * 获取Spring针对当前日志组件, 去进行初始化的配置文件(在日志组件的原始文件扩展名之前添加"-spring", 比如"logback.xml"->"logback-spring.xml")
      *
-     * @return Spring支持的配置文件当中, 用于去初始化日志组件本身的配置文件路径(如果用户没有指定配置文件的话, return null)
+     * @return Spring支持的配置文件当中, 用于去初始化日志组件本身的配置文件路径(如果用户没有指定Spring的配置文件的话, return null)
      */
     @Nullable
     protected open fun getSpringInitializationConfig(): String? {
@@ -164,22 +166,22 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
     @Nullable
     private fun findConfig(locations: Array<String>): String? {
         for (location in locations) {
-            if (ClassPathResource("classpath:$location", this.classLoader).exists()) {
-                return location
+            if (ClassPathResource(location, this.classLoader).exists()) {
+                return "classpath:$location"
             }
         }
         return null
     }
 
     /**
-     * 获取当前[LoggingSystem]对应的日志组件, 支持去进行处理的标准的配置文件的位置
+     * 获取当前[LoggingSystem]对应的日志组件, 支持去进行处理的标准的配置文件的位置(比如logback的"logback.xml")
      *
-     * @return 日志组件默认的标准的配置文件的位置
+     * @return 日志组件默认的标准的配置文件的位置(比如logback的"logback.xml")
      */
     protected abstract fun getStandardConfigLocations(): Array<String>
 
     /**
-     * 获取该日志组件对应的Spring的配置文件路径裂帛啊呸(在文件扩展名之前添加"-spring", 比如"logback.xml"->"logback-spring.xml")
+     * 获取该日志组件对应的Spring的配置文件路径(在日志组件的原始文件扩展名之前添加"-spring", 比如"logback.xml"->"logback-spring.xml")
      *
      * @return 解析得到该日志组件对应的Spring的配置文件路径列表
      */
@@ -195,7 +197,9 @@ abstract class AbstractLoggingSystem(val classLoader: ClassLoader) : LoggingSyst
     }
 
     /**
-     * 获取基于子类所在包下的配置文件
+     * 获取基于当前LoggingSystem的具体实现类所在包下的配置文件,
+     * 比如className="com.wanna.boot.logging.java.JavaLoggingSystem",
+     * 那么将会从类路径"com/wanna/boot/logging/java"作为基准路径, 去生成最终的配置文件的路径
      *
      * @param fileName fileName
      * @return 子类所在包下的指定文件名的配置文件路径

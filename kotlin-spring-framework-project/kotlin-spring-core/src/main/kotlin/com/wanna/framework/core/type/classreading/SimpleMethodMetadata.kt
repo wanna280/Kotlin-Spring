@@ -2,7 +2,7 @@ package com.wanna.framework.core.type.classreading
 
 import com.wanna.framework.core.annotation.MergedAnnotations
 import com.wanna.framework.core.type.MethodMetadata
-import org.objectweb.asm.Opcodes
+import com.wanna.framework.asm.Opcodes
 
 /**
  * MethodMetadata的简单实现

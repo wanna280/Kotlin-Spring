@@ -1,11 +1,11 @@
 package com.wanna.framework.util
 
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.constants.ANY_ARRAY_TYPE
 import com.wanna.framework.constants.CLASS_ARRAY_TYPE
 import com.wanna.framework.constants.NUMBER_ARRAY_TYPE
 import com.wanna.framework.constants.STRING_ARRAY_TYPE
 import com.wanna.framework.lang.Nullable
-import com.wanna.common.logging.LoggerFactory
 import java.lang.reflect.Method
 import java.util.*
 
@@ -207,8 +207,8 @@ object ClassUtils {
     fun resolvePrimitiveClassName(@Nullable name: String?): Class<*>? {
         var result: Class<*>? = null
         // 因为对于大多数的类都会很长, 因为它们都被放到一个包当中,
-        // 但是基础数据类型没有包, 因此对于包的长度检验是很有价值的...
-        if (name != null && name.length < 7) {
+        // 但是基础数据类型没有包(最长是boolean, 长度为7), 因此对于包的长度检验是很有价值的...
+        if (name != null && name.length <= 7) {
             result = primitiveTypeNameMap[name]
         }
         return result
@@ -377,7 +377,7 @@ object ClassUtils {
                 val nestedClassName =
                     clazzName.substring(0, dotIndex) + NESTED_CLASS_SEPARATOR + clazzName.substring(dotIndex + 1)
                 try {
-                    return forName<T>(nestedClassName, classLoader)
+                    return Class.forName(nestedClassName, false, classLoader) as Class<T>  // use Class.forName
                 } catch (ex: ClassNotFoundException) {
                     // 对于解析内部类的fallback的情况, 我们不进行处理, 别把外层的原始异常吃掉了... 需要直接把原始的异常丢出去
                 }

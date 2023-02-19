@@ -1,30 +1,35 @@
 package com.wanna.framework.util
 
-import java.util.Properties
+import com.wanna.framework.util.PropertyPlaceholderHelper.PlaceholderResolver
+import java.util.*
 
 /**
- * 这是一个属性值的占位符的解析器的工具类, 可以用它完成占位符的解析
+ * 属性值的占位符的解析器的工具类, 可以用它完成占位符的解析
+ *
+ * @param prefix 占位符前缀
+ * @param suffix 占位符后缀
+ * @param valueSeparator 默认值的分隔符
  *
  * @see PlaceholderResolver
  */
-open class PropertyPlaceholderHelper(
+open class PropertyPlaceholderHelper @JvmOverloads constructor(
     private val prefix: String, private val suffix: String, private val valueSeparator: String? = null
 ) {
-    // 简单前缀, 如果是"%{}"则为"{", 如果是"%[]"则为"[", 如果是"%()"则为"("
+    /**
+     * 简单前缀, 如果是"${}"则为"{", 如果是"$[]"则为"[", 如果是"$()"则为"("
+     */
     private val simplePrefix = wellKnownSimplePrefix[suffix] ?: prefix
 
     companion object {
-        // 已经知道的简单前缀
-        private val wellKnownSimplePrefix = HashMap<String, String>(3)
-        init {
-            wellKnownSimplePrefix["}"] = "{"
-            wellKnownSimplePrefix["]"] = "]"
-            wellKnownSimplePrefix[")"] = "("
-        }
+        /**
+         * 已经明确知道的简单前缀
+         */
+        @JvmStatic
+        private val wellKnownSimplePrefix = mapOf("}" to "{", "]" to "[", ")" to "(")
     }
 
     /**
-     * 给定一个Properties, 从Properties当中去获取属性, 去完成最终的占位符解析
+     * 给定一个[Properties], 从[Properties]当中去获取属性, 去完成最终的占位符解析
      *
      * @param text 要去进行解析的目标占位符文本
      * @param properties 要解析的占位符的属性来源
@@ -36,7 +41,7 @@ open class PropertyPlaceholderHelper(
     }
 
     /**
-     * 解析占位符, 支持"%{%{user.name}} %{user.id}"这种情况, user.name等具体的属性值, 甚至还可以是占位符, 也支持去进行解析
+     * 解析占位符, 支持"${${user.name}} ${user.id}"这种情况, user.name等具体的属性值, 甚至还可以是占位符, 也支持去进行解析
      *
      * @param text 要去进行解析的目标占位符文本
      * @param placeholderResolver 占位符解析的策略接口, 从哪获取属性的回调方法?
@@ -56,9 +61,7 @@ open class PropertyPlaceholderHelper(
      * @see parseStringValue
      */
     open fun replacePlaceholder(text: String, placeholderResolver: (String) -> String?): String {
-        return replacePlaceholder(text, object : PlaceholderResolver {
-            override fun resolvePlaceholder(text: String) = placeholderResolver.invoke(text)
-        })
+        return replacePlaceholder(text, PlaceholderResolver { placeholderResolver.invoke(it) })
     }
 
     /**
@@ -111,15 +114,15 @@ open class PropertyPlaceholderHelper(
                     }
                 }
 
-                // 如果解析出来了值, 比如user.name, 但是它有可能值还是"%{}"的占位符的情况, 因此还需要递归去进行解析和处理
+                // 如果解析出来了值, 比如user.name, 但是它有可能值还是"${}"的占位符的情况, 因此还需要递归去进行解析和处理
                 if (propertyValue != null) {
                     // 递归去进行解析
                     propertyValue = parseStringValue(propertyValue, placeholderResolver, visitedPlaceholder)
-                    // 将字符串的"%{...}"部分, 去替换成为解析完成的属性值(propertyValue)...
+                    // 将字符串的"${...}"部分, 去替换成为解析完成的属性值(propertyValue)...
                     builder.replace(startIndex, endIndex + suffix.length, propertyValue)
 
                     // 重新计算startIndex, 找到后续的下一个占位符
-                    // 因为有可能出现"%{...} %{...}"这种情况, 需要向后去继续解析后面的占位符
+                    // 因为有可能出现"${...} ${...}"这种情况, 需要向后去继续解析后面的占位符
                     // 如果没有后面的占位符了, 那么startIndex=-1, 直接break掉跳出循环了
                     startIndex = builder.indexOf(prefix, startIndex + propertyValue.length)
 
@@ -138,7 +141,7 @@ open class PropertyPlaceholderHelper(
 
     /**
      * 寻找占位符的结束(suffix)index,
-     * 有可能会出现"%{%{%{user.name}}}"这种情况, 使用withinNestedPlaceholder去完成计数
+     * 有可能会出现"${${${user.name}}}"这种情况, 使用withinNestedPlaceholder去完成计数
      * 在每次遇到前缀时, withinNestedPlaceholder++, 计算前缀的出现次数;
      * 如果遇到一次后缀, 那么就将withinNestedPlaceholder--;
      * 如果最终, withinNestedPlaceholder==0时, 说明内部的全部占位符都解析完了, 直接return, 后面部分的字符串就不用管了
@@ -179,7 +182,14 @@ open class PropertyPlaceholderHelper(
      * 这是一个策略接口, 它是一个占位符的解析器Resolver, 完成属性值的获取, 通过key去获取value的方式;
      * 供外部为占位符的解析去提供属性的来源的回调方法
      */
-    interface PlaceholderResolver {
+    fun interface PlaceholderResolver {
+
+        /**
+         * 执行占位符的解析
+         *
+         * @param text 待解析的占位符
+         * @return 解析占位符的结果
+         */
         fun resolvePlaceholder(text: String): String?
     }
 

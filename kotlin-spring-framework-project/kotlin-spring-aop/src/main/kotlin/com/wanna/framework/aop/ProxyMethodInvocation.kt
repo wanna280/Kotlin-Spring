@@ -1,9 +1,10 @@
 package com.wanna.framework.aop
 
 import com.wanna.framework.aop.intercept.MethodInvocation
+import com.wanna.framework.lang.Nullable
 
 /**
- * 这是一个代理方法的Invocation
+ * 代理方法的[MethodInvocation]
  */
 interface ProxyMethodInvocation : MethodInvocation {
 
@@ -14,16 +15,25 @@ interface ProxyMethodInvocation : MethodInvocation {
 
     /**
      * 设置方法参数
+     *
+     * @param args 方法参数列表
      */
     fun setArguments(vararg args: Any?)
 
     /**
      * 通过MethodInvocation可以去设置用户自定义的属性
+     *
+     * @param key key
+     * @param value value
      */
-    fun setUserAttribute(key: String, value: Any?)
+    fun setUserAttribute(key: String, @Nullable value: Any?)
 
     /**
      * 获取用户自定义属性
+     *
+     * @param key key
+     * @return value
      */
-    fun getUserAttribute(key: String) : Any?
+    @Nullable
+    fun getUserAttribute(key: String): Any?
 }

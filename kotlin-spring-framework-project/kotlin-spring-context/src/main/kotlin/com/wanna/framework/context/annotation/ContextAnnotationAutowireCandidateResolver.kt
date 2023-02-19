@@ -6,6 +6,7 @@ import com.wanna.framework.beans.factory.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.beans.factory.support.AutowireCandidateResolver
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.beans.factory.support.DependencyDescriptor
+import com.wanna.framework.lang.Nullable
 
 /**
  * 这是一个新增了支持处理Context相关的注解的AutowireCandidateResolver, 比如Lazy注解的AutowireCandidateResolver;
@@ -29,7 +30,8 @@ open class ContextAnnotationAutowireCandidateResolver : QualifierAnnotationAutow
      * @param beanName beanName
      * @return 构建好的代理对象(如果不是Lazy的, 那么return null)
      */
-    override fun getLazyResolutionProxyIfNecessary(descriptor: DependencyDescriptor, beanName: String?): Any? {
+    @Nullable
+    override fun getLazyResolutionProxyIfNecessary(descriptor: DependencyDescriptor, @Nullable beanName: String?): Any? {
         return if (isLazy(descriptor)) buildLazyResolutionProxy(descriptor, beanName) else null
     }
 
@@ -68,7 +70,7 @@ open class ContextAnnotationAutowireCandidateResolver : QualifierAnnotationAutow
 
         // 构建TargetSource, 设置getTarget获取到的对象是从BeanFactory当中去进行解析到的
         val targetSource = object : TargetSource {
-            override fun getTarget(): Any? {
+            override fun getTarget(): Any {
                 val type = getTargetClass()
                 val autowiredNames = if (beanName == null) null else LinkedHashSet<String>(1)
                 // Note: 这里应该调用的是, doResolveDependency方法, 而不是直接去调用resolveDependency方法

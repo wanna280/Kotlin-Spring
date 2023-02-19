@@ -1,7 +1,12 @@
 package com.wanna.framework.util
 
+import com.wanna.framework.lang.Nullable
+
 /**
  * 多值Map, 一个Key可以拥有多个Value(value存放的是一个List)
+ *
+ * @param K keyType
+ * @param V valueType
  */
 interface MultiValueMap<K, V> : MutableMap<K, MutableList<V>> {
 
@@ -11,6 +16,7 @@ interface MultiValueMap<K, V> : MutableMap<K, MutableList<V>> {
      * @param key key
      * @return 寻找到的第一个value(如果不存在的话, return null)
      */
+    @Nullable
     fun getFirst(key: K): V?
 
     /**

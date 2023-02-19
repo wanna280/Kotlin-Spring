@@ -12,6 +12,6 @@ dependencies {
     compileOnly("javax.servlet:javax.servlet-api:$servletApiVersion") // servlet-api
 
 
-    testImplementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")  // for test
-    testImplementation(project(":kotlin-logger-project:kotlin-logger-slf4j-impl"))
+    // for test
+    testImplementation("com.fasterxml.jackson.core:jackson-databind:$jacksonDatabindVersion")
 }

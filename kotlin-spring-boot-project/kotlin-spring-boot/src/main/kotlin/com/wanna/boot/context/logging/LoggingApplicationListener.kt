@@ -302,21 +302,26 @@ open class LoggingApplicationListener : GenericApplicationListener {
         getLoggingSystemProperties(environment).apply()
 
         // 获取到LogFile(filePath/fileName)的配置信息, 并把它apply给SystemProperties当中
+        // 可以通过属性"logging.file.name"/去配置fileName, 通过"logging.file.path"属性去配置filePath
         this.logFile = LogFile.get(environment)
+
+        // 将fileName和filePath, 去放入到SystemProperties系统属性当中
         this.logFile?.applyToSystemProperties()
 
         // 为默认的日志包去进行分组(web/sql)
         this.loggerGroups = LoggerGroups(DEFAULT_GROUP_LOGGERS)
 
-        val loggingSystem = loggingSystem!!
+        val loggingSystem = loggingSystem ?: throw IllegalStateException("LoggingSystem is not available")
 
         // 先去初始化早期的LoggingLevel(检查"--debug"/"--trace"命令行参数, 去初始化早期的SpringBoot相关依赖的日志级别)
         initializeEarlyLoggingLevel(environment)
 
-        // 初始化LoggingSystem, 将日志文件当中的配置信息都去应用给LoggingSystem...
+        // 初始化当前LoggingSystem,
+        // 将日志组件对应的配置文件(比如logback的"logback.xml")的相关配置信息都去应用给当前的LoggingSystem...
         initializeSystem(environment, loggingSystem, logFile)
 
-        // 在加载完成配置文件之后, 可以根据配置信息去初始化最终的LoggingLevel...
+        // 在加载完成配置文件之后, 我们就可以根据配置文件当中的"logging.level"相关的配置信息去初始化最终的LoggingLevel...
+        // 例如可以通过"logging.level.ROOT=INFO"去将ROOT Logger的日志级别去配置成为INFO级别...
         initializeFinalLoggingLevels(environment, loggingSystem)
 
         // 如果必要的话, 注册Logging的Shutdown Hook...

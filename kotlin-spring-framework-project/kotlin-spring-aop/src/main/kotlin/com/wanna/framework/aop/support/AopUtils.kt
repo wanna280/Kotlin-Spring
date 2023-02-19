@@ -1,15 +1,71 @@
 package com.wanna.framework.aop.support
 
 import com.wanna.framework.aop.*
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
+import java.lang.reflect.Proxy
 
 /**
  * Spring Aop的相关工具类
  */
 object AopUtils {
+
+    /**
+     * 检查给定的实例, 是否是一个被SpringProxy所代理的实例?
+     *
+     * @param instance 要去进行检查的实例
+     * @return 如果它是Spring代理对象, 那么return true; 否则return false
+     */
+    @JvmStatic
+    fun isAopProxy(@Nullable instance: Any?): Boolean {
+        return instance is SpringProxy
+                && (Proxy.isProxyClass(instance.javaClass) || instance.javaClass.name.contains(ClassUtils.CGLIB_CLASS_SEPARATOR))
+    }
+
+    /**
+     * 检查给定的实例, 是否是一个被JDK动态代理产生的类?
+     *
+     * @param instance 要去进行检查的实例对象
+     * @return 如果它是JDK动态代理产生的对象, return true; 否则return false
+     */
+    @JvmStatic
+    fun isJdkDynamicProxy(@Nullable instance: Any?): Boolean {
+        return instance is SpringProxy && Proxy.isProxyClass(instance.javaClass)
+    }
+
+    /**
+     * 检查给定的实例, 是否是一个被JDK动态代理产生的类?
+     *
+     * @param instance 要去进行检查的实例对象
+     * @return 如果它是CGLIB动态代理产生的对象, return true; 否则return false
+     */
+    @JvmStatic
+    fun isCglibProxy(@Nullable instance: Any?): Boolean {
+        return instance is SpringProxy && instance.javaClass.name.contains(ClassUtils.CGLIB_CLASS_SEPARATOR)
+    }
+
+    /**
+     * 获取给定的实例对象的原始对象类型(如果是CGLIB代理, 那么返回superClass)
+     *
+     * @param candidate 要去获取原始类型的对象
+     * @return 获取到的给定的对象的原始类型
+     */
+    @JvmStatic
+    fun getTargetClass(candidate: Any): Class<*> {
+        var targetClass: Class<*>? = null
+
+        // 如果是TargetClassAware, 那么优先从这里去进行获取
+        if (candidate is TargetClassAware) {
+            targetClass = candidate.getsTargetClass()
+        }
+        if (targetClass == null) {
+            targetClass = if (isCglibProxy(candidate)) candidate.javaClass.superclass else candidate.javaClass
+        }
+        return targetClass!!
+    }
 
     /**
      * 寻找到所有的可以去apply给当前的beanClass的Advisor列表
@@ -91,8 +147,9 @@ object AopUtils {
      * @param method 目标方法
      * @param args 方法参数
      */
+    @Nullable
     @JvmStatic
-    fun invokeJoinpointUsingReflection(target: Any?, method: Method, args: Array<Any?>): Any? {
+    fun invokeJoinpointUsingReflection(@Nullable target: Any?, method: Method, args: Array<Any?>): Any? {
         try {
             ReflectionUtils.makeAccessible(method)
             return ReflectionUtils.invokeMethod(method, target, *args)

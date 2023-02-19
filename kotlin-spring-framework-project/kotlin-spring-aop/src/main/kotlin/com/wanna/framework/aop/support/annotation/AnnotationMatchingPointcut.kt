@@ -8,12 +8,16 @@ import com.wanna.framework.aop.Pointcut
  *
  * @param annotationClass 要去进行匹配的注解类型
  */
-open class AnnotationMatchingPointcut(val annotationClass: Class<out Annotation>) : Pointcut {
+open class AnnotationMatchingPointcut(private val annotationClass: Class<out Annotation>) : Pointcut {
 
-    // ClassFilter, 用于提供注解的匹配工作
+    /**
+     * ClassFilter, 用于提供注解的匹配工作
+     */
     private val classFilter = AnnotationClassFilter(annotationClass)
 
-    // MethodMatcher
+    /**
+     * MethodMatcher
+     */
     private val methodMatcher = MethodMatcher.TRUE
 
     override fun getClassFilter() = this.classFilter

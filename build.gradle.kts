@@ -1,8 +1,10 @@
 plugins {
     kotlin("jvm") version kotlinVersion
     java
-    maven
+    `maven-publish`
 }
+
+
 
 allprojects {
     group = "com.wanna"
@@ -10,18 +12,35 @@ allprojects {
 
     repositories {
         mavenCentral()
-        jcenter()
         google()
         mavenLocal()
     }
 
     apply {
         plugin("java")
-        plugin("maven")
-        plugin("maven-publish")
+        plugin("maven-publish")  // Gradle7.0+, maven插件被移除, 现在使用maven-publish插件
         plugin("kotlin")
         plugin(com.wanna.plugin.BuildPlugin::class.java)
     }
+
+    // 配置maven发布插件的配置, 必须放到apply之后
+    publishing {
+        publications {
+            create<MavenPublication>("maven") {
+                afterEvaluate {
+                    // 配置发布到Maven仓库时, 需要使用的GAV坐标
+                    groupId = this.group.toString()
+                    artifactId = this.name
+                    version = this.version.toString()
+
+                    // 将Kotlin的源码包添加到发布到Maven仓库的构建, 实现打Jar包的同时打源码包
+                    artifact(tasks.getByName("kotlinSourcesJar"))
+                }
+                from(components["java"])
+            }
+        }
+    }
+
 
     dependencies {
         implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
@@ -47,10 +66,5 @@ allprojects {
 
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
         kotlinOptions.jvmTarget = "1.8"  // set JvmTarget=1.8
-    }
-
-    // 新增产物的构件, 添加KotlinSourcesJar任务, 将源码jar包也一起去进行构建到maven仓库
-    artifacts {
-        archives(tasks.getByName("kotlinSourcesJar"))
     }
 }

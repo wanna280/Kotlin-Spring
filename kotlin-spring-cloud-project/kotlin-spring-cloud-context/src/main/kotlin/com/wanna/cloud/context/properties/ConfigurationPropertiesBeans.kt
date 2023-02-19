@@ -3,16 +3,17 @@ package com.wanna.cloud.context.properties
 import com.wanna.boot.context.properties.ConfigurationPropertiesBean
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.beans.factory.config.BeanPostProcessor
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.ConfigurableApplicationContext
-import com.wanna.framework.beans.factory.config.BeanPostProcessor
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.lang.Nullable
 
 /**
- * 它维护了所有的RefreshScope内的ConfigurationPropertiesBean, 将其维护起来, 方便后期在环境信息发生改变时, 可以去对RefreshScope内的Bean去进行刷新
+ * 它维护了所有的RefreshScope内的[ConfigurationPropertiesBean],
+ * 将其维护起来统一管理, 可以方便后期在环境信息发生改变时, 可以去对RefreshScope内的Bean去进行刷新
  *
  * @see ConfigurationPropertiesRebinder
  */
@@ -22,6 +23,7 @@ open class ConfigurationPropertiesBeans : ApplicationContextAware, BeanFactoryAw
     /**
      * ApplicationContext
      */
+    @Nullable
     private var applicationContext: ApplicationContext? = null
 
     /**
@@ -78,8 +80,12 @@ open class ConfigurationPropertiesBeans : ApplicationContextAware, BeanFactoryAw
 
     /**
      * 在Bean初始化之前, 对Bean检查, 是否是一个ConfigurationPropertiesBean, 如果是的话, 那么需要去进行保存
+     *
+     * @param beanName  beanName
+     * @param bean bean
+     * @return bean
      */
-    override fun postProcessBeforeInitialization(beanName: String, bean: Any): Any? {
+    override fun postProcessBeforeInitialization(beanName: String, bean: Any): Any {
         if (isRefreshScoped(beanName)) {
             val propertiesBean = ConfigurationPropertiesBean.get(getApplicationContext(), bean, beanName)
             if (propertiesBean != null) {
@@ -93,7 +99,7 @@ open class ConfigurationPropertiesBeans : ApplicationContextAware, BeanFactoryAw
      * 判断该Bean是否在RefreshScope当中, 比对beanName对应的BeanDefinition的scope是否是refresh
      *
      * @param beanName 要进行比对的beanName
-     * @return 该Bean是否在RefreshScope当中? 
+     * @return 该Bean是否在RefreshScope当中?
      */
     private fun isRefreshScoped(beanName: String): Boolean {
         val beanFactory = this.beanFactory ?: return false  // not BeanFactory return false

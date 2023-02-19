@@ -5,19 +5,21 @@ import com.wanna.boot.actuate.endpoint.web.EndpointMapping
 import com.wanna.boot.actuate.endpoint.web.ExposableWebEndpoint
 import com.wanna.boot.actuate.endpoint.web.WebOperation
 import com.wanna.boot.actuate.endpoint.web.WebOperationRequestPredicate
+import com.wanna.boot.actuate.endpoint.web.mvc.AbstractWebMvcEndpointHandlerMapping.OperationHandler
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.web.HandlerMapping
+import com.wanna.framework.web.bind.annotation.RequestBody
 import com.wanna.framework.web.bind.annotation.RequestMethod
+import com.wanna.framework.web.bind.annotation.ResponseBody
 import com.wanna.framework.web.method.RequestMappingInfo
 import com.wanna.framework.web.method.RequestMappingInfoHandlerMapping
-import com.wanna.framework.web.bind.annotation.RequestBody
-import com.wanna.framework.web.bind.annotation.ResponseBody
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 import java.lang.reflect.Method
 
 /**
- * 处理WebMvc的Endpoint的HandlerMapping, 支持将Endpoint当中的Operation方法交给OperationHandler去进行代为调用; 
+ * 处理WebMvc的Endpoint的HandlerMapping, 支持将Endpoint当中的Operation方法交给OperationHandler去进行代为调用;
  *
  * 我们沿用父类的大多数方法, 包括路径的匹配, 以及Mapping也使用RequestMappingInfo, 甚至是
  * 管理Handler方法的MappingRegistry都沿用父类的模板方法, 我们需要重写的, 只是寻找HandlerMethod的方式罢了
@@ -36,14 +38,15 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
     private val shouldRegisterLinksMapping: Boolean
 ) : RequestMappingInfoHandlerMapping() {
 
-    // 处理请求的Handler方法(指向Operation的handle方法)
-    private val handlerMethod =
-        ReflectionUtils.findMethod(
-            OperationHandler::class.java,
-            "handle",
-            HttpServerRequest::class.java,
-            Map::class.java
-        )!!
+    /**
+     * 使用反射的方式, 去找到处理请求的Handler方法(指向Operation的handle方法)
+     */
+    private val handlerMethod = ReflectionUtils.findMethod(
+        OperationHandler::class.java,
+        "handle",
+        HttpServerRequest::class.java,
+        Map::class.java
+    )!!
 
     /**
      * 初始化HandlerMapping, 将所有Endpoint当中的所有的Operation方法全部封装成为RequestMappingInfo,
@@ -89,7 +92,7 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
     }
 
     /**
-     * 针对于具体的Operation去进行注册RequestMappingInfo
+     * 针对于具体的Operation去进行注册[RequestMappingInfo]
      *
      * @param endpoint endpoint
      * @param webOperation WebOperation
@@ -118,34 +121,43 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
     }
 
     /**
-     * 根据Predicate去转换成为RequestMappingInfo
+     * 根据Predicate去转换成为[RequestMappingInfo]
      *
      * @param predicate 请求断言
      * @param path requestPath(需要拼接上前缀才能作为真正的path)
      * @return 构建好的RequestMappingInfo
      */
     private fun createRequestMappingInfo(predicate: WebOperationRequestPredicate, path: String): RequestMappingInfo {
-        return RequestMappingInfo.Builder()
+        return RequestMappingInfo
+            .Builder()
             .paths(this.endpointMapping.createSubPath(path))
             .methods(RequestMethod.forName(predicate.getHttpMethod().name))
             .build()
     }
 
     /**
-     * 对于判断isHandler的方式, 我们不用去进行匹配, 因为我们重写了initHandlerMethods方法,
+     * 对于判断isHandler的方式, 我们不用去进行匹配, 因为我们重写了[initHandlerMethods]方法,
      * 我们直接自定义了寻找Handler的方式, 这个方法不会被回调到, 根本不用使用isHandler方法去进行匹配了
+     *
+     * @param beanType beanType
+     * @return false
      */
     override fun isHandler(beanType: Class<*>) = false
 
     /**
-     * 对于针对具体的方法去创建Mapping的具体逻辑, 因为我们直接重写了initHandlerMethods方法, 这个方法根本不会被调用到
+     * 对于针对具体的方法去创建Mapping的具体逻辑, 因为我们直接重写了[initHandlerMethods]方法, 这个方法根本不会被调用到
+     *
+     * @param method method
+     * @param handlerType handlerType
+     * @return null
      */
+    @Nullable
     override fun getMappingForMethod(method: Method, handlerType: Class<*>): RequestMappingInfo? = null
 
     /**
-     * 获取LinksHandler, 交给子类去完成
+     * 获取[LinksHandler], 去对Endpoint的相关URL去进行暴露, 抽象模板方法, 交给子类去完成
      *
-     * @return 你想要使用的LinksHandler
+     * @return LinksHandler
      */
     protected abstract fun getLinksHandler(): LinksHandler
 
@@ -158,14 +170,16 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
     }
 
     /**
-     * 将WebOperation转换为MvcWebOperation的适配器
+     * 将[WebOperation]去转换为[MvcWebOperation]的适配器
      *
      * @param operation WebOperation
      */
     class MvcWebOperationAdapter(private val operation: WebOperation) : MvcWebOperation {
+
+        @Nullable
         override fun handle(
             request: HttpServerRequest,
-            @RequestBody(required = false) body: Map<String, String>?
+            @RequestBody(required = false) @Nullable body: Map<String, String>?
         ): Any? {
             val arguments = getArguments(request, body)
             val context = InvocationContext(arguments)
@@ -180,7 +194,7 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
          * @return 从请求当中解析出来的参数列表
          */
         @Suppress("UNCHECKED_CAST")
-        private fun getArguments(request: HttpServerRequest, body: Map<String, String>?): Map<String, Any> {
+        private fun getArguments(request: HttpServerRequest, @Nullable body: Map<String, String>?): Map<String, Any> {
             val arguments = HashMap<String, Any>()
             val urlVariables = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)
             // 1.add Url Template Variables(PathVariables)
@@ -198,22 +212,33 @@ abstract class AbstractWebMvcEndpointHandlerMapping(
     }
 
     /**
-     * MvcWebOperation的Handler, 提供handle方法, 直接去执行"WebMvcOperation.handle"方法,
+     * [MvcWebOperation]的Handler, 提供handle方法, 直接去执行"WebMvcOperation.handle"方法,
      * 将它作为一个Controller去注册到MappingRegistry当中, 提供的handle方法, 需要将返回值设置为@ResponseBody,
-     * 需要将Body标注为@RequestBody注解, 表示去获取到请求当中的RequestBody, 并放入到Map当中
+     * 需要将Body标注为`@RequestBody`注解, 表示去获取到请求当中的RequestBody, 并放入到Map当中
      *
      * @param operation MvcWebOperation
      */
     class OperationHandler(private val operation: MvcWebOperation) {
+
+        @Nullable
         @ResponseBody
-        fun handle(request: HttpServerRequest, @RequestBody(required = false) body: Map<String, String>?): Any? =
-            operation.handle(request, body)
+        fun handle(
+            request: HttpServerRequest,
+            @RequestBody(required = false) @Nullable body: Map<String, String>?
+        ): Any? = operation.handle(request, body)
     }
 
     /**
      * LinksHandler
      */
     interface LinksHandler {
+        /**
+         * 解析Links
+         *
+         * @param request request
+         * @return response
+         * @return 解析得到的链接映射关系
+         */
         fun links(request: HttpServerRequest, response: HttpServerResponse): Any
     }
 }

@@ -31,9 +31,10 @@ interface ListableBeanFactory : BeanFactory {
      * 给定具体类型type, 去容器中找到该类型的所有Bean列表
      *
      * Note: 允许去使用非单例的Bean(includeNonSingletons=true), 并且允许eager去进行加载(allowEagerInit=true),
-     * ！！！请不要提前使用这个方法, 避免出现Bean的先后顺序出现严重的问题
+     * !!! 请不要提前使用这个方法, 避免出现Bean的先后顺序出现严重的问题
      *
      * @param type 要去进行匹配的类型
+     * @return 解析得到的Bean的列表(Key-beanName, Value-Bean)
      */
     fun <T : Any> getBeansForType(type: Class<T>): Map<String, T>
 
@@ -41,10 +42,10 @@ interface ListableBeanFactory : BeanFactory {
      * 根据type去匹配容器以及父容器当中所有该类型的Bean的beanName
      *
      * Note: 允许去使用非单例的Bean(includeNonSingletons=true), 并且允许eager去进行加载(allowEagerInit=true),
-     * ！！！请不要提前使用这个方法, 避免出现Bean的先后顺序出现严重的问题
+     * !!! 请不要提前使用这个方法, 避免出现Bean的先后顺序出现严重的问题
      *
      * @param type 要去进行匹配的类型
-     * @return List for beanNames
+     * @return List of beanNames
      */
     fun getBeanNamesForTypeIncludingAncestors(type: Class<*>): List<String>
 
