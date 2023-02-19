@@ -833,4 +833,18 @@ open class PropertiesLauncher : Launcher() {
         }
     }
 
+    /**
+     * 嵌套的Archive(Zip/Jar)的寻找的EntryFilter
+     */
+    private class ArchiveEntryFilter : Archive.EntryFilter {
+        companion object {
+            private const val DOT_JAR = ".jar"
+            private const val DOT_ZIP = ".zip"
+        }
+
+        override fun matches(entry: Archive.Entry): Boolean {
+            return entry.name.endsWith(DOT_JAR) || entry.name.endsWith(DOT_ZIP)
+        }
+    }
+
 }
