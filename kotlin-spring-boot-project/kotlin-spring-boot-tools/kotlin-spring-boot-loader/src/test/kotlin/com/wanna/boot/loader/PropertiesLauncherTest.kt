@@ -29,6 +29,7 @@ fun useLoaderProperties() {
 }
 
 fun main() {
+    System.setProperty("loader.home", "/Users/jianchaojia/Desktop/Code/java/Project/WebSpringProject/")
     System.setProperty("loader.debug", "true")
     useLoaderProperties()
     println()

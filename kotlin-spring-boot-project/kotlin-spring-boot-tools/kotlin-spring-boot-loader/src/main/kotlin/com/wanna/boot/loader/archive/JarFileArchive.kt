@@ -203,6 +203,18 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
     }
 
     /**
+     * toString
+     */
+    override fun toString(): String {
+        return try {
+            getUrl().toString()
+        } catch (ex: Exception) {
+            "jar archive"
+        }
+    }
+
+
+    /**
      * 抽象的遍历JarEntry的迭代器
      *
      * @param iterator JarEntry迭代器(java.util.jar.JarEntry)

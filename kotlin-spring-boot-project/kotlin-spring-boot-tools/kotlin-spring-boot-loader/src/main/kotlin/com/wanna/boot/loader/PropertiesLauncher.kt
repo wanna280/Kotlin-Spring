@@ -86,7 +86,8 @@ open class PropertiesLauncher : Launcher() {
         private const val LOADER_ARGS = "loader.args"
 
         /**
-         * Loader的Home目录(默认使用"user.dir"去作为Home目录)
+         * Loader加载资源的Home目录(默认使用"user.dir"去作为Home目录),
+         * 对于执行资源加载时, 将会使用这个目录去作为根目录去进行搜索
          */
         private const val LOADER_HOME = "loader.home"
 
@@ -95,6 +96,12 @@ open class PropertiesLauncher : Launcher() {
          * 可以配置绝对路径, 比如"/tmp/lib", 也可以配置相对路径, 例如"lib"(会以"loader.home"去作为基准地址去进行寻找)
          */
         private const val LOADER_PATH = "loader.path"
+
+        /**
+         * 是否需要将加载到的".properties"配置文件当中的配置信息, 去设置到系统属性当中?
+         * 将这个属性设置为true时, 将会自动把加载".properties"配置文件得到的全部的属性信息去设置到SystemProperties当中
+         */
+        private const val SET_SYSTEM_PROPERTIES = "loader.system"
 
         /**
          * Loader的配置文件路径
@@ -107,18 +114,19 @@ open class PropertiesLauncher : Launcher() {
         private const val CONFIG_NAME = "loader.config.name"
 
         /**
-         * Manifest当中的Start-Class
+         * Manifest当中的"Start-Class"属性Key
          */
         private const val MANIFEST_KEY_START_CLASS = "Start-Class"
 
         /**
-         * Word分隔符
+         * Word分隔符的拆分的正则表达式
          */
         @JvmStatic
         private val WORD_SEPARATOR = Pattern.compile("\\W+")
 
         /**
-         * 嵌套Archive的分隔符
+         * 嵌套Archive的分隔符, 对于嵌套的Archive, 类似"/aaa/bbb.jar!/xxx.jar"的格式,
+         * 对于Archive之内和Archive之外两个部分, 使用"!/"去进行分隔
          */
         @JvmStatic
         private val NESTED_ARCHIVE_SEPARATOR = "!" + File.separator
@@ -133,7 +141,7 @@ open class PropertiesLauncher : Launcher() {
         @Throws(Exception::class)
         @JvmStatic
         fun main(vararg args: String) {
-            // 创建PropertiesLauncher, 完成配置文件的加载
+            // 创建PropertiesLauncher, 完成对于loader.properties配置文件的加载
             val propertiesLauncher = PropertiesLauncher()
 
             // 将loader.args属性当中的参数, 去merge到原始的命令行参数之前
@@ -145,7 +153,8 @@ open class PropertiesLauncher : Launcher() {
     }
 
     /**
-     * Loader的工作目录(HomeDirectory), 可以通过"loader.home"去进行指定, 默认为"user.dir"用户家目录
+     * Loader的工作目录(HomeDirectory), 可以通过"loader.home"去进行指定,
+     * 默认为"user.dir", 也就是当前应用启动的工作目录
      */
     private val home: File
 
@@ -175,7 +184,7 @@ open class PropertiesLauncher : Launcher() {
             // 1.初始化Loader的HomeDirectory
             this.home = this.getHomeDirectory()
 
-            // 2.加载Loader的.properties配置文件
+            // 2.加载Loader的".properties"配置文件
             initializeProperties()
 
             // 3.初始化Paths, 找到用户需要去进行加载的类的来源的目录
@@ -200,6 +209,10 @@ open class PropertiesLauncher : Launcher() {
 
     /**
      * 创建[ClassLoader], 用该[ClassLoader]去加载主启动类, 去完成应用程序的启动
+     *
+     * * 默认情况下, 将会使用[LaunchedURLClassLoader]去作为[ClassLoader]去提供类加载;
+     * * 但是有时候用户想要去进行自定义[ClassLoader], 因此允许用户通过"loader.classLoader"去自定义[ClassLoader]的类,
+     * 为了提供对于嵌套的Archive的加载功能, 因此采用包装原始的[LaunchedURLClassLoader]的方式去进行实现
      *
      * @param archives Archives
      * @return ClassLoader
@@ -238,7 +251,7 @@ open class PropertiesLauncher : Launcher() {
      * 获取到Loader的Home工作目录
      *
      * * 1.如果有指定"loader.home"系统属性的话, 那么使用该属性值去作为HomeDirectory
-     * * 2.如果没有指定"loader.home"系统属性的话, 那么使用"user.dir"属性值(用户家目录)去作为HomeDirectory
+     * * 2.如果没有指定"loader.home"系统属性的话, 那么使用"user.dir"属性值(项目工作目录)去作为HomeDirectory
      *
      * @return HomeDirectory
      */
@@ -267,7 +280,7 @@ open class PropertiesLauncher : Launcher() {
     }
 
     /**
-     * 初始化Loader要去进行加载的类的资源路径
+     * 初始化Loader要去进行加载的类的资源路径, 通过"loader.path"系统属性去进行指定
      */
     private fun initializePaths() {
         val path = getProperty(LOADER_PATH)
@@ -329,12 +342,16 @@ open class PropertiesLauncher : Launcher() {
 
 
     /**
-     * 使用自定义的ClassLoader去进行包装原始的ClassLoader
+     * 使用自定义的[ClassLoader]去进行包装原始的[LaunchedURLClassLoader]作为parentClassLoader,
+     * 允许使用"ClassLoader(parent)"/"ClassLoader(URLs, parent)"/"ClassLoader()"这三种格式的
+     * [ClassLoader]的构造器, 如果不存在有合适的构造器的话, 那么将会丢出[IllegalArgumentException]
      *
      * @param parent parentClassLoader
      * @param className 自定义ClassLoader的类名
      * @return 包装了parentClassLoader的自定义ClassLoader
+     * @throws IllegalArgumentException 如果自定义的ClassLoader的类名无法完成实例化
      */
+    @Throws(IllegalArgumentException::class)
     @Suppress("UNCHECKED_CAST")
     private fun wrapWithCustomClassLoader(parent: ClassLoader, className: String): ClassLoader {
         val classLoaderClass: Class<ClassLoader> = Class.forName(className, true, parent) as Class<ClassLoader>
@@ -502,7 +519,7 @@ open class PropertiesLauncher : Launcher() {
             } else {
                 debug("Found: $config")
                 loadResource(resource)
-                // 只要加载到一个, 默认就行了, return
+                // 只要加载到一个配置文件就已经足够了, 不再去进行继续加载了, 直接return
                 return
             }
         }
@@ -631,7 +648,7 @@ open class PropertiesLauncher : Launcher() {
                     return false
                 }
             }
-            // 如果不是HttpURLConnection的话, 那么检查contentLength
+            // 如果不是HttpURLConnection的话, 那么检查只去检查contentLength即可
             return connection.contentLength >= 0
         } finally {
             if (connection is HttpURLConnection) {
@@ -641,10 +658,35 @@ open class PropertiesLauncher : Launcher() {
     }
 
 
+    /**
+     * 执行配置文件的真正加载
+     *
+     * * 1.将".properties"配置文件内容加载到Properties当中
+     * * 2.对于".properties"配置文件当中的每一行, 去进行占位符解析
+     * * 3.如果"loader.system"=true, 那么将加载到的属性信息, 全部merge到系统属性列表当中
+     *
+     * @param resource 提供对于配置文件的读取的输入流
+     */
     private fun loadResource(resource: InputStream) {
+        // 1.将该配置文件的内容, 加载到Properties对象当中
         this.properties.load(resource)
 
-        // TODO resolve Placeholder
+        // 2.对于加载配置文件得到的所有的属性值, 去执行"${}"占位符解析...
+        for (propertyName in this.properties.propertyNames().toList()) {
+            val text = this.properties[propertyName].toString()
+            val resolvedValue = SystemPropertiesUtils.resolvePlaceholders(this.properties, text)
+            if (resolvedValue != null) {
+                this.properties[propertyName] = resolvedValue
+            }
+        }
+
+        // 3.如果"loader.system"=true, 那么将加载到的属性信息, 全部merge到系统属性列表当中
+        if (getProperty(SET_SYSTEM_PROPERTIES) == "true") {
+            debug("Adding resolved properties to System properties")
+            for (propertyName in this.properties.propertyNames().toList()) {
+                System.setProperty(propertyName.toString(), this.properties[propertyName].toString())
+            }
+        }
     }
 
     /**
@@ -658,6 +700,19 @@ open class PropertiesLauncher : Launcher() {
             // Note: 这里没有Logger, 也无法使用Logger, 只能使用System.out输出一下...
             println(message)
         }
+    }
+
+    /**
+     * 关闭当前[Launcher]时, 需要将所有相关的[JarFileArchive]去进行关闭
+     *
+     * @see ClassPathArchives.close
+     */
+    fun close() {
+        // 关闭所有的JarFileArchive
+        this.classPathArchives?.close()
+
+        // 关闭parent Archive
+        parent.close()
     }
 
 
@@ -767,7 +822,57 @@ open class PropertiesLauncher : Launcher() {
          */
         @Nullable
         private fun getNestedArchives(path: String): List<Archive>? {
-            return null
+            var parent = this@PropertiesLauncher.parent
+            var root = path
+
+            // 如果parent和home一样的话, 那么肯定是无法去进行搜索到嵌套的Archive的...
+            if (root != "/" && root.startsWith("/")
+                && parent.getUrl().toURI() == this@PropertiesLauncher.home.toURI()
+            ) {
+                return null
+            }
+
+            // 如果路径当中含有"!"的话, 说明它给定的是一个嵌套的Jar包当中的Archive的路径
+            // 那么我们将parent, 切入到外层Jar包的根目录去, root则是嵌套的Archive相比于外层Jar包的相对路径
+            // 比如"/aaa/bbb.jar!/ccc/ddd.jar", 我们就需要让parent="/aaa/bbb.jar", root="/ccc/ddd"
+            val index = root.indexOf('!')
+            if (index != -1) {
+                var file = File(this@PropertiesLauncher.home, root.substring(0, index))
+                if (root.startsWith("jar:file:")) {
+                    file = File(root.substring("jar:file:".length, index))
+                }
+                parent = getJarFileArchive(file)
+                root = root.substring(index + 1)
+                while (root.startsWith("/")) {
+                    root = root.substring(1)
+                }
+            }
+
+            // 如果path给定的是一个".jar", 那么我们尝试把parent切入到home目录下,
+            // 从home路径下, 去进行寻找(如果找不到算了)
+            if (root.endsWith(".jar")) {
+                val file = File(this@PropertiesLauncher.home, root)
+                if (file.exists()) {
+                    parent = getJarFileArchive(file)
+                    root = ""
+                }
+            }
+
+            // 对于root是"/", "./", "."这几种情况的路径, 其实都相当于根路径, 统一转换成为""去进行处理
+            if (root == "/" || root == "./" || root == ".") {
+                root = ""
+            }
+            val filter = PrefixMatchingArchiveFilter(root)
+
+            // 将嵌套的Archive当中, 所有的符合要求的Archive, 全部收集起来
+            val archives = ArrayList<Archive>()
+            for (archive in parent.getNestedArchives({ true }, filter)) {
+                archives.add(archive)
+            }
+            if (root.isEmpty() && !path.endsWith(".jar") && parent != this@PropertiesLauncher.parent) {
+                archives += parent
+            }
+            return archives
         }
 
         /**
@@ -834,7 +939,26 @@ open class PropertiesLauncher : Launcher() {
     }
 
     /**
-     * 嵌套的Archive(Zip/Jar)的寻找的EntryFilter
+     * 对于前缀以及后缀去进行匹配的ArchiveFilter, 只有在下面两种情况才才算匹配
+     * * 1.entryName以prefix作为开头,并且后缀是".jar"/".zip"的文件,
+     * * 2.entryName以prefix作为开头的文件夹.
+     *
+     * @param prefix 要去进行匹配的entryName的前缀
+     */
+    private class PrefixMatchingArchiveFilter(private val prefix: String) : Archive.EntryFilter {
+
+        private val suffixFilter = ArchiveEntryFilter()
+
+        override fun matches(entry: Archive.Entry): Boolean {
+            if (entry.isDirectory) {
+                return entry.name.startsWith(prefix)
+            }
+            return entry.name.startsWith(prefix) && suffixFilter.matches(entry)
+        }
+    }
+
+    /**
+     * 用于去进行嵌套的Archive(Zip/Jar)的寻找的EntryFilter
      */
     private class ArchiveEntryFilter : Archive.EntryFilter {
         companion object {
