@@ -10,6 +10,7 @@ import java.io.InputStream
 import java.lang.ref.SoftReference
 import java.net.MalformedURLException
 import java.net.URL
+import java.net.URLStreamHandler
 import java.util.*
 import java.util.function.Supplier
 import java.util.jar.Manifest
@@ -46,7 +47,17 @@ open class JarFile private constructor(
          * Manifest文件名
          */
         private const val MANIFEST_NAME = "META-INF/MANIFEST.MF"
+
+        /**
+         * Java当中的URL Protocol Handler的系统属性Key,
+         * 通过这个系统属性, 可以去自定义处理对应的protocol的URL的[URLStreamHandler]
+         */
         private const val PROTOCOL_HANDLER = "java.protocol.handler.pkgs"
+
+        /**
+         * 我们要去进行使用的Handler的包, 寻找[URLStreamHandler]时会拼接上".{protocol}.Handler"去进行类的寻找,
+         * 因此处理Jar协议的URL时, 可以使用我们自定义的"com.wanna.boot.loader.jar.Handler"类去进行处理
+         */
         private const val HANDLERS_PACKAGE = "com.wanna.boot.loader"
 
         @JvmStatic
@@ -61,16 +72,21 @@ open class JarFile private constructor(
         private const val READ_ACTION = "read"
 
         /**
-         * 注册一个"java.protocol.handler.pkgs"属性到SystemProperties当中,
-         * 以便[java.net.URLStreamHandler]可以定位到, 用来处理那些Jar的URL
+         * 注册一个"java.protocol.handler.pkgs"属性到SystemProperties系统属性当中,
+         * 以便[java.net.URLStreamHandler]可以定位到, 用来处理那些Jar协议的URL
          */
         @JvmStatic
         fun registerUrlProtocolHandler() {
             Handler.captureJarContextUrl()
             val handlers = System.getProperty(PROTOCOL_HANDLER, "")
+
+            // 如果之前不存在有"java.protocol.handler.pkgs"系统属性的话, 那么value设置为"com.wanna.boot.loader"
+            // 如果之前已经存在有"java.protocol.handler.pkgs"系统属性的话, 那么使用"|"去拼接到之前的handles之后
+            // 对于寻找合适的URLStreamHandler去处理URL时, 会通过"{packageName}.{protocol}.Handler"去进行寻找
+            // 因此就会找到我们的"com.wanna.boot.loader.jar.Handler"这个类, 去处理Jar协议的URL
             System.setProperty(
                 PROTOCOL_HANDLER,
-                if (handlers == null || handlers.isEmpty()) HANDLERS_PACKAGE else "$handlers|$HANDLERS_PACKAGE"
+                if (handlers.isNullOrBlank()) HANDLERS_PACKAGE else "$handlers|$HANDLERS_PACKAGE"
             )
             resetCachedUrlHandlers()
         }

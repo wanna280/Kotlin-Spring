@@ -100,8 +100,9 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
         }
 
         /**
-         * 如果可能的话, 捕捉一个可以被原来的JarHandler去进行配置的URL; 以便后续我们可以使用它去作为Fallback的上下文;
-         * 我们仅仅只是想要知道一下最原始是什么, 很快我们就会将JarHandler给重设回去
+         * 如果可能的话, 捕捉一个可以被原来的JarHandler去进行配置的URL;
+         * 以便后续我们可以使用它去作为Fallback的上下文;
+         * 我们仅仅只是想要知道一下最原始的URLHandler是什么, 很快我们就会将JarHandler给重设回去
          */
         @JvmStatic
         fun captureJarContextUrl() {
@@ -112,7 +113,7 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
                     try {
                         resetCachedUrlHandlers()
                         jarContextUrl = URL("jar:file:context.jar!/")
-                        val connection = jarContextUrl!!.openConnection()
+                        val connection = jarContextUrl?.openConnection()
                         if (connection is JarURLConnection) {
                             jarContextUrl = null
                         }

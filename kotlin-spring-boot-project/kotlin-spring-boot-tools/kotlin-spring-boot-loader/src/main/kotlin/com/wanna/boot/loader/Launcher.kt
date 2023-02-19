@@ -32,12 +32,13 @@ abstract class Launcher {
      */
     @Throws(Exception::class)
     protected open fun launch(args: Array<String>) {
-        // 如果当前不是一个解压的包的话, 那么需要注册URLProtocolHandler
+        // 如果当前不是一个解压的包的话, 那么需要注册URLProtocolHandler,
+        // 让Jar协议的URL都能被自定义的Handler这个URLStreamHandler所处理到
         if (!exploded) {
             JarFile.registerUrlProtocolHandler()
         }
 
-        // 创建ClassLoader
+        // 根据ClassPath Archives, 去创建ClassLoader提供对于类的加载
         val classLoader = createClassLoader(getClassPathArchivesIterator())
 
         // 如果是jarmode, 那么使用JarModeLauncher作为启动类
