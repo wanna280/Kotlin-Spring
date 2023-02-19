@@ -66,11 +66,9 @@ open class ExplodedArchive @JvmOverloads constructor(private val root: File, pri
     override fun getUrl(): URL = this.root.toURI().toURL()
 
     /**
-     * 当前Archive归档文件是一个WarExploded, return true
-     *
-     * @return true
+     * 当前Archive归档文件是一个WarExploded, 值为true
      */
-    override fun isExploded(): Boolean = true
+    override val exploded: Boolean = true
 
     /**
      * 获取当前Exploded Archive的Manifest("META-INF/MANIFEST.MF")

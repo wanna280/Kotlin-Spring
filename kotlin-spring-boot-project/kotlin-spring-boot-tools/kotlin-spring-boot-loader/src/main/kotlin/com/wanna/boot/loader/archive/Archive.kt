@@ -41,10 +41,9 @@ interface Archive : Iterable<Archive.Entry>, AutoCloseable {
 
     /**
      * 当前的归档文件是否已经被解压(unpack-解压)了? 默认为false
-     *
-     * @return 如果已经被解压, 那么return true; 如果没有被解压, 那么return false
      */
-    fun isExploded(): Boolean = false
+    val exploded: Boolean
+        get() = false
 
     /**
      * 如果必要的话, 需要去释放当前Archive归档文件相关的资源

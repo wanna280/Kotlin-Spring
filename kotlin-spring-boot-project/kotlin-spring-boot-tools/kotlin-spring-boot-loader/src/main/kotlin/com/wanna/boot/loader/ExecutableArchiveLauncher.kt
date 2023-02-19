@@ -174,6 +174,11 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
         return createClassLoader(urls.toTypedArray())
     }
 
+    /**
+     * 获取当前Launcher所在的Archive
+     *
+     * @return 当前Launcher所在的Archive
+     */
     override fun getArchive(): Archive = this.archive
 
     /**
@@ -197,14 +202,13 @@ abstract class ExecutableArchiveLauncher() : Launcher() {
      */
     abstract fun getArchiveEntryPathPrefix(): String
 
+
     /**
-     * 检查当前Launcher所引导的Archive应用是否是一个解压缩的归档文件
-     *
-     * @return 如果所引导的Archive是War Exploded类型的Archive, return true; 不然return false
+     * 检查当前Launcher所引导的Archive应用是否是一个解压缩的归档文件.
+     * 果所引导的Archive是War Exploded类型的Archive, 值为true; 否则值为false
      */
-    override fun isExploded(): Boolean {
-        return this.archive.isExploded()
-    }
+    override val exploded: Boolean
+        get() = this.archive.exploded
 
     /**
      * 获取MainClass, 从Manifest当中去进行获取到"Start-Class"属性,

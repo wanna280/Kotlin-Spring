@@ -33,7 +33,7 @@ abstract class Launcher {
     @Throws(Exception::class)
     protected open fun launch(args: Array<String>) {
         // 如果当前不是一个解压的包的话, 那么需要注册URLProtocolHandler
-        if (!isExploded()) {
+        if (!exploded) {
             JarFile.registerUrlProtocolHandler()
         }
 
@@ -112,7 +112,7 @@ abstract class Launcher {
      * @return 提供应用程序启动的类的加载的ClassLoader
      */
     protected open fun createClassLoader(urls: Array<URL>): ClassLoader {
-        return LaunchedURLClassLoader(isExploded(), getArchive(), urls, this::class.java.classLoader)
+        return LaunchedURLClassLoader(exploded, getArchive(), urls, this::class.java.classLoader)
     }
 
     /**
@@ -141,11 +141,10 @@ abstract class Launcher {
     }
 
     /**
-     * 该归档文件是否是被解压之后的?
-     *
-     * @return 如果是War Exploded, 那么return true; 否则return false
+     * 该归档文件是否是被解压之后的? ( 如果是War Exploded, 那么值为true; 否则值为false)
      */
-    protected open fun isExploded(): Boolean = false
+    protected open val exploded: Boolean
+        get() = false
 
     /**
      * 获取当前启动器的Archive归档文件对象

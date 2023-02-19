@@ -104,10 +104,10 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
     override fun getManifest(): Manifest? = jarFile.manifest
 
     /**
-     * 获取内部的Archive
+     * 获取JarFile内部嵌套的Archive, 将一个[Archive.Entry]去转换成为一个[Archive]
      *
      * @param entry ArchiveEntry
-     * @return Archive
+     * @return 转换得到的Archive
      */
     protected open fun getNestedArchive(entry: Archive.Entry): Archive {
         val jarEntry = (entry as JarFileEntry).jarEntry
@@ -142,6 +142,7 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
         return JarFileArchive(path.toFile(), path.toUri().toURL())
     }
 
+    @Nullable
     private fun getTempUnpackDirectory(): Path? {
         if (tempUnpackDirectory == null) {
             val tempDirectory = Paths.get(System.getProperty("java.io.tmpdir"))
@@ -150,6 +151,7 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
         return tempUnpackDirectory
     }
 
+    @Nullable
     private fun createUnpackDirectory(parent: Path): Path? {
         var attempts = 0
         while (attempts++ < 1000) {
@@ -224,8 +226,8 @@ open class JarFileArchive(private val jarFile: JarFile) : Archive {
      */
     private abstract class AbstractIterator<T>(
         private val iterator: Iterator<JarEntry>,
-        private val searchFilter: Archive.EntryFilter?,
-        private val includeFilter: Archive.EntryFilter?
+        @Nullable private val searchFilter: Archive.EntryFilter?,
+        @Nullable private val includeFilter: Archive.EntryFilter?
     ) : Iterator<T> {
 
         /**
