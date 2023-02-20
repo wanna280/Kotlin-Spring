@@ -77,6 +77,7 @@ open class JarFile private constructor(
          */
         @JvmStatic
         fun registerUrlProtocolHandler() {
+            // 通过保存下来一个JarContextURL, 去捕捉原始的Jar URL Protocol Handler
             Handler.captureJarContextUrl()
             val handlers = System.getProperty(PROTOCOL_HANDLER, "")
 
@@ -88,18 +89,22 @@ open class JarFile private constructor(
                 PROTOCOL_HANDLER,
                 if (handlers.isNullOrBlank()) HANDLERS_PACKAGE else "$handlers|$HANDLERS_PACKAGE"
             )
+
+            // 再次将URL Handler缓存清空掉...
             resetCachedUrlHandlers()
         }
 
         /**
-         * 重设已经缓存的URLStreamHandler
+         * 重设[URL]类当中已经缓存的[URLStreamHandler]
+         *
+         * @see URL.setURLStreamHandlerFactory
          */
         @JvmStatic
         private fun resetCachedUrlHandlers() {
             try {
                 URL.setURLStreamHandlerFactory(null)
             } catch (ex: Error) {
-                // Ignore
+                // catch Error throw from URL.setURLStreamHandlerFactory and ignore
             }
         }
     }
