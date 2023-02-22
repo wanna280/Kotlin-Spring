@@ -106,7 +106,7 @@ open class TypeMappedAnnotations(
         if (this.annotationFilter.matches(annotationType)) {
             return MergedAnnotation.missing()
         }
-        val result = scan(annotationType, MergedAnnotationFinder<A>(annotationType, predicate, selector))
+        val result = scan(annotationType, MergedAnnotationFinder(annotationType, predicate, selector))
         return result ?: MergedAnnotation.missing()
     }
 
@@ -128,7 +128,7 @@ open class TypeMappedAnnotations(
         if (this.annotationFilter.matches(annotationName)) {
             return MergedAnnotation.missing()
         }
-        val result = scan(annotationName, MergedAnnotationFinder<A>(annotationName, predicate, selector))
+        val result = scan(annotationName, MergedAnnotationFinder(annotationName, predicate, selector))
         return result ?: MergedAnnotation.missing()
     }
 
@@ -215,12 +215,13 @@ open class TypeMappedAnnotations(
      * @param processor 需要对注解去进行处理和收集的AnnotationsProcessor回调方法
      * @return AnnotationsProcessor针对注解去进行处理的结果(or null)
      */
+    @Suppress("UNCHECKED_CAST")
     @Nullable
     private fun <C, R> scan(criteria: C, processor: AnnotationsProcessor<C, R>): R? {
         // 如果存在有直接给定的注解的话, 那么直接根据AnnotationProcessor从注解上去进行搜索即可
         if (this.annotations != null) {
             // 利用AnnotationsProcessor直接对给定的注解去进行处理
-            val result = processor.doWithAnnotations(criteria, 0, null, this.annotations)
+            val result = processor.doWithAnnotations(criteria, 0, null, this.annotations as Array<Annotation?>)
 
             // 使用AnnotationsProcessor的finish方法, 去对结果去进行后置收尾处理工作
             return processor.finish(result)
@@ -332,7 +333,7 @@ open class TypeMappedAnnotations(
                     val mappings = aggregate.getMappings(annotationIndex)
                     var numberOfMappings = mappings.size
                     if (aggregateIndex == aggregateCursor && mappingCursors != null) {
-                        numberOfMappings -= Math.min(mappingCursors!![annotationIndex], mappings.size)
+                        numberOfMappings -= mappingCursors!![annotationIndex].coerceAtMost(mappings.size)
                     }
                     size += numberOfMappings
                 }
@@ -401,7 +402,7 @@ open class TypeMappedAnnotations(
          */
         @Nullable
         fun <A : Annotation> createIfPossible(annotationIndex: Int, mappingIndex: Int): MergedAnnotation<A>? {
-            return TypeMappedAnnotation.createIfPossible<A>(
+            return TypeMappedAnnotation.createIfPossible(
                 this.mappings[annotationIndex][mappingIndex],
                 this.source,
                 this.annotations[annotationIndex],
@@ -433,7 +434,7 @@ open class TypeMappedAnnotations(
          */
         @Nullable
         override fun doWithAnnotations(
-            context: Any, aggregateIndex: Int, @Nullable source: Any?, annotations: Array<Annotation>
+            context: Any, aggregateIndex: Int, @Nullable source: Any?, annotations: Array<Annotation?>
         ): List<Aggregate>? {
             aggregates.add(createAggregate(aggregateIndex, source, annotations))
             return null
@@ -448,7 +449,7 @@ open class TypeMappedAnnotations(
          * @return 创建得到的汇总了所有的注解的Aggregate对象
          */
         private fun createAggregate(
-            aggregateIndex: Int, @Nullable source: Any?, annotations: Array<Annotation>
+            aggregateIndex: Int, @Nullable source: Any?, annotations: Array<Annotation?>
         ): Aggregate {
             return Aggregate(aggregateIndex, source, getAggregateAnnotations(annotations))
         }
@@ -459,21 +460,22 @@ open class TypeMappedAnnotations(
          * @param annotations 候选的注解列表
          * @return 需要去进行汇总的注解列表(使用AnnotationFilter去执行过滤操作)
          */
-        private fun getAggregateAnnotations(annotations: Array<Annotation>): List<Annotation> {
+        private fun getAggregateAnnotations(annotations: Array<Annotation?>): List<Annotation> {
             val aggregateAnnotations = ArrayList<Annotation>()
             addAggregateAnnotations(aggregateAnnotations, annotations)
             return aggregateAnnotations
         }
 
+        @Suppress("UNCHECKED_CAST")
         private fun addAggregateAnnotations(
-            aggregateAnnotations: MutableList<Annotation>, annotations: Array<Annotation>
+            aggregateAnnotations: MutableList<Annotation>, annotations: Array<Annotation?>
         ) {
             for (annotation in annotations) {
-                if (!annotationFilter.matches(annotation)) {
+                if (annotation != null && !annotationFilter.matches(annotation)) {
                     // 如果有重复注解的话, 那么扫描出来进行递归处理
                     val repeatedAnnotations = repeatableContainers.findRepeatedAnnotations(annotation)
                     if (repeatedAnnotations != null) {
-                        addAggregateAnnotations(aggregateAnnotations, repeatedAnnotations)
+                        addAggregateAnnotations(aggregateAnnotations, repeatedAnnotations as Array<Annotation?>)
                     } else {
                         aggregateAnnotations.add(annotation)
                     }
@@ -504,12 +506,15 @@ open class TypeMappedAnnotations(
          * @param annotations 待检查的注解列表
          * @return 如果给定的注解当中存在有requiredType的话return true, 否则return null
          */
+        @Suppress("UNCHECKED_CAST")
         override fun doWithAnnotations(
-            context: Any, aggregateIndex: Int, source: Any?, annotations: Array<Annotation>
+            context: Any, aggregateIndex: Int, source: Any?, annotations: Array<Annotation?>
         ): Boolean? {
 
             // 根据给定的所有的注解, 尝试去进行匹配
             for (annotation in annotations) {
+                annotation ?: continue
+
                 val annotationType = annotation.annotationClass.java
 
                 // 检查这个注解类型是否应该跳过, 对于AnnotationFilter匹配上的, 不应该进行检查
@@ -522,7 +527,12 @@ open class TypeMappedAnnotations(
                     // 检查一波@Repeatable的Container当中装了多个注解的情况, 让Container内部的注解和context去进行一波匹配
                     val repeatedAnnotations = repeatableContainers.findRepeatedAnnotations(annotation)
                     if (repeatedAnnotations != null) {
-                        val result = doWithAnnotations(context, aggregateIndex, source, repeatedAnnotations)
+                        val result = doWithAnnotations(
+                            context,
+                            aggregateIndex,
+                            source,
+                            repeatedAnnotations as Array<Annotation?>
+                        )
                         if (result != null) {
                             return result
                         }
@@ -598,10 +608,10 @@ open class TypeMappedAnnotations(
         @Suppress("UNCHECKED_CAST")
         @Nullable
         override fun doWithAnnotations(
-            context: Any, aggregateIndex: Int, @Nullable source: Any?, annotations: Array<Annotation>
+            context: Any, aggregateIndex: Int, @Nullable source: Any?, annotations: Array<Annotation?>
         ): MergedAnnotation<A>? {
             // 根据给定的所有的候选的注解当中, 去找出来一个合适的
-            for (annotation in (annotations as Array<Annotation?>)) {
+            for (annotation in annotations) {
                 if (annotation != null && !annotationFilter.matches(annotation)) {
                     val result = process(context, aggregateIndex, source, annotation)
                     if (result != null) {
@@ -618,6 +628,7 @@ open class TypeMappedAnnotations(
          * @param source  source
          * @param annotation 待进行处理的Annotation
          */
+        @Suppress("UNCHECKED_CAST")
         @Nullable
         private fun process(
             type: Any, aggregateIndex: Int, @Nullable source: Any?, annotation: Annotation
@@ -625,7 +636,7 @@ open class TypeMappedAnnotations(
             // 如果有@Repeatable重复注解的Container, 那么对重复注解去进行匹配
             val repeatedAnnotations = repeatableContainers.findRepeatedAnnotations(annotation)
             if (repeatedAnnotations != null) {
-                return doWithAnnotations(type, aggregateIndex, source, repeatedAnnotations)
+                return doWithAnnotations(type, aggregateIndex, source, repeatedAnnotations as Array<Annotation?>)
             }
 
             // 建立起来给定的注解的注解的映射关系(包含当前注解, 也包含对应的Meta注解的相关信息)
