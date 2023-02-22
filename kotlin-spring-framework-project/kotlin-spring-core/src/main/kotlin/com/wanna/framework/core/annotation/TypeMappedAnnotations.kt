@@ -595,13 +595,14 @@ open class TypeMappedAnnotations(
          * @param annotations 候选的待去进行处理的注解列表
          * @return 找到的类型匹配的注解的MergedAnnotation
          */
+        @Suppress("UNCHECKED_CAST")
         @Nullable
         override fun doWithAnnotations(
             context: Any, aggregateIndex: Int, @Nullable source: Any?, annotations: Array<Annotation>
         ): MergedAnnotation<A>? {
             // 根据给定的所有的候选的注解当中, 去找出来一个合适的
-            for (annotation in annotations) {
-                if (!annotationFilter.matches(annotation)) {
+            for (annotation in (annotations as Array<Annotation?>)) {
+                if (annotation != null && !annotationFilter.matches(annotation)) {
                     val result = process(context, aggregateIndex, source, annotation)
                     if (result != null) {
                         return result
