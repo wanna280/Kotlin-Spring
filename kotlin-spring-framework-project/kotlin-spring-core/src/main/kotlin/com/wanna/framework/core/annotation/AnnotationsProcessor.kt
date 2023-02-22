@@ -14,7 +14,7 @@ interface AnnotationsProcessor<C, R> {
     fun doWithAggregate(context: C, aggregateIndex: Int): R? = null
 
     @Nullable
-    fun doWithAnnotations(context: C, aggregateIndex: Int, @Nullable source: Any?, annotations: Array<Annotation>): R?
+    fun doWithAnnotations(context: C, aggregateIndex: Int, @Nullable source: Any?, annotations: Array<Annotation?>): R?
 
     @Nullable
     fun finish(@Nullable result: R?): R? {

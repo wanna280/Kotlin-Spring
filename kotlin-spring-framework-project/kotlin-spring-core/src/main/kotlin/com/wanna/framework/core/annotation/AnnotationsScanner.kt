@@ -10,7 +10,7 @@ import java.lang.reflect.AnnotatedElement
 import java.lang.reflect.Member
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
-import java.util.Arrays
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -318,6 +318,7 @@ object AnnotationsScanner {
      * @param includeInterfaces 是否要处理接口?
      * @return 使用给定的AnnotationsProcessor去处理注解的结果...
      */
+    @Suppress("UNCHECKED_CAST")
     @Nullable
     @JvmStatic
     private fun <C, R> processClassHierarchy(
@@ -341,7 +342,7 @@ object AnnotationsScanner {
 
             // 1.检查类上是否直接定义了该注解? 如果有的话, 直接return ...
             val declaredAnnotations = getDeclaredAnnotations(source, false)
-            result = processor.doWithAnnotations(context, aggregateIndex[0], source, declaredAnnotations)
+            result = processor.doWithAnnotations(context, aggregateIndex[0], source, declaredAnnotations as Array<Annotation?>)
             if (result != null) {
                 return result
             }
@@ -556,6 +557,7 @@ object AnnotationsScanner {
      * @param processor 对注解去进行处理(例如收集)的Processor, 是一个Callback方法
      * @return 如果AnnotationsProcessor找到了合适的注解, return result; 否则return null
      */
+    @Suppress("UNCHECKED_CAST")
     @JvmStatic
     @Nullable
     private fun <C, R> processMethodAnnotations(
@@ -565,7 +567,7 @@ object AnnotationsScanner {
         val annotations = getDeclaredAnnotations(source, false)
 
         // 利用该方法身上的注解, 利用AnnotationsProcessor去进行处理
-        val result = processor.doWithAnnotations(context, aggregateIndex, source, annotations)
+        val result = processor.doWithAnnotations(context, aggregateIndex, source, annotations as Array<Annotation?>)
         if (result != null) {
             return result
         }
@@ -575,6 +577,7 @@ object AnnotationsScanner {
     /**
      * 处理一个AnnotatedElement上的注解
      */
+    @Suppress("UNCHECKED_CAST")
     @Nullable
     @JvmStatic
     private fun <C, R> processElement(
@@ -583,7 +586,7 @@ object AnnotationsScanner {
         processor: AnnotationsProcessor<C, R>
     ): R? {
         return processor.doWithAggregate(context, 0) ?: processor.doWithAnnotations(
-            context, 0, source, getDeclaredAnnotations(source, false)
+            context, 0, source, getDeclaredAnnotations(source, false) as Array<Annotation?>
         )
     }
 

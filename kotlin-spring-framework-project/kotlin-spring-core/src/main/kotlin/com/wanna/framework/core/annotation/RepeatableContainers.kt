@@ -42,7 +42,8 @@ abstract class RepeatableContainers(@Nullable private val parent: RepeatableCont
      * @param annotation annotation
      */
     @Nullable
-    open fun findRepeatedAnnotations(annotation: Annotation): Array<Annotation>? {
+    open fun findRepeatedAnnotations(annotation: Annotation?): Array<Annotation>? {
+        annotation ?: return null
         return this.parent?.findRepeatedAnnotations(annotation)
     }
 
@@ -68,7 +69,8 @@ abstract class RepeatableContainers(@Nullable private val parent: RepeatableCont
          */
         @Suppress("UNCHECKED_CAST")
         @Nullable
-        override fun findRepeatedAnnotations(annotation: Annotation): Array<Annotation>? {
+        override fun findRepeatedAnnotations(@Nullable annotation: Annotation?): Array<Annotation>? {
+            annotation ?: return null
             val method = getRepeatedAnnotationsMethod(annotation.annotationClass.java)
             if (method != null) {
                 return ReflectionUtils.invokeMethod(method, annotation) as Array<Annotation>?

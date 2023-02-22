@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.regex.Pattern
+import javax.annotation.Nullable
 import kotlin.collections.set
 
 /**
@@ -57,11 +58,21 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
 
         private const val PARENT_DIR = "/../"
 
+        /**
+         * Java当中用于去进行寻找URL Protocol Handler的系统属性Key
+         */
         private const val PROTOCOL_HANDLER = "java.protocol.handler.pkgs"
 
+        /**
+         * Fallback的Java原生的Jar URL Protocol Handler
+         */
         @JvmStatic
         private val FALLBACK_HANDLERS = arrayOf("sun.net.www.protocol.jar.Handler")
 
+        /**
+         * JarContextURL, 用于去捕捉原始的Jar协议的Handler,
+         * 我们会去进行自定义Handler, 因此我们需要去将原始的Handler去保存下来, 通过JarContextURL的方式去保存原始的Handler
+         */
         @JvmStatic
         private var jarContextUrl: URL? = null
 
@@ -100,48 +111,74 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
         }
 
         /**
-         * 如果可能的话, 捕捉一个可以被原来的JarHandler去进行配置的URL; 以便后续我们可以使用它去作为Fallback的上下文;
-         * 我们仅仅只是想要知道一下最原始是什么, 很快我们就会将JarHandler给重设回去
+         * 如果可能的话, 捕捉一个可以被原来的Jar Handler去进行配置的URL;
+         * 以便后续我们可以使用它去作为Fallback的上下文, 在失败时, 我们可以尝试去走fallback的打开Connection的方式;
+         * 在这个方法当中, 我们仅仅只是想要知道一下最原始的URLHandler是什么, 在使用完毕之后很快我们就会将JarHandler给重设回去
          */
         @JvmStatic
         fun captureJarContextUrl() {
+            // 如果之前URL还未设置过URLStreamHandlerFactory的话, 那么...
             if (canResetCachedUrlHandlers()) {
+
+                // 清空掉SystemProperties当中的ProtocolHandler属性
                 val handlers = System.getProperty(PROTOCOL_HANDLER)
                 try {
                     System.clearProperty(PROTOCOL_HANDLER)
                     try {
+
+                        // 清空URL当中已经缓存的所有的URL Handler
                         resetCachedUrlHandlers()
+
+                        // 构建出来一个"jar:file:context.jar!/"
+                        // 尝试根据这个URL, 去进行URL Handler的推断
                         jarContextUrl = URL("jar:file:context.jar!/")
-                        val connection = jarContextUrl!!.openConnection()
+                        val connection = jarContextUrl?.openConnection()
+
+                        // 如果打开的Connection是我们自定义的JarURLConnection, 那么无需使用jarContextURL
                         if (connection is JarURLConnection) {
                             jarContextUrl = null
                         }
                     } catch (ex: Exception) {
+                        // ignore
                     }
                 } finally {
+
+                    // 在处理完成之后, 我们将ProtocolHandler重新设置到SystemProperties当中
                     if (handlers == null) {
                         System.clearProperty(PROTOCOL_HANDLER)
                     } else {
                         System.setProperty(PROTOCOL_HANDLER, handlers)
                     }
                 }
+
+                // 因为在JarContextURL的构建过程当中会缓存Handler, 因此在使用完成之后, 我们将URL Handler缓存清空掉
                 resetCachedUrlHandlers()
             }
         }
 
+        /**
+         * 检查我们是否可以去进行重设缓存当中的URLHandler?
+         * 如果之前已经设置过非空的[URLStreamHandlerFactory]的话, 那么将不允许去进行重设, return false
+         *
+         * @return 如果可以去进行重设URLHandler的缓存的话, 那么return true; 否则return false
+         */
         @JvmStatic
         private fun canResetCachedUrlHandlers(): Boolean {
             return try {
                 resetCachedUrlHandlers()
                 true
             } catch (ex: Error) {
+                // catch Error throw from URL.setURLStreamHandlerFactory
                 false
             }
         }
 
         /**
-         * reset已经缓存的URLStreamHandler列表
+         * 如果可以的话, 那么reset已经缓存的URLStreamHandler列表
+         *
+         * @throws Error 如果之前URL已经设置过非空URLStreamHandlerFactory
          */
+        @Throws(Error::class)
         @JvmStatic
         private fun resetCachedUrlHandlers() = URL.setURLStreamHandlerFactory(null)
     }
@@ -163,7 +200,7 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
         }
 
     /**
-     * 根据给定的的URL, 去开启[URLConnection]
+     * 根据给定的的URL, 去开启[URLConnection], 提供对于该[URL]连接的数据访问
      *
      * @param url URL
      * @return URLConnection
@@ -187,7 +224,7 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
     }
 
     /**
-     * 判断给定的url是否在JarFile当中
+     * 判断给定的url是否在目标JarFile当中, 通过前缀匹配的方式去进行检查
      *
      * @param url url
      * @param jarFile JarFile
@@ -279,6 +316,7 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
      * @param url url
      * @return URLConnection(不存在jarContextUrl, 或者打开失败, return null)
      */
+    @Nullable
     private fun openFallbackContextConnection(url: URL): URLConnection? {
         try {
             if (jarContextUrl != null) {
@@ -476,7 +514,7 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
         return try {
             check(name.startsWith(FILE_PROTOCOL)) { "给定的url不是一个文件协议(file:)的URL" }
             val file = File(URI.create(name))
-            val cache: Map<File, JarFile>? = rootFileCache.get()
+            val cache = rootFileCache.get()
             var result = cache?.get(file)
             if (result == null) {
                 result = JarFile(file)
