@@ -1,5 +1,7 @@
 package com.wanna.framework.core.annotation
 
+import javax.annotation.Nullable
+
 /**
  * 提供对于注解的匹配的Filter, 如果该注解和AnnotationFilter匹配了, 那么说明该注解需要被过滤掉
  *
@@ -14,7 +16,7 @@ fun interface AnnotationFilter {
      * @param type 注解对象
      * @return 如果该注解的类名和AnnotationFilter匹配的话, 那么return true; 否则return false
      */
-    fun matches(type: Annotation): Boolean = matches(type.annotationClass.java)
+    fun matches(@Nullable type: Annotation?): Boolean = type != null && matches(type.annotationClass.java)
 
 
     /**
@@ -23,7 +25,7 @@ fun interface AnnotationFilter {
      * @param type 注解类型Class
      * @return 如果该注解的类名和AnnotationFilter匹配的话, 那么return true; 否则return false
      */
-    fun matches(type: Class<*>): Boolean = matches(type.name)
+    fun matches(@Nullable type: Class<*>?): Boolean = type != null && matches(type.name)
 
     /**
      * 执行对于目标注解类型(className)的匹配
@@ -31,7 +33,7 @@ fun interface AnnotationFilter {
      * @param typeName 注解的ClassName
      * @return 如果typeName和AnnotationFilter匹配的话, 那么return true; 否则return false
      */
-    fun matches(typeName: String): Boolean
+    fun matches(typeName: String?): Boolean
 
     companion object {
 
@@ -52,9 +54,9 @@ fun interface AnnotationFilter {
          */
         @JvmStatic
         val ALL = object : AnnotationFilter {
-            override fun matches(type: Annotation): Boolean = true
-            override fun matches(type: Class<*>): Boolean = true
-            override fun matches(typeName: String): Boolean = true
+            override fun matches(@Nullable type: Annotation?): Boolean = true
+            override fun matches(@Nullable type: Class<*>?): Boolean = true
+            override fun matches(@Nullable typeName: String?): Boolean = true
             override fun toString(): String = "ALL Filtered"
         }
 
