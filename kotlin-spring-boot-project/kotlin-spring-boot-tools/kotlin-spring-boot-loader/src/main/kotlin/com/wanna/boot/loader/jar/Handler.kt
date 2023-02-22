@@ -200,7 +200,7 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
         }
 
     /**
-     * 根据给定的的URL, 去开启[URLConnection]
+     * 根据给定的的URL, 去开启[URLConnection], 提供对于该[URL]连接的数据访问
      *
      * @param url URL
      * @return URLConnection
@@ -224,7 +224,7 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
     }
 
     /**
-     * 判断给定的url是否在目标JarFile当中
+     * 判断给定的url是否在目标JarFile当中, 通过前缀匹配的方式去进行检查
      *
      * @param url url
      * @param jarFile JarFile
@@ -514,7 +514,7 @@ class Handler @JvmOverloads constructor(private val jarFile: JarFile? = null) : 
         return try {
             check(name.startsWith(FILE_PROTOCOL)) { "给定的url不是一个文件协议(file:)的URL" }
             val file = File(URI.create(name))
-            val cache: Map<File, JarFile>? = rootFileCache.get()
+            val cache = rootFileCache.get()
             var result = cache?.get(file)
             if (result == null) {
                 result = JarFile(file)
