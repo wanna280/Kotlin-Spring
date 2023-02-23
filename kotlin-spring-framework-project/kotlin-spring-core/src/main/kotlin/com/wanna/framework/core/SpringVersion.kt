@@ -12,7 +12,8 @@ import com.wanna.framework.lang.Nullable
 object SpringVersion {
 
     /**
-     * 获取到Spring的版本信息, 如果无法获取到return null
+     * 获取到Spring的版本信息, 如果无法获取到return null.
+     * 通过Spring-Core的Manifest当中去进行读取.
      *
      * @return version
      */

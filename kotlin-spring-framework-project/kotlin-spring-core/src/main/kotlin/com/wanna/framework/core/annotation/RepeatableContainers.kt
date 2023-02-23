@@ -42,7 +42,7 @@ abstract class RepeatableContainers(@Nullable private val parent: RepeatableCont
      * @param annotation annotation
      */
     @Nullable
-    open fun findRepeatedAnnotations(annotation: Annotation?): Array<Annotation>? {
+    open fun findRepeatedAnnotations(@Nullable annotation: Annotation?): Array<Annotation>? {
         annotation ?: return null
         return this.parent?.findRepeatedAnnotations(annotation)
     }
