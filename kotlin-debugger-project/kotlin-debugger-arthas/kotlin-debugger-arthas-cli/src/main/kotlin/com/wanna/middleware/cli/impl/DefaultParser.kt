@@ -31,11 +31,11 @@ class DefaultParser {
         // 为所有的Argument, 去填充index
         var current = 0
         for (argument in cli.getArguments()) {
-            if (argument.index == -1) {
-                argument.index = current
+            if (argument.getIndex() == -1) {
+                argument.setIndex(current)
                 current++
             } else {
-                current = argument.index + 1
+                current = argument.getIndex() + 1
             }
         }
         // sort arguments
