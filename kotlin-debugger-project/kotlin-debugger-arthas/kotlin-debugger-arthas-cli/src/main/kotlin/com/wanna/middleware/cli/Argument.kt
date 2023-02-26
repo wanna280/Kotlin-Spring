@@ -20,8 +20,26 @@ package com.wanna.middleware.cli
  */
 open class Argument {
 
-    var index: Int = -1
+    private var index: Int = -1
 
-    var name: String = ""
+    private var name: String = ""
+
+    open fun setIndex(index: Int): Argument {
+        this.index = index
+        return this
+    }
+
+    open fun getIndex(): Int {
+        return this.index
+    }
+
+    open fun setName(name: String): Argument {
+        this.name = name
+        return this
+    }
+
+    open fun getName(): String {
+        return this.name
+    }
 
 }

@@ -144,7 +144,7 @@ open class DefaultCLI : CLI {
             throw IllegalArgumentException("Given index cannot be negative")
         }
         for (argument in arguments) {
-            if (argument.index == index) {
+            if (argument.getIndex() == index) {
                 return argument
             }
         }
@@ -153,7 +153,7 @@ open class DefaultCLI : CLI {
 
     override fun getArgument(name: String): Argument {
         for (argument in arguments) {
-            if (optionOrArgumentEquals(argument.name, name)) {
+            if (optionOrArgumentEquals(argument.getName(), name)) {
                 return argument
             }
         }
@@ -162,7 +162,7 @@ open class DefaultCLI : CLI {
 
     override fun removeArgument(index: Int): CLI {
         for (argument in TreeSet(this.arguments)) {
-            if (argument.index == index) {
+            if (argument.getIndex() == index) {
                 this.arguments.remove(argument)
             }
         }
