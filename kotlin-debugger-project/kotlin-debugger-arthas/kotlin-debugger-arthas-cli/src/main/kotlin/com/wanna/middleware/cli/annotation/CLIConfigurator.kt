@@ -2,6 +2,7 @@ package com.wanna.middleware.cli.annotation
 
 import com.wanna.middleware.cli.CLI
 import com.wanna.middleware.cli.CommandLine
+import com.wanna.middleware.cli.TypedArgument
 import com.wanna.middleware.cli.TypedOption
 import com.wanna.middleware.cli.impl.ArgumentComparator
 import com.wanna.middleware.cli.impl.DefaultCLI
@@ -68,6 +69,12 @@ object CLIConfigurator {
         return cli
     }
 
+    /**
+     * 根据给定的Setter方法上标注的相关注解, 去构建出来Option对象
+     *
+     * @param method setter method
+     * @return Option
+     */
     @Suppress("UNCHECKED_CAST")
     @JvmStatic
     private fun createOption(method: Method): com.wanna.middleware.cli.Option {
@@ -100,9 +107,38 @@ object CLIConfigurator {
         return opt
     }
 
+    /**
+     * 根据给定的Setter方法上标注的注解, 去构建出来Argument对象
+     *
+     * @param method method
+     * @return Argument
+     */
+    @Suppress("UNCHECKED_CAST")
     @JvmStatic
     private fun createArgument(method: Method): com.wanna.middleware.cli.Argument {
-        return com.wanna.middleware.cli.Argument()
+        val arg = TypedArgument<Any>()
+        val argument = method.getAnnotation(Argument::class.java)
+            ?: throw IllegalStateException("Cannot find @Argument annotation on method")
+        arg.setIndex(argument.index)
+        arg.setArgName(argument.argName)
+        arg.setRequired(argument.required)
+
+        val description = method.getAnnotation(Description::class.java)
+        if (description != null) {
+            arg.setDescription(description.value)
+        }
+        val hidden = method.getAnnotation(Hidden::class.java)
+        if (hidden != null) {
+            arg.setHidden(true)
+        }
+
+        if (ReflectionUtils.isMultiple(method)) {
+            arg.setType(ReflectionUtils.getComponentType(method, 0) as Class<Any>)
+        } else {
+            val type = method.parameterTypes[0]
+            arg.setType(type as Class<Any>)
+        }
+        return arg
     }
 
     /**

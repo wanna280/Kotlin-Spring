@@ -153,7 +153,7 @@ open class DefaultCLI : CLI {
 
     override fun getArgument(name: String): Argument {
         for (argument in arguments) {
-            if (optionOrArgumentEquals(argument.getName(), name)) {
+            if (optionOrArgumentEquals(argument.getArgName(), name)) {
                 return argument
             }
         }

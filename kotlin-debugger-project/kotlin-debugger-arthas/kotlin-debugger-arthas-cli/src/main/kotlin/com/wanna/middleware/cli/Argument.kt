@@ -22,7 +22,13 @@ open class Argument {
 
     private var index: Int = -1
 
-    private var name: String = ""
+    private var argName: String = ""
+
+    private var description: String = ""
+
+    private var hidden: Boolean = false
+
+    private var required: Boolean = false
 
     open fun setIndex(index: Int): Argument {
         this.index = index
@@ -33,13 +39,39 @@ open class Argument {
         return this.index
     }
 
-    open fun setName(name: String): Argument {
-        this.name = name
+    open fun setArgName(name: String): Argument {
+        this.argName = name
         return this
     }
 
-    open fun getName(): String {
-        return this.name
+    open fun getArgName(): String {
+        return this.argName
     }
 
+    open fun isHidden(): Boolean {
+        return this.hidden
+    }
+
+    open fun setHidden(hidden: Boolean): Argument {
+        this.hidden = hidden
+        return this
+    }
+
+    open fun getDescription(): String {
+        return this.description
+    }
+
+    open fun setDescription(description: String): Argument {
+        this.description = description
+        return this
+    }
+
+    open fun isRequired(required: Boolean): Boolean {
+        return this.required
+    }
+
+    open fun setRequired(required: Boolean): Argument {
+        this.required = required
+        return this
+    }
 }
