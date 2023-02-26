@@ -108,6 +108,13 @@ open class Option {
         return this
     }
 
+    /**
+     * 检查参数值的合法性
+     */
+    open fun ensureValidity() {
+
+    }
+
 
     companion object {
         /**

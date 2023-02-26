@@ -74,4 +74,11 @@ open class Argument {
         this.required = required
         return this
     }
+
+    /**
+     * 检查参数值的合法性
+     */
+    open fun ensureValidity() {
+
+    }
 }
