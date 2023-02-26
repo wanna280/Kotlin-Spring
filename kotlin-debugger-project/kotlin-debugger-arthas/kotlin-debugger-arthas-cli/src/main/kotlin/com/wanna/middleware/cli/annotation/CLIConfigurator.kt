@@ -1,14 +1,12 @@
 package com.wanna.middleware.cli.annotation
 
-import com.wanna.middleware.cli.CLI
-import com.wanna.middleware.cli.CommandLine
-import com.wanna.middleware.cli.TypedArgument
-import com.wanna.middleware.cli.TypedOption
+import com.wanna.middleware.cli.*
 import com.wanna.middleware.cli.converter.Converter
 import com.wanna.middleware.cli.impl.ArgumentComparator
 import com.wanna.middleware.cli.impl.DefaultCLI
 import com.wanna.middleware.cli.impl.ReflectionUtils
 import java.lang.reflect.Method
+import javax.annotation.Nullable
 
 
 /**
@@ -86,6 +84,7 @@ object CLIConfigurator {
         opt.setArgName(option.argName)
             .setLongName(option.longName)
             .setShortName(option.shortName)
+            .setRequired(option.required)
 
         val description = method.getAnnotation(Description::class.java)
         if (description != null) {
@@ -170,13 +169,60 @@ object CLIConfigurator {
     }
 
     /**
-     * 执行CLI的注入
+     * 执行CLI的注入, 对于`@Option`/`@Argument`注解的Setter方法去进行回调, 完成注入
      *
      * @param commandLine commandLine
      * @param obj 要去进行注入的实例对象
      */
     @JvmStatic
     fun inject(commandLine: CommandLine, obj: Any) {
+        val setterMethods = ReflectionUtils.getSetterMethods(obj.javaClass)
+        for (setterMethod in setterMethods) {
 
+            // check @Option
+            val option = setterMethod.getAnnotation(Option::class.java)
+            if (option != null) {
+                var name = option.longName
+                if (name.isBlank()) {
+                    name = option.shortName
+                }
+                try {
+                    val injected = getOptionValue(setterMethod, name, commandLine)
+                    if (injected != null) {
+                        setterMethod.isAccessible = true
+                        setterMethod.invoke(obj, injected)
+                    }
+                } catch (ex: Exception) {
+                    throw CLIException("Cannot inject value for option '$name'", ex)
+                }
+            }
+
+            // check @Argument
+            val argument = setterMethod.getAnnotation(Argument::class.java)
+            if (argument != null) {
+                val index = argument.index
+                try {
+                    val injected = getArgumentValue(setterMethod, index, commandLine)
+                    if (injected != null) {
+                        setterMethod.isAccessible = true
+                        setterMethod.invoke(obj, injected)
+                    }
+                } catch (ex: Exception) {
+                    throw CLIException("Cannot inject value for argument '$index'", ex)
+                }
+            }
+        }
+    }
+
+    @Nullable
+    @JvmStatic
+    private fun getArgumentValue(method: Method, index: Int, commandLine: CommandLine): Any? {
+        return Any()
+    }
+
+    @Nullable
+    @JvmStatic
+    private fun getOptionValue(method: Method, name: String, commandLine: CommandLine): Any? {
+        return Any()
     }
 }

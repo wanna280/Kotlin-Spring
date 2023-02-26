@@ -58,8 +58,34 @@ object ReflectionUtils {
         throw IllegalStateException("Cannot get componentType")
     }
 
+    /**
+     * 从给定的类当中, 去提取到所有的Setter方法
+     *
+     * * Note: 获取的是所有的public方法, 对于private方法不算
+     *
+     * @param clazz clazz
+     * @return 从该类当中去获取到的所有的Setter方法
+     */
     @JvmStatic
     fun getSetterMethods(clazz: Class<*>): List<Method> {
-        return emptyList()
+        val setterMethods = ArrayList<Method>()
+        val methods = clazz.methods
+        for (method in methods) {
+            if (isSetterMethod(method)) {
+                setterMethods.add(method)
+            }
+        }
+        return setterMethods
+    }
+
+    /**
+     * 检查给定的方法, 是否是一个JavaBean的Setter方法
+     *
+     * @param method 待检查的方法
+     * @return 如果该方法的方法名以"set"开头, 并且参数数量为1, 说明是Setter方法, return true; 否则return false
+     */
+    @JvmStatic
+    fun isSetterMethod(method: Method): Boolean {
+        return method.name.startsWith("set") && method.parameterCount == 1
     }
 }
