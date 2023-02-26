@@ -12,6 +12,11 @@ import java.lang.reflect.ParameterizedType
  */
 object ReflectionUtils {
 
+    @JvmStatic
+    fun <T> newInstance(clazz: Class<T>): T {
+        return clazz.getDeclaredConstructor().newInstance()
+    }
+
     /**
      * 检查给定的Setter的参数是否是一个Multiple? 也就是是否是一个集合/数组
      *

@@ -4,6 +4,7 @@ import com.wanna.middleware.cli.CLI
 import com.wanna.middleware.cli.CommandLine
 import com.wanna.middleware.cli.TypedArgument
 import com.wanna.middleware.cli.TypedOption
+import com.wanna.middleware.cli.converter.Converter
 import com.wanna.middleware.cli.impl.ArgumentComparator
 import com.wanna.middleware.cli.impl.DefaultCLI
 import com.wanna.middleware.cli.impl.ReflectionUtils
@@ -104,6 +105,22 @@ object CLIConfigurator {
                 opt.setSingleValued(true)
             }
         }
+
+        val convertedBy = method.getAnnotation(ConvertedBy::class.java)
+        if (convertedBy != null) {
+            opt.setConverter(ReflectionUtils.newInstance(convertedBy.value.java) as Converter<Any>)
+        }
+
+        val defaultValue = method.getAnnotation(DefaultValue::class.java)
+        if (defaultValue != null) {
+            opt.setDefaultValue(defaultValue.value)
+        }
+
+        val parsedAsList = method.getAnnotation(ParsedAsList::class.java)
+        if (parsedAsList != null) {
+            opt.setParsedAsList(true).setListSeparator(parsedAsList.separator)
+        }
+
         return opt
     }
 
@@ -138,6 +155,17 @@ object CLIConfigurator {
             val type = method.parameterTypes[0]
             arg.setType(type as Class<Any>)
         }
+
+        val convertedBy = method.getAnnotation(ConvertedBy::class.java)
+        if (convertedBy != null) {
+            arg.setConverter(ReflectionUtils.newInstance(convertedBy.value.java) as Converter<Any>)
+        }
+
+        val defaultValue = method.getAnnotation(DefaultValue::class.java)
+        if (defaultValue != null) {
+            arg.setDefaultValue(defaultValue.value)
+        }
+
         return arg
     }
 
