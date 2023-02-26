@@ -11,6 +11,6 @@ import com.wanna.middleware.cli.Argument
  */
 object ArgumentComparator : Comparator<Argument> {
     override fun compare(o1: Argument, o2: Argument): Int {
-        return if (o1.index == o2.index) 1 else o1.index.compareTo(o2.index)
+        return if (o1.getIndex() == o2.getIndex()) 1 else o1.getIndex().compareTo(o2.getIndex())
     }
 }
