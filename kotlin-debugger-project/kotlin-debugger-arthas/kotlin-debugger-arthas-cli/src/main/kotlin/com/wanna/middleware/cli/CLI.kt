@@ -3,7 +3,7 @@ package com.wanna.middleware.cli
 import javax.annotation.Nullable
 
 /**
- * CLI命令行
+ * CLI命令行的相关参数的模板信息
  *
  * @author jianchao.jia
  * @version v1.0
@@ -58,7 +58,8 @@ interface CLI {
 
     fun removeOption(name: String): CLI
 
-    fun getOption(name: String): Option
+    @Nullable
+    fun getOption(name: String): Option?
 
     fun getOptions(): List<Option>
 
@@ -68,9 +69,11 @@ interface CLI {
 
     fun setArguments(arguments: List<Argument>): CLI
 
-    fun getArgument(index: Int): Argument
+    @Nullable
+    fun getArgument(index: Int): Argument?
 
-    fun getArgument(name: String): Argument
+    @Nullable
+    fun getArgument(name: String): Argument?
 
     fun removeArgument(index: Int): CLI
 

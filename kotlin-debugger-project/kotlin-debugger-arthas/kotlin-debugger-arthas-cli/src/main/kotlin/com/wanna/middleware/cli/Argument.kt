@@ -30,6 +30,8 @@ open class Argument {
 
     private var required: Boolean = false
 
+    private var defaultValue: String = ""
+
     open fun setIndex(index: Int): Argument {
         this.index = index
         return this
@@ -73,6 +75,15 @@ open class Argument {
     open fun setRequired(required: Boolean): Argument {
         this.required = required
         return this
+    }
+
+    open fun setDefaultValue(defaultValue: String): Argument {
+        this.defaultValue = defaultValue
+        return this
+    }
+
+    open fun getDefaultValue(): String {
+        return this.defaultValue
     }
 
     /**

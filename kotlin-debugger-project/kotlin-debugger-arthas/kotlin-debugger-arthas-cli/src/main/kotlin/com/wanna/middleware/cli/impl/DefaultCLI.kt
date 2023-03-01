@@ -2,6 +2,7 @@ package com.wanna.middleware.cli.impl
 
 import com.wanna.middleware.cli.*
 import java.util.*
+import javax.annotation.Nullable
 
 /**
  * 默认的CLI命令行的实现
@@ -109,13 +110,14 @@ open class DefaultCLI : CLI {
         return this
     }
 
-    override fun getOption(name: String): Option {
+    @Nullable
+    override fun getOption(name: String): Option? {
         for (option in options) {
             if (optionOrArgumentEquals(option.getArgName(), name)) {
                 return option
             }
         }
-        throw IllegalStateException("Cannot get option by name $name")
+        return null
     }
 
     override fun getOptions(): List<Option> {
@@ -139,7 +141,8 @@ open class DefaultCLI : CLI {
         return this
     }
 
-    override fun getArgument(index: Int): Argument {
+    @Nullable
+    override fun getArgument(index: Int): Argument? {
         if (index < 0) {
             throw IllegalArgumentException("Given index cannot be negative")
         }
@@ -148,16 +151,17 @@ open class DefaultCLI : CLI {
                 return argument
             }
         }
-        throw IllegalStateException("Cannot get argument by index $index")
+        return null
     }
 
-    override fun getArgument(name: String): Argument {
+    @Nullable
+    override fun getArgument(name: String): Argument? {
         for (argument in arguments) {
             if (optionOrArgumentEquals(argument.getArgName(), name)) {
                 return argument
             }
         }
-        throw IllegalStateException("Cannot get argument by name $name")
+        return null
     }
 
     override fun removeArgument(index: Int): CLI {

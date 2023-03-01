@@ -18,11 +18,30 @@ import javax.annotation.Nullable
  */
 object CLIConfigurator {
 
+    /**
+     * 根据给定的类当中的相关注解, 去解析成为[CLI]
+     *
+     * * 1.解析该类上的`@Name`注解成为命令的commandName;
+     * * 2.解析该类当中的`@Option`注解和`@Argument`注解的Setter方法成为命令的相关参数.
+     *
+     * @param clazz clazz
+     * @return CLI
+     */
     @JvmStatic
     fun define(clazz: Class<*>): CLI {
         return define(clazz, false)
     }
 
+    /**
+     * 根据给定的类当中的相关注解, 去解析成为[CLI]
+     *
+     * * 1.解析该类上的`@Name`注解成为命令的commandName;
+     * * 2.解析该类当中的`@Option`注解和`@Argument`注解的Setter方法成为命令的相关参数.
+     *
+     * @param clazz clazz
+     * @param caseSensitive 是否区分大小写?
+     * @return CLI
+     */
     @JvmStatic
     fun define(clazz: Class<*>, caseSensitive: Boolean): CLI {
         val cli = DefaultCLI()
