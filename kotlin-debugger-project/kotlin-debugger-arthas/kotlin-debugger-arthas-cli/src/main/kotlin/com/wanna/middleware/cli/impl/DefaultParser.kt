@@ -1,6 +1,7 @@
 package com.wanna.middleware.cli.impl
 
 import com.wanna.middleware.cli.*
+import javax.annotation.Nullable
 
 /**
  * 命令行参数的解析器, 将字符串的参数列表, 去解析成为一个[CommandLine]对象
@@ -106,14 +107,17 @@ open class DefaultParser {
         } else if (token == "--") {
             this.skipParsing = true
 
-            // 如果当前有正在进行处理的Option, 并且它还接收参数值的话, 那么将token收集到Option的参数当中器
+            // 如果当前有正在进行处理的Option, 并且它还接收参数值,
+            // 并且该token当中不含有longName/shortName的话, 那么将token收集到Option的参数当中器
         } else if (current != null && this.current!!.acceptValue() && this.isValue(token)) {
             getCommandLine().addRawValue(this.current!!, token)
+
             // 如果是"--"开头, 那么当作长参数(LongOption)去进行处理
+            // 有可能是"--xxx=y"和"--xxx"这种形式
         } else if (token.startsWith("--")) {
             handleLongOption(token)
 
-            // 如果是"-"开头, 那么当作短参数去进行处理
+            // 如果是单纯的"-"开头, 那么当作短参数(ShortOption)去进行处理
         } else if (token.startsWith("-") && token != "-") {
             handleShortAndLongOption(token)
 
@@ -214,28 +218,20 @@ open class DefaultParser {
     open fun getMatchingOptions(token: String): List<Option> {
         val opt = stripLeadingHyphens(token)
 
-        val matchingOptions = ArrayList<Option>()
-        var iterator = getCLI().getOptions().iterator()
-
-        var option: Option
-        while (true) {
-            // 如果找到最后, 都没有找到longName和opt相同的Option, 那么尝试一下基于前缀去进行匹配...
-            if (!iterator.hasNext()) {
-                iterator = getCLI().getOptions().iterator()
-                while (iterator.hasNext()) {
-                    option = iterator.next()
-                    if (option.getLongName() != Option.NO_NAME && option.getLongName().startsWith(opt)) {
-                        matchingOptions.add(option)
-                    }
-                }
-                return matchingOptions
-            }
-
-            option = iterator.next()
+        for (option in getCLI().getOptions()) {
             if (this.optionEquals(option.getLongName(), opt)) {
                 return listOf(option)
             }
         }
+
+        val matchingOptions = ArrayList<Option>()
+        // 如果找到最后, 都没有找到longName和opt相同的Option, 那么尝试一下基于前缀去进行匹配...
+        for (option in getCLI().getOptions()) {
+            if (option.getLongName() != Option.NO_NAME && option.getLongName().startsWith(opt)) {
+                matchingOptions.add(option)
+            }
+        }
+        return matchingOptions
     }
 
     /**
@@ -273,8 +269,112 @@ open class DefaultParser {
         getCommandLine().addArgumentValue(token)
     }
 
+    /**
+     * 判断给定的token, 是否是一个值? 对于shortName/longName, 都不算是一个值
+     *
+     * @param token token
+     * @return 该token对应的是否是一个值?
+     */
     private fun isValue(token: String): Boolean {
+        return !isOption(token) || isNegativeNumber(token)
+    }
+
+    /**
+     * 判断给定的token是否是一个Option?
+     *
+     * @param token token
+     * @return 如果它是longOption/shortOption, 那么return true; 否则return false
+     */
+    private fun isOption(token: String): Boolean {
+        return isLongOption(token) || isShortOption(token)
+    }
+
+    /**
+     * 判断给定的token是否是一个Option
+     *
+     * @param token token
+     * @return 如果该token是一个LongOption的话, return true; 负责return false
+     */
+    private fun isLongOption(token: String): Boolean {
+        if (token.startsWith('-') && token.length != 1) {
+            val index = token.indexOf('=')
+            val str = if (index == -1) token else token.substring(index)
+
+            // 如果可以寻找到合适的Option的话, 那么说明它是一个LongOption
+            if (getMatchingOptions(str).isNotEmpty()) {
+                return true
+            } else {
+                return getLongPrefix(token) != null && !token.startsWith("--")
+            }
+        }
         return false
+    }
+
+    /**
+     * 获取LongOption的前缀, 根据给定的token, 切取任意长度的字符串, 去进行检验是否存在有合适的Option?
+     *
+     * @param token token
+     * @return Option LongName Prefix(or null)
+     */
+    @Nullable
+    private fun getLongPrefix(token: String): String? {
+        val tokenToUse = stripLeadingHyphens(token)
+        for (i in (2..tokenToUse.length - 2).reversed()) {
+            val prefix = tokenToUse.substring(0, i)
+            if (this.hasOptionWithLongName(tokenToUse)) {
+                return prefix
+            }
+        }
+        return null
+    }
+
+    /**
+     * 检查CLI当中, 是否存在有和给定的name所匹配的longName的Option
+     *
+     * @param name name
+     * @return 如果存在有name匹配的Option, return true; 否则return false
+     */
+    private fun hasOptionWithLongName(name: String): Boolean {
+        for (option in getCLI().getOptions()) {
+            if (optionEquals(option.getLongName(), name)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    /**
+     * 检查给定的token, 是否是一个Option的shortName
+     *
+     * @param token token
+     * @return 如果该token对应的是一个Option的shortName, 那么return true; 否则return false
+     */
+    private fun isShortOption(token: String): Boolean {
+        return token.startsWith('-') && token.length > 2 && hasOptionWithLongName(token)
+    }
+
+    /**
+     * 检查是否存在有name, 和目标Option的shortName匹配的Option?
+     *
+     * @param name name
+     * @return 如果存在有shortName匹配的name, 那么return true; 否则return false
+     */
+    private fun hasOptionWithShortName(name: String): Boolean {
+        for (option in getCLI().getOptions()) {
+            if (optionEquals(option.getShortName(), name)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun isNegativeNumber(token: String): Boolean {
+        try {
+            token.toDouble()
+            return true
+        } catch (ex: Throwable) {
+            return false
+        }
     }
 
     private fun getCLI(): CLI {

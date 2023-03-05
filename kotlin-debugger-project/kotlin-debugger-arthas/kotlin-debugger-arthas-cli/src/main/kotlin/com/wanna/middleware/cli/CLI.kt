@@ -26,16 +26,32 @@ interface CLI {
     fun parse(args: List<String>, validate: Boolean): CommandLine
 
     /**
-     * 设置CLI命令的名字
+     * 设置CLI命令的名字commandName
      *
      * @param name command name
      */
     fun setName(name: String): CLI
 
+    /**
+     * 获取CLI命令的commandName
+     *
+     * @return commandName
+     */
     fun getName(): String
 
+    /**
+     * 设置当前CLI命令的描述信息
+     *
+     * @param description 描述信息
+     * @return this
+     */
     fun setDescription(description: String): CLI
 
+    /**
+     * 获取当前CLI命令的描述信息
+     *
+     * @return 当前CLI命令的描述信息
+     */
     fun getDescription(): String
 
     fun setSummary(summary: String): CLI
@@ -46,9 +62,21 @@ interface CLI {
 
     fun isHidden(): Boolean
 
+    /**
+     * 命令是否要忽略大小写? true代表区分大小写, false代表区分大小写
+     *
+     * @return 是否大小写敏感?
+     */
     fun isCaseSensitive(): Boolean
 
+    /**
+     * 设置当前的命令是否要区分大小写
+     *
+     * @param caseSensitive 当前命令是否区分大小写?
+     */
     fun setCaseSensitive(caseSensitive: Boolean): CLI
+
+    // -------------------------Option相关API---------------------------------
 
     fun addOption(option: Option): CLI
 
@@ -62,6 +90,8 @@ interface CLI {
     fun getOption(name: String): Option?
 
     fun getOptions(): List<Option>
+
+    // -------------------------Argument相关API---------------------------------
 
     fun addArgument(argument: Argument): CLI
 
@@ -78,6 +108,8 @@ interface CLI {
     fun removeArgument(index: Int): CLI
 
     fun getArguments(): List<Argument>
+
+    // -------------------------Usage相关API---------------------------------
 
     fun usage(builder: StringBuilder): CLI
 

@@ -37,6 +37,13 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
         return this
     }
 
+    /**
+     * 为给定的Option, 去添加一个参数值
+     *
+     * @param option Option
+     * @param value 要去进行添加的参数值
+     * @return this(DefaultCommandLine)
+     */
     open fun addRawValue(option: Option, value: String): DefaultCommandLine {
         var list = this.optionValues[option]
         if (list == null) {
@@ -73,7 +80,7 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
      * @return 如果该Option已经分配了参数值, return true; 否则return false
      */
     override fun isOptionAssigned(option: Option): Boolean {
-        return getRawValuesForOption(option).isEmpty()
+        return getRawValuesForOption(option).isNotEmpty()
     }
 
     @Nullable

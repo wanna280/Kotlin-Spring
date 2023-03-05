@@ -113,7 +113,19 @@ open class DefaultCLI : CLI {
     @Nullable
     override fun getOption(name: String): Option? {
         for (option in options) {
-            if (optionOrArgumentEquals(option.getArgName(), name)) {
+            if (option.getArgName() == name) {
+                return option
+            }
+        }
+
+        for (option in options) {
+            if (option.getShortName() == name) {
+                return option
+            }
+        }
+
+        for (option in options) {
+            if (option.getLongName() == name) {
                 return option
             }
         }

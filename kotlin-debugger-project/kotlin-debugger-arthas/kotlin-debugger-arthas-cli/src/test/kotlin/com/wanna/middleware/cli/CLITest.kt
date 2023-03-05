@@ -13,8 +13,18 @@ import com.wanna.middleware.cli.annotation.Option
 @Name("wanna")
 class CLITest {
 
-    @Option()
-    fun setA(a: String?) {
+    @Option(longName = "pid")
+    fun setPid(pid: String?) {
+
+    }
+
+    @Option(longName = "core")
+    fun setCore(core: String) {
+
+    }
+
+    @Option(longName = "agent")
+    fun setAgent(agent: String) {
 
     }
 
@@ -46,16 +56,18 @@ fun main() {
         .setShortName("target-ip")
 
     val cli = CLIs.create(CLITest::class.java)
-        .addOption(pidOption)
-        .addOption(coreOption)
-        .addOption(agentOption)
-        .addOption(targetIpOption)
+//        .addOption(pidOption)
+//        .addOption(coreOption)
+//        .addOption(agentOption)
+//        .addOption(targetIpOption)
 
-    val args = listOf<String>()
+    val args = listOf<String>("--pid=1999", "--core", "1000", "--agent", "xxx")
 
     // 根据args去解析成为CommandLine
     val commandLine = cli.parse(args)
 
+    val pid = commandLine.getOptionValue<String>("pid")
+    val core = commandLine.getOptionValue<String>("core")
     val agent = commandLine.getOptionValue<String>("agent")
 
 
