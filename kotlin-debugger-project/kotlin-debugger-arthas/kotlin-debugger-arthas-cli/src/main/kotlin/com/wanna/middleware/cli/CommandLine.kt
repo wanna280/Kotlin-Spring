@@ -68,6 +68,7 @@ interface CommandLine {
      * @param option Option
      * @return 该Option对应的已经分配的原始参数值
      */
+    @Nullable
     fun getRawValueForOption(option: Option): String?
 
     /**
@@ -77,5 +78,6 @@ interface CommandLine {
      * @param argument Argument
      * @return 该Argument对应的已经分配的原始参数值
      */
-    fun getRawValueForArgument(argument: Argument): String
+    @Nullable
+    fun getRawValueForArgument(argument: Argument): String?
 }
