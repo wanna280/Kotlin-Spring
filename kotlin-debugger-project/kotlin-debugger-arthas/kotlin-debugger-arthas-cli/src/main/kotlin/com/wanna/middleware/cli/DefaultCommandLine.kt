@@ -65,24 +65,50 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
         return if (option is TypedOption<*>) return getValue(option as TypedOption<T>) else getRawValueForOption(option) as T
     }
 
+    /**
+     * 检查给定的Option是否已经分配了参数值?
+     *
+     * @param option Option
+     * @return 如果该Option已经分配了参数值, return true; 否则return false
+     */
     override fun isOptionAssigned(option: Option): Boolean {
         return getRawValueForOption(option).isEmpty()
     }
 
+    @Nullable
     override fun <T> getArgumentValue(name: String): T? {
-        TODO("Not yet implemented")
+        val argument = this.cli.getArgument(name)
+        return if (argument == null) null else this.getArgumentValue(argument.getIndex())
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T> getArgumentValue(index: Int): T? {
-        TODO("Not yet implemented")
+        val argument = this.cli.getArgument(index) ?: return null
+        if (argument !is TypedArgument<*>) {
+            return getRawValueForArgument(argument) as T?
+        }
+        // TODO
+        return null
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T> getOptionValues(name: String): List<T>? {
-        TODO("Not yet implemented")
+        val option = cli.getOption(name) ?: return null
+        if (option !is TypedOption<*>) {
+            return getRawValuesForOption(option) as List<T>?
+        }
+        // TODO
+        return null
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T> getArgumentValues(name: String): List<T>? {
-        TODO("Not yet implemented")
+        val argument = cli.getArgument(name) ?: return null
+        if (argument !is TypedArgument<*>) {
+            return getRawValuesForArgument(argument) as List<T>?
+        }
+        // TODO
+        return null
     }
 
     /**
@@ -91,12 +117,21 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
      * @param option Option
      * @return 如果该Option已经分配了参数值, return true; 否则return false
      */
-    override fun getRawValueForOption(option: Option): List<String> {
+    override fun getRawValuesForOption(option: Option): List<String> {
         return rawValues(this.optionValues[option])
     }
 
-    override fun getRawValueForArgument(argument: Argument): List<String> {
+    override fun getRawValuesForArgument(argument: Argument): List<String> {
         return rawValues(argumentValues[argument])
+    }
+
+    override fun getRawValueForOption(option: Option): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun getRawValueForArgument(argument: Argument): String {
+        val values = argumentValues[argument]
+        return if (!values.isNullOrEmpty()) values[0] else argument.getDefaultValue()
     }
 
     @Nullable
