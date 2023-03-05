@@ -117,7 +117,7 @@ open class DefaultParser {
         } else if (token.startsWith("--")) {
             handleLongOption(token)
 
-            // 如果是单纯的"-"开头, 那么当作短参数(ShortOption)去进行处理
+            // 如果是单纯的"-"开头, 那么当作短参数(ShortOption)去进行处理(当然, 遇到长参数也可以处理)
         } else if (token.startsWith("-") && token != "-") {
             handleShortAndLongOption(token)
 
@@ -261,8 +261,66 @@ open class DefaultParser {
     }
 
 
+    /**
+     * 处理"-"开头的长参数/短参数
+     *
+     * @param token token
+     */
     private fun handleShortAndLongOption(token: String) {
+        val tokenToUse = stripLeadingHyphens(token)
 
+        val index = tokenToUse.indexOf('=')
+
+        // 如果长度为1, 那么尝试shortName的逻辑
+        if (tokenToUse.length == 1) {
+            if (hasOptionWithShortName(tokenToUse)) {
+                handleOption(getOption(tokenToUse))
+            } else {
+                handleArgument(tokenToUse)
+            }
+        } else {
+
+            // TODO
+
+            // 如果token当中没有"="的话
+            if (index == -1) {
+                if (hasOptionWithShortName(tokenToUse)) {
+                    handleOption(getOption(tokenToUse))
+                } else if (this.getMatchingOptions(tokenToUse).isNotEmpty()) {
+                    handleLongOptionWithoutEquals(tokenToUse)
+                } else {
+
+                }
+
+
+                // 如果token当中有"="的话
+            } else {
+                val opt = tokenToUse.substring(0, index)
+                val strip = tokenToUse.substring(index + 1)
+
+                // 如果option长度为1, 那么尝试走shortOption
+                if (opt.length == 1) {
+
+                } else {
+
+                }
+            }
+        }
+    }
+
+    /**
+     * 根据name去寻找Option
+     *
+     * @param name name
+     * @return Option
+     */
+    open fun getOption(name: String): Option {
+        for (option in getCLI().getOptions()) {
+            if (option.getLongName() == name || option.getShortName() == name) {
+                return option
+            }
+        }
+        throw IllegalStateException("cannot find Option by name $name")
     }
 
     private fun handleArgument(token: String) {
