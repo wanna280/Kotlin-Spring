@@ -1,5 +1,7 @@
 package com.wanna.middleware.cli
 
+import javax.annotation.Nullable
+
 /**
  * 对于一个命令行来说, 分为name/option/argument三个部分
  *
@@ -31,6 +33,8 @@ open class Option {
     private var required: Boolean = false
 
     private var hidden: Boolean = false
+
+    private var defaultValue: String = ""
 
     private var singleValued: Boolean = false
 
@@ -110,6 +114,16 @@ open class Option {
 
     open fun acceptValue(): Boolean {
         return this.singleValued || this.multipleValued
+    }
+
+    @Nullable
+    open fun getDefaultValue(): String? {
+        return this.defaultValue
+    }
+
+    open fun setDefaultValue(defaultValue: String): Option {
+        this.defaultValue = defaultValue
+        return this
     }
 
     /**

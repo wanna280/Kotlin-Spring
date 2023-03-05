@@ -14,8 +14,6 @@ open class TypedArgument<T> : Argument() {
 
     private var converter: Converter<T>? = null
 
-    private var defaultValue: String? = null
-
     open fun getType(): Class<T> {
         return this.type ?: throw IllegalStateException("type has not been initialized")
     }
@@ -25,8 +23,8 @@ open class TypedArgument<T> : Argument() {
         return this
     }
 
-    open fun getConverter(): Converter<T> {
-        return this.converter ?: throw IllegalStateException("Converter has not been initialized")
+    open fun getConverter(): Converter<T>? {
+        return this.converter
     }
 
     open fun setConverter(converter: Converter<T>): TypedArgument<T> {
@@ -34,12 +32,8 @@ open class TypedArgument<T> : Argument() {
         return this
     }
 
-    override fun getDefaultValue(): String {
-        return this.defaultValue ?: throw IllegalStateException("defaultValue has not been initialized")
-    }
-
     override fun setDefaultValue(defaultValue: String): TypedArgument<T> {
-        this.defaultValue = defaultValue
+        super.setDefaultValue(defaultValue)
         return this
     }
 

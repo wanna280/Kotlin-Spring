@@ -62,19 +62,20 @@ interface CommandLine {
     fun getRawValuesForArgument(argument: Argument): List<String>
 
     /**
-     * 为给定的Option去获取到已经分配的原始参数值
+     * 为给定的Option去获取到已经分配的原始参数值, 如果该Option给定了多个参数值, 那么返回第一个;
+     * 如果该Option参数值没有指定的话, 那么返回给Option的默认值
      *
      * @param option Option
-     * @return 该Option已经分配的参数值
+     * @return 该Option对应的已经分配的原始参数值
      */
-    fun getRawValueForOption(option: Option): String
+    fun getRawValueForOption(option: Option): String?
 
     /**
      * 为给定的Argument去获取到所有的原始参数值, 如果该Argument给定了多个参数值, 那么返回第一个;
      * 如果该Argument参数值没有指定的话, 那么返回该Argument的默认值
      *
      * @param argument Argument
-     * @return 该Argument对应的原始参数值列表
+     * @return 该Argument对应的已经分配的原始参数值
      */
     fun getRawValueForArgument(argument: Argument): String
 }

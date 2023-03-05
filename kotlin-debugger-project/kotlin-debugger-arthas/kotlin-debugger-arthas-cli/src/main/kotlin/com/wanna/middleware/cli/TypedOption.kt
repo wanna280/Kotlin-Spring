@@ -1,6 +1,7 @@
 package com.wanna.middleware.cli
 
 import com.wanna.middleware.cli.converter.Converter
+import javax.annotation.Nullable
 
 /**
  *
@@ -47,8 +48,8 @@ open class TypedOption<T> : Option() {
         return this
     }
 
-    open fun getConverter(): Converter<T> {
-        return this.converter ?: throw IllegalStateException("Converter has not been initialized")
+    open fun getConverter(): Converter<T>? {
+        return this.converter
     }
 
     open fun setConverter(converter: Converter<T>): TypedOption<T> {
@@ -56,11 +57,12 @@ open class TypedOption<T> : Option() {
         return this
     }
 
-    open fun getDefaultValue(): String {
-        return this.defaultValue ?: throw IllegalStateException("defaultValue has not been initialized")
+    @Nullable
+    override fun getDefaultValue(): String? {
+        return this.defaultValue
     }
 
-    open fun setDefaultValue(defaultValue: String): TypedOption<T> {
+    override fun setDefaultValue(defaultValue: String): TypedOption<T> {
         this.defaultValue = defaultValue
         return this
     }

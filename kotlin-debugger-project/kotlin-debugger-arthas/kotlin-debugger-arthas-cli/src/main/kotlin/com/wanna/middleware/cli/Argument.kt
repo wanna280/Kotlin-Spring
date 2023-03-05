@@ -1,5 +1,7 @@
 package com.wanna.middleware.cli
 
+import javax.annotation.Nullable
+
 /**
  * 对于一个命令行来说, 分为name/option/argument三个部分
  *
@@ -30,7 +32,7 @@ open class Argument {
 
     private var required: Boolean = false
 
-    private var defaultValue: String = ""
+    private var defaultValue: String? = null
 
     open fun setIndex(index: Int): Argument {
         this.index = index
@@ -82,7 +84,8 @@ open class Argument {
         return this
     }
 
-    open fun getDefaultValue(): String {
+    @Nullable
+    open fun getDefaultValue(): String? {
         return this.defaultValue
     }
 

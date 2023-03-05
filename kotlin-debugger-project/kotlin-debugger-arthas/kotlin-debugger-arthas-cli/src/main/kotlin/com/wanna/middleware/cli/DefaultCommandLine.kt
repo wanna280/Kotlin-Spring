@@ -1,5 +1,6 @@
 package com.wanna.middleware.cli
 
+import com.wanna.middleware.cli.converter.Converters
 import javax.annotation.Nullable
 
 /**
@@ -72,7 +73,7 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
      * @return 如果该Option已经分配了参数值, return true; 否则return false
      */
     override fun isOptionAssigned(option: Option): Boolean {
-        return getRawValueForOption(option).isEmpty()
+        return getRawValuesForOption(option).isEmpty()
     }
 
     @Nullable
@@ -87,8 +88,7 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
         if (argument !is TypedArgument<*>) {
             return getRawValueForArgument(argument) as T?
         }
-        // TODO
-        return null
+        return create(getRawValueForArgument(argument), argument as TypedArgument<T>)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -125,8 +125,10 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
         return rawValues(argumentValues[argument])
     }
 
-    override fun getRawValueForOption(option: Option): String {
-        TODO("Not yet implemented")
+    @Nullable
+    override fun getRawValueForOption(option: Option): String? {
+        return if (isOptionAssigned(option)) return getRawValuesForOption(option)[0]
+        else option.getDefaultValue()
     }
 
     override fun getRawValueForArgument(argument: Argument): String {
@@ -136,10 +138,43 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
 
     @Nullable
     private fun <T> getValue(option: TypedOption<T>): T? {
-        return null!!
+        if (this.isOptionAssigned(option)) {
+            return create(getRawValueForOption(option), option)
+        }
+        if (option.getDefaultValue() != null) {
+            return create(option.getDefaultValue(), option)
+        }
+        return null
     }
 
     private fun rawValues(@Nullable list: List<*>?): List<String> {
         return list?.map { it.toString() } ?: emptyList()
+    }
+
+    companion object {
+
+        @Nullable
+        @JvmStatic
+        fun <T> create(@Nullable value: String?, option: TypedOption<T>): T? {
+            val valueToUse = value ?: option.getDefaultValue()
+
+            val converter = option.getConverter()
+            if (converter != null) {
+                return Converters.create(valueToUse, converter)
+            }
+            return Converters.create(option.getType(), valueToUse)
+        }
+
+        @Nullable
+        @JvmStatic
+        fun <T> create(@Nullable value: String?, argument: TypedArgument<T>): T? {
+            val valueToUse = value ?: argument.getDefaultValue()
+
+            val converter = argument.getConverter()
+            if (converter != null) {
+                return Converters.create(value, converter)
+            }
+            return Converters.create(argument.getType(), valueToUse)
+        }
     }
 }
