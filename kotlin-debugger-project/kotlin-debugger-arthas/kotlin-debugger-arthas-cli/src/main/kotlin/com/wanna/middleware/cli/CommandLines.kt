@@ -16,7 +16,7 @@ object CommandLines {
      * @return CommandLine
      */
     @JvmStatic
-    fun create(cli: CLI): CommandLine {
+    fun create(cli: CLI): DefaultCommandLine {
         return DefaultCommandLine(cli)
     }
 }

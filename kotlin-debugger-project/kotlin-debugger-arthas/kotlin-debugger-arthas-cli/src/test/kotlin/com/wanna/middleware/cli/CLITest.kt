@@ -26,6 +26,41 @@ class CLITest {
 }
 
 fun main() {
+    val pidOption = TypedOption<Long>()
+        .setType(Long::class.javaObjectType)
+        .setShortName("pid")
+        .setRequired(true)
+
+    val coreOption = TypedOption<String>()
+        .setType(String::class.java)
+        .setShortName("core")
+        .setRequired(true)
+
+    val agentOption = TypedOption<String>()
+        .setType(String::class.java)
+        .setShortName("agent")
+        .setRequired(true)
+
+    val targetIpOption = TypedOption<String>()
+        .setType(String::class.java)
+        .setShortName("target-ip")
+
     val cli = CLIs.create(CLITest::class.java)
+        .addOption(pidOption)
+        .addOption(coreOption)
+        .addOption(agentOption)
+        .addOption(targetIpOption)
+
+    val args = listOf<String>()
+
+    // 根据args去解析成为CommandLine
+    val commandLine = cli.parse(args)
+
+    val agent = commandLine.getOptionValue<String>("agent")
+
+
+
+
+
     println(cli)
 }

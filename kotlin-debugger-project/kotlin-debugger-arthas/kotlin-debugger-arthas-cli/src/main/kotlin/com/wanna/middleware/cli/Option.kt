@@ -108,6 +108,10 @@ open class Option {
         return this
     }
 
+    open fun acceptValue(): Boolean {
+        return this.singleValued || this.multipleValued
+    }
+
     /**
      * 检查参数值的合法性
      */

@@ -29,9 +29,35 @@ interface CommandLine {
     @Nullable
     fun <T> getArgumentValues(name: String): List<T>?
 
-    @Nullable
-    fun getRawValueForOption(option: Option): String?
+    /**
+     * 检查给定的Option是否还可以接收更多的参数值?
+     *
+     * @param option Option
+     * @return 如果该Option还能接收更多参数值的话, return true; 否则return false
+     */
+    fun acceptMoreValues(option: Option): Boolean
 
-    @Nullable
-    fun getRawValueForArgument(argument: Argument): String?
+    /**
+     * 检查给定的Option是否已经分配了参数值?
+     *
+     * @param option Option
+     * @return 如果该Option已经分配了参数值, return true; 否则return false
+     */
+    fun isOptionAssigned(option: Option): Boolean
+
+    /**
+     * 为给定的Option去获取到所有的原始参数值
+     *
+     * @param option Option
+     * @return 该Option对应的原始参数值列表
+     */
+    fun getRawValueForOption(option: Option): List<String>
+
+    /**
+     * 为给定的Argument去获取到所有的原始参数值
+     *
+     * @param argument Argument
+     * @return 该Argument对应的原始参数值列表
+     */
+    fun getRawValueForArgument(argument: Argument): List<String>
 }

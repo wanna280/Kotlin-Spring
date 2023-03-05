@@ -4,6 +4,8 @@ import com.sun.tools.attach.VirtualMachine
 import com.sun.tools.attach.VirtualMachineDescriptor
 import com.wanna.middleware.arthas.common.JavaVersionUtils
 import com.wanna.middleware.arthas.core.config.Configure
+import com.wanna.middleware.cli.CLIs
+import com.wanna.middleware.cli.TypedOption
 
 /**
  * Arthas启动器
@@ -22,12 +24,46 @@ class Arthas private constructor(args: Array<String>) {
     }
 
     /**
-     * 解析命令行参数
+     * 解析命令行参数的配置信息
      *
      * @param args 命令行参数列表
      */
     private fun parse(args: Array<String>): Configure {
-        return Configure()
+        val pidOption = TypedOption<Long>()
+            .setType(Long::class.javaObjectType)
+            .setShortName("pid")
+            .setRequired(true)
+
+        val coreOption = TypedOption<String>()
+            .setType(String::class.java)
+            .setShortName("core")
+            .setRequired(true)
+
+        val agentOption = TypedOption<String>()
+            .setType(String::class.java)
+            .setShortName("agent")
+            .setRequired(true)
+
+        val targetIpOption = TypedOption<String>()
+            .setType(String::class.java)
+            .setShortName("target-ip")
+
+        val cli = CLIs.create("arthas")
+            .addOption(pidOption)
+            .addOption(coreOption)
+            .addOption(agentOption)
+            .addOption(targetIpOption)
+
+        // 根据args去解析成为CommandLine
+        val commandLine = cli.parse(args.toList())
+
+        val configure = Configure()
+
+        configure.javaPid = commandLine.getOptionValue("pid")!!
+        configure.arthasAgent = commandLine.getOptionValue("agent")
+        configure.arthasCore = commandLine.getOptionValue("core")
+
+        return configure
     }
 
     /**
@@ -72,10 +108,9 @@ class Arthas private constructor(args: Array<String>) {
 
 
     companion object {
-
         @JvmStatic
         fun main(args: Array<String>) {
-            com.wanna.middleware.arthas.core.Arthas(args)
+            Arthas(args)
         }
     }
 }

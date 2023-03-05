@@ -34,11 +34,11 @@ open class TypedArgument<T> : Argument() {
         return this
     }
 
-    open fun getDefaultValue(): String {
+    override fun getDefaultValue(): String {
         return this.defaultValue ?: throw IllegalStateException("defaultValue has not been initialized")
     }
 
-    open fun setDefaultValue(defaultValue: String): TypedArgument<T> {
+    override fun setDefaultValue(defaultValue: String): TypedArgument<T> {
         this.defaultValue = defaultValue
         return this
     }
