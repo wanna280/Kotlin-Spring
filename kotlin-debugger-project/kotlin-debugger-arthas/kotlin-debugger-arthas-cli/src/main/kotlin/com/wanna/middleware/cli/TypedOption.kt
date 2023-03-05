@@ -13,8 +13,14 @@ open class TypedOption<T> : Option() {
 
     private var type: Class<T>? = null
 
+    /**
+     * 是否需要将单个参数值, 使用","的方式去拆分成为列表去进行解析
+     */
     private var parsedAsList: Boolean = false
 
+    /**
+     * 将参数值拆分成为列表所使用的分隔符, 默认为","
+     */
     private var listSeparator: String = ","
 
     private var converter: Converter<T>? = null

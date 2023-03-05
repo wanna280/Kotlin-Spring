@@ -15,12 +15,12 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
     private val allArgs = ArrayList<String>()
 
     /**
-     * Argument对应的原始参数值
+     * Argument对应的原始参数值列表
      */
     private val argumentValues = LinkedHashMap<Argument, MutableList<String>>()
 
     /**
-     * Option对应的原始参数值
+     * Option对应的原始参数值列表
      */
     private val optionValues = LinkedHashMap<Option, MutableList<String>>()
 
@@ -97,8 +97,10 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
         if (option !is TypedOption<*>) {
             return getRawValuesForOption(option) as List<T>?
         }
-        // TODO
-        return null
+        if (option.isParsedAsList()) {
+            return createFromList(getRawValueForOption(option), option as TypedOption<T>)
+        }
+        return typedValues(option as TypedOption<T>, getRawValuesForOption(option))
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -107,8 +109,8 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
         if (argument !is TypedArgument<*>) {
             return getRawValuesForArgument(argument) as List<T>?
         }
-        // TODO
-        return null
+        val rawValues = getRawValuesForArgument(argument)
+        return typedValues(argument as TypedArgument<T>, rawValues)
     }
 
     /**
@@ -173,6 +175,38 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
     }
 
     companion object {
+        @Suppress("UNCHECKED_CAST")
+        @JvmStatic
+        private fun <T> typedValues(typed: TypedArgument<T>, rawValues: List<String>): List<T> {
+            val result = ArrayList<T>()
+            for (rawValue in rawValues) {
+                result.add(create(rawValue, typed) as T)
+            }
+            return result
+        }
+
+
+        @Suppress("UNCHECKED_CAST")
+        @JvmStatic
+        fun <T> createFromList(@Nullable raw: String?, option: TypedOption<T>): List<T> {
+            raw ?: return emptyList()
+            val segments = raw.split(option.getListSeparator())
+            val result = ArrayList<T>()
+            for (segment in segments) {
+                result.add(create(segment, option) as T)
+            }
+            return result
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        @JvmStatic
+        private fun <T> typedValues(typed: TypedOption<T>, rawValues: List<String>): List<T> {
+            val result = ArrayList<T>()
+            for (rawValue in rawValues) {
+                result.add(create(rawValue, typed) as T)
+            }
+            return result
+        }
 
         @Nullable
         @JvmStatic
