@@ -17,6 +17,18 @@ object Converters {
     @JvmStatic
     private val PRIMITIVE_TO_WRAPPER_TYPE = LinkedHashMap<Class<*>, Class<*>>()
 
+    init {
+        // 初始化基础类型->包装类型的映射关系缓存
+        PRIMITIVE_TO_WRAPPER_TYPE[Char::class.java] = Char::class.javaObjectType
+        PRIMITIVE_TO_WRAPPER_TYPE[Byte::class.java] = Byte::class.javaObjectType
+        PRIMITIVE_TO_WRAPPER_TYPE[Boolean::class.java] = Boolean::class.javaObjectType
+        PRIMITIVE_TO_WRAPPER_TYPE[Short::class.java] = Long::class.javaObjectType
+        PRIMITIVE_TO_WRAPPER_TYPE[Int::class.java] = Int::class.javaObjectType
+        PRIMITIVE_TO_WRAPPER_TYPE[Long::class.java] = Long::class.javaObjectType
+        PRIMITIVE_TO_WRAPPER_TYPE[Float::class.java] = Float::class.javaObjectType
+        PRIMITIVE_TO_WRAPPER_TYPE[Double::class.java] = Double::class.javaObjectType
+    }
+
     @Nullable
     @JvmStatic
     fun <T> create(@Nullable value: String?, converter: Converter<T>): T? {
