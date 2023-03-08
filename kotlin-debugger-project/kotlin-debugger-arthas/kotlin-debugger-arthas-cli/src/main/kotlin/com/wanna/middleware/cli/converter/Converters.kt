@@ -54,7 +54,14 @@ object Converters {
         if (type == Boolean::class.java) {
             return BooleanConverter as Converter<T>
         }
-        val converter = ConstructorBasedConverter.getIfEligible(type)
+        // 尝试基于类的构造器去进行构建Converter
+        var converter: Converter<T>? = ConstructorBasedConverter.getIfEligible(type)
+        if (converter != null) {
+            return converter
+        }
+
+        // 尝试基于类的valueOf方法去构建Converter
+        converter = ValueOfBasedConverter.getIfEligible(type)
         if (converter != null) {
             return converter
         }

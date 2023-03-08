@@ -14,12 +14,12 @@ import com.wanna.middleware.cli.annotation.Option
 class CLITest {
 
     @Option(longName = "pid")
-    fun setPid(pid: String?) {
+    fun setPid(pid: Long?) {
 
     }
 
     @Option(longName = "core")
-    fun setCore(core: String) {
+    fun setCore(core: Long) {
 
     }
 
@@ -66,8 +66,8 @@ fun main() {
     // 根据args去解析成为CommandLine
     val commandLine = cli.parse(args)
 
-    val pid = commandLine.getOptionValue<String>("pid")
-    val core = commandLine.getOptionValue<String>("core")
+    val pid = commandLine.getOptionValue<Long>("pid")
+    val core = commandLine.getOptionValue<Long>("core")
     val agent = commandLine.getOptionValue<String>("agent")
 
 
