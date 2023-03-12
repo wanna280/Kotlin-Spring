@@ -29,6 +29,15 @@ object Converters {
         PRIMITIVE_TO_WRAPPER_TYPE[Double::class.java] = Double::class.javaObjectType
     }
 
+    /**
+     * 使用给定的Converter, 去将给定的字符串去转换成为目标对象
+     *
+     * @param value 待进行转换的字符串
+     * @param converter 用于进行字符串的转换的Converter
+     * @return 转换成为的目标类型的对象
+     *
+     * @param T 目标对象类型
+     */
     @Nullable
     @JvmStatic
     fun <T> create(@Nullable value: String?, converter: Converter<T>): T? {
@@ -45,22 +54,33 @@ object Converters {
         return getConverter(typeToUse).fromString(value)
     }
 
+    /**
+     * 为给定的类型, 去获取到转换成为该类型的目标对象的Converter
+     *
+     * @param type 要去进行转换的目标类型
+     * @return 用于转换成为目标类型的对象的Converter
+     */
     @JvmStatic
     @Suppress("UNCHECKED_CAST")
     private fun <T> getConverter(type: Class<T>): Converter<T> {
+
+        // 如果是String, 那么直接使用StringConverter
         if (type == String::class.java) {
             return StringConverter as Converter<T>
         }
+
+        // 如果是Boolean, 那么直接使用BooleanConverter
         if (type == Boolean::class.java) {
             return BooleanConverter as Converter<T>
         }
-        // 尝试基于类的构造器去进行构建Converter
+
+        // 如果还是无法尝试的话, 那么继续尝试基于目标类型的类的构造器去进行构建Converter
         var converter: Converter<T>? = ConstructorBasedConverter.getIfEligible(type)
         if (converter != null) {
             return converter
         }
 
-        // 尝试基于类的valueOf方法去构建Converter
+        // 如果基于构造器也尝试失败的话, 那么继续尝试基于类的valueOf方法去构建Converter
         converter = ValueOfBasedConverter.getIfEligible(type)
         if (converter != null) {
             return converter
@@ -69,10 +89,10 @@ object Converters {
     }
 
     /**
-     * 获取到给定类型的包装类
+     * 获取到给定类型的包装类, 比如int.class, 可以获取到Integer.class
      *
      * @param type type
-     * @return 给类型的包装类型
+     * @return 给定的type类型对应的包装类型, 如果type不是基础类型, 那么return type
      */
     @JvmStatic
     @Suppress("UNCHECKED_CAST")

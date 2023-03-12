@@ -4,14 +4,22 @@ import java.lang.reflect.Constructor
 import javax.annotation.Nullable
 
 /**
- * 基于构造器的Converter
+ * 基于构造器去提供类型转换的Converter
  *
  * @author jianchao.jia
  * @version v1.0
  * @date 2023/3/6
+ *
+ * @param constructor 实例化的构造器
  */
 open class ConstructorBasedConverter<T>(private val constructor: Constructor<T>) : Converter<T> {
 
+    /**
+     * 将给定的字符串, 传递到构造器当中作为参数, 去构建成为目标对象
+     *
+     * @param string 待进行转换的字符串
+     * @return 利用构造器去转换成为的目标对象
+     */
     @Nullable
     override fun fromString(@Nullable string: String?): T? {
         try {

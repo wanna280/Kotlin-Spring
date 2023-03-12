@@ -1,7 +1,7 @@
 package com.wanna.middleware.cli.converter
 
 /**
- * String的Converter
+ * String的Converter, 无需执行任何操作, 直接返回原始的对象即可
  *
  * @author jianchao.jia
  * @version v1.0

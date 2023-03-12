@@ -10,9 +10,18 @@ import javax.annotation.Nullable
  * @author jianchao.jia
  * @version v1.0
  * @date 2023/3/6
+ *
+ * @param clazz 要去进行转换的目标类型
+ * @param method 类的valueOf静态工厂方法
  */
 open class ValueOfBasedConverter<T>(private val clazz: Class<T>, private val method: Method) : Converter<T> {
 
+    /**
+     * 将给定的字符串, 传入目标类的valueOf方法, 去转换成为目标对象
+     *
+     * @param string 待进行转换滴字符串
+     * @return 基于valueOf方法去转换成为的目标对象
+     */
     @Nullable
     override fun fromString(@Nullable string: String?): T? {
         try {
