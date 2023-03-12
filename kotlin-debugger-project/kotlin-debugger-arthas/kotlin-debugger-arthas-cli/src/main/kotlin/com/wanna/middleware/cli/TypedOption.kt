@@ -4,6 +4,7 @@ import com.wanna.middleware.cli.converter.Converter
 import javax.annotation.Nullable
 
 /**
+ * 支持去将Option的字符串字符串, 去转换成为目标类型的Converter
  *
  * @author jianchao.jia
  * @version v1.0
@@ -11,6 +12,9 @@ import javax.annotation.Nullable
  */
 open class TypedOption<T> : Option() {
 
+    /**
+     * 需要去将字符串去转换成为的目标类型
+     */
     private var type: Class<T>? = null
 
     /**
@@ -23,6 +27,9 @@ open class TypedOption<T> : Option() {
      */
     private var listSeparator: String = ","
 
+    /**
+     * 用于去将字符串去转换成为目标类型的Converter
+     */
     private var converter: Converter<T>? = null
 
     private var defaultValue: String? = null
