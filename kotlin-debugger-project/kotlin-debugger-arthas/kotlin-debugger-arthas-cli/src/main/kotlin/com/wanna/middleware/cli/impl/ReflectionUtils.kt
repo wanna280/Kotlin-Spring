@@ -12,6 +12,14 @@ import java.lang.reflect.ParameterizedType
  */
 object ReflectionUtils {
 
+    /**
+     * 使用给定的类的无参数构造器, 去完成实例化
+     *
+     * @param clazz 待实例化的类
+     * @return 实例化得到的目标对象
+     *
+     * @param T 目标对象类型
+     */
     @JvmStatic
     fun <T> newInstance(clazz: Class<T>): T {
         return clazz.getDeclaredConstructor().newInstance()
