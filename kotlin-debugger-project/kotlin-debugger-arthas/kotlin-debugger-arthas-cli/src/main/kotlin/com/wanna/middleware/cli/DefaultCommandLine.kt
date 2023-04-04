@@ -9,9 +9,14 @@ import javax.annotation.Nullable
  * @author jianchao.jia
  * @version v1.0
  * @date 2023/2/26
+ *
+ * @param cli 需要去进行描述的命令行CLI
  */
 open class DefaultCommandLine(private val cli: CLI) : CommandLine {
 
+    /**
+     * 参数值列表
+     */
     private val allArgs = ArrayList<String>()
 
     /**
@@ -38,10 +43,10 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
     }
 
     /**
-     * 为给定的Option, 去添加一个参数值
+     * 为给定的Option, 去添加一个选项参数值
      *
      * @param option Option
-     * @param value 要去进行添加的参数值
+     * @param value 要去进行添加的选项值
      * @return this(DefaultCommandLine)
      */
     open fun addRawValue(option: Option, value: String): DefaultCommandLine {
@@ -182,6 +187,14 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
     }
 
     companion object {
+
+        /**
+         * 将给定的字符串列表参数值, 按照给定的类型, 去解析成为目标类型对象的列表
+         *
+         * @param typed 要去进行转换的目标类型信息
+         * @param rawValues 原始的参数值字符串列表
+         * @return 转换成为的目标对象列表
+         */
         @Suppress("UNCHECKED_CAST")
         @JvmStatic
         private fun <T> typedValues(typed: TypedArgument<T>, rawValues: List<String>): List<T> {
@@ -192,7 +205,13 @@ open class DefaultCommandLine(private val cli: CLI) : CommandLine {
             return result
         }
 
-
+        /**
+         * 根据给定的字符串, 按照分隔符去分割成为列表, 并转换成为目标类型的对象
+         *
+         * @param raw 待进行转换的字符串(将会使用分隔符去进行分割)
+         * @param option 对于单个元素, 将要去转换成为的目标类型
+         * @return 转换成为的目标对象列表
+         */
         @Suppress("UNCHECKED_CAST")
         @JvmStatic
         fun <T> createFromList(@Nullable raw: String?, option: TypedOption<T>): List<T> {

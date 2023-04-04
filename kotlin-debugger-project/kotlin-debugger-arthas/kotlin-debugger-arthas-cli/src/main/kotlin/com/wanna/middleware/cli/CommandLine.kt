@@ -22,27 +22,68 @@ import javax.annotation.Nullable
  * @date 2023/2/25
  */
 interface CommandLine {
+
+    /**
+     * 获取到命令行的命令的模板CLI
+     *
+     * @return CLI
+     */
     fun cli(): CLI
 
+    /**
+     * 获取到所有的参数值列表
+     *
+     * @return 参数值列表
+     */
     fun allArguments(): List<String>
 
+    /**
+     * 根据name获取到对应的Option对应的选项值
+     *
+     * @param name 选项名
+     * @return 选项值
+     */
     @Nullable
     fun <T> getOptionValue(name: String): T?
 
+    /**
+     * 根据name去获取到对应的Argument对应的参数值
+     *
+     * @param name 参数名
+     * @return 根据name去获取到的参数值
+     */
     @Nullable
     fun <T> getArgumentValue(name: String): T?
 
+    /**
+     * 根据index, 去获取到对应的Argument对应的参数值
+     *
+     * @param index 参数名
+     * @return 获取到的参数值
+     */
     @Nullable
     fun <T> getArgumentValue(index: Int): T?
 
+    /**
+     * 根据name去获取到对应的Option对应的选项值列表
+     *
+     * @param name 参数名
+     * @return 该Option对应的选项值列表
+     */
     @Nullable
     fun <T> getOptionValues(name: String): List<T>?
 
+    /**
+     * 根据name, 去获取到对应的Argument对应的参数值列表
+     *
+     * @param name 参数名
+     * @return 获取到的参数值列表
+     */
     @Nullable
     fun <T> getArgumentValues(name: String): List<T>?
 
     /**
-     * 检查给定的Option是否还可以接收更多的参数值?
+     * 检查给定的Option选项是否还可以接收更多的参数值?
      *
      * @param option Option
      * @return 如果该Option还能接收更多参数值的话, return true; 否则return false
