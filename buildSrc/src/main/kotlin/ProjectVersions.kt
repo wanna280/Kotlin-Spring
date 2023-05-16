@@ -1,6 +1,5 @@
-const val kotlinVersion = "1.6.10"  // kotlinVersion
+const val kotlinVersion = "1.8.21"  // kotlinVersion
 const val slf4jApiVersion = "1.7.36"  // slf-api Version
-const val springCoreVersion = "5.3.17" // spring-core Version
 const val nettyVersion = "4.1.77.Final"  // netty Version
 const val cglibVersion = "3.3.0"  // cglib Version
 const val javaxAnnotationVersion = "1.3.2"  // javax.annotation Version
