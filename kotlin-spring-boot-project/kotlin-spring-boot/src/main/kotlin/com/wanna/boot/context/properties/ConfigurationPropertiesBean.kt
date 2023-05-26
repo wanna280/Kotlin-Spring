@@ -19,7 +19,7 @@ import java.lang.reflect.Method
 import java.util.concurrent.atomic.AtomicReference
 
 /**
- * 这是对标注了`！ConfigurationProperties`注解的一个Bean的相关信息去进行的封装
+ * 这是对标注了`ConfigurationProperties`注解的一个Bean的相关信息去进行的封装
  *
  * @param name beanName
  * @param instance 单例Bean对象(有可能现在为null)
