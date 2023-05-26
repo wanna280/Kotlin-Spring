@@ -7,9 +7,6 @@ import com.wanna.framework.util.LinkedMultiValueMap
 import com.wanna.framework.util.MultiValueMap
 import com.wanna.framework.util.ReflectionUtils
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
-import kotlin.collections.LinkedHashSet
 
 /**
  * CollectionFactory, 支持给定collectionType/mapType去创建Collection/Map的对象, 是一个工具类
@@ -153,7 +150,7 @@ object CollectionFactory {
      */
     @JvmStatic
     private fun asEnumType(type: Class<*>): Class<out Enum<*>> {
-        if (ClassUtils.isAssignFrom(Enum::class.java, type)) {
+        if (!ClassUtils.isAssignFrom(Enum::class.java, type)) {
             throw IllegalArgumentException("给定的type=[${getQualifiedName(type)}], 并不是一个Enum枚举类型")
         }
         return type.asSubclass(Enum::class.java)

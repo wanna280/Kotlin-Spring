@@ -1,6 +1,5 @@
 package com.wanna.framework.core.type.filter
 
-import com.wanna.framework.core.annotation.AnnotatedElementUtils
 import com.wanna.framework.core.type.classreading.MetadataReader
 import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 

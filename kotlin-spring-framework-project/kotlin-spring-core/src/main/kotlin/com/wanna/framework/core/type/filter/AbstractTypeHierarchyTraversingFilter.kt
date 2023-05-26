@@ -43,7 +43,7 @@ abstract class AbstractTypeHierarchyTraversingFilter(
                         return true
                     }
                 } catch (ex: Exception) {
-                    // read superClassE rror
+                    // read superClassError
                     if (logger.isDebugEnabled) {
                         logger.debug("Could not read super class [${metadata.getSuperClassName()}] of type-filtered class [${metadata.getClassName()}]")
                     }

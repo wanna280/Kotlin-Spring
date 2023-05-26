@@ -8,10 +8,11 @@ import com.wanna.framework.core.type.classreading.MetadataReaderFactory
  *
  * @see AssignableTypeFilter
  * @see AnnotationTypeFilter
+ * @see RegexPatternTypeFilter
  */
 fun interface TypeFilter {
     /**
-     * 基于MetadataReader的方式, 去执行匹配
+     * 基于MetadataReader的方式, 去对给定的类的元信息执行匹配
      *
      * @param metadataReader MetadataReader
      * @param metadataReaderFactory MetadataReaderFactory

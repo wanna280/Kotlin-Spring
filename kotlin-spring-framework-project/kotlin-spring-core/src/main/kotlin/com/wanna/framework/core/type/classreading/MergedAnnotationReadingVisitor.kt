@@ -69,7 +69,7 @@ open class MergedAnnotationReadingVisitor<A : Annotation>(
      * @param value 枚举值的字符串(可以根据descriptor去获取到枚举类型从而去转换为枚举对象)
      */
     override fun visitEnum(name: String, descriptor: String, value: String) {
-        visitEnum(descriptor, value) { attributes[name] = it }
+        visitEnum0(descriptor, value) { attributes[name] = it }
     }
 
     /**
@@ -79,7 +79,7 @@ open class MergedAnnotationReadingVisitor<A : Annotation>(
      * @param value 枚举值字符串
      * @param consumer 对于获取到的枚举值需要执行的操作Consumer
      */
-    private fun <E : Enum<E>> visitEnum(descriptor: String, value: String, consumer: Consumer<E>) {
+    private fun <E : Enum<E>> visitEnum0(descriptor: String, value: String, consumer: Consumer<E>) {
         val className = Type.getType(descriptor).className
         val enumClass = ClassUtils.forName<E>(className, classLoader)
         consumer.accept(java.lang.Enum.valueOf(enumClass, value))
@@ -159,7 +159,7 @@ open class MergedAnnotationReadingVisitor<A : Annotation>(
          * @param value 枚举值字符串
          */
         override fun visitEnum(@Nullable name: String?, descriptor: String, value: String) {
-            this@MergedAnnotationReadingVisitor.visitEnum<Enum<*>>(descriptor, value) { this.elements.add(it) }
+            this@MergedAnnotationReadingVisitor.visitEnum0(descriptor, value) { this.elements.add(it) }
         }
 
         /**

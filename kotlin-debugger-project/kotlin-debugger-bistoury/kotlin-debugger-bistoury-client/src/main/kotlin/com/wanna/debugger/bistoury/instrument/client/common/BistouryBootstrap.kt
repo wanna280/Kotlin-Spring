@@ -70,5 +70,7 @@ object BistouryBootstrap {
         // 将Instrumentation去保存到InstrumentClientStore当中去...
         // 并完成各个InstrumentClient(例如DebugClient)的初始化
         InstrumentClientStore.init(instrumentation!!)
+
+        // TODO create ShellServer to process Commands
     }
 }
