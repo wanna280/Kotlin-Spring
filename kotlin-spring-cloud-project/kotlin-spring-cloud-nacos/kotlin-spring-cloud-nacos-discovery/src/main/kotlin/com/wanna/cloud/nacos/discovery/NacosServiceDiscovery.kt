@@ -6,6 +6,7 @@ import com.wanna.cloud.client.ServiceInstance
 import com.wanna.cloud.nacos.NacosDiscoveryProperties
 import com.wanna.cloud.nacos.NacosServiceInstance
 import com.wanna.cloud.nacos.NacosServiceManager
+import com.wanna.framework.lang.Nullable
 
 /**
  * 整合NacosDiscoveryProperties和NacosServiceManager去实现Nacos的服务发现
@@ -13,6 +14,9 @@ import com.wanna.cloud.nacos.NacosServiceManager
  * @see NacosServiceManager
  * @see NacosDiscoveryProperties
  * @see NacosDiscoveryClient
+ *
+ * @param properties Nacos服务发现的配置信息
+ * @param manager Nacos实例的管理器
  */
 open class NacosServiceDiscovery(
     private val properties: NacosDiscoveryProperties, private val manager: NacosServiceManager
@@ -39,7 +43,9 @@ open class NacosServiceDiscovery(
     }
 
     /**
-     * 获取NamingService
+     * 获取Nacos原生的[NamingService]
+     *
+     * @return NamingService
      */
     private fun namingService(): NamingService {
         return manager.getNamingService(properties.getNacosProperties())
@@ -55,16 +61,17 @@ open class NacosServiceDiscovery(
          */
         @JvmStatic
         fun hostToServiceInstanceList(instances: List<Instance>, serviceId: String): List<ServiceInstance> {
-            return instances.map { hostToServiceInstance(it, serviceId) }.filterNotNull().toList()
+            return instances.mapNotNull { hostToServiceInstance(it, serviceId) }.toList()
         }
 
         /**
-         * 将Nacos的Instance对象, 转换为适配SpringCloud的ServiceInstance对象
+         * 将Nacos的Instance对象, 转换为适配SpringCloud的[ServiceInstance]对象
          *
          * @param instance Nacos的Instance列表
          * @param serviceId serviceId
          * @return 适配为SpringCloud的ServiceInstance(有可能为null)
          */
+        @Nullable
         @JvmStatic
         fun hostToServiceInstance(instance: Instance, serviceId: String): ServiceInstance? {
             if (!instance.isEnabled && !instance.isHealthy) {

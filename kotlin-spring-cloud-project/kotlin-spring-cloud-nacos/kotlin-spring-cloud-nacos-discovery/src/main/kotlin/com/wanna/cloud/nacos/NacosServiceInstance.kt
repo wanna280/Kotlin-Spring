@@ -7,14 +7,34 @@ import com.wanna.cloud.client.ServiceInstance
  */
 open class NacosServiceInstance : ServiceInstance {
 
+    /**
+     * 微服务的服务名称
+     */
     private var serviceId: String? = null
 
+    /**
+     * 实例ID
+     */
     private var instanceId: String? = null
 
+    /**
+     * host
+     */
     private var host: String? = null
 
+    /**
+     * host
+     */
     private var port: Int = -1
 
+    /**
+     * 是否应该使用https去进行注册
+     */
+    private var secure: Boolean = false;
+
+    /**
+     * 服务的Metadata元信息
+     */
     private var metadata: Map<String, String>? = null
 
     open fun setServiceId(serviceId: String) {
@@ -25,8 +45,8 @@ open class NacosServiceInstance : ServiceInstance {
         return this.serviceId!!
     }
 
-    override fun getInstanceId(): String {
-        return this.instanceId!!
+    override fun getInstanceId(): String? {
+        return this.instanceId
     }
 
     open fun setInstanceId(instanceId: String) {
@@ -49,12 +69,20 @@ open class NacosServiceInstance : ServiceInstance {
         this.port = port
     }
 
+    override fun isSecure(): Boolean = secure
+
+    open fun setSecure(secure: Boolean) {
+        this.secure = secure
+    }
+
+
     override fun getUri(): String {
-        return "http://$host:$port"
+        val schema = if (isSecure()) "https" else "http"
+        return "$schema://$host:$port"
     }
 
     override fun getMetadata(): Map<String, String> {
-        return this.metadata!!
+        return this.metadata ?: emptyMap()
     }
 
     open fun setMetadata(metadata: Map<String, String>) {

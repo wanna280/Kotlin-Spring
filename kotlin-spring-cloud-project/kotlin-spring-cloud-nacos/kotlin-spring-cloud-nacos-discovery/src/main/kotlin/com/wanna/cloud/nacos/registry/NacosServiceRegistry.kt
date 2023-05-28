@@ -9,6 +9,9 @@ import com.wanna.cloud.nacos.NacosServiceManager
 
 /**
  * 这是Nacos对于SpringCloud的注册中心的实现, 负责去完成Nacos服务的注册
+ *
+ * @param manager Nacos服务的管理器
+ * @param properties Nacos服务发现的配置信息
  */
 open class NacosServiceRegistry(
     private val manager: NacosServiceManager, private val properties: NacosDiscoveryProperties
@@ -20,7 +23,7 @@ open class NacosServiceRegistry(
     }
 
     /**
-     * 注册一个实例到Nacos的注册中心(NamingService)
+     * 注册一个实例到Nacos的注册中心([NamingService])
      *
      * @param registration SpringCloud的Registration
      */

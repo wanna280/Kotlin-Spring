@@ -27,6 +27,11 @@ open class NacosDiscoveryProperties {
     @Value("${'$'}{spring.cloud.nacos.discovery.port:${'$'}{server.port:9888}}")
     var port: Int = 9888  // port
 
+    /**
+     * 是否应该使用https去进行注册?
+     */
+    var secure: Boolean = false
+
     var ephemeral: Boolean = true  // 是否是一个临时节点, 默认为true(切换CP/AP)
 
     var weight: Double = 1.0  // weight
