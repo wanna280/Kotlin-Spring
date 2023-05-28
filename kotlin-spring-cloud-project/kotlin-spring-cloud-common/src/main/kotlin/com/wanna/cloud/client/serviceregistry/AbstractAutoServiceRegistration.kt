@@ -17,7 +17,7 @@ import javax.annotation.PreDestroy
  * @see start
  * @see stop
  *
- * @param registry SpringCloud服务的注册中心
+ * @param registry SpringCloud服务的注册中心, 当前服务要去注册到哪个注册中心当中去
  * @param properties SpringCloud服务注册的相关配置信息
  */
 abstract class AbstractAutoServiceRegistration<R : Registration>(
@@ -127,8 +127,11 @@ abstract class AbstractAutoServiceRegistration<R : Registration>(
      *
      * @return enabled?
      */
-    protected fun isEnabled(): Boolean = true
+    protected open fun isEnabled(): Boolean = true
 
+    /**
+     * 停止当前ServiceInstance
+     */
     open fun stop() {
         if (this.running.compareAndSet(true, false)) {
             deregister()
@@ -137,7 +140,7 @@ abstract class AbstractAutoServiceRegistration<R : Registration>(
     }
 
     /**
-     * 注册一个实例到ServiceInstance的Registry当中
+     * 注册一个实例到ServiceInstance的ServiceRegistry当中
      */
     protected open fun register() {
         this.registry.register(getRegistration())
