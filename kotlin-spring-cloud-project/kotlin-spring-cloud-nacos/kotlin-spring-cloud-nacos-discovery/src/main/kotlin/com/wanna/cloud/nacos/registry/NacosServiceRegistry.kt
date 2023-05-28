@@ -61,17 +61,19 @@ open class NacosServiceRegistry(
     }
 
     /**
-     * 获取NamingService
+     * 获取Nacos原生的NamingService
+     *
+     * @return Nacos NamingService
      */
     private fun namingService(): NamingService {
         return manager.getNamingService(properties.getNacosProperties())
     }
 
     /**
-     * 根据SpringCloud的Registration以及NacosDiscoveryProperties, 去进行构建Nacos的Instance
+     * 根据SpringCloud的Registration以及NacosDiscoveryProperties, 去进行构建Nacos的Instance对象
      *
      * @param registration SpringCloud的Registration
-     * @return 构建好的NacosInstance
+     * @return 根据Registration去构建好的NacosInstance
      */
     private fun buildNacosInstanceFromRegistration(registration: Registration): Instance {
         val instance = Instance()
@@ -82,6 +84,9 @@ open class NacosServiceRegistry(
         instance.weight = properties.weight
         instance.isEnabled = properties.instanceEnabled
         instance.clusterName = properties.clusterName
+
+        // service metadata
+        instance.metadata = registration.getMetadata()
         return instance
     }
 }
