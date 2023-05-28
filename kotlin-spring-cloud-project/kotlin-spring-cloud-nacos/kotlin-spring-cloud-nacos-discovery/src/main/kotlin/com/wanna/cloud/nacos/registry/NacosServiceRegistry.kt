@@ -8,7 +8,7 @@ import com.wanna.cloud.nacos.NacosDiscoveryProperties
 import com.wanna.cloud.nacos.NacosServiceManager
 
 /**
- * 这是Nacos对于SpringCloud的注册中心的实现, 负责去完成Nacos服务的注册
+ * 这是Nacos对于SpringCloud的注册中心的实现, 负责去完成Nacos服务的注册和管理
  *
  * @param manager Nacos服务的管理器
  * @param properties Nacos服务发现的配置信息

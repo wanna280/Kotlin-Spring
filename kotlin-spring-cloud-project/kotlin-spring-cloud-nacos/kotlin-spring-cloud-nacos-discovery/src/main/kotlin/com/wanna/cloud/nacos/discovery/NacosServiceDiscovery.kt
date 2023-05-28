@@ -33,8 +33,8 @@ open class NacosServiceDiscovery(
     /**
      * 给定一个serviceId, 去获取到该Service对应的所有的实例
      *
-     * @param serviceId
-     * @return 该serviceId对应的ServiceInstance列表
+     * @param serviceId serviceId
+     * @return 根据给定的该serviceId对应的ServiceInstance列表
      */
     open fun getInstances(serviceId: String): List<ServiceInstance> {
         // 获取到所有的健康状态的ServiceInstance列表
@@ -53,7 +53,7 @@ open class NacosServiceDiscovery(
 
     companion object {
         /**
-         * 将Nacos的Instance列表, 转换为适配SpringCloud的ServiceInstance列表
+         * 将Nacos的Instance列表, 转换为适配SpringCloud的[ServiceInstance]列表
          *
          * @param instances Nacos的Instance列表
          * @param serviceId serviceId
@@ -74,6 +74,7 @@ open class NacosServiceDiscovery(
         @Nullable
         @JvmStatic
         fun hostToServiceInstance(instance: Instance, serviceId: String): ServiceInstance? {
+            // 如果该Instance不提供服务, 或者该实例是不健康的, 那么return null
             if (!instance.isEnabled && !instance.isHealthy) {
                 return null
             }

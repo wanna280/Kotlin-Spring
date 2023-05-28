@@ -5,7 +5,7 @@ package com.wanna.cloud.nacos.registry
  *
  * @author wanna
  */
-interface NacosRegistrationCustomizer {
+fun interface NacosRegistrationCustomizer {
 
     /**
      * 自定义NacosRegistration的回调函数

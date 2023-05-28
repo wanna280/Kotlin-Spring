@@ -3,11 +3,13 @@ package com.wanna.cloud.client.serviceregistry
 import com.wanna.boot.web.server.WebServerInitializedEvent
 import com.wanna.cloud.client.discovery.event.InstancePreRegisteredEvent
 import com.wanna.cloud.client.discovery.event.InstanceRegisteredEvent
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.core.environment.Environment
 import java.util.concurrent.atomic.AtomicBoolean
+import javax.annotation.PreDestroy
 
 /**
  * 为服务的自动注册提供抽象的模板方法实现, 它组合了[ServiceRegistry], 去完成服务的**自动注册**
@@ -22,6 +24,14 @@ abstract class AbstractAutoServiceRegistration<R : Registration>(
     private val registry: ServiceRegistry<R>,
     private val properties: AutoServiceRegistrationProperties
 ) : AutoServiceRegistration, ApplicationContextAware, ApplicationListener<WebServerInitializedEvent> {
+
+    companion object {
+        /**
+         * Logger
+         */
+        @JvmStatic
+        private val logger = LoggerFactory.getLogger(AbstractAutoServiceRegistration::class.java)
+    }
 
     /**
      * 服务是否已经完成注册的标志位
@@ -61,7 +71,25 @@ abstract class AbstractAutoServiceRegistration<R : Registration>(
         this.start()
     }
 
+    /**
+     * 当destroy时, 执行deregister取消服务的注册
+     */
+    @PreDestroy
+    open fun destroy() {
+        stop()
+    }
+
+    /**
+     * 启动当前的ServiceInstance
+     */
     open fun start() {
+        if (!isEnabled()) {
+            if (logger.isDebugEnabled) {
+                logger.debug("Discovery Lifecycle disabled. Not starting")
+            }
+            return
+        }
+
         // 如果running状态为false, 才需要去进行启动, 避免重复注册
         if (!this.running.get()) {
             val context = this.applicationContext!!
@@ -93,6 +121,13 @@ abstract class AbstractAutoServiceRegistration<R : Registration>(
      * @return 服务的注册的相关配置信息
      */
     protected abstract fun getConfiguration(): Any
+
+    /**
+     * 当前ServiceInstance是否要去进行启用
+     *
+     * @return enabled?
+     */
+    protected fun isEnabled(): Boolean = true
 
     open fun stop() {
         if (this.running.compareAndSet(true, false)) {
