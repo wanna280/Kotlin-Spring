@@ -2,7 +2,7 @@ package com.wanna.cloud.nacos.config.refresh
 
 import com.alibaba.nacos.api.config.listener.AbstractSharedListener
 import com.wanna.boot.context.event.ApplicationReadyEvent
-import com.wanna.cloud.context.endpoint.event.RefreshEvent
+import com.wanna.cloud.endpoint.event.RefreshEvent
 import com.wanna.cloud.nacos.config.NacosConfigManager
 import com.wanna.cloud.nacos.config.NacosPropertySource
 import com.wanna.cloud.nacos.config.NacosPropertySourceRepository

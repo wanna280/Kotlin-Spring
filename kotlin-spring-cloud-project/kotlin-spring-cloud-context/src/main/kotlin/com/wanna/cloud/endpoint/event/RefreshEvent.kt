@@ -1,4 +1,4 @@
-package com.wanna.cloud.context.endpoint.event
+package com.wanna.cloud.endpoint.event
 
 import com.wanna.framework.context.event.ApplicationEvent
 
