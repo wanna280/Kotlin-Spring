@@ -634,7 +634,8 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         var result = mbd.isFactoryBean()  // 从缓存当中先去进行判断...
         // 缓存当中没有, 就得去预测一些BeanType再去进行匹配...
         if (result == null) {
-            val beanClass = predictBeanType(name, mbd)
+            // 预测beanType时, 我们只去进行FactoryBean类型的预测...
+            val beanClass = predictBeanType(name, mbd, FactoryBean::class.java)
             result = beanClass != null && ClassUtils.isAssignFrom(FactoryBean::class.java, beanClass)
             mbd.setFactoryBean(result)
         }
@@ -707,18 +708,34 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         }
     }
 
+    /**
+     * 根据给定的Merged BeanDefinition, 去决定得到合适的beanType
+     * (当前类的实现方式, 只支持去对已经存在有beanClassName, 但是没有解析成为beanClass的情况去进行解析;
+     * 对于factoryMethod, 也就是@Bean方法的情况, 当前类的实现方式不支持去进行解析, 详情交给子类去进行实现)
+     *
+     * @param beanName beanName
+     * @param mbd Merged BeanDefinition
+     * @param typeToMatch typeToMatch
+     * @return 预测得到的beanType
+     */
     @Nullable
     protected open fun predictBeanType(
         beanName: String,
         mbd: RootBeanDefinition,
         vararg typeToMatch: Class<*>
     ): Class<*>? {
+        // 如果MergedBeanDefinition已经存在有beanClass的话, 那么直接返回beanClass即可...
         if (mbd.hasBeanClass()) {
             return mbd.getBeanClass()
         }
+
+        // 如果有factoryMethodName的话, 说明该Bean是@Bean方法导入的, 这里beanClass返回null
+        // 子类会去进行重写这个方法, 进行另外的beanClass的寻找
         if (mbd.getFactoryMethodName() != null) {
             return null
         }
+
+        // 如果有beanClassName, 并且没有factoryMethodName, 那么走这里去进行解析, 进行类加载...
         return resolveBeanClass(mbd, beanName, *typeToMatch)
     }
 

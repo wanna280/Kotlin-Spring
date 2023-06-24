@@ -1,7 +1,7 @@
 package com.wanna.framework.beans.factory.support
 
-import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.beans.factory.BeanFactory
+import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 
@@ -52,4 +52,16 @@ interface InstantiationStrategy {
         factoryBean: Any,
         vararg args: Any?
     ): Any?
+
+    /**
+     * 根据实例化策略, 去计算从而获取到真正的beanClass
+     *
+     * @param bd BeanDefinition
+     * @param beanName beanName
+     * @param owner BeanFactory
+     * @return 解析得到的真正的beanClass
+     */
+    fun getActualBeanClass(bd: RootBeanDefinition, beanName: String?, owner: BeanFactory): Class<*>? {
+        return bd.getBeanClass()
+    }
 }

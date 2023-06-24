@@ -1,20 +1,18 @@
 package com.wanna.framework.beans.factory.support
 
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.beans.*
 import com.wanna.framework.beans.factory.*
+import com.wanna.framework.beans.factory.exception.BeanCreationException
 import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import com.wanna.framework.beans.factory.BeanClassLoaderAware
-import com.wanna.framework.beans.factory.BeanNameAware
-import com.wanna.framework.beans.factory.exception.BeanCreationException
 import com.wanna.framework.core.*
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.util.StringUtils
-import com.wanna.common.logging.Logger
-import com.wanna.common.logging.LoggerFactory
 import java.lang.reflect.Constructor
 import java.lang.reflect.Modifier
 import java.util.*
@@ -305,14 +303,78 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
         return beanWrapper
     }
 
+    /**
+     * 决定合适的beanType
+     *
+     * @param beanName beanName
+     * @param mbd MergedBeanDefinition
+     * @param typesToMatch typeToMatch
+     * @return 解析得到的合适的beanType
+     */
     @Nullable
     protected open fun determineTargetType(
         beanName: String,
         mbd: RootBeanDefinition,
         vararg typesToMatch: Class<*>
     ): Class<*>? {
-        val targetType = if (mbd.getFactoryMethodName() != null) getTypeForFactoryMethod(beanName, mbd, *typesToMatch)
-        else resolveBeanClass(mbd, beanName, *typesToMatch)
+        var targetType = mbd.getTargetType()
+        if (targetType == null) {
+            if (mbd.getFactoryMethodName() != null) {
+                targetType = getTypeForFactoryMethod(beanName, mbd, *typesToMatch)
+            } else {
+                targetType = resolveBeanClass(mbd, beanName, *typesToMatch)
+                if (mbd.hasBeanClass()) {
+                    targetType = getInstantiationStrategy().getActualBeanClass(mbd, beanName, this)
+                }
+            }
+
+            // 将解析得到的目标类型, 去缓存到RootBeanDefinition当中...
+            if (typesToMatch.isEmpty()) {
+                mbd.resolvedTargetType = targetType;
+            }
+        }
+        return targetType
+    }
+
+    /**
+     * 重写父类的决定BeanType的实现方式, 新增对于factoryMethod情况下的beanType的解析, 以及更多的增强
+     *
+     * @param beanName beanName
+     * @param mbd Merged BeanDefinition
+     * @param typeToMatch typeToMatch
+     * @return 预测得到的beanType
+     */
+    @Nullable
+    override fun predictBeanType(beanName: String, mbd: RootBeanDefinition, vararg typeToMatch: Class<*>): Class<*>? {
+        // 决定出来合适的目标beanType
+        val targetType = determineTargetType(beanName, mbd, *typeToMatch)
+
+        // 交给BeanPostProcessor, 去进行更多的beanType的预测
+        if (targetType != null && !mbd.isSynthetic() && getBeanPostProcessorCache().hasInstantiationAware()) {
+            for (bp in getBeanPostProcessorCache().smartInstantiationAwareCache) {
+
+                // 是否只是匹配FactoryBean
+                val matchingOnlyFactoryBean = typeToMatch.size == 1 && typeToMatch[0] == FactoryBean::class.java
+
+                // 使用该BeanPostProcessor, 去对beanType做出预测...
+                val predicted = bp.predictBeanType(targetType, beanName)
+                if (predicted != null) {
+
+                    // 如果并不是只匹配FactoryBean的话, 那么直接返回predicted即可
+                    if (!matchingOnlyFactoryBean) {
+                        return predicted;
+                    }
+
+                    // 如果是只去匹配FactoryBean的话, 那么只有在类型是FactoryBean的情况下才返回...
+                    if (ClassUtils.isAssignable(FactoryBean::class.java, predicted)) {
+                        return predicted;
+                    }
+                }
+            }
+
+            // 如果所有的BeanPostProcessor都没有决策出来合适的beanType, 那么直接返回targetType即可...
+            return targetType;
+        }
         return targetType
     }
 
@@ -839,7 +901,7 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
     }
 
     /**
-     * 获取当前BeanFactory是否允许循环引用? 
+     * 获取当前BeanFactory是否允许循环引用?
      *
      * @return 如果允许循环依赖, 那么return true; 如果不允许的话, 那么return false
      */
