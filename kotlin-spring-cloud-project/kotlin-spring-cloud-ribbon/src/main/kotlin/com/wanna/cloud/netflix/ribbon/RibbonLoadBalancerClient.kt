@@ -22,7 +22,8 @@ import java.net.URI
 open class RibbonLoadBalancerClient(private val springClientFactory: SpringClientFactory) : LoadBalancerClient {
 
     override fun <T> execute(serviceId: String, request: LoadBalancerRequest<T>): T {
-        val serviceInstance = choose(serviceId) ?: throw IllegalStateException("无法找到合适的ServiceInstance去处理请求")
+        val serviceInstance =
+            choose(serviceId) ?: throw IllegalStateException("无法找到合适的ServiceInstance去处理请求")
         return execute(serviceId, serviceInstance, request)
     }
 
@@ -69,7 +70,15 @@ open class RibbonLoadBalancerClient(private val springClientFactory: SpringClien
         override fun getInstanceId(): String = server.id
         override fun getHost(): String = server.host
         override fun getPort(): Int = server.port
-        override fun getUri(): String = "http://${server.hostPort}"
+
+        override fun isSecure(): Boolean {
+            return getSchema() == "https"
+        }
+
+        override fun getSchema(): String = server.scheme
+
+        override fun getUri(): String = "${getSchema()}://${server.hostPort}"
+
         override fun getMetadata(): Map<String, String> = emptyMap()
     }
 }

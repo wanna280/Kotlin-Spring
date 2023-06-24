@@ -2,6 +2,7 @@ package com.wanna.framework.beans.factory
 
 import com.wanna.framework.beans.factory.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.beans.factory.exception.NoUniqueBeanDefinitionException
+import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.lang.Nullable
 
 /**
@@ -94,10 +95,21 @@ interface BeanFactory {
      * @param name 要匹配的beanName
      * @param type 要去进行匹配的类型
      * @return 根据name获取到的Bean是否匹配指定的类型?
-     *  @throws NoSuchBeanDefinitionException 如果beanFactory当中没有这样beanName的BeanDefinition的话¬
+     * @throws NoSuchBeanDefinitionException 如果beanFactory当中没有这样beanName的BeanDefinition的话
      */
     @Throws(NoSuchBeanDefinitionException::class)
     fun isTypeMatch(name: String, type: Class<*>): Boolean
+
+    /**
+     * beanName对应的Bean的类型是否匹配type?
+     *
+     * @param name 要匹配的beanName
+     * @param type 要去进行匹配的类型
+     * @return 根据name获取到的Bean是否匹配指定的类型?
+     * @throws NoSuchBeanDefinitionException 如果beanFactory当中没有这样beanName的BeanDefinition的话
+     */
+    @Throws(NoSuchBeanDefinitionException::class)
+    fun isTypeMatch(name: String, type: ResolvableType): Boolean
 
     /**
      * 根据beanName去匹配beanType

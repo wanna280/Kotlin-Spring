@@ -1,19 +1,20 @@
 package com.wanna.framework.context.annotation
 
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.aop.framework.AopInfrastructureBean
+import com.wanna.framework.beans.factory.config.BeanFactoryPostProcessor
+import com.wanna.framework.beans.factory.config.BeanPostProcessor
 import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
 import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.context.event.EventListenerFactory
-import com.wanna.framework.beans.factory.config.BeanPostProcessor
-import com.wanna.framework.beans.factory.config.BeanFactoryPostProcessor
 import com.wanna.framework.context.processor.factory.internal.ConfigurationClassPostProcessor
 import com.wanna.framework.context.stereotype.Component
 import com.wanna.framework.core.Order
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.type.AnnotationMetadata
-import com.wanna.framework.util.ClassUtils
 import com.wanna.framework.lang.Nullable
+import com.wanna.framework.util.ClassUtils
 
 /**
  * 这是一个ConfigurationClass的配置类, 在ConfigurationClassPostProcessor扫描时,
@@ -25,7 +26,16 @@ import com.wanna.framework.lang.Nullable
  */
 object ConfigurationClassUtils {
 
-    // 配置类的候选匹配注解, 只要一个类上标注了这些类, 那么它就是有资格成为一个候选的配置类
+    /**
+     * Logger
+     */
+    @JvmStatic
+    private val logger = LoggerFactory.getLogger(ConfigurationClassUtils::class.java)
+
+    /**
+     * 配置类的候选匹配注解, 只要一个类上标注了这些类, 那么它就是有资格成为一个候选的配置类
+     */
+    @JvmStatic
     private val candidateIndicators = setOf(
         Import::class.java.name,
         Component::class.java.name,
@@ -33,12 +43,24 @@ object ConfigurationClassUtils {
         PropertySource::class.java.name
     )
 
-    // 配置类的属性, 可以从BeanDefinition当中获取到该属性, 用来判断该配置类是否被处理过！
+    // 配置类的属性, 可以从BeanDefinition当中获取到该属性, 用来判断该配置类是否被处理过!
+    @JvmField
     val CONFIGURATION_CLASS_ATTRIBUTE = ConfigurationClassPostProcessor::class.java.name + ".configurationClass"
-    const val CONFIGURATION_CLASS_FULL = "full"  // full, 全配置类(@Configuration & proxyBeanMethods=true)
-    const val CONFIGURATION_CLASS_LITE = "lite"  // lite, 半配置类
 
-    // 一个配置类上的@Order解析完成的属性, 可以支持对配置类去进行排序
+    /**
+     * full, 全配置类(@Configuration & proxyBeanMethods=true)
+     */
+    const val CONFIGURATION_CLASS_FULL = "full"
+
+    /**
+     * lite, 半配置类
+     */
+    const val CONFIGURATION_CLASS_LITE = "lite"
+
+    /**
+     * 一个配置类上的@Order解析完成的属性, 可以支持对配置类去进行排序
+     */
+    @JvmField
     val ORDER_ATTRIBUTE = ConfigurationClassPostProcessor::class.java.name + ".order"
 
 
@@ -115,7 +137,7 @@ object ConfigurationClassUtils {
      * 只要有Spring当中的一些标志性注解, 那么它就有机会成为一个候选的配置类
      *
      * @param metadata 目标配置类的相关注解信息
-     * @return 如果有资格, return true; 否则return false
+     * @return 如果有资格成为一个Spring的配置类, return true; 否则return false
      */
     @JvmStatic
     fun isConfigurationCandidate(metadata: AnnotationMetadata): Boolean {
@@ -130,9 +152,24 @@ object ConfigurationClassUtils {
             }
         }
         // 3.检查它身上是否有@Bean注解? 如果有的话, return true, 否则return false
+        return hasBeanMethods(metadata)
+    }
+
+    /**
+     * 检查给定的AnnotationMetadata对应的类上, 是否存在有@Bean注解的方法
+     *
+     * @param metadata metadata
+     * @return 该类上是否存在有@Bean注解标注方法
+     */
+    @JvmStatic
+    fun hasBeanMethods(metadata: AnnotationMetadata): Boolean {
         return try {
             metadata.hasAnnotatedMethods(Bean::class.java.name)
-        } catch (ex: Exception) {
+        } catch (ex: Throwable) {
+            // 出现异常打印日志...
+            if (logger.isDebugEnabled) {
+                logger.debug("Failed to introspect @Bean methods on class [${metadata.getClassName()}]: ", ex)
+            }
             false
         }
     }

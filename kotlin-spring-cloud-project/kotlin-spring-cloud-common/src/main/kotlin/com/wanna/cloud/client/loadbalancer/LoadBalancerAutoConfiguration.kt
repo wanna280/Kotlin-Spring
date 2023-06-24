@@ -71,6 +71,9 @@ open class LoadBalancerAutoConfiguration {
 
         /**
          * LoadBalancer的拦截器, 给RestTemplate当中要去进行导入的拦截器, 替换掉目标请求的URI成为ServiceInstance的URI
+         *
+         * @param loadBalancerClient 带有负载均衡的Client
+         * @param requestFactory 负责均衡的请求的创建的Factory
          */
         @Bean
         open fun loadBalancerInterceptor(
@@ -81,7 +84,10 @@ open class LoadBalancerAutoConfiguration {
         }
 
         /**
-         * [RestTemplate]的自定义化器, 给
+         * [RestTemplate]的自定义化器, 给它添加上拦截器列表, 用于去为RestTemplate提供负载均衡的功能
+         *
+         * @param loadBalancerInterceptor 为RestTemplate负载均衡的拦截器
+         * @return RestTemplate的Customizer
          */
         @Bean
         open fun restTemplateCustomizer(loadBalancerInterceptor: LoadBalancerInterceptor): RestTemplateCustomizer {

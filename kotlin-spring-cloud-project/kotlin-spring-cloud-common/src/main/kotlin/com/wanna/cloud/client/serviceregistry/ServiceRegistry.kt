@@ -23,7 +23,7 @@ interface ServiceRegistry<R : Registration> {
     fun deregister(registration: R)
 
     /**
-     * 关闭ServiceRegistry
+     * 关闭ServiceRegistry, 它是一个生命周期钩子方法
      */
     fun close()
 

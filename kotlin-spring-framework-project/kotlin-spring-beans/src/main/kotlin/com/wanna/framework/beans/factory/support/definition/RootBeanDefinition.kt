@@ -107,7 +107,13 @@ open class RootBeanDefinition() : AbstractBeanDefinition() {
     @Nullable
     private var isFactoryBean: Boolean? = null
 
+    /**
+     * 已经解析完成的目标beanType
+     */
+    var resolvedTargetType: Class<*>? = null
+
     open fun isFactoryBean(): Boolean? = isFactoryBean
+
     open fun setFactoryBean(@Nullable isFactoryBean: Boolean?) {
         this.isFactoryBean = isFactoryBean
     }
@@ -143,4 +149,15 @@ open class RootBeanDefinition() : AbstractBeanDefinition() {
     @Nullable
     open fun getFactoryMethodMetadata(): MethodMetadata? = null
 
+    /**
+     * 获取目标BeanType
+     *
+     * @return beanType
+     */
+    open fun getTargetType(): Class<*>? {
+        if (resolvedTargetType != null) {
+            return resolvedTargetType
+        }
+        return null
+    }
 }

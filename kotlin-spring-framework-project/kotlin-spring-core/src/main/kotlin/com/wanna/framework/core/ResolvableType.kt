@@ -361,6 +361,20 @@ open class ResolvableType() {
         return DefaultVariableResolver(this)
     }
 
+    /**
+     * 检查给定的对象, 是否和当前type类型匹配?
+     *
+     * @param obj 目标实例
+     * @return 该对象, 是否和当前type类型匹配?
+     */
+    open fun isInstance(@Nullable obj: Any?): Boolean {
+        return obj != null && isAssignFrom(obj::class.java)
+    }
+
+    open fun isAssignFrom(other: Class<*>): Boolean {
+        return resolve()!!.isAssignableFrom(other)
+    }
+
     override fun toString(): String {
         return ClassUtils.getQualifiedName(resolved ?: Any::class.java)
     }

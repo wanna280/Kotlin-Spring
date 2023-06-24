@@ -1,7 +1,7 @@
 package com.wanna.framework.beans.factory.support.definition
 
 import com.wanna.framework.core.type.AnnotationMetadata
-import com.wanna.framework.util.ClassUtils
+import com.wanna.framework.core.type.MethodMetadata
 
 /**
  * 这是一个被注解标注的通用的BeanDefinition
@@ -12,6 +12,11 @@ open class AnnotatedGenericBeanDefinition protected constructor() : AnnotatedBea
      * AnnotationMetadata(维护注解相关信息)
      */
     private var metadata: AnnotationMetadata? = null
+
+    /**
+     * FactoryMethod的Metadata信息
+     */
+    private var factoryMethodMetadata: MethodMetadata? = null
 
     /**
      * 基于beanClass的方式去进行构建
@@ -33,5 +38,18 @@ open class AnnotatedGenericBeanDefinition protected constructor() : AnnotatedBea
         this.setBeanClassName(metadata.getClassName())  // set beanClassName
     }
 
-    override fun getMetadata() = metadata ?: throw IllegalStateException("Metadata is null")
+    /**
+     * 基于AnnotationMetadata和FactoryMethodMetadata去构建
+     *
+     * @param metadata 类的Metadata
+     * @param factoryMethodMetadata @Bean方法的Metadata
+     */
+    constructor(metadata: AnnotationMetadata, factoryMethodMetadata: MethodMetadata) : this(metadata) {
+        this.factoryMethodMetadata = factoryMethodMetadata
+        this.setFactoryMethodName(factoryMethodMetadata.getMethodName())
+    }
+
+    override fun getMetadata() = metadata ?: throw IllegalStateException("AnnotationMetadata is null")
+
+    override fun getFactoryMethodMetadata(): MethodMetadata? = this.factoryMethodMetadata
 }

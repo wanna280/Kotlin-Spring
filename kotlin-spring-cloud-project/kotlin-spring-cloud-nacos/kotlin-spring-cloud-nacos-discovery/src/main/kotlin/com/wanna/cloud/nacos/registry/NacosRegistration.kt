@@ -10,7 +10,7 @@ import javax.annotation.PostConstruct
  */
 open class NacosRegistration(
     private val customizers: List<NacosRegistrationCustomizer>,
-    private val properties: NacosDiscoveryProperties
+    val properties: NacosDiscoveryProperties
 ) : Registration, ServiceInstance {
 
     @PostConstruct
@@ -45,8 +45,13 @@ open class NacosRegistration(
         return properties.port
     }
 
+    override fun isSecure(): Boolean {
+        return properties.secure;
+    }
+
     override fun getUri(): String {
-        return "http://${properties.ip}:${properties.port}"
+        val schema = if (isSecure()) "https" else "http"
+        return "$schema://${properties.ip}:${properties.port}"
     }
 
     override fun getMetadata(): MutableMap<String, String> {

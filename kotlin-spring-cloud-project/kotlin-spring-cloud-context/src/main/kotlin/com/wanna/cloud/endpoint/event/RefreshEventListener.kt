@@ -1,7 +1,8 @@
-package com.wanna.cloud.context.endpoint.event
+package com.wanna.cloud.endpoint.event
 
 import com.wanna.boot.context.event.ApplicationReadyEvent
 import com.wanna.cloud.context.refresh.ContextRefresher
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.context.event.ApplicationEvent
 import com.wanna.framework.context.event.SmartApplicationListener
 import com.wanna.framework.util.ClassUtils
@@ -14,9 +15,22 @@ import java.util.concurrent.atomic.AtomicBoolean
  * 更新配置文件到环境-->发布EnvironmentChangeEvent事件--->RefreshScope.refreshAll刷新RefreshScope内的全部Bean
  *
  * @see ContextRefresher
+ *
+ * @param contextRefresher ContextRefresher
  */
 open class RefreshEventListener(private val contextRefresher: ContextRefresher) : SmartApplicationListener {
+    companion object {
 
+        /**
+         * Logger
+         */
+        @JvmStatic
+        private val logger = LoggerFactory.getLogger(RefreshEventListener::class.java)
+    }
+
+    /**
+     * 应用是否已经准备好?
+     */
     private val ready = AtomicBoolean(false)
 
     override fun onApplicationEvent(event: ApplicationEvent) {
@@ -38,8 +52,12 @@ open class RefreshEventListener(private val contextRefresher: ContextRefresher) 
     }
 
     open fun handleRefreshEvent(event: RefreshEvent) {
+        // 在应用启动之前, 不触发刷新
         if (this.ready.get()) {
             val keys = contextRefresher.refresh()
+            if (logger.isInfoEnabled) {
+                logger.info("Refresh keys changed: ", keys)
+            }
         }
     }
 }

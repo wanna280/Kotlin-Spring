@@ -6,6 +6,7 @@ import com.wanna.cloud.client.ServiceInstance
 import com.wanna.cloud.nacos.NacosDiscoveryProperties
 import com.wanna.cloud.nacos.NacosServiceInstance
 import com.wanna.cloud.nacos.NacosServiceManager
+import com.wanna.framework.lang.Nullable
 
 /**
  * 整合NacosDiscoveryProperties和NacosServiceManager去实现Nacos的服务发现
@@ -13,6 +14,9 @@ import com.wanna.cloud.nacos.NacosServiceManager
  * @see NacosServiceManager
  * @see NacosDiscoveryProperties
  * @see NacosDiscoveryClient
+ *
+ * @param properties Nacos服务发现的配置信息
+ * @param manager Nacos实例的管理器
  */
 open class NacosServiceDiscovery(
     private val properties: NacosDiscoveryProperties, private val manager: NacosServiceManager
@@ -29,8 +33,8 @@ open class NacosServiceDiscovery(
     /**
      * 给定一个serviceId, 去获取到该Service对应的所有的实例
      *
-     * @param serviceId
-     * @return 该serviceId对应的ServiceInstance列表
+     * @param serviceId serviceId
+     * @return 根据给定的该serviceId对应的ServiceInstance列表
      */
     open fun getInstances(serviceId: String): List<ServiceInstance> {
         // 获取到所有的健康状态的ServiceInstance列表
@@ -39,7 +43,9 @@ open class NacosServiceDiscovery(
     }
 
     /**
-     * 获取NamingService
+     * 获取Nacos原生的[NamingService]
+     *
+     * @return NamingService
      */
     private fun namingService(): NamingService {
         return manager.getNamingService(properties.getNacosProperties())
@@ -47,7 +53,7 @@ open class NacosServiceDiscovery(
 
     companion object {
         /**
-         * 将Nacos的Instance列表, 转换为适配SpringCloud的ServiceInstance列表
+         * 将Nacos的Instance列表, 转换为适配SpringCloud的[ServiceInstance]列表
          *
          * @param instances Nacos的Instance列表
          * @param serviceId serviceId
@@ -55,18 +61,20 @@ open class NacosServiceDiscovery(
          */
         @JvmStatic
         fun hostToServiceInstanceList(instances: List<Instance>, serviceId: String): List<ServiceInstance> {
-            return instances.map { hostToServiceInstance(it, serviceId) }.filterNotNull().toList()
+            return instances.mapNotNull { hostToServiceInstance(it, serviceId) }.toList()
         }
 
         /**
-         * 将Nacos的Instance对象, 转换为适配SpringCloud的ServiceInstance对象
+         * 将Nacos的Instance对象, 转换为适配SpringCloud的[ServiceInstance]对象
          *
          * @param instance Nacos的Instance列表
          * @param serviceId serviceId
          * @return 适配为SpringCloud的ServiceInstance(有可能为null)
          */
+        @Nullable
         @JvmStatic
         fun hostToServiceInstance(instance: Instance, serviceId: String): ServiceInstance? {
+            // 如果该Instance不提供服务, 或者该实例是不健康的, 那么return null
             if (!instance.isEnabled && !instance.isHealthy) {
                 return null
             }

@@ -1,7 +1,7 @@
 package com.wanna.cloud.autoconfigure
 
 import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
-import com.wanna.cloud.context.endpoint.event.RefreshEventListener
+import com.wanna.cloud.endpoint.event.RefreshEventListener
 import com.wanna.cloud.context.refresh.ContextRefresher
 import com.wanna.cloud.context.scope.refresh.RefreshScope
 import com.wanna.framework.context.ConfigurableApplicationContext

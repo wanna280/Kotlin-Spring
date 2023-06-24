@@ -1,6 +1,7 @@
 package com.wanna.framework.beans.factory.support.definition
 
 import com.wanna.framework.core.type.AnnotationMetadata
+import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.core.type.classreading.MetadataReader
 
 /**
@@ -34,4 +35,6 @@ open class ScannedGenericBeanDefinition protected constructor() : AnnotatedBeanD
 
 
     override fun getMetadata() = metadata ?: throw IllegalStateException("AnnotationMetadata is null")
+
+    override fun getFactoryMethodMetadata(): MethodMetadata? = null
 }

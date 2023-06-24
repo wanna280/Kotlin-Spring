@@ -848,6 +848,16 @@ abstract class AbstractApplicationContext() : ConfigurableApplicationContext, De
         assertBeanFactoryActive()
         return getBeanFactory().isTypeMatch(name, type)
     }
+    /**
+     * 根据beanName去检查BeanFactory当中该beanName对应的Bean的类型是否和给定的type匹配?
+     *
+     * @param name beanName
+     * @param type 要去进行匹配的beanType
+     */
+    override fun isTypeMatch(name: String, type: ResolvableType): Boolean {
+        assertBeanFactoryActive()
+        return getBeanFactory().isTypeMatch(name, type)
+    }
 
     /**
      * 根据beanName获取BeanFactory当中该beanName对应的Bean的类型
