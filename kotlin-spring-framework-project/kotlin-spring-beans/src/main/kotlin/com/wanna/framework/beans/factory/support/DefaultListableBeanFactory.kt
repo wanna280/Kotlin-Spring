@@ -1,5 +1,6 @@
 package com.wanna.framework.beans.factory.support
 
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.SmartInitializingSingleton
 import com.wanna.framework.beans.TypeConverter
@@ -8,17 +9,16 @@ import com.wanna.framework.beans.factory.BeanFactory.Companion.FACTORY_BEAN_PREF
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.config.ConfigurableBeanFactory
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
-import com.wanna.framework.beans.factory.support.definition.BeanDefinition
-import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.beans.factory.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.beans.factory.exception.NoUniqueBeanDefinitionException
+import com.wanna.framework.beans.factory.support.definition.BeanDefinition
+import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.core.ParameterNameDiscoverer
 import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.comparator.OrderComparator
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.ClassUtils
-import com.wanna.common.logging.LoggerFactory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.Consumer
@@ -1106,18 +1106,18 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
             var matchFound = false
             // 如果它不是一个FactoryBean的话, 那么直接去匹配就行
             if (!isFactoryBean) {
-                if (isTypeMatch(beanNameToUse, type, allowFactoryBeanInit)) {
+                if (isTypeMatch(beanNameToUse, ResolvableType.forClass(type), allowFactoryBeanInit)) {
                     matchFound = true
                 }
                 // 如果它是一个FactoryBean的话, 那么需要匹配beanName, 也要匹配&beanName
             } else {
-                if (isTypeMatch(beanNameToUse, type, allowFactoryBeanInit)) {
+                if (isTypeMatch(beanNameToUse, ResolvableType.forClass(type), allowFactoryBeanInit)) {
                     matchFound = true
                 }
                 if (!matchFound) {
                     // fixed: 如果是FactoryBean才匹配了你给的类型, 那么说明你想要的是FactoryBean, 我们必须给beanName加上&
                     beanNameToUse = FACTORY_BEAN_PREFIX + beanName
-                    if (isTypeMatch(beanNameToUse, type, allowFactoryBeanInit)) {
+                    if (isTypeMatch(beanNameToUse, ResolvableType.forClass(type), allowFactoryBeanInit)) {
                         matchFound = true
 
                     }

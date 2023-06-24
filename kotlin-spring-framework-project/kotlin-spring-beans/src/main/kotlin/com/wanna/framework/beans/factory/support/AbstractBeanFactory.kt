@@ -10,6 +10,7 @@ import com.wanna.framework.beans.factory.support.definition.BeanDefinition
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
 import com.wanna.framework.beans.util.StringValueResolver
 import com.wanna.framework.core.NamedThreadLocal
+import com.wanna.framework.core.ResolvableType
 import com.wanna.framework.core.convert.ConversionService
 import com.wanna.framework.core.convert.support.DefaultConversionService
 import com.wanna.framework.core.metrics.ApplicationStartup
@@ -547,6 +548,17 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      * @return 是否类型匹配?
      */
     override fun isTypeMatch(name: String, type: Class<*>): Boolean {
+        return isTypeMatch(name, ResolvableType.forClass(type))
+    }
+
+    /**
+     * 判断容器当中的beanName对应的类型是否和type匹配? (支持去匹配FactoryBeanObject)
+     *
+     * @param name beanName
+     * @param type beanName应该匹配的类型?
+     * @return 是否类型匹配?
+     */
+    override fun isTypeMatch(name: String, type: ResolvableType): Boolean {
         return isTypeMatch(name, type, false)
     }
 
@@ -560,6 +572,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      * @param allowFactoryBeanInit 是否允许FactoryBean去进行初始化?
      * @return 是否类型匹配?
      */
+    @Deprecated(message = "use new api to replace")
     protected open fun isTypeMatch(name: String, type: Class<*>, allowFactoryBeanInit: Boolean): Boolean {
         val beanName = transformedBeanName(name)
         val isFactoryDereference = BeanFactoryUtils.isFactoryDereference(name)
@@ -625,6 +638,122 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     }
 
     /**
+     * 检查给定的name对应的Bean, 是否和预期的type匹配得上?
+     *
+     * @param name name
+     * @param typeToMatch 预期beanType
+     * @param allowEagerInit 是否允许eagerInit?
+     * @return 给定的name对应的Bean的类型, 是否和预期的type匹配得上?
+     */
+    protected open fun isTypeMatch(
+        name: String,
+        typeToMatch: ResolvableType,
+        allowEagerInit: Boolean
+    ): Boolean {
+        // 转换beanName(如果有&的话, 那么去掉&)
+        val beanName = transformedBeanName(name)
+        // 根据name是否以&作为开头, 去检查是否是FactoryBean引用
+        val factoryDereference = BeanFactoryUtils.isFactoryDereference(name)
+
+        // 1.检查已经注册到缓存当中的Bean实例对象
+        val beanInstance = getSingleton(beanName, false)
+        if (beanInstance != null && beanInstance != NullBean::class.java) {
+
+            // 如果拿到的beanInstance本身就是FactoryBean的话...
+            if (beanInstance is FactoryBean<*>) {
+                // 如果name是以"&"作为开头, 那么说明应该参与匹配的就是FactoryBean, 也就是beanInstance
+                if (factoryDereference) {
+                    return typeToMatch.isInstance(beanInstance)
+
+                    // 如果name不是以"&"作为开头, 那么说明应该匹配的是FactoryBeanObject
+                } else {
+                    val typeForFactoryBean = getTypeForFactoryBean(beanInstance)
+                    return typeForFactoryBean != null && typeToMatch.isAssignFrom(typeForFactoryBean)
+                }
+
+                // 如果beanInstance不是FactoryBean的话
+            } else {
+                // 如果不是FactoryBean, 但是name以"&"作为开头
+                // 例如根据"&aaa"去获取到了一个非FactoryBean的这种情况
+                // 在这种情况下, 一律认为是不匹配
+                if (factoryDereference) {
+                    return false
+
+                    // 如果beanInstance不是FactoryBean, name也不是以"&"作为开头, 也就是最正常的情况下
+                } else {
+                    // 最开始的情况下, 先根据beanInstance直接去进行匹配...
+                    if (typeToMatch.isInstance(beanInstance)) {
+                        return true
+                    }
+                }
+            }
+
+            // 如果包含了beanName的单例对象, 但是不包含这样的BeanDefinition
+        } else if (containsSingleton(beanName) && !containsBeanDefinition(beanName)) {
+            // null instance registered
+            return false
+        }
+
+        // 2.如果确定当前BeanFactory当中不包含这样的BeanDefinition, 那么交给parentBeanFactory去进行检查
+        val parentBeanFactory = getParentBeanFactory()
+        if (parentBeanFactory != null && !containsBeanDefinition(beanName)) {
+            return parentBeanFactory.isTypeMatch(name, typeToMatch);
+        }
+
+        // 3.根据BeanInstance无法check成功, 那么尝试去检查BeanDefinition
+        val mbd = getMergedLocalBeanDefinition(beanName)
+
+        // 要去进行匹配的类型
+        val classToMatch = typeToMatch.resolve() ?: FactoryBean::class.java
+
+        // 要去进行匹配的类型列表, 如果classToMatch==FactoryBean.class, 那么只匹配FactoryBean;
+        // 如果classToMatch!=FactoryBean.class, 那么需要同时匹配FactoryBean和classToMatch
+        val typesToMatch: Array<Class<*>> =
+            if (classToMatch == FactoryBean::class.java) arrayOf(classToMatch)
+            else arrayOf(FactoryBean::class.java, classToMatch)
+
+
+        // 预测得到的beanType
+        var predictedType: Class<*>? = null
+
+        // TODO check decorated BeanDefinition
+
+        if (predictedType == null) {
+
+            // 预测beanType
+            predictedType = predictBeanType(beanName, mbd, *typesToMatch)
+
+            // predictedType==null, 说明预测不到合适的beanType的话, 那么直接return false
+            if (predictedType == null) {
+                return false;
+            }
+        }
+
+        if (ClassUtils.isAssignable(FactoryBean::class.java, predictedType)) {
+            // 如果根据beanName去拿到的BeanDefinition的类型是FactoryBean
+            // 但是预期的并不是FactoryBean, 我们需要获取到FactoryBeanObject的类型...
+            if (beanInstance == null && !factoryDereference) {
+                predictedType = getTypeForFactoryBean(beanName, mbd, allowEagerInit)
+
+                // 如果FactoryBeanObject类型无法获取到, 那么return false
+                if (predictedType == null) {
+                    return false
+                }
+            }
+        } else if (factoryDereference) {
+            predictedType = predictBeanType(beanName, mbd, FactoryBean::class.java)
+            if (predictedType == null || !ClassUtils.isAssignable(FactoryBean::class.java, predictedType)) {
+                return false
+            }
+        }
+
+        // TODO check generics
+
+        // 检查predictedType和预期type是否能匹配成功?
+        return typeToMatch.isAssignFrom(predictedType)
+    }
+
+    /**
      * 从MergedBeanDefinition当中去判断, 它是否是一个FactoryBean?
      *
      * @param name name
@@ -636,7 +765,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         if (result == null) {
             // 预测beanType时, 我们只去进行FactoryBean类型的预测...
             val beanClass = predictBeanType(name, mbd, FactoryBean::class.java)
-            result = beanClass != null && ClassUtils.isAssignFrom(FactoryBean::class.java, beanClass)
+            result = beanClass != null && ClassUtils.isAssignable(FactoryBean::class.java, beanClass)
             mbd.setFactoryBean(result)
         }
         return result

@@ -318,7 +318,10 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
 
         // 对所有的@Configuration & proxyBeanMethods的配置类去进行增强
         configBeanDefs.forEach { (beanName, beanDefinition) ->
-            val beanClass = beanDefinition.getBeanClass()!!
+            val beanClass = beanDefinition.getBeanClass()
+            if (beanClass == null) {
+                return
+            }
             val configClass = enhancer.enhance(beanClass, getBeanClassLoader())
             if (configClass != beanClass) {
                 if (logger.isTraceEnabled) {
