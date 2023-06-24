@@ -461,7 +461,7 @@ abstract class AbstractBeanDefinition : BeanDefinition, BeanMetadataAttributeAcc
     open fun hasBeanClass(): Boolean = beanClass != null
 
     /**
-     * 根据给定的ClassLoader, 去将beanClassName去解析解析beanClass
+     * 根据给定的ClassLoader, 去将beanClassName去解析解析beanClass并保存到当前BeanDefinition当中
      *
      * @param classLoader ClassLoader
      * @return beanClass(如果没有beanClassName的话, return null)

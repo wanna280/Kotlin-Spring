@@ -1,19 +1,21 @@
 package com.wanna.framework.context.processor.factory.internal
 
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.beans.PropertyValues
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
 import com.wanna.framework.beans.factory.config.ConfigurableListableBeanFactory
+import com.wanna.framework.beans.factory.config.InstantiationAwareBeanPostProcessor
 import com.wanna.framework.beans.factory.config.SingletonBeanRegistry
 import com.wanna.framework.beans.factory.support.BeanDefinitionHolder
+import com.wanna.framework.beans.factory.support.BeanNameGenerator
 import com.wanna.framework.beans.factory.support.definition.AbstractBeanDefinition
+import com.wanna.framework.beans.factory.support.definition.AnnotatedBeanDefinition
 import com.wanna.framework.context.ApplicationStartupAware
 import com.wanna.framework.context.ResourceLoaderAware
 import com.wanna.framework.context.annotation.*
 import com.wanna.framework.context.annotation.ConfigurationClassUtils.getOrder
-import com.wanna.framework.beans.factory.BeanClassLoaderAware
 import com.wanna.framework.context.aware.EnvironmentAware
-import  com.wanna.framework.beans.factory.config.InstantiationAwareBeanPostProcessor
 import com.wanna.framework.context.processor.factory.BeanDefinitionRegistryPostProcessor
 import com.wanna.framework.core.PriorityOrdered
 import com.wanna.framework.core.environment.Environment
@@ -21,11 +23,11 @@ import com.wanna.framework.core.environment.StandardEnvironment
 import com.wanna.framework.core.io.DefaultResourceLoader
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.core.metrics.ApplicationStartup
+import com.wanna.framework.core.type.AnnotationMetadata
+import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.core.type.classreading.CachingMetadataReaderFactory
 import com.wanna.framework.core.type.classreading.MetadataReaderFactory
 import com.wanna.framework.lang.Nullable
-import com.wanna.common.logging.LoggerFactory
-import com.wanna.framework.beans.factory.support.BeanNameGenerator
 
 /**
  * SpringBeanFactory的配置类处理器, 用来扫描Spring当中的配置类, 包括对@Configuration/@Component/@Bean等注解的处理
@@ -296,14 +298,46 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
 
             // 从BeanDefinition上获取到之前解析的配置类信息(FULL/LITE), 如果是FULL配置类, 那么它是一个需要被增强的配置类
             val configClassAttr = beanDefinition.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE)
+
+            var annotationMetadata: AnnotationMetadata? = null;
+            var methodMetadata: MethodMetadata? = null;
+            if (beanDefinition is AnnotatedBeanDefinition) {
+                annotationMetadata = beanDefinition.getMetadata()
+                methodMetadata = beanDefinition.getFactoryMethodMetadata()
+            }
+
+            // 如果它是一个配置类, 或者这个类有@Bean方法, 但是没有解析完成beanClass的话
+            if ((configClassAttr != null || methodMetadata != null)
+                && (beanDefinition is AbstractBeanDefinition && !beanDefinition.hasBeanClass())
+            ) {
+                // 如果它是一个"full"配置类, 或者是虽然是"lite"配置类, 但是含有@Bean方法的话,
+                // 那么需要在这儿去完成提前的resolveClass, 也就是提前完成类加载, 不然有可能会出现一些问题...
+                // 但是如果它是一个"lite"配置类并且没有@Bean方法这种情况的话, 那么不必在这去提前完成resolveClass, 后续再resolveClass也无所谓
+                val liteConfigurationCandidateWithoutBeanMethods =
+                    configClassAttr == ConfigurationClassUtils.CONFIGURATION_CLASS_LITE
+                            && annotationMetadata != null
+                            && !ConfigurationClassUtils.hasBeanMethods(annotationMetadata)
+
+                if (!liteConfigurationCandidateWithoutBeanMethods) {
+                    try {
+                        beanDefinition.resolveBeanClass(this.getBeanClassLoader())
+                    } catch (ex: Throwable) {
+                        throw IllegalStateException(
+                            "Cannot load configuration class: ${beanDefinition.getBeanClassName()}",
+                            ex
+                        )
+                    }
+                }
+            }
+
+
             if (configClassAttr == ConfigurationClassUtils.CONFIGURATION_CLASS_FULL) {
                 if (beanDefinition !is AbstractBeanDefinition) {
                     throw IllegalStateException("Given BeanDefinition is not a AbstractBeanDefinition, un support to enhance it")
                 } else if (logger.isInfoEnabled && beanFactory.containsSingleton(beanName)) {
                     logger.info("Cannot support enhance Bean because bean factory exists its singleton object, beanName=$beanName")
-                } else {
-                    configBeanDefs[beanName] = beanDefinition // add full ConfigurationClass
                 }
+                configBeanDefs[beanName] = beanDefinition // add full ConfigurationClass
             }
         }
 
@@ -318,10 +352,7 @@ open class ConfigurationClassPostProcessor : BeanDefinitionRegistryPostProcessor
 
         // 对所有的@Configuration & proxyBeanMethods的配置类去进行增强
         configBeanDefs.forEach { (beanName, beanDefinition) ->
-            val beanClass = beanDefinition.getBeanClass()
-            if (beanClass == null) {
-                return
-            }
+            val beanClass = beanDefinition.getBeanClass() ?: return
             val configClass = enhancer.enhance(beanClass, getBeanClassLoader())
             if (configClass != beanClass) {
                 if (logger.isTraceEnabled) {
