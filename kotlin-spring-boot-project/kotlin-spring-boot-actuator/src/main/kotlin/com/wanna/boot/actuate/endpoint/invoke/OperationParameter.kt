@@ -20,9 +20,9 @@ interface OperationParameter {
     fun getType(): Class<*>
 
     /**
-     * 该参数是否是强制性的？(该参数是否允许为空？)
+     * 该参数是否是强制性的? (该参数是否允许为空? )
      *
-     * @return 如如果该参数不允许为空，return true；否则return false
+     * @return 如如果该参数不允许为空, return true; 否则return false
      */
     fun isMandatory(): Boolean
 }

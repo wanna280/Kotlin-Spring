@@ -7,7 +7,7 @@ import com.wanna.framework.util.ClassUtils
 import java.util.*
 
 /**
- * 标注了某个注解的类的寻找器，支持从某个包下去找到标注了某个注解的类
+ * 标注了某个注解的类的寻找器, 支持从某个包下去找到标注了某个注解的类
  *
  * @author jianchao.jia
  * @version v1.0
@@ -67,7 +67,7 @@ class AnnotatedClassFinder(private val annotationType: Class<out Annotation>) {
      * 从给定的包以及其所有的父包当中去寻找合适的类
      *
      * @param source 需要去进行搜寻的包
-     * @return 扫描到的标注了给定的注解的类(没有找到的话，return null)
+     * @return 扫描到的标注了给定的注解的类(没有找到的话, return null)
      */
     @Nullable
     private fun scanPackage(source: String): Class<*>? {

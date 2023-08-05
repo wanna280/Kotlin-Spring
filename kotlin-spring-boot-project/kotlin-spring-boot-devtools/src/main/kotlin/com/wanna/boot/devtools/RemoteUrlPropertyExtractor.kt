@@ -9,26 +9,35 @@ import java.net.URI
 import java.net.URISyntaxException
 
 /**
- * "remoteUrl"的属性提取器，将命令行当中以nonOptionArgs的方式传递的"remoteUrl"，
- * 包装成为一个PropertySource放入到Environment当中，方便直接使用@Value注解去进行注入
+ * "remoteUrl"的属性提取器, 将命令行当中以nonOptionArgs的方式传递的"remoteUrl",
+ * 包装成为一个PropertySource放入到Environment当中, 方便直接使用@Value注解去进行注入
  *
  * @see RemoteSpringApplication
  * @see com.wanna.boot.devtools.remote.client.RemoteClientConfiguration
  */
 open class RemoteUrlPropertyExtractor : ApplicationListener<ApplicationEnvironmentPreparedEvent> {
     companion object {
+
+        /**
+         * 命令行的NonOptionArgs的属性名
+         */
         private const val NON_OPTION_ARGS = CommandLinePropertySource.DEFAULT_NO_OPTION_ARGS_PROPERTY_NAME
     }
 
+    /**
+     * 在Spring的[ApplicationEnvironmentPreparedEvent]事件触发时, 说明Environment已经准备好了, 可以去探测remoteUrl了
+     *
+     * @param event event
+     */
     override fun onApplicationEvent(event: ApplicationEnvironmentPreparedEvent) {
         val environment = event.environment
         // 获取NonOptionArgs作为Url
         val remoteUrl = getCleanRemoteUrl(environment.getProperty(NON_OPTION_ARGS))
         if (!StringUtils.hasText(remoteUrl)) {
-            throw IllegalStateException("没有指定remoteUrl，请在命令行当中指定remoteUrl")
+            throw IllegalStateException("没有指定remoteUrl, 请在命令行当中指定remoteUrl")
         }
 
-        // 验证给定的"remoteUrl"是否合法，如果不合法需要抛出异常
+        // 验证给定的"remoteUrl"是否合法, 如果不合法需要抛出异常
         try {
             URI(remoteUrl!!)
         } catch (ex: URISyntaxException) {

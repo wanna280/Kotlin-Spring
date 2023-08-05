@@ -1,7 +1,7 @@
 package com.wanna.framework.test.junit
 
 import com.wanna.framework.context.annotation.Autowired
-import com.wanna.framework.context.processor.beans.BeanPostProcessor
+import com.wanna.framework.beans.factory.config.BeanPostProcessor
 import com.wanna.framework.test.JUnitApp
 import com.wanna.framework.test.context.ContextConfiguration
 import com.wanna.framework.test.context.junit.jupiter.SpringExtension

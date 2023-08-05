@@ -1,14 +1,14 @@
 package com.wanna.boot.actuate.autoconfigure.metrics
 
 import com.wanna.framework.context.ApplicationContext
-import com.wanna.framework.context.processor.beans.BeanPostProcessor
+import com.wanna.framework.beans.factory.config.BeanPostProcessor
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.binder.MeterBinder
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry
 import io.micrometer.core.instrument.config.MeterFilter
 
 /**
- * 提供对于[MeterRegistry]的自定义工作的[BeanPostProcessor]，内部实现是时通过委托[MeterRegistryConfigurer]去完成真正的定义
+ * 提供对于[MeterRegistry]的自定义工作的[BeanPostProcessor], 内部实现是时通过委托[MeterRegistryConfigurer]去完成真正的定义
  *
  * @author jianchao.jia
  * @version v1.0
@@ -31,7 +31,7 @@ open class MeterRegistryPostProcessor(
 ) : BeanPostProcessor {
 
     /**
-     * MeterRegistryConfigurer，对于真正的[MeterRegistry]的自定义
+     * MeterRegistryConfigurer, 对于真正的[MeterRegistry]的自定义
      *
      * @see MeterRegistry
      */
@@ -39,7 +39,7 @@ open class MeterRegistryPostProcessor(
     private var configurer: MeterRegistryConfigurer? = null
 
     /**
-     * 对Bean去进行后置处理时，如果在这里有去遇到了一个[MeterRegistry]的Bean话，
+     * 对Bean去进行后置处理时, 如果在这里有去遇到了一个[MeterRegistry]的Bean话,
      * 那么它就需要交给[MeterRegistryConfigurer]去进行自定义的merge操作
      *
      * @param beanName beanName
@@ -47,7 +47,7 @@ open class MeterRegistryPostProcessor(
      * @return bean
      */
     override fun postProcessAfterInitialization(beanName: String, bean: Any): Any? {
-        // 如果该Bean是一个MeterRegistry的话，那么我们就需要交给MeterRegistryConfigurer去进行自定义...
+        // 如果该Bean是一个MeterRegistry的话, 那么我们就需要交给MeterRegistryConfigurer去进行自定义...
         if (bean is MeterRegistry) {
             getConfigurer().configure(bean)
         }
@@ -55,17 +55,17 @@ open class MeterRegistryPostProcessor(
     }
 
     /**
-     * 获取到[MeterRegistryConfigurer]，提供对于[MeterRegistry]去执行真正的自定义
+     * 获取到[MeterRegistryConfigurer], 提供对于[MeterRegistry]去执行真正的自定义
      *
      * @return MeterRegistryConfigurer
      */
     private fun getConfigurer(): MeterRegistryConfigurer {
         if (this.configurer == null) {
-            // 检查一下是否存在有CompositeMeterRegistry？
+            // 检查一下是否存在有CompositeMeterRegistry? 
             val hasCompositeMeterRegistry =
                 this.applicationContext.getBeanNamesForType(CompositeMeterRegistry::class.java, true, false).isEmpty()
 
-            // 构建出来一个MeterRegistryConfigurer，将MeterBinder/MeterFilter/MeterRegistryCustomizer
+            // 构建出来一个MeterRegistryConfigurer, 将MeterBinder/MeterFilter/MeterRegistryCustomizer
             // 去merge到给定的MeterRegistry当中来
             this.configurer =
                 MeterRegistryConfigurer(

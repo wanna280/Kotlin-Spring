@@ -16,25 +16,40 @@ import java.net.URL
  * @version 1.0
  */
 open class HttpServerRequestImpl : HttpServerRequest {
-    companion object {
-        const val PARAM_SEPARATOR = "&"
-        const val EQUAL = "="
-    }
-
-    // 请求方式
+    /**
+     * 请求方式
+     */
     private var method = RequestMethod.GET
 
-    // schema(protocol)
+    /**
+     * schema(protocol)
+     */
     var scheme: String = "http"
 
-    // 完成请求路径，包括query部分
+    /**
+     * 完成请求路径, 包括query部分
+     */
     private var uri = "/"
 
-    // 请求路径，不包含query部分
+    /**
+     * 请求路径, 不包含query部分
+     */
     private var url = "/"
 
-    // remoteHost
+    /**
+     * remoteHost
+     */
     private var remoteHost: String = ""
+
+    /**
+     * remoteIp
+     */
+    private var remoteIp: String = ""
+
+    /**
+     * remote Port
+     */
+    private var remotePort: Int = -1
 
     // headers
     private val headers = HttpHeaders()
@@ -44,15 +59,29 @@ open class HttpServerRequestImpl : HttpServerRequest {
      */
     private var cookies: Array<Cookie>? = null
 
-    // params
+    /**
+     * params
+     */
     private val params = LinkedMultiValueMap<String, String>()
 
-    // attributes
+    /**
+     * attributes
+     */
     private val attributes = LinkedHashMap<String, Any?>()
 
-    // ActionHook，当给予对应的状态码时，应该产生的动作
+    /**
+     * ActionHook, 当给予对应的状态码时, 应该产生的动作
+     */
     private var actionHook: ActionHook? = null
 
+    /**
+     * AsyncContext
+     */
+    private var asyncContext: AsyncContextImpl? = null
+
+    /**
+     * InputStream
+     */
     private var inputStream: InputStream? = null
 
     open fun setInputStream(inputStream: InputStream) {
@@ -60,7 +89,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
     }
 
     /**
-     * 获取request的输入流，可以从输出流当中获取RequestBody
+     * 获取request的输入流, 可以从输出流当中获取RequestBody
      *
      * @return RequestBody的输入流
      */
@@ -85,7 +114,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
     }
 
     /**
-     * 设置request的具体的参数(如果之前已经有该参数了，那么直接去进行替换)
+     * 设置request的具体的参数(如果之前已经有该参数了, 那么直接去进行替换)
      *
      * @param name paramName
      * @param value paramValue(为null时代表移除)
@@ -99,7 +128,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
     }
 
     /**
-     * 添加参数，如果value为空的话，移除该name的param
+     * 添加参数, 如果value为空的话, 移除该name的param
      *
      * @param name paramName
      * @param value paramValue(为null时代表移除)
@@ -120,7 +149,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
      * 根据name获取param
      *
      * @param name paramName
-     * @return 给定paramName获取到的参数列表(如果存在有多个param，那么使用"; "去进行分割)
+     * @return 给定paramName获取到的参数列表(如果存在有多个param, 那么使用"; "去进行分割)
      */
     override fun getParam(name: String): String? {
         return this.params[name]?.joinToString(COMMA)
@@ -149,7 +178,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
     }
 
     /**
-     * 添加Header，如果value为空的话，标识移除该name的header
+     * 添加Header, 如果value为空的话, 标识移除该name的header
      *
      * @param name headerName
      * @param value headerValue
@@ -176,7 +205,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
      * 根据name去获取到headerValue
      *
      * @param name headerName
-     * @return 根据name去获取到的headerValue(如果该header存在有多个值，那么使用"; "去进行分割)
+     * @return 根据name去获取到的headerValue(如果该header存在有多个值, 那么使用"; "去进行分割)
      */
     override fun getHeader(name: String): String? {
         return this.headers[name]?.joinToString(COMMA)
@@ -225,30 +254,61 @@ open class HttpServerRequestImpl : HttpServerRequest {
         this.uri = uri
     }
 
-    open fun init(init: HttpServerRequestImpl.() -> Unit) = init.invoke(this)
-
-    open fun parseUriUrlAndParams(uri: String) {
-        this.uri = uri
-        val indexOf = uri.indexOf("?")
-        if (indexOf == -1) {
-            this.url = uri
-            return
-        }
-        this.url = uri.substring(0, indexOf) // url
-
-        val params = uri.substring(indexOf + 1).split(PARAM_SEPARATOR)
-        params.forEach {
-            val eqIndex = it.indexOf(EQUAL)
-            val key = it.substring(0, eqIndex)
-            val value = it.substring(eqIndex + 1)
-            // 拼接param
-            this.params.add(key, value)
-        }
+    open fun setUrl(url: String) {
+        this.url = url
     }
+
+    open fun init(init: HttpServerRequestImpl.() -> Unit) = init.invoke(this)
 
     override fun getLocalHost() = headers.getHost() ?: ""
 
+    /**
+     * 设置remoteHost
+     *
+     * @param remoteHost remoteHost
+     */
+    open fun setRemoteHost(remoteHost: String) {
+        this.remoteHost = remoteHost
+    }
+
+    /**
+     * 设置remoteIP
+     *
+     * @param remoteIp remoteIp
+     */
+    open fun setRemoteIp(remoteIp: String) {
+        this.remoteIp = remoteIp
+    }
+
+    /**
+     * 设置remotePort
+     *
+     * @param remotePort remotePort
+     */
+    open fun setRemotePort(remotePort: Int) {
+        this.remotePort = remotePort
+    }
+
+    /**
+     * 获取remote Port
+     *
+     * @return remote Port
+     */
+    override fun getRemotePort(): Int = this.remotePort
+
+    /**
+     * 获取remote Host
+     *
+     * @return remote Host
+     */
     override fun getRemoteHost() = this.remoteHost
+
+    /**
+     * 获取远程的IP
+     *
+     * @return remoteIp
+     */
+    override fun getRemoteIp(): String = this.remoteIp
 
     override fun getServerPort() = URL(getSchema() + "://" + getLocalHost()).port
 
@@ -261,6 +321,7 @@ open class HttpServerRequestImpl : HttpServerRequest {
     override fun getServerName() = URL(getSchema() + "://" + getLocalHost()).host!!
 
     override fun getUri() = this.uri
+
     override fun getUrl() = this.url
     override fun getMethod() = this.method
 
@@ -271,6 +332,26 @@ open class HttpServerRequestImpl : HttpServerRequest {
     override fun action(code: ActionCode, param: Any?) {
         this.actionHook?.action(code, param)
     }
+
+    override fun startAsync(): AsyncContext {
+        return startAsyncInternal(this, null)
+    }
+
+    override fun startAsync(request: HttpServerRequest, response: HttpServerResponse): AsyncContext {
+        return startAsyncInternal(request, response)
+    }
+
+    private fun startAsyncInternal(request: HttpServerRequest?, response: HttpServerResponse?): AsyncContext {
+        var asyncContext = this.asyncContext
+        if (asyncContext == null) {
+            asyncContext = AsyncContextImpl()
+            this.asyncContext = asyncContext
+        }
+        asyncContext.setStarted(request, response)
+        return this.asyncContext!!
+    }
+
+    override fun getAsyncContext(): AsyncContext? = this.asyncContext
 
     /**
      * 设置ActionHook

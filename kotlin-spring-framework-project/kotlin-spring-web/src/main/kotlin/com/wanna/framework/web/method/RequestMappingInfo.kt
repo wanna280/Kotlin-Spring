@@ -1,17 +1,19 @@
 package com.wanna.framework.web.method
 
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.bind.annotation.RequestMethod
 import com.wanna.framework.web.mvc.condition.*
 import com.wanna.framework.web.server.HttpServerRequest
 
 /**
- * 它封装了@RequestMapping注解当中的各个属性的信息，负责对一个@RequestMapping去进行匹配
+ * 它封装了@RequestMapping注解当中的各个属性的信息, 负责对一个@RequestMapping去进行匹配
  *
- * @param methodsCondition 对应@RequestMapping当中的method属性(只有拥有这些methods的情况下，当前RequestMapping才能被匹配到)
- * @param pathPatternsCondition 对应@RequestMapping当中的path属性(只有拥有这些path的情况下，当前RequestMapping才能被匹配到)
- * @param paramsCondition 对应@RequestMapping当中的params属性(只有拥有这些params的情况下，当前RequestMapping才能被匹配到)
- * @param headersCondition 对应@RequestMapping当中的headers属性(只有拥有这些headers的情况下，当前RequestMapping才能被匹配到)
- * @param producesCondition 对应@RequestMapping当中的produces属性，设置当前请求的产出类型(要以什么类型的数据去进行写出给客户端)
+ * @param methodsCondition 对应@RequestMapping当中的method属性(只有拥有这些methods的情况下, 当前RequestMapping才能被匹配到)
+ * @param pathPatternsCondition 对应@RequestMapping当中的path属性(只有拥有这些path的情况下, 当前RequestMapping才能被匹配到)
+ * @param paramsCondition 对应@RequestMapping当中的params属性(只有拥有这些params的情况下, 当前RequestMapping才能被匹配到)
+ * @param headersCondition 对应@RequestMapping当中的headers属性(只有拥有这些headers的情况下, 当前RequestMapping才能被匹配到)
+ * @param producesCondition 对应@RequestMapping当中的produces属性, 设置当前请求的产出类型(要以什么类型的数据去进行写出给客户端)
+ * @param consumesCondition 对应@RequestMapping当中的consumes属性, 获取进行客户端的ContentType的匹配
  *
  * @see com.wanna.framework.web.bind.annotation.RequestMapping
  */
@@ -20,12 +22,13 @@ open class RequestMappingInfo(
     val pathPatternsCondition: PathPatternsRequestCondition = PathPatternsRequestCondition(),
     val paramsCondition: ParamsRequestCondition = ParamsRequestCondition(),
     val headersCondition: HeadersRequestCondition = HeadersRequestCondition(),
-    val producesCondition: ProducesRequestCondition = ProducesRequestCondition()
+    val producesCondition: ProducesRequestCondition = ProducesRequestCondition(),
+    val consumesCondition: ConsumesRequestCondition = ConsumesRequestCondition()
 ) {
     open fun getPaths(): Set<String> = HashSet(pathPatternsCondition.paths)
 
     /**
-     * 对请求去进行匹配，看当前的Mapping是否支持处理该request
+     * 对请求去进行匹配, 看当前的Mapping是否支持处理该request
      *
      * @param request request
      */
@@ -40,24 +43,24 @@ open class RequestMappingInfo(
         val headersCondition = headersCondition.getMatchingCondition(request) ?: return null
         // 5.匹配produces
         val producesCondition = producesCondition.getMatchingCondition(request) ?: return null
+        // 6.匹配consumes
+        val consumesCondition = consumesCondition.getMatchingCondition(request) ?: return null
 
-        // build RequestMappingInfo for Match
+        // build RequestMappingInfo for MatchResult
         return RequestMappingInfo(
-            methodsCondition,
-            pathCondition,
-            paramsCondition,
-            headersCondition,
-            producesCondition
+            methodsCondition, pathCondition, paramsCondition,
+            headersCondition, producesCondition, consumesCondition
         )
     }
 
-    override fun equals(other: Any?): Boolean {
+    override fun equals(@Nullable other: Any?): Boolean {
         if (this === other) return true
         if (other !is RequestMappingInfo) return false
         if (methodsCondition != other.methodsCondition) return false
         if (pathPatternsCondition != other.pathPatternsCondition) return false
         if (paramsCondition != other.paramsCondition) return false
         if (headersCondition != other.headersCondition) return false
+        if (consumesCondition != other.consumesCondition) return false
         return true
     }
 
@@ -66,7 +69,8 @@ open class RequestMappingInfo(
         result = 31 * result + pathPatternsCondition.hashCode()
         result = 31 * result + paramsCondition.hashCode()
         result = 31 * result + headersCondition.hashCode()
-        result = 31 * result + producesCondition.hashCode()  // fixed
+        result = 31 * result + producesCondition.hashCode()
+        result = 31 * result + consumesCondition.hashCode()
         return result
     }
 
@@ -75,11 +79,12 @@ open class RequestMappingInfo(
                 "pathPatterns=$pathPatternsCondition, " +
                 "params=$paramsCondition, " +
                 "headers=$headersCondition, " +
-                "produces=$producesCondition"
+                "produces=$producesCondition, " +
+                "consumes=$consumesCondition"
 
 
     /**
-     * RequestMappingInfo的Builder，对于RequestMappingInfo的构建比较复杂，这里主要是为了更方便地去构建RequestMappingInfo
+     * RequestMappingInfo的Builder, 对于RequestMappingInfo的构建比较复杂, 这里主要是为了更方便地去构建RequestMappingInfo
      *
      * @see com.wanna.framework.web.bind.annotation.RequestMapping
      */
@@ -89,6 +94,7 @@ open class RequestMappingInfo(
         private var paramsCondition: ParamsRequestCondition = ParamsRequestCondition()
         private var headersCondition: HeadersRequestCondition = HeadersRequestCondition()
         private var producesCondition: ProducesRequestCondition = ProducesRequestCondition()
+        private var consumesCondition: ConsumesRequestCondition = ConsumesRequestCondition()
         fun paths(vararg paths: String): Builder {
             this.pathPatternsCondition = PathPatternsRequestCondition(*paths)
             return this
@@ -139,13 +145,24 @@ open class RequestMappingInfo(
             return this
         }
 
-        fun build(): RequestMappingInfo =
-            RequestMappingInfo(
-                methodsCondition,
-                pathPatternsCondition,
-                paramsCondition,
-                headersCondition,
-                producesCondition
-            )
+        fun consumes(consumes: ConsumesRequestCondition): Builder {
+            this.consumesCondition = consumes
+            return this
+        }
+
+        fun consumes(vararg consumes: String): Builder {
+            this.consumesCondition = ConsumesRequestCondition(*consumes)
+            return this
+        }
+
+        /**
+         * 构建[RequestMappingInfo]
+         *
+         * @return RequestMappingInfo
+         */
+        fun build(): RequestMappingInfo = RequestMappingInfo(
+            methodsCondition, pathPatternsCondition, paramsCondition,
+            headersCondition, producesCondition, consumesCondition
+        )
     }
 }

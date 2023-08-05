@@ -22,7 +22,7 @@ open class MappingsEndpoint(
 ) {
 
     /**
-     * 对外提供读操作的接口，用于提供ApplicationContext当中的Mapping的描述信息
+     * 对外提供读操作的接口, 用于提供ApplicationContext当中的Mapping的描述信息
      *
      * @return ApplicationMappings
      */
@@ -32,7 +32,7 @@ open class MappingsEndpoint(
         // contextMappings(key-contextId, value-ContextMappings)
         val contextMappings = LinkedHashMap<String, ContextMappings>()
 
-        // 遍历所有的parentApplicationContext去进行merge，得到所有的ApplicationContext当中的Mappings信息
+        // 遍历所有的parentApplicationContext去进行merge, 得到所有的ApplicationContext当中的Mappings信息
         var target: ApplicationContext? = this.applicationContext
         while (target != null) {
             contextMappings[target.getId()] = mappingsForContext(target)
@@ -68,7 +68,7 @@ open class MappingsEndpoint(
     /**
      * 对于单个ApplicationContext当中的多个[MappingDescriptionProvider]得到描述信息的merge结果
      *
-     * @param parentId parentContextId(如果存在的话，不存在的话，为null)
+     * @param parentId parentContextId(如果存在的话, 不存在的话, 为null)
      * @param mappings 一个元素就代表了一个[MappingDescriptionProvider]的描述信息(Key-mappingName, Value-MappingDescriptionValue)
      */
     data class ContextMappings(val parentId: String?, val mappings: Map<String, Any?>)

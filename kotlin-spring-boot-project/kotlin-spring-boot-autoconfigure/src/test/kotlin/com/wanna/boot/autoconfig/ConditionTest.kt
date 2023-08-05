@@ -10,7 +10,6 @@ import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.EnableAspectJWeaving
 import com.wanna.framework.context.annotation.LoadTimeWeavingConfigurer
 import com.wanna.framework.instrument.classloading.InstrumentationLoadTimeWeaver
-import com.wanna.framework.instrument.classloading.LoadTimeWeaver
 import org.aspectj.lang.annotation.After
 import org.aspectj.lang.annotation.Aspect
 import org.aspectj.lang.annotation.Before
@@ -25,11 +24,7 @@ open class ConditionTest {
 
     @Bean
     fun loadTimeWeavingConfigurer(): LoadTimeWeavingConfigurer {
-        return object : LoadTimeWeavingConfigurer {
-            override fun getLoadTimeWeaver(): LoadTimeWeaver {
-                return InstrumentationLoadTimeWeaver(MyClassLoader.INSTANCE)
-            }
-        }
+        return LoadTimeWeavingConfigurer { InstrumentationLoadTimeWeaver(MyClassLoader.INSTANCE) }
     }
 }
 

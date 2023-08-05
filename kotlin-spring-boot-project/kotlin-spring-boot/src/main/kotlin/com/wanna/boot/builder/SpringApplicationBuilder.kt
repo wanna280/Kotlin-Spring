@@ -3,24 +3,37 @@ package com.wanna.boot.builder
 import com.wanna.boot.ApplicationType
 import com.wanna.boot.Banner
 import com.wanna.boot.SpringApplication
+import com.wanna.framework.context.ApplicationContext
+import com.wanna.framework.context.ApplicationContextInitializer
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.event.ApplicationListener
 import com.wanna.framework.core.environment.ConfigurableEnvironment
+import com.wanna.framework.lang.Nullable
 
 /**
- * 这是一个SpringApplication的Builder，支持去进行SpringApplication的构建
+ * 这是一个[SpringApplication]的Builder, 支持以Builder的方式去进行[SpringApplication]的构建
  *
  * @see SpringApplication
+ *
+ * @param sources sources
  */
 open class SpringApplicationBuilder(vararg sources: Class<*>) {
 
-    // SpringApplication
+    /**
+     * SpringApplication
+     */
     private val application = SpringApplication(*sources)
 
-    // parent SpringApplicationBuilder
+    /**
+     * parent [SpringApplication]的Builder, 用于去构建parent [ApplicationContext]
+     */
+    @Nullable
     private var parent: SpringApplicationBuilder? = null
 
-    // 已经创建好的ApplicationContext
+    /**
+     * 已经创建好的ApplicationContext
+     */
+    @Nullable
     private var context: ConfigurableApplicationContext? = null
 
     open fun bannerMode(mode: Banner.Mode): SpringApplicationBuilder {
@@ -28,7 +41,7 @@ open class SpringApplicationBuilder(vararg sources: Class<*>) {
         return this
     }
 
-    open fun setApplicationListeners(listeners:Collection<ApplicationListener<*>>) : SpringApplicationBuilder {
+    open fun setApplicationListeners(listeners: Collection<ApplicationListener<*>>): SpringApplicationBuilder {
         this.application.setApplicationListeners(listeners)
         return this
     }
@@ -38,7 +51,7 @@ open class SpringApplicationBuilder(vararg sources: Class<*>) {
         return this
     }
 
-    open fun getMainApplicationClass() : Class<*>? {
+    open fun getMainApplicationClass(): Class<*>? {
         return this.application.getMainApplicationClass()
     }
 
@@ -63,7 +76,9 @@ open class SpringApplicationBuilder(vararg sources: Class<*>) {
     }
 
     /**
-     * 设置parentBuilder，为parentApplicationContext的构建提供支持
+     * 设置parentBuilder, 为parentApplicationContext的构建提供支持
+     *
+     * @param builder parent Builder
      */
     open fun parent(builder: SpringApplicationBuilder) {
         this.parent = builder
@@ -71,14 +86,16 @@ open class SpringApplicationBuilder(vararg sources: Class<*>) {
 
     /**
      * 通过sources去构建parentBuilder
+     *
+     * @param sources sources
      */
     open fun parent(vararg sources: Class<*>) {
         parent(SpringApplicationBuilder(*sources))
     }
 
     /**
-     * run SpringApplication
-     * 添加一个ApplicationContext的Initializer到容器当中，支持去对parentApplicationContext去进行设置
+     * 执行run SpringApplication
+     * 添加一个[ApplicationContextInitializer]到[SpringApplication]当中, 支持去对parentApplicationContext去进行设置
      *
      * @see ParentContextApplicationContextInitializer.initialize
      * @see ConfigurableApplicationContext.setParent

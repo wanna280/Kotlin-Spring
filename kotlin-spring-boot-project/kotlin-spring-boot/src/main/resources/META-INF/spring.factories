@@ -1,10 +1,16 @@
+com.wanna.boot.logging.LoggingSystemFactory=\
+  com.wanna.boot.logging.logback.LogbackLoggingSystem$Factory,\
+  com.wanna.boot.logging.java.JavaLoggingSystem$Factory
+
 # Run Listener
 com.wanna.boot.SpringApplicationRunListener=\
   com.wanna.boot.context.event.EventPublishingRunListener
 
 # ApplicationListener
 com.wanna.framework.context.event.ApplicationListener=\
-  com.wanna.boot.env.EnvironmentPostProcessorApplicationListener
+  com.wanna.boot.context.config.DelegatingApplicationListener,\
+  com.wanna.boot.env.EnvironmentPostProcessorApplicationListener,\
+  com.wanna.boot.context.logging.LoggingApplicationListener
 
 # Environment Processor
 com.wanna.boot.env.EnvironmentPostProcessor=\
@@ -12,8 +18,24 @@ com.wanna.boot.env.EnvironmentPostProcessor=\
 
 # PropertySourceLoader
 com.wanna.boot.env.PropertySourceLoader=\
-  com.wanna.boot.env.PropertiesPropertySourceLoader
+  com.wanna.boot.env.PropertiesPropertySourceLoader,\
+  com.wanna.boot.env.YamlPropertySourceLoader
 
 # FailureAnalyzers
 com.wanna.boot.SpringBootExceptionReporter=\
   com.wanna.boot.diagnostics.FailureAnalyzers
+
+# ConfigData LocationResolver
+com.wanna.boot.context.config.ConfigDataLocationResolver=\
+  com.wanna.boot.context.config.StandardConfigDataLocationResolver,\
+  com.wanna.boot.context.config.ConfigTreeConfigDataLocationResolver
+
+# ConfigFile DataLoader
+com.wanna.boot.context.config.ConfigDataLoader=\
+  com.wanna.boot.context.config.StandardConfigDataLoader,\
+  com.wanna.boot.context.config.ConfigTreeConfigDataLoader
+
+# ApplicationContext Initializers
+com.wanna.framework.context.ApplicationContextInitializer=\
+  com.wanna.boot.context.config.DelegatingApplicationContextInitializer,\
+  com.wanna.boot.context.ContextIdApplicationContextInitializer

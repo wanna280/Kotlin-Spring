@@ -1,7 +1,9 @@
 package com.wanna.boot.actuate.endpoint
 
+import com.wanna.framework.lang.Nullable
+
 /**
- * Endpoint的操作的最顶层接口，描述了一个Endpoint当中标注了Operation相关的注解的方法
+ * Endpoint的操作的最顶层接口, 描述了一个Endpoint当中标注了Operation相关的注解的方法
  *
  * @see OperationType
  * @see com.wanna.boot.actuate.endpoint.annotation.ReadOperation
@@ -23,5 +25,6 @@ interface Operation {
      * @param context InvocationContext(执行目标方法需要用到的方法列表)
      * @return 执行目标操作方法的返回值
      */
+    @Nullable
     fun invoke(context: InvocationContext): Any?
 }

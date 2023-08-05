@@ -1,6 +1,8 @@
 package com.wanna.boot.autoconfigure.condition
 
 import com.wanna.boot.autoconfigure.AutoConfigurationMetadata
+import com.wanna.boot.autoconfigure.condition.ConditionalOnWebApplication.Type.MVC
+import com.wanna.boot.autoconfigure.condition.ConditionalOnWebApplication.Type.SERVLET
 import com.wanna.framework.context.annotation.ConditionContext
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
 import com.wanna.framework.util.ClassUtils
@@ -13,35 +15,55 @@ import com.wanna.framework.util.ClassUtils
 open class OnWebApplicationCondition : FilteringSpringBootCondition() {
 
     companion object {
-        const val MVC_WEB_MARKER = "com.wanna.framework.web.config.annotation.DelegatingWebMvcConfiguration"
+        /**
+         * Servlet的标识类
+         */
+        private const val SERVLET_MARKER = "javax.servlet.Servlet"
+
+        /**
+         * Netty的标识类
+         */
+        private const val NETTY_MARKER = "io.netty.bootstrap.ServerBootstrap"
     }
 
     override fun getOutcomes(
-        autoConfigurationClasses: Array<String?>,
-        autoConfigurationMetadata: AutoConfigurationMetadata
+        autoConfigurationClasses: Array<String?>, autoConfigurationMetadata: AutoConfigurationMetadata
     ): Array<ConditionOutcome?> {
-        TODO("Not yet implemented")
+        return emptyArray()
     }
 
     override fun getConditionOutcome(context: ConditionContext, metadata: AnnotatedTypeMetadata): ConditionOutcome {
         if (metadata.isAnnotated(ConditionalOnWebApplication::class.java.name)) {
-            val onWeb = metadata.getAnnotationAttributes(ConditionalOnWebApplication::class.java)
-            val type = onWeb["type"] as ConditionalOnWebApplication.Type
-            if (isMvc(context) && type == ConditionalOnWebApplication.Type.MVC) {
-                return ConditionOutcome.match()
+            val onWeb = metadata.getAnnotations().get(ConditionalOnWebApplication::class.java)
+            val type = onWeb.getEnum("type", ConditionalOnWebApplication.Type::class.java)
+            return if (isServlet(context) && type == SERVLET) {
+                ConditionOutcome.match()
+            } else if (isMvc(context) && type == MVC) {
+                ConditionOutcome.match()
+            } else {
+                ConditionOutcome.noMatch()
             }
-            if (!isMvc(context) && type == ConditionalOnWebApplication.Type.MVC) {
-                return ConditionOutcome.noMatch()
-            }
-            return ConditionOutcome.match()
         }
         return ConditionOutcome.match()
     }
 
+    /**
+     * 检查当前是否是Mvc环境
+     *
+     * @param context context
+     * @return 如果是Mvc环境, 那么return true
+     */
     private fun isMvc(context: ConditionContext): Boolean {
-        if (ClassUtils.isPresent(MVC_WEB_MARKER, context.getClassLoader())) {
-            return true
-        }
-        return false
+        return ClassUtils.isPresent(NETTY_MARKER, context.getClassLoader())
+    }
+
+    /**
+     * 检查当前是否是Servlet环境?
+     *
+     * @param context context
+     * @return 如果是Servlet环境, return true
+     */
+    private fun isServlet(context: ConditionContext): Boolean {
+        return ClassUtils.isPresent(SERVLET_MARKER, context.getClassLoader())
     }
 }

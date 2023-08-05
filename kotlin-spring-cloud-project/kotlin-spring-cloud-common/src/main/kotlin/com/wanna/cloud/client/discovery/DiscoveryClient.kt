@@ -4,7 +4,7 @@ import com.wanna.cloud.client.ServiceInstance
 import com.wanna.framework.core.Ordered
 
 /**
- * 标识这是一个DiscoveryClient，提供对于服务发现的服务列表的可读操作，例如Nacos、Eureka
+ * 标识这是一个DiscoveryClient, 提供对于服务发现的服务列表的可读操作, 例如Nacos、Eureka
  */
 interface DiscoveryClient : Ordered {
     companion object {
@@ -24,7 +24,7 @@ interface DiscoveryClient : Ordered {
     fun getDescription(): String
 
     /**
-     * 给定一个serviceId，去获取到该Service对应的所有的实例
+     * 给定一个serviceId, 去获取到该Service对应的所有的实例
      *
      * @param serviceId
      * @return 该serviceId对应的ServiceInstance列表

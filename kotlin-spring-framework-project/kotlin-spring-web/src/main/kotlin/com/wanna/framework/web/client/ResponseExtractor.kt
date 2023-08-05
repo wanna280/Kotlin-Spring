@@ -3,12 +3,12 @@ package com.wanna.framework.web.client
 import com.wanna.framework.web.http.client.ClientHttpResponse
 
 /**
- * 它是一个Response的提取器(Extractor)，负责将ClientHttpResponse转换为JavaBean，主要用在RestTemplate当中，去完成类型的转换
+ * 它是一个Response的提取器(Extractor), 负责将ClientHttpResponse转换为JavaBean, 主要用在RestTemplate当中, 去完成类型的转换
  *
  * @see RestTemplate
  */
 @FunctionalInterface
-interface ResponseExtractor<T> {
+fun interface ResponseExtractor<T> {
 
     /**
      * 从ClientHttpResponse提取到ResponseBody的数据

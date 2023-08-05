@@ -1,7 +1,7 @@
 package com.wanna.framework.web.context.request.async
 
 /**
- * DeferredResult，封装一个延时获取的结果
+ * DeferredResult, 封装一个延时获取的结果
  */
 class DeferredResult<T> {
 
@@ -26,7 +26,7 @@ class DeferredResult<T> {
     }
 
     /**
-     * 设置ResultHandler，相当于Future的监听器，对异步任务的最终的结果去进行处理
+     * 设置ResultHandler, 相当于Future的监听器, 对异步任务的最终的结果去进行处理
      *
      * @param resultHandler ResultHandler
      */

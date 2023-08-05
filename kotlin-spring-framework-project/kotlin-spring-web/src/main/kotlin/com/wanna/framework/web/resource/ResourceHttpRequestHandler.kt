@@ -4,10 +4,10 @@ import com.wanna.framework.core.io.Resource
 import com.wanna.framework.web.HttpRequestHandler
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 
 /**
- * Spring的资源的HttpRequestHandler，负责返回资源(html/css/js/jpg/png等)给客户端
+ * Spring的资源的HttpRequestHandler, 负责返回资源(html/css/js/jpg/png等)给客户端
  *
  * @see HttpRequestHandler
  */
@@ -32,7 +32,7 @@ open class ResourceHttpRequestHandler : HttpRequestHandler {
     override fun handleRequest(request: HttpServerRequest, response: HttpServerResponse) {
         locations?.forEach {
             try {
-                val resource = it.createRelative(request.getUrl())
+                val resource = it.createRelative(request.getUri())
                 val inputStream = resource.getInputStream()
                 inputStream.use { ips ->
                     response.getOutputStream().write(ips.readAllBytes())

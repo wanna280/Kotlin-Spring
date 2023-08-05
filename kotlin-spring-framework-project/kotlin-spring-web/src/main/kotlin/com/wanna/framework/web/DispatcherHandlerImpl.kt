@@ -1,12 +1,10 @@
 package com.wanna.framework.web
 
-import com.wanna.framework.beans.BeansException
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ConfigurableApplicationContext
 import com.wanna.framework.context.event.ApplicationEvent
 import com.wanna.framework.context.event.ContextRefreshedEvent
 import com.wanna.framework.context.event.SmartApplicationListener
-import com.wanna.framework.context.exception.NoSuchBeanDefinitionException
 import com.wanna.framework.core.comparator.AnnotationAwareOrderComparator
 import com.wanna.framework.core.io.support.PropertiesLoaderUtils
 import com.wanna.framework.lang.Nullable
@@ -17,12 +15,15 @@ import com.wanna.framework.web.handler.HandlerAdapter
 import com.wanna.framework.web.handler.HandlerExceptionResolver
 import com.wanna.framework.web.handler.ModelAndView
 import com.wanna.framework.web.handler.ViewResolver
+import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.method.RequestToViewNameTranslator
 import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 import com.wanna.framework.web.ui.ModelMap
 import com.wanna.framework.web.ui.View
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
+import com.wanna.framework.beans.BeansException
+import com.wanna.framework.beans.factory.exception.NoSuchBeanDefinitionException
 
 /**
  * DispatcherHandler的具体实现
@@ -36,7 +37,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
         private val logger = LoggerFactory.getLogger(DispatcherHandlerImpl::class.java)
 
         /**
-         * 默认的策略路径，如果从Spring BeanFactory当中没有探测到对应的组件，那么可以从这个配置文件当中去进行读取默认配置
+         * 默认的策略路径, 如果从Spring BeanFactory当中没有探测到对应的组件, 那么可以从这个配置文件当中去进行读取默认配置
          */
         private const val DEFAULT_STRATEGIES_PATH = "DispatcherHandler.properties"
 
@@ -67,22 +68,22 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     }
 
     /**
-     * 是否要从Spring BeanFactory当中去探测HandlerAdapter？
+     * 是否要从Spring BeanFactory当中去探测HandlerAdapter? 
      */
     var detectAllHandlerAdapters = true
 
     /**
-     * 是否要从Spring BeanFactory当中去探测所有的HandlerMapping？默认为true
+     * 是否要从Spring BeanFactory当中去探测所有的HandlerMapping? 默认为true
      */
     var detectAllHandlerMappings = true
 
     /**
-     * 是否要从Spring BeanFactory当中探测所有的HandlerExceptionResolver？默认为true
+     * 是否要从Spring BeanFactory当中探测所有的HandlerExceptionResolver? 默认为true
      */
     var detectAllHandlerExceptionHandlers = true
 
     /**
-     * 是否从Spring BeanFactory当中要探测所有的视图解析器？默认为true
+     * 是否从Spring BeanFactory当中要探测所有的视图解析器? 默认为true
      */
     var detectAllViewResolvers = true
 
@@ -105,8 +106,8 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     private var handlerExceptionResolvers: MutableList<HandlerExceptionResolver>? = null
 
     /**
-     * 视图解析器列表，负责完成视图的解析(根据viewName去获取到对应的View视图对象)；
-     * 对于模板引擎的视图渲染，就会使用到[ViewResolver]去进行解析视图，将viewName去转换成为对应的View视图对象
+     * 视图解析器列表, 负责完成视图的解析(根据viewName去获取到对应的View视图对象); 
+     * 对于模板引擎的视图渲染, 就会使用到[ViewResolver]去进行解析视图, 将viewName去转换成为对应的View视图对象
      */
     @Nullable
     private var viewResolvers: MutableList<ViewResolver>? = null
@@ -118,7 +119,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     private var applicationContext: ApplicationContext? = null
 
     /**
-     * 视图名的翻译器，在方法的返回值解析器没有找到合适的视图名时，它需要从请求当中去获取到对应的视图名
+     * 视图名的翻译器, 在方法的返回值解析器没有找到合适的视图名时, 它需要从请求当中去获取到对应的视图名
      */
     @Nullable
     private var viewNameTranslator: RequestToViewNameTranslator? = null
@@ -135,7 +136,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
                 // 遍历所有的HandlerMapping获取HandlerExecutionChain去处理本次请求
                 mappedHandler = getHandler(request)
 
-                // 如果没有找到合适的Handler，得处理404的情况...
+                // 如果没有找到合适的Handler, 得处理404的情况...
                 if (mappedHandler == null) {
                     notHandlerFound(request, response)
                     return
@@ -149,16 +150,16 @@ open class DispatcherHandlerImpl : DispatcherHandler {
                     return
                 }
 
-                // 真正地去执行Handler，交给HandlerAdapter去解析参数、执行目标方法、处理返回值
+                // 真正地去执行Handler, 交给HandlerAdapter去解析参数、执行目标方法、处理返回值
                 mv = handlerAdapter.handle(request, response, mappedHandler.getHandler())
 
-                // 如果并发处理任务已经启动了，那么就直接return，不需要去进行向后的处理工作了...
+                // 如果并发处理任务已经启动了, 那么就直接return, 不需要去进行向后的处理工作了...
                 if (asyncManager.isConcurrentHandlingStarted()) {
                     return
                 }
 
-                // 如果必要的话，需要使用视图名翻译器，将请求路径直接翻译成为视图名...
-                // 如果解析出来了ModelAndView，但是没有找到合适的viewName，此时就需要用到ViewNameTranslator
+                // 如果必要的话, 需要使用视图名翻译器, 将请求路径直接翻译成为视图名...
+                // 如果解析出来了ModelAndView, 但是没有找到合适的viewName, 此时就需要用到ViewNameTranslator
                 applyDefaultViewName(request, mv)
 
                 // 逆方向去执行拦截器链的所有的postHandle方法
@@ -168,17 +169,17 @@ open class DispatcherHandlerImpl : DispatcherHandler {
                 logger.error("处理请求[uri=${request.getUri()}]失败", ex)
             }
 
-            // 处理dispatch派发的结果，处理异常以及渲染视图...
+            // 处理dispatch派发的结果, 处理异常以及渲染视图...
             processDispatchResult(request, response, mappedHandler, mv, dispatchException)
         } catch (ex: Throwable) {
-            logger.error("处理请求[uri=${request.getUri()}]失败，原因是[$ex]", ex)
+            logger.error("处理请求[uri=${request.getUri()}]失败, 原因是[$ex]", ex)
             throw ex
         }
 
     }
 
     /**
-     * 处理派发的结果，如果是异常情况的话，需要使用异常解析器去解析异常，如果不是异常情况的话，要去进行视图的渲染
+     * 处理派发的结果, 如果是异常情况的话, 需要使用异常解析器去解析异常, 如果不是异常情况的话, 要去进行视图的渲染
      *
      * @param request request
      * @param response response
@@ -199,7 +200,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
             modelAndView = processHandlerException(request, response, mappedHandler?.getHandler(), ex)
         }
 
-        // 如果必要的话(ModelAndView不为空)，需要去进行进行视图的渲染
+        // 如果必要的话(ModelAndView不为空), 需要去进行进行视图的渲染
         if (modelAndView != null) {
             render(request, response, modelAndView)
         }
@@ -218,7 +219,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     protected open fun render(request: HttpServerRequest, response: HttpServerResponse, mv: ModelAndView) {
         val viewName = mv.getViewName()
 
-        // 如果是viewName的话，需要使用ViewResolver，去将一个viewName去转换成为一个View对象
+        // 如果是viewName的话, 需要使用ViewResolver, 去将一个viewName去转换成为一个View对象
         val view = if (viewName != null) resolveView(viewName, mv.modelMap, request) else mv.getView()
 
         // 使用View的render方法去执行渲染视图
@@ -226,12 +227,12 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     }
 
     /**
-     * 遍历所有的视图解析器，尝试去进行视图的解析
+     * 遍历所有的视图解析器, 尝试去进行视图的解析
      *
      * @param viewName viewName(视图名)
      * @param model model数据
      * @param request request
-     * @return 解析到的视图对象(没有解析到合适的View的话，return null)，后续过程当中可以调用render方法去进行渲染
+     * @return 解析到的视图对象(没有解析到合适的View的话, return null), 后续过程当中可以调用render方法去进行渲染
      */
     @Nullable
     protected open fun resolveView(viewName: String, @Nullable model: ModelMap?, request: HttpServerRequest): View? {
@@ -245,7 +246,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     }
 
     /**
-     * 如果[ModelAndView]当中还没有解析到对应的视图(View)的话，需要去应用默认的视图名
+     * 如果[ModelAndView]当中还没有解析到对应的视图(View)的话, 需要去应用默认的视图名
      *
      * @param request request
      * @param mav ModelAndView
@@ -263,7 +264,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      * 使用viewNameTranslator去获取默认的视图名
      *
      * @param request request
-     * @return 如果获取到了默认的视图名的话，那么return 获取到的视图名；不然return null
+     * @return 如果获取到了默认的视图名的话, 那么return 获取到的视图名; 不然return null
      */
     @Nullable
     protected open fun getDefaultViewName(request: HttpServerRequest): String? =
@@ -276,7 +277,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      * @param response response
      * @param handler handler
      * @param ex 派发过程当中的异常
-     * @return 处理异常得到的ModelAndView(可以为null，代表不去渲染视图)
+     * @return 处理异常得到的ModelAndView(可以为null, 代表不去渲染视图)
      */
     @Nullable
     protected open fun processHandlerException(
@@ -284,9 +285,9 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     ): ModelAndView? {
         var modelAndView: ModelAndView? = null
         val exceptionResolvers = this.handlerExceptionResolvers ?: return null
-        // 遍历所有的ExceptionResolver，去进行异常的解析(例如解析@ExceptionHandler方法的Resolver)
+        // 遍历所有的ExceptionResolver, 去进行异常的解析(例如解析@ExceptionHandler方法的Resolver)
         for (resolver in exceptionResolvers) {
-            // 如果返回一个非空的ModelAndView，终止后续HandlerExceptionResolver的执行...
+            // 如果返回一个非空的ModelAndView, 终止后续HandlerExceptionResolver的执行...
             modelAndView = resolver.resolveException(request, response, handler, ex)
             if (modelAndView != null) {
                 break
@@ -295,7 +296,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
 
         // 如果返回了视图的话...那么需要去进行解析...
         if (modelAndView != null) {
-            // 如果是个空的ModelAndView，那么return null(比如@ResponseBody这种已经被处理过的情况)
+            // 如果是个空的ModelAndView, 那么return null(比如@ResponseBody这种已经被处理过的情况)
             if (modelAndView.isEmpty()) {
                 return null
             }
@@ -316,17 +317,17 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      */
     protected open fun notHandlerFound(request: HttpServerRequest, response: HttpServerResponse) {
         if (logger.isWarnEnabled) {
-            logger.warn("[NOT-FOUND]--没有找到合适的Handler去处理本次请求[path=${request.getUri()}]")
+            logger.warn("[NOT-FOUND]--没有找到合适的Handler去处理本次请求[path=${request.getUri()}, method=${request.getMethod()}, headers=[${request.getHeaders()}]]")
         }
         // sendError(404)
         response.sendError(HttpServerResponse.SC_NOT_FOUND)
     }
 
     /**
-     * 遍历已经注册到当前的DispatcherHandler当中的所有的HandlerAdapter，去找到合适的一个去处理本次请求
+     * 遍历已经注册到当前的DispatcherHandler当中的所有的HandlerAdapter, 去找到合适的一个去处理本次请求
      *
      * @param handler handler
-     * @return 如果找到了合适的Adapter来处理请求的话，return HandlerAdapter
+     * @return 如果找到了合适的Adapter来处理请求的话, return HandlerAdapter
      * @throws IllegalStateException 如果没有找到合适的Handler去进行处理的话
      */
     protected open fun getHandlerAdapter(handler: Any): HandlerAdapter {
@@ -339,10 +340,10 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     }
 
     /**
-     * 遍历所有的HandlerMapping，去找到合适的HandlerExecutionChain去处理本次请求
+     * 遍历所有的HandlerMapping, 去找到合适的HandlerExecutionChain去处理本次请求
      *
      * @param request request
-     * @return 如果找到了合适的Handler，那么return HandlerExecutionChain；否则，return null
+     * @return 如果找到了合适的Handler, 那么return HandlerExecutionChain; 否则, return null
      */
     @Nullable
     protected open fun getHandler(request: HttpServerRequest): HandlerExecutionChain? {
@@ -398,13 +399,13 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     }
 
     /**
-     * 初始化[ApplicationContext]，向[ApplicationContext]中去加入一个[ContextRefreshListener]，
+     * 初始化[ApplicationContext], 向[ApplicationContext]中去加入一个[ContextRefreshListener],
      * 从而去初始化当前[DispatcherHandler]当中的各个组件
      */
     private fun initWebApplicationContext() {
         val applicationContext = this.applicationContext
         if (applicationContext is ConfigurableApplicationContext) {
-            // 添加监听容器刷新完成的监听器，完成组件的初始化
+            // 添加监听容器刷新完成的监听器, 完成组件的初始化
             applicationContext.addApplicationListener(ContextRefreshListener())
         }
     }
@@ -414,10 +415,10 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      *
      * @param applicationContext ApplicationContext
      */
-    open fun setApplicationContext(applicationContext: ApplicationContext) {
+    override fun setApplicationContext(applicationContext: ApplicationContext) {
         this.applicationContext = applicationContext
 
-        // 初始化ApplicationContext，添加ContextRefreshListener，去完成内部的核心组件的初始化工作
+        // 初始化ApplicationContext, 添加ContextRefreshListener, 去完成内部的核心组件的初始化工作
         initWebApplicationContext()
     }
 
@@ -427,7 +428,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
      * 初始化ViewName的翻译器
      *
      * * 1.尝试从ApplicationContext根据beanName去进行获取
-     * * 2.ApplicationContext当中没有，那么从配置文件当中去进行加载
+     * * 2.ApplicationContext当中没有, 那么从配置文件当中去进行加载
      *
      * @param applicationContext ApplicationContext
      */
@@ -443,7 +444,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     }
 
     /**
-     * 初始化HandlerMapping，从容器当中拿出所有的HandlerMapping
+     * 初始化HandlerMapping, 从容器当中拿出所有的HandlerMapping
      *
      * @param applicationContext ApplicationContext
      */
@@ -459,7 +460,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
                 // ignored
             }
         }
-        // 如果还为空，从配置文件当中去加载默认的策略...
+        // 如果还为空, 从配置文件当中去加载默认的策略...
         if (handlerMappings.isEmpty()) {
             handlerMappings += getDefaultStrategies(applicationContext, HandlerMapping::class.java)
         }
@@ -483,7 +484,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
                 // ignored
             }
         }
-        // 如果还为空，从配置文件当中去加载默认的策略...
+        // 如果还为空, 从配置文件当中去加载默认的策略...
         if (handlerAdapters.isEmpty()) {
             handlerAdapters += getDefaultStrategies(applicationContext, HandlerAdapter::class.java)
         }
@@ -509,7 +510,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
                 // ignored
             }
         }
-        // 如果还为空，从配置文件当中去加载默认的策略...
+        // 如果还为空, 从配置文件当中去加载默认的策略...
         if (handlerExceptionResolvers.isEmpty()) {
             handlerExceptionResolvers += getDefaultStrategies(applicationContext, HandlerExceptionResolver::class.java)
         }
@@ -537,7 +538,7 @@ open class DispatcherHandlerImpl : DispatcherHandler {
     }
 
     /**
-     * 给定具体的策略接口，从配置文件当中获取默认的策略并交给ApplicationContext去进行初始化工作
+     * 给定具体的策略接口, 从配置文件当中获取默认的策略并交给ApplicationContext去进行初始化工作
      *
      * @param applicationContext ApplicationContext
      * @param strategyInterface 策略接口(HandlerMapping/HandlerAdapter/HandlerExceptionResolver等)
@@ -554,25 +555,25 @@ open class DispatcherHandlerImpl : DispatcherHandler {
                 val impl = ClassUtils.forName<T>(it, DispatcherHandler::class.java.classLoader)
                 result += applicationContext.getAutowireCapableBeanFactory().createBean(impl)
             } catch (ex: Exception) {
-                throw BeansException("在DispatcherHandler的初始化过程当中，无法找到类[$it]")
+                throw BeansException("在DispatcherHandler的初始化过程当中, 无法找到类[$it]")
             }
         }
         if (classNames.isEmpty()) {
             if (logger.isTraceEnabled) {
-                logger.info("没有从容器当中找到[${strategyInterface.name}]的具体实现，从配置文件当中加载到如下实现[$property]")
+                logger.info("没有从容器当中找到[${strategyInterface.name}]的具体实现, 从配置文件当中加载到如下实现[$property]")
             }
         }
         return result
     }
 
     /**
-     * 监听Context刷新完成的事件，负责完成DispatcherHandler当中的各个核心组件的初始化工作
+     * 监听Context刷新完成的事件, 负责完成DispatcherHandler当中的各个核心组件的初始化工作
      *
-     * Note: 这里需要使用inner内部类，方便去获取外部类的方法
+     * Note: 这里需要使用inner内部类, 方便去获取外部类的方法
      */
     inner class ContextRefreshListener : SmartApplicationListener {
         /**
-         * 处理事件的方式是，交给DispatcherHandler.OnRefresh方法去进行组件的初始化
+         * 处理事件的方式是, 交给DispatcherHandler.OnRefresh方法去进行组件的初始化
          *
          * @param event event
          */

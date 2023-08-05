@@ -4,7 +4,7 @@ import com.wanna.framework.web.bind.WebDataBinder
 import com.wanna.framework.web.context.request.NativeWebRequest
 
 /**
- * WebDataBinder的Factory，主要作用是去创建WebDataBinder，去提供数据的绑定功能，具体来说，其实，也是完成数据的类型转换功能
+ * WebDataBinder的Factory, 主要作用是去创建WebDataBinder, 去提供数据的绑定功能, 具体来说, 其实, 也是完成数据的类型转换功能
  *
  * @see WebDataBinder
  */

@@ -7,12 +7,12 @@ import org.junit.jupiter.api.extension.*
 import org.junit.runner.RunWith
 
 /**
- * 针对JUnit5实现的Extension，对于JUnit5的各个生命周期去进行自定义，对应JUnit4的[SpringJUnit4ClassRunner]。
+ * 针对JUnit5实现的Extension, 对于JUnit5的各个生命周期去进行自定义, 对应JUnit4的[SpringJUnit4ClassRunner].
  *
- * 在JUnit4当中，采用的方式通过重写模板方法去实现的添加Callback方法；在JUnit5当中，则为每个Callback单独抽离成为了一个
- * 接口去作为Callback，无需通过重写模板方法的方式去进行实现。
+ * 在JUnit4当中, 采用的方式通过重写模板方法去实现的添加Callback方法; 在JUnit5当中, 则为每个Callback单独抽离成为了一个
+ * 接口去作为Callback, 无需通过重写模板方法的方式去进行实现.
  *
- * 在JUnit4当中，对于Runner需要配合[RunWith]注解去进行使用；在JUnit5当中，SpringExtension则需要配合[ExtendWith]注解去进行使用。
+ * 在JUnit4当中, 对于Runner需要配合[RunWith]注解去进行使用; 在JUnit5当中, SpringExtension则需要配合[ExtendWith]注解去进行使用.
  *
  * 使用参考示例代码：
  * ```kotlin
@@ -73,7 +73,7 @@ open class SpringExtension : BeforeAllCallback, AfterAllCallback, TestInstancePo
     }
 
     /**
-     * 在[BeforeAll]注解的方法(对应JUnit4当中的`@BeforeTestClass`的方法)执行之前，需要触发的Callback
+     * 在[BeforeAll]注解的方法(对应JUnit4当中的`@BeforeTestClass`的方法)执行之前, 需要触发的Callback
      *
      * @param context JUnit的ExtensionContext(维护了testInstance、testClass、testMethod的上下文信息)
      */
@@ -82,7 +82,7 @@ open class SpringExtension : BeforeAllCallback, AfterAllCallback, TestInstancePo
     }
 
     /**
-     * 在[AfterAll]注解的方法(对应JUnit4当中的`@AfterClass`的方法)执行之后，需要触发的Callback
+     * 在[AfterAll]注解的方法(对应JUnit4当中的`@AfterClass`的方法)执行之后, 需要触发的Callback
      *
      * @param context JUnit的ExtensionContext(维护了testInstance、testClass、testMethod的上下文信息)
      */
@@ -96,7 +96,7 @@ open class SpringExtension : BeforeAllCallback, AfterAllCallback, TestInstancePo
     }
 
     /**
-     * 在[BeforeEach]注解的方法(对应JUnit4当中的`@Before`的方法)执行之前，需要触发的Callback
+     * 在[BeforeEach]注解的方法(对应JUnit4当中的`@Before`的方法)执行之前, 需要触发的Callback
      *
      * @param context JUnit的ExtensionContext(维护了testInstance、testClass、testMethod的上下文信息)
      */
@@ -105,7 +105,7 @@ open class SpringExtension : BeforeAllCallback, AfterAllCallback, TestInstancePo
     }
 
     /**
-     * 在[AfterEach]注解的方法(对应JUnit4当中的`@After`的方法)执行之后，需要触发的Callback
+     * 在[AfterEach]注解的方法(对应JUnit4当中的`@After`的方法)执行之后, 需要触发的Callback
      *
      * @param context JUnit的ExtensionContext(维护了testInstance、testClass、testMethod的上下文信息)
      */

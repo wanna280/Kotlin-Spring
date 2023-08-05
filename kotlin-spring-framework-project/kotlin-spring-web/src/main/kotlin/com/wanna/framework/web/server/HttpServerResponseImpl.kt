@@ -5,6 +5,7 @@ import com.wanna.framework.web.http.Cookie
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpStatus
 import com.wanna.framework.web.http.MediaType
+import java.io.OutputStream
 
 /**
  * HttpServerResponse的默认实现
@@ -14,7 +15,10 @@ import com.wanna.framework.web.http.MediaType
  */
 open class HttpServerResponseImpl : HttpServerResponse {
     companion object {
-        private const val COMMA = "; "
+        /**
+         * 元素的分隔符
+         */
+        private const val ELEMENT_SEP = "; "
 
         /**
          * 默认的响应类型
@@ -22,19 +26,29 @@ open class HttpServerResponseImpl : HttpServerResponse {
         private const val DEFAULT_CONTENT_TYPE = MediaType.APPLICATION_JSON_UTF8_VALUE
     }
 
-    // flush Callback
+    /**
+     * flush Callback
+     */
     private var flushCallback: ((HttpServerResponseImpl) -> Unit)? = null
 
-    // 响应状态码，默认为200
+    /**
+     * 响应状态码, 默认为200
+     */
     private var statusCode: Int = HttpStatus.SUCCESS.value
 
-    // message
+    /**
+     * message
+     */
     private var message: String = HttpStatus.SUCCESS.reasonPhase
 
-    // ResponseBody的输出流
+    /**
+     * ResponseBody的输出流
+     */
     private val outputStream = ResponseOutputStream(this, 1024)
 
-    // headers
+    /**
+     * Http Headers
+     */
     private val headers = HttpHeaders()
 
     /**
@@ -66,16 +80,16 @@ open class HttpServerResponseImpl : HttpServerResponse {
     override fun getCookies() = this.cookies.toTypedArray()
 
     /**
-     * 根据headerName，去移除一个header
+     * 根据headerName, 去移除一个header
      *
      * @param name headerName
-     * @return 之前的旧的headerValue(如果有多个，使用"; "去进行分割)
+     * @return 之前的旧的headerValue(如果有多个, 使用"; "去进行分割)
      */
     @Nullable
-    override fun removeHeader(name: String) = this.headers.remove(name)?.joinToString(COMMA)
+    override fun removeHeader(name: String) = this.headers.remove(name)?.joinToString(ELEMENT_SEP)
 
     /**
-     * 根据name和value去设置一个Header(如果之前已经有该header，那么直接清除掉之前所有的)
+     * 根据name和value去设置一个Header(如果之前已经有该header, 那么直接清除掉之前所有的)
      *
      * @param name headerName
      * @param value headerValue(为null时表示移除)
@@ -89,7 +103,7 @@ open class HttpServerResponseImpl : HttpServerResponse {
     }
 
     /**
-     * 根据name和value去添加一个Header(如果之前已经有该header，那么在原来的基础上去进行扩充)
+     * 根据name和value去添加一个Header(如果之前已经有该header, 那么在原来的基础上去进行扩充)
      *
      * @param name headerName
      * @param value headerValue(为null时表示移除)
@@ -106,9 +120,9 @@ open class HttpServerResponseImpl : HttpServerResponse {
      * 根据headerName去设置一个Header
      *
      * @param name headerName
-     * @return headerValue(如果有多个，使用"; "去进行分割；如果不存在return null)
+     * @return headerValue(如果有多个, 使用"; "去进行分割; 如果不存在return null)
      */
-    override fun getHeader(name: String) = headers[name]?.joinToString(COMMA)
+    override fun getHeader(name: String) = headers[name]?.joinToString(ELEMENT_SEP)
 
     /**
      * 获取response的响应类型
@@ -120,12 +134,12 @@ open class HttpServerResponseImpl : HttpServerResponse {
     /**
      * 获取响应状态码
      *
-     * @return 响应状态码(比如404，500)
+     * @return 响应状态码(比如404, 500)
      */
     override fun getStatusCode() = this.statusCode
 
     /**
-     * 获取响应的消息，配合状态码去进行使用
+     * 获取响应的消息, 配合状态码去进行使用
      *
      * @return 响应携带的消息
      */
@@ -139,7 +153,7 @@ open class HttpServerResponseImpl : HttpServerResponse {
     override fun getOutputStream() = this.outputStream
 
     /**
-     * sendError，msg采用默认的msg
+     * sendError, msg采用默认的msg
      *
      * @param statusCode 状态码
      */
@@ -162,7 +176,7 @@ open class HttpServerResponseImpl : HttpServerResponse {
     override fun setStatus(status: HttpStatus): Unit = setStatus(status.value)
 
     /**
-     * sendError，并同时设置Error的消息
+     * sendError, 并同时设置Error的消息
      *
      * @param statusCode 状态码
      * @param msg message of error
@@ -175,7 +189,7 @@ open class HttpServerResponseImpl : HttpServerResponse {
     /**
      * 设置flush的回调callback
      *
-     * @param callback 你先要去进行刷新的操作的callback
+     * @param callback 用于去进行flush操作的callback
      */
     open fun initFlushCallback(callback: HttpServerResponseImpl.() -> Unit) {
         this.flushCallback = callback

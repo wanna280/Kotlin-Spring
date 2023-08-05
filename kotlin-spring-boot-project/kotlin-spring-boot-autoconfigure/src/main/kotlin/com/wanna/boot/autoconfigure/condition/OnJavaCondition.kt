@@ -1,10 +1,11 @@
 package com.wanna.boot.autoconfigure.condition
 
 import com.wanna.framework.context.annotation.ConditionContext
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
 
 /**
- * 提供Java版本的匹配功能，只有当版本匹配时才需要去进行自动装配
+ * 提供Java版本的匹配功能, 只有当版本匹配时才需要去进行自动装配
  *
  * @author jianchao.jia
  * @version v1.0
@@ -31,12 +32,12 @@ open class OnJavaCondition : SpringBootCondition() {
      * @return 匹配Java版本的结果
      */
     override fun getConditionOutcome(context: ConditionContext, metadata: AnnotatedTypeMetadata): ConditionOutcome {
-        val attributes = metadata.getAnnotationAttributes(ConditionalOnJava::class.java)
-        if (attributes.isEmpty()) {
+        val attributes = metadata.getAnnotations().get(ConditionalOnJava::class.java)
+        if (!attributes.present) {
             throw IllegalStateException("无法找到@ConditionalOnJava注解")
         }
-        val range = attributes["range"] as ConditionalOnJava.Range
-        val javaVersion = attributes["value"] as JavaVersion
+        val range = attributes.getEnum("range", ConditionalOnJava.Range::class.java)
+        val javaVersion = attributes.getEnum(MergedAnnotation.VALUE, JavaVersion::class.java)
         return getMatchOutcome(range, JVM_VERSION, javaVersion)
     }
 
@@ -54,7 +55,8 @@ open class OnJavaCondition : SpringBootCondition() {
             ConditionalOnJava.Range.EQUAL_OR_NEWER -> runningVersion.isEqualOrNewerThan(version)
             ConditionalOnJava.Range.OLDER_THAN -> runningVersion.isOlderThan(version)
         }
-        val message = "需要的是Java版本[${range.rangeName}${version.versionName}], 实际是[${runningVersion.versionName}]"
+        val message =
+            "需要的是Java版本[${range.rangeName}${version.versionName}], 实际是[${runningVersion.versionName}]"
         return if (result) ConditionOutcome.match(message)
         else ConditionOutcome.noMatch("Java版本不匹配！$message")
     }

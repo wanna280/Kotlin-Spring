@@ -5,8 +5,10 @@ package com.wanna.boot.devtools.restart
  */
 interface FailureHandler {
     companion object {
-
-        // None FailureHandler
+        /**
+         *  None FailureHandler
+         */
+        @JvmStatic
         val NONE = object : FailureHandler {
             override fun handle(error: Throwable): Outcome = Outcome.ABORT
         }
@@ -16,12 +18,13 @@ interface FailureHandler {
     /**
      * 处理产生的异常
      *
-     * @param error 移除
+     * @param error 异常
+     * @return 处理异常的结果(结束/重试?)
      */
     fun handle(error: Throwable): Outcome
 
     /**
-     * 处理失败的结果，是要结束？还是要去进行尝试？
+     * 处理失败的结果, 是要结束? 还是要去进行尝试?
      */
     enum class Outcome { ABORT, RETRY }
 }

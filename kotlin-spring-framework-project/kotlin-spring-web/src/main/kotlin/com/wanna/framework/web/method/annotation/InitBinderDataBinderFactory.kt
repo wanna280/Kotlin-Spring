@@ -14,14 +14,14 @@ open class InitBinderDataBinderFactory(private val binderMethods: List<Invocable
     DefaultWebDataBinderFactory() {
 
     /**
-     * 初始化Binder，遍历所有的@InitBinder方法，交给它对WebDataBinder去进行初始化工作；
+     * 初始化Binder, 遍历所有的@InitBinder方法, 交给它对WebDataBinder去进行初始化工作;
      *
      * @param dataBinder 目标Binder
      * @param webRequest webRequest
      */
     override fun initBinder(dataBinder: WebDataBinder, webRequest: NativeWebRequest) {
         // apply所有的@InitBinder方法
-        // 并且给定了DataBinder，也就是说，一个可以去注入WebDataBinder，完成自定义操作
+        // 并且给定了DataBinder, 也就是说, 一个可以去注入WebDataBinder, 完成自定义操作
         binderMethods.forEach { it.invokeForRequest(webRequest, null, dataBinder) }
     }
 }

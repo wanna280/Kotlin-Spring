@@ -27,7 +27,7 @@ open class ThreadDumpEndpoint {
     /**
      * 获取格式化之后的ThreadDump信息
      *
-     * @param formatter 如何去对ThreadInfo去进行格式化？
+     * @param formatter 如何去对ThreadInfo去进行格式化? 
      * @return 格式化之后的数据
      */
     private fun <T> getFormattedThreadDump(formatter: Function<Array<ThreadInfo>, T>): T =

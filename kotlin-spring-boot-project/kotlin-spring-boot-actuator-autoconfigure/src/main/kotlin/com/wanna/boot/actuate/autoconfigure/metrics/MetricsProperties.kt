@@ -13,7 +13,7 @@ import  io.micrometer.core.instrument.MeterRegistry
 open class MetricsProperties {
 
     /**
-     * 是否需要将[MeterRegistry]去应用到全局的[MeterRegistry]当中？默认为true
+     * 是否需要将[MeterRegistry]去应用到全局的[MeterRegistry]当中? 默认为true
      */
     var useGlobalRegistry: Boolean = true
 }

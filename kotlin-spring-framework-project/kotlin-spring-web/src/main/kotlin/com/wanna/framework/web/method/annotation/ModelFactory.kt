@@ -10,7 +10,7 @@ import com.wanna.framework.web.method.support.InvocableHandlerMethod
 import com.wanna.framework.web.method.support.ModelAndViewContainer
 
 /**
- * ModelFactory，提供将@ModelAttribute方法的执行过程当中产生的Model数据，全部合并到ModelAndViewContainer当中
+ * ModelFactory, 提供将@ModelAttribute方法的执行过程当中产生的Model数据, 全部合并到ModelAndViewContainer当中
  *
  * @param binderFactory BinderFactory
  * @param handlerMethods @ModelAttribute的HandlerMethod列表
@@ -21,7 +21,7 @@ class ModelFactory(
 ) {
 
     /**
-     * 初始化Model，apply所有@ModelAttribute的HandlerMethod
+     * 初始化Model, apply所有@ModelAttribute的HandlerMethod
      *
      * @param webRequest (request&response)
      * @param mavContainer ModelAndViewContainer
@@ -44,7 +44,7 @@ class ModelFactory(
             if (modelMethod.isVoid()) {
                 continue
             }
-            // 获取returnValueName(如果有ModelAttribute注解的属性的话，从里面去进行获取；如果没有的话，那么使用类型的首字母小写)
+            // 获取returnValueName(如果有ModelAttribute注解的属性的话, 从里面去进行获取; 如果没有的话, 那么使用类型的首字母小写)
             val returnValueName = getNameForReturnValue(returnValue, modelMethod.getReturnValueType(returnValue))
             if (!mavContainer.containsAttribute(returnValueName)) {
                 // 将值转移到ModelAndViewContainer当中
@@ -55,7 +55,7 @@ class ModelFactory(
 
     companion object {
         /**
-         * 获取returnValueName(如果有ModelAttribute注解的属性的话，从里面去进行获取；如果没有的话，那么使用类型的首字母小写)
+         * 获取returnValueName(如果有ModelAttribute注解的属性的话, 从里面去进行获取; 如果没有的话, 那么使用类型的首字母小写)
          *
          * @param returnValue returnValue
          * @param returnType returnType

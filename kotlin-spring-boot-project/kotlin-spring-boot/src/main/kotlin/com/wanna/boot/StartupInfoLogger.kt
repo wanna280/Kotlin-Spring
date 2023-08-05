@@ -1,15 +1,16 @@
 package com.wanna.boot
 
+import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.StopWatch
-import org.slf4j.Logger
+import com.wanna.common.logging.Logger
 import java.lang.management.ManagementFactory
 
 /**
- * 以日志的形式去进行记录Spring应用启动过程当中的相关信息，比如相关的JavaVersion，Spring应用启动所花费的时间；
+ * 以日志的形式去进行记录Spring应用启动过程当中的相关信息, 比如相关的JavaVersion, Spring应用启动所花费的时间;
  *
- * @param sourceClass 源类(主启动类)，如果不设置默认为"application"
+ * @param sourceClass 源类(主启动类), 如果不设置默认为"application"
  */
-class StartupInfoLogger(private val sourceClass: Class<*>?) {
+class StartupInfoLogger(@Nullable private val sourceClass: Class<*>?) {
 
     /**
      * 记录SpringApplication启动过程当中的相关的信息
@@ -36,7 +37,7 @@ class StartupInfoLogger(private val sourceClass: Class<*>?) {
     }
 
     /**
-     * 获取Spring应用开始启动的相关消息，包括JavaVersion、PID、ImplementationVersion等信息
+     * 获取Spring应用开始启动的相关消息, 包括JavaVersion、PID、ImplementationVersion等信息
      */
     private fun getStartingMessage(): String {
         val builder = StringBuilder()
@@ -63,12 +64,12 @@ class StartupInfoLogger(private val sourceClass: Class<*>?) {
     }
 
     /**
-     * 获取Spring应用已经启动的相关信息，主要包括SpringApplication启动的时间，以及JVM的运行时间
+     * 获取Spring应用已经启动的相关信息, 主要包括SpringApplication启动的时间, 以及JVM的运行时间
      */
     private fun getStartedMessage(stopWatch: StopWatch): String {
         val builder = StringBuilder("SpringApplication[")
         builder.append(getApplicationName())
-        builder.append("]启动成功，启动所花费的时间为[")
+        builder.append("]启动成功, 启动所花费的时间为[")
         builder.append(stopWatch.getTotalTimeMills() / 1000.0)
         builder.append("]s")
         try {
@@ -81,9 +82,9 @@ class StartupInfoLogger(private val sourceClass: Class<*>?) {
     }
 
     /**
-     * 获取SpringApplication的name，如果sourceClass为空，那么name默认为application；如果sourceClass不为空，则应用名称为简单类名
+     * 获取SpringApplication的name, 如果sourceClass为空, 那么name默认为application; 如果sourceClass不为空, 则应用名称为简单类名
+     *
+     * @return applicationName
      */
-    private fun getApplicationName(): String {
-        return sourceClass?.simpleName ?: "application"
-    }
+    private fun getApplicationName(): String = sourceClass?.simpleName ?: "application"
 }

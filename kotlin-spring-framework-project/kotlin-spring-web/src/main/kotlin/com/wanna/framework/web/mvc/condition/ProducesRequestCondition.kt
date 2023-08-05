@@ -13,7 +13,7 @@ import com.wanna.framework.web.server.HttpServerRequest
  * @see RequestMapping.produces
  *
  * @param produces 要产出的MediaTypes
- * @param manager 要使用的ContentNegotiationManager，有默认值
+ * @param manager 要使用的ContentNegotiationManager, 有默认值
  */
 open class ProducesRequestCondition(
     private val produces: List<String> = emptyList(),
@@ -21,20 +21,28 @@ open class ProducesRequestCondition(
 ) : AbstractRequestCondition<ProducesRequestCondition>() {
 
     companion object {
-        // Default ContentNegotiationManager
-        @JvmStatic
+        /**
+         * Default ContentNegotiationManager
+         */
+        @JvmField
         val DEFAULT_CONTENT_NEGOTIATION_MANAGER: ContentNegotiationManager = ContentNegotiationManager()
 
-        // MediaType的属性名
+        /**
+         * MediaType的属性名
+         */
         @JvmStatic
         private val MEDIA_TYPES_ATTRIBUTE = ProducesRequestCondition::class.java.name + ".MEDIA_TYPES"
 
-        // 空的ProducesCondition
+        /**
+         * 空的ProducesCondition
+         */
         @JvmStatic
         private val EMPTY_CONDITION = ProducesRequestCondition()
     }
 
-    // 提供一个变长参数的构造方法
+    /**
+     * 提供一个变长参数的构造方法
+     */
     constructor(vararg produces: String) : this(produces.toList(), DEFAULT_CONTENT_NEGOTIATION_MANAGER)
 
     override fun getContent() = this.produces
@@ -49,10 +57,10 @@ open class ProducesRequestCondition(
     override fun getToStringInfix() = " || "
 
     /**
-     * combine的方式为，如果other当中存在有配置，那么就使用它的配置，否则就使用当前的配置；
-     * 典型的就是：当方法级别上的配置，会替换掉类上的配置(而不是真的对两个方法当中的产出类型去进行合并)
+     * combine的方式为, 如果other当中存在有配置, 那么就使用它的配置, 否则就使用当前的配置;
+     * 典型的就是：当方法级别上的配置, 会替换掉类上的配置(而不是真的对两个方法当中的产出类型去进行合并)
      *
-     * @param other other Produces，例如之前是类级别的匹配，现在是方法级别的匹配
+     * @param other other Produces, 例如之前是类级别的匹配, 现在是方法级别的匹配
      */
     override fun combine(other: ProducesRequestCondition) = if (other.getContent().isNotEmpty()) other else this
 
@@ -60,15 +68,15 @@ open class ProducesRequestCondition(
      * 获取匹配的结果
      *
      * @param request request
-     * @return 匹配的结果，如果不匹配的话，return null；否则返回的是正常的ProducesRequestCondition
+     * @return 匹配的结果, 如果不匹配的话, return null; 否则返回的是正常的ProducesRequestCondition
      */
     override fun getMatchingCondition(request: HttpServerRequest): ProducesRequestCondition? {
-        // 1.如果它是一个Cors的预检请求("OPTIONS")，那么return EMPTY_CONDITION, 匹配
+        // 1.如果它是一个Cors的预检请求("OPTIONS"), 那么return EMPTY_CONDITION, 匹配
         if (CorsUtils.isPreFlightRequest(request)) {  // fixed for PreFlightRequest
             return EMPTY_CONDITION
         }
 
-        // 2.如果当前Produces为空，没有要去进行产出的类型，那么return this, 匹配
+        // 2.如果当前Produces为空, 没有要去进行产出的类型, 那么return this, 匹配
         if (this.isEmpty()) {
             return this
         }
@@ -80,18 +88,18 @@ open class ProducesRequestCondition(
         try {
             mediaTypes = getAcceptedMediaTypes(request) ?: return null
         } catch (ex: Exception) {
-            return null  // 解析错误，那么说明不匹配，return null
+            return null  // 解析错误, 那么说明不匹配, return null
         }
 
-        // 4.获取匹配的结果，判断你想要去进行接收的MediaType，看下有哪个是我能产出的？
+        // 4.获取匹配的结果, 判断你想要去进行接收的MediaType, 看下有哪个是我能产出的?
         val result = getMatchingExpressions(mediaTypes)
 
-        // 5.如果确实有我能去进行产出的，那么return ProducesRequestCondition，并包装我能去进行产出的类型
+        // 5.如果确实有我能去进行产出的, 那么return ProducesRequestCondition, 并包装我能去进行产出的类型
         if (result != null && result.isNotEmpty()) {
             return ProducesRequestCondition(produces = result, manager = this.manager)
         }
 
-        // 6.如果包含了ALL，那么return EMPTY_CONDITION
+        // 6.如果包含了ALL, 那么return EMPTY_CONDITION
         if (MediaType.ALL.isPresentIn(mediaTypes)) {
             return EMPTY_CONDITION
         }
@@ -99,10 +107,10 @@ open class ProducesRequestCondition(
     }
 
     /**
-     * 遍历你所有想要接收的数据类型，看是否有一个是我想要去进行产出的？
+     * 遍历你所有想要接收的数据类型, 看是否有一个是我想要去进行产出的?
      *
      * @param acceptedMediaTypes 你想要去进行接收的MediaType列表
-     * @return 如果有我能去进行产出的，那么return 能产出MediaType的List；如果没有我能去进行产出的，那么return null
+     * @return 如果有我能去进行产出的, 那么return 能产出MediaType的List; 如果没有我能去进行产出的, 那么return null
      */
     private fun getMatchingExpressions(acceptedMediaTypes: List<MediaType>): List<String>? {
         val result = ArrayList<String>()
@@ -110,8 +118,8 @@ open class ProducesRequestCondition(
             val mediaType = MediaType.parseMediaType(it)
             acceptedMediaTypes.forEach { accept ->
                 if (mediaType.isCompatibleWith(accept)) {
-                    // 如果匹配的话，应该使用的是用户自己的去配置的，而不是用户想要去进行接收的
-                    // 例如用户配置了"application/json"，而Accept为"*/*"，此时不应该返回"*/*"...
+                    // 如果匹配的话, 应该使用的是用户自己的去配置的, 而不是用户想要去进行接收的
+                    // 例如用户配置了"application/json", 而Accept为"*/*", 此时不应该返回"*/*"...
                     result += it
                 }
             }

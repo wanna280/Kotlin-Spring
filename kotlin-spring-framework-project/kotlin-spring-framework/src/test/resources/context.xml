@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-    <bean id="machine" class="com.wanna.test.xml.bean.Machine"/>
-    <bean id="user" class="com.wanna.test.xml.bean.User" autowire-mode="byName" init-method="init">
-        <property name="name" value="wanna"/>
-    </bean>
-</beans>

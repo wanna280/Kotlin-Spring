@@ -4,7 +4,7 @@ import com.wanna.framework.web.server.HttpServerRequest
 import com.wanna.framework.web.server.HttpServerResponse
 
 /**
- * Cors的处理器，提供去处理一个跨域请求，判断一个跨域请求是否合法
+ * Cors的处理器, 提供去处理一个跨域请求, 判断一个跨域请求是否合法
  */
 interface CorsProcessor {
 

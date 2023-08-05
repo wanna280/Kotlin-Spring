@@ -9,13 +9,14 @@ package com.wanna.framework.web.http
  */
 enum class HttpStatus(val value: Int, val series: Series, val reasonPhase: String) {
     SUCCESS(200, Series.SUCCESSFUL, "OK"),
+    BAD_REQUEST(400, Series.CLIENT_EROR, "Bad Request"),
     FORBIDDEN(403, Series.CLIENT_EROR, "Forbidden"),
-    NOT_FOUNT(404, Series.CLIENT_EROR, "Not Found"),
+    NOT_FOUND(404, Series.CLIENT_EROR, "Not Found"),
     INTERNAL_SERVER_ERROR(500, Series.SERVER_ERROR, "Internal Server Error")
     ;
 
     /**
-     * Http状态码所属的系列的枚举值，也就是我们常说的"1xx"，"2xx"，"3xx"，"4xx"，"5xx"
+     * Http状态码所属的系列的枚举值, 也就是我们常说的"1xx", "2xx", "3xx", "4xx", "5xx"
      *
      * @param value SeriesInt
      */

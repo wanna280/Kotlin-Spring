@@ -6,7 +6,7 @@ import com.wanna.framework.context.annotation.Bean
 import com.wanna.framework.context.annotation.Configuration
 
 /**
- * 线程的Dump信息的自动配置类，它负责去对外提供线程的Dump信息
+ * 线程的Dump信息的自动配置类, 它负责去对外提供线程的Dump信息
  *
  * @see ThreadDumpEndpoint
  */

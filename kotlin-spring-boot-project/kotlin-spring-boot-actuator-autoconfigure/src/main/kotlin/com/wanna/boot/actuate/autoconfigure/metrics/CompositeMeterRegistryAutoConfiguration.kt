@@ -14,7 +14,7 @@ import io.micrometer.core.instrument.MeterRegistry
  *
  * @see CompositeMeterRegistryConfiguration
  */
-@ConditionalOnClass(name = ["io.micrometer.core.instrument.composite.CompositeMeterRegistry"])
+@ConditionalOnClass(value = [io.micrometer.core.instrument.MeterRegistry::class])
 @Import([CompositeMeterRegistryConfiguration::class])
 @Configuration(proxyBeanMethods = false)
 open class CompositeMeterRegistryAutoConfiguration

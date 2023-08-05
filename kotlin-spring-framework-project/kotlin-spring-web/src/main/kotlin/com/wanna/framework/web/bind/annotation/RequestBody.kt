@@ -1,7 +1,7 @@
 package com.wanna.framework.web.bind.annotation
 
 /**
- * 标识该参数，需要从HTTP请求的RequestBody当中去进行获取和转换，可以支持使用Map/JavaBean去进行接收
+ * 标识该参数, 需要从HTTP请求的RequestBody当中去进行获取和转换, 可以支持使用Map/JavaBean去进行接收
  *
  * 具体的使用参考下面的示例代码:
  *

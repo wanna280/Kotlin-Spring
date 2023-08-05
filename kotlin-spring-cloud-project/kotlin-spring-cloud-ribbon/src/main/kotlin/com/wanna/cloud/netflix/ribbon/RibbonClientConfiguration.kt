@@ -14,10 +14,10 @@ import com.wanna.framework.context.aware.EnvironmentAware
 import com.wanna.framework.core.environment.Environment
 
 /**
- * RibbonClient的配置类，RibbonClient要想实现负载均衡，必须组合ILoadBalancer去完成负载均衡，需要使用到ILoadBalancer，
- * 则需要提供IClientConfig、IRule、IPing、ServerList、ServerFilterList、ServerListUpdater这六个组件，在这个配置类当中，我们都提供默认的；
- * 在真正地提供负载均衡的Server(ServiceInstance)一方(比如Nacos、Eureka等)，只需要按需替换掉配置的默认配置即可实现让Ribbon去完成负载均衡；
- * 比如Nacos当中，就替换掉默认的ServerList去让Ribbon知道，Nacos的DiscoveryServer当中根据serviceId能够去，找到哪些实例列表；
+ * RibbonClient的配置类, RibbonClient要想实现负载均衡, 必须组合ILoadBalancer去完成负载均衡, 需要使用到ILoadBalancer,
+ * 则需要提供IClientConfig、IRule、IPing、ServerList、ServerFilterList、ServerListUpdater这六个组件, 在这个配置类当中, 我们都提供默认的;
+ * 在真正地提供负载均衡的Server(ServiceInstance)一方(比如Nacos、Eureka等), 只需要按需替换掉配置的默认配置即可实现让Ribbon去完成负载均衡;
+ * 比如Nacos当中, 就替换掉默认的ServerList去让Ribbon知道, Nacos的DiscoveryServer当中根据serviceId能够去, 找到哪些实例列表;
  *
  * @see IClientConfig
  * @see IRule
@@ -33,7 +33,7 @@ open class RibbonClientConfiguration : EnvironmentAware {
 
     private var environment: Environment? = null
 
-    @Value("%{ribbon.client.name}")
+    @Value("${'$'}{ribbon.client.name}")
     private var clientName: String = "client"
 
     /**
@@ -51,7 +51,7 @@ open class RibbonClientConfiguration : EnvironmentAware {
     }
 
     /**
-     * 给容器中导入一个默认的负载均衡的规则，配置ILoadBalancer去完成
+     * 给容器中导入一个默认的负载均衡的规则, 配置ILoadBalancer去完成
      */
     @Bean
     @ConditionalOnMissingBean
@@ -90,7 +90,7 @@ open class RibbonClientConfiguration : EnvironmentAware {
     }
 
     /**
-     * ILoadBalancer，去提供负载均衡的Server的选择
+     * ILoadBalancer, 去提供负载均衡的Server的选择
      */
     @Bean
     @ConditionalOnMissingBean

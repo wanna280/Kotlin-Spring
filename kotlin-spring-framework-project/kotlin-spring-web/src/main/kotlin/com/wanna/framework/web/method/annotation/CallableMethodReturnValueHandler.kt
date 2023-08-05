@@ -18,10 +18,10 @@ import java.util.concurrent.Callable
 open class CallableMethodReturnValueHandler : HandlerMethodReturnValueHandler {
 
     /**
-     * 是否支持处理这样的类型的返回值？只支持去处理Callable类型的返回值类型
+     * 是否支持处理这样的类型的返回值? 只支持去处理Callable类型的返回值类型
      *
      * @param parameter 返回值类型封装成为的MethodParameter
-     * @return 如果返回值类型是Callable，那么return true；否则return false
+     * @return 如果返回值类型是Callable, 那么return true; 否则return false
      */
     override fun supportsReturnType(parameter: MethodParameter): Boolean =
         ClassUtils.isAssignFrom(Callable::class.java, parameter.getParameterType())
@@ -45,7 +45,7 @@ open class CallableMethodReturnValueHandler : HandlerMethodReturnValueHandler {
             return
         }
 
-        // 交给AsyncManager去对Callable去进行处理，去进行异步任务的执行
+        // 交给AsyncManager去对Callable去进行处理, 去进行异步任务的执行
         WebAsyncUtils.getAsyncManager(webRequest.getNativeRequest(HttpServerRequest::class.java))
             .startCallableProcessing(returnValue as Callable<*>, mavContainer)
     }

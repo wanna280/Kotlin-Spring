@@ -16,9 +16,9 @@ import feign.codec.Decoder
 import feign.codec.Encoder
 
 /**
- * FeignClient的FactoryBean，会将一个@FeignClient注解当中的全部元素解析成为一个FactoryBean；
- * 方便后期去进行FeignClient的构建，本身是一个FactoryBean，可以通过getTarget方法去回调和创建Bean；
- * 它负责将给定的FeignClient接口使用JDK动态代理去生成代理对象，方便拦截FeignClient方法，并在运行时能够正确地去执行请求的发送；
+ * FeignClient的FactoryBean, 会将一个@FeignClient注解当中的全部元素解析成为一个FactoryBean;
+ * 方便后期去进行FeignClient的构建, 本身是一个FactoryBean, 可以通过getTarget方法去回调和创建Bean;
+ * 它负责将给定的FeignClient接口使用JDK动态代理去生成代理对象, 方便拦截FeignClient方法, 并在运行时能够正确地去执行请求的发送;
  *
  * @see FeignClient
  * @see EnableFeignClients
@@ -58,37 +58,33 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
     }
 
     /**
-     * getTarget，完成FeignClient的代理工作，使用JDK动态代理去生成FeignClient的动态代理
+     * getTarget, 完成FeignClient的代理工作, 使用JDK动态代理去生成FeignClient的动态代理
      */
     open fun <T> getTarget(): T {
         val beanFactory = this.beanFactory
         val applicationContext = this.applicationContext
 
-        val context = if (beanFactory != null) {
-            beanFactory.getBean(FeignContext::class.java)
-        } else if (applicationContext != null) {
-            applicationContext.getBean(FeignContext::class.java)
-        } else {
-            throw IllegalStateException("BeanFactory和ApplicationContext不能都为空")
-        }
+        val context = beanFactory?.getBean(FeignContext::class.java)
+            ?: (applicationContext?.getBean(FeignContext::class.java)
+                ?: throw IllegalStateException("BeanFactory和ApplicationContext不能都为空"))
         // 从ChildContext当中去获取FeignBuilder
         val feign = feign(context)
-        // 如果url为空的话，那么通过serviceName去进行负载均衡...
+        // 如果url为空的话, 那么通过serviceName去进行负载均衡...
         if (!StringUtils.hasText(url)) {
             var name = name!!
-            // 如果name不是以"http:"作为开头，那么需要拼接上"http://"协议前缀(Feign当中会检查，如果没有协议名会报错)
+            // 如果name不是以"http:"作为开头, 那么需要拼接上"http://"协议前缀(Feign当中会检查, 如果没有协议名会报错)
             if (!name.startsWith("http:")) {
                 name = "http://$name"
             }
-            // 拼接上干净的路径(如果路径不是以"/"开头，那么拼接上"/"，如果路径是以"/"作为结尾，那么需要切掉"/")
+            // 拼接上干净的路径(如果路径不是以"/"开头, 那么拼接上"/", 如果路径是以"/"作为结尾, 那么需要切掉"/")
             name += getCleanPath()
             return loadBalance(feign, context, HardCodedTarget(this.type, name, name)) as T
         }
 
-        // 如果url不为空的话，那么直接通过url去进行调用即可
+        // 如果url不为空的话, 那么直接通过url去进行调用即可
         val client = getOptional(context, Client::class.java)
         if (client != null) {
-            // 1.如果是LoadBalancerFeignClient的话，应该获取它包装的client(提供ApacheHttpClient/OkHttp)
+            // 1.如果是LoadBalancerFeignClient的话, 应该获取它包装的client(提供ApacheHttpClient/OkHttp)
             val clientToUse =
                 if (client is RibbonLoadBalancerFeignClient) {
                     client.delegate
@@ -103,7 +99,7 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
     }
 
     /**
-     * 获取干净的路径，如果路径不是以"/"开头，那么拼接上"/"，如果路径是以"/"作为结尾，那么需要切掉"/"
+     * 获取干净的路径, 如果路径不是以"/"开头, 那么拼接上"/", 如果路径是以"/"作为结尾, 那么需要切掉"/"
      */
     private fun getCleanPath(): String {
         var path = this.path
@@ -118,20 +114,19 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
     }
 
     /**
-     * 获取FeignBuilder，并完成FeignBuilder的初始化工作；
+     * 获取FeignBuilder, 并完成FeignBuilder的初始化工作;
      * * (1)Decoder-->负责将RequestBody转为JavaBean
      * * (2)Encoder-->负责将JavaBean写出成为RequestBody
-     * * (3)Contract-->扩展Feign默认的Contract，完成SpringMvc的相关注解的解析
+     * * (3)Contract-->扩展Feign默认的Contract, 完成SpringMvc的相关注解的解析
      *
      * @param context FeignContext
      * @return 完成初始化之后的Feign.Builder
      */
     private fun feign(context: FeignContext): Feign.Builder {
-        val feign = get(context, Feign.Builder::class.java)
+        return get(context, Feign.Builder::class.java)
             .decoder(get(context, Decoder::class.java))
             .encoder(get(context, Encoder::class.java))
             .contract(get(context, Contract::class.java))
-        return feign
     }
 
     /**
@@ -140,7 +135,7 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
      * @param feign FeignBuilder
      * @param context FeignContext
      * @param target target
-     * @throws IllegalStateException 如果没有负载均衡的FeignClient，那么抛出不合法状态异常
+     * @throws IllegalStateException 如果没有负载均衡的FeignClient, 那么抛出不合法状态异常
      */
     protected open fun <T> loadBalance(feign: Feign.Builder, context: FeignContext, target: HardCodedTarget<T>): T {
         val client = getOptional(context, Client::class.java)
@@ -158,9 +153,9 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
      *
      * @param context FeignContext
      * @param type 想要获取的类型
-     * @return return 获取到的Bean，如果获取到了return Bean；如果没有获取到，直接抛出异常
+     * @return return 获取到的Bean, 如果获取到了return Bean; 如果没有获取到, 直接抛出异常
      */
-    protected open fun <T> get(context: FeignContext, type: Class<T>): T {
+    protected open fun <T : Any> get(context: FeignContext, type: Class<T>): T {
         return context.getInstance(contextId!!, type)!!
     }
 
@@ -169,9 +164,9 @@ open class FeignClientFactoryBean : FactoryBean<Any>, InitializingBean, Applicat
      *
      * @param context FeignContext
      * @param type 想要获取的类型
-     * @return return 获取到的Bean，如果获取到了return Bean；如果没有获取到，return null
+     * @return return 获取到的Bean, 如果获取到了return Bean; 如果没有获取到, return null
      */
-    protected open fun <T> getOptional(context: FeignContext, type: Class<T>): T? {
+    protected open fun <T : Any> getOptional(context: FeignContext, type: Class<T>): T? {
         return context.getInstance(contextId!!, type)
     }
 

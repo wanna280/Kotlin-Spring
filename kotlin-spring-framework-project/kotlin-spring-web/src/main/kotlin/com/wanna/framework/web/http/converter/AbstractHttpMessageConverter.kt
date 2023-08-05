@@ -1,29 +1,34 @@
 package com.wanna.framework.web.http.converter
 
+import com.wanna.common.logging.Logger
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.http.HttpHeaders
 import com.wanna.framework.web.http.HttpInputMessage
 import com.wanna.framework.web.http.HttpOutputMessage
 import com.wanna.framework.web.http.MediaType
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import java.nio.charset.Charset
 
 /**
- * 抽象的HttpMessageConverter的实现，为所有的HttpMessageConverter提供模板方法的实现
+ * 抽象的[HttpMessageConverter]的实现, 为所有的[HttpMessageConverter]去提供模板方法的实现
  *
  * @see HttpMessageConverter
  */
 abstract class AbstractHttpMessageConverter<T> : HttpMessageConverter<T> {
 
-    // Logger
+    /**
+     * Logger
+     */
     protected val logger: Logger = LoggerFactory.getLogger(AbstractHttpMessageConverter::class.java)
 
-
-    // 当前的MessageConverter支持的MediaType列表
+    /**
+     * 当前的MessageConverter支持的MediaType列表
+     */
     private var supportedMediaTypes = ArrayList<MediaType>()
 
-    // 默认的字符集
+    /**
+     * 默认的字符集
+     */
     @Nullable
     private var defaultCharset: Charset? = null
 
@@ -32,13 +37,24 @@ abstract class AbstractHttpMessageConverter<T> : HttpMessageConverter<T> {
      *
      * @param supportedMediaTypes SupportedMediaTypes
      */
-    fun setSupportedMediaTypes(vararg supportedMediaTypes: MediaType) {
+    open fun setSupportedMediaTypes(vararg supportedMediaTypes: MediaType) {
         this.supportedMediaTypes = ArrayList(listOf(*supportedMediaTypes))
     }
 
-    fun getDefaultCharset(): Charset? = this.defaultCharset
+    /**
+     * 获取默认的字符集
+     *
+     * @return 默认字符集
+     */
+    @Nullable
+    open fun getDefaultCharset(): Charset? = this.defaultCharset
 
-    fun setDefaultCharset(defaultCharset: Charset) {
+    /**
+     * 设置默认的字符集
+     *
+     * @param defaultCharset 默认字符集
+     */
+    open fun setDefaultCharset(defaultCharset: Charset) {
         this.defaultCharset = defaultCharset
     }
 
@@ -50,7 +66,7 @@ abstract class AbstractHttpMessageConverter<T> : HttpMessageConverter<T> {
     override fun getSupportedMediaTypes() = this.supportedMediaTypes
 
     /**
-     * 能否去读这样的MediaType成为clazz类型的数据？如果它支持去处理这样的类型的数据，并且支持这种MediaType的写的功能即可认为它可以读
+     * 能否去读这样的MediaType成为clazz类型的数据? 如果它支持去处理这样的类型的数据, 并且支持这种MediaType的写的功能即可认为它可以读
      *
      * @param clazz JavaBean类型
      * @param mediaType MediaType
@@ -58,14 +74,14 @@ abstract class AbstractHttpMessageConverter<T> : HttpMessageConverter<T> {
     override fun canRead(clazz: Class<*>, @Nullable mediaType: MediaType?) = supports(clazz) && canRead(mediaType)
 
     /**
-     * 能否将clazz类型的JavaBean数据去写出成为MediaType类型的响应数据？如果它支持去处理这样的类型的数据，并且支持这种MediaType的写的功能即可认为它可以写
+     * 能否将clazz类型的JavaBean数据去写出成为MediaType类型的响应数据? 如果它支持去处理这样的类型的数据, 并且支持这种MediaType的写的功能即可认为它可以写
      *
      * @param clazz JavaBean类型
      * @param mediaType MediaType
      */
     override fun canWrite(clazz: Class<*>, @Nullable mediaType: MediaType?) = supports(clazz) && canWrite(mediaType)
 
-    protected open fun canRead(mediaType: MediaType?): Boolean {
+    protected open fun canRead(@Nullable mediaType: MediaType?): Boolean {
         mediaType ?: return true
         getSupportedMediaTypes().forEach {
             if (it.includes(mediaType)) {
@@ -75,7 +91,7 @@ abstract class AbstractHttpMessageConverter<T> : HttpMessageConverter<T> {
         return false
     }
 
-    protected open fun canWrite(mediaType: MediaType?): Boolean {
+    protected open fun canWrite(@Nullable mediaType: MediaType?): Boolean {
         mediaType ?: return true
         getSupportedMediaTypes().forEach {
             if (it.isCompatibleWith(mediaType)) {
@@ -97,7 +113,7 @@ abstract class AbstractHttpMessageConverter<T> : HttpMessageConverter<T> {
         if (contentType != null) {
             var contentTypeToUse = contentType
 
-            // 如果必要的话，需要添加上默认的charset
+            // 如果必要的话, 需要添加上默认的charset
             if (contentTypeToUse.charset == null) {
                 val defaultCharset = getDefaultCharset()
                 if (defaultCharset != null) {
@@ -119,14 +135,15 @@ abstract class AbstractHttpMessageConverter<T> : HttpMessageConverter<T> {
     }
 
     /**
-     * 是否支持这样的类型数据？
+     * 是否去处理支持[clazz]这样的Java对象类型数据?
      *
      * @param clazz JavaBean类型
+     * @return 如果支持去进行这样的Java对象数据的处理, 那么return true; 否则return false
      */
     protected abstract fun supports(clazz: Class<*>): Boolean
 
     /**
-     * 执行真正的read工作，模板方法，具体逻辑交给子类去完成实现
+     * 执行真正的read工作, 模板方法, 具体逻辑交给子类去完成实现
      *
      * @param clazz JavaBean类型
      * @param inputMessage request Message数据
@@ -135,7 +152,7 @@ abstract class AbstractHttpMessageConverter<T> : HttpMessageConverter<T> {
     protected abstract fun readInternal(clazz: Class<*>, inputMessage: HttpInputMessage): T
 
     /**
-     * 执行真正的write工作，模板方法，具体逻辑交给子类去进行实现
+     * 执行真正的write工作, 模板方法, 具体逻辑交给子类去进行实现
      *
      * @param t JavaBean
      * @param mediaType MediaType

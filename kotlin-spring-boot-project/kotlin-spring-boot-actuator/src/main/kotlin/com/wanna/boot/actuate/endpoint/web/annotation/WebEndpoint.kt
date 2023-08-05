@@ -1,7 +1,7 @@
 package com.wanna.boot.actuate.endpoint.web.annotation
 
 import com.wanna.boot.actuate.endpoint.annotation.Endpoint
-import org.springframework.core.annotation.AliasFor
+import com.wanna.framework.core.annotation.AliasFor
 
 /**
  * Web环境下的Endpoint

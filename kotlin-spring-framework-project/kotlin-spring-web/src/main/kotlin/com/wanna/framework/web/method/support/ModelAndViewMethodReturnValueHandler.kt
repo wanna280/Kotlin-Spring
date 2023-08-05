@@ -7,7 +7,7 @@ import com.wanna.framework.web.handler.ModelAndView
 import com.wanna.framework.web.ui.SmartView
 
 /**
- * ModelAndView的返回值解析器，支持去处理返回值为ModelAndView的方法，将ModelAndView当中的数据转移到ModelAndView的容器(ModelAndViewContainer)当中
+ * ModelAndView的返回值解析器, 支持去处理返回值为ModelAndView的方法, 将ModelAndView当中的数据转移到ModelAndView的容器(ModelAndViewContainer)当中
  *
  * @see ModelAndView
  * @see HandlerMethodReturnValueHandler
@@ -15,7 +15,7 @@ import com.wanna.framework.web.ui.SmartView
 open class ModelAndViewMethodReturnValueHandler : HandlerMethodReturnValueHandler {
 
     /**
-     * 是否处理该返回值？只要返回值类型是ModelAndView就支持
+     * 是否处理该返回值? 只要返回值类型是ModelAndView就支持
      *
      * @param parameter 返回值类型封装成为的MethodParameter
      */
@@ -56,7 +56,7 @@ open class ModelAndViewMethodReturnValueHandler : HandlerMethodReturnValueHandle
      * 它是否是一个重定向的是视图
      *
      * @param viewName viewName
-     * @return 如果viewName以"redirect:"，则说明它是重定向视图，return true；否则return false
+     * @return 如果viewName以"redirect:", 则说明它是重定向视图, return true; 否则return false
      */
     protected open fun isRedirectView(viewName: String): Boolean {
         return viewName.startsWith("redirect:")

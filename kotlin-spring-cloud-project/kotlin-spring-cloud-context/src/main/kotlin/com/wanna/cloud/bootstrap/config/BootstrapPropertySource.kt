@@ -3,7 +3,7 @@ package com.wanna.cloud.bootstrap.config
 import com.wanna.framework.core.environment.EnumerablePropertySource
 
 /**
- * 这是一个对EnumerablePropertySource的包装，主要用于标识它是一个Bootstrap的PropertySource
+ * 这是一个对EnumerablePropertySource的包装, 主要用于标识它是一个Bootstrap的PropertySource
  *
  * @param delegate 要委托的EnumerablePropertySource
  */

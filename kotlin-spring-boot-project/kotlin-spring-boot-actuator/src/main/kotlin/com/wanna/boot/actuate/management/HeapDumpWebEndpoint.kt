@@ -55,7 +55,7 @@ open class HeapDumpWebEndpoint {
     }
 
     /**
-     * HeapDumper，提供对于Java堆当中的相关信息的Dump到一个文件当中的策略接口
+     * HeapDumper, 提供对于Java堆当中的相关信息的Dump到一个文件当中的策略接口
      */
     interface HeapDumper {
 
@@ -63,7 +63,7 @@ open class HeapDumpWebEndpoint {
          * 将堆信息去dump到指定的文件当中
          *
          * @param file 堆信息将会被dump到这个文件当中
-         * @param live 是不是只有可达的对象才需要dump？
+         * @param live 是不是只有可达的对象才需要dump? 
          */
         fun dump(file: File, live: Boolean)
     }

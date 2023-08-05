@@ -1,6 +1,7 @@
 package com.wanna.framework.web.method.annotation
 
 import com.wanna.framework.core.MethodParameter
+import com.wanna.framework.web.bind.ServerRequestBindingException
 import com.wanna.framework.web.bind.annotation.RequestParam
 import com.wanna.framework.web.context.request.NativeWebRequest
 import com.wanna.framework.web.server.HttpServerRequest
@@ -13,7 +14,7 @@ import com.wanna.framework.web.server.HttpServerRequest
 open class RequestParamMethodArgumentResolver : AbstractNamedValueMethodArgumentResolver() {
 
     /**
-     * 是否支持处理这样的参数？只要参数上标注了@RequestParam注解，就支持去进行处理
+     * 是否支持处理这样的参数? 只要参数上标注了@RequestParam注解, 就支持去进行处理
      *
      * @param parameter 方法参数
      * @return 是否支持去进行处理
@@ -27,13 +28,14 @@ open class RequestParamMethodArgumentResolver : AbstractNamedValueMethodArgument
     }
 
     /**
-     * 给定paramName，需要去计算该paramName在请求参数当中的具体的值
+     * 给定paramName, 需要去计算该paramName在请求参数当中的具体的值
      *
      * @param name paramName
+     * @param parameter 方法参数
      * @param webRequest NativeWebRequest(request and response)
      * @return 从header当中获取到的参数的值
      */
-    override fun resolveName(name: String, webRequest: NativeWebRequest): Any? {
+    override fun resolveName(name: String, parameter: MethodParameter, webRequest: NativeWebRequest): Any? {
         val request = webRequest.getNativeRequest(HttpServerRequest::class.java)
         return request.getParam(name)
     }
@@ -42,15 +44,19 @@ open class RequestParamMethodArgumentResolver : AbstractNamedValueMethodArgument
      * 构建RequestParam的NamedValueInfo
      *
      * @param parameter 方法参数
-     * @return 根据该方法参数当中的@RequestParam注解，去解析成为NamedValueInfo信息
+     * @return 根据该方法参数当中的@RequestParam注解, 去解析成为NamedValueInfo信息
      */
     override fun createNamedValueInfo(parameter: MethodParameter): NamedValueInfo {
         val requestParam = parameter.getAnnotation(RequestParam::class.java)!!
         return RequestParamNamedValueInfo(requestParam.name, requestParam.required, requestParam.defaultValue)
     }
 
+    override fun handleMissingValue(name: String, parameter: MethodParameter) {
+        throw ServerRequestBindingException("在绑定[${parameter.getExecutable()}]的[${parameter.getParameter()}]时遇到了, 缺失[$name]对应的HttpParam")
+    }
+
     /**
-     * 针对于RequestParam的NamedValueInfo，负责包装name/required/defaultValue等信息
+     * 针对于RequestParam的NamedValueInfo, 负责包装name/required/defaultValue等信息
      */
     private class RequestParamNamedValueInfo(name: String, required: Boolean, defaultValue: String) :
         NamedValueInfo(name, required, defaultValue)

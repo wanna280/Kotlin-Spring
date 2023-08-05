@@ -4,7 +4,7 @@ import com.wanna.boot.SpringApplication
 import com.wanna.boot.autoconfigure.SpringBootApplication
 import java.util.concurrent.ConcurrentHashMap
 
-@SpringBootApplication
+@SpringBootApplication(proxyBeanMethods = false)
 class BootstrapListenerTest
 
 fun main() {

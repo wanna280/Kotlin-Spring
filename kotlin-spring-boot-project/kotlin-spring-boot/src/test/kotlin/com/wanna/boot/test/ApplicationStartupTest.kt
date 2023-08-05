@@ -6,11 +6,11 @@ import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.core.metrics.ApplicationStartup
 import com.wanna.framework.core.metrics.DefaultApplicationStartup
 import com.wanna.framework.core.metrics.StartupStep
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.util.function.Supplier
 
 /**
- * 用于对ApplicationStartup去进行功能设置，对过程当中产生的数据去以日志的形式去进行输出
+ * 用于对ApplicationStartup去进行功能设置, 对过程当中产生的数据去以日志的形式去进行输出
  */
 @Configuration(proxyBeanMethods = false)
 class ApplicationStartupTest

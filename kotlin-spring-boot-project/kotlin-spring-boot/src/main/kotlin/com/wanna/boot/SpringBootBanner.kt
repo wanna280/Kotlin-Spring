@@ -4,7 +4,7 @@ import com.wanna.framework.core.environment.Environment
 import java.io.PrintStream
 
 /**
- * 这是一个SpringBoot的Banner，负责打印SpringBoot的Logo的Banner
+ * 这是一个SpringBoot的Banner, 负责打印SpringBoot的Logo的Banner
  *
  * @see Banner
  */

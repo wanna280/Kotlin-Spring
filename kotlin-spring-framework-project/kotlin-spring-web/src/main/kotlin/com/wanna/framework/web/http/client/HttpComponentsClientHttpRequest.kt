@@ -14,13 +14,13 @@ import java.net.URI
  * @param httpClient Apache的HttpClient
  * @param httpRequest Apache的HttpRequest
  */
-class HttpComponentsClientHttpRequest(
+internal class HttpComponentsClientHttpRequest(
     private val httpClient: HttpClient,
     private val httpRequest: HttpUriRequest,
     private val method: RequestMethod = RequestMethod.GET
 ) : AbstractBufferingClientHttpRequest() {
     override fun getMethod() = method
-    override fun getUri(): URI = this.httpRequest.uri
+    override fun getURI(): URI = this.httpRequest.uri
 
     override fun executeInternal(headers: HttpHeaders, bufferedOutput: ByteArray): ClientHttpResponse {
         val httpRequest = this.httpRequest

@@ -29,14 +29,14 @@ open class MappingJackson2HttpMessageConverter : AbstractHttpMessageConverter<An
     }
 
     /**
-     * 不管是什么类型的数据，我都支持去进行处理，因为我是Json的序列化方式
+     * 不管是什么类型的数据, 我都支持去进行处理, 因为我是Json的序列化方式
      *
      * @param clazz JavaBean类型
      */
     override fun supports(clazz: Class<*>) = true
 
     /**
-     * readInternal，直接利用ObjectMapper去进行读取即可
+     * readInternal, 直接利用ObjectMapper去进行读取即可
      *
      * @param clazz 目标数据类型
      * @param inputMessage request Message
@@ -45,7 +45,7 @@ open class MappingJackson2HttpMessageConverter : AbstractHttpMessageConverter<An
         objectMapper.readValue(inputMessage.getBody(), clazz)
 
     /**
-     * writeInternal，直接利用ObjectMapper去进行write即可
+     * writeInternal, 直接利用ObjectMapper去进行write即可
      *
      * @param t 要去进行写入的目标类型
      * @param mediaType MediaType

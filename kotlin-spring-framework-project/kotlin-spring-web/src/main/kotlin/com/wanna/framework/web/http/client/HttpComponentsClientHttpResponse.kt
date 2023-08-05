@@ -10,7 +10,7 @@ import java.io.InputStream
  * @see ClientHttpRequest
  * @see HttpComponentsClientHttpRequest
  */
-class HttpComponentsClientHttpResponse(private val response: HttpResponse) : ClientHttpResponse {
+internal class HttpComponentsClientHttpResponse(private val response: HttpResponse) : ClientHttpResponse {
 
     override fun getBody(): InputStream = response.entity.content
 
@@ -22,5 +22,9 @@ class HttpComponentsClientHttpResponse(private val response: HttpResponse) : Cli
             httpHeaders.add(it.name, it.value)
         }
         return httpHeaders
+    }
+
+    override fun close() {
+
     }
 }

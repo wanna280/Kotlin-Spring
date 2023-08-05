@@ -1,6 +1,6 @@
 package com.wanna.framework.web.bind.annotation
 
-import org.springframework.core.annotation.AliasFor
+import com.wanna.framework.core.annotation.AliasFor
 
 /**
  * 标识这是一个支持PATCH请求的RequestMapping

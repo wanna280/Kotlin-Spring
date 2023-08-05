@@ -10,7 +10,7 @@ import com.wanna.framework.test.context.TestContext
 import java.lang.reflect.Method
 
 /**
- * 对于[TestContext]的默认实现，维护了当前Test应用的上下文信息
+ * 对于[TestContext]的默认实现, 维护了当前Test应用的上下文信息
  *
  * @author jianchao.jia
  * @version v1.0
@@ -45,8 +45,8 @@ open class DefaultTestContext(
     private var textException: Throwable? = null
 
     /**
-     * 获取到[ApplicationContext]，直接使用[CacheAwareContextLoaderDelegate]，
-     * 根据[MergedContextConfiguration]，使用[ContextLoader]去进行构建出来一个合适的[ApplicationContext]
+     * 获取到[ApplicationContext], 直接使用[CacheAwareContextLoaderDelegate],
+     * 根据[MergedContextConfiguration], 使用[ContextLoader]去进行构建出来一个合适的[ApplicationContext]
      *
      * @return ApplicationContext
      */
@@ -64,7 +64,7 @@ open class DefaultTestContext(
     /**
      * 获取到testInstance
      *
-     * @return testInstance(如果没有初始化，那么return null)
+     * @return testInstance(如果没有初始化, 那么return null)
      */
     @Nullable
     override fun getTestInstance(): Any? = this.testInstance
@@ -72,7 +72,7 @@ open class DefaultTestContext(
     /**
      * 获取到testMethod
      *
-     * @return testMethod(如果没有初始化，那么return null)
+     * @return testMethod(如果没有初始化, 那么return null)
      */
     @Nullable
     override fun getTestMethod(): Method? = this.testMethod
@@ -80,7 +80,7 @@ open class DefaultTestContext(
     /**
      * 获取到testException
      *
-     * @return testException(如果没有初始化，那么return null)
+     * @return testException(如果没有初始化, 那么return null)
      */
     @Nullable
     override fun getTestException(): Throwable? = this.textException

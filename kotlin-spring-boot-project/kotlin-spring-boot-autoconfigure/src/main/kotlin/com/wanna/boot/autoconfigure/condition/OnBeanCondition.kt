@@ -9,12 +9,13 @@ import com.wanna.framework.context.annotation.ConfigurationCondition.Configurati
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase.REGISTER_BEAN
 import com.wanna.framework.core.Order
 import com.wanna.framework.core.Ordered
+import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.type.AnnotatedTypeMetadata
 import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.util.ClassUtils
 
 /**
- * 这是用于匹配Bean的SpringBootCondition，主要处理@ConditionOnBean/@ConditionOnMissingBean/@ConditionOnSingleCandidate等注解
+ * 这是用于匹配Bean的SpringBootCondition, 主要处理@ConditionOnBean/@ConditionOnMissingBean/@ConditionOnSingleCandidate等注解
  *
  * @see ConditionalOnBean
  * @see ConditionalOnMissingBean
@@ -30,7 +31,7 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
     override fun getConfigurationPhase(): ConfigurationPhase = REGISTER_BEAN
 
     /**
-     * 匹配configurationClassName.OnBeanCondition/OnSingletonCandidate中配置的className列表，判断是否存在
+     * 匹配configurationClassName.OnBeanCondition/OnSingletonCandidate中配置的className列表, 判断是否存在
      *
      * @param autoConfigurationClasses 自动配置类的列表
      * @param autoConfigurationMetadata 自动配置类的元信息("META-INF/spring-autoconfigure-metadata.properties")
@@ -44,10 +45,10 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
             val autoConfigurationClass = autoConfigurationClasses[index]
             if (autoConfigurationClass != null) {  // pass null entry
 
-                // 首先，检查OnBeanCondition的所有className是否都已经存在
+                // 首先, 检查OnBeanCondition的所有className是否都已经存在
                 val onBeanTypes = autoConfigurationMetadata.getSet(autoConfigurationClass, "OnBeanCondition")
                 outcomes[index] = getOutcome(onBeanTypes, ConditionalOnBean::class.java)
-                // 如果OnBeanCondition的所有className都已经存在，那么再去检查一下onSingleCandidate的所有className是否都已经存在
+                // 如果OnBeanCondition的所有className都已经存在, 那么再去检查一下onSingleCandidate的所有className是否都已经存在
                 if (outcomes[index] == null) {
                     val onSingletonCandidateTypes =
                         autoConfigurationMetadata.getSet(autoConfigurationClass, "OnSingletonCandidate")
@@ -59,10 +60,10 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
     }
 
     /**
-     * 获取Condition的匹配结果，判断requiredBeanTypes列表当中的所有的className是否都已经存在？
+     * 获取Condition的匹配结果, 判断requiredBeanTypes列表当中的所有的className是否都已经存在?
      *
      * @param requiredBeanTypes 需要去进行匹配的className列表
-     * @return 如果要匹配的所有className都已经存在，那么return null；如果存在有className不存在的，那么return noMatch
+     * @return 如果要匹配的所有className都已经存在, 那么return null; 如果存在有className不存在的, 那么return noMatch
      */
     private fun getOutcome(requiredBeanTypes: Set<String>?, annotation: Class<out Annotation>): ConditionOutcome? {
         val missing = filter(requiredBeanTypes, ClassNameFilter.MISSING, this.getClassLoader())
@@ -77,7 +78,7 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
             // 构建Spec对象
             val spec = Spec(context, metadata, ConditionalOnBean::class.java)
             val matchResult: MatchResult = getMatchBeans(context, spec)
-            if (!matchResult.isAllMatch()) {  // 如果不是全部匹配，return false
+            if (!matchResult.isAllMatch()) {  // 如果不是全部匹配, return false
                 return ConditionOutcome.noMatch()
             }
         }
@@ -85,11 +86,11 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
             // 构建Spec对象
             val spec = Spec(context, metadata, ConditionalOnMissingBean::class.java)
             val matchResult: MatchResult = getMatchBeans(context, spec)
-            if (matchResult.isAnyMatch()) {  // 如果有部分匹配，那么return false
+            if (matchResult.isAnyMatch()) {  // 如果有部分匹配, 那么return false
                 return ConditionOutcome.noMatch()
             }
         }
-        // 如果全部都匹配了，return true
+        // 如果全部都匹配了, return true
         return ConditionOutcome.match()
     }
 
@@ -118,13 +119,13 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
             }
         }
 
-        // 3.匹配注解，暂时不支持
+        // 3.匹配注解, 暂时不支持
 
         return result
     }
 
     /**
-     * 容器中是否包含了这么个Bean？
+     * 容器中是否包含了这么个Bean?
      */
     private fun containsBean(beanFactory: ConfigurableListableBeanFactory, name: String): Boolean {
         return beanFactory.containsBeanDefinition(name) || beanFactory.containsSingleton(name)
@@ -138,7 +139,7 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
     }
 
     /**
-     * 这是Spring当中对于匹配的结果去进行封装的一个结果，里面维护了各项结果(type/name/annotation等)的匹配结果
+     * 这是Spring当中对于匹配的结果去进行封装的一个结果, 里面维护了各项结果(type/name/annotation等)的匹配结果
      */
     private class MatchResult {
         // 已经匹配的部分
@@ -194,19 +195,19 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
         }
 
         /**
-         * 是否是只有部分匹配的？(==>是否有部分是未匹配的？)只要matches集合中有一个不为空，那么就是部分匹配
+         * 是否是只有部分匹配的? (==>是否有部分是未匹配的? )只要matches集合中有一个不为空, 那么就是部分匹配
          */
         fun isAnyMatch() =
             matchedNames.isNotEmpty() || matchedTypes.isNotEmpty() || matchedAnnotations.isNotEmpty()
 
         /**
-         * 是否全部都匹配了？必须要unmatches的三个集合全部为空才算匹配
+         * 是否全部都匹配了? 必须要unmatches的三个集合全部为空才算匹配
          */
         fun isAllMatch() = unmatchedNames.isEmpty() && unmatchedTypes.isEmpty() && unmatchedAnnotations.isEmpty()
     }
 
     /**
-     * 这是Spring当中对于Condition匹配的相关条件的去进行封装的类，它是对于ConditionOnBean/ConditionOnMissingBean的进行的一层抽象
+     * 这是Spring当中对于Condition匹配的相关条件的去进行封装的类, 它是对于ConditionOnBean/ConditionOnMissingBean的进行的一层抽象
      *
      * @see ConditionalOnBean
      * @see ConditionalOnMissingBean
@@ -215,36 +216,34 @@ open class OnBeanCondition : FilteringSpringBootCondition(), ConfigurationCondit
         context: ConditionContext, metadata: AnnotatedTypeMetadata, annotationType: Class<A>
     ) {
         private val classLoader: ClassLoader = context.getClassLoader()
-        private var types: Set<String>? = null
-        private var annotations: Set<String>? = null
-        private var names: Set<String>? = null
+        private var types: Set<String> = emptySet()
+        private var annotations: Set<String> = emptySet()
+        private var names: Set<String> = emptySet()
 
         init {
             // 从metadata当中去解析到AnnotationAttributes信息
-            val attributes = metadata.getAnnotationAttributes(annotationType)
+            val attributes = metadata.getAnnotations().get(annotationType)
 
             // 1.解析要匹配的beanNames列表
-            this.names = (attributes["name"] as Array<String>).toSet()
+            this.names = attributes.getStringArray("name").toSet()
 
-            // 2.解析要匹配的className类型列表(value属性当中是class，type属性当中是className，合并为className列表)
-            val types = HashSet<String>()
-            types += (attributes["value"] as Array<Class<*>>).map { it.name }.toList()
-            types += (attributes["type"] as Array<String>)
-            // 如果从name/value/type属性当中都没有匹配到要匹配的Bean？那么从@Bean方法去推断beanType作为匹配的Bean
+            // 2.解析要匹配的className类型列表(value属性当中是class, type属性当中是className, 合并为className列表)
+            val types = (attributes.getStringArray(MergedAnnotation.VALUE) + attributes.getStringArray("type")).toSet()
+            // 如果从name/value/type属性当中都没有匹配到要匹配的Bean? 那么从@Bean方法去推断beanType作为匹配的Bean
             this.types =
-                if (types.isEmpty() && this.names!!.isEmpty()) this.deduceBeanType(context, metadata)
+                if (types.isEmpty() && this.names.isEmpty()) this.deduceBeanType(context, metadata)
                 else types
 
             // 3.解析要匹配的annotations列表
-            this.annotations = (attributes["annotation"] as Array<Class<*>>).map { it.name }.toSet()
+            this.annotations = attributes.getStringArray("annotation").toSet()
         }
 
-        open fun getNames(): Set<String> = this.names!!
-        open fun getTypes(): Set<String> = this.types!!
-        open fun getAnnotations(): Set<String> = this.annotations!!
+        open fun getNames(): Set<String> = this.names
+        open fun getTypes(): Set<String> = this.types
+        open fun getAnnotations(): Set<String> = this.annotations
 
         /**
-         * 推断bean的类型究竟是什么？如果从@Bean方法当中可以推断出来类型，那么就获取返回类型作为要匹配的类型；如果从@Bean方法当中无法推断出来类型，那么return empty
+         * 推断bean的类型究竟是什么? 如果从@Bean方法当中可以推断出来类型, 那么就获取返回类型作为要匹配的类型; 如果从@Bean方法当中无法推断出来类型, 那么return empty
          */
         open fun deduceBeanType(context: ConditionContext, metadata: AnnotatedTypeMetadata): Set<String> {
             if (metadata is MethodMetadata && metadata.isAnnotated(Bean::class.java.name)) {

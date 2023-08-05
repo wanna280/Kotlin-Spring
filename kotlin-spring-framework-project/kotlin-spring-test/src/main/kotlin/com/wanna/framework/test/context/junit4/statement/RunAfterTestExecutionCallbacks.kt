@@ -5,7 +5,7 @@ import org.junit.runners.model.Statement
 import java.lang.reflect.Method
 
 /**
- * 在一个`@Test`方法执行完成之后的，需要去执行的Callback
+ * 在一个`@Test`方法执行完成之后的, 需要去执行的Callback
  *
  * @author jianchao.jia
  * @version v1.0

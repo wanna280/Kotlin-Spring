@@ -6,7 +6,7 @@ import com.wanna.framework.beans.factory.config.Scope
 import com.wanna.framework.context.ConfigurableApplicationContext
 
 /**
- * RestartScopeInitializer，负责在SpringBoot启动时，去注册一个RestartScope
+ * RestartScopeInitializer, 负责在SpringBoot启动时, 去注册一个RestartScope
  *
  * @see RestartScope
  * @see com.wanna.boot.devtools.restart.RestartScope
@@ -17,7 +17,7 @@ class RestartScopeInitializer : ApplicationContextInitializer<ConfigurableApplic
     }
 
     /**
-     * RestartScope，自定义一个Spring的Scope
+     * RestartScope, 自定义一个Spring的Scope
      *
      * @see com.wanna.boot.devtools.restart.RestartScope
      */

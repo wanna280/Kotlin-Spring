@@ -18,7 +18,7 @@ interface HttpServerRequest {
     }
 
     /**
-     * 获取request的输入流，可以从输出流当中获取RequestBody
+     * 获取request的输入流, 可以从输出流当中获取RequestBody
      *
      * @return RequestBody的输入流
      */
@@ -29,10 +29,10 @@ interface HttpServerRequest {
      *
      * @return Cookie列表
      */
-    fun getCookies() : Array<Cookie>
+    fun getCookies(): Array<Cookie>
 
     /**
-     * 设置request的具体的参数(如果之前已经有该参数了，那么直接去进行替换)
+     * 设置request的具体的参数(如果之前已经有该参数了, 那么直接去进行替换)
      *
      * @param name paramName
      * @param value paramValue(为null时代表移除)
@@ -40,7 +40,7 @@ interface HttpServerRequest {
     fun setParam(name: String, value: String?)
 
     /**
-     * 添加参数，如果value为空的话，移除该name的param
+     * 添加参数, 如果value为空的话, 移除该name的param
      *
      * @param name paramName
      * @param value paramValue(为null时代表移除)
@@ -51,7 +51,7 @@ interface HttpServerRequest {
      * 根据name获取param
      *
      * @param name paramName
-     * @return 给定paramName获取到的参数列表(如果存在有多个param，那么return第一个paramValue)
+     * @return 给定paramName获取到的参数列表(如果存在有多个param, 那么return第一个paramValue)
      */
     fun getFirstParam(name: String): String?
 
@@ -59,7 +59,7 @@ interface HttpServerRequest {
      * 根据name获取param
      *
      * @param name paramName
-     * @return 给定paramName获取到的参数列表(如果存在有多个param，那么使用"; "去进行分割)
+     * @return 给定paramName获取到的参数列表(如果存在有多个param, 那么使用"; "去进行分割)
      */
     fun getParam(name: String): String?
 
@@ -85,7 +85,7 @@ interface HttpServerRequest {
     fun getParamNames(): Set<String>
 
     /**
-     * 添加Header，如果value为空的话，标识移除该name的header
+     * 添加Header, 如果value为空的话, 标识移除该name的header
      *
      * @param name headerName
      * @param value headerValue
@@ -104,7 +104,7 @@ interface HttpServerRequest {
      * 根据name去获取到headerValue
      *
      * @param name headerName
-     * @return 根据name去获取到的headerValue(如果该header存在有多个值，那么使用"; "去进行分割)
+     * @return 根据name去获取到的headerValue(如果该header存在有多个值, 那么使用"; "去进行分割)
      */
     fun getHeader(name: String): String?
 
@@ -112,7 +112,7 @@ interface HttpServerRequest {
      * 根据name去获取到headerValue
      *
      * @param name headerName
-     * @return 根据name去获取到的headerValue(如果该header存在有多个值，那么返回第一个)
+     * @return 根据name去获取到的headerValue(如果该header存在有多个值, 那么返回第一个)
      */
     fun getFirstHeader(name: String): String?
 
@@ -124,7 +124,7 @@ interface HttpServerRequest {
     fun getHeaders(): HttpHeaders
 
     /**
-     * 根据headerName，去获取当前request的HttpHeaders当中对应header的值的列表
+     * 根据headerName, 去获取当前request的HttpHeaders当中对应header的值的列表
      *
      * @param name headerName
      * @return 给定的headerName对应的headerValue列表
@@ -169,14 +169,14 @@ interface HttpServerRequest {
     fun getAttributeNames(): Set<String>
 
     /**
-     * 获取当前请求的uri(包含url和query参数)
+     * 获取当前请求的uri, 例如"uri"
      *
      * @return uri of request
      */
     fun getUri(): String
 
     /**
-     * 获取当前请求的url(不包含query参数)
+     * 获取当前请求的url, 例如"http://localhost:9966/servlet", 但是不含有query的部分
      *
      * @return url of request
      */
@@ -197,11 +197,25 @@ interface HttpServerRequest {
     fun getRemoteHost(): String
 
     /**
+     * 获取远程的IP
+     *
+     * @return remoteIp
+     */
+    fun getRemoteIp(): String
+
+    /**
      * 获取ServerPost
      *
      * @return serverPost
      */
     fun getServerPort(): Int
+
+    /**
+     * 获取remotePort
+     *
+     * @return remotePort
+     */
+    fun getRemotePort(): Int
 
     /**
      * 获取schema
@@ -223,6 +237,29 @@ interface HttpServerRequest {
      * @return request method of request
      */
     fun getMethod(): RequestMethod
+
+    /**
+     * 开启异步的支持
+     *
+     * @return AsyncContext
+     */
+    fun startAsync(): AsyncContext
+
+    /**
+     * 开启异步的支持
+     *
+     * @param request request
+     * @param response response
+     * @return AsyncContext
+     */
+    fun startAsync(request: HttpServerRequest, response: HttpServerResponse): AsyncContext
+
+    /**
+     * 获取AsyncContext
+     *
+     * @return AsyncContext
+     */
+    fun getAsyncContext(): AsyncContext?
 
     /**
      * 针对对应的ActionCode去执行对应的回调

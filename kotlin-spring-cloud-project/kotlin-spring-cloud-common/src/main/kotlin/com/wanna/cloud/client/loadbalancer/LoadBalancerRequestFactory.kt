@@ -26,7 +26,7 @@ class LoadBalancerRequestFactory(private val loadBalancerClient: LoadBalancerCli
     ): LoadBalancerRequest<ClientHttpResponse> {
         return object : LoadBalancerRequest<ClientHttpResponse> {
             override fun apply(serviceInstance: ServiceInstance): ClientHttpResponse {
-                // 包装原来的Request，将serviceName替换成为ServiceInstance当中的真实的主机host
+                // 包装原来的Request, 将serviceName替换成为ServiceInstance当中的真实的主机host
                 val wrappedRequest = ServiceRequestWrapper(request, loadBalancerClient, serviceInstance)
                 return execution.execute(wrappedRequest, body)
             }

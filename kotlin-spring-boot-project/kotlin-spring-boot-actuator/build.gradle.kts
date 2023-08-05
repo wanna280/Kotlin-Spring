@@ -1,12 +1,14 @@
 
 dependencies {
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-core"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-beans"))
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-context"))
     implementation("com.google.guava:guava:$guavaVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
-    implementation("org.springframework:spring-core:$springCoreVersion")
     implementation("javax.annotation:javax.annotation-api:$javaxAnnotationVersion")
+    implementation(project(":kotlin-spring-framework-project:kotlin-spring-jcl"))
 
     implementation(project(":kotlin-spring-boot-project:kotlin-spring-boot"))
-    implementation(project(":kotlin-spring-framework-project:kotlin-spring-framework"))
 
 
 

@@ -14,7 +14,7 @@ import com.wanna.framework.context.annotation.Configuration
 import com.wanna.framework.web.DispatcherHandler
 
 /**
- * 提供对于[MappingsEndpoint]的自动装配，对外提供所有的RequestMapping映射的Endpoint
+ * 提供对于[MappingsEndpoint]的自动装配, 对外提供所有的RequestMapping映射的Endpoint
  *
  * @author jianchao.jia
  * @version v1.0
@@ -40,7 +40,7 @@ open class MappingsEndpointAutoConfiguration {
     }
 
     @ConditionalOnWebApplication(MVC)
-    @ConditionalOnClass(name = ["com.wanna.framework.web.DispatcherHandler"])
+    @ConditionalOnClass(value = [DispatcherHandler::class])
     @ConditionalOnBean(value = [DispatcherHandler::class])
     @Configuration(proxyBeanMethods = false)
     open class MvcWebConfiguration {

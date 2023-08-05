@@ -17,20 +17,20 @@ import javax.validation.Validator
 
 
 /**
- * Bean Validation的自动配置类，提供对于JSR303的参数校验的支持
+ * Bean Validation的自动配置类, 提供对于JSR303的参数校验的支持
  *
  * @see Validator
  * @see MethodValidationPostProcessor
  * @see LocalValidatorFactoryBean
  */
 @Order(Ordered.ORDER_HIGHEST + 20)  // highest order
-@ConditionalOnResource("classpath:META-INF/services/javax.validation.spi.ValidationProvider")
-@ConditionalOnClass(name = ["javax.validation.Validator"])
+@ConditionalOnResource(resources = ["classpath:META-INF/services/javax.validation.spi.ValidationProvider"])
+@ConditionalOnClass(value = [javax.validation.Validator::class])
 @Configuration(proxyBeanMethods = false)
 open class ValidationAutoConfiguration {
 
     /**
-     * 注册一个LocalValidatorFactoryBean，提供Spring的Validator和javax.validation的Validator的Bean的支持
+     * 注册一个LocalValidatorFactoryBean, 提供Spring的Validator和javax.validation的Validator的Bean的支持
      *
      * @return LocalValidatorFactoryBean
      */
@@ -50,7 +50,7 @@ open class ValidationAutoConfiguration {
      * @return MethodValidationPostProcessor
      */
     @Bean
-    @ConditionalOnClass(name = ["javax.validation.Validator"])
+    @ConditionalOnClass(value = [javax.validation.Validator::class])
     @ConditionalOnMissingBean
     open fun methodValidationPostProcessor(@Lazy validator: Validator): MethodValidationPostProcessor {
         val methodValidationPostProcessor = MethodValidationPostProcessor()

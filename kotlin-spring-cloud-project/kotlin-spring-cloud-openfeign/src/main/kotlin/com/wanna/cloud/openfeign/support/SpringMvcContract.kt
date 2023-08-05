@@ -16,10 +16,10 @@ import feign.Request.HttpMethod.*
 import java.lang.reflect.Method
 
 /**
- * SpringMvc的Contract，主要是解析以支持SpringMvc相关的注解，将其适配到Feign当中；
+ * SpringMvc的Contract, 主要是解析以支持SpringMvc相关的注解, 将其适配到Feign当中;
  *
- * 默认情况下，Feign支持的是解析Feign当中的@RequestLine/@Headers/@Param/@QueryMap/@HeaderMap/@Body这些注解；
- * 我们在Spring当中，想要直接使用SpringMvc相关的注解，因此，我们在这里去进行自定义注解的处理逻辑，而不是仅仅使用Feign默认的Contract！
+ * 默认情况下, Feign支持的是解析Feign当中的@RequestLine/@Headers/@Param/@QueryMap/@HeaderMap/@Body这些注解;
+ * 我们在Spring当中, 想要直接使用SpringMvc相关的注解, 因此, 我们在这里去进行自定义注解的处理逻辑, 而不是仅仅使用Feign默认的Contract！
  *
  * @see AnnotatedParameterProcessor
  */
@@ -31,7 +31,7 @@ open class SpringMvcContract(
         private val PARAMETER_NAME_DISCOVERER = DefaultParameterNameDiscoverer()  // 参数名发现器
     }
 
-    // 参数处理器列表(key-注解类型，value-该注解类型对应的注解处理器)
+    // 参数处理器列表(key-注解类型, value-该注解类型对应的注解处理器)
     private val argumentsProcessors: MutableMap<Class<out Annotation>, AnnotatedParameterProcessor> = HashMap()
 
     // 已经处理过的方法列表
@@ -44,7 +44,7 @@ open class SpringMvcContract(
     }
 
     /**
-     * Feign，会根据这个方法的返回值，去进行HandlerMethod的构建？
+     * Feign, 会根据这个方法的返回值, 去进行HandlerMethod的构建?
      *
      * @param targetType FeignClient Interface
      */
@@ -64,7 +64,7 @@ open class SpringMvcContract(
      * @param method 要处理的方法
      */
     override fun processAnnotationOnMethod(data: MethodMetadata, annotation: Annotation, method: Method) {
-        // 添加方法缓存，方便后期拿出来(似乎没有必要存在？因为MethodMetadata当中可以获取到方法？)
+        // 添加方法缓存, 方便后期拿出来(似乎没有必要存在? 因为MethodMetadata当中可以获取到方法? )
         processedMethods[Feign.configKey(method.declaringClass, method)] = method
         val requestMapping = AnnotatedElementUtils.getMergedAnnotation(method, RequestMapping::class.java)
         if (requestMapping != null) {
@@ -81,12 +81,12 @@ open class SpringMvcContract(
     }
 
     /**
-     * 处理一个方法的其中一个参数上的全部注解(至于是哪个参数，通过paramIndex去进行确定)
+     * 处理一个方法的其中一个参数上的全部注解(至于是哪个参数, 通过paramIndex去进行确定)
      *
      * @param data methodMetadata
-     * @param annotations 某个方法参数当中的注解列表？
-     * @param paramIndex 该方法参数位于方法当中的索引index？
-     * @return 该参数是否是一个Http注解(如果为true时，可以使用nameParam(MethodMetadata data,String name,int i)获取到该参数的值)
+     * @param annotations 某个方法参数当中的注解列表?
+     * @param paramIndex 该方法参数位于方法当中的索引index?
+     * @return 该参数是否是一个Http注解(如果为true时, 可以使用nameParam(MethodMetadata data,String name,int i)获取到该参数的值)
      */
     override fun processAnnotationsOnParameter(
         data: MethodMetadata, annotations: Array<out Annotation>, paramIndex: Int
@@ -95,7 +95,7 @@ open class SpringMvcContract(
         val method = processedMethods[data.configKey()]
         val context = SimpleAnnotatedParameterContext(data, paramIndex)
 
-        // 遍历所有的方法参数当中的注解列表，挨个去进行判断，看是否有合适的处理器去处理该注解？
+        // 遍历所有的方法参数当中的注解列表, 挨个去进行判断, 看是否有合适的处理器去处理该注解?
         annotations.forEach {
             val processor = argumentsProcessors[it.annotationClass.java]
             if (processor != null) {

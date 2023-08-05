@@ -10,7 +10,7 @@ import javax.annotation.PostConstruct
  */
 open class NacosRegistration(
     private val customizers: List<NacosRegistrationCustomizer>,
-    private val properties: NacosDiscoveryProperties
+    val properties: NacosDiscoveryProperties
 ) : Registration, ServiceInstance {
 
     @PostConstruct
@@ -27,7 +27,7 @@ open class NacosRegistration(
             metadata["preserved.ip.delete.timeout"] = properties.ipDeleteTimeout.toString()
         }
 
-        // 遍历所有的初始化器，去对NacosRegistration去进行自定义...
+        // 遍历所有的初始化器, 去对NacosRegistration去进行自定义...
         if (this.customizers.isNotEmpty()) {
             this.customizers.forEach { it.customNacosRegistration(this) }
         }
@@ -45,8 +45,13 @@ open class NacosRegistration(
         return properties.port
     }
 
+    override fun isSecure(): Boolean {
+        return properties.secure;
+    }
+
     override fun getUri(): String {
-        return "http://${properties.ip}:${properties.port}"
+        val schema = if (isSecure()) "https" else "http"
+        return "$schema://${properties.ip}:${properties.port}"
     }
 
     override fun getMetadata(): MutableMap<String, String> {

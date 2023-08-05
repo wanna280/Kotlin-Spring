@@ -12,7 +12,7 @@ import com.wanna.boot.context.properties.ConfigurationProperties
 open class SimpleProperties {
 
     /**
-     * 是否开启？
+     * 是否开启?
      */
     var enabled: Boolean = true
 }

@@ -1,0 +1,2 @@
+com.wanna.framework.context.ApplicationContextInitializer=\
+  com.wanna.nacos.naming.server.util.ApplicationUtils

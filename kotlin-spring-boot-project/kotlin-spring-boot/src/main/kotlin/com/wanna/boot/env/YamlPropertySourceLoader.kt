@@ -12,11 +12,6 @@ open class YamlPropertySourceLoader : PropertySourceLoader {
     override fun getFileExtensions() = arrayOf("yaml", "yml")
 
     // TODO
-    override fun load(name: String, resource: String): List<PropertySource<*>> {
-        return emptyList()
-    }
-
-    // TODO
     override fun load(name: String, resource: Resource): List<PropertySource<*>> {
         return emptyList()
     }

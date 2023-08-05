@@ -11,7 +11,7 @@ import com.wanna.framework.web.server.HttpServerRequest
  * 基于路径变量的参数解析器
  */
 open class PathVariableHandlerMethodArgumentResolver : AbstractNamedValueMethodArgumentResolver() {
-    override fun resolveName(name: String, webRequest: NativeWebRequest): Any? {
+    override fun resolveName(name: String, parameter: MethodParameter, webRequest: NativeWebRequest): Any? {
         val request = webRequest.getNativeRequest(HttpServerRequest::class.java)
         val uriTemplates = request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE)
         if (uriTemplates != null && uriTemplates is Map<*, *>) {

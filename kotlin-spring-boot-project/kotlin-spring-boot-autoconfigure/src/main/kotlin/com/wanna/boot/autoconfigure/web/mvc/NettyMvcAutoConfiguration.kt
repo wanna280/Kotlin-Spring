@@ -4,7 +4,7 @@ import com.wanna.boot.autoconfigure.condition.ConditionalOnMissingBean
 import com.wanna.boot.autoconfigure.condition.ConditionalOnProperty
 import com.wanna.boot.autoconfigure.condition.ConditionalOnWebApplication
 import com.wanna.boot.context.properties.EnableConfigurationProperties
-import com.wanna.boot.web.mvc.server.WebServerFactory
+import com.wanna.boot.web.mvc.server.NettyWebServerFactory
 import com.wanna.framework.beans.factory.annotation.Qualifier
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
@@ -23,10 +23,11 @@ import com.wanna.framework.web.config.annotation.DelegatingWebMvcConfiguration
 import com.wanna.framework.web.handler.SimpleUrlHandlerMapping
 import com.wanna.framework.web.method.annotation.RequestMappingHandlerMapping
 import com.wanna.framework.web.resource.ResourceHttpRequestHandler
-import com.wanna.framework.web.server.netty.server.support.NettyServerHandler
+import com.wanna.boot.web.embedded.netty.NettyServerHandler
+import com.wanna.boot.web.embedded.netty.NettyWebServerFactoryImpl
 
 /**
- * 只有在WebMvc下才生效的自动配置类，给SpringBeanFactory当中导入MVC相关的配置类
+ * 只有在WebMvc下才生效的自动配置类, 给SpringBeanFactory当中导入MVC相关的配置类
  *
  * @see DelegatingWebMvcConfiguration
  * @see DispatcherHandler
@@ -45,22 +46,20 @@ open class NettyMvcAutoConfiguration : ApplicationContextAware {
     @Bean
     @ConditionalOnMissingBean
     open fun dispatcherHandler(): DispatcherHandler {
-        val dispatcherHandler = DispatcherHandlerImpl()
-        dispatcherHandler.setApplicationContext(this.applicationContext)
-        return dispatcherHandler
+        return DispatcherHandlerImpl()
     }
 
     /**
      * 给SpringBeanFactory当中导入一个NettyWebServerFactory
-     * 它的作用是，为Spring的ApplicationContext去提供WebServer，
+     * 它的作用是, 为Spring的ApplicationContext去提供WebServer, 
      * 并提供WebServer启动与关闭等相关的操作
      *
      * @param properties WebServer的配置信息
      */
     @Bean
     @ConditionalOnMissingBean
-    open fun nettyWebServerFactory(properties: NettyWebServerProperties): WebServerFactory {
-        val nettyWebServerFactory = NettyWebServerFactory()
+    open fun nettyWebServerFactory(properties: NettyWebServerProperties): NettyWebServerFactory {
+        val nettyWebServerFactory = NettyWebServerFactoryImpl()
         nettyWebServerFactory.setHandler(NettyServerHandler(this.applicationContext))
         nettyWebServerFactory.setPort(properties.port)
         nettyWebServerFactory.setBossGroupThreads(properties.bossCount)
@@ -69,7 +68,7 @@ open class NettyMvcAutoConfiguration : ApplicationContextAware {
     }
 
     /**
-     * 开启SpringMVC的的配置的类，导入SpringMVC需要用到的各个相关的组件
+     * 开启SpringMVC的的配置的类, 导入SpringMVC需要用到的各个相关的组件
      */
     @Configuration(proxyBeanMethods = false)
     open class EnableWebMvcConfiguration : DelegatingWebMvcConfiguration() {
@@ -86,7 +85,7 @@ open class NettyMvcAutoConfiguration : ApplicationContextAware {
     }
 
     /**
-     * 处理"favicon.ico"请求的配置类，在SpringBoot2.2.x之前存在，2.2.x之后取消了(根据默认Logo知道网站开发框架，泄露隐私)
+     * 处理"favicon.ico"请求的配置类, 在SpringBoot2.2.x之前存在, 2.2.x之后取消了(根据默认Logo知道网站开发框架, 泄露隐私)
      */
     @ConditionalOnProperty(value = ["spring.mvc.favicon.enabled"], matchIfMissing = true)
     @Configuration(proxyBeanMethods = false)

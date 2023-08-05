@@ -45,15 +45,15 @@ interface HttpServerResponse {
     fun getCookies(): Array<Cookie>
 
     /**
-     * 根据headerName，去移除一个header
+     * 根据headerName, 去移除一个header
      *
      * @param name headerName
-     * @return 之前的旧的headerValue(如果有多个，使用"; "去进行分割)
+     * @return 之前的旧的headerValue(如果有多个, 使用"; "去进行分割)
      */
     fun removeHeader(name: String): String?
 
     /**
-     * 根据name和value去设置一个Header(如果之前已经有该header，那么直接清除掉之前所有的)
+     * 根据name和value去设置一个Header(如果之前已经有该header, 那么直接清除掉之前所有的)
      *
      * @param name headerName
      * @param value headerValue(为null时表示移除)
@@ -61,7 +61,7 @@ interface HttpServerResponse {
     fun setHeader(name: String, value: String?)
 
     /**
-     * 根据name和value去添加一个Header(如果之前已经有该header，那么在原来的基础上去进行扩充)
+     * 根据name和value去添加一个Header(如果之前已经有该header, 那么在原来的基础上去进行扩充)
      *
      * @param name headerName
      * @param value headerValue(为null时表示移除)
@@ -72,7 +72,7 @@ interface HttpServerResponse {
      * 根据headerName去设置一个Header
      *
      * @param name headerName
-     * @return headerValue(如果有多个，使用"; "去进行分割；如果不存在return null)
+     * @return headerValue(如果有多个, 使用"; "去进行分割; 如果不存在return null)
      */
     fun getHeader(name: String): String?
 
@@ -91,7 +91,7 @@ interface HttpServerResponse {
     fun getStatusCode(): Int
 
     /**
-     * 获取响应的消息，配合状态码去进行使用
+     * 获取响应的消息, 配合状态码去进行使用
      *
      * @return 响应携带的消息
      */
@@ -112,14 +112,14 @@ interface HttpServerResponse {
     fun setStatus(status: HttpStatus)
 
     /**
-     * sendError，msg采用默认的msg
+     * sendError, msg采用默认的msg
      *
      * @param statusCode 状态码
      */
     fun sendError(statusCode: Int)
 
     /**
-     * sendError，并同时设置Error的消息
+     * sendError, 并同时设置Error的消息
      *
      * @param statusCode 状态码
      * @param msg message of error
@@ -127,7 +127,7 @@ interface HttpServerResponse {
     fun sendError(statusCode: Int, msg: String)
 
     /**
-     * flush Response，将Buffer当中的数据写出给客户端
+     * flush Response, 将Buffer当中的数据写出给客户端
      */
     fun flush()
 }

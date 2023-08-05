@@ -20,11 +20,23 @@ class InterceptingClientHttpRequest(
     private val method: RequestMethod,
     private val interceptors: List<ClientHttpRequestInterceptor>
 ) : AbstractBufferingClientHttpRequest() {
-    override fun getMethod() = method
-    override fun getUri() = uri
 
     /**
-     * 真正执行目标方法，创建一个拦截器链去执行目标方法，先去apply所有的拦截器，再去发送目标请求
+     * 获取HTTP请求方式
+     *
+     * @return RequestMethod
+     */
+    override fun getMethod() = method
+
+    /**
+     * 获取HTTP请求的URI
+     *
+     * @return URI
+     */
+    override fun getURI() = uri
+
+    /**
+     * 真正执行目标方法, 创建一个拦截器链去执行目标方法, 先去apply所有的拦截器, 再去发送目标请求
      *
      * @param headers headers
      * @param bufferedOutput byteArray数组(要去进行写出的requestBody)
@@ -34,19 +46,29 @@ class InterceptingClientHttpRequest(
     }
 
     /**
-     * 拦截器的执行器链条，它负责控制拦截器链的向下执行的过程的流转...
+     * 拦截器的执行器链条, 它负责控制拦截器链的向下执行的过程的流转...
      */
     inner class InterceptingRequestExecution : ClientHttpRequestExecution {
-        // 通常拦截器的链条是做成一个interceptorIndex去控制拦截器链条的流转的方式
-        // Note: 拦截器的链条的实现，也可以使用Iterator的实现方式，使用hasNext去进行判断是否是最后一个拦截器
+        /**
+         * 通常拦截器的链条是做成一个interceptorIndex去控制拦截器链条的流转的方式.
+         *
+         * Note: 拦截器的链条的实现, 也可以使用Iterator的实现方式, 使用hasNext去进行判断是否是最后一个拦截器
+         */
         private val iterator = interceptors.iterator()
 
+        /**
+         * 利用拦截器去拦截目标[ClientHttpRequest]的执行
+         *
+         * @param request 待拦截的[ClientHttpRequest]
+         * @param body RequestBody
+         * @return ClientHttpResponse
+         */
         override fun execute(request: ClientHttpRequest, body: ByteArray): ClientHttpResponse {
             return if (iterator.hasNext()) {
                 iterator.next().intercept(request, body, this)
             } else {
-                // 这里因为往下传递的request其实是InterceptingClientHttpRequest对象，因此，我们必须将request当中的数据全部合并到delegate当中
-                val delegate = requestFactory.createRequest(request.getUri(), request.getMethod())
+                // 这里因为往下传递的request其实是InterceptingClientHttpRequest对象, 因此, 我们必须将request当中的数据全部合并到delegate当中
+                val delegate = requestFactory.createRequest(request.getURI(), request.getMethod())
 
                 // copy headers to delegate
                 request.getHeaders().forEach { delegate.getHeaders().addAll(it.key, it.value) }

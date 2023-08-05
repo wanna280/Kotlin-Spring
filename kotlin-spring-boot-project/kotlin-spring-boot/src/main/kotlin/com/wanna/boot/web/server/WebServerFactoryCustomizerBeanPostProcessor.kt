@@ -3,7 +3,7 @@ package com.wanna.boot.web.server
 import com.wanna.framework.beans.BeanFactoryAware
 import com.wanna.framework.beans.factory.BeanFactory
 import com.wanna.framework.beans.factory.ListableBeanFactory
-import com.wanna.framework.context.processor.beans.BeanPostProcessor
+import com.wanna.framework.beans.factory.config.BeanPostProcessor
 
 /**
  * 这是一个对WebServerFactory去进行自定义的BeanPostProcessor
@@ -17,8 +17,8 @@ open class WebServerFactoryCustomizerBeanPostProcessor : BeanPostProcessor, Bean
     }
 
     /**
-     * 在Bean初始化之前，去判断Bean是否是WebServerFactory；
-     * 如果它是WebServerFactory的话，那么从容器当中拿到所有的WebServerCustomizer去对WebServer去进行自定义
+     * 在Bean初始化之前, 去判断Bean是否是WebServerFactory;
+     * 如果它是WebServerFactory的话, 那么从容器当中拿到所有的WebServerCustomizer去对WebServer去进行自定义
      *
      * @see WebServerFactoryCustomizer
      * @see WebServerFactory

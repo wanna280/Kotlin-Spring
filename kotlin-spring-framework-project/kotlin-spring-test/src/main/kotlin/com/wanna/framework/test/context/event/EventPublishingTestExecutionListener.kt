@@ -6,9 +6,9 @@ import com.wanna.framework.test.context.TestExecutionListener
 import com.wanna.framework.test.context.support.AbstractTestExecutionListener
 
 /**
- * 用于[TestContext]的相关事件的发布的[TestExecutionListener]，在合适的时机去发布对应的[TestContextEvent]事件。
- * 当监听对应事件的[ApplicationListener]将收到事件，并去对[TestContext]去进行更多自定义的操作。
- * 通过[com.wanna.framework.test.context.event.annotation]包下的相关注解，可以快速地监听到这些事件并进行自定义处理
+ * 用于[TestContext]的相关事件的发布的[TestExecutionListener], 在合适的时机去发布对应的[TestContextEvent]事件.
+ * 当监听对应事件的[ApplicationListener]将收到事件, 并去对[TestContext]去进行更多自定义的操作.
+ * 通过[com.wanna.framework.test.context.event.annotation]包下的相关注解, 可以快速地监听到这些事件并进行自定义处理
  *
  * @author jianchao.jia
  * @version v1.0

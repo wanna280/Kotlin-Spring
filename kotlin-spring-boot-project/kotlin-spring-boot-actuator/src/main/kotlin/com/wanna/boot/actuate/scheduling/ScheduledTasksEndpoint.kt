@@ -32,7 +32,7 @@ open class ScheduledTasksEndpoint(private val scheduledTaskHolder: ScheduledTask
     }
 
     /**
-     * ScheduledTasks列表的报告信息，维护了各种类别的定时任务的列表
+     * ScheduledTasks列表的报告信息, 维护了各种类别的定时任务的列表
      *
      * @param descriptionsByType key-TaskType, value-TaskDefinition列表
      */
@@ -59,7 +59,7 @@ open class ScheduledTasksEndpoint(private val scheduledTaskHolder: ScheduledTask
             }
 
             /**
-             * 给定一个Task，协助去构建一个TaskDescription
+             * 给定一个Task, 协助去构建一个TaskDescription
              *
              * @return TaskDescription
              */
@@ -71,7 +71,7 @@ open class ScheduledTasksEndpoint(private val scheduledTaskHolder: ScheduledTask
     }
 
     /**
-     * Spring的间隔任务的描述信息，内部维护了初始化延时时间(initialDelay)以及任务的间隔时间(interval)
+     * Spring的间隔任务的描述信息, 内部维护了初始化延时时间(initialDelay)以及任务的间隔时间(interval)
      *
      * @param task task
      * @param taskType taskType

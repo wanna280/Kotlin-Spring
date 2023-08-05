@@ -52,28 +52,28 @@ open class MetricsEndpoint(private val meterRegistry: MeterRegistry) {
     open fun metric(@Selector requiredMetricName: String, @Nullable tag: List<String>?): MetricResponse? {
         val tags = parseTags(tag)
 
-        // 根据指标名和Tag，去找到匹配的指标Meter数据
+        // 根据指标名和Tag, 去找到匹配的指标Meter数据
         val meters = findFirstMatchingMeters(this.meterRegistry, tags, requiredMetricName)
 
-        // 如果没有找到Meter数据的话，那么直接return null
+        // 如果没有找到Meter数据的话, 那么直接return null
         if (meters.isEmpty()) {
             return null
         }
 
-        // 从Meters数据当中，获取到采样数据
+        // 从Meters数据当中, 获取到采样数据
         val samples = getSamples(meters)
 
-        // 统计出来所有的Meter当中的tagKey和tagValue列表，一个tagKey可能对应多个tagValue
-        // 最终tagValue会被merge成为一个列表，结构为：Map<String, Set<String>>, tagKey-tagValues
+        // 统计出来所有的Meter当中的tagKey和tagValue列表, 一个tagKey可能对应多个tagValue
+        // 最终tagValue会被merge成为一个列表, 结构为：Map<String, Set<String>>, tagKey-tagValues
         val availableTags = getAvailableTags(meters)
 
         // remove something(将tagKey从tagValues的merge结果当中去移除掉)
         availableTags.forEach { it.value.remove(it.key) }
 
-        // 获取meterId，方便我们去获取到description和baseUnit
+        // 获取meterId, 方便我们去获取到description和baseUnit
         val meterId = meters.first().id
 
-        // 将结果去进行Merge，得到MetricsResponse
+        // 将结果去进行Merge, 得到MetricsResponse
         return MetricResponse(
             requiredMetricName,  // name
             meterId.description,  // description
@@ -84,11 +84,11 @@ open class MetricsEndpoint(private val meterRegistry: MeterRegistry) {
     }
 
     /**
-     * 将一个Map当中的MapEntry去转换成为一个目标对象，最终将所有的MapEntry转换结果去merge成为一个列表
+     * 将一个Map当中的MapEntry去转换成为一个目标对象, 最终将所有的MapEntry转换结果去merge成为一个列表
      *
      * @param map 提供MapEntry的Map
      * @param mapper 如何根据(K,V)去构建出来目标对象的Function(Lambda)
-     * @return 所有的MapEntry转换成为目标对象之后，得到的merge结果
+     * @return 所有的MapEntry转换成为目标对象之后, 得到的merge结果
      * @param K entryKey
      * @param V entryValue
      * @param T 目标对象类型
@@ -98,7 +98,7 @@ open class MetricsEndpoint(private val meterRegistry: MeterRegistry) {
     }
 
     /**
-     * 从给定的Meter指标列表数据当中，去获取到所有的Sample采样信息
+     * 从给定的Meter指标列表数据当中, 去获取到所有的Sample采样信息
      *
      * @param meters meters指标信息
      * @return Samples采样信息
@@ -120,7 +120,7 @@ open class MetricsEndpoint(private val meterRegistry: MeterRegistry) {
     }
 
     /**
-     * 获取到用于merge统计数据的函数(如果是MAX的话，那么计算max(a,b); 如果不是MAX的话，那么计算sum(a,b))
+     * 获取到用于merge统计数据的函数(如果是MAX的话, 那么计算max(a,b); 如果不是MAX的话, 那么计算sum(a,b))
      *
      * @param statistic 计算统计数据的BiFunction
      */
@@ -128,10 +128,10 @@ open class MetricsEndpoint(private val meterRegistry: MeterRegistry) {
         if (Statistic.MAX == statistic) BiFunction { a, b -> maxOf(a, b) } else BiFunction { a, b -> a + b }
 
     /**
-     * 针对给定的Meter列表，去获取所有的可用的Tags
+     * 针对给定的Meter列表, 去获取所有的可用的Tags
      *
      * @param meters Meter指标列表
-     * @return 获取到的Tag列表(Key是TagKey，Value是该TagKey对应的TagValue)
+     * @return 获取到的Tag列表(Key是TagKey, Value是该TagKey对应的TagValue)
      */
     private fun getAvailableTags(meters: Collection<Meter>): MutableMap<String, MutableSet<String>> {
         val availableTags: MutableMap<String, MutableSet<String>> = LinkedHashMap()
@@ -152,7 +152,7 @@ open class MetricsEndpoint(private val meterRegistry: MeterRegistry) {
     }
 
     /**
-     * 寻找第一个匹配的指标(如果有多个MeterRegistry，那么只去寻找到第一个合适的元素即结束)
+     * 寻找第一个匹配的指标(如果有多个MeterRegistry, 那么只去寻找到第一个合适的元素即结束)
      *
      * @param registry MeterRegistry
      * @param tags tags
@@ -172,15 +172,15 @@ open class MetricsEndpoint(private val meterRegistry: MeterRegistry) {
 
 
     /**
-     * 根据Tags字符串列表，解析得到Tags列表
+     * 根据Tags字符串列表, 解析得到Tags列表
      *
      * @param tags tagStr("key:value")列表
-     * @return 解析得到的Tags列表(如果tags为null，那么返回empty list)
+     * @return 解析得到的Tags列表(如果tags为null, 那么返回empty list)
      */
     private fun parseTags(tags: List<String>?): List<Tag> = tags?.map(this::parseTag)?.toList() ?: emptyList()
 
     /**
-     * 解析单个的Tag，把Tag字符串按照"key:value"的方式去拆分，并构建出来Tag对象
+     * 解析单个的Tag, 把Tag字符串按照"key:value"的方式去拆分, 并构建出来Tag对象
      *
      * @param tag tagStr("key:value")
      * @return Tag(key, value)
@@ -195,18 +195,18 @@ open class MetricsEndpoint(private val meterRegistry: MeterRegistry) {
 
 
     /**
-     * 收集出来所有的指标名，并merge到`names`这个列表当中来
+     * 收集出来所有的指标名, 并merge到`names`这个列表当中来
      *
-     * @param names 输出参数，将数据merge到这里
+     * @param names 输出参数, 将数据merge到这里
      * @param registry 提供收集指标名的MeterRegistry
      */
     private fun collectNames(names: MutableSet<String>, registry: MeterRegistry) {
 
-        // 如果是一个CompositeMeterRegistry，那么递归处理所有内部的MeterRegistry
+        // 如果是一个CompositeMeterRegistry, 那么递归处理所有内部的MeterRegistry
         if (registry is CompositeMeterRegistry) {
             registry.registries.forEach { collectNames(names, it) }
 
-            // 如果是一个put的MeterRegistry的话，那么将内部所有的meter去merge到names列表当中来
+            // 如果是一个put的MeterRegistry的话, 那么将内部所有的meter去merge到names列表当中来
         } else {
             registry.meters.stream().map(this::getName).forEach(names::add)
         }

@@ -8,7 +8,7 @@ import com.wanna.framework.test.context.ContextConfigurationAttributes
 import com.wanna.framework.test.context.ContextLoader
 import com.wanna.framework.test.context.MergedContextConfiguration
 import com.wanna.framework.test.context.SmartContextLoader
-import com.wanna.framework.util.BeanUtils
+import com.wanna.framework.beans.BeanUtils
 
 /**
  * SpringBoot的[ContextLoader]

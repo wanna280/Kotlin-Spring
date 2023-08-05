@@ -4,8 +4,8 @@ import feign.Feign
 import feign.Target
 
 /**
- * Feign的CircuitBreaker(熔断器，断路器)的Targeter；
- * 在DefaultTargeter的基础上，增加了fallback机制，支持处理@FeignClient上的fallback和fallback机制；
+ * Feign的CircuitBreaker(熔断器, 断路器)的Targeter;
+ * 在DefaultTargeter的基础上, 增加了fallback机制, 支持处理@FeignClient上的fallback和fallback机制;
  *
  * @see DefaultTargeter
  * @see FeignClient.fallback
@@ -20,11 +20,11 @@ class FeignCircuitBreakerTargeter : Targeter {
         context: FeignContext,
         target: Target.HardCodedTarget<T>
     ): T {
-        // 如果不是CircuitBreaker，那么直接调用调用target
+        // 如果不是CircuitBreaker, 那么直接调用调用target
         if (feign !is FeignCircuitBreaker.Builder) {
             return feign.target(target)
         }
-        // 如果是CircuitBreaker，那么需要解析fallback和fallbackFactory
+        // 如果是CircuitBreaker, 那么需要解析fallback和fallbackFactory
         val fallback = factory.fallback
         val fallbackFactory = factory.fallbackFactory
         val contextId = factory.contextId!!

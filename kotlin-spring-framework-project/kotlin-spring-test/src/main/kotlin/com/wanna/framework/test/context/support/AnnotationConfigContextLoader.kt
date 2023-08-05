@@ -1,7 +1,7 @@
 package com.wanna.framework.test.context.support
 
+import com.wanna.framework.beans.factory.support.BeanDefinitionReader
 import com.wanna.framework.context.annotation.AnnotatedBeanDefinitionReader
-import com.wanna.framework.context.annotation.BeanDefinitionReader
 import com.wanna.framework.context.support.GenericApplicationContext
 import com.wanna.framework.test.context.ContextLoader
 import com.wanna.framework.test.context.MergedContextConfiguration

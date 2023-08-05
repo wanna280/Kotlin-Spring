@@ -3,13 +3,13 @@ package com.wanna.framework.web.method.view
 import com.wanna.framework.context.ApplicationContext
 import com.wanna.framework.context.ApplicationContextAware
 import com.wanna.framework.context.ResourceLoaderAware
-import com.wanna.framework.context.aware.BeanClassLoaderAware
+import com.wanna.framework.beans.factory.BeanClassLoaderAware
 import com.wanna.framework.core.Ordered
 import com.wanna.framework.core.io.ResourceLoader
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.web.handler.ViewResolver
 import com.wanna.framework.web.ui.View
-import org.slf4j.LoggerFactory
+import com.wanna.common.logging.LoggerFactory
 import java.io.IOException
 
 open class TemplateViewResolver : ViewResolver, BeanClassLoaderAware, Ordered, ApplicationContextAware,
