@@ -238,14 +238,12 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
 
                 // 如果Bean是单例(Singleton)的
                 if (mbd.isSingleton()) {
-                    beanInstance = getSingleton(beanName, object : ObjectFactory<Any> {
-                        override fun getObject(): Any {
-                            try {
-                                return createBean(beanName, mbd, args)
-                            } catch (ex: Exception) {
-                                destroySingleton(beanName)  // destroyBean
-                                throw ex   // rethrow
-                            }
+                    beanInstance = getSingleton(beanName, ObjectFactory {
+                        try {
+                            return@ObjectFactory createBean(beanName, mbd, args)
+                        } catch (ex: Exception) {
+                            destroySingleton(beanName)  // destroyBean
+                            throw ex   // rethrow
                         }
                     })!!
 
