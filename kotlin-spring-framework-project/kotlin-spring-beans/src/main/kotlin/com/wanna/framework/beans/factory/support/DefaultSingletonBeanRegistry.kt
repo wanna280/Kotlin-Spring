@@ -1,10 +1,10 @@
 package com.wanna.framework.beans.factory.support
 
+import com.wanna.common.logging.LoggerFactory
 import com.wanna.framework.beans.factory.BeanCurrentlyInCreationException
 import com.wanna.framework.beans.factory.ObjectFactory
 import com.wanna.framework.beans.factory.config.SingletonBeanRegistry
 import com.wanna.framework.lang.Nullable
-import com.wanna.common.logging.LoggerFactory
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -277,7 +277,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
     }
 
     /**
-     * 摧毁一个Bean, 回调它的destory方法, 并完成相关的后续处理工作
+     * 摧毁一个Bean, 回调它的destroy方法, 并完成相关的后续处理工作
      *
      * @param beanName beanName
      * @param disposableBean disposableBean(有可能为null)
@@ -288,7 +288,7 @@ open class DefaultSingletonBeanRegistry : SingletonBeanRegistry {
                 disposableBean.destroy()
             } catch (ex: Throwable) {
                 if (logger.isDebugEnabled) {
-                    logger.debug("执行DisposableBean[beanName=$beanName]的destory方法失败, 原因是[$ex]")
+                    logger.debug("执行DisposableBean[beanName=$beanName]的destroy方法失败, 原因是[$ex]")
                 }
             }
         }
