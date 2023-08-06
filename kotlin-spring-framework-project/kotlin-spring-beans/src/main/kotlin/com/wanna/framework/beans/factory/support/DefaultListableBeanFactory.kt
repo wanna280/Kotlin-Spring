@@ -60,9 +60,9 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     /**
-     * 是否允许发生BeanDefinition的覆盖? 后来的BeanDefinition是否有资格去替换掉之前的BeanDefinition?
+     * 是否允许发生BeanDefinition的覆盖? 后来的BeanDefinition是否有资格去替换掉之前的BeanDefinition?(默认为true, 允许覆盖)
      */
-    private var allowBeanDefinitionOverriding: Boolean = false
+    private var allowBeanDefinitionOverriding: Boolean = true
 
     /**
      * beanDefinitionMap, 使用ConcurrentHashMap去保证线程安全, 也会作为操作beanDefinitionNames和manualSingletonNames的锁对象
@@ -75,7 +75,6 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
      * 在添加元素/删除元素时, 都得新复制一份数据并进行修改, 接着重新设置引用, 就不影响使用方进行的迭代(也就是写时复制COW)
      */
     private var beanDefinitionNames = ArrayList<String>()
-
 
     /**
      * 这是一个依赖的比较器, 可以通过beanFactory去进行获取, 可以基于比较规则, 对依赖去完成排序;
@@ -97,12 +96,12 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
 
     /**
      * 这是用来处理Autowire的候选的依赖注入的Bean的解析器
-     * 在注解版IOC容器当中, 默认会被设置为ContextAnnotationAutowireCandidateResolver
+     * 在注解版IOC容器当中, 默认会被设置为[ContextAnnotationAutowireCandidateResolver]
      */
     private var autowireCandidateResolver: AutowireCandidateResolver = SimpleAutowireCandidateResolver.INSTANCE
 
     /**
-     * **手工(manual)**注册的 singletonObject的beanName列表, 在这里进行维护, 它内部的beanName和beanDefinitionNames列表不会冲突;
+     * 外部使用API的方式去**手工(manual)**注册的 singletonObject的beanName列表, 在这里进行维护, 它内部的beanName和beanDefinitionNames列表不会冲突;
      * 不然通过registerSingleton操作对单例Bean进行注册时, 后续要对它去进行匹配时, 没有办法找到该对象;
      * 因此这里就需要维护一个列表, 方便后期去进行类型的匹配, 比如解析Autowire依赖的时候, 就会对这个列表去进行匹配
      */
@@ -974,8 +973,49 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
                 removeManualSingletonName(name)
             }
 
-            // 如果已经存在过的话, 那么...
+            // 如果已经存在过该beanName对应的BeanDefinition的话, 那么需要检查是否需要去进行覆盖...
         } else {
+
+            // 如果BeanFactory不允许BeanDefinition的覆盖, 那么丢出异常...
+            if (!isAllowBeanDefinitionOverriding()) {
+                throw BeanDefinitionOverrideException(name, beanDefinition, existBeanDefinition)
+            }
+
+            // 如果BeanFactory允许BeanDefinition的覆盖, 那么根据不同的覆盖情况, 打印日志信息...
+
+            // 如果当前的BeanDefinition的role角色比较高, 基础设施的BeanDefinition不允许被覆盖...
+            if (existBeanDefinition.getRole() < beanDefinition.getRole()) {
+                // 原本role=ROLE_APPLICATION, 现在替换成为ROLE_SUPPORT/ROLE_INFRASTRUCTURE
+
+                if (logger.isInfoEnabled) {
+                    logger.info(
+                        "Overriding user-defined bean definition for bean '" + name +
+                                "' with a framework-generated bean definition: replacing [" +
+                                existBeanDefinition + "] with [" + beanDefinition + "]"
+                    )
+                }
+
+                // 如果两个BeanDefinition不一致
+            } else if (existBeanDefinition != beanDefinition) {
+                if (logger.isDebugEnabled) {
+                    logger.debug(
+                        "Overriding bean definition for bean '" + name +
+                                "' with a different definition: replacing [" + existBeanDefinition +
+                                "] with [" + beanDefinition + "]"
+                    )
+                }
+
+            } else {
+                if (logger.isTraceEnabled) {
+                    logger.trace(
+                        "Overriding bean definition for bean '" + name +
+                                "' with an equivalent definition: replacing [" + existBeanDefinition +
+                                "] with [" + beanDefinition + "]"
+                    )
+                }
+            }
+
+            // 覆盖之前的BeanDefinition
             beanDefinitionMap[name] = beanDefinition
         }
     }
@@ -1155,5 +1195,10 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
         this.allowBeanDefinitionOverriding = allowBeanDefinitionOverriding
     }
 
+    /**
+     * 检查当前BeanFactory, 是否允许BeanDefinition的覆盖的情况?
+     *
+     * @return allowBeanDefinitionOverriding
+     */
     open fun isAllowBeanDefinitionOverriding(): Boolean = this.allowBeanDefinitionOverriding
 }

@@ -172,18 +172,21 @@ abstract class AbstractMessageConverterMethodProcessor : AbstractMessageConverte
      * @return 服务端能够产生的全部MediaType列表
      */
     protected open fun getProducibleMediaTypes(request: HttpServerRequest, valueType: Class<*>): List<MediaType> {
-
-        // 1.尝试从request当中去进行搜索, 如果request属性当中已经存在了的话, 那么直接沿用request
+        // 1.尝试从request的属性当中去进行搜索, 如果request属性当中已经存在预期要去进行输出的MediaType的话,
+        // 那么直接沿用request的属性当中给定的预期MediaType, 一般情况: 通过@RequestMapping注解的produces属性可以进行配置
         @Suppress("UNCHECKED_CAST")
         val mediaTypes = request.getAttribute(PRODUCIBLE_MEDIA_TYPES_ATTRIBUTE) as Collection<MediaType>?
         if (!mediaTypes.isNullOrEmpty()) {
             return ArrayList(mediaTypes)
         }
 
-        // 2.遍历所有的MessageConverter去进行搜索它们所支持的MediaType, 完成最终可以产出的MeidaType的统计工作
+        // 2.如果在request当中没有找到预期要去进行产出的MediaType, 那么我们可以尝试去通过MessageConverter去进行腿短
+        // 遍历所有的MessageConverter去进行搜索它们所支持的MediaType, 完成最终可以产出的MediaType的统计工作
         val produceTypes = ArrayList<MediaType>()
         this.messageConverters.forEach {
-            produceTypes += it.getSupportedMediaTypes(valueType)
+            if (it.canWrite(valueType, null)) {
+                produceTypes += it.getSupportedMediaTypes(valueType)
+            }
         }
 
         // if empty set to all("*/*")

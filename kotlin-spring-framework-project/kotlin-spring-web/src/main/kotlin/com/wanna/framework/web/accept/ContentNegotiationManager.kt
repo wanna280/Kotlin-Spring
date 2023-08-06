@@ -23,6 +23,12 @@ open class ContentNegotiationManager(strategies: Collection<ContentNegotiationSt
      */
     private val strategies = ArrayList(strategies)
 
+    /**
+     * 根据request去解析出来客户端愿意接收的合适的MediaType
+     *
+     * @param webRequest WebRequest
+     * @return 从request当中解析出来合适的MediaType
+     */
     override fun resolveMediaTypes(webRequest: NativeWebRequest): List<MediaType> {
         this.strategies.forEach {
             val mediaTypes = it.resolveMediaTypes(webRequest)

@@ -33,7 +33,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     ConfigurableBeanFactory, ListableBeanFactory, FactoryBeanRegistrySupport() {
 
     /**
-     * beanClassLoader, 提供对于BeanClass的类加载扥功能
+     * beanClassLoader, 提供对于BeanClass的类加载功能
      */
     private var beanClassLoader: ClassLoader = ClassUtils.getDefaultClassLoader()
 
@@ -120,8 +120,8 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      * @param parentBeanFactory parentBeanFactory
      */
     override fun setParentBeanFactory(parentBeanFactory: BeanFactory?) {
-        // 如果之前设置过parentBeanFactory, 现在又想设置新的parent去进行替换? 那么肯定是不行...
-        if (this.parentBeanFactory != null && parentBeanFactory != parentBeanFactory) {
+        // 如果之前设置过parentBeanFactory，现在又想设置新的parent去进行替换？那么肯定是不行...
+        if (this.parentBeanFactory != null && this.parentBeanFactory != parentBeanFactory) {
             throw IllegalStateException("之前已经设置过parentBeanFactory[$parentBeanFactory], 不能设置新的parent[$parentBeanFactory]")
         }
         // 如果parent==this? 肯定不允许发生这种情况...不然处理parent时, 直接StackOverflow...
@@ -235,14 +235,12 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
 
                 // 如果Bean是单例(Singleton)的
                 if (mbd.isSingleton()) {
-                    beanInstance = getSingleton(beanName, object : ObjectFactory<Any> {
-                        override fun getObject(): Any {
-                            try {
-                                return createBean(beanName, mbd, args)
-                            } catch (ex: Exception) {
-                                destroySingleton(beanName)  // destroyBean
-                                throw ex   // rethrow
-                            }
+                    beanInstance = getSingleton(beanName, ObjectFactory {
+                        try {
+                            return@ObjectFactory createBean(beanName, mbd, args)
+                        } catch (ex: Exception) {
+                            destroySingleton(beanName)  // destroyBean
+                            throw ex   // rethrow
                         }
                     })!!
 
@@ -808,6 +806,9 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
 
     /**
      * 根据beanName获取到该Bean在SpringBeanFactory中的类型
+     *
+     * @param beanName beanName
+     * @return beanType
      */
     override fun getType(beanName: String): Class<*>? {
         // 1.从SingletonBean中去进行获取Bean的类型
