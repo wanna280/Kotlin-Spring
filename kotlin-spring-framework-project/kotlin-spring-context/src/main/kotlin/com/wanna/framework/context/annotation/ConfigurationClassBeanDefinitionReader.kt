@@ -1,12 +1,16 @@
 package com.wanna.framework.context.annotation
 
+import com.wanna.common.logging.LoggerFactory
+import com.wanna.framework.beans.BeanUtils
 import com.wanna.framework.beans.factory.BeanDefinitionStoreException
 import com.wanna.framework.beans.factory.config.BeanDefinitionRegistry
+import com.wanna.framework.beans.factory.support.BeanDefinitionReader
+import com.wanna.framework.beans.factory.support.BeanNameGenerator
 import com.wanna.framework.beans.factory.support.DefaultListableBeanFactory
 import com.wanna.framework.beans.factory.support.definition.*
 import com.wanna.framework.beans.factory.xml.XmlBeanDefinitionReader
 import com.wanna.framework.context.annotation.ConfigurationCondition.ConfigurationPhase.REGISTER_BEAN
-import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.core.annotation.AnnotationAttributes
 import com.wanna.framework.core.annotation.MergedAnnotation
 import com.wanna.framework.core.environment.Environment
 import com.wanna.framework.core.io.ResourceLoader
@@ -15,11 +19,6 @@ import com.wanna.framework.core.type.MethodMetadata
 import com.wanna.framework.core.type.StandardMethodMetadata
 import com.wanna.framework.lang.Nullable
 import com.wanna.framework.util.StringUtils
-import com.wanna.common.logging.LoggerFactory
-import com.wanna.framework.beans.BeanUtils
-import com.wanna.framework.beans.factory.support.BeanDefinitionReader
-import com.wanna.framework.beans.factory.support.BeanNameGenerator
-import com.wanna.framework.core.annotation.AnnotationAttributes
 
 /**
  * 这是一个配置类的BeanDefinitionReader, 负责从ConfigurationClass当中去读取BeanDefinition
@@ -162,7 +161,7 @@ open class ConfigurationClassBeanDefinitionReader(
         // 处理@Bean方法上的@Role/@Primary/@DependsOn/@Lazy注解
         AnnotationConfigUtils.processCommonDefinitionAnnotations(beanDefinition, metadata)
 
-        // 根据@Bean注解当中的init方法和destory方法, 去设置BeanDefinition的initMethod和destroyMethod
+        // 根据@Bean注解当中的init方法和destroy方法, 去设置BeanDefinition的initMethod和destroyMethod
         if (StringUtils.hasText(beanAnnotation.getString("initMethod"))) {
             beanDefinition.setInitMethodName(beanAnnotation.getString("initMethod"))
         }

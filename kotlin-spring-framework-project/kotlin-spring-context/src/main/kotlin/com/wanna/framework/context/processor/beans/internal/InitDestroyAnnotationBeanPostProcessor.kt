@@ -158,7 +158,7 @@ open class InitDestroyAnnotationBeanPostProcessor : DestructionAwareBeanPostProc
     }
 
     /**
-     * 设置用于destroy的注解, 比如@PreDestory
+     * 设置用于destroy的注解, 比如@PreDestroy
      *
      * @param annotationType 你想要设置的destroy注解
      */
