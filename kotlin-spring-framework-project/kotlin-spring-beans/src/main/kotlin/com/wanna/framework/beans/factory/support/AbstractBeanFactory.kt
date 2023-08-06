@@ -774,6 +774,8 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      *
      * @param mbd BeanDefinition
      * @param beanName beanName
+     * @param typeToMatch 要去进行匹配的类型
+     * @return 从BeanDefinition当中去解析到的beanClass
      */
     @Nullable
     protected open fun resolveBeanClass(
@@ -784,6 +786,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
             if (mbd.hasBeanClass()) {
                 return mbd.getBeanClass()!!
             }
+            // 2.如果没有beanClass的话, 那么尝试去进行解析, 使用classLoader去进行类加载
             return doResolveBeanClass(mbd, typeToMatch = typeToMatch)
         } catch (ex: Throwable) {
             throw CannotLoadBeanClassException("Cannot load bean class", ex)
