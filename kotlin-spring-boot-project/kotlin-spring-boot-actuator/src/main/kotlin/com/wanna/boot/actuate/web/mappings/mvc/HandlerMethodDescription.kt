@@ -12,17 +12,17 @@ import com.wanna.framework.web.method.HandlerMethod
 open class HandlerMethodDescription(handlerMethod: HandlerMethod) {
 
     /**
-     * className
+     * className(Handler方法所在的类名)
      */
-    var className: String? = handlerMethod.method?.javaClass?.name
+    var className: String? = handlerMethod.method?.declaringClass?.name
 
     /**
-     * methodName
+     * methodName(Handler方法的方法名)
      */
     var name: String? = handlerMethod.method?.name
 
     /**
-     * descriptor
+     * descriptor(Handler方法的签名信息)
      */
     var descriptor: String? = handlerMethod.method?.toGenericString()
 }
