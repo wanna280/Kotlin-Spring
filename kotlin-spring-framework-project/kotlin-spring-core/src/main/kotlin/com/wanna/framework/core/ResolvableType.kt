@@ -456,14 +456,40 @@ open class ResolvableType {
         @JvmField
         val EMPTY_TYPES_ARRAY = emptyArray<ResolvableType>()
 
+        /**
+         * 基于给定的Class, 去包装成为ResolvableType
+         *
+         * @return ResolvableType
+         */
         @JvmStatic
         fun forClass(clazz: Class<*>?): ResolvableType {
             return ResolvableType(clazz)
         }
 
+        /**
+         * 基于给定的Field, 去为该类型解析成为ResolvableType
+         *
+         * @param field 要去进行解析的字段
+         * @return 为该字段解析得到的ResolvableType
+         */
         @JvmStatic
         fun forField(field: Field): ResolvableType {
             return forType(null, FieldTypeProvider(field), null)
+        }
+
+        /**
+         * 指定Field以及该Field的实现类, 从而去解析成为ResolvableType,
+         * 有可能父类定义了一个T[]的字段, 具体的类型是子类给定的, 如果没有子类, 这个T[]的类型就无法被解析出来,
+         * 但是提供了子类之后, 我们可以基于子类, 去解析父类的泛型, 从而解析得到这个T
+         *
+         * @param field field, 可能为父类当中的字段
+         * @param implementingClass 该字段对应的类的实现类
+         * @return 针对该Field去进行描述得到的ResolvableType
+         */
+        @JvmStatic
+        fun forField(field: Field, implementingClass: Class<*>): ResolvableType {
+            val owner = forType(implementingClass).`as`(field.declaringClass)
+            return forType(null, FieldTypeProvider(field), owner.asVariableResolver())
         }
 
         @JvmStatic
