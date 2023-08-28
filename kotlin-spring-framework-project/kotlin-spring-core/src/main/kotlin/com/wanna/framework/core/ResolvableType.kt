@@ -1,203 +1,126 @@
 package com.wanna.framework.core
 
-import com.wanna.framework.lang.Nullable
-import com.wanna.framework.util.ClassUtils
+import java.io.Serializable
 import java.lang.reflect.*
 
 /**
- * 这是一个可以被解析的类型, 是Spring对于一个Class的顶层的封装, 功能很强大;
- * 它支持去获取到泛型的类型, 以及获取到它的接口当中的泛型等情况
+ * 对于Java的Type提供解析的工具类
+ *
+ * @author jianchao.jia
+ * @version v1.0
+ * @date 2023/8/27
+ * @see Type
  */
-open class ResolvableType() {
+open class ResolvableType {
 
     /**
-     * 当前Class, 就是普通的不带泛型的类
+     * 当前Class, 也就是不带泛型的Class
      */
     private var resolved: Class<*>? = null
 
     /**
-     * type可能是Class/GenericArrayType/ParameterizedType/WildcardType
+     * 需要进行解析的Type
      */
     private var type: Type? = null
 
     /**
-     * 当前类型的它的所有接口
+     * 数组的元素类型, 如果无法推断出来, 那么值为null
      */
-    private var interfaces: Array<ResolvableType>? = null
+    private var componentType: ResolvableType? = null
 
     /**
-     * 当前类型的父类的类型
-     */
-    private var superType: ResolvableType? = null
-
-    /**
-     * TypeVariable的解析器
+     * 泛型变量的解析器
      */
     private var variableResolver: VariableResolver? = null
 
     /**
-     * 当前类的泛型信息
+     * TypeProvider
+     */
+    private var typeProvider: TypeProvider? = null
+
+    /**
+     * 泛型列表
      */
     private var generics: Array<ResolvableType>? = null
 
-    constructor(@Nullable clazz: Class<*>?) : this() {
+    /**
+     * 接口列表
+     */
+    private var interfaces: Array<ResolvableType>? = null
+
+    /**
+     * 父类
+     */
+    private var superType: ResolvableType? = null
+
+    private constructor(clazz: Class<*>?) {
         this.resolved = clazz ?: Any::class.java
         this.type = resolved
+        this.typeProvider = null
+        this.variableResolver = null
+        this.componentType = null
     }
 
-    /**
-     * 根据给定的type去进行构建
-     *
-     * @param type type
-     * @param variableResolver 解析泛型E/T/K/V的TypeVariable解析器
-     */
-    constructor(@Nullable type: Type?, @Nullable variableResolver: VariableResolver?) : this() {
+    private constructor(
+        type: Type?,
+        typeProvider: TypeProvider?,
+        variableResolver: VariableResolver?,
+        componentType: ResolvableType?
+    ) {
         this.type = type
+        this.typeProvider = typeProvider
         this.variableResolver = variableResolver
-        this.resolved = resolveClass()  // 解析Class
+        this.resolved = resolveClass()
+        this.componentType = componentType
+    }
+
+    private constructor(
+        type: Type?,
+        typeProvider: TypeProvider?,
+        variableResolver: VariableResolver?
+    ) {
+        this.type = type
+        this.typeProvider = typeProvider
+        this.variableResolver = variableResolver
+        this.resolved = resolveClass()
+        this.componentType = null
     }
 
     /**
-     * 根据type去解析出来Class对象, 放方便去设置到resolved字段当中, 有可能解析不到return null
+     * 根据type, 去执行对于Class的解析
      *
-     * @return 解析结果Class
+     * @return 解析得到的Class
      */
     private fun resolveClass(): Class<*>? {
-        // 有可能确实就是没有type...直接return null
+        // 如果为EmptyType, 那么return null
+        if (this.type == EmptyType.INSTANCE) {
+            return null
+        }
+        // 如果type不存在, 那么直接return null, 无法解析出来合适的Class
         this.type ?: return null
 
-        var resolved: Class<*>? = null
-        // type可能的类型为, Class/ParameterizedType/WildcardType/GenericArrayType/TypeVariable
-
-        // 如果是最普通的Class的话, 解析结果就是Class
         if (this.type is Class<*>) {
-            resolved = this.type as Class<*>
-
-            // 如果是GenericArrayType(泛型数组), 那么我们去创建出来一个空的数组, 从而去解析到类型
-        } else if (this.type is GenericArrayType) {
-            val genericComponentType = (this.type as GenericArrayType).genericComponentType
-            if (genericComponentType != null) {
-                // TODO
-                if (genericComponentType is ParameterizedType) {
-                    return java.lang.reflect.Array.newInstance(genericComponentType.rawType as Class<*>, 0).javaClass
-                }
-                return java.lang.reflect.Array.newInstance(genericComponentType as Class<*>, 0).javaClass
-            }
-
-            // 对于更多别的类型的话...
-        } else {
-            resolved = this.resolveType().resolve()
+            return this.type as Class<*>
         }
-        return resolved
-    }
+        // 泛型数组, 比如E[], T[]
+        if (this.type is GenericArrayType) {
+            // 获取到元素类型E, 并完成ComponentType的解析...
+            val resolvedComponent = getComponentType().resolve() ?: return null
 
-    /**
-     * 将当前类型转换为Map
-     *
-     * @return 转换为Map之后的类型
-     */
-    open fun asMap(): ResolvableType {
-        return `as`(Map::class.java)
-    }
-
-    /**
-     * 将当前类型转换为Collection之后的类型
-     *
-     * @return 转换为Collection之后的类型
-     */
-    open fun asCollection(): ResolvableType {
-        return `as`(Collection::class.java)
-    }
-
-    /**
-     * 将当前ResolvableType解析成为它的父类当中的某个类型
-     *
-     * @return 解析完成的ResolvableType
-     */
-    open fun `as`(clazz: Class<*>): ResolvableType {
-        if (this == NONE) {
-            return NONE
+            // 根据元素类型去创建数组, 再去getClass...
+            return java.lang.reflect.Array.newInstance(resolvedComponent, 0)::class.java
         }
-        val resolved = resolve()
-        // 如果解析不到, 或者给定的clazz就是this.resolved, 那么return this
-        if (resolved == null || resolved == clazz) {
-            return this
-        }
-        val interfaces = getInterfaces()
-        // 遍历所有的泛型接口, 先去完成接口的构建工作...
-        interfaces.forEach { itf ->
-            val interfaceAsType = itf.`as`(clazz)
-            if (interfaceAsType != NONE) {
-                return interfaceAsType
-            }
-        }
-        return getSuperType().`as`(clazz)
+        // 非泛型数组
+        return resolveType().resolve()
     }
 
     /**
-     * 获取super类型, 如果没有解析过的话, 那么先去进行解析
+     * 获取当前类型对应的原始的JavaClass(比如List<String>, 将会返回List), 如果无法获取的话, return null
      *
-     * @return superType(ResolvableType)
+     * @return Raw JavaClass
      */
-    open fun getSuperType(): ResolvableType {
-        val resolved = resolve() ?: return NONE
-
-        // 获取泛型的父类...
-        val superclass = resolved.genericSuperclass ?: return NONE
-        var superType = this.superType
-
-        // 如果之前没有解析过, 那么去进行解析...
-        if (superType == null) {
-            superType = forType(superclass, this)
-            this.superType = superType
-        }
-        return superType
-    }
-
-    /**
-     * 获取某个ResolvableType的接口列表
-     *
-     * @return 该类的接口列表(ResolvableType)
-     */
-    open fun getInterfaces(): Array<ResolvableType> {
-        val resolved = resolve() ?: return EMPTY_TYPES_ARRAY
-        var interfaces = this.interfaces
-        if (interfaces == null) {
-            // 获取所有的泛型接口, 去进行构建成为ResolvableType, type有可能为ParameterizedType/Class
-            // 如果一个接口有泛型的话, 那么它的类型会是ParameterizedType(rawType & actualTypeArguments)
-            // 如果一个接口没有泛型的话, 那么它的类型会是Class
-            val genericInterfaces = resolved.genericInterfaces
-            interfaces = Array(genericInterfaces.size) { index ->
-                val interfaceType = forType(genericInterfaces[index], this)
-                interfaceType
-            }
-            this.interfaces = interfaces
-        }
-        return interfaces
-    }
-
-    open fun resolve(): Class<*>? {
-        return this.resolved
-    }
-
-    /**
-     * 获取到解析得到的真实的类型, 如果获取不到, 那么返回给定的fallback类型
-     *
-     * @param fallback fallback类型
-     * @return 解析得到的类型Class
-     */
-    open fun resolve(fallback: Class<*>): Class<*> {
-        return this.resolved ?: fallback
-    }
-
-    /**
-     * 获取当前[ResolvableType]的原始类型
-     *
-     * @return rawClass(or null)
-     */
-    @Nullable
     open fun getRawClass(): Class<*>? {
-        if (this.type == this.resolved) {
+        if (this.resolved == this.type) {
             return this.resolved
         }
         var rawType = this.type
@@ -208,111 +131,74 @@ open class ResolvableType() {
     }
 
     /**
-     * 判断当前类型是否是一个数组? 有三种情况是匹配的
-     * (1)type is Class, 并且type.isArray
-     * (2)type is GenericArrayType
-     * (3)解析类型(resolveType())解析出来是数组...
+     * 返回解析完成得到的Class, 如果没有已经完成解析的Class, 那么返回Object.class
      *
-     * @return 当前类型是否是一个数组
+     * @return 已经完成解析的Class(或者Object.class)
      */
-    open fun isArray(): Boolean {
-        val type = this.type
-        return (type is Class<*> && type.isArray) || type is GenericArrayType || resolveType().isArray()
+    open fun toClass(): Class<*> {
+        return resolve(Any::class.java)
     }
 
     /**
-     * 解析类型; (type类型可能为Class/ParameterizedType/WildcardType/GenericArrayType/TypeVariable)
-     * (1)如果是Class的话, 直接去进行构建就行了...
-     * (2)如果是ParameterizedType的话, 应该使用rawType作为真正的类型;
-     * (3)如果是野生的泛型类型的话(java里的? extends, 或者是Kotlin里的*等情况), 需要去解析向上/向下转型
-     * (4)如果是TypeVariable... 这种情况, 就是在解析接口当中的泛型的时候, 遇到了E/T这种不知道的类型,
-     * 需要向最外层的类型当中去进行寻找(VariableResolver就负责包装外层的类型)
+     * 返回解析得到的Class, 如果没有已经解析完成的Class, 那么返回给定的fallback的Class
      *
-     * Note: 这里不解析泛型数组的情况, 只会解析别的4种情况...
-     * @return 解析成为的ResolvableType
+     * @return 已经完成解析的Class(或者给定的fallback的Class)
      */
-    open fun resolveType(): ResolvableType {
-        if (type is Class<*>) {
-            return forClass(this.type as Class<*>)
-        }
-        // 如果是有真实的泛型参数的话, 那么rawType就是原始的类型(比如List)
-        if (this.type is ParameterizedType) {
-            return forType((this.type!! as ParameterizedType).rawType, this.variableResolver)
+    open fun resolve(fallback: Class<*>): Class<*> {
+        return this.resolved ?: fallback
+    }
+
+    /**
+     * 根据给定的indexes去返回对应的泛型参数的ResolvableType,
+     * 例如Map<Integer, Map<String, Double>>, getGeneric(0)将会得到Integer,
+     * getGeneric(1,0)将会得到String, getGeneric(1,1)将会得到Double.
+     *
+     * 如果没有给定indexes, 那么将会返回第一个泛型参数的ResolvableType
+     *
+     * @param indexes indexes
+     * @return 泛型参数的ResolvableType(找不到的话, 返回NONE)
+     */
+    open fun getGeneric(vararg indexes: Int): ResolvableType {
+        var generics = getGenerics()
+        if (indexes.isEmpty()) {
+            return if (generics.isEmpty()) NONE else generics[0]
         }
 
-        // 如果是野生的泛型类型的话(java里的? extends, 或者是Kotlin里的*/out/in等情况), 需要检查向上/向下转型...
-        // 这种情况比较好解决, 直接转型就完事了...
-        if (this.type is WildcardType) {
-            val wildcardType = this.type as WildcardType
-            var resolved = resolveBounds(wildcardType.lowerBounds)
-            if (resolved == null) {
-                resolved = resolveBounds(wildcardType.upperBounds)
+        var generic: ResolvableType = this
+        for (index in indexes) {
+            generics = generic.getGenerics()
+            if (index < 0 || index >= generics.size) {
+                return NONE
             }
-            return forType(resolved, this.variableResolver)
+            generic = generics[index]
         }
-        // 如果是TypeVariable(例如泛型E时), 那么就会使用VariableResolver去进行解析
-        // 比如原始是List<String>, 现在是Collection<E>, 解析的过程当中, 遇到了E这种情况, 就需要回到List<String>当中去寻找E的类型
-        if (this.type is TypeVariable<*>) {
-            val resolveVariable = this.variableResolver?.resolveVariable(this.type as TypeVariable<*>)
-            if (resolveVariable != null) {
-                return resolveVariable
-            }
-            return forType(resolveBounds((this.type as TypeVariable<*>).bounds), this.variableResolver)
-        }
-        return NONE
+        return generic
     }
 
     /**
-     * 解析野生类型的向上转型和向下转型(比如"<out UserService>"/"<in UserService>")这种情况;
-     * 内层的类型, 机会被封装到Bound数组当中, 可以通过upperBounds/lowerBounds等方式去进行获取
+     * 获取该类型对应的泛型列表
      *
-     * @param bounds BoundTypes, 有可能是向上转型/向上转型的来的BoundTypes
-     * @return 解析出来的泛型的上界/下界限
-     */
-    private fun resolveBounds(bounds: Array<Type>): Type? {
-        if (bounds.isEmpty() || bounds[0] == Any::class.java) {
-            return null
-        }
-        return bounds[0]
-    }
-
-    /**
-     * 当前类型是否有泛型?
-     */
-    open fun hasGeneric(): Boolean {
-        return getGenerics().isNotEmpty()
-    }
-
-    /**
-     * 根据type, 去获取该type对应的泛型类型;
-     * (1)如果该类型是Class, 那么获取它的typeParameters作为泛型类型(直接在类上写死的类型, 比如<User>, 没有T/E这类的)
-     * (2)如果该类型是ParameterizedType, 那么获取它的actualTypeArguments作为泛型类型
-     * (3)如果是别的几种类型的话, resolveType().getGenerics()
-     *
-     * @return type对应的泛型类型
+     * @return 泛型列表
      */
     open fun getGenerics(): Array<ResolvableType> {
-        if (this == NONE) { // 不判断会递归无法结束, SOF
+        if (this == NONE) {
             return EMPTY_TYPES_ARRAY
         }
         var generics = this.generics
         if (generics == null) {
-            if (type is Class<*>) {
-                // 类身上的TypeParameter(有可能是<K,V>这种), 直接把K/V作为type去进行构建ResolvableType
-                // 构建的过程当中会走到resolveClass->resolveType去进行TypeVariable的解析...
+            if (this.type is Class<*>) {
+
+                // 如果当前类是一个抽象类, 那么通过typeParameters, 可以获取到抽象类定义的泛型
+                // 例如List<E>, 在这里typeParameters可以拿到E, 元素类型为TypeVariable
                 val typeParameters = (type as Class<*>).typeParameters
-                generics = Array(typeParameters.size) {
-                    forType(typeParameters[it], this.variableResolver)
-                }
+                generics = Array(typeParameters.size) { forType(typeParameters[it], this) }
 
-                // 如果是ParameterizedType这种类型的话, 就比较简单, 直接获取到actualTypeArguments, 并去进行构建就行...
-            } else if (type is ParameterizedType) {
+                // ParameterizedType->带泛型的类型, 例如List<String>, List<E>
+                // 如果是List<String>的情况, 这里actualTypeArguments可以拿到[String.class]
+                // 如果是List<E>的情况, 这里actualTypeArguments可以拿到[E], 这里的E的类型是Class
+            } else if (this.type is ParameterizedType) {
                 val actualTypeArguments = (type as ParameterizedType).actualTypeArguments
-                generics = Array(actualTypeArguments.size) {
-                    forType(actualTypeArguments[it], this.variableResolver)
-                }
-
-                // 如果是别的类型的话, 那么就得走resolveType了...
+                generics = Array(actualTypeArguments.size) { forType(actualTypeArguments[it], this) }
             } else {
                 generics = resolveType().getGenerics()
             }
@@ -321,135 +207,302 @@ open class ResolvableType() {
         return generics
     }
 
+    open fun resolveGenerics(): Array<Class<*>?> {
+        val generics = getGenerics()
+        return Array(generics.size) { generics[it].resolve() }
+    }
+
+    open fun resolveGeneric(vararg indexes: Int): Class<*>? {
+        return getGeneric(*indexes).resolve()
+    }
+
+    open fun hasGenerics(): Boolean {
+        return getGenerics().isNotEmpty()
+    }
+
+    open fun asCollection(): ResolvableType {
+        return `as`(Collection::class.java)
+    }
+
+    open fun asMap(): ResolvableType {
+        return `as`(Map::class.java)
+    }
+
+    open fun getComponentType(): ResolvableType {
+        if (this == NONE) {
+            return NONE
+        }
+        if (this.componentType != null) {
+            return this.componentType!!
+        }
+        if (this.type is Class<*>) {
+            val componentType = (this.type as Class<*>).componentType
+            return forType(componentType, this.variableResolver)
+        }
+        if (this.type is GenericArrayType) {
+            return forType((this.type as GenericArrayType).genericComponentType, this.variableResolver)
+        }
+        return resolveType().getComponentType()
+    }
+
+    open fun isArray(): Boolean {
+        if (this == NONE) {
+            return false
+        }
+        if (this.type is Class<*>) {
+            return (this.type as Class<*>).isArray
+        }
+        if (this.type is GenericArrayType) {
+            return true
+        }
+        return resolveType().isArray()
+    }
+
+    open fun `as`(type: Class<*>): ResolvableType {
+        if (this == NONE) {
+            return NONE
+        }
+        val resolved = resolve()
+        if (resolved == null || resolved == type) {
+            return this
+        }
+        // 遍历当前类的所有直接接口
+        for (interfaceType in getInterfaces()) {
+
+            // 使用该接口, 递归去执行as方法
+            val interfaceAsType = interfaceType.`as`(type)
+            if (interfaceAsType != NONE) {
+                return interfaceAsType
+            }
+        }
+        return getSuperType().`as`(type)
+    }
+
+    open fun getInterfaces(): Array<ResolvableType> {
+        val resolved = resolve() ?: return EMPTY_TYPES_ARRAY
+        var interfaces = this.interfaces
+        if (this.interfaces == null) {
+            val genericInterfaces = resolved.genericInterfaces
+
+            // 为所有的泛型接口, 去构建对应的ResolvableType
+            // 每个泛型接口的owner都是子类(子接口), type指定父接口
+            interfaces = Array(genericInterfaces.size) { forType(genericInterfaces[it], this) }
+            this.interfaces = interfaces
+        }
+        return interfaces!!
+    }
+
+    open fun getSuperType(): ResolvableType {
+        val resolved = resolve() ?: return NONE
+        val superclass = resolved.genericSuperclass ?: return NONE
+
+        var superType = superType
+        if (superType == null) {
+            // 为superType, 去构建ResolvableType
+            // 每个泛型父类的owner都是子类, type=superClass
+            superType = forType(superclass, this)
+            this.superType = superType
+        }
+        return superType
+    }
+
     /**
-     * 使用[VariableResolver], 去解析出来那些未知的泛型的类型(T/E/K/V)
+     * 返回解析得到的Class, 如果没有已经完成解析的Class, 那么return null
      *
-     * @param typeVariable TypeVariable(T/E/K/V等)
-     * @return 根据TypeVariable去解析出来的结果
+     * @return 已经完成解析的Class(如果不存在的话, return null)
      */
-    open fun resolveVariable(typeVariable: TypeVariable<*>): ResolvableType? {
-        // 只有原始的type为ParameterizedType才能去获取到真正的泛型信息...
+    open fun resolve(): Class<*>? {
+        return this.resolved
+    }
+
+    /**
+     * 指定对于type的解析
+     *
+     * @return 对type执行解析得到的ResolvableType
+     */
+    private fun resolveType(): ResolvableType {
+        // 如果是ParameterizedType, 例如List<String>, Map<String, String>
         if (this.type is ParameterizedType) {
+            return forType((type as ParameterizedType).rawType, this.variableResolver)
+        }
+        // 如果是WildcardType, 通配符的情况, 也就是"? extends"/"? super"这种情况
+        if (this.type is WildcardType) {
+            var resolved = resolveBounds((type as WildcardType).upperBounds)
+            if (resolved == null) {
+                resolved = resolveBounds((type as WildcardType).lowerBounds)
+            }
+            return forType(resolved, this.variableResolver)
+        }
+
+        // 如果是TypeVariable, 说明是一个泛型的元素, 例如List<E>中的E就是TypeVariable
+        // 这种情况, 我们就得使用variableResolver去进行解析...
+        // 例如对于ArrayList<String>的接口列表可以获取到List<E>, List<E>的接口列表可以获取到Collection<E>
+        // 当使用asCollection方法获取到Collection<E>时, 就得尝试从子类找到List<E>
+        // List<E>再往子类去找到ArrayList<String>, 通过泛型名字E, 从而最终找到元素类型String
+        if (this.type is TypeVariable<*>) {
+            val typeVariable = this.type as TypeVariable<*>
+            val resolved = this.variableResolver?.resolveVariable(typeVariable)
+            if (resolved != null) {
+                return resolved
+            }
+            return forType(resolveBounds(typeVariable.bounds), this.variableResolver)
+        }
+        return NONE
+    }
+
+    private fun resolveBounds(bounds: Array<Type>): Type? {
+        if (bounds.isEmpty() || bounds[0] == Any::class.java) {
+            return null
+        }
+        return bounds[0]
+    }
+
+
+    /**
+     * 执行对于泛型变量的解析
+     *
+     * @param typeVariable 带解析的泛型变量, 比如E/T/K,V
+     */
+    private fun resolveVariable(typeVariable: TypeVariable<*>): ResolvableType? {
+
+        if (this.type is ParameterizedType) {
+            val parameterizedType = this.type as ParameterizedType
             val resolved = resolve() ?: return null
+            val variables = resolved.typeParameters
 
-            // 获取到Class的类型参数, 比如List来说这里基于可以获取到"E", 对于Map来说这里可以获取到"K,V"
-            val typeParameters = resolved.typeParameters
-
-            // eg: 如果字段泛型为List<String>, 它的定义类型为List<E>, 那么它在进行接口的转换时, 会转换到的Collection<E>
-            // 但是在解析Collection<E>的泛型时, 遇到了TypeVariable(E)这种情况, 就得使用VariableResolver去之前的List<String>当中去解析泛型类型
-            // List<String>的泛型类型恰好是ParameterizedType...
-            // 此事, 可以遍历List的所有TypeParameter(例如E), 和Collection的E去进行匹配, 最终泛型名称为E相等了, 因此就确定了
-            // 真实的类型位于ParameterizedType的索引为index, 从而获取到真实的泛型类型E的具体类型为String
-
-            typeParameters.indices.forEach {
-                if (typeParameters[it].name == typeVariable.name) {
-                    val actualType = (this.type as ParameterizedType).actualTypeArguments[it]
+            // 遍历当前类定义的所有的泛型参数, 去寻找, 如果该泛型参数的name和给定的TypeVariable的name一致
+            // 那么就去返回该位置的泛型参数...比如ArrayList<String>, 对于Collection<E>, 就能从子类当中
+            // 去解析得到ArrayList当中对应位置为E的泛型, 从而解析得到String...
+            for ((index, variable) in variables.withIndex()) {
+                if (variable.name == typeVariable.name) {
+                    val actualType = parameterizedType.actualTypeArguments[index]
                     return forType(actualType, this.variableResolver)
                 }
             }
+
+            val ownerType = parameterizedType.ownerType
+            if (ownerType != null) {
+                return forType(ownerType, this.variableResolver).resolveVariable(typeVariable)
+            }
         }
+
         return null
     }
 
     /**
-     * 将一个ResolvableType转换成为[VariableResolver], 提供对于未知泛型的解析能力;
-     * 这里只有在当前的[ResolvableType]的type是[ParameterizedType]时, 才能提供泛型的解析能力
+     * 将当前ResolvableType转换为泛型变量的解析器
      *
-     * @return VariableResolver
+     * @return 泛型变量解析器
      */
     open fun asVariableResolver(): VariableResolver? {
+        if (this == NONE) {
+            return null
+        }
         return DefaultVariableResolver(this)
     }
 
-    /**
-     * 检查给定的对象, 是否和当前type类型匹配?
-     *
-     * @param obj 目标实例
-     * @return 该对象, 是否和当前type类型匹配?
-     */
-    open fun isInstance(@Nullable obj: Any?): Boolean {
-        return obj != null && isAssignFrom(obj::class.java)
+    open fun isInstance(obj: Any?): Boolean {
+        return obj != null && isAssignableFrom(obj::class.java)
     }
 
-    open fun isAssignFrom(other: Class<*>): Boolean {
-        return resolve()!!.isAssignableFrom(other)
+    open fun isAssignableFrom(other: Class<*>?): Boolean {
+        return isAssignableFrom(forClass(other), null)
+    }
+
+    open fun isAssignableFrom(owner: ResolvableType): Boolean {
+        return isAssignableFrom(owner, null)
+    }
+
+    private fun isAssignableFrom(other: ResolvableType, matchedBefore: Map<Type, Type>?): Boolean {
+        if (this == NONE || other == NONE) {
+            return false
+        }
+        if (isArray()) {
+            return this.getComponentType().isAssignableFrom(other.getComponentType())
+        }
+        // 先这么判断吧, 后面再修一下...
+        return resolve()!!.isAssignableFrom(other.resolve()!!)
     }
 
     override fun toString(): String {
-        return ClassUtils.getQualifiedName(resolved ?: Any::class.java)
+        if (isArray()) {
+            return getComponentType().toString() + "[]"
+        }
+        if (this.resolved == null) {
+            return "?"
+        }
+        if (this.type is TypeVariable<*>) {
+            if (variableResolver?.resolveVariable(this.type as TypeVariable<*>) == null) {
+                return "?"
+            }
+        }
+        if (this.hasGenerics()) {
+            return resolved!!.name + "<" + getGenerics().joinToString(",") { it.toString() } + ">"
+        }
+        return this.resolved!!.name
     }
 
 
     companion object {
         /**
-         * 空的ResolvableType
+         * 空的ResolvableType常量
          */
         @JvmField
-        val NONE = ResolvableType()
+        val NONE = ResolvableType(EmptyType.INSTANCE, null, null)
 
         /**
-         * 空的类型(ResolvableType)数组
+         * 空的ResolvableType[]常量
          */
         @JvmField
         val EMPTY_TYPES_ARRAY = emptyArray<ResolvableType>()
 
-        /**
-         * 给定type去进行构建ResolvableType
-         *
-         * @param type type(type的常见的子类型包括Class/ParameterizedType/WildcardType/GenericArrayType/TypeVariable这几个类别)
-         */
         @JvmStatic
-        fun forType(type: Type?, variableResolver: VariableResolver?): ResolvableType {
-            return ResolvableType(type, variableResolver)
+        fun forClass(clazz: Class<*>?): ResolvableType {
+            return ResolvableType(clazz)
         }
 
-        /**
-         * 给定type去进行构建ResolvableType
-         * (type的常见的子类型包括Class/ParameterizedType/WildcardType/GenericArrayType/TypeVariable这几个类别)
-         *
-         * @param type (Type有可能是带有泛型的ParameterizedType, 也可能只是普通的Class)
-         * @param owner 这个ResolvableType的所有者, 可以从owner去转换成为VariableResolver完成K/V/E/T等泛型的解析
-         * @return 转换得到的ResolvableType
-         */
-        @JvmStatic
-        fun forType(type: Type?, owner: ResolvableType?): ResolvableType {
-            var variableResolver: VariableResolver? = null
-            if (owner != null) {
-                variableResolver = owner.asVariableResolver()
-            }
-            if (type == null) {
-                return NONE
-            }
-            // 如果类型是Class的话, 直接构建...
-            if (type is Class<*>) {
-                return ResolvableType(type)
-            }
-            // 如果是(ParameterizedType/WildcardType/GenericArrayType/TypeVariable)这几类的话...
-            return forType(type, variableResolver)
-        }
-
-        /**
-         * 为指定类型去构建ResolvableType(type=resolved=clazz)
-         *
-         * @param clazz 目标类
-         * @return 根据Class构建的ResolvableType
-         */
-        @JvmStatic
-        fun forClass(clazz: Class<*>): ResolvableType {
-            return forType(type = clazz, variableResolver = null)
-        }
-
-        /**
-         * 将一个字段的相关泛型信息去转换为[ResolvableType]
-         *
-         * @param field 目标字段
-         * @return 用于去描述字段的ResolvableType
-         */
         @JvmStatic
         fun forField(field: Field): ResolvableType {
-            // 先构建出来一个type=ParameterizedType的ResolvableType去作为VariableResolver, 去提供泛型的解析
-            val owner = forType(type = field.genericType, variableResolver = null)
-            return forType(field.genericType, owner.asVariableResolver())
+            return forType(null, FieldTypeProvider(field), null)
+        }
+
+        @JvmStatic
+        fun forType(type: Type?): ResolvableType {
+            return forType(type, null, null)
+        }
+
+        @JvmStatic
+        fun forType(type: Type?, owner: ResolvableType?): ResolvableType {
+            return forType(type, owner?.asVariableResolver())
+        }
+
+        @JvmStatic
+        fun forType(
+            type: Type?,
+            variableResolver: VariableResolver?
+        ): ResolvableType {
+            return forType(type, null, variableResolver)
+        }
+
+        @JvmStatic
+        private fun forType(
+            type: Type?,
+            typeProvider: TypeProvider?,
+            variableResolver: VariableResolver?
+        ): ResolvableType {
+            var typeToUse = type
+            if (typeToUse == null && typeProvider != null) {
+                typeToUse = typeProvider.getType()
+            }
+            if (typeToUse == null) {
+                return NONE
+            }
+
+            if (typeToUse is Class<*>) {
+                return ResolvableType(typeToUse, typeProvider, variableResolver, null)
+            }
+
+            return ResolvableType(typeToUse, typeProvider, variableResolver)
         }
 
         /**
@@ -518,9 +571,6 @@ open class ResolvableType() {
             return resolvableType
         }
 
-        /**
-         * 清除缓存
-         */
         @JvmStatic
         fun clearCache() {
 
@@ -528,35 +578,67 @@ open class ResolvableType() {
     }
 
     /**
-     * 这是一个TypeVariable的解析器(有可能在解析泛型的过程当中, 遇到了E/T/K/V等未知泛型的情况, 就得去进行解析)
+     * TypeProvider
+     */
+    interface TypeProvider {
+        fun getType(): Type?
+
+        fun getSource(): Any? = null
+    }
+
+    private class FieldTypeProvider(private val field: Field) : TypeProvider {
+        override fun getType(): Type? {
+            return field.genericType
+        }
+
+        override fun getSource(): Any {
+            return field
+        }
+    }
+
+
+    /**
+     * 提供对于TypeVariable的解析的Resolver策略接口
      *
-     * @see DefaultVariableResolver
+     * @see TypeVariable
      */
     interface VariableResolver {
 
         /**
-         * 真正执行泛型的解析的对象
+         * 返回VariableResolver的source
          *
-         * @return source
+         * @return source of VariableResolver
          */
         fun getSource(): Any
 
         /**
-         * 解析TypeVariable, 有可能在解析泛型的过程当中, 遇到了E/T/K/V等泛型的情况, 就得去进行解析
+         * 执行对于泛型变量的解析
          *
-         * @param typeVariable 解析过程当中遇到的TypeVariable
-         * @return 将TypeVariable转换成为ResolvableType
+         * @param typeVariable 泛型变量
+         * @return 解析完成得到的变量值, 解析不到的话return null
          */
         fun resolveVariable(typeVariable: TypeVariable<*>): ResolvableType?
     }
 
+    private class DefaultVariableResolver(private val source: ResolvableType) : VariableResolver {
+        override fun getSource(): Any {
+            return source
+        }
+
+        override fun resolveVariable(typeVariable: TypeVariable<*>): ResolvableType? {
+            return source.resolveVariable(typeVariable)
+        }
+    }
+
     /**
-     * 默认的TypeVariable解析器, 使用ResolvableType作为变量解析器
-     *
-     * @param source source of ResolvableType, 一般为最外层的类型...
+     * 空的Type标识
      */
-    open class DefaultVariableResolver(private val source: ResolvableType) : VariableResolver {
-        override fun getSource() = this.source
-        override fun resolveVariable(typeVariable: TypeVariable<*>) = this.source.resolveVariable(typeVariable)
+    private class EmptyType : Type, Serializable {
+        companion object {
+            @JvmField
+            val INSTANCE = EmptyType()
+        }
+
+        fun readResolve(): Any = INSTANCE
     }
 }

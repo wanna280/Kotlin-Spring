@@ -666,7 +666,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
                     // 如果name不是以"&"作为开头, 那么说明应该匹配的是FactoryBeanObject
                 } else {
                     val typeForFactoryBean = getTypeForFactoryBean(beanInstance)
-                    return typeForFactoryBean != null && typeToMatch.isAssignFrom(typeForFactoryBean)
+                    return typeForFactoryBean != null && typeToMatch.isAssignableFrom(typeForFactoryBean)
                 }
 
                 // 如果beanInstance不是FactoryBean的话
@@ -748,7 +748,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         // TODO check generics
 
         // 检查predictedType和预期type是否能匹配成功?
-        return typeToMatch.isAssignFrom(predictedType)
+        return typeToMatch.isAssignableFrom(predictedType)
     }
 
     /**
