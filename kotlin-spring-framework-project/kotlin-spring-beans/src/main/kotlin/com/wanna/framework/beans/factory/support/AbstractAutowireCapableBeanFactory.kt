@@ -319,10 +319,16 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
     ): Class<*>? {
         var targetType = mbd.getTargetType()
         if (targetType == null) {
+
+            // 如果存在有factoryMethod, 也就是@Bean的情况, 我们去解析该方法的返回值类型
             if (mbd.getFactoryMethodName() != null) {
                 targetType = getTypeForFactoryMethod(beanName, mbd, *typesToMatch)
+
+                // 如果不存在有FactoryMethod的话, 那么我们只能解析beanClass啦...
             } else {
                 targetType = resolveBeanClass(mbd, beanName, *typesToMatch)
+
+                // 如果已经解析出来适合的beanClass的话, 我们期望得到真实的目标类型
                 if (mbd.hasBeanClass()) {
                     targetType = getInstantiationStrategy().getActualBeanClass(mbd, beanName, this)
                 }
@@ -350,7 +356,7 @@ abstract class AbstractAutowireCapableBeanFactory() : AbstractBeanFactory(), Aut
         val targetType = determineTargetType(beanName, mbd, *typeToMatch)
 
         // 交给BeanPostProcessor, 去进行更多的beanType的预测
-        if (targetType != null && !mbd.isSynthetic() && getBeanPostProcessorCache().hasInstantiationAware()) {
+        if (targetType != null && !mbd.isSynthetic() && getBeanPostProcessorCache().hasSmartInstantiationAware()) {
             for (bp in getBeanPostProcessorCache().smartInstantiationAwareCache) {
 
                 // 是否只是匹配FactoryBean

@@ -1,10 +1,10 @@
 package com.wanna.framework.beans.factory.support
 
+import com.wanna.common.logging.LoggerFactory
+import com.wanna.framework.beans.factory.config.DestructionAwareBeanPostProcessor
 import com.wanna.framework.beans.factory.support.definition.RootBeanDefinition
-import  com.wanna.framework.beans.factory.config.DestructionAwareBeanPostProcessor
 import com.wanna.framework.util.ReflectionUtils
 import com.wanna.framework.util.StringUtils
-import com.wanna.common.logging.LoggerFactory
 import java.lang.reflect.Method
 
 /**
@@ -115,7 +115,7 @@ open class DisposableBeanAdapter(
         }
 
         /**
-         * 判断一个Bean是否有Destory方法, DisposableBean/AutoCloseable, 则return true
+         * 判断一个Bean是否有Destroy方法, DisposableBean/AutoCloseable, 则return true
          *
          * @param bean bean
          * @param mbd MergedBeanDefinition
@@ -126,7 +126,7 @@ open class DisposableBeanAdapter(
             if (bean is DisposableBean || bean is AutoCloseable) {
                 return true
             }
-            // 尝试去进行推断Destory方法
+            // 尝试去进行推断Destroy方法
             return inferDestroyMethodIfNecessary(bean, mbd) != null
         }
 

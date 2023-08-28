@@ -666,7 +666,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
                     // 如果name不是以"&"作为开头, 那么说明应该匹配的是FactoryBeanObject
                 } else {
                     val typeForFactoryBean = getTypeForFactoryBean(beanInstance)
-                    return typeForFactoryBean != null && typeToMatch.isAssignFrom(typeForFactoryBean)
+                    return typeForFactoryBean != null && typeToMatch.isAssignableFrom(typeForFactoryBean)
                 }
 
                 // 如果beanInstance不是FactoryBean的话
@@ -748,7 +748,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         // TODO check generics
 
         // 检查predictedType和预期type是否能匹配成功?
-        return typeToMatch.isAssignFrom(predictedType)
+        return typeToMatch.isAssignableFrom(predictedType)
     }
 
     /**
@@ -774,6 +774,8 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
      *
      * @param mbd BeanDefinition
      * @param beanName beanName
+     * @param typeToMatch 要去进行匹配的类型
+     * @return 从BeanDefinition当中去解析到的beanClass
      */
     @Nullable
     protected open fun resolveBeanClass(
@@ -784,6 +786,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
             if (mbd.hasBeanClass()) {
                 return mbd.getBeanClass()!!
             }
+            // 2.如果没有beanClass的话, 那么尝试去进行解析, 使用classLoader去进行类加载
             return doResolveBeanClass(mbd, typeToMatch = typeToMatch)
         } catch (ex: Throwable) {
             throw CannotLoadBeanClassException("Cannot load bean class", ex)
@@ -1013,8 +1016,8 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
     }
 
     /**
-     * 是否需要去注册destory的回调?
-     * (1)支持AutoCloseable/DisposableBean以及BeanDefinition当中的destoryMethod等?
+     * 是否需要去注册destroy的回调?
+     * (1)支持AutoCloseable/DisposableBean以及BeanDefinition当中的destroyMethod等?
      * (2)遍历所有的DestructionAwareBeanPostProcessor来判断是否需要注册注册?
      *
      * @param bean bean
@@ -1024,7 +1027,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         if (mbd.getBeanClass() == NullBean::class.java) {  // except NullBean
             return false
         }
-        // 判断它是否有destroy方法, 如果有return true(支持AutoCloseable/DisposableBean以及BeanDefinition当中的destoryMethod等)
+        // 判断它是否有destroy方法, 如果有return true(支持AutoCloseable/DisposableBean以及BeanDefinition当中的destroyMethod等)
         if (DisposableBeanAdapter.hasDestroyMethod(bean, mbd)) {
             return true
         }
@@ -1063,7 +1066,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
             if (mbd.isSingleton()) {
                 registerDisposableBean(beanName, disposableBeanAdapter)
 
-                // 如果它是一个来自于Scope的Bean, 那么需要把DisposableBean注册给Scope当中, 让Scope去管理destory
+                // 如果它是一个来自于Scope的Bean, 那么需要把DisposableBean注册给Scope当中, 让Scope去管理destroy
             } else {
                 val scope = this.scopes[mbd.getScope()]
                     ?: throw IllegalStateException("BeanFactory当中没有注册Scope[name=${mbd.getScope()}, 但是BeanDefinition[name=$beanName]当中设置了该Scope]")
@@ -1162,7 +1165,7 @@ abstract class AbstractBeanFactory(private var parentBeanFactory: BeanFactory? =
         // 处理MergeBeanDefinition的PostProcessor
         val mergedDefinitions = ArrayList<MergedBeanDefinitionPostProcessor>()
 
-        // 处理destory的BeanPostProcessor
+        // 处理destroy的BeanPostProcessor
         val destructionAwareCache = ArrayList<DestructionAwareBeanPostProcessor>()
 
         fun hasInstantiationAware(): Boolean = instantiationAwareCache.isNotEmpty()
