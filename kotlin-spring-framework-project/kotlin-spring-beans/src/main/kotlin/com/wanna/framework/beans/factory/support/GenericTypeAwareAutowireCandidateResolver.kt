@@ -51,7 +51,7 @@ open class GenericTypeAwareAutowireCandidateResolver : BeanFactoryAware, SimpleA
             if (ClassUtils.isAssignFrom(Collection::class.java, dependencyType)) {
                 val beanResolveType = ResolvableType.forClass(beanClass).asCollection()
                 if(beanResolveType.getGenerics().isNotEmpty() && resolvableType.getGenerics().isNotEmpty()) {
-                    return beanResolveType.getGenerics()[0].resolveType() == resolvableType.getGenerics()[0].resolveType()
+                    return beanResolveType.getGenerics()[0].resolve() == resolvableType.getGenerics()[0].resolve()
                 }
                 return true
             } else {
