@@ -12,27 +12,32 @@ import java.lang.reflect.*
  *
  * @param executable 方法/字段/构造器
  * @param parameterIndex 参数的index, 必须介于[-1, parameterCount-1]之间, 并且index=-1代表描述的是方法的返回值
+ * @param containingClass containingClass, 指定的方法的具体实现类, 如果不给这个参数的话, 那么认为containingClass就是declaringClass
+ * @param nestingLevel 方法参数的嵌套层级, 用于解析泛型, 例如Map<String, String>在指定nestingLevel=2的情况下, 可以获取到内部的泛型参数
+ * @param typeIndexesPerLevel 嵌套层级解析泛型参数时, 需要使用哪个位置的泛型参数
  */
 open class MethodParameter(
     private var executable: Executable,
     private var parameterIndex: Int,
     private var containingClass: Class<*>?,
-    private var nestingLevel: Int = 1
+    private var nestingLevel: Int = 1,
+    private var typeIndexesPerLevel: Map<Int, Int>?
 ) {
-
-    constructor(executable: Executable, parameterIndex: Int) : this(executable, parameterIndex, null, 1)
+    constructor(executable: Executable, parameterIndex: Int) : this(executable, parameterIndex, null, 1, null)
     constructor(executable: Executable, parameterIndex: Int, nestingLevel: Int) : this(
         executable,
         parameterIndex,
         null,
-        nestingLevel
+        nestingLevel,
+        null
     )
 
     constructor(executable: Executable, parameterIndex: Int, containingClass: Class<*>?) : this(
         executable,
         parameterIndex,
         containingClass,
-        1
+        1,
+        null
     )
 
     init {
@@ -42,7 +47,9 @@ open class MethodParameter(
         }
     }
 
-    // 参数名发现器, 提供该方法/构造器当中的方法的参数名列表的获取
+    /**
+     * 参数名发现器, 提供该方法/构造器当中的方法的参数名列表的获取
+     */
     private var parameterNameDiscoverer: ParameterNameDiscoverer? = null
 
     /**
@@ -61,6 +68,10 @@ open class MethodParameter(
      */
     open fun getAnnotations(): Array<Annotation> {
         return executable.parameters[parameterIndex].annotations
+    }
+
+    open fun getTypeIndexesPerLevel(): Map<Int, Int>? {
+        return typeIndexesPerLevel
     }
 
     /**
@@ -145,7 +156,7 @@ open class MethodParameter(
     }
 
     /**
-     * 该方法/构造器, 被定义在哪个类当中? 
+     * 该方法/构造器, 被定义在哪个类当中?
      *
      * @return 方法/构造器所被定义的类
      */
@@ -154,7 +165,9 @@ open class MethodParameter(
     }
 
     /**
-     * 获取包含的类
+     * 获取包含的类, 也就是方法的具体实现类(如果有指定containingClass, 那么使用自定义的; 如果没有自定义, 那么使用declaringClass作为containingClass)
+     *
+     * @return 方法的具体实现类
      */
     open fun getContainingClass(): Class<*> {
         return containingClass ?: getDeclaringClass()
@@ -242,7 +255,7 @@ open class MethodParameter(
          * 提供静态方法, 为Executable去构建MethodParameter
          *
          * @param executable 方法/构造器
-         * @param parameterIndex 当前参数位于该方法/构造器的第几个位置? 
+         * @param parameterIndex 当前参数位于该方法/构造器的第几个位置?
          * @return 为该方法参数构建好的MethodParameter对象
          */
         @JvmStatic
