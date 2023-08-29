@@ -1,6 +1,7 @@
 package com.wanna.framework.core
 
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.lang.Nullable
 import java.lang.reflect.*
 
 /**
@@ -21,7 +22,7 @@ open class MethodParameter(
     private var parameterIndex: Int,
     private var containingClass: Class<*>?,
     private var nestingLevel: Int = 1,
-    private var typeIndexesPerLevel: Map<Int, Int>?
+    private var typeIndexesPerLevel: MutableMap<Int, Int>?
 ) {
     constructor(executable: Executable, parameterIndex: Int) : this(executable, parameterIndex, null, 1, null)
     constructor(executable: Executable, parameterIndex: Int, nestingLevel: Int) : this(
@@ -40,6 +41,19 @@ open class MethodParameter(
         null
     )
 
+    /**
+     * 对外提供一个用于copy的MethodParameter构造器
+     *
+     * @param original 原始的待进行copy的MethodParameter
+     */
+    constructor(original: MethodParameter) : this(
+        original.executable,
+        original.parameterIndex,
+        original.containingClass,
+        original.nestingLevel,
+        original.typeIndexesPerLevel
+    )
+
     init {
         val parameterCount = executable.parameterCount
         if (parameterIndex < -1 || parameterIndex > parameterCount) {
@@ -51,6 +65,11 @@ open class MethodParameter(
      * 参数名发现器, 提供该方法/构造器当中的方法的参数名列表的获取
      */
     private var parameterNameDiscoverer: ParameterNameDiscoverer? = null
+
+    /**
+     * 嵌套一层的MethodParameter(常用, 做一层缓存)
+     */
+    private var nestedMethodParameter: MethodParameter? = null
 
     /**
      * 初始化参数名发现器(Kotlin反射/标准反射/ASM三种方式)
@@ -70,8 +89,26 @@ open class MethodParameter(
         return executable.parameters[parameterIndex].annotations
     }
 
-    open fun getTypeIndexesPerLevel(): Map<Int, Int>? {
+    /**
+     * 获取原始的typeIndexesPerLevel的Map
+     *
+     * @return typeIndexesPerLevel
+     */
+    @Nullable
+    open fun getOriginTypeIndexesPerLevel(): Map<Int, Int>? {
         return typeIndexesPerLevel
+    }
+
+    /**
+     * 获取懒加载的typeIndexesPerLevel Map, 如果之前不存在的话, 那么构建一个空的Map
+     *
+     * @return typeIndexesPerLevel
+     */
+    open fun getTypeIndexesPerLevel(): MutableMap<Int, Int> {
+        if (this.typeIndexesPerLevel == null) {
+            this.typeIndexesPerLevel = LinkedHashMap(4)
+        }
+        return this.typeIndexesPerLevel!!
     }
 
     /**
@@ -105,7 +142,7 @@ open class MethodParameter(
      * @return 如果方法上标注了该注解, 那么return true; 否则return false
      */
     open fun hasMethodAnnotation(annotationClass: Class<out Annotation>): Boolean {
-        return AnnotatedElementUtils.hasAnnotation(this.executable, annotationClass);
+        return AnnotatedElementUtils.hasAnnotation(this.executable, annotationClass)
     }
 
     /**
@@ -245,8 +282,58 @@ open class MethodParameter(
         return null
     }
 
-    override fun toString(): String {
-        return "MethodParameter(executable=$executable, parameterIndex=$parameterIndex, containingClass=$containingClass, nestingLevel=$nestingLevel)"
+    /**
+     * 获取当前方法参数, 嵌套一层的泛型方法参数
+     *
+     * @return 嵌套一层的泛型参数
+     */
+    open fun nested(): MethodParameter {
+        return nested(null)
+    }
+
+    /**
+     * 获取当前方法参数, 嵌套一层的泛型方法参数
+     *
+     * @param typeIndex 该层级要使用哪个位置的泛型参数? 不传默认取最后一个
+     * @return 嵌套一层的泛型参数
+     */
+    open fun nested(@Nullable typeIndex: Int?): MethodParameter {
+        var nestedParam = this.nestedMethodParameter
+        // 如果type==null, 缓存起来单层嵌套的MethodParameter
+        if (nestedParam != null && typeIndex == null) {
+            return nestedParam
+        }
+        nestedParam = nested(this.nestingLevel + 1, typeIndex)
+        if (typeIndex == null) {
+            nestedMethodParameter = nestedParam
+        }
+        return nestedParam
+    }
+
+    /**
+     * 根据当前方法参数, 以及嵌套层级信息, 重新去构建一个MethodParameter
+     *
+     * @param nestingLevel 最终的嵌套层级
+     * @param typeIndex 该嵌套层级的泛型参数, 需要使用哪个位置的泛型, 指定泛型参数index?
+     */
+    open fun nested(nestingLevel: Int, typeIndex: Int?): MethodParameter {
+        val copy = clone()
+
+        // 修改嵌套层级
+        copy.nestingLevel = nestingLevel
+        // copy typeIndexesPerLevel
+        if (this.typeIndexesPerLevel != null) {
+            copy.typeIndexesPerLevel = LinkedHashMap(this.typeIndexesPerLevel)
+        }
+        if (typeIndex != null) {
+            copy.getTypeIndexesPerLevel()[nestingLevel] = typeIndex
+        }
+
+        return copy
+    }
+
+    open fun clone(): MethodParameter {
+        return MethodParameter(this)
     }
 
 

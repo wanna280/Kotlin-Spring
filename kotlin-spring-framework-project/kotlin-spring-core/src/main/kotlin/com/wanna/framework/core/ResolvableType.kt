@@ -720,7 +720,7 @@ open class ResolvableType {
                 null,
                 MethodParameterTypeProvider(methodParameter),
                 owner.asVariableResolver()
-            ).getNested(methodParameter.getNestingLevel(), methodParameter.getTypeIndexesPerLevel())
+            ).getNested(methodParameter.getNestingLevel(), methodParameter.getOriginTypeIndexesPerLevel())
         }
 
         /**
@@ -739,7 +739,7 @@ open class ResolvableType {
                 targetType,
                 MethodParameterTypeProvider(methodParameter),
                 owner.asVariableResolver()
-            ).getNested(nestingLevel, methodParameter.getTypeIndexesPerLevel())
+            ).getNested(nestingLevel, methodParameter.getOriginTypeIndexesPerLevel())
         }
 
         /**
