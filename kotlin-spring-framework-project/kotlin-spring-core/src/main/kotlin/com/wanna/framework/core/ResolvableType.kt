@@ -541,7 +541,7 @@ open class ResolvableType {
          * @return 针对该Field去进行描述得到的ResolvableType
          */
         @JvmStatic
-        fun forField(field: Field, implementingClass: Class<*>): ResolvableType {
+        fun forField(field: Field, implementingClass: Class<*>?): ResolvableType {
             val owner = forType(implementingClass).`as`(field.declaringClass)
             return forType(null, FieldTypeProvider(field), owner.asVariableResolver())
         }
@@ -569,7 +569,7 @@ open class ResolvableType {
          * @return 针对该Field去进行描述得到的ResolvableType
          */
         @JvmStatic
-        fun forField(field: Field, nestingLevel: Int, implementingClass: Class<*>): ResolvableType {
+        fun forField(field: Field, nestingLevel: Int, implementingClass: Class<*>?): ResolvableType {
             return forField(field, implementingClass).getNested(nestingLevel)
         }
 

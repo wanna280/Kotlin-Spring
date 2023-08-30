@@ -169,6 +169,34 @@ open class MethodParameter(
     }
 
     /**
+     * 获取嵌套的泛型的参数类型(如果nestingLevel=1, 那么返回参数类型; 如果nestingLevel>1, 那么需要递归解析嵌套的参数类型)
+     *
+     * @return 嵌套的泛型的参数类型
+     */
+    open fun getNestedParameterType(): Class<*> {
+        if (this.nestingLevel > 1) {
+            var type = getGenericParameterType()
+            for (i in 2..nestingLevel) {
+                if (type is ParameterizedType) {
+                    val args = type.actualTypeArguments
+                    type = args[getTypeIndexesPerLevel()[i] ?: (args.size - 1)]
+                }
+            }
+            if (type is Class<*>) {
+                return type
+            } else if (type is ParameterizedType) {
+                val rawType = type.rawType
+                if (rawType is Class<*>) {
+                    return rawType
+                }
+            }
+            return Any::class.java
+        } else {
+            return getParameterType()
+        }
+    }
+
+    /**
      * 获取方法参数(来自jdk的Parameter)对象, 将其暴露给使用者
      */
     open fun getParameter(): Parameter {

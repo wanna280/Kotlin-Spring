@@ -765,13 +765,23 @@ open class DefaultListableBeanFactory : ConfigurableListableBeanFactory, BeanDef
     }
 
     /**
-     * 多个元素的DependencyDescriptor
+     * 增加泛型参数的嵌套级别的DependencyDescriptor, 包装一层, 修改当前DependencyDescriptor的嵌套级别
+     *
+     * @param descriptor 待增加嵌套级别的依赖描述符
+     */
+    private open class NestedDependencyDescriptor(descriptor: DependencyDescriptor) : DependencyDescriptor(descriptor) {
+        init {
+            // 增加嵌套级别
+            this.increaseNestingLevel()
+        }
+    }
+
+    /**
+     * 需要去注入多个元素的DependencyDescriptor(Map/List/...)
      *
      * @param descriptor 原始的Descriptor
      */
-    private class MultiElementDescriptor(descriptor: DependencyDescriptor) : DependencyDescriptor(
-        descriptor.getField(), descriptor.getMethodParameter(), descriptor.isRequired(), descriptor.isEager()
-    )
+    private class MultiElementDescriptor(descriptor: DependencyDescriptor) : NestedDependencyDescriptor(descriptor)
 
     /**
      * 解析多个Bean的情况, 比如Collection/Map/Array等类型的依赖的解析, 有可能会需要用到Converter去完成类型的转换
