@@ -1,5 +1,6 @@
 package com.wanna.framework.core
 
+import com.wanna.framework.lang.Nullable
 import java.io.Serializable
 import java.lang.reflect.*
 
@@ -146,6 +147,59 @@ open class ResolvableType {
      */
     open fun resolve(fallback: Class<*>): Class<*> {
         return this.resolved ?: fallback
+    }
+
+    /**
+     * 获取嵌套层级的Type信息
+     *
+     * * 1.比如针对List<Set<String>>这种情况, nestingLevel=1将会获取到List,
+     * nestingLevel=2将会获取到Set, nestingLevel=3将会获取到String.
+     * * 2.针对String[]这种情况, nestingLevel=1可以获取到String[], nestingLevel=2可以获取到String.
+     * * 3.某些层级可能存在有多个泛型, 比如Map<String,Integer>, 这种情况获取到的是最后一个泛型, 也就是Integer
+     * * 4.如果当前类没有泛型, 那么也支持从父类当中去进行寻找泛型...
+     *
+     * @param nestingLevel 要获取泛型的具体嵌套层级
+     * @return 获取到的嵌套层级的泛型(可能为NONE)
+     */
+    open fun getNested(nestingLevel: Int): ResolvableType {
+        return getNested(nestingLevel, null)
+    }
+
+    /**
+     * 获取嵌套层级的Type信息
+     *
+     * * 1.比如针对List<Set<String>>这种情况, nestingLevel=1将会获取到List,
+     * nestingLevel=2将会获取到Set, nestingLevel=3将会获取到String.
+     * * 2.针对String[]这种情况, nestingLevel=1可以获取到String[], nestingLevel=2可以获取到String.
+     * * 3.针对typeIndexesPerLevel, 用于获取获取某个层级(key)需要获取第几个(value)泛型, 比如Map<String,Integer>,
+     * 例如指定value为1, 那么代表要获取到Integer的泛型, value为0, 那么代表要获取到String的泛型.
+     * 如果typeIndexesPerLevel当中没有指定当前level要使用的泛型, 默认取最后一个泛型去进行计算, 也就是Integer
+     * * 4.如果当前类没有泛型, 那么也支持从父类当中去进行寻找泛型...
+     *
+     * @param nestingLevel 要获取泛型的具体嵌套层级
+     * @param typeIndexesPerLevel 某个层级要取第几个泛型? key-层级, value-泛型index
+     * @return 获取到的嵌套层级的泛型(可能为NONE)
+     */
+    open fun getNested(nestingLevel: Int, typeIndexesPerLevel: Map<Int, Int>?): ResolvableType {
+        var result = this
+        for (i in 2..nestingLevel) {
+            // 如果是数组的话, 那么获取它的元素类型, 并消耗一个层级
+            if (result.isArray()) {
+                result = result.getComponentType()
+            } else {
+
+                // 如果当前result不为NONE, 但是不存在有泛型的话, 那么尝试从superType去进行获取
+                while (result != NONE && !result.hasGenerics()) {
+                    result = result.getSuperType()
+                }
+
+                // 如果typeIndexesPerLevel当中指定了要读取当前层级要使用第几个索引的话
+                // 那么取自定义的, 如果没有自定义的话, 那么取默认的层级...
+                val index = typeIndexesPerLevel?.get(i) ?: (result.getGenerics().size - 1)
+                result = result.getGeneric(index)
+            }
+        }
+        return result
     }
 
     /**
@@ -456,26 +510,99 @@ open class ResolvableType {
         @JvmField
         val EMPTY_TYPES_ARRAY = emptyArray<ResolvableType>()
 
+        /**
+         * 基于给定的Class, 去包装成为ResolvableType
+         *
+         * @return ResolvableType
+         */
         @JvmStatic
         fun forClass(clazz: Class<*>?): ResolvableType {
             return ResolvableType(clazz)
         }
 
+        /**
+         * 基于给定的Field, 去为该类型解析成为ResolvableType
+         *
+         * @param field 要去进行解析的字段
+         * @return 为该字段解析得到的ResolvableType
+         */
         @JvmStatic
         fun forField(field: Field): ResolvableType {
             return forType(null, FieldTypeProvider(field), null)
         }
 
+        /**
+         * 指定Field以及该Field的实现类, 从而去解析成为ResolvableType,
+         * 有可能父类定义了一个T[]的字段, 具体的类型是子类给定的, 如果没有子类, 这个T[]的类型就无法被解析出来,
+         * 但是提供了子类之后, 我们可以基于子类, 去解析父类的泛型, 从而解析得到这个T
+         *
+         * @param field field, 可能为父类当中的字段
+         * @param implementingClass 该字段对应的类的实现类
+         * @return 针对该Field去进行描述得到的ResolvableType
+         */
+        @JvmStatic
+        fun forField(field: Field, implementingClass: Class<*>?): ResolvableType {
+            val owner = forType(implementingClass).`as`(field.declaringClass)
+            return forType(null, FieldTypeProvider(field), owner.asVariableResolver())
+        }
+
+        /**
+         * 获取指定的Field的指定嵌套层级的Type信息
+         *
+         * @param field Field, 待解析的字段
+         * @param nestingLevel nestingLevel, 要获取的泛型的嵌套等级
+         * @return 获取到的字段的指定层级的泛型的Type信息对应的ResolvableType
+         */
+        @JvmStatic
+        fun forField(field: Field, nestingLevel: Int): ResolvableType {
+            return forField(field).getNested(nestingLevel)
+        }
+
+        /**
+         * 指定Field以及该Field的实现类, 从而对该字段的指定层级的泛型信息, 去解析成为ResolvableType,
+         * 有可能父类定义了一个T[]的字段, 具体的类型是子类给定的, 如果没有子类, 这个T[]的类型就无法被解析出来,
+         * 但是提供了子类之后, 我们可以基于子类, 去解析父类的泛型, 从而解析得到这个T
+         *
+         * @param field field, 可能为父类当中的字段
+         * @param nestingLevel nestingLevel, 要获取的泛型的嵌套等级
+         * @param implementingClass 该字段对应的类的实现类
+         * @return 针对该Field去进行描述得到的ResolvableType
+         */
+        @JvmStatic
+        fun forField(field: Field, nestingLevel: Int, implementingClass: Class<*>?): ResolvableType {
+            return forField(field, implementingClass).getNested(nestingLevel)
+        }
+
+        /**
+         * 针对给定的Type去解析成为ResolvableType
+         *
+         * @param type type
+         * @return 解析得到的ResolvableType
+         */
         @JvmStatic
         fun forType(type: Type?): ResolvableType {
             return forType(type, null, null)
         }
 
+        /**
+         * 针对给定的Type去解析成为ResolvableType
+         *
+         * @param type type
+         * @param owner 该type对应的Owner, 比如字段对应的具体实现类
+         * @return 解析得到的ResolvableType
+         */
         @JvmStatic
         fun forType(type: Type?, owner: ResolvableType?): ResolvableType {
             return forType(type, owner?.asVariableResolver())
         }
 
+        /**
+         * 针对给定的Type去解析成为ResolvableType
+         *
+         * @param type type
+         * @param variableResolver 提供对于TypeVariable的解析的解析器(很可能由owner提供, 让子类去解析父类的泛型信息)
+         * @return 解析得到的ResolvableType
+         */
         @JvmStatic
         fun forType(
             type: Type?,
@@ -484,6 +611,14 @@ open class ResolvableType {
             return forType(type, null, variableResolver)
         }
 
+        /**
+         * 针对给定的Type去解析成为ResolvableType
+         *
+         * @param type type
+         * @param typeProvider typeProvider(如果type为null, 支持从typeProvider当中去进行getType)
+         * @param variableResolver 提供对于TypeVariable的解析的解析器(很可能由owner提供, 让子类去解析父类的泛型信息)
+         * @return 解析得到的ResolvableType
+         */
         @JvmStatic
         private fun forType(
             type: Type?,
@@ -518,6 +653,19 @@ open class ResolvableType {
         }
 
         /**
+         * 将一个方法参数去转换成为[ResolvableType]
+         *
+         * @param method 方法
+         * @param index 方法参数index?
+         * @param implementingClass 该方法的具体实现类
+         * @return 解析得到描述该方法参数的ResolveType
+         */
+        @JvmStatic
+        fun forMethodParameter(method: Method, index: Int, implementingClass: Class<*>): ResolvableType {
+            return forMethodParameter(MethodParameter(method, index, implementingClass))
+        }
+
+        /**
          * 根据给定的方法的返回值去构建出来[ResolvableType]
          *
          * @param method method
@@ -536,9 +684,62 @@ open class ResolvableType {
          */
         @JvmStatic
         fun forMethodParameter(methodParameter: MethodParameter): ResolvableType {
-            // 先构建出来一个type=ParameterizedType的ResolvableType去作为VariableResolver, 去提供泛型的解析
-            val owner = forType(type = methodParameter.getGenericParameterType(), variableResolver = null)
-            return forType(methodParameter.getGenericParameterType(), owner.asVariableResolver())
+            return forMethodParameter(methodParameter, targetType = null)
+        }
+
+        /**
+         * 将一个方法参数去转换成为ResolvableType
+         *
+         * @param methodParameter 方法参数
+         * @param targetType targetType
+         * @return 针对该方法参数去解析得到的ResolvableType
+         */
+        @JvmStatic
+        fun forMethodParameter(methodParameter: MethodParameter, @Nullable targetType: Type?): ResolvableType {
+            return forMethodParameter(methodParameter, targetType, methodParameter.getNestingLevel())
+        }
+
+        /**
+         * 将一个方法参数去转换成为ResolvableType
+         *
+         * @param methodParameter 方法参数
+         * @param implementationType 该方法参数对应的实现类的类型
+         * @return 针对该方法参数, 去解析得到的ResolvableType
+         */
+        @JvmStatic
+        fun forMethodParameter(
+            methodParameter: MethodParameter,
+            @Nullable implementationType: ResolvableType?
+        ): ResolvableType {
+            // 获取到具体的实现类(如果不存在的话, 那么从方法参数当中去进行获取containingClass)
+            val implementationTypeToUse = implementationType ?: forType(methodParameter.getContainingClass())
+            // 将实现类使用as转换为方法所在的类...
+            val owner = implementationTypeToUse.`as`(methodParameter.getDeclaringClass())
+
+            return forType(
+                null,
+                MethodParameterTypeProvider(methodParameter),
+                owner.asVariableResolver()
+            ).getNested(methodParameter.getNestingLevel(), methodParameter.getOriginTypeIndexesPerLevel())
+        }
+
+        /**
+         * 将一个方法参数类型的指定泛型嵌套级别的参数, 去转换成为ResolvableType
+         *
+         * @param methodParameter 方法参数
+         * @param nestingLevel 泛型参数嵌套级别
+         * @param targetType targetType
+         * @return 方法参数/方法参数的泛型信息, 去转换得到的ResolvableType
+         */
+        @JvmStatic
+        fun forMethodParameter(methodParameter: MethodParameter, targetType: Type?, nestingLevel: Int): ResolvableType {
+            // 使用containingClass去解析成为ResolvableType, 再使用as切换到declaringClass的ResolvableType
+            val owner = forType(methodParameter.getContainingClass()).`as`(methodParameter.getDeclaringClass())
+            return forType(
+                targetType,
+                MethodParameterTypeProvider(methodParameter),
+                owner.asVariableResolver()
+            ).getNested(nestingLevel, methodParameter.getOriginTypeIndexesPerLevel())
         }
 
         /**
@@ -593,6 +794,16 @@ open class ResolvableType {
 
         override fun getSource(): Any {
             return field
+        }
+    }
+
+    private class MethodParameterTypeProvider(private val methodParameter: MethodParameter) : TypeProvider {
+        override fun getType(): Type {
+            return methodParameter.getGenericParameterType()
+        }
+
+        override fun getSource(): Any {
+            return this.methodParameter
         }
     }
 

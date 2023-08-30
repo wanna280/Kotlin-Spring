@@ -1,6 +1,7 @@
 package com.wanna.framework.core
 
 import com.wanna.framework.core.annotation.AnnotatedElementUtils
+import com.wanna.framework.lang.Nullable
 import java.lang.reflect.*
 
 /**
@@ -12,27 +13,45 @@ import java.lang.reflect.*
  *
  * @param executable 方法/字段/构造器
  * @param parameterIndex 参数的index, 必须介于[-1, parameterCount-1]之间, 并且index=-1代表描述的是方法的返回值
+ * @param containingClass containingClass, 指定的方法的具体实现类, 如果不给这个参数的话, 那么认为containingClass就是declaringClass
+ * @param nestingLevel 方法参数的嵌套层级, 用于解析泛型, 例如Map<String, String>在指定nestingLevel=2的情况下, 可以获取到内部的泛型参数
+ * @param typeIndexesPerLevel 嵌套层级解析泛型参数时, 需要使用哪个位置的泛型参数
  */
 open class MethodParameter(
     private var executable: Executable,
     private var parameterIndex: Int,
     private var containingClass: Class<*>?,
-    private var nestingLevel: Int = 1
+    private var nestingLevel: Int = 1,
+    private var typeIndexesPerLevel: MutableMap<Int, Int>?
 ) {
-
-    constructor(executable: Executable, parameterIndex: Int) : this(executable, parameterIndex, null, 1)
+    constructor(executable: Executable, parameterIndex: Int) : this(executable, parameterIndex, null, 1, null)
     constructor(executable: Executable, parameterIndex: Int, nestingLevel: Int) : this(
         executable,
         parameterIndex,
         null,
-        nestingLevel
+        nestingLevel,
+        null
     )
 
     constructor(executable: Executable, parameterIndex: Int, containingClass: Class<*>?) : this(
         executable,
         parameterIndex,
         containingClass,
-        1
+        1,
+        null
+    )
+
+    /**
+     * 对外提供一个用于copy的MethodParameter构造器
+     *
+     * @param original 原始的待进行copy的MethodParameter
+     */
+    constructor(original: MethodParameter) : this(
+        original.executable,
+        original.parameterIndex,
+        original.containingClass,
+        original.nestingLevel,
+        original.typeIndexesPerLevel
     )
 
     init {
@@ -42,8 +61,15 @@ open class MethodParameter(
         }
     }
 
-    // 参数名发现器, 提供该方法/构造器当中的方法的参数名列表的获取
+    /**
+     * 参数名发现器, 提供该方法/构造器当中的方法的参数名列表的获取
+     */
     private var parameterNameDiscoverer: ParameterNameDiscoverer? = null
+
+    /**
+     * 嵌套一层的MethodParameter(常用, 做一层缓存)
+     */
+    private var nestedMethodParameter: MethodParameter? = null
 
     /**
      * 初始化参数名发现器(Kotlin反射/标准反射/ASM三种方式)
@@ -61,6 +87,28 @@ open class MethodParameter(
      */
     open fun getAnnotations(): Array<Annotation> {
         return executable.parameters[parameterIndex].annotations
+    }
+
+    /**
+     * 获取原始的typeIndexesPerLevel的Map
+     *
+     * @return typeIndexesPerLevel
+     */
+    @Nullable
+    open fun getOriginTypeIndexesPerLevel(): Map<Int, Int>? {
+        return typeIndexesPerLevel
+    }
+
+    /**
+     * 获取懒加载的typeIndexesPerLevel Map, 如果之前不存在的话, 那么构建一个空的Map
+     *
+     * @return typeIndexesPerLevel
+     */
+    open fun getTypeIndexesPerLevel(): MutableMap<Int, Int> {
+        if (this.typeIndexesPerLevel == null) {
+            this.typeIndexesPerLevel = LinkedHashMap(4)
+        }
+        return this.typeIndexesPerLevel!!
     }
 
     /**
@@ -94,7 +142,7 @@ open class MethodParameter(
      * @return 如果方法上标注了该注解, 那么return true; 否则return false
      */
     open fun hasMethodAnnotation(annotationClass: Class<out Annotation>): Boolean {
-        return AnnotatedElementUtils.hasAnnotation(this.executable, annotationClass);
+        return AnnotatedElementUtils.hasAnnotation(this.executable, annotationClass)
     }
 
     /**
@@ -118,6 +166,34 @@ open class MethodParameter(
             return method.returnType
         }
         return executable.parameterTypes[parameterIndex]
+    }
+
+    /**
+     * 获取嵌套的泛型的参数类型(如果nestingLevel=1, 那么返回参数类型; 如果nestingLevel>1, 那么需要递归解析嵌套的参数类型)
+     *
+     * @return 嵌套的泛型的参数类型
+     */
+    open fun getNestedParameterType(): Class<*> {
+        if (this.nestingLevel > 1) {
+            var type = getGenericParameterType()
+            for (i in 2..nestingLevel) {
+                if (type is ParameterizedType) {
+                    val args = type.actualTypeArguments
+                    type = args[getTypeIndexesPerLevel()[i] ?: (args.size - 1)]
+                }
+            }
+            if (type is Class<*>) {
+                return type
+            } else if (type is ParameterizedType) {
+                val rawType = type.rawType
+                if (rawType is Class<*>) {
+                    return rawType
+                }
+            }
+            return Any::class.java
+        } else {
+            return getParameterType()
+        }
     }
 
     /**
@@ -145,7 +221,7 @@ open class MethodParameter(
     }
 
     /**
-     * 该方法/构造器, 被定义在哪个类当中? 
+     * 该方法/构造器, 被定义在哪个类当中?
      *
      * @return 方法/构造器所被定义的类
      */
@@ -154,7 +230,9 @@ open class MethodParameter(
     }
 
     /**
-     * 获取包含的类
+     * 获取包含的类, 也就是方法的具体实现类(如果有指定containingClass, 那么使用自定义的; 如果没有自定义, 那么使用declaringClass作为containingClass)
+     *
+     * @return 方法的具体实现类
      */
     open fun getContainingClass(): Class<*> {
         return containingClass ?: getDeclaringClass()
@@ -232,8 +310,58 @@ open class MethodParameter(
         return null
     }
 
-    override fun toString(): String {
-        return "MethodParameter(executable=$executable, parameterIndex=$parameterIndex, containingClass=$containingClass, nestingLevel=$nestingLevel)"
+    /**
+     * 获取当前方法参数, 嵌套一层的泛型方法参数
+     *
+     * @return 嵌套一层的泛型参数
+     */
+    open fun nested(): MethodParameter {
+        return nested(null)
+    }
+
+    /**
+     * 获取当前方法参数, 嵌套一层的泛型方法参数
+     *
+     * @param typeIndex 该层级要使用哪个位置的泛型参数? 不传默认取最后一个
+     * @return 嵌套一层的泛型参数
+     */
+    open fun nested(@Nullable typeIndex: Int?): MethodParameter {
+        var nestedParam = this.nestedMethodParameter
+        // 如果type==null, 缓存起来单层嵌套的MethodParameter
+        if (nestedParam != null && typeIndex == null) {
+            return nestedParam
+        }
+        nestedParam = nested(this.nestingLevel + 1, typeIndex)
+        if (typeIndex == null) {
+            nestedMethodParameter = nestedParam
+        }
+        return nestedParam
+    }
+
+    /**
+     * 根据当前方法参数, 以及嵌套层级信息, 重新去构建一个MethodParameter
+     *
+     * @param nestingLevel 最终的嵌套层级
+     * @param typeIndex 该嵌套层级的泛型参数, 需要使用哪个位置的泛型, 指定泛型参数index?
+     */
+    open fun nested(nestingLevel: Int, typeIndex: Int?): MethodParameter {
+        val copy = clone()
+
+        // 修改嵌套层级
+        copy.nestingLevel = nestingLevel
+        // copy typeIndexesPerLevel
+        if (this.typeIndexesPerLevel != null) {
+            copy.typeIndexesPerLevel = LinkedHashMap(this.typeIndexesPerLevel)
+        }
+        if (typeIndex != null) {
+            copy.getTypeIndexesPerLevel()[nestingLevel] = typeIndex
+        }
+
+        return copy
+    }
+
+    open fun clone(): MethodParameter {
+        return MethodParameter(this)
     }
 
 
@@ -242,7 +370,7 @@ open class MethodParameter(
          * 提供静态方法, 为Executable去构建MethodParameter
          *
          * @param executable 方法/构造器
-         * @param parameterIndex 当前参数位于该方法/构造器的第几个位置? 
+         * @param parameterIndex 当前参数位于该方法/构造器的第几个位置?
          * @return 为该方法参数构建好的MethodParameter对象
          */
         @JvmStatic
